@@ -360,19 +360,3 @@ If you have an issue: report it on the [issue tracker](https://github.com/profcl
 
 ## Contributing
 Feel like contributing? That's awesome! We have a [contributing guide](https://github.com/profclems/glab/blob/trunk/CONTRIBUTING.md) and [Code of conduct](https://github.com/profclems/glab/blob/trunk/CODE_OF_CONDUCT.md) to help guide you
-
-### Contributors
-
-#### Individuals
-
-This project exists thanks to all the people who contribute. [[Contribute](https://github.com/profclems/glab/blob/trunk/.github/CONTRIBUTING.md)].
-<a href="https://opencollective.com/glab/contribute"><img src="https://opencollective.com/glab/contributors.svg?width=890" /></a>
-
-#### Organizations
-
-[![Fosshost.org](https://fosshost.org/img/fosshost-logo.png)](https://fosshost.org)
-
-## License
-Copyright © [Clement Sam](https://clementsam.tech)
-
-`glab` is open-sourced software licensed under the [MIT](LICENSE) license.
