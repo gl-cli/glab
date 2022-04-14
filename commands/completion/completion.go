@@ -28,8 +28,8 @@ For example, for bash you could add this to your '~/.bash_profile':
 
 	eval "$(glab completion -s bash)"
 
-Generate a %[1]s_gh%[1]s completion script and put it somewhere in your %[1]s$fpath%[1]s:
-				gh completion -s zsh > /usr/local/share/zsh/site-functions/_gh
+Generate a %[1]s_glab%[1]s completion script and put it somewhere in your %[1]s$fpath%[1]s:
+				glab completion -s zsh > /usr/local/share/zsh/site-functions/_glab
 			Ensure that the following is present in your %[1]s~/.zshrc%[1]s:
 				autoload -U compinit
 				compinit -i
