@@ -1,6 +1,7 @@
 linters:
     enable:
         - gofmt
-        - nolintlint
+
 run:
-    tests: true
+    timeout: 5m
+    modules-download-mode: readonly
