@@ -3,7 +3,7 @@ name: goreleaser
 on:
   push:
     branches:
-      - 'trunk'
+      - 'main'
     tags:
       - "v*"
   pull_request:
@@ -72,7 +72,7 @@ jobs:
         run: |
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
             goreleaser release --release-notes=CHANGELOG.md
-          elif [[ $GITHUB_REF == refs/heads/trunk ]]; then
+          elif [[ $GITHUB_REF == refs/heads/main ]]; then
             goreleaser --snapshot
           fi
 

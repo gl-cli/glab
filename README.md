@@ -86,7 +86,7 @@ curl -sL https://j.mp/glab-cli | sudo sh
 ```
 or
 ```sh
-curl -s https://raw.githubusercontent.com/profclems/glab/trunk/scripts/install.sh | sudo sh
+curl -s https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh | sudo sh
 ```
 *Installs into `usr/bin`*
 
@@ -359,4 +359,4 @@ Some `glab` commands such as `ci view` and `ci trace` were adopted from [lab].
 If you have an issue: report it on the [issue tracker](https://github.com/profclems/glab/issues)
 
 ## Contributing
-Feel like contributing? That's awesome! We have a [contributing guide](https://github.com/profclems/glab/blob/trunk/CONTRIBUTING.md) and [Code of conduct](https://github.com/profclems/glab/blob/trunk/CODE_OF_CONDUCT.md) to help guide you
+Feel like contributing? That's awesome! We have a [contributing guide](https://gitlab.com/gitlab-org/cli/-/blob/main/CONTRIBUTING.md) and [Code of conduct](https://gitlab.com/gitlab-org/cli/-/blob/main/CODE_OF_CONDUCT.md) to help guide you

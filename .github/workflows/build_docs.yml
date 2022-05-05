@@ -9,7 +9,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: trunk
+          ref: main
           fetch-depth: 0
       - name: Get Latest Version Tag
         id: get_version

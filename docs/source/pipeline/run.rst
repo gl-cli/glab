@@ -21,8 +21,8 @@ Examples
 ::
 
   $ glab pipeline run
-  $ glab pipeline run -b trunk
-  
+  $ glab pipeline run -b main
+
 
 Options
 ~~~~~~~
