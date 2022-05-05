@@ -28,10 +28,10 @@ func Test_DisplayMR(t *testing.T) {
 				IID:          1,
 				State:        "opened",
 				Title:        "This is open",
-				SourceBranch: "trunk",
-				WebURL:       "https://gitlab.com/profclems/glab/-/merge_requests/1",
+				SourceBranch: "main",
+				WebURL:       "https://gitlab.com/gitlab-org/cli/-/merge_requests/1",
 			},
-			output:      "!1 This is open (trunk)\n https://gitlab.com/profclems/glab/-/merge_requests/1\n",
+			output:      "!1 This is open (main)\n https://gitlab.com/gitlab-org/cli/-/merge_requests/1\n",
 			outputToTTY: true,
 		},
 		{
@@ -40,10 +40,10 @@ func Test_DisplayMR(t *testing.T) {
 				IID:          2,
 				State:        "merged",
 				Title:        "This is merged",
-				SourceBranch: "trunk",
-				WebURL:       "https://gitlab.com/profclems/glab/-/merge_requests/2",
+				SourceBranch: "main",
+				WebURL:       "https://gitlab.com/gitlab-org/cli/-/merge_requests/2",
 			},
-			output:      "!2 This is merged (trunk)\n https://gitlab.com/profclems/glab/-/merge_requests/2\n",
+			output:      "!2 This is merged (main)\n https://gitlab.com/gitlab-org/cli/-/merge_requests/2\n",
 			outputToTTY: true,
 		},
 		{
@@ -52,10 +52,10 @@ func Test_DisplayMR(t *testing.T) {
 				IID:          3,
 				State:        "closed",
 				Title:        "This is closed",
-				SourceBranch: "trunk",
-				WebURL:       "https://gitlab.com/profclems/glab/-/merge_requests/3",
+				SourceBranch: "main",
+				WebURL:       "https://gitlab.com/gitlab-org/cli/-/merge_requests/3",
 			},
-			output:      "!3 This is closed (trunk)\n https://gitlab.com/profclems/glab/-/merge_requests/3\n",
+			output:      "!3 This is closed (main)\n https://gitlab.com/gitlab-org/cli/-/merge_requests/3\n",
 			outputToTTY: true,
 		},
 		{
@@ -64,10 +64,10 @@ func Test_DisplayMR(t *testing.T) {
 				IID:          4,
 				State:        "open",
 				Title:        "This shouldn't be visible",
-				SourceBranch: "trunk",
-				WebURL:       "https://gitlab.com/profclems/glab/-/merge_requests/4",
+				SourceBranch: "main",
+				WebURL:       "https://gitlab.com/gitlab-org/cli/-/merge_requests/4",
 			},
-			output:      "https://gitlab.com/profclems/glab/-/merge_requests/4",
+			output:      "https://gitlab.com/gitlab-org/cli/-/merge_requests/4",
 			outputToTTY: false,
 		},
 	}
@@ -378,7 +378,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 	f := &cmdutils.Factory{
 		HttpClient: func() (*gitlab.Client, error) { return &gitlab.Client{}, nil },
 		BaseRepo:   func() (glrepo.Interface, error) { return glrepo.New("foo", "bar"), nil },
-		Branch:     func() (string, error) { return "trunk", nil },
+		Branch:     func() (string, error) { return "main", nil },
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -389,7 +389,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 				return &gitlab.MergeRequest{
 					IID:          2,
 					Title:        "test mr",
-					SourceBranch: "trunk",
+					SourceBranch: "main",
 				}, nil
 			}
 
@@ -405,7 +405,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 
 			assert.Equal(t, 2, gotMR.IID)
 			assert.Equal(t, "test mr", gotMR.Title)
-			assert.Equal(t, "trunk", gotMR.SourceBranch)
+			assert.Equal(t, "main", gotMR.SourceBranch)
 		})
 		t.Run("via-name", func(t *testing.T) {
 			f := *f
@@ -414,7 +414,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 				return &gitlab.MergeRequest{
 					IID:          2,
 					Title:        "test mr",
-					SourceBranch: "trunk",
+					SourceBranch: "main",
 				}, nil
 			}
 
@@ -422,7 +422,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 				return &gitlab.MergeRequest{
 					IID:          2,
 					Title:        "test mr",
-					SourceBranch: "trunk",
+					SourceBranch: "main",
 				}, nil
 			}
 
@@ -438,7 +438,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 
 			assert.Equal(t, 2, gotMR.IID)
 			assert.Equal(t, "test mr", gotMR.Title)
-			assert.Equal(t, "trunk", gotMR.SourceBranch)
+			assert.Equal(t, "main", gotMR.SourceBranch)
 		})
 	})
 
@@ -516,28 +516,28 @@ func Test_DisplayAllMRs(t *testing.T) {
 			IID:          1,
 			State:        "opened",
 			Title:        "add tests",
-			TargetBranch: "trunk",
+			TargetBranch: "main",
 			SourceBranch: "new-tests",
 		},
 		{
 			IID:          2,
 			State:        "merged",
 			Title:        "fix bug",
-			TargetBranch: "trunk",
+			TargetBranch: "main",
 			SourceBranch: "new-feature",
 		},
 		{
 			IID:          1,
 			State:        "closed",
 			Title:        "add new feature",
-			TargetBranch: "trunk",
+			TargetBranch: "main",
 			SourceBranch: "new-tests",
 		},
 	}
 
-	expected := `!1	add tests	(trunk) ← (new-tests)
-!2	fix bug	(trunk) ← (new-feature)
-!1	add new feature	(trunk) ← (new-tests)
+	expected := `!1	add tests	(main) ← (new-tests)
+!2	fix bug	(main) ← (new-feature)
+!1	add new feature	(main) ← (new-tests)
 `
 
 	got := DisplayAllMRs(streams, mrs, "unused")

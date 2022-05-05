@@ -68,7 +68,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 			$ glab mr list --assignee=@me
 			$ glab mr list --reviewer=@me
 			$ glab mr list --source-branch=new-feature
-			$ glab mr list --target-branch=trunk
+			$ glab mr list --target-branch=main
 			$ glab mr list --search "this adds feature X"
 			$ glab mr list --label needs-review
 			$ glab mr list --not-label waiting-maintainer-feedback,subsystem-x

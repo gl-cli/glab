@@ -32,7 +32,7 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 			$ glab mr checkout 1
 			$ glab mr checkout branch --track
 			$ glab mr checkout 12 --branch todo-fix
-			$ glab mr checkout new-feature --set-upstream-to=upstream/trunk
+			$ glab mr checkout new-feature --set-upstream-to=upstream/main
 			$ glab mr checkout   # use checked out branch
 		`),
 		Args: cobra.ExactArgs(1),
