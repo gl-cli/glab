@@ -2,7 +2,7 @@
 
 ![GLab](https://user-images.githubusercontent.com/9063085/90530075-d7a58580-e14a-11ea-9727-4f592f7dcf2e.png)
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/profclems/glab)](https://goreportcard.com/report/github.com/profclems/glab)
+[![Go Report Card](https://goreportcard.com/badge/gitlab.com/gitlab-org/cli)](https://goreportcard.com/report/gitlab.com/gitlab-org/cli)
 [![Gitter](https://badges.gitter.im/glabcli/community.svg)](https://gitter.im/glabcli/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/glab_cli?style=social)](https://reddit.com/r/glab_cli)
 [![Twitter Follow](https://img.shields.io/twitter/follow/glab_cli?style=social)](https://twitter.com/glab_cli)
@@ -64,7 +64,7 @@ Table of Contents
 Read the [documentation](https://glab.readthedocs.io/) for usage instructions.
 
 ## Installation
-Download a binary suitable for your OS at the [releases page](https://github.com/profclems/glab/releases/latest).
+Download a binary suitable for your OS at the [releases page](https://gitlab.com/gitlab-org/cli/releases/latest).
 
 ### Quick Install
 **Supported Platforms**: Linux and macOS
@@ -116,10 +116,10 @@ scoop update glab
 ```
 #### EXE Installer
 
-EXE installers are available for download on the [releases page](https://github.com/profclems/glab/releases/latest).
+EXE installers are available for download on the [releases page](https://gitlab.com/gitlab-org/cli/releases/latest).
 
 ### Linux
-Prebuilt binaries available at the [releases page](https://github.com/profclems/glab/releases/latest).
+Prebuilt binaries available at the [releases page](https://gitlab.com/gitlab-org/cli/releases/latest).
 
 #### Linuxbrew (Homebrew)
 ```sh
@@ -138,7 +138,7 @@ Make sure you have [snap installed on your Linux Distro](https://snapcraft.io/do
 1. `sudo snap connect glab:ssh-keys` to grant ssh access
 
 #### Arch Linux
-`glab` is available through the [community/glab](https://archlinux.org/packages/community/x86_64/glab/) package or download and install an archive from the [releases page](https://github.com/profclems/glab/releases/latest). Arch Linux also supports [snap](https://snapcraft.io/docs/installing-snap-on-arch-linux).
+`glab` is available through the [community/glab](https://archlinux.org/packages/community/x86_64/glab/) package or download and install an archive from the [releases page](https://gitlab.com/gitlab-org/cli/releases/latest). Arch Linux also supports [snap](https://snapcraft.io/docs/installing-snap-on-arch-linux).
 ```sh
 pacman -S glab
 ```
@@ -230,7 +230,7 @@ sudo port selfupdate && sudo port upgrade glab
 ```
 
 ### Building From Source
-If a supported binary for your OS is not found at the [releases page](https://github.com/profclems/glab/releases/latest), you can build from source:
+If a supported binary for your OS is not found at the [releases page](https://gitlab.com/gitlab-org/cli/releases/latest), you can build from source:
 
 #### Prerequisites for building from source
 - `make`
@@ -248,7 +248,7 @@ If a supported binary for your OS is not found at the [releases page](https://gi
 2. Clone this repository
 
    ```sh
-   git clone https://github.com/profclems/glab.git
+   git clone https://gitlab.com/gitlab-org/cli.git
    cd glab
    ```
    If you have $GOPATH/bin or $GOBIN in your $PATH, you can just install with `make install` (install glab in $GOPATH/bin) and **skip steps 3 and 4**.
@@ -356,7 +356,7 @@ Some `glab` commands such as `ci view` and `ci trace` were adopted from [lab].
 [lab]:https://github.com/zaquestion/lab
 
 ## Issues
-If you have an issue: report it on the [issue tracker](https://github.com/profclems/glab/issues)
+If you have an issue: report it on the [issue tracker](https://gitlab.com/gitlab-org/cli/issues)
 
 ## Contributing
 Feel like contributing? That's awesome! We have a [contributing guide](https://gitlab.com/gitlab-org/cli/-/blob/main/CONTRIBUTING.md) and [Code of conduct](https://gitlab.com/gitlab-org/cli/-/blob/main/CODE_OF_CONDUCT.md) to help guide you
