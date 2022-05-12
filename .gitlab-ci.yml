@@ -22,7 +22,6 @@ variables:
 include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
-  - local: .gitlab/ci/*.gitlab-ci.yml
 
 gosec-sast:
   before_script:
