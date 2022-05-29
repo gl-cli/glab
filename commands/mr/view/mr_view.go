@@ -31,7 +31,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	opts := &ViewOpts{
 		IO: f.IO,
 	}
-	var mrViewCmd = &cobra.Command{
+	mrViewCmd := &cobra.Command{
 		Use:     "view {<id> | <branch>}",
 		Short:   `Display the title, body, and other information about a merge request.`,
 		Long:    ``,
@@ -51,9 +51,15 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
+			mrApprovals, err := api.GetMRApprovalState(apiClient, baseRepo.FullName(), mr.IID)
+			if err != nil {
+				return err
+			}
+
 			cfg, _ := f.Config()
 
-			if opts.OpenInBrowser { //open in browser if --web flag is specified
+			if opts.OpenInBrowser { // open in browser if --web flag is specified
 				if f.IO.IsOutputTTY() {
 					fmt.Fprintf(f.IO.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(mr.WebURL))
 				}
@@ -85,7 +91,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			defer f.IO.StopPager()
 
 			if f.IO.IsOutputTTY() {
-				return printTTYMRPreview(opts, mr, notes)
+				return printTTYMRPreview(opts, mr, mrApprovals, notes)
 			}
 			return printRawMRPreview(opts, mr)
 		},
@@ -136,7 +142,7 @@ func mrState(c *iostreams.ColorPalette, mr *gitlab.MergeRequest) (mrState string
 	return mrState
 }
 
-func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.Note) error {
+func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *gitlab.MergeRequestApprovalState, notes []*gitlab.Note) error {
 	c := opts.IO.Color()
 	out := opts.IO.StdOut
 	mrTimeAgo := utils.TimeToPrettyTimeAgo(*mr.CreatedAt)
@@ -191,6 +197,11 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.
 		if mr.MergeWhenPipelineSucceeds && mr.Pipeline.Status != "success" {
 			fmt.Fprintf(out, "%s Requires pipeline to succeed before merging\n", c.WarnIcon())
 		}
+	}
+	if mrApprovals != nil {
+		fmt.Fprintln(out)
+		fmt.Fprintln(out, c.Bold("Approvals Status:"))
+		mrutils.PrintMRApprovalState(opts.IO, mrApprovals)
 	}
 	fmt.Fprintf(out, "%s This merge request has %s changes\n", c.GreenCheck(), c.Yellow(mr.ChangesCount))
 	if mr.State == "merged" && mr.MergedBy != nil {

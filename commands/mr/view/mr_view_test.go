@@ -11,16 +11,18 @@ import (
 	"github.com/profclems/glab/pkg/iostreams"
 
 	"github.com/acarl005/stripansi"
+	"github.com/stretchr/testify/require"
+	"github.com/xanzy/go-gitlab"
+
 	"github.com/profclems/glab/api"
 	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/profclems/glab/internal/config"
-	"github.com/stretchr/testify/require"
-	"github.com/xanzy/go-gitlab"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/profclems/glab/commands/cmdtest"
 	"github.com/profclems/glab/internal/run"
 	mainTest "github.com/profclems/glab/test"
-	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -103,7 +105,7 @@ func TestMRView_web_numberArg(t *testing.T) {
 	})
 	defer restoreCmd()
 
-	_, err := cmdtest.RunCommand(cmd, "225 -w -R glab-cli/test")
+	_, err := cmdtest.RunCommand(cmd, "2 -w -R glab-cli/test")
 	if err != nil {
 		t.Error(err)
 		return
@@ -114,7 +116,7 @@ func TestMRView_web_numberArg(t *testing.T) {
 	stdout.Reset()
 	stderr.Reset()
 
-	assert.Contains(t, outErr, "Opening gitlab.com/glab-cli/test/-/merge_requests/225 in your browser.")
+	assert.Contains(t, outErr, "Opening gitlab.com/glab-cli/test/-/merge_requests/2 in your browser.")
 	assert.Equal(t, out, "")
 
 	if seenCmd == nil {
@@ -164,7 +166,6 @@ func TestMRView(t *testing.T) {
 		cmdutils.EnableRepoOverride(cmd, stubFactory)
 
 		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R glab-cli/test")
-
 		if err != nil {
 			t.Error(err)
 			return

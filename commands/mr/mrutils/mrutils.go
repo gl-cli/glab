@@ -9,13 +9,14 @@ import (
 
 	"github.com/profclems/glab/pkg/iostreams"
 
+	"github.com/xanzy/go-gitlab"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/profclems/glab/api"
 	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/profclems/glab/internal/glrepo"
 	"github.com/profclems/glab/pkg/prompt"
 	"github.com/profclems/glab/pkg/tableprinter"
-	"github.com/xanzy/go-gitlab"
-	"golang.org/x/sync/errgroup"
 )
 
 type MRCheckErrOptions struct {
@@ -117,12 +118,12 @@ func DisplayAllMRs(streams *iostreams.IOStreams, mrs []*gitlab.MergeRequest, pro
 	return table.Render()
 }
 
-//MRFromArgs is wrapper around MRFromArgsWithOpts without any custom options
+// MRFromArgs is wrapper around MRFromArgsWithOpts without any custom options
 func MRFromArgs(f *cmdutils.Factory, args []string, state string) (*gitlab.MergeRequest, glrepo.Interface, error) {
 	return MRFromArgsWithOpts(f, args, &gitlab.GetMergeRequestsOptions{}, state)
 }
 
-//MRFromArgsWithOpts gets MR with custom request options passed down to it
+// MRFromArgsWithOpts gets MR with custom request options passed down to it
 func MRFromArgsWithOpts(
 	f *cmdutils.Factory,
 	args []string,
@@ -216,7 +217,6 @@ func MRsFromArgs(f *cmdutils.Factory, args []string, state string) ([]*gitlab.Me
 		return nil, nil, err
 	}
 	return mrs, baseRepo, nil
-
 }
 
 var getMRForBranch = func(apiClient *gitlab.Client, baseRepo glrepo.Interface, arg string, state string) (*gitlab.MergeRequest, error) {
@@ -327,4 +327,47 @@ func RebaseMR(ios *iostreams.IOStreams, apiClient *gitlab.Client, repo glrepo.In
 	}
 	fmt.Fprintln(ios.StdOut, ios.Color().GreenCheck(), "Rebase successful")
 	return nil
+}
+
+// PrintMRApprovalState renders an output to summarize the approval state of a merge request
+func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeRequestApprovalState) {
+	c := ios.Color()
+
+	if mrApprovals.ApprovalRulesOverwritten {
+		fmt.Fprintln(ios.StdOut, c.Yellow("Approval rules overwritten"))
+	}
+	for _, rule := range mrApprovals.Rules {
+		table := tableprinter.NewTablePrinter()
+		if rule.Approved {
+			fmt.Fprintln(ios.StdOut, c.Green(fmt.Sprintf("Rule %q sufficient approvals (%d/%d required):", rule.Name, len(rule.ApprovedBy), rule.ApprovalsRequired)))
+		} else {
+			fmt.Fprintln(ios.StdOut, c.Yellow(fmt.Sprintf("Rule %q insufficient approvals (%d/%d required):", rule.Name, len(rule.ApprovedBy), rule.ApprovalsRequired)))
+		}
+
+		eligibleApprovers := rule.EligibleApprovers
+
+		approvedBy := map[string]*gitlab.BasicUser{}
+		for _, by := range rule.ApprovedBy {
+			approvedBy[by.Username] = by
+		}
+
+		for _, eligibleApprover := range eligibleApprovers {
+			approved := "-"
+			source := ""
+			if _, exists := approvedBy[eligibleApprover.Username]; exists {
+				approved = "👍"
+			}
+			if rule.SourceRule != nil {
+				source = rule.SourceRule.RuleType
+			}
+			table.AddRow(eligibleApprover.Name, eligibleApprover.Username, approved, source)
+			delete(approvedBy, eligibleApprover.Username)
+		}
+
+		for _, approver := range approvedBy {
+			approved := "👍"
+			table.AddRow(approver.Name, approver.Username, approved, "")
+		}
+		fmt.Fprintln(ios.StdOut, table)
+	}
 }
