@@ -13,9 +13,10 @@ import (
 	"github.com/profclems/glab/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/xanzy/go-gitlab"
+
 	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/profclems/glab/commands/mr/mrutils"
-	"github.com/xanzy/go-gitlab"
 
 	"github.com/spf13/cobra"
 )
@@ -45,7 +46,6 @@ func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comma
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			if repoOverride, _ := cmd.Flags().GetString("repo"); repoOverride != "" && len(args) == 0 {
 				return &cmdutils.FlagError{Err: errors.New("argument required when using the --repo flag")}
 			}
@@ -97,14 +97,9 @@ func diffRun(opts *DiffOptions) error {
 			return fmt.Errorf("could not find merge request diff: %w", err)
 		}
 		for _, diffLine := range diffVersion.Diffs {
-			if diffLine.RenamedFile {
-				diffOut.WriteString("-" + diffLine.OldPath + "\n")
-			}
-			if diffLine.NewFile || diffLine.RenamedFile {
-				diffOut.WriteString("+" + diffLine.NewPath + "\n")
-			} else {
-				diffOut.WriteString(diffLine.OldPath + "\n")
-			}
+			// output the unified diff header
+			diffOut.WriteString("--- " + diffLine.OldPath + "\n")
+			diffOut.WriteString("+++ " + diffLine.NewPath + "\n")
 
 			diffOut.WriteString(diffLine.Diff)
 		}

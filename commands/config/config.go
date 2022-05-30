@@ -4,16 +4,17 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/spf13/cobra"
+
 	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/profclems/glab/internal/config"
 	"github.com/profclems/glab/pkg/glinstance"
-	"github.com/spf13/cobra"
 )
 
 var isGlobal bool
 
 func NewCmdConfig(f *cmdutils.Factory) *cobra.Command {
-	var configCmd = &cobra.Command{
+	configCmd := &cobra.Command{
 		Use:   "config [flags]",
 		Short: `Set and get glab settings`,
 		Long: heredoc.Doc(`Get and set key/value strings.
@@ -26,6 +27,7 @@ Current respected settings:
 - editor: if unset, defaults to environment variables.
 - visual: alternative for editor. if unset, defaults to environment variables.
 - glamour_style: Your desired markdown renderer style. Options are dark, light, notty. Custom styles are allowed set a custom style https://github.com/charmbracelet/glamour#styles
+- glab_pager: Your desired pager command to use (e.g. less -R)
 	`),
 		Aliases: []string{"conf"},
 	}
@@ -133,7 +135,7 @@ Specifying the --hostname flag also saves in the global config file
 }
 
 func NewCmdConfigInit(f *cmdutils.Factory) *cobra.Command {
-	var configInitCmd = &cobra.Command{
+	configInitCmd := &cobra.Command{
 		Use:   "init",
 		Short: "Shows a prompt to set basic glab configuration",
 		Long: `Update the configuration by setting a key to a value.
