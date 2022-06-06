@@ -31,7 +31,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	opts := &ViewOpts{
 		IO: f.IO,
 	}
-	mrViewCmd := &cobra.Command{
+	var mrViewCmd = &cobra.Command{
 		Use:     "view {<id> | <branch>}",
 		Short:   `Display the title, body, and other information about a merge request.`,
 		Long:    ``,
