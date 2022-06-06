@@ -9,14 +9,13 @@ import (
 
 	"github.com/profclems/glab/pkg/iostreams"
 
-	"github.com/xanzy/go-gitlab"
-	"golang.org/x/sync/errgroup"
-
 	"github.com/profclems/glab/api"
 	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/profclems/glab/internal/glrepo"
 	"github.com/profclems/glab/pkg/prompt"
 	"github.com/profclems/glab/pkg/tableprinter"
+	"github.com/xanzy/go-gitlab"
+	"golang.org/x/sync/errgroup"
 )
 
 type MRCheckErrOptions struct {
@@ -331,6 +330,8 @@ func RebaseMR(ios *iostreams.IOStreams, apiClient *gitlab.Client, repo glrepo.In
 
 // PrintMRApprovalState renders an output to summarize the approval state of a merge request
 func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeRequestApprovalState) {
+	const approvedIcon = "👍"
+
 	c := ios.Color()
 
 	if mrApprovals.ApprovalRulesOverwritten {
@@ -355,7 +356,7 @@ func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeReq
 			approved := "-"
 			source := ""
 			if _, exists := approvedBy[eligibleApprover.Username]; exists {
-				approved = "👍"
+				approved = approvedIcon
 			}
 			if rule.SourceRule != nil {
 				source = rule.SourceRule.RuleType
@@ -365,7 +366,7 @@ func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeReq
 		}
 
 		for _, approver := range approvedBy {
-			approved := "👍"
+			approved := approvedIcon
 			table.AddRow(approver.Name, approver.Username, approved, "")
 		}
 		fmt.Fprintln(ios.StdOut, table)

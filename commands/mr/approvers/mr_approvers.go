@@ -4,17 +4,15 @@ import (
 	"fmt"
 
 	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/mr/mrutils"
-
-	"github.com/spf13/cobra"
-
 	"github.com/profclems/glab/commands/cmdutils"
+	"github.com/profclems/glab/commands/mr/mrutils"
+	"github.com/spf13/cobra"
 )
 
 func NewCmdApprovers(f *cmdutils.Factory) *cobra.Command {
-	mrApproversCmd := &cobra.Command{
+	var mrApproversCmd = &cobra.Command{
 		Use:     "approvers [<id> | <branch>] [flags]",
-		Short:   `List merge request eligible approvers`,
+		Short:   `List eligible approvers for merge requests in any state`,
 		Long:    ``,
 		Aliases: []string{},
 		Args:    cobra.MaximumNArgs(1),
@@ -24,6 +22,8 @@ func NewCmdApprovers(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
+			// Obtain the MR from the positional arguments, but allow users to find approvers for
+			// merge requests in any valid state
 			mr, repo, err := mrutils.MRFromArgs(f, args, "any")
 			if err != nil {
 				return err

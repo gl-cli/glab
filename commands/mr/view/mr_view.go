@@ -199,7 +199,6 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 		}
 	}
 	if mrApprovals != nil {
-		fmt.Fprintln(out)
 		fmt.Fprintln(out, c.Bold("Approvals Status:"))
 		mrutils.PrintMRApprovalState(opts.IO, mrApprovals)
 	}
