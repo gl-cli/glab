@@ -15,18 +15,12 @@ workflow:
 default:
   image: golang:1.15
 
-# Disable DIND for SAST because we need to execute a before_script in the gosec-sast job
 variables:
-  SAST_DISABLE_DIND: "true"
+  SAST_EXCLUDED_ANALYZERS: "bandit,gosec,eslint"
 
 include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
-
-gosec-sast:
-  before_script:
-    - apk add make
-    - make install
 
 code_navigation:
   image: golang:latest
