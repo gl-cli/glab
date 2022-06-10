@@ -1,6 +1,7 @@
 package git
 
 import (
+	"os"
 	"os/exec"
 	"reflect"
 	"testing"
@@ -12,6 +13,13 @@ import (
 
 	"github.com/stretchr/testify/require"
 )
+
+func getEnv(key, fallback string) string {
+    if value, ok := os.LookupEnv(key); ok {
+        return value
+    }
+    return fallback
+}
 
 func Test_isFilesystemPath(t *testing.T) {
 	type args struct {
@@ -291,7 +299,7 @@ func TestGetRemoteURL(t *testing.T) {
 		{
 			name:        "isInvalid",
 			remoteAlias: "origin",
-			want:        "gitlab-org/cli",
+			want:        getEnv("CI_PROJECT_PATH","gitlab-org/cli"),
 		},
 	}
 	for _, tt := range tests {
