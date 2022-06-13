@@ -46,13 +46,15 @@ hosts:
 	repo := cmdtest.CopyTestRepo(t, "ci_trace_test")
 	gitCmd := exec.Command("git", "fetch", "origin")
 	gitCmd.Dir = repo
-	if _, err := gitCmd.CombinedOutput(); err != nil {
+	if out, err := gitCmd.CombinedOutput(); err != nil {
+		t.Error(string(out))
 		t.Fatal(err)
 	}
 
 	gitCmd = exec.Command("git", "checkout", "test-cli")
 	gitCmd.Dir = repo
-	if _, err := gitCmd.CombinedOutput(); err != nil {
+	if out, err := gitCmd.CombinedOutput(); err != nil {
+		t.Error(string(out))
 		t.Fatal(err)
 	}
 

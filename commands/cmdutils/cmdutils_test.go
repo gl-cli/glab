@@ -259,7 +259,7 @@ func Test_UserAssignmentsAPIFailure(t *testing.T) {
 		t.Errorf("UsersFromReplaces() expected error to not be nil")
 	}
 	if want != err.Error() {
-		t.Errorf("UsersFromReplace() expected error = %s, got = %w", want, err)
+		t.Errorf("UsersFromReplace() expected error = %s, got = %v", want, err)
 	}
 
 	_, _, err = ua.UsersFromAddRemove(nil, nil, &apiClient, nil)
@@ -267,7 +267,7 @@ func Test_UserAssignmentsAPIFailure(t *testing.T) {
 		t.Errorf("UsersFromReplaces() expected error to not be nil")
 	}
 	if want != err.Error() {
-		t.Errorf("UsersFromReplace() expected error = %s, got = %w", want, err)
+		t.Errorf("UsersFromReplace() expected error = %s, got = %v", want, err)
 	}
 }
 
