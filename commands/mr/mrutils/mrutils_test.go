@@ -543,3 +543,154 @@ func Test_DisplayAllMRs(t *testing.T) {
 	got := DisplayAllMRs(streams, mrs, "unused")
 	assert.Equal(t, expected, got)
 }
+
+func Test_PrintMRApprovalState(t *testing.T) {
+	scenarios := []struct {
+		name          string
+		approvalState *gitlab.MergeRequestApprovalState
+		expected      string
+	}{
+		{
+			name: "approved, min approvers met",
+			approvalState: &gitlab.MergeRequestApprovalState{
+				Rules: []*gitlab.MergeRequestApprovalRule{
+					{
+						ID:                1,
+						Name:              "rule 1",
+						ApprovalsRequired: 2,
+						ApprovedBy: []*gitlab.BasicUser{
+							{
+								ID:       1,
+								Username: "user1",
+								Name:     "User One",
+							},
+							{
+								ID:       2,
+								Username: "user2",
+								Name:     "User Two",
+							},
+						},
+						Approved: true,
+					},
+				},
+			},
+			expected: `Rule "rule 1" sufficient approvals (2/2 required):
+User One	user1	👍	
+User Two	user2	👍	
+
+`,
+		},
+		{
+			name: "not-approved, min approvers not met",
+			approvalState: &gitlab.MergeRequestApprovalState{
+				Rules: []*gitlab.MergeRequestApprovalRule{
+					{
+						ID:                1,
+						Name:              "rule 1",
+						ApprovalsRequired: 2,
+						ApprovedBy: []*gitlab.BasicUser{
+							{
+								ID:       1,
+								Username: "user1",
+								Name:     "User One",
+							},
+						},
+						Approved: false,
+					},
+				},
+			},
+			expected: `Rule "rule 1" insufficient approvals (1/2 required):
+User One	user1	👍	
+
+`,
+		},
+		{
+			name: "approved, eligible approvers",
+			approvalState: &gitlab.MergeRequestApprovalState{
+				Rules: []*gitlab.MergeRequestApprovalRule{
+					{
+						ID:                1,
+						Name:              "rule 1",
+						ApprovalsRequired: 2,
+						EligibleApprovers: []*gitlab.BasicUser{
+							{
+								ID:       1,
+								Username: "user1",
+								Name:     "User One",
+							},
+							{
+								ID:       2,
+								Username: "user2",
+								Name:     "User Two",
+							},
+						},
+						ApprovedBy: []*gitlab.BasicUser{
+							{
+								ID:       1,
+								Username: "user1",
+								Name:     "User One",
+							},
+							{
+								ID:       2,
+								Username: "user2",
+								Name:     "User Two",
+							},
+						},
+						Approved: true,
+					},
+				},
+			},
+			expected: `Rule "rule 1" sufficient approvals (2/2 required):
+User One	user1	👍	
+User Two	user2	👍	
+
+`,
+		},
+		{
+			name: "not approved, missing eligible approver",
+			approvalState: &gitlab.MergeRequestApprovalState{
+				Rules: []*gitlab.MergeRequestApprovalRule{
+					{
+						ID:                1,
+						Name:              "rule 1",
+						ApprovalsRequired: 2,
+						EligibleApprovers: []*gitlab.BasicUser{
+							{
+								ID:       1,
+								Username: "user1",
+								Name:     "User One",
+							},
+							{
+								ID:       2,
+								Username: "user2",
+								Name:     "User Two",
+							},
+						},
+						ApprovedBy: []*gitlab.BasicUser{
+							{
+								ID:       1,
+								Username: "user1",
+								Name:     "User One",
+							},
+						},
+						Approved: false,
+					},
+				},
+			},
+			expected: `Rule "rule 1" insufficient approvals (1/2 required):
+User One	user1	👍	
+User Two	user2	-	
+
+`,
+		},
+	}
+
+	for _, scenario := range scenarios {
+		t.Run(scenario.name, func(t *testing.T) {
+			streams, _, stdout, _ := iostreams.Test()
+
+			PrintMRApprovalState(streams, scenario.approvalState)
+			assert.Equal(t, scenario.expected, stdout.String())
+		})
+	}
+}
