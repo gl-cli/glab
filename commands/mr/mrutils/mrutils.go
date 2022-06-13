@@ -370,6 +370,5 @@ func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeReq
 			table.AddRow(approver.Name, approver.Username, approved, "")
 		}
 		fmt.Fprintln(ios.StdOut, table)
-		return nil
 	}
 }
