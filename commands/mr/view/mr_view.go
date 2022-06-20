@@ -52,10 +52,15 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			mrApprovals, err := api.GetMRApprovalState(apiClient, baseRepo.FullName(), mr.IID)
-			if err != nil {
-				return err
-			}
+			// Optional: check for approval state of the MR (if the project supports it). In the event of a failure
+			// for this step, move forward assuming MR approvals are not supported. See below.
+			//
+			// NOTE: the API documentation says that project details have `approvals_before_merge` for GitLab Premium
+			// https://docs.gitlab.com/ee/api/projects.html#get-single-project. Unfortunately, the API client used
+			// does not provide the necessary ability to determine if this value was present or not in the response JSON
+			// since Project.ApprovalsBeforeMerge is a non-pointer type. Because of this, this step will either succeed
+			// and show approval state or it will fail silently
+			mrApprovals, _ := api.GetMRApprovalState(apiClient, baseRepo.FullName(), mr.IID)
 
 			cfg, _ := f.Config()
 
