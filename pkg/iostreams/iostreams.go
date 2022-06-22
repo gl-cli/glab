@@ -20,10 +20,10 @@ type IOStreams struct {
 	StdOut io.Writer
 	StdErr io.Writer
 
-	IsaTTY         bool //stdout is a tty
-	IsErrTTY       bool //stderr is a tty
-	IsInTTY        bool //stdin is a tty
-	promptDisabled bool //disable prompting for input
+	IsaTTY         bool // stdout is a tty
+	IsErrTTY       bool // stderr is a tty
+	IsInTTY        bool // stdin is a tty
+	promptDisabled bool // disable prompting for input
 
 	is256ColorEnabled bool
 
@@ -171,7 +171,7 @@ func (s *IOStreams) TerminalWidth() int {
 	return TerminalWidth(s.StdOut)
 }
 
-//IsOutputTTY returns true if both stdout and stderr is TTY
+// IsOutputTTY returns true if both stdout and stderr is TTY
 func (s *IOStreams) IsOutputTTY() bool {
 	return s.IsErrTTY && s.IsaTTY
 }
