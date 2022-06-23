@@ -683,6 +683,146 @@ User Two	user2	-
 
 `,
 		},
+		{
+			name: "deterministic output without eligible approvers",
+			approvalState: &gitlab.MergeRequestApprovalState{
+				Rules: []*gitlab.MergeRequestApprovalRule{
+					{
+						ID:                1,
+						Name:              "rule 1",
+						ApprovalsRequired: 2,
+						ApprovedBy: []*gitlab.BasicUser{
+							{
+								ID:       1,
+								Username: "aaa",
+								Name:     "User One",
+							},
+							{
+								ID:       2,
+								Username: "zzz",
+								Name:     "User Two",
+							},
+							{
+								ID:       3,
+								Username: "000",
+								Name:     "User Three",
+							},
+							{
+								ID:       4,
+								Username: "xyz",
+								Name:     "User Four",
+							},
+						},
+						Approved: true,
+					},
+				},
+			},
+			expected: `Rule "rule 1" sufficient approvals (4/2 required):
+User Three	000	👍	
+User One	aaa	👍	
+User Four	xyz	👍	
+User Two	zzz	👍	
+
+`,
+		},
+		{
+			name: "deterministic output with all eligible approvers",
+			approvalState: &gitlab.MergeRequestApprovalState{
+				Rules: []*gitlab.MergeRequestApprovalRule{
+					{
+						ID:                1,
+						Name:              "rule 1",
+						ApprovalsRequired: 2,
+						ApprovedBy: []*gitlab.BasicUser{
+							{
+								ID:       4,
+								Username: "xyz",
+								Name:     "User Four",
+							},
+							{
+								ID:       1,
+								Username: "aaa",
+								Name:     "User One",
+							},
+							{
+								ID:       2,
+								Username: "zzz",
+								Name:     "User Two",
+							},
+							{
+								ID:       3,
+								Username: "000",
+								Name:     "User Three",
+							},
+						},
+						EligibleApprovers: []*gitlab.BasicUser{
+							{
+								ID:       4,
+								Username: "xyz",
+								Name:     "User Four",
+							},
+							{
+								ID:       2,
+								Username: "zzz",
+								Name:     "User Two",
+							},
+						},
+						Approved: true,
+					},
+				},
+			},
+			expected: `Rule "rule 1" sufficient approvals (4/2 required):
+User Four	xyz	👍	
+User Two	zzz	👍	
+User Three	000	👍	
+User One	aaa	👍	
+
+`,
+		},
+		{
+			name: "deterministic output with no eligible approvers",
+			approvalState: &gitlab.MergeRequestApprovalState{
+				Rules: []*gitlab.MergeRequestApprovalRule{
+					{
+						ID:                1,
+						Name:              "rule 1",
+						ApprovalsRequired: 2,
+						ApprovedBy: []*gitlab.BasicUser{
+							{
+								ID:       1,
+								Username: "aaa",
+								Name:     "User One",
+							},
+							{
+								ID:       3,
+								Username: "000",
+								Name:     "User Three",
+							},
+						},
+						EligibleApprovers: []*gitlab.BasicUser{
+							{
+								ID:       4,
+								Username: "xyz",
+								Name:     "User Four",
+							},
+							{
+								ID:       2,
+								Username: "zzz",
+								Name:     "User Two",
+							},
+						},
+						Approved: true,
+					},
+				},
+			},
+			expected: `Rule "rule 1" sufficient approvals (2/2 required):
+User Four	xyz	-	
+User Two	zzz	-	
+User Three	000	👍	
+User One	aaa	👍	
+
+`,
+		},
 	}
 
 	for _, scenario := range scenarios {

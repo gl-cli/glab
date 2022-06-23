@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -365,9 +366,16 @@ func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeReq
 			delete(approvedBy, eligibleApprover.Username)
 		}
 
-		for _, approver := range approvedBy {
-			approved := approvedIcon
-			table.AddRow(approver.Name, approver.Username, approved, "")
+		// sort all usernames to ensure consistent output
+		approverNames := make([]string, 0, len(approvedBy))
+		for name := range approvedBy {
+			approverNames = append(approverNames, name)
+		}
+		sort.Strings(approverNames)
+
+		for _, name := range approverNames {
+			approver := approvedBy[name]
+			table.AddRow(approver.Name, approver.Username, approvedIcon, "")
 		}
 		fmt.Fprintln(ios.StdOut, table)
 	}
