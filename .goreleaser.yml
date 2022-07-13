@@ -2,12 +2,12 @@ project_name: glab
 
 release:
   prerelease: auto
-  
+
 before:
   hooks:
     - go mod tidy
     - make manpage
-    
+
 builds:
   - <<: &build_defaults
       main: ./cmd/glab
@@ -23,17 +23,17 @@ builds:
   - <<: *build_defaults
     id: linux
     goos: [linux]
-    goarch: [386, arm, amd64, arm64]
+    goarch: ["386", arm, amd64, arm64]
 
   - <<: *build_defaults
     id: windows
     goos: [windows]
-    goarch: [386, amd64]
+    goarch: ["386", amd64]
 
 dockers:
   - image_templates:
-      - 'profclems/glab:{{ .Tag }}-amd64'
-      - 'ghcr.io/profclems/glab:{{ .Tag }}-amd64'
+      # TODO: once we have access to docker container registry, add gitlab/glab image here
+      - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-amd64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -47,8 +47,7 @@ dockers:
     extra_files:
       - scripts/entrypoint.sh
   - image_templates:
-      - 'profclems/glab:{{ .Tag }}-arm64'
-      - 'ghcr.io/profclems/glab:{{ .Tag }}-arm64'
+      - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-arm64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -63,22 +62,14 @@ dockers:
     extra_files:
       - scripts/entrypoint.sh
 docker_manifests:
-  - name_template: 'profclems/glab:{{ .Tag }}'
+  - name_template: "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}"
     image_templates:
-      - 'profclems/glab:{{ .Tag }}-amd64'
-      - 'profclems/glab:{{ .Tag }}-arm64'
-  - name_template: 'ghcr.io/profclems/glab:{{ .Tag }}'
+      - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-amd64"
+      - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-arm64"
+  - name_template: "registry.gitlab.com/gitlab-org/cli:latest"
     image_templates:
-      - 'ghcr.io/profclems/glab:{{ .Tag }}-amd64'
-      - 'ghcr.io/profclems/glab:{{ .Tag }}-arm64'
-  - name_template: 'profclems/glab:latest'
-    image_templates:
-      - 'profclems/glab:{{ .Tag }}-amd64'
-      - 'profclems/glab:{{ .Tag }}-arm64'
-  - name_template: 'ghcr.io/profclems/glab:latest'
-    image_templates:
-      - 'ghcr.io/profclems/glab:{{ .Tag }}-amd64'
-      - 'ghcr.io/profclems/glab:{{ .Tag }}-arm64'
+      - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-amd64"
+      - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-arm64"
 
 archives:
   - id: nix
@@ -87,7 +78,7 @@ archives:
       name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
       wrap_in_directory: false
     format: tar.gz
-    replacements: 
+    replacements:
       darwin: macOS
       linux: Linux
       <<: &arch_replacemens
@@ -98,13 +89,12 @@ archives:
     builds: [windows]
     <<: *archive_defaults
     format: zip
-    replacements: 
+    replacements:
       windows: Windows
       <<: *arch_replacemens
 
 nfpms:
-  -
-    id: foo
+  - id: foo
     package_name: glab
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
@@ -116,9 +106,10 @@ nfpms:
       386: i386
       darwin: macOS
       linux: Linux
-    vendor: Clement Sam
-    homepage: https://github.com/profclems/glab
-    maintainer: Clement Sam <clementsam75@gmail.com>
+    vendor: GitLab
+    homepage: https://gitlab.com/gitlab-org/cli
+    # using service-desk email https://docs.gitlab.com/ee/user/project/service_desk.html
+    maintainer: GitLab<contact-project+gitlab-org-cli-34675721-issue-@incoming.gitlab.com>
     description: An open source GitLab CLI tool
     license: MIT
     formats:
@@ -133,15 +124,15 @@ nfpms:
         dst: "/usr/share/man/man1"
 
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 snapshot:
   name_template: "{{ .Tag }}"
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
-      - '^Merge pull request'
-      - '^chore'
-      - '^Update README.md'
+      - "^docs:"
+      - "^test:"
+      - "^Merge pull request"
+      - "^chore"
+      - "^Update README.md"
