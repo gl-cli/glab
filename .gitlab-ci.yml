@@ -15,6 +15,10 @@ workflow:
 default:
   image: golang:1.18
 
+stages:
+  - test
+  - release
+
 variables:
   SAST_EXCLUDED_ANALYZERS: "bandit,gosec,eslint"
 
@@ -23,6 +27,7 @@ include:
   - template: Security/Dependency-Scanning.gitlab-ci.yml
 
 code_navigation:
+  stage: test
   image: golang:latest
   allow_failure: true
   script:
@@ -33,6 +38,7 @@ code_navigation:
       lsif: dump.lsif
 
 run_tests:
+  stage: test
   before_script:
     ## Adding private SSH key to the executor, more information: https://docs.gitlab.com/ee/ci/ssh_keys/#ssh-keys-when-using-the-docker-executor
     - mkdir -p ~/.ssh
@@ -43,4 +49,45 @@ run_tests:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
 
   script:
-    - make test
+    # `goreleaser` also uses GITLAB_TOKEN and so we need to distinguish between
+    # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token
+    - GITLAB_TOKEN=$GITLAB_TOKEN_TEST make test
+
+.release:
+  stage: release
+  image: docker:stable
+  services:
+    - docker:dind
+  variables:
+    # Disable shallow cloning so that goreleaser can diff between tags to
+    # generate a changelog.
+    GIT_DEPTH: 0
+
+release_test:
+  extends: .release
+  except:
+    - tags
+  script: |
+    docker run --rm --privileged \
+      -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
+      -w /go/src/gitlab.com/gitlab-org/cli \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      goreleaser/goreleaser release --snapshot --rm-dist
+
+release:
+  extends: .release
+  only:
+    - tags
+  variables:
+    DOCKER_REGISTRY: $CI_REGISTRY
+    DOCKER_USERNAME: $CI_REGISTRY_USER
+    DOCKER_PASSWORD: $CI_REGISTRY_PASSWORD
+
+  script: |
+    docker run --rm --privileged \
+      -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
+      -w /go/src/gitlab.com/gitlab-org/cli \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY  \
+      -e GITLAB_TOKEN=$GITLAB_TOKEN_RELEASE \
+      goreleaser/goreleaser release
