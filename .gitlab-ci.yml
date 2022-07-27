@@ -25,6 +25,7 @@ variables:
 include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
 
 code_navigation:
   stage: test
@@ -52,6 +53,15 @@ run_tests:
     # `goreleaser` also uses GITLAB_TOKEN and so we need to distinguish between
     # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token
     - GITLAB_TOKEN=$GITLAB_TOKEN_TEST make test
+
+secret_detection:
+  rules:
+    - if: $SECRET_DETECTION_DISABLED
+      when: never
+    - if: '$CI_MERGE_REQUEST_IID'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  needs: []
+  dependencies: [] # Don't download artifacts, especially `./public/`
 
 .release:
   stage: release
