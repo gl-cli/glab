@@ -32,7 +32,7 @@ code_navigation:
   image: golang:latest
   allow_failure: true
   script:
-    - go get github.com/sourcegraph/lsif-go/cmd/lsif-go
+    - go install github.com/sourcegraph/lsif-go/cmd/lsif-go@latest
     - lsif-go
   artifacts:
     reports:
