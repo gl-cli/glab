@@ -135,8 +135,9 @@ func IssueFromArg(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interface,
 }
 
 // FIXME: have a single regex to match either of the following
-//  OWNER/REPO/issues/id
-//  GROUP/NAMESPACE/REPO/issues/id
+//
+//	OWNER/REPO/issues/id
+//	GROUP/NAMESPACE/REPO/issues/id
 var issueURLPersonalRE = regexp.MustCompile(`^/([^/]+)/([^/]+)/issues/(\d+)`)
 var issueURLGroupRE = regexp.MustCompile(`^/([^/]+)/([^/]+)/([^/]+)/issues/(\d+)`)
 

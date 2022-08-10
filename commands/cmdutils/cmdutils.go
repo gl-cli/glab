@@ -63,7 +63,8 @@ func LoadGitLabTemplate(tmplType, tmplName string) (string, error) {
 }
 
 // TODO: properly handle errors in this function.
-//       For now, it returns nil and empty slice if there's an error
+//
+//	For now, it returns nil and empty slice if there's an error
 func ListGitLabTemplates(tmplType string) ([]string, error) {
 	wdir, err := git.ToplevelDir()
 	if err != nil {
@@ -351,7 +352,7 @@ func PickMetadata() ([]Action, error) {
 	return pickedActions, nil
 }
 
-//IDsFromUsers collects all user IDs from a slice of users
+// IDsFromUsers collects all user IDs from a slice of users
 func IDsFromUsers(users []*gitlab.User) []int {
 	ids := make([]int, len(users))
 	for i, user := range users {

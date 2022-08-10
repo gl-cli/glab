@@ -2,7 +2,7 @@ package api
 
 var DefaultListLimit = 30
 
-//IsValidToken checks if a token provided is valid.
+// IsValidToken checks if a token provided is valid.
 // The token string must be 26 characters in length and have the 'glpat-'
 // prefix or just be 20 characters long to be recognized as a valid personal access token.
 //
