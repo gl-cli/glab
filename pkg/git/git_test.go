@@ -15,10 +15,10 @@ import (
 )
 
 func getEnv(key, fallback string) string {
-    if value, ok := os.LookupEnv(key); ok {
-        return value
-    }
-    return fallback
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }
 
 func Test_isFilesystemPath(t *testing.T) {
@@ -299,7 +299,7 @@ func TestGetRemoteURL(t *testing.T) {
 		{
 			name:        "isInvalid",
 			remoteAlias: "origin",
-			want:        getEnv("CI_PROJECT_PATH","gitlab-org/cli"),
+			want:        getEnv("CI_PROJECT_PATH", "gitlab-org/cli"),
 		},
 	}
 	for _, tt := range tests {
