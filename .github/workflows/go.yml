@@ -52,8 +52,8 @@ jobs:
 
       - name: Run tests
         env:
-          GITLAB_TOKEN: "qRC87Xg9Wd46RhB8J8sp"
-          CODECOV_TOKEN: "1597edbc-8760-42c1-ab79-c192ad151717"
+          GITLAB_TOKEN: "[redacted]"
+          CODECOV_TOKEN: "[redacted]"
         run: make test
 
       - name: Upload Test Result to Codecov
