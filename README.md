@@ -298,7 +298,7 @@ If a supported binary for your OS is not found at the [releases page](https://gi
 1. Clone this repository
 
    ```shell
-   git clone https://gitlab.com/gitlab-org/cli.git
+   git clone https://gitlab.com/gitlab-org/cli.git glab
    cd glab
    ```
 
