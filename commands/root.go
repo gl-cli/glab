@@ -97,7 +97,7 @@ func NewCmdRoot(f *cmdutils.Factory, version, buildDate string) *cobra.Command {
 	rootCmd.AddCommand(configCmd.NewCmdConfig(f))
 	rootCmd.AddCommand(completionCmd.NewCmdCompletion(f.IO))
 	rootCmd.AddCommand(versionCmd.NewCmdVersion(f.IO, version, buildDate))
-	rootCmd.AddCommand(updateCmd.NewCheckUpdateCmd(f.IO, version))
+	rootCmd.AddCommand(updateCmd.NewCheckUpdateCmd(f, version))
 	rootCmd.AddCommand(authCmd.NewCmdAuth(f))
 
 	// the commands below require apiClient and resolved repos

@@ -1,49 +1,80 @@
 package update
 
 import (
-	"errors"
 	"fmt"
+	"strings"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"github.com/profclems/glab/commands/cmdutils"
 
+	"github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
+	"github.com/xanzy/go-gitlab"
 )
 
-func NewCheckUpdateCmd(s *iostreams.IOStreams, version string) *cobra.Command {
+const defaultProjectURL = "https://gitlab.com/gitlab-org/cli"
+
+func NewCheckUpdateCmd(f *cmdutils.Factory, version string) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:     "check-update",
 		Short:   "Check for latest glab releases",
 		Long:    ``,
 		Aliases: []string{"update"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return CheckUpdate(s, version, false)
+			return CheckUpdate(f, version, false)
 		},
 	}
 
 	return cmd
 }
 
-func CheckUpdate(s *iostreams.IOStreams, version string, silentErr bool) error {
-	latestRelease, err := GetUpdateInfo()
-	c := s.Color()
+func CheckUpdate(f *cmdutils.Factory, version string, silentErr bool) error {
+	err := f.RepoOverride(defaultProjectURL)
+	if err != nil {
+		return err
+	}
+	repo, err := f.BaseRepo()
+	if err != nil {
+		return err
+	}
+	apiClient, err := f.HttpClient()
+	if err != nil {
+		return err
+	}
+	releases, _, err := apiClient.Releases.ListReleases(repo.FullName(), &gitlab.ListReleasesOptions{Page: 1, PerPage: 1})
 	if err != nil {
 		if silentErr {
 			return nil
 		}
-		return errors.New("could not check for update! Make sure you have a stable internet connection")
+		return fmt.Errorf("could not check for update: %s", err.Error())
 	}
+	if len(releases) < 1 {
+		return fmt.Errorf("no release found for glab")
+	}
+	latestRelease := releases[0]
+	releaseURL := fmt.Sprintf("%s/-/releases/%s", defaultProjectURL, latestRelease.TagName)
 
-	if isOlderVersion(latestRelease.Version, version) {
-		fmt.Fprintf(s.StdOut, "%s %s → %s\n%s\n",
+	c := f.IO.Color()
+	if isOlderVersion(latestRelease.Name, version) {
+		fmt.Fprintf(f.IO.StdOut, "%s %s → %s\n%s\n",
 			c.Yellow("A new version of glab has been released:"),
-			c.Red(version), c.Green(latestRelease.Version),
-			latestRelease.URL)
+			c.Red(version), c.Green(latestRelease.TagName),
+			releaseURL)
 	} else {
 		if silentErr {
 			return nil
 		}
-		fmt.Fprintf(s.StdOut, "%v %v", c.GreenCheck(),
+		fmt.Fprintf(f.IO.StdOut, "%v %v", c.GreenCheck(),
 			c.Green("You are already using the latest version of glab\n"))
 	}
 	return nil
+}
+
+func isOlderVersion(latestVersion, appVersion string) bool {
+	latestVersion = strings.TrimSpace(latestVersion)
+	appVersion = strings.TrimSpace(appVersion)
+
+	vv, ve := version.NewVersion(latestVersion)
+	vw, we := version.NewVersion(appVersion)
+
+	return ve == nil && we == nil && vv.GreaterThan(vw)
 }

@@ -1,33 +1,34 @@
 package update
 
 import (
+	"bytes"
 	"fmt"
+	"net/http"
 	"testing"
 
+	"github.com/profclems/glab/api"
+	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/profclems/glab/pkg/iostreams"
 
 	"github.com/alecthomas/assert"
 	"github.com/jarcoal/httpmock"
+	"github.com/xanzy/go-gitlab"
 )
 
 func TestNewCheckUpdateCmd(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", `https://api.github.com/repos/profclems/glab/releases/latest`,
-		httpmock.NewStringResponder(200, `{
-    "url": "https://api.github.com/repos/profclems/glab/releases/33385584",
-  "html_url": "https://github.com/profclems/glab/releases/tag/v1.11.1",
-  "tag_name": "v1.11.1",
+	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases`,
+		httpmock.NewStringResponder(200, `[{"tag_name": "v1.11.1",
   "name": "v1.11.1",
-  "draft": false,
-  "prerelease": false,
   "created_at": "2020-11-03T05:33:29Z",
-  "published_at": "2020-11-03T05:39:04Z"}`))
+  "released_at": "2020-11-03T05:39:04Z"}]`))
 
-	ioStream, _, stdout, stderr := iostreams.Test()
+	factory, _, stdout, stderr, err := makeTestFactory()
+	assert.Nil(t, err)
+
 	type args struct {
-		s       *iostreams.IOStreams
 		version string
 	}
 	tests := []struct {
@@ -40,7 +41,6 @@ func TestNewCheckUpdateCmd(t *testing.T) {
 		{
 			name: "same version",
 			args: args{
-				s:       ioStream,
 				version: "v1.11.1",
 			},
 			stdOut: "✓ You are already using the latest version of glab\n",
@@ -49,16 +49,15 @@ func TestNewCheckUpdateCmd(t *testing.T) {
 		{
 			name: "older version",
 			args: args{
-				s:       ioStream,
 				version: "v1.11.0",
 			},
-			stdOut: "A new version of glab has been released: v1.11.0 → v1.11.1\nhttps://github.com/profclems/glab/releases/tag/v1.11.1\n",
+			stdOut: "A new version of glab has been released: v1.11.0 → v1.11.1\nhttps://gitlab.com/gitlab-org/cli/-/releases/v1.11.1\n",
 			stdErr: "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := NewCheckUpdateCmd(tt.args.s, tt.args.version).Execute()
+			err := NewCheckUpdateCmd(factory, tt.args.version).Execute()
 			if tt.wantErr {
 				assert.Nil(t, err)
 			}
@@ -77,30 +76,93 @@ func TestNewCheckUpdateCmd_error(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", `https://api.github.com/repos/profclems/glab/releases/latest`,
+	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases`,
 		httpmock.NewErrorResponder(fmt.Errorf("an error expected")))
 
-	ioStream, _, stdout, stderr := iostreams.Test()
+	factory, _, stdout, stderr, err := makeTestFactory()
+	assert.Nil(t, err)
 
-	err := NewCheckUpdateCmd(ioStream, "1.11.0").Execute()
+	err = NewCheckUpdateCmd(factory, "1.11.0").Execute()
 	assert.NotNil(t, err)
-	assert.Equal(t, "could not check for update! Make sure you have a stable internet connection", err.Error())
+	assert.Equal(t, "could not check for update: Get \"https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases?page=1&per_page=1\": an error expected", err.Error())
 	assert.Equal(t, "", stdout.String())
 	assert.Equal(t, "", stderr.String())
 }
 
-func TestNewCheckUpdateCmd_json_error(t *testing.T) {
+func TestNewCheckUpdateCmd_no_release(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", `https://api.github.com/repos/profclems/glab/releases/latest`,
-		httpmock.NewStringResponder(200, ``))
+	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases`,
+		httpmock.NewStringResponder(200, `[]`))
 
-	ioStream, _, stdout, stderr := iostreams.Test()
+	factory, _, stdout, stderr, err := makeTestFactory()
+	assert.Nil(t, err)
 
-	err := NewCheckUpdateCmd(ioStream, "1.11.0").Execute()
+	err = NewCheckUpdateCmd(factory, "1.11.0").Execute()
 	assert.NotNil(t, err)
-	assert.Equal(t, "could not check for update! Make sure you have a stable internet connection", err.Error())
+	assert.Equal(t, "no release found for glab", err.Error())
 	assert.Equal(t, "", stdout.String())
 	assert.Equal(t, "", stderr.String())
+}
+
+func Test_isOlderVersion(t *testing.T) {
+	type args struct {
+		latestVersion  string
+		currentVersion string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "latest is newer",
+			args: args{"v1.10.0", "v1.9.1"},
+			want: true,
+		},
+		{
+			name: "latest is current",
+			args: args{"v1.9.2", "v1.9.2"},
+			want: false,
+		},
+		{
+			name: "latest is older",
+			args: args{"v1.9.0", "v1.9.2-pre.1"},
+			want: false,
+		},
+		{
+			name: "current is prerelease",
+			args: args{"v1.9.0", "v1.9.0-pre.1"},
+			want: true,
+		},
+		{
+			name: "latest is older (against prerelease)",
+			args: args{"v1.9.0", "v1.10.0-pre.1"},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isOlderVersion(tt.args.latestVersion, tt.args.currentVersion); got != tt.want {
+				t.Errorf("isOlderVersion(%s, %s) = %v, want %v",
+					tt.args.latestVersion, tt.args.currentVersion, got, tt.want)
+			}
+		})
+	}
+}
+
+func makeTestFactory() (factory *cmdutils.Factory, in *bytes.Buffer, out *bytes.Buffer, errOut *bytes.Buffer, err error) {
+	var apiClient *api.Client
+	apiClient, err = api.TestClient(http.DefaultClient, "", "gitlab.com", false)
+	if err != nil {
+		return
+	}
+
+	factory = cmdutils.NewFactory()
+	factory.HttpClient = func() (*gitlab.Client, error) {
+		return apiClient.Lab(), nil
+	}
+	factory.IO, _, out, errOut = iostreams.Test()
+	return
 }

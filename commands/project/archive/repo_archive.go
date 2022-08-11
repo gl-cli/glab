@@ -108,7 +108,7 @@ func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
 	return repoArchiveCmd
 }
 
-//CloneWriter w
+// CloneWriter w
 type CloneWriter struct {
 	Total uint64
 }
