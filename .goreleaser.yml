@@ -18,7 +18,7 @@ builds:
         - -s -w -X main.version={{.Version}} -X main.build={{time "2006-01-02"}}
     id: macos
     goos: [darwin]
-    goarch: [amd64]
+    goarch: [amd64, arm64]
 
   - <<: *build_defaults
     id: linux
