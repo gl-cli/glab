@@ -37,6 +37,7 @@ Inspired by [gh], the official GitHub CLI tool.
     * [Nix/NixOS](#nixnixos)
     * [MPR (Debian/Ubuntu)](#mpr-debianubuntu)
       * [Prebuilt-MPR](#prebuilt-mpr)
+    * [Spack](#spack)
   * [macOS](#macos)
     * [Homebrew](#homebrew)
     * [MacPorts](#macports)
@@ -246,6 +247,18 @@ First [set up the Prebuilt-MPR on your system](https://docs.makedeb.org/prebuilt
 
 ```shell
 sudo apt install glab
+```
+
+#### Spack
+
+```shell
+spack install glab
+```
+
+Updating (Spack):
+
+```shell
+spack uninstall glab && spack install glab
 ```
 
 ### macOS
