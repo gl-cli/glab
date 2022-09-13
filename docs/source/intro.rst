@@ -3,8 +3,7 @@ GLab - A GitLab CLI Tool
 GLab is an open source Gitlab Cli tool written in Go (golang) to help
 work seamlessly with Gitlab from the command line. Work with issues,
 merge requests, **watch running pipelines directly from your CLI** among
-other features. Inspired by ``gh``, `the official GitHub CLI
-tool <https://github.com/cli/cli>`__.
+other features.
 
 Usage
 -----

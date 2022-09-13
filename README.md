@@ -9,7 +9,6 @@
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#version-control)
 
 GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to where you are already working with `git` and your code without switching between windows and browser tabs. Work with issues, merge requests, **watch running pipelines directly from your CLI** among other features.
-Inspired by [gh], the official GitHub CLI tool.
 
 `glab` is available for repositories hosted on GitLab.com and self-managed GitLab instances. `glab` supports multiple authenticated GitLab instances and automatically detects the authenticated hostname from the remotes available in the working Git directory.
 
@@ -417,13 +416,12 @@ FORCE_HYPERLINKS: set to 1 to force hyperlinks to be output, even when not outpu
 
 ## What about Lab?
 
-Both `glab` and [lab] are open-source tools with the same goal of bringing GitLab to your command line and simplifying the developer workflow. In many ways `lab` is to [hub], while `glab` is to [gh].
+Both `glab` and [lab] are open-source tools with the same goal of bringing GitLab to your command line and simplifying the developer workflow.
 
 If you want a tool that's more opinionated and intended to help simplify your GitLab workflows from the command line, then `glab` is for you. However, if you want a tool like [hub] that feels like using Git and allows you to interact with GitLab, consider using [lab].
 
 Some `glab` commands such as `ci view` and `ci trace` were adopted from [lab].
 
-[gh]:https://github.com/cli/cli
 [hub]:https://github.com/github/hub
 [lab]:https://github.com/zaquestion/lab
 
