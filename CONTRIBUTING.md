@@ -47,7 +47,7 @@ Run tests with: `make test` or `go test ./...`
 
 A commit message consists of a header, a body and a footer, separated by a blank line.
 
-Any line of the commit message cannot be longer than 100 characters! This allows the message to be easier to read on GitHub as well as in various git tools.
+Any line of the commit message cannot be longer than 100 characters! This allows the message to be easier to read as well as in various git tools.
 
 ```sh
 <type>[optional scope]: <description>
