@@ -1,10 +1,26 @@
-**Describe the feature or problem you'd like to solve**
-<!-- A clear and concise description of what the feature or problem is. Ex. I'm always frustrated when [...] so having [...] -->
+<!---
+Please read this!
 
-**Propose a Solution**
-<!-- A clear and concise description of what you want to happen and alternatives you have considered. -->
+Before opening a new issue, make sure to search for keywords in the issues
+filtered by the "feature" label:
 
-**Additional context**
-<!-- Add any other context or screenshots about the feature request here. -->
+ - https://gitlab.com/gitlab-org/cli/-/issues/?label_name%5B%5D=type%3A%3Afeature
 
-/label ~"gh-new"
+and verify the issue you're about to submit isn't a duplicate.
+--->
+
+### Problem to solve
+
+<!-- What problem do we solve? Try to define the who/what/why of the opportunity as a user story. For example, "As a (who), I want (what), so I can (why/value)." -->
+
+### Proposal
+
+<!-- How are we going to solve the problem? -->
+
+### Further details
+
+<!-- Include examples, use cases, benefits, goals, or any other details that will help us understand the problem better. -->
+
+### Links / references
+
+/label ~"type::feature" ~"devops::create" ~"group::code review" ~"Category:Editor Extension" ~"cli"
