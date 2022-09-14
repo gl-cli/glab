@@ -26,11 +26,35 @@ var ListIssueBoards = func(client *gitlab.Client, projectID interface{}, opts *g
 	return boards, nil
 }
 
+var ListGroupIssueBoards = func(client *gitlab.Client, groupID interface{}, opts *gitlab.ListGroupIssueBoardsOptions) ([]*gitlab.GroupIssueBoard, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	boards, _, err := client.GroupIssueBoards.ListGroupIssueBoards(groupID, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return boards, nil
+}
+
 var GetIssueBoardLists = func(client *gitlab.Client, projectID interface{}, boardID int, opts *gitlab.GetIssueBoardListsOptions) ([]*gitlab.BoardList, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
 	boardLists, _, err := client.Boards.GetIssueBoardLists(projectID, boardID, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return boardLists, nil
+}
+
+var GetGroupIssueBoardLists = func(client *gitlab.Client, groupID interface{}, boardID int, opts *gitlab.ListGroupIssueBoardListsOptions) ([]*gitlab.BoardList, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	boardLists, _, err := client.GroupIssueBoards.ListGroupIssueBoardLists(groupID, boardID, opts)
 	if err != nil {
 		return nil, err
 	}
