@@ -188,8 +188,14 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if removeSource, _ := cmd.Flags().GetBool("remove-source-branch"); removeSource {
-				actions = append(actions, "enabled removal of source branch on merge")
-				l.RemoveSourceBranch = gitlab.Bool(true)
+
+				if mr.ForceRemoveSourceBranch {
+					actions = append(actions, "disabled removal of source branch on merge")
+				} else {
+					actions = append(actions, "enabled removal of source branch on merge")
+				}
+
+				l.RemoveSourceBranch = gitlab.Bool(!mr.ForceRemoveSourceBranch)
 			}
 
 			if squashBeforeMerge, _ := cmd.Flags().GetBool("squash-before-merge"); squashBeforeMerge {
@@ -232,7 +238,7 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 	mrUpdateCmd.Flags().StringSliceP("reviewer", "", []string{}, "request review from users by their usernames, prefix with '!' or '-' to remove from existing reviewers, '+' to add, otherwise replace existing reviewers with given users")
 	mrUpdateCmd.Flags().Bool("unassign", false, "unassign all users")
 	mrUpdateCmd.Flags().BoolP("squash-before-merge", "", false, "Toggles the option to squash commits into a single commit when merging")
-	mrUpdateCmd.Flags().BoolP("remove-source-branch", "", false, "Remove Source Branch on merge")
+	mrUpdateCmd.Flags().BoolP("remove-source-branch", "", false, "Toggles the removal of the Source Branch on merge")
 	mrUpdateCmd.Flags().StringP("milestone", "m", "", "title of the milestone to assign, pass \"\" or 0 to unassign")
 	mrUpdateCmd.Flags().String("target-branch", "", "set target branch")
 
