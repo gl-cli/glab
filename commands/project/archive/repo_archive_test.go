@@ -4,8 +4,8 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/profclems/glab/commands/cmdtest"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 func TestMain(m *testing.M) {

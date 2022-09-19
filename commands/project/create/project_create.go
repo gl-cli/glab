@@ -7,17 +7,17 @@ import (
 	"path"
 	"strings"
 
-	"github.com/profclems/glab/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/internal/run"
-	"github.com/profclems/glab/pkg/git"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/run"
+	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
 func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {

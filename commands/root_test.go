@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/profclems/glab/commands/cmdtest"
-	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func TestMain(m *testing.M) {

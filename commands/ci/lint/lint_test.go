@@ -3,10 +3,10 @@ package lint
 import (
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/alecthomas/assert"
-	"github.com/profclems/glab/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 func TestMain(m *testing.M) {

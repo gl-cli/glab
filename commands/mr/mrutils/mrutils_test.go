@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/internal/glrepo"
-	"github.com/profclems/glab/pkg/prompt"
 	"github.com/stretchr/testify/assert"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
 
 func Test_DisplayMR(t *testing.T) {

@@ -8,19 +8,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/acarl005/stripansi"
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/internal/config"
 	"github.com/stretchr/testify/require"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 
-	"github.com/profclems/glab/commands/cmdtest"
-	"github.com/profclems/glab/internal/run"
-	mainTest "github.com/profclems/glab/test"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/run"
+	mainTest "gitlab.com/gitlab-org/cli/test"
 )
 
 var (

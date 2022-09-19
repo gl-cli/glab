@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/ci/ciutils"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/pkg/git"
-	"github.com/profclems/glab/pkg/utils"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/ci/ciutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/gdamore/tcell/v2"

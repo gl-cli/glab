@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/charmbracelet/glamour"
-	"github.com/profclems/glab/internal/run"
-	"github.com/profclems/glab/pkg/browser"
+	"gitlab.com/gitlab-org/cli/internal/run"
+	"gitlab.com/gitlab-org/cli/pkg/browser"
 )
 
 type MarkdownRenderOpts []glamour.TermRendererOption

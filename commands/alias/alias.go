@@ -1,10 +1,10 @@
 package alias
 
 import (
-	deleteCmd "github.com/profclems/glab/commands/alias/delete"
-	listCmd "github.com/profclems/glab/commands/alias/list"
-	setCmd "github.com/profclems/glab/commands/alias/set"
-	"github.com/profclems/glab/commands/cmdutils"
+	deleteCmd "gitlab.com/gitlab-org/cli/commands/alias/delete"
+	listCmd "gitlab.com/gitlab-org/cli/commands/alias/list"
+	setCmd "gitlab.com/gitlab-org/cli/commands/alias/set"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"github.com/spf13/cobra"
 )

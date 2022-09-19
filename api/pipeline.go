@@ -6,8 +6,8 @@ import (
 	"io"
 	"sort"
 
-	"github.com/profclems/glab/pkg/git"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
 var RetryPipeline = func(client *gitlab.Client, pid int, repo string) (*gitlab.Pipeline, error) {

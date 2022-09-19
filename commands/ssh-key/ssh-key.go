@@ -1,11 +1,11 @@
 package ssh
 
 import (
-	"github.com/profclems/glab/commands/cmdutils"
-	cmdAdd "github.com/profclems/glab/commands/ssh-key/add"
-	cmdGet "github.com/profclems/glab/commands/ssh-key/get"
-	cmdList "github.com/profclems/glab/commands/ssh-key/list"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	cmdAdd "gitlab.com/gitlab-org/cli/commands/ssh-key/add"
+	cmdGet "gitlab.com/gitlab-org/cli/commands/ssh-key/get"
+	cmdList "gitlab.com/gitlab-org/cli/commands/ssh-key/list"
 )
 
 func NewCmdSSHKey(f *cmdutils.Factory) *cobra.Command {

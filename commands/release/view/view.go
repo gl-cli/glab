@@ -5,15 +5,15 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/release/releaseutils"
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/internal/glrepo"
-	"github.com/profclems/glab/pkg/glinstance"
-	"github.com/profclems/glab/pkg/iostreams"
-	"github.com/profclems/glab/pkg/utils"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/release/releaseutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
 type ViewOpts struct {

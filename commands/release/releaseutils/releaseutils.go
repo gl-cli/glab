@@ -6,15 +6,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/profclems/glab/internal/glrepo"
-	"github.com/profclems/glab/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 
-	"github.com/profclems/glab/commands/release/releaseutils/upload"
+	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/profclems/glab/pkg/tableprinter"
-	"github.com/profclems/glab/pkg/utils"
+	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/xanzy/go-gitlab"
 )

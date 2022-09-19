@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/profclems/glab/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/git"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/mr/mrutils"
-	"github.com/profclems/glab/pkg/utils"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"

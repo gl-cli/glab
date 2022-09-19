@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func Test_Repo(t *testing.T) {

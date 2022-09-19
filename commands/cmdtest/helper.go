@@ -13,14 +13,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/profclems/glab/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/git"
 
 	"github.com/google/shlex"
 	"github.com/otiai10/copy"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/test"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/test"
 )
 
 var (

@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/alecthomas/assert"
 	"github.com/jarcoal/httpmock"

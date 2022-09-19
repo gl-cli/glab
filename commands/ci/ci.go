@@ -1,17 +1,17 @@
 package ci
 
 import (
-	jobArtifactCmd "github.com/profclems/glab/commands/ci/artifact"
-	pipeDeleteCmd "github.com/profclems/glab/commands/ci/delete"
-	legacyCICmd "github.com/profclems/glab/commands/ci/legacyci"
-	ciLintCmd "github.com/profclems/glab/commands/ci/lint"
-	pipeListCmd "github.com/profclems/glab/commands/ci/list"
-	pipeRetryCmd "github.com/profclems/glab/commands/ci/retry"
-	pipeRunCmd "github.com/profclems/glab/commands/ci/run"
-	pipeStatusCmd "github.com/profclems/glab/commands/ci/status"
-	ciTraceCmd "github.com/profclems/glab/commands/ci/trace"
-	ciViewCmd "github.com/profclems/glab/commands/ci/view"
-	"github.com/profclems/glab/commands/cmdutils"
+	jobArtifactCmd "gitlab.com/gitlab-org/cli/commands/ci/artifact"
+	pipeDeleteCmd "gitlab.com/gitlab-org/cli/commands/ci/delete"
+	legacyCICmd "gitlab.com/gitlab-org/cli/commands/ci/legacyci"
+	ciLintCmd "gitlab.com/gitlab-org/cli/commands/ci/lint"
+	pipeListCmd "gitlab.com/gitlab-org/cli/commands/ci/list"
+	pipeRetryCmd "gitlab.com/gitlab-org/cli/commands/ci/retry"
+	pipeRunCmd "gitlab.com/gitlab-org/cli/commands/ci/run"
+	pipeStatusCmd "gitlab.com/gitlab-org/cli/commands/ci/status"
+	ciTraceCmd "gitlab.com/gitlab-org/cli/commands/ci/trace"
+	ciViewCmd "gitlab.com/gitlab-org/cli/commands/ci/view"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"github.com/spf13/cobra"
 )

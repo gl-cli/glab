@@ -7,7 +7,7 @@ import (
 
 	"github.com/xanzy/go-gitlab"
 
-	"github.com/profclems/glab/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
 // Remotes represents a set of git remotes

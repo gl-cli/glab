@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/google/shlex"
 
-	"github.com/profclems/glab/api"
-	cmdTestUtils "github.com/profclems/glab/commands/cmdtest"
-	"github.com/profclems/glab/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/api"
+	cmdTestUtils "gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"github.com/acarl005/stripansi"
 	"github.com/stretchr/testify/assert"

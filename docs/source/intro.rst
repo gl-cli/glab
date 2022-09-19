@@ -37,7 +37,7 @@ Examples
 
 Installation
 ~~~~~~~~~~~~
-You can find installation instructions on our `README <https://github.com/profclems/glab#installation>`__.
+You can find installation instructions on our `README <https://gitlab.com/gitlab-org/cli/#installation>`__.
 
 Authentication
 ~~~~~~~~~~~~~~
@@ -45,4 +45,4 @@ Run ``glab auth login`` to authenticate with your GitLab account. ``glab`` will 
 
 Feedback
 ~~~~~~~~
-Thank you for checking out GLab! Please open an `issue <https://github.com/profclems/glab/issues/new>`__. to send us feedback. We're looking forward to hearing it.
+Thank you for checking out GLab! Please open an `issue <https://gitlab.com/gitlab-org/cli/issues/new>`__. to send us feedback. We're looking forward to hearing it.

@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/pkg/glinstance"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
 // AuthType represents an authentication type within GitLab.

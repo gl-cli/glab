@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/profclems/glab/pkg/tableprinter"
+	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/internal/config"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 
 	"github.com/spf13/cobra"
 )

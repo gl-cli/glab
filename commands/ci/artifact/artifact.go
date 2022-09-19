@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func NewCmdRun(f *cmdutils.Factory) *cobra.Command {

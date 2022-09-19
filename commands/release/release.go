@@ -1,14 +1,14 @@
 package release
 
 import (
-	"github.com/profclems/glab/commands/cmdutils"
-	releaseCreateCmd "github.com/profclems/glab/commands/release/create"
-	releaseDeleteCmd "github.com/profclems/glab/commands/release/delete"
-	releaseDownloadCmd "github.com/profclems/glab/commands/release/download"
-	releaseListCmd "github.com/profclems/glab/commands/release/list"
-	releaseUploadCmd "github.com/profclems/glab/commands/release/upload"
-	releaseViewCmd "github.com/profclems/glab/commands/release/view"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	releaseCreateCmd "gitlab.com/gitlab-org/cli/commands/release/create"
+	releaseDeleteCmd "gitlab.com/gitlab-org/cli/commands/release/delete"
+	releaseDownloadCmd "gitlab.com/gitlab-org/cli/commands/release/download"
+	releaseListCmd "gitlab.com/gitlab-org/cli/commands/release/list"
+	releaseUploadCmd "gitlab.com/gitlab-org/cli/commands/release/upload"
+	releaseViewCmd "gitlab.com/gitlab-org/cli/commands/release/view"
 )
 
 func NewCmdRelease(f *cmdutils.Factory) *cobra.Command {

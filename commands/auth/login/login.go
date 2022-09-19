@@ -8,17 +8,17 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/profclems/glab/commands/auth/authutils"
+	"gitlab.com/gitlab-org/cli/commands/auth/authutils"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/pkg/glinstance"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
 type LoginOptions struct {

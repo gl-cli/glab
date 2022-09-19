@@ -2,9 +2,9 @@ package snippet
 
 import (
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/snippet/create"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/snippet/create"
 )
 
 func NewCmdSnippet(f *cmdutils.Factory) *cobra.Command {

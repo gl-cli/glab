@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/internal/config"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 func httpRequest(client *api.Client, config config.Config, hostname string, method string, p string, params interface{}, headers []string) (*http.Response, error) {

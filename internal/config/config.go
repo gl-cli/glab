@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/profclems/glab/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
 
 // PromptAndSetEnv : prompts user for value and returns default value if empty

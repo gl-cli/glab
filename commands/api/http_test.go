@@ -7,9 +7,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/internal/config"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 func Test_groupGraphQLVariables(t *testing.T) {

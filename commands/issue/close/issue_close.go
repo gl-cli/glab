@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/api"
+	"gitlab.com/gitlab-org/cli/api"
 
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/issue/issueutils"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/issue/issueutils"
 )
 
 func NewCmdClose(f *cmdutils.Factory) *cobra.Command {

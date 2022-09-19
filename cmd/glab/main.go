@@ -9,21 +9,21 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/mgutz/ansi"
 
 	surveyCore "github.com/AlecAivazis/survey/v2/core"
-	"github.com/profclems/glab/commands"
-	"github.com/profclems/glab/commands/alias/expand"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/help"
-	"github.com/profclems/glab/commands/update"
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/internal/run"
-	"github.com/profclems/glab/pkg/glinstance"
-	"github.com/profclems/glab/pkg/tableprinter"
-	"github.com/profclems/glab/pkg/utils"
+	"gitlab.com/gitlab-org/cli/commands"
+	"gitlab.com/gitlab-org/cli/commands/alias/expand"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/help"
+	"gitlab.com/gitlab-org/cli/commands/update"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/run"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/spf13/cobra"
 )

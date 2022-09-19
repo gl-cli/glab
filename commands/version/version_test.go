@@ -3,7 +3,7 @@ package version
 import (
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/stretchr/testify/assert"
 )

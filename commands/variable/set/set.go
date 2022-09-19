@@ -4,15 +4,15 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/variable/variableutils"
-	"github.com/profclems/glab/internal/glrepo"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/variable/variableutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
 type SetOpts struct {

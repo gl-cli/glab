@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 func TestNewCmdUnsubscribe(t *testing.T) {

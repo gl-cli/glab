@@ -1,4 +1,4 @@
-module github.com/profclems/glab
+module gitlab.com/gitlab-org/cli
 
 go 1.17
 

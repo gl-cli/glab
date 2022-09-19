@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/pkg/utils"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
 func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {

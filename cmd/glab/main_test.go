@@ -6,11 +6,11 @@ import (
 	"net"
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/pkg/errors"
-	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func Test_printError(t *testing.T) {

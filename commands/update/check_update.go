@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/profclems/glab/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"

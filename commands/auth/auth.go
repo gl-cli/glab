@@ -1,10 +1,10 @@
 package auth
 
 import (
-	authLoginCmd "github.com/profclems/glab/commands/auth/login"
-	authStatusCmd "github.com/profclems/glab/commands/auth/status"
-	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/spf13/cobra"
+	authLoginCmd "gitlab.com/gitlab-org/cli/commands/auth/login"
+	authStatusCmd "gitlab.com/gitlab-org/cli/commands/auth/status"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func NewCmdAuth(f *cmdutils.Factory) *cobra.Command {

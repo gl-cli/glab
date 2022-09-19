@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/internal/glrepo"
-	"github.com/profclems/glab/pkg/iostreams"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/alecthomas/assert"
 	"github.com/google/shlex"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/pkg/httpmock"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 )
 
 func Test_NewCmdSet(t *testing.T) {

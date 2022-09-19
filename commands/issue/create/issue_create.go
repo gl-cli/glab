@@ -7,20 +7,20 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/internal/glrepo"
-	"github.com/profclems/glab/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/issue/issueutils"
-	"github.com/profclems/glab/pkg/prompt"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/issue/issueutils"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
 
 type CreateOpts struct {

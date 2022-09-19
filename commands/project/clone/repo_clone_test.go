@@ -6,18 +6,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/spf13/cobra"
 
 	"github.com/google/shlex"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/test"
 	"github.com/stretchr/testify/require"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/test"
 
-	"github.com/profclems/glab/commands/cmdtest"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 func TestMain(m *testing.M) {
