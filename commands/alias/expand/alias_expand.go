@@ -9,10 +9,10 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/profclems/glab/pkg/execext"
+	"gitlab.com/gitlab-org/cli/pkg/execext"
 
 	"github.com/google/shlex"
-	"github.com/profclems/glab/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 // ExpandAlias processes argv to see if it should be rewritten according to a user's aliases. The

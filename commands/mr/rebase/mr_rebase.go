@@ -2,8 +2,8 @@ package rebase
 
 import (
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/mr/mrutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 
 	"github.com/spf13/cobra"
 )

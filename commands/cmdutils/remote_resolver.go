@@ -6,10 +6,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/internal/glrepo"
-	"github.com/profclems/glab/pkg/git"
-	"github.com/profclems/glab/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
 type remoteResolver struct {

@@ -5,17 +5,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/google/shlex"
 
-	"github.com/profclems/glab/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/config"
 
 	"github.com/acarl005/stripansi"
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 // TODO: test by mocking the appropriate api function

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/pkg/git"
-	"github.com/profclems/glab/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/stretchr/testify/assert"

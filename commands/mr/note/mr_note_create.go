@@ -3,11 +3,11 @@ package note
 import (
 	"fmt"
 
-	"github.com/profclems/glab/commands/mr/mrutils"
+	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/pkg/utils"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"

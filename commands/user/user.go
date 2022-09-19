@@ -1,9 +1,9 @@
 package user
 
 import (
-	"github.com/profclems/glab/commands/cmdutils"
-	userEventsCmd "github.com/profclems/glab/commands/user/events"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	userEventsCmd "gitlab.com/gitlab-org/cli/commands/user/events"
 )
 
 func NewCmdUser(f *cmdutils.Factory) *cobra.Command {

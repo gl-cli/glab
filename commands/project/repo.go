@@ -1,18 +1,18 @@
 package project
 
 import (
-	"github.com/profclems/glab/commands/cmdutils"
-	repoCmdArchive "github.com/profclems/glab/commands/project/archive"
-	repoCmdClone "github.com/profclems/glab/commands/project/clone"
-	repoCmdContributors "github.com/profclems/glab/commands/project/contributors"
-	repoCmdCreate "github.com/profclems/glab/commands/project/create"
-	repoCmdDelete "github.com/profclems/glab/commands/project/delete"
-	repoCmdFork "github.com/profclems/glab/commands/project/fork"
-	repoCmdList "github.com/profclems/glab/commands/project/list"
-	repoCmdMirror "github.com/profclems/glab/commands/project/mirror"
-	repoCmdSearch "github.com/profclems/glab/commands/project/search"
-	repoCmdTransfer "github.com/profclems/glab/commands/project/transfer"
-	repoCmdView "github.com/profclems/glab/commands/project/view"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	repoCmdArchive "gitlab.com/gitlab-org/cli/commands/project/archive"
+	repoCmdClone "gitlab.com/gitlab-org/cli/commands/project/clone"
+	repoCmdContributors "gitlab.com/gitlab-org/cli/commands/project/contributors"
+	repoCmdCreate "gitlab.com/gitlab-org/cli/commands/project/create"
+	repoCmdDelete "gitlab.com/gitlab-org/cli/commands/project/delete"
+	repoCmdFork "gitlab.com/gitlab-org/cli/commands/project/fork"
+	repoCmdList "gitlab.com/gitlab-org/cli/commands/project/list"
+	repoCmdMirror "gitlab.com/gitlab-org/cli/commands/project/mirror"
+	repoCmdSearch "gitlab.com/gitlab-org/cli/commands/project/search"
+	repoCmdTransfer "gitlab.com/gitlab-org/cli/commands/project/transfer"
+	repoCmdView "gitlab.com/gitlab-org/cli/commands/project/view"
 
 	"github.com/spf13/cobra"
 )

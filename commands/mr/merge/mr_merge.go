@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/profclems/glab/pkg/surveyext"
+	"gitlab.com/gitlab-org/cli/pkg/surveyext"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/avast/retry-go"
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/mr/mrutils"
-	"github.com/profclems/glab/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
-	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 type MRMergeMethod int

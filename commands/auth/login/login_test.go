@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/google/shlex"
-	"github.com/profclems/glab/commands/cmdtest"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 func TestMain(m *testing.M) {

@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 func GetValue(value string, io *iostreams.IOStreams, args []string) (string, error) {

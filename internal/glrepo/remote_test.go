@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/profclems/glab/pkg/git"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
 func eq(t *testing.T, got interface{}, expected interface{}) {

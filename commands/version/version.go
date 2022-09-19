@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/spf13/cobra"
 )

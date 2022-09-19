@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/profclems/glab/commands/issue/issueutils"
+	"gitlab.com/gitlab-org/cli/commands/issue/issueutils"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/pkg/utils"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/spf13/cobra"
 	gitlab "github.com/xanzy/go-gitlab"

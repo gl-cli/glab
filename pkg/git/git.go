@@ -12,7 +12,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/profclems/glab/internal/run"
+	"gitlab.com/gitlab-org/cli/internal/run"
 )
 
 func GetRemoteURL(remoteAlias string) (string, error) {

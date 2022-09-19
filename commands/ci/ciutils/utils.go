@@ -8,11 +8,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/pkg/tableprinter"
-	"github.com/profclems/glab/pkg/utils"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/pkg/errors"
 	"github.com/xanzy/go-gitlab"

@@ -3,10 +3,10 @@ package todo
 import (
 	"fmt"
 
-	"github.com/profclems/glab/commands/mr/mrutils"
+	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"github.com/spf13/cobra"
 )

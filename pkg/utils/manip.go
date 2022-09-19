@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/profclems/glab/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
 	"github.com/AlecAivazis/survey/v2"
 )

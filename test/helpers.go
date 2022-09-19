@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"regexp"
 
-	"github.com/profclems/glab/internal/run"
+	"gitlab.com/gitlab-org/cli/internal/run"
 
 	"github.com/pkg/errors"
 )

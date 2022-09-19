@@ -10,9 +10,9 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/dustin/go-humanize"
-	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {

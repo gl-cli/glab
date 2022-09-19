@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/profclems/glab/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 
 	"errors"
 

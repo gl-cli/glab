@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/profclems/glab/pkg/text"
 	"github.com/spf13/cast"
+	"gitlab.com/gitlab-org/cli/pkg/text"
 )
 
 var tp *TablePrinter

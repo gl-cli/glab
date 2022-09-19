@@ -10,20 +10,20 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/internal/glrepo"
-	"github.com/profclems/glab/pkg/utils"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/profclems/glab/pkg/prompt"
-	"github.com/profclems/glab/pkg/surveyext"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/pkg/surveyext"
 
-	"github.com/profclems/glab/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/config"
 
-	"github.com/profclems/glab/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
 const (

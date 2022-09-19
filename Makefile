@@ -47,7 +47,7 @@ endif
 
 GO_LDFLAGS := -X main.build=$(BUILD_DATE) $(GO_LDFLAGS)
 GO_LDFLAGS := $(GO_LDFLAGS) -X main.version=$(GLAB_VERSION)
-GOURL ?= github.com/profclems/glab
+GOURL ?= gitlab.com/gitlab-org/cli
 BUILDLOC ?= ./bin/glab
 
 # Dependency versions

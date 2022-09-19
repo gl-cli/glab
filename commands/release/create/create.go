@@ -8,25 +8,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/profclems/glab/commands/release/releaseutils"
-	"github.com/profclems/glab/commands/release/releaseutils/upload"
+	"gitlab.com/gitlab-org/cli/commands/release/releaseutils"
+	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/internal/run"
-	"github.com/profclems/glab/pkg/git"
-	"github.com/profclems/glab/pkg/prompt"
-	"github.com/profclems/glab/pkg/surveyext"
-	"github.com/profclems/glab/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/run"
+	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/pkg/surveyext"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
-	"github.com/profclems/glab/internal/glrepo"
-	"github.com/profclems/glab/pkg/glinstance"
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 type CreateOpts struct {

@@ -6,10 +6,10 @@ package legacyci
 import (
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func TestNewCmdCI(t *testing.T) {
@@ -29,6 +29,6 @@ func TestNewCmdCI(t *testing.T) {
 
 	assert.Contains(t, stdout.String(), "Work with GitLab CI pipelines and jobs\n")
 	assert.Contains(t, stderr.String(), "")
-	assert.Contains(t, stdout.String(), "This command is deprecated. All the commands under it has been moved to `ci` or `pipeline` command. See https://github.com/profclems/glab/issues/372 for more info.\n")
+	assert.Contains(t, stdout.String(), "This command is deprecated. All the commands under it has been moved to `ci` or `pipeline` command. See https://gitlab.com/gitlab-org/cli/issues/372 for more info.\n")
 
 }

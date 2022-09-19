@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/profclems/glab/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/config"
 
 	"github.com/MakeNowJust/heredoc"
 )

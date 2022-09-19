@@ -1,13 +1,13 @@
 package variable
 
 import (
-	"github.com/profclems/glab/commands/cmdutils"
-	deleteCmd "github.com/profclems/glab/commands/variable/delete"
-	getCmd "github.com/profclems/glab/commands/variable/get"
-	listCmd "github.com/profclems/glab/commands/variable/list"
-	setCmd "github.com/profclems/glab/commands/variable/set"
-	updateCmd "github.com/profclems/glab/commands/variable/update"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	deleteCmd "gitlab.com/gitlab-org/cli/commands/variable/delete"
+	getCmd "gitlab.com/gitlab-org/cli/commands/variable/get"
+	listCmd "gitlab.com/gitlab-org/cli/commands/variable/list"
+	setCmd "gitlab.com/gitlab-org/cli/commands/variable/set"
+	updateCmd "gitlab.com/gitlab-org/cli/commands/variable/update"
 )
 
 func NewVariableCmd(f *cmdutils.Factory) *cobra.Command {

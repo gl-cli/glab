@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert"
-	"github.com/profclems/glab/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func TestCmdSnippet_noARgs(t *testing.T) {

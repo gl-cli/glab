@@ -8,16 +8,16 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
 
-	"github.com/profclems/glab/commands"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/pkg/utils"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
 var tocTree = `.. toctree::

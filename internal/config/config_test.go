@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/profclems/glab/pkg/prompt"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
 
 func Test_Prompt(t *testing.T) {

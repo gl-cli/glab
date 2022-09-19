@@ -1,10 +1,10 @@
 package label
 
 import (
-	"github.com/profclems/glab/commands/cmdutils"
-	labelCreateCmd "github.com/profclems/glab/commands/label/create"
-	labelListCmd "github.com/profclems/glab/commands/label/list"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	labelCreateCmd "gitlab.com/gitlab-org/cli/commands/label/create"
+	labelListCmd "gitlab.com/gitlab-org/cli/commands/label/list"
 )
 
 func NewCmdLabel(f *cmdutils.Factory) *cobra.Command {

@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/profclems/glab/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/google/shlex"
-	"github.com/profclems/glab/internal/config"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 type SetOptions struct {

@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/mr/mrutils"
-	"github.com/profclems/glab/pkg/git"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
+	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
 type mrCheckoutConfig struct {

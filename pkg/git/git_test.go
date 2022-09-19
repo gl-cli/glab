@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/profclems/glab/internal/run"
-	"github.com/profclems/glab/test"
+	"gitlab.com/gitlab-org/cli/internal/run"
+	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/stretchr/testify/require"
 )

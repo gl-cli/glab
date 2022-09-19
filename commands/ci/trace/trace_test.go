@@ -5,17 +5,17 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/alecthomas/assert"
 	"github.com/google/shlex"
-	"github.com/profclems/glab/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/internal/config"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 
-	"github.com/profclems/glab/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 var (

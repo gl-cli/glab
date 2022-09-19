@@ -3,10 +3,10 @@ package approvers
 import (
 	"fmt"
 
-	"github.com/profclems/glab/api"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/mr/mrutils"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 )
 
 func NewCmdApprovers(f *cmdutils.Factory) *cobra.Command {

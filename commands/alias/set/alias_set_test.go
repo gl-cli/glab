@@ -5,14 +5,14 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/google/shlex"
-	"github.com/profclems/glab/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
-	"github.com/profclems/glab/internal/config"
-	"github.com/profclems/glab/test"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"

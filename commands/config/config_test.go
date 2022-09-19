@@ -4,13 +4,13 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/profclems/glab/commands/cmdutils"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
-	"github.com/profclems/glab/internal/config"
 	"github.com/stretchr/testify/require"
+	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 type configStub map[string]string

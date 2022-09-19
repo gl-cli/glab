@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/profclems/glab/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/config"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/xanzy/go-gitlab"

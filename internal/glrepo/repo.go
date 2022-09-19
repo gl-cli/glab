@@ -6,14 +6,14 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/profclems/glab/api"
+	"gitlab.com/gitlab-org/cli/api"
 
-	"github.com/profclems/glab/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/config"
 
-	"github.com/profclems/glab/pkg/git"
-	"github.com/profclems/glab/pkg/glinstance"
-	"github.com/profclems/glab/pkg/utils"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
 // RemoteURL returns correct git clone URL of a repo

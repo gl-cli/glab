@@ -10,13 +10,13 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/profclems/glab/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/xanzy/go-gitlab"
 
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/commands/mr/mrutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 
 	"github.com/spf13/cobra"
 )

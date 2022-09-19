@@ -7,11 +7,11 @@ import (
 	"os"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/profclems/glab/commands/cmdutils"
-	"github.com/profclems/glab/internal/glrepo"
-	"github.com/profclems/glab/pkg/iostreams"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 type AddOpts struct {
