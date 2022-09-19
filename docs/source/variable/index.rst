@@ -32,6 +32,7 @@ Subcommands
    :maxdepth: 0
 
    delete <delete>
+   get <get>
    list <list>
    set <set>
    update <update>
