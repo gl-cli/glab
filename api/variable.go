@@ -30,6 +30,18 @@ var ListProjectVariables = func(client *gitlab.Client, projectID interface{}, op
 	return vars, nil
 }
 
+var GetProjectVariable = func(client *gitlab.Client, projectID interface{}, key string, opts *gitlab.RequestOptionFunc) (*gitlab.ProjectVariable, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	vars, _, err := client.ProjectVariables.GetVariable(projectID, key)
+	if err != nil {
+		return nil, err
+	}
+
+	return vars, nil
+}
+
 var DeleteProjectVariable = func(client *gitlab.Client, projectID interface{}, key string, scope string) error {
 	if client == nil {
 		client = apiClient.Lab()
@@ -92,6 +104,18 @@ var CreateGroupVariable = func(client *gitlab.Client, groupID interface{}, opts 
 		client = apiClient.Lab()
 	}
 	vars, _, err := client.GroupVariables.CreateVariable(groupID, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return vars, nil
+}
+
+var GetGroupVariable = func(client *gitlab.Client, groupID interface{}, key string, opts *gitlab.RequestOptionFunc) (*gitlab.GroupVariable, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	vars, _, err := client.GroupVariables.GetVariable(groupID, key)
 	if err != nil {
 		return nil, err
 	}
