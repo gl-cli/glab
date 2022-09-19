@@ -1,11 +1,18 @@
-# Contributing
+## Developer Certificate of Origin + License
 
-[legal]: https://help.github.com/articles/github-terms-of-service/#6-contributions-under-repository-license
-[license]: LICENSE
+Contributions to this repository are subject to the [Developer Certificate of Origin](https://docs.gitlab.com/ee/legal/developer_certificate_of_origin.html#developer-certificate-of-origin-version-11).
 
-Hi! Thanks for your interest in contributing to this project!
+All Documentation content that resides under the [docs/ directory](/docs) of this
+repository is licensed under Creative Commons:
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 
-To encourage active collaboration, pull requests are strongly encouraged, not just bug reports. "Bug reports" may also be sent in the form of a pull request containing a failing test. I'd also love to hear about ideas for new features as issues.
+_This notice should stay as the first item in the CONTRIBUTING.md file._
+
+---
+
+Thank you for your interest in contributing to the GitLab CLI! This guide details how to contribute
+to this extension in a way that is easy for everyone. These are mostly guidelines, not rules.
+Use your best judgement, and feel free to propose changes to this document in a merge request.
 
 Please do:
 
@@ -13,16 +20,20 @@ Please do:
 * Open an issue if things aren't working as expected.
 * Open an issue to propose a significant change.
 * open an issue to propose a feature
-* Open a pull request to fix a bug.
-* Open a pull request to fix documentation about a command.
-* Open a pull request for an issue with the help-wanted label and leave a comment claiming it.
+* Open a merge request to fix a bug.
+* Open a merge request to fix documentation about a command.
+* Open a merge request for an issue and leave a comment claiming it.
 
 Please avoid:
 
-* Opening pull requests for issues marked `needs-design`, `needs-investigation`, `needs-user-input`, or `blocked`.
-* Opening pull requests for documentation for a new command specifically. Manual pages are auto-generated from source after every release
+* Opening merge requests for issues marked `blocked`.
+* Opening merge requests for documentation for a new command specifically. Manual pages are auto-generated from source after every release
+## Code of Conduct
 
-## Building the project
+We want to create a welcoming environment for everyone who is interested in contributing. Visit our [Code of Conduct page](https://about.gitlab.com/community/contribute/code-of-conduct/) to learn more about our commitment to an open and welcoming environment.
+
+## Getting Started
+### Building the project
 
 Prerequisites:
 - Go 1.16+
@@ -35,13 +46,13 @@ Run tests with: `make test` or `go test ./...`
 
 > WARNING: Do not run `make test` outside of an isolated environment, it will overwrite your global config.
 
-## Submitting a pull request
+### Submitting a merge request
 
 1. Create a new branch: `git checkout -b my-branch-name`
 1. Make your change, add tests, and ensure tests pass
-1. Submit a pull request
+1. Submit a merge request
 
-## Commits Message
+## Commit Messages
 
 ### TL;DR: Your commit message should be semantic
 
@@ -86,7 +97,7 @@ This is a very short description of the change
 * `don't capitalize the first letter`
 * `no dot (.) at the end`
 
-## Message Body
+### Message Body
 
 - just as in subject use imperative, present tense: “change” not “changed” nor “changes”
 - includes motivation for the change and contrasts with previous behavior
@@ -95,13 +106,13 @@ This is a very short description of the change
 
 <http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>
 
-## Message Footer
+### Message Footer
 
 Finished, fixed or delivered stories should be listed on a separate line in the footer prefixed with "Finishes", "Fixes" , or "Delivers" keyword like this:
 
 `[(Finishes|Fixes|Delivers) #ISSUE_ID]`
 
-## Message Example
+### Message Example
 
 ```sh
 feat(kafka): implement exactly once delivery
@@ -120,12 +131,3 @@ fix(login): allow provided user preferences to override default preferences
 Fixes #025
 ```
 
-Contributions to this project are made available to public under the [project's open source license][license].
-Please note that this project adheres to a [Contributor Code of Conduct](https://gitlab.com/gitlab-org/cli/-/blob/main/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
-
-Manual pages are auto-generated from source on every release. You do not need to submit pull requests for documentation specifically; manual pages for commands will automatically get updated after your pull requests gets accepted.
-
-## Resources
-
-- [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
-- [Using Pull Requests](https://help.github.com/articles/about-pull-requests/)
