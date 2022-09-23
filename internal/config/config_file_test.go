@@ -17,6 +17,23 @@ func eq(t *testing.T, got interface{}, expected interface{}) {
 	}
 }
 
+func clearEnvironmentVariables() (string, string, string) {
+	// prevent using environment variables for test
+	envToken := os.Getenv("GITLAB_TOKEN")
+	if envToken != "" {
+		_ = os.Setenv("GITLAB_TOKEN", "")
+	}
+	envVisual := os.Getenv("VISUAL")
+	if envVisual != "" {
+		_ = os.Setenv("VISUAL", "")
+	}
+	envEditor := os.Getenv("EDITOR")
+	if envEditor != "" {
+		_ = os.Setenv("EDITOR", "")
+	}
+	return envToken, envVisual, envEditor
+}
+
 func Test_parseConfig(t *testing.T) {
 	defer StubConfig(`---
 hosts:
@@ -25,11 +42,9 @@ hosts:
     token: OTOKEN
 aliases:
 `, "")()
-	// prevent using env variable for test
-	envToken := os.Getenv("GITLAB_TOKEN")
-	if envToken != "" {
-		_ = os.Setenv("GITLAB_TOKEN", "")
-	}
+
+	envToken, _, _ := clearEnvironmentVariables()
+
 	config, err := ParseConfig("config.yml")
 	eq(t, err, nil)
 	username, err := config.Get("gitlab.com", "username")
@@ -53,11 +68,9 @@ hosts:
     username: monalisa
     token: OTOKEN
 `, "")()
-	// prevent using env variable for test
-	envToken := os.Getenv("GITLAB_TOKEN")
-	if envToken != "" {
-		_ = os.Setenv("GITLAB_TOKEN", "")
-	}
+
+	envToken, _, _ := clearEnvironmentVariables()
+
 	config, err := ParseConfig("config.yml")
 	eq(t, err, nil)
 	username, err := config.Get("gitlab.com", "username")
@@ -79,11 +92,9 @@ hosts:
     token: OTOKEN
 `, `
 `)()
-	// prevent using env variable for test
-	envToken := os.Getenv("GITLAB_TOKEN")
-	if envToken != "" {
-		_ = os.Setenv("GITLAB_TOKEN", "")
-	}
+
+	envToken, _, _ := clearEnvironmentVariables()
+
 	config, err := ParseConfig("config.yml")
 	eq(t, err, nil)
 	username, err := config.Get("gitlab.com", "username")
