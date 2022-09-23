@@ -19,7 +19,7 @@ Please do:
 * Check existing issues to verify that the bug or feature request has not already been submitted.
 * Open an issue if things aren't working as expected.
 * Open an issue to propose a significant change.
-* open an issue to propose a feature
+* Open an issue to propose a feature.
 * Open a merge request to fix a bug.
 * Open a merge request to fix documentation about a command.
 * Open a merge request for an issue and leave a comment claiming it.
