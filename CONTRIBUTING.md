@@ -42,7 +42,11 @@ Build with: `make` or `go build -o bin/glab ./cmd/glab/main.go`
 
 Run the new binary as: `./bin/glab`
 
-Run tests with: `make test` or `go test ./...`
+### Running tests
+
+Run tests with: `go test ./...` or `make test`.
+
+To run `make test`, the `GITLAB_TOKEN` environment variable must be set,
 
 > WARNING: Do not run `make test` outside of an isolated environment, it will overwrite your global config.
 
