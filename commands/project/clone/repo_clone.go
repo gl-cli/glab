@@ -36,8 +36,9 @@ type CloneOptions struct {
 	Host              string
 	Protocol          string
 
-	Page    int
-	PerPage int
+	Page     int
+	PerPage  int
+	Paginate bool
 
 	IO        *iostreams.IOStreams
 	APIClient *api.Client
@@ -74,7 +75,7 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 	$ glab repo clone 4356677   # finds the project by the ID provided and clones it
 
 	# Clone all repos in a group
-	$ glab repo clone -g everyonecancontribute  
+	$ glab repo clone -g everyonecancontribute --paginate
 
 	# Clone from a self-hosted instance
 	$ GITLAB_HOST=salsa.debian.org glab repo clone myrepo  
@@ -141,6 +142,7 @@ Clone a GitLab repository/project
 	repoCloneCmd.Flags().BoolVarP(&opts.WithIssuesEnabled, "with-issues-enabled", "I", false, "Limit by projects with issues feature enabled. Default is false. Used with --group flag")
 	repoCloneCmd.Flags().BoolVarP(&opts.WithMREnabled, "with-mr-enabled", "M", false, "Limit by projects with issues feature enabled. Default is false. Used with --group flag")
 	repoCloneCmd.Flags().BoolVarP(&opts.WithShared, "with-shared", "S", false, "Include projects shared to this group. Default is false. Used with --group flag")
+	repoCloneCmd.Flags().BoolVarP(&opts.Paginate, "paginate", "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects --per-page")
 	repoCloneCmd.Flags().IntVarP(&opts.Page, "page", "", 1, "Page number")
 	repoCloneCmd.Flags().IntVarP(&opts.PerPage, "per-page", "", 30, "Number of items to list per page")
 
@@ -153,6 +155,29 @@ Clone a GitLab repository/project
 	})
 
 	return repoCloneCmd
+}
+
+func listProjects(opts *CloneOptions, ListGroupProjectOpts *gitlab.ListGroupProjectsOptions) ([]*gitlab.Project, error) {
+	var projects []*gitlab.Project
+	var hasRemaining = true
+
+	for hasRemaining {
+		currentPage, resp, err := api.ListGroupProjects(opts.APIClient.Lab(), opts.GroupName, ListGroupProjectOpts)
+		if err != nil {
+			return nil, err
+		}
+		if len(currentPage) == 0 {
+			fmt.Fprintf(opts.IO.StdErr, "Group %q does not have any projects\n", opts.GroupName)
+			return nil, cmdutils.SilentError
+		}
+
+		projects = append(projects, currentPage...)
+
+		ListGroupProjectOpts.Page = resp.NextPage
+		hasRemaining = opts.Paginate && resp.CurrentPage != resp.TotalPages
+	}
+
+	return projects, nil
 }
 
 func groupClone(opts *CloneOptions, ctxOpts *ContextOpts) error {
@@ -179,21 +204,19 @@ func groupClone(opts *CloneOptions, ctxOpts *ContextOpts) error {
 	if opts.Visibility != "" {
 		ListGroupProjectOpts.Visibility = gitlab.Visibility(gitlab.VisibilityValue(opts.Visibility))
 	}
+
 	ListGroupProjectOpts.PerPage = 100
+	if opts.Paginate {
+		ListGroupProjectOpts.PerPage = 30
+	}
 	if opts.PerPage != 0 {
 		ListGroupProjectOpts.PerPage = opts.PerPage
 	}
 	if opts.Page != 0 {
 		ListGroupProjectOpts.Page = opts.Page
 	}
-	projects, err := api.ListGroupProjects(opts.APIClient.Lab(), opts.GroupName, ListGroupProjectOpts)
-	if err != nil {
-		return err
-	}
-	if len(projects) == 0 {
-		fmt.Fprintf(opts.IO.StdErr, "Group %q does not have any projects\n", opts.GroupName)
-		return cmdutils.SilentError
-	}
+
+	var projects, err = listProjects(opts, ListGroupProjectOpts)
 	var finalOutput []string
 	for _, project := range projects {
 		ctxOpt := *ctxOpts
