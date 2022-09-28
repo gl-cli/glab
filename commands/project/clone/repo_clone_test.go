@@ -2,6 +2,7 @@ package clone
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -188,6 +189,26 @@ hosts:
 }
 
 func Test_repoClone_group(t *testing.T) {
+	var names = []string{"glab-cli/test", "glab-cli/test-pv"}
+	var urls = []string{"git@gitlab.com:glab-cli/test.git", "git@gitlab.com:glab-cli/test-pv.git"}
+	repoCloneTest(t, names, urls, 0, false)
+}
+
+func Test_repoClone_group_single(t *testing.T) {
+	var names = []string{"glab-cli/test"}
+	var urls = []string{"git@gitlab.com:glab-cli/test.git"}
+	repoCloneTest(t, names, urls, 1, false)
+}
+
+func Test_repoClone_group_paginate(t *testing.T) {
+	var names = []string{"glab-cli/test", "glab-cli/test-pv"}
+	var urls = []string{"git@gitlab.com:glab-cli/test.git", "git@gitlab.com:glab-cli/test-pv.git"}
+	repoCloneTest(t, names, urls, 1, true)
+}
+
+func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []string, perPage int, paginate bool) {
+	assert.Equal(t, len(expectedRepoNames), len(expectedRepoUrls))
+
 	defer config.StubConfig(`
 hosts:
   gitlab.com:
@@ -206,25 +227,36 @@ hosts:
 	}
 
 	cs, restore := test.InitCmdStubber()
-	// git clone
-	cs.Stub("")
-	// git clone again since glab-cli has two projects
-	cs.Stub("")
+	for i := 0; i < len(expectedRepoUrls); i++ {
+		cs.Stub("")
+	}
+
 	defer restore()
 
 	cmd := NewCmdClone(fac, nil)
+	var cli = "-g glab-cli"
+	if perPage != 0 {
+		cli += fmt.Sprintf(" --per-page %d", perPage)
+	}
+	if paginate {
+		cli += " --paginate"
+	}
+
 	// TODO: stub api.ListGroupProjects endpoint
-	out, err := runCommand(cmd, "-g glab-cli", stdin, stdout, stderr)
+	out, err := runCommand(cmd, cli, stdin, stdout, stderr)
 	if err != nil {
 		t.Errorf("unexpected error: %q", err)
 		return
 	}
 
-	assert.Equal(t, "✓ glab-cli/test\n✓ glab-cli/test-pv\n", out.String())
+	assert.Equal(t, "✓ "+strings.Join(expectedRepoNames, "\n✓ ")+"\n", out.String())
 	assert.Equal(t, "", out.Stderr())
-	assert.Equal(t, 2, cs.Count)
-	assert.Equal(t, "git clone git@gitlab.com:glab-cli/test.git", strings.Join(cs.Calls[0].Args, " "))
-	assert.Equal(t, "git clone git@gitlab.com:glab-cli/test-pv.git", strings.Join(cs.Calls[1].Args, " "))
+	assert.Equal(t, len(expectedRepoUrls), cs.Count)
+
+	for i := 0; i < len(expectedRepoUrls); i++ {
+		assert.Equal(t, fmt.Sprintf("git clone %s", expectedRepoUrls[i]), strings.Join(cs.Calls[i].Args, " "))
+	}
+
 	if token != "" {
 		_ = os.Setenv("GITLAB_TOKEN", token)
 	}

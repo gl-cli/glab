@@ -62,15 +62,15 @@ var GetGroup = func(client *gitlab.Client, groupID interface{}) (*gitlab.Group, 
 	return group, nil
 }
 
-var ListGroupProjects = func(client *gitlab.Client, groupID interface{}, opts *gitlab.ListGroupProjectsOptions) ([]*gitlab.Project, error) {
+var ListGroupProjects = func(client *gitlab.Client, groupID interface{}, opts *gitlab.ListGroupProjectsOptions) ([]*gitlab.Project, *gitlab.Response, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
-	project, _, err := client.Groups.ListGroupProjects(groupID, opts)
+	project, resp, err := client.Groups.ListGroupProjects(groupID, opts)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return project, nil
+	return project, resp, nil
 }
 
 var ListProjectsGroups = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectGroupOptions) ([]*gitlab.ProjectGroup, error) {
