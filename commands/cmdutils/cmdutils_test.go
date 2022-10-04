@@ -236,7 +236,7 @@ func Test_UsersFromReplaces(t *testing.T) {
 			if err != nil {
 				t.Errorf("UsersFromReplaces() unexpected error = %s", err)
 			}
-			assert.ElementsMatch(t, gotIDs, tC.expectedIDs)
+			assert.ElementsMatch(t, *gotIDs, tC.expectedIDs)
 			assert.ElementsMatch(t, gotAction, tC.expectedAction)
 		})
 	}
@@ -469,7 +469,8 @@ func Test_UsersFromAddRemove(t *testing.T) {
 					t.Errorf("UsersFromAddRemove() unexpected error = %s", err)
 				}
 			}
-			assert.ElementsMatch(t, gotIDs, tC.expectedIDs)
+
+			assert.ElementsMatch(t, *gotIDs, tC.expectedIDs)
 			assert.ElementsMatch(t, gotAction, tC.expectedAction)
 		})
 	}
@@ -1027,7 +1028,7 @@ func Test_IDsFromUsers(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
 			got := IDsFromUsers(tC.users)
-			assert.ElementsMatch(t, got, tC.IDs)
+			assert.ElementsMatch(t, *got, tC.IDs)
 		})
 	}
 }

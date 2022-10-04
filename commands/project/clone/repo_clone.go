@@ -199,7 +199,8 @@ func groupClone(opts *CloneOptions, ctxOpts *ContextOpts) error {
 		ListGroupProjectOpts.Archived = gitlab.Bool(opts.Archived)
 	}
 	if opts.IncludeSubgroups {
-		ListGroupProjectOpts.IncludeSubgroups = gitlab.Bool(true)
+		includeSubGroups := true
+		ListGroupProjectOpts.IncludeSubGroups = &includeSubGroups
 	}
 	if opts.Visibility != "" {
 		ListGroupProjectOpts.Visibility = gitlab.Visibility(gitlab.VisibilityValue(opts.Visibility))
