@@ -55,9 +55,14 @@ func (c *Context) UploadFiles(projectID, tagName string) error {
 			color.ProgressIcon(), color.Blue("file"), file.Path,
 			color.Blue("name"), file.Name)
 
+		r, err := file.Open()
+		if err != nil {
+			return err
+		}
 		projectFile, _, err := c.Client.Projects.UploadFile(
 			projectID,
-			file.Path,
+			r,
+			file.Name,
 			nil,
 		)
 		if err != nil {

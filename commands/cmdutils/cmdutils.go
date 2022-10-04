@@ -353,12 +353,12 @@ func PickMetadata() ([]Action, error) {
 }
 
 // IDsFromUsers collects all user IDs from a slice of users
-func IDsFromUsers(users []*gitlab.User) []int {
+func IDsFromUsers(users []*gitlab.User) *[]int {
 	ids := make([]int, len(users))
 	for i, user := range users {
 		ids[i] = user.ID
 	}
-	return ids
+	return &ids
 }
 
 func ParseMilestone(apiClient *gitlab.Client, repo glrepo.Interface, milestoneTitle string) (int, error) {
@@ -434,10 +434,10 @@ func (ua *UserAssignments) VerifyAssignees() error {
 // UsersFromReplaces converts all users from the `ToReplace` member of the struct into
 // an Slice of String representing the Users' IDs, it also takes a Slice of Strings and
 // writes a proper action message to it
-func (ua *UserAssignments) UsersFromReplaces(apiClient *gitlab.Client, actions []string) ([]int, []string, error) {
+func (ua *UserAssignments) UsersFromReplaces(apiClient *gitlab.Client, actions []string) (*[]int, []string, error) {
 	users, err := api.UsersByNames(apiClient, ua.ToReplace)
 	if err != nil {
-		return nil, actions, err
+		return &[]int{}, actions, err
 	}
 	var usernames []string
 	for i := range users {
@@ -464,14 +464,14 @@ func (ua *UserAssignments) UsersFromAddRemove(
 	mergeRequestAssignees []*gitlab.BasicUser,
 	apiClient *gitlab.Client,
 	actions []string,
-) ([]int, []string, error) {
+) (*[]int, []string, error) {
 
 	var assignedIDs []int
 	var usernames []string
 
 	// Only one of those is required
 	if mergeRequestAssignees != nil && issueAssignees != nil {
-		return nil, actions, fmt.Errorf("issueAssignes and mergeRequestAssignes can't both not be nil")
+		return &[]int{}, actions, fmt.Errorf("issueAssignes and mergeRequestAssignes can't both not be nil")
 	}
 
 	// Path for Issues
@@ -534,7 +534,7 @@ func (ua *UserAssignments) UsersFromAddRemove(
 	if len(assignedIDs) == 0 {
 		assignedIDs = []int{0}
 	}
-	return assignedIDs, actions, nil
+	return &assignedIDs, actions, nil
 }
 
 func ConfirmTransfer() error {

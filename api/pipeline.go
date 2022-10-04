@@ -336,7 +336,7 @@ var PipelineCILint = func(client *gitlab.Client, content string) (*gitlab.LintRe
 	if client == nil {
 		client = apiClient.Lab()
 	}
-	c, _, err := client.Validate.Lint(content)
+	c, _, err := client.Validate.Lint(&gitlab.LintOptions{Content: content})
 	if err != nil {
 		return nil, err
 	}

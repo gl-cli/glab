@@ -65,24 +65,25 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			pipelineVars := []*gitlab.PipelineVariable{}
+			pipelineVars := []*gitlab.PipelineVariableOptions{}
 
 			if customPipelineVars, _ := cmd.Flags().GetStringSlice("variables"); len(customPipelineVars) > 0 {
+				varType := "env_var"
 				for _, v := range customPipelineVars {
 					if !re.MatchString(v) {
 						return fmt.Errorf("Bad pipeline variable : \"%s\" should be of format KEY:VALUE", v)
 					}
 					s := strings.SplitN(v, ":", 2)
-					pipelineVars = append(pipelineVars, &gitlab.PipelineVariable{
-						Key:          s[0],
-						Value:        s[1],
-						VariableType: "env_var",
+					pipelineVars = append(pipelineVars, &gitlab.PipelineVariableOptions{
+						Key:          &s[0],
+						Value:        &s[1],
+						VariableType: &varType,
 					})
 				}
 			}
 
 			c := &gitlab.CreatePipelineOptions{
-				Variables: pipelineVars,
+				Variables: &pipelineVars,
 			}
 
 			if m, _ := cmd.Flags().GetString("branch"); m != "" {

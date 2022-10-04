@@ -48,7 +48,7 @@ func TestNewCmdUpdate(t *testing.T) {
 			testIssue.Description = *opts.Description
 		}
 		if opts.AddLabels != nil {
-			testIssue.Labels = opts.AddLabels
+			testIssue.Labels = *opts.AddLabels
 		}
 		return testIssue, nil
 	}

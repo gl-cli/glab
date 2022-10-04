@@ -41,7 +41,7 @@ func Test_IssueCreate(t *testing.T) {
 			ID:          1,
 			IID:         1,
 			Title:       *opts.Title,
-			Labels:      opts.Labels,
+			Labels:      *opts.Labels,
 			State:       "opened",
 			Description: *opts.Description,
 			Weight:      *opts.Weight,
