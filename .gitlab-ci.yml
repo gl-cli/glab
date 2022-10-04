@@ -27,6 +27,17 @@ include:
   - template: Security/Dependency-Scanning.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
 
+
+# From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
+.go-cache:
+  variables:
+    GOPATH: $CI_PROJECT_DIR/.go
+  before_script:
+    - mkdir -p .go
+  cache:
+    paths:
+      - .go/pkg/mod/
+
 code_navigation:
   stage: test
   image: golang:latest
@@ -40,6 +51,7 @@ code_navigation:
 
 run_tests:
   stage: test
+  extends: .go-cache
   before_script:
     ## Adding private SSH key to the executor, more information: https://docs.gitlab.com/ee/ci/ssh_keys/#ssh-keys-when-using-the-docker-executor
     - mkdir -p ~/.ssh
@@ -54,6 +66,11 @@ run_tests:
     # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token
     - GITLAB_TOKEN=$GITLAB_TOKEN_TEST make test
 
+  coverage: '/coverage: \d+.\d+% of statements/'
+  artifacts:
+      reports:
+        junit: coverage.xml
+        
 secret_detection:
   rules:
     - if: $SECRET_DETECTION_DISABLED
