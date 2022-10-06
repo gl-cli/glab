@@ -1,19 +1,16 @@
 # GLab
 
-![GLab](https://user-images.githubusercontent.com/9063085/90530075-d7a58580-e14a-11ea-9727-4f592f7dcf2e.png)
+![GLab](docs/assets/glab-logo.png)
 
 [![Go Report Card](https://goreportcard.com/badge/gitlab.com/gitlab-org/cli)](https://goreportcard.com/report/gitlab.com/gitlab-org/cli)
-[![Gitter](https://badges.gitter.im/glabcli/community.svg)](https://gitter.im/glabcli/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Coverage](https://gitlab.com/gitlab-org/cli/badges/main/coverage.svg)](https://gitlab.com/gitlab-org/cli/badges/main)
-[![Reddit](https://img.shields.io/reddit/subreddit-subscribers/glab_cli?style=social)](https://reddit.com/r/glab_cli)
-[![Twitter Follow](https://img.shields.io/twitter/follow/glab_cli?style=social)](https://twitter.com/glab_cli)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#version-control)
 
 GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to where you are already working with `git` and your code without switching between windows and browser tabs. Work with issues, merge requests, **watch running pipelines directly from your CLI** among other features.
 
 `glab` is available for repositories hosted on GitLab.com and self-managed GitLab instances. `glab` supports multiple authenticated GitLab instances and automatically detects the authenticated hostname from the remotes available in the working Git directory.
 
-![image](https://user-images.githubusercontent.com/41906128/88968573-0b556400-d29f-11ea-8504-8ecd9c292263.png)
+![command example](docs/assets/command-example.png)
 
 ## Table of contents
 
@@ -49,10 +46,6 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 * [What about lab](#what-about-lab)
 * [Issues](#issues)
 * [Contributing](#contributing)
-  * [Support glab <g-emoji class="g-emoji" alias="sparkling_heart" fallback-src="https://github.githubassets.com/images/icons/emoji/unicode/1f496.png">💖</g-emoji>](#support-glab-)
-    * [Individuals](#individuals)
-    * [Backers](#backers)
-* [License](#license)
 
 ## Usage
 
