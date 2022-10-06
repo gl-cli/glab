@@ -135,7 +135,12 @@ func TestMergeRequestList_tty(t *testing.T) {
     "labels" : ["foo", "bar"],
 	"target_branch": "master",
     "source_branch": "test1",
-    "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/6"
+    "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/6",
+    "references": {
+      "full": "OWNER/REPO/merge_requests/6",
+      "relative": "#6",
+      "short": "#6"
+    }
   },
   {
     "state" : "opened",
@@ -149,7 +154,12 @@ func TestMergeRequestList_tty(t *testing.T) {
 	"target_branch": "master",
     "source_branch": "test2",
     "labels" : ["fooz", "baz"],
-    "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/7"
+    "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/7",
+    "references": {
+      "full": "OWNER/REPO/merge_requests/7",
+      "relative": "#7",
+      "short": "#7"
+    }
   }
 ]
 `))
@@ -166,8 +176,8 @@ func TestMergeRequestList_tty(t *testing.T) {
 	assert.Equal(t, heredoc.Doc(`
 		Showing 2 open merge requests on OWNER/REPO (Page 1)
 
-		!6	MergeRequest one	(master) ← (test1)
-		!7	MergeRequest two	(master) ← (test2)
+		!6	OWNER/REPO/merge_requests/6	MergeRequest one	(master) ← (test1)
+		!7	OWNER/REPO/merge_requests/7	MergeRequest two	(master) ← (test2)
 
 	`), out)
 	assert.Equal(t, ``, output.Stderr())
@@ -220,13 +230,13 @@ func makeHyperlink(linkText, targetURL string) string {
 
 func TestMergeRequestList_hyperlinks(t *testing.T) {
 	noHyperlinkCells := [][]string{
-		{"!6", "MergeRequest one", "(master) ← (test1)"},
-		{"!7", "MergeRequest two", "(master) ← (test2)"},
+		{"!6", "OWNER/REPO/merge_requests/6", "MergeRequest one", "(master) ← (test1)"},
+		{"!7", "OWNER/REPO/merge_requests/7", "MergeRequest two", "(master) ← (test2)"},
 	}
 
 	hyperlinkCells := [][]string{
-		{makeHyperlink("!6", "http://gitlab.com/OWNER/REPO/merge_requests/6"), "MergeRequest one", "(master) ← (test1)"},
-		{makeHyperlink("!7", "http://gitlab.com/OWNER/REPO/merge_requests/7"), "MergeRequest two", "(master) ← (test2)"},
+		{makeHyperlink("!6", "http://gitlab.com/OWNER/REPO/merge_requests/6"), "OWNER/REPO/merge_requests/6", "MergeRequest one", "(master) ← (test1)"},
+		{makeHyperlink("!7", "http://gitlab.com/OWNER/REPO/merge_requests/7"), "OWNER/REPO/merge_requests/7", "MergeRequest two", "(master) ← (test2)"},
 	}
 
 	type hyperlinkTest struct {
@@ -275,7 +285,12 @@ func TestMergeRequestList_hyperlinks(t *testing.T) {
     "labels" : ["foo", "bar"],
 	"target_branch": "master",
     "source_branch": "test1",
-    "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/6"
+    "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/6",
+    "references": {
+      "full": "OWNER/REPO/merge_requests/6",
+      "relative": "#6",
+      "short": "#6"
+    }
   },
   {
     "state" : "opened",
@@ -289,7 +304,12 @@ func TestMergeRequestList_hyperlinks(t *testing.T) {
 	"target_branch": "master",
     "source_branch": "test2",
     "labels" : ["fooz", "baz"],
-    "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/7"
+    "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/7",
+    "references": {
+      "full": "OWNER/REPO/merge_requests/7",
+      "relative": "#7",
+      "short": "#7"
+    }
   }
 ]
 `))

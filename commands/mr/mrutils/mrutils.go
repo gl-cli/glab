@@ -104,12 +104,13 @@ func MRState(c *iostreams.ColorPalette, m *gitlab.MergeRequest) string {
 	}
 }
 
-func DisplayAllMRs(streams *iostreams.IOStreams, mrs []*gitlab.MergeRequest, projectID string) string {
+func DisplayAllMRs(streams *iostreams.IOStreams, mrs []*gitlab.MergeRequest) string {
 	c := streams.Color()
 	table := tableprinter.NewTablePrinter()
 	table.SetIsTTY(streams.IsOutputTTY())
 	for _, m := range mrs {
 		table.AddCell(streams.Hyperlink(MRState(c, m), m.WebURL))
+		table.AddCell(m.References.Full)
 		table.AddCell(m.Title)
 		table.AddCell(c.Cyan(fmt.Sprintf("(%s) ← (%s)", m.TargetBranch, m.SourceBranch)))
 		table.EndRow()
