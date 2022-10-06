@@ -2,7 +2,6 @@ package search
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
@@ -63,7 +62,7 @@ func NewCmdSearch(f *cmdutils.Factory) *cobra.Command {
 					description = fmt.Sprintf("\n%s", c.Cyan(p.Description))
 				}
 
-				table.AddCellf("%s%s\n%s", strings.ReplaceAll(p.PathWithNamespace, "/", " / "), description, c.Gray(p.WebURL))
+				table.AddCellf("%s%s\n%s", p.PathWithNamespace, description, c.Gray(p.WebURL))
 				table.AddCellf("%d stars %d forks %d issues", p.StarCount, p.ForksCount, p.OpenIssuesCount)
 				table.AddCellf("updated %s", utils.TimeToPrettyTimeAgo(*p.LastActivityAt))
 				table.EndRow()
