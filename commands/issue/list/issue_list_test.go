@@ -135,8 +135,8 @@ func TestIssueList_tty(t *testing.T) {
 	assert.Equal(t, heredoc.Doc(`
 		Showing 2 open issues in OWNER/REPO that match your search (Page 1)
 
-		#6	Issue one	(foo, bar) 	about X years ago
-		#7	Issue two	(fooz, baz)	about X years ago
+		#6	OWNER/REPO/issues/6	Issue one	(foo, bar) 	about X years ago
+		#7	OWNER/REPO/issues/7	Issue two	(fooz, baz)	about X years ago
 
 	`), out)
 	assert.Equal(t, ``, output.Stderr())
@@ -226,13 +226,13 @@ func makeHyperlink(linkText, targetURL string) string {
 
 func TestIssueList_hyperlinks(t *testing.T) {
 	noHyperlinkCells := [][]string{
-		{"#6", "Issue one", "(foo, bar)", "about X years ago"},
-		{"#7", "Issue two", "(fooz, baz)", "about X years ago"},
+		{"#6", "OWNER/REPO/issues/6", "Issue one", "(foo, bar)", "about X years ago"},
+		{"#7", "OWNER/REPO/issues/7", "Issue two", "(fooz, baz)", "about X years ago"},
 	}
 
 	hyperlinkCells := [][]string{
-		{makeHyperlink("#6", "http://gitlab.com/OWNER/REPO/issues/6"), "Issue one", "(foo, bar)", "about X years ago"},
-		{makeHyperlink("#7", "http://gitlab.com/OWNER/REPO/issues/7"), "Issue two", "(fooz, baz)", "about X years ago"},
+		{makeHyperlink("#6", "http://gitlab.com/OWNER/REPO/issues/6"), "OWNER/REPO/issues/6", "Issue one", "(foo, bar)", "about X years ago"},
+		{makeHyperlink("#7", "http://gitlab.com/OWNER/REPO/issues/7"), "OWNER/REPO/issues/7", "Issue two", "(fooz, baz)", "about X years ago"},
 	}
 
 	type hyperlinkTest struct {
