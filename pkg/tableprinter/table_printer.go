@@ -54,7 +54,7 @@ type TableCell struct {
 
 type TableRow struct {
 	Cells []*TableCell
-	// Separator is the seperator for columns in the table. Default is " "
+	// Separator is the separator for columns in the table. Default is " "
 	Separator string
 }
 
@@ -177,7 +177,7 @@ func (r *TableRow) String() string {
 		}
 	}
 
-	// allocate a two-dimentional array of cells for each line and add size them
+	// allocate a two-dimensional array of cells for each line and add size them
 	cells := make([][]*TableCell, lc)
 	for x := 0; x < lc; x++ {
 		cells[x] = make([]*TableCell, len(r.Cells))

@@ -221,7 +221,7 @@ func Test(t *testing.T) {
 			expected: "a value is required",
 		},
 		{
-			name:     "invalid/has-foward-slash",
+			name:     "invalid/has-forward-slash",
 			hostname: "local/host",
 			expected: "invalid hostname",
 		},
