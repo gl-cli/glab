@@ -46,7 +46,10 @@ Run the new binary as: `./bin/glab`
 
 Run tests with: `go test ./...` or `make test`.
 
-To run `make test`, the `GITLAB_TOKEN` environment variable must be set,
+To run `make test`, the `GITLAB_TOKEN` environment variable must be set.
+`GITLAB_TOKEN` must be a
+[personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
+on [GitLab.com](https://gitlab.com).
 
 > WARNING: Do not run `make test` outside of an isolated environment, it will overwrite your global config.
 
