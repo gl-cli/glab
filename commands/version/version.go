@@ -12,7 +12,7 @@ import (
 func NewCmdVersion(s *iostreams.IOStreams, version, buildDate string) *cobra.Command {
 	var versionCmd = &cobra.Command{
 		Use:     "version",
-		Short:   "show glab version information",
+		Short:   "Show glab version information",
 		Long:    ``,
 		Aliases: []string{"v"},
 		RunE: func(cmd *cobra.Command, args []string) error {

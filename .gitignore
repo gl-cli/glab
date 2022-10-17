@@ -1,6 +1,9 @@
 /bin
 .envrc
 
+# asdf
+.tool-versions
+
 # man pages
 /share/man/man1
 
