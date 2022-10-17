@@ -69,7 +69,7 @@ func NewCmdRoot(f *cmdutils.Factory, version, buildDate string) *cobra.Command {
 			"help:feedback": heredoc.Docf(`
 			Encountered a bug or want to suggest a feature?
 			Open an issue using '%s'
-		`, c.Bold(c.Yellow("glab issue create -R profclems/glab"))),
+		`, c.Bold(c.Yellow("glab issue create -R gitlab-org/cli"))),
 		},
 	}
 
