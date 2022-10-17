@@ -89,7 +89,8 @@ func lintRun(f *cmdutils.Factory, path string) error {
 			i++
 			fmt.Fprintln(out, i, err)
 		}
-		return cmdutils.SilentError
+		// Returning the error to cobra here causes the process to exit with code 0, so we exit manually.
+		os.Exit(1)
 	}
 	fmt.Fprintln(out, c.GreenCheck(), "CI yml is Valid!")
 	return nil
