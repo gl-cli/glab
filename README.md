@@ -85,12 +85,6 @@ brew upgrade glab
 Alternatively, you can install `glab` by shell script:
 
 ```shell
-curl -sL https://j.mp/glab-cli | sudo sh
-```
-
-or
-
-```shell
 curl -s https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh | sudo sh
 ```
 
