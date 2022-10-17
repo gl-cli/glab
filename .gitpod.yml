@@ -1,0 +1,7 @@
+tasks:
+  - name: Init environment
+    init: |
+      go build -o bin/glab ./cmd/glab/main.go
+      echo '🚀 You can now run glab with this command : ./bin/glab'
+      echo 'and run test with : go test ./...'
+      
