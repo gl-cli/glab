@@ -518,11 +518,11 @@ func Test_DisplayAllMRs(t *testing.T) {
 			Title:        "add tests",
 			TargetBranch: "main",
 			SourceBranch: "new-tests",
-			References:   &gitlab.IssueReferences{
-				Full: "OWNER/REPO/merge_requests/1",
+			References: &gitlab.IssueReferences{
+				Full:     "OWNER/REPO/merge_requests/1",
 				Relative: "#1",
-				Short: "#1",
-                        },
+				Short:    "#1",
+			},
 		},
 		{
 			IID:          2,
@@ -530,11 +530,11 @@ func Test_DisplayAllMRs(t *testing.T) {
 			Title:        "fix bug",
 			TargetBranch: "main",
 			SourceBranch: "new-feature",
-			References:   &gitlab.IssueReferences{
-				Full: "OWNER/REPO/merge_requests/2",
+			References: &gitlab.IssueReferences{
+				Full:     "OWNER/REPO/merge_requests/2",
 				Relative: "#2",
-				Short: "#2",
-                        },
+				Short:    "#2",
+			},
 		},
 		{
 			IID:          1,
@@ -542,11 +542,11 @@ func Test_DisplayAllMRs(t *testing.T) {
 			Title:        "add new feature",
 			TargetBranch: "main",
 			SourceBranch: "new-tests",
-			References:   &gitlab.IssueReferences{
-				Full: "OWNER/REPO/merge_requests/3",
+			References: &gitlab.IssueReferences{
+				Full:     "OWNER/REPO/merge_requests/3",
 				Relative: "#3",
-				Short: "#3",
-                        },
+				Short:    "#3",
+			},
 		},
 	}
 

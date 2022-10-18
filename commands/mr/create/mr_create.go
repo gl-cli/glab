@@ -716,7 +716,7 @@ func resolvedHeadRepo(f *cmdutils.Factory) func() (glrepo.Interface, error) {
 		if err != nil {
 			return nil, err
 		}
-		headRepo, err := repoContext.HeadRepo(true)
+		headRepo, err := repoContext.HeadRepo(f.IO.PromptEnabled())
 		if err != nil {
 			return nil, err
 		}
