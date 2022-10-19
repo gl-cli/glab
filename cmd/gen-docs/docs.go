@@ -202,7 +202,7 @@ func GenMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 	}
 
 	printSubcommands(cmd, buf)
-	
+
 	_, err := buf.WriteTo(w)
 	return err
 }

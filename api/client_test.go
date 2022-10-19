@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"testing"
 
-  "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_tlsConfig(t *testing.T) {
@@ -41,7 +41,7 @@ func Test_tlsConfig(t *testing.T) {
 
 			client := tlsConfig(tt.args.host)
 
-      assert.Equal(t, tt.want, client.CipherSuites)
+			assert.Equal(t, tt.want, client.CipherSuites)
 		})
 	}
 }

@@ -134,7 +134,7 @@ func resolvedBaseRepo(f *cmdutils.Factory) func() (glrepo.Interface, error) {
 		if err != nil {
 			return nil, err
 		}
-		baseRepo, err := repoContext.BaseRepo(true)
+		baseRepo, err := repoContext.BaseRepo(f.IO.PromptEnabled())
 		if err != nil {
 			return nil, err
 		}
