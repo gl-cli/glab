@@ -39,13 +39,13 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *UpdateOpts) error) *cobra.Co
 		Short: "Update an existing project or group variable",
 		Args:  cobra.RangeArgs(1, 2),
 		Example: heredoc.Doc(`
-			$ glab variable update WITH_ARG "some value"
-			$ glab variable update FROM_FLAG -v "some value"
-			$ glab variable update FROM_ENV_WITH_ARG "${ENV_VAR}"
-			$ glab variable update FROM_ENV_WITH_FLAG -v"${ENV_VAR}"
-			$ glab variable update FROM_FILE < secret.txt
-			$ cat file.txt | glab variable update SERVER_TOKEN
-			$ cat token.txt | glab variable update GROUP_TOKEN -g mygroup --scope=prod
+			glab variable update WITH_ARG "some value"
+			glab variable update FROM_FLAG -v "some value"
+			glab variable update FROM_ENV_WITH_ARG "${ENV_VAR}"
+			glab variable update FROM_ENV_WITH_FLAG -v"${ENV_VAR}"
+			glab variable update FROM_FILE < secret.txt
+			cat file.txt | glab variable update SERVER_TOKEN
+			cat token.txt | glab variable update GROUP_TOKEN -g mygroup --scope=prod
 		`),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// Supports repo override

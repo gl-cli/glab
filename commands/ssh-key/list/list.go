@@ -25,10 +25,10 @@ func NewCmdList(f *cmdutils.Factory, runE func(*ListOpts) error) *cobra.Command 
 	}
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Lists currently authenticated user’s SSH keys",
-		Long:  "Get a list of currently authenticated user’s SSH keys",
+		Short: "Get a list of currently authenticated user's SSH keys.",
+		Long:  "",
 		Example: heredoc.Doc(`
-		$ glab ssh-key list
+		glab ssh-key list
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

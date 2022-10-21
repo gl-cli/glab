@@ -18,9 +18,9 @@ func NewCmdUnsubscribe(f *cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"unsub"},
 		Example: heredoc.Doc(`
-			$ glab issue unsubscribe 123
-			$ glab issue unsub 123
-			$ glab issue unsubscribe https://gitlab.com/profclems/glab/-/issues/123
+			glab issue unsubscribe 123
+			glab issue unsub 123
+			glab issue unsubscribe https://gitlab.com/profclems/glab/-/issues/123
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

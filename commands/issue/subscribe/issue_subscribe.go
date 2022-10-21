@@ -17,9 +17,9 @@ func NewCmdSubscribe(f *cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"sub"},
 		Example: heredoc.Doc(`
-			$ glab issue subscribe 123
-			$ glab issue sub 123
-			$ glab issue subscribe https://gitlab.com/profclems/glab/-/issues/123
+			glab issue subscribe 123
+			glab issue sub 123
+			glab issue subscribe https://gitlab.com/profclems/glab/-/issues/123
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

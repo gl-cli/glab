@@ -19,7 +19,7 @@ import (
 func NewCmdLint(f *cmdutils.Factory) *cobra.Command {
 	var pipelineCILintCmd = &cobra.Command{
 		Use:   "lint",
-		Short: "Checks if your .gitlab-ci.yml file is valid.",
+		Short: "Checks if your `.gitlab-ci.yml` file is valid.",
 		Args:  cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
 		$ glab ci lint  

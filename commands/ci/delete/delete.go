@@ -19,8 +19,8 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		Use:   "delete <id> [flags]",
 		Short: `Delete a CI pipeline`,
 		Example: heredoc.Doc(`
-	$ glab ci delete 34
-	$ glab ci delete 12,34,2
+	glab ci delete 34
+	glab ci delete 12,34,2
 	`),
 		Long: ``,
 		Args: cobra.ExactArgs(1),

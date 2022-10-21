@@ -17,10 +17,10 @@ func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
 		Use:   "reopen [<id>... | <branch>...]",
 		Short: `Reopen merge requests`,
 		Example: heredoc.Doc(`
-			$ glab mr reopen 123
-			$ glab mr reopen 123 456 789
-			$ glab mr reopen branch-1 branch-2
-			$ glab mr reopen  # use checked out branch
+			glab mr reopen 123
+			glab mr reopen 123 456 789
+			glab mr reopen branch-1 branch-2
+			glab mr reopen  # use checked out branch
 		`),
 		Aliases: []string{"open"},
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -63,16 +63,16 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Example: heredoc.Doc(`
-			$ glab mr list --all
-			$ glab mr ls -a
-			$ glab mr list --assignee=@me
-			$ glab mr list --reviewer=@me
-			$ glab mr list --source-branch=new-feature
-			$ glab mr list --target-branch=main
-			$ glab mr list --search "this adds feature X"
-			$ glab mr list --label needs-review
-			$ glab mr list --not-label waiting-maintainer-feedback,subsystem-x
-			$ glab mr list -M --per-page 10
+			glab mr list --all
+			glab mr ls -a
+			glab mr list --assignee=@me
+			glab mr list --reviewer=@me
+			glab mr list --source-branch=new-feature
+			glab mr list --target-branch=main
+			glab mr list --search "this adds feature X"
+			glab mr list --label needs-review
+			glab mr list --not-label waiting-maintainer-feedback,subsystem-x
+			glab mr list -M --per-page 10
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {

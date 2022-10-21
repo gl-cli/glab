@@ -20,9 +20,9 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Example: heredoc.Doc(`
-			$ glab label list
-			$ glab label ls
-			$ glab label list -R owner/repository
+			glab label list
+			glab label ls
+			glab label list -R owner/repository
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {

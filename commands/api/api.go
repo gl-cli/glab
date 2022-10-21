@@ -61,47 +61,50 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 	cmd := &cobra.Command{
 		Use:   "api <endpoint>",
 		Short: "Make an authenticated request to GitLab API",
-		Long: `Makes an authenticated HTTP request to the GitLab API and prints the response.
-The endpoint argument should either be a path of a GitLab API v4 endpoint, or 
-"graphql" to access the GitLab's GraphQL API.
+		Long: heredoc.Docf(`
+		Makes an authenticated HTTP request to the GitLab API and prints the response.
+		The endpoint argument should either be a path of a GitLab API v4 endpoint, or 
+		"graphql" to access the GitLab GraphQL API.
 
-GitLab REST API Docs: https://docs.gitlab.com/ce/api/README.html
-GitLab GraphQL Docs: https://docs.gitlab.com/ee/api/graphql/
+		- [GitLab REST API Docs](https://docs.gitlab.com/ee/api/index.html)
+		- [GitLab GraphQL Docs](https://docs.gitlab.com/ee/api/graphql/)
 
-If the current directory is a git directory, the GitLab authenticated host in the current git 
-directory will be used else gitlab.com will be used.
-Override the GitLab hostname with '--hostname'.
+		If the current directory is a Git directory, the GitLab authenticated host in the current 
+		directory will be used otherwise %[1]sgitlab.com%[1]s will be used.
+		Override the GitLab hostname with '--hostname'.
 
-Placeholder values ":fullpath" or ":id"", ":user" or ":username", ":group", ":namespace", 
-":repo", and ":branch" in the endpoint argument will get replaced with values from the 
-repository of the current directory.
+		Placeholder values %[1]s:fullpath%[1]s or %[1]s:id%[1]s, %[1]s:user%[1]s or %[1]s:username%[1]s, %[1]s:group%[1]s, %[1]s:namespace%[1]s, 
+		%[1]s:repo%[1]s, and %[1]s:branch%[1]s in the endpoint argument will get replaced with values from the 
+		repository of the current directory.
 
-The default HTTP request method is "GET" normally and "POST" if any parameters
-were added. Override the method with '--method'.
+		The default HTTP request method is "GET" normally and "POST" if any parameters
+		were added. Override the method with '--method'.
 
-Pass one or more '--raw-field' values in "key=value" format to add
-JSON-encoded string parameters to the POST body.
+		Pass one or more '--raw-field' values in "key=value" format to add
+		JSON-encoded string parameters to the POST body.
 
-The '--field' flag behaves like '--raw-field' with magic type conversion based
-on the format of the value:
-- literal values "true", "false", "null", and integer numbers get converted to
-  appropriate JSON types;
-- placeholder values ":namespace", ":repo", and ":branch" get populated with values
-  from the repository of the current directory;
-- if the value starts with "@", the rest of the value is interpreted as a
-  filename to read the value from. Pass "-" to read from standard input.
+		The '--field' flag behaves like '--raw-field' with magic type conversion based
+		on the format of the value:
 
-For GraphQL requests, all fields other than "query" and "operationName" are
-interpreted as GraphQL variables.
+		- literal values "true", "false", "null", and integer numbers get converted to
+		  appropriate JSON types;
+		- placeholder values ":namespace", ":repo", and ":branch" get populated with values
+		  from the repository of the current directory;
+		- if the value starts with "@", the rest of the value is interpreted as a
+		  filename to read the value from. Pass "-" to read from standard input.
 
-Raw request body may be passed from the outside via a file specified by '--input'.
-Pass "-" to read from standard input. In this mode, parameters specified via
-'--field' flags are serialized into URL query parameters.
+		For GraphQL requests, all fields other than "query" and "operationName" are
+		interpreted as GraphQL variables.
 
-In '--paginate' mode, all pages of results will sequentially be requested until
-there are no more pages of results. For GraphQL requests, this requires that the
-original query accepts an '$endCursor: String' variable and that it fetches the
-'pageInfo{ hasNextPage, endCursor }' set of fields from a collection.`,
+		Raw request body may be passed from the outside via a file specified by '--input'.
+		Pass "-" to read from standard input. In this mode, parameters specified via
+		'--field' flags are serialized into URL query parameters.
+
+		In '--paginate' mode, all pages of results will sequentially be requested until
+		there are no more pages of results. For GraphQL requests, this requires that the
+		original query accepts an '$endCursor: String' variable and that it fetches the
+		'pageInfo{ hasNextPage, endCursor }' set of fields from a collection.
+		`,"`"),
 		Example: heredoc.Doc(`
 			$ glab api projects/:fullpath/releases
 

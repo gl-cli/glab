@@ -36,7 +36,7 @@ func NewCmdDelete(f *cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra
 
 	cmd := &cobra.Command{
 		Use:   "delete <tag>",
-		Short: "Delete a  GitLab Release",
+		Short: "Delete a GitLab Release",
 		Long: heredoc.Docf(`Delete release assets to GitLab Release
 
 			Deleting a release does not delete the associated tag unless %[1]s--with-tag%[1]s is specified.

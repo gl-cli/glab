@@ -65,16 +65,16 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 
 				If the release already exists, glab updates the release with the new info provided.
 
-				If a git tag specified does not yet exist, the release will automatically get created
+				If a Git tag specified does not yet exist, the release will automatically get created
 				from the latest state of the default branch and tagged with the specified tag name.
 				Use %[1]s--ref%[1]s to override this.
 				The %[1]sref%[1]s can be a commit SHA, another tag name, or a branch name.
 				To fetch the new tag locally after the release, do %[1]sgit fetch --tags origin%[1]s.
 
-				To create a release from an annotated git tag, first create one locally with
-				git, push the tag to GitLab, then run this command.
+				To create a release from an annotated Git tag, first create one locally with
+				Git, push the tag to GitLab, then run this command.
 
-				NB: Developer level access to the project is required to create a release.
+				Developer level access to the project is required to create a release.
 		`, "`"),
 		Args: cmdutils.MinimumArgs(1, "no tag name provided"),
 		Example: heredoc.Doc(`
@@ -101,14 +101,14 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 
 			Create a release with assets specified as JSON object
 			$ glab release create v1.0.1 --assets-links='
-				[
-					{
-						"name": "Asset1", 
-						"url":"https://<domain>/some/location/1", 
-						"link_type": "other", 
-						"filepath": "path/to/file"
-					}
-				]'
+			  [
+			    {
+			      "name": "Asset1", 
+			      "url":"https://<domain>/some/location/1", 
+			      "link_type": "other", 
+			      "filepath": "path/to/file"
+			    }
+			  ]'
 `),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error

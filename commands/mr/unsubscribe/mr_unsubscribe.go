@@ -18,10 +18,10 @@ func NewCmdUnsubscribe(f *cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"unsub"},
 		Example: heredoc.Doc(`
-			$ glab mr unsubscribe 123
-			$ glab mr unsub 123
-			$ glab mr unsubscribe branch
-			$ glab mr unsubscribe 123 branch  # unsubscribe from multiple MRs
+			glab mr unsubscribe 123
+			glab mr unsub 123
+			glab mr unsubscribe branch
+			glab mr unsubscribe 123 branch  # unsubscribe from multiple MRs
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error

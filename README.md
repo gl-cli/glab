@@ -15,38 +15,38 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 
 ## Table of contents
 
-* [Usage](#usage)
-* [Demo](#demo)
-* [Documentation](#documentation)
-* [Installation](#installation)
-  * [Quick Install](#quick-install)
-  * [Windows](#windows)
-    * [WinGet](#winget)
-    * [Scoop](#scoop)
-    * [EXE Installer](#exe-installer)
-  * [Linux](#linux)
-    * [Linuxbrew (Homebrew)](#linuxbrew-homebrew)
-    * [Snapcraft](#snapcraft)
-    * [Arch Linux](#arch-linux)
-    * [KISS Linux](#kiss-linux)
-    * [Alpine Linux](#alpine-linux)
-      * [Install a pinned version from edge](#install-a-pinned-version-from-edge)
-      * [Alpine Linux Docker-way](#alpine-linux-docker-way)
-    * [Nix/NixOS](#nixnixos)
-    * [MPR (Debian/Ubuntu)](#mpr-debianubuntu)
-      * [Prebuilt-MPR](#prebuilt-mpr)
-    * [Spack](#spack)
-  * [macOS](#macos)
-    * [Homebrew](#homebrew)
-    * [MacPorts](#macports)
-  * [Building From Source](#building-from-source)
-    * [Prerequisites](#prerequisites-for-building-from-source-are)
-* [Authentication](#authentication)
-* [Configuration](#configuration)
-* [Environment Variables](#environment-variables)
-* [What about lab](#what-about-lab)
-* [Issues](#issues)
-* [Contributing](#contributing)
+- [Usage](#usage)
+- [Demo](#demo)
+- [Documentation](#documentation)
+- [Installation](#installation)
+  - [Quick Install](#quick-install)
+  - [Windows](#windows)
+    - [WinGet](#winget)
+    - [Scoop](#scoop)
+    - [EXE Installer](#exe-installer)
+  - [Linux](#linux)
+    - [Linuxbrew (Homebrew)](#linuxbrew-homebrew)
+    - [Snapcraft](#snapcraft)
+    - [Arch Linux](#arch-linux)
+    - [KISS Linux](#kiss-linux)
+    - [Alpine Linux](#alpine-linux)
+      - [Install a pinned version from edge](#install-a-pinned-version-from-edge)
+      - [Alpine Linux Docker-way](#alpine-linux-docker-way)
+    - [Nix/NixOS](#nixnixos)
+    - [MPR (Debian/Ubuntu)](#mpr-debianubuntu)
+      - [Prebuilt-MPR](#prebuilt-mpr)
+    - [Spack](#spack)
+  - [macOS](#macos)
+    - [Homebrew](#homebrew)
+    - [MacPorts](#macports)
+  - [Building From Source](#building-from-source)
+    - [Prerequisites](#prerequisites-for-building-from-source-are)
+- [Authentication](#authentication)
+- [Configuration](#configuration)
+- [Environment Variables](#environment-variables)
+- [What about lab](#what-about-lab)
+- [Issues](#issues)
+- [Contributing](#contributing)
 
 ## Usage
 
@@ -85,7 +85,7 @@ brew upgrade glab
 Alternatively, you can install `glab` by shell script:
 
 ```shell
-curl -s https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh | sudo sh
+curl -s "https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh" | sudo sh
 ```
 
 *Installs into `usr/bin`*
@@ -146,7 +146,7 @@ brew upgrade glab
 
 1. Make sure you have [snap installed on your Linux distribution](https://snapcraft.io/docs/installing-snapd).
 1. `sudo snap install --edge glab`
-1. `sudo snap connect glab:ssh-keys` to grant ssh access
+1. `sudo snap connect glab:ssh-keys` to grant SSH access
 
 #### Arch Linux
 
@@ -158,7 +158,8 @@ pacman -S glab
 
 #### KISS Linux
 
-> WARNING: It seems that KISS Linux may no longer be actively maintained, so links to its web domain have been removed from this README.
+WARNING:
+It seems that KISS Linux may no longer be actively maintained, so links to its web domain have been removed from this README.
 
 `glab` is available on the [KISS Linux Community Repository](https://github.com/kisslinux/community) as `gitlab-glab`.
 If you already have the community repository configured in your `KISS_PATH` you can install `glab` through your terminal.
@@ -285,8 +286,8 @@ If a supported binary for your OS is not found at the [releases page](https://gi
 
 #### Prerequisites for building from source
 
-* `make`
-* Go 1.13+
+- `make`
+- Go 1.13+
 
 1. Verify that you have Go 1.13+ installed
 
@@ -322,25 +323,25 @@ If a supported binary for your OS is not found at the [releases page](https://gi
 
 Get a GitLab access token at <https://gitlab.com/-/profile/personal_access_tokens> or <https://gitlab.example.com/-/profile/personal_access_tokens> if self-managed:
 
-* Start interactive setup:
+- Start interactive setup:
 
   ```shell
   glab auth login
   ```
 
-* Authenticate against `gitlab.com` by reading the token from a file:
+- Authenticate against `gitlab.com` by reading the token from a file:
 
   ```shell
   glab auth login --stdin < myaccesstoken.txt
   ```
 
-* Authenticate against a self-managed GitLab instance by reading from a file:
+- Authenticate against a self-managed GitLab instance by reading from a file:
 
   ```shell
   glab auth login --hostname salsa.debian.org --stdin < myaccesstoken.txt
   ```
 
-* Authenticate with token and hostname. Not recommended for shared environments:
+- Authenticate with token and hostname. Not recommended for shared environments:
 
   ```shell
   glab auth login --hostname gitlab.example.org --token xxxxx
@@ -350,23 +351,23 @@ Get a GitLab access token at <https://gitlab.com/-/profile/personal_access_token
 
 By default, `glab` follows the XDG Base Directory [Spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html):
 
-* The global configuration file is saved at `~/.config/glab-cli`.
-* The local configuration file is saved at `.git/glab-cli` in the current working Git directory.
-* Advanced workflows may override the location of the global configuration by setting the `GLAB_CONFIG_DIR` environment variable.
+- The global configuration file is saved at `~/.config/glab-cli`.
+- The local configuration file is saved at `.git/glab-cli` in the current working Git directory.
+- Advanced workflows may override the location of the global configuration by setting the `GLAB_CONFIG_DIR` environment variable.
 
-* **To set configuration globally**
+- **To set configuration globally**
 
   ```shell
   glab config set --global editor vim
   ```
 
-* **To set configuration for current directory (must be a git repository)**
+- **To set configuration for current directory (must be a Git repository)**
 
   ```shell
   glab config set editor vim
   ```
 
-* **To set configuration for a specific host**
+- **To set configuration for a specific host**
 
   Use the `--host` flag to set configuration for a specific host. This configuration is always stored in the global configuration file, with or without the `global` flag.
 
