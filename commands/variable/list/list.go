@@ -31,7 +31,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 		Aliases: []string{"new", "create"},
 		Args:    cobra.ExactArgs(0),
 		Example: heredoc.Doc(`
-			$ glab variable list
+			glab variable list
 		`),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// Supports repo override

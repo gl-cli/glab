@@ -23,10 +23,10 @@ func NewCmdFor(f *cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"new-for", "create-for", "for-issue"},
 		Example: heredoc.Doc(`
-	$ glab mr for 34   # Create mr for issue 34
-	$ glab mr for 34 --wip   # Create mr and mark as work in progress
-	$ glab mr new-for 34
-	$ glab mr create-for 34
+	glab mr for 34   # Create mr for issue 34
+	glab mr for 34 --wip   # Create mr and mark as work in progress
+	glab mr new-for 34
+	glab mr create-for 34
 	`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

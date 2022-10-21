@@ -1,38 +1,37 @@
 # GLab - A GitLab CLI Tool
 
-GLab is an open source Gitlab Cli tool written in Go (golang) to help
-work seamlessly with Gitlab from the command line. Work with issues,
+GLab is an open source GitLab Cli tool written in Go (golang) to help
+work seamlessly with GitLab from the command line. Work with issues,
 merge requests, **watch running pipelines directly from your CLI** among
 other features.
 
 ## Usage
 
-```
+```plaintext
 glab <command> <subcommand> [flags]
 ```
 
 ## Core Commands
 
-
--  ``glab mr [list, create, close, reopen, delete, ...]``
--  ``glab issue [list, create, close, reopen, delete, ...]``
--  ``glab pipeline [list, delete, ci status, ci view, ...]``
--  ``glab release``
--  ``glab repo``
--  ``glab label``
--  ``glab alias``
+- `glab mr [list, create, close, reopen, delete, ...]`
+- `glab issue [list, create, close, reopen, delete, ...]`
+- `glab pipeline [list, delete, ci status, ci view, ...]`
+- `glab release`
+- `glab repo`
+- `glab label`
+- `glab alias`
 
 ### Examples
 
-```
-$ glab auth login --stdin < token.txt
-$ glab issue list
-$ glab mr for 123   # Create merge request for issue 123
-$ glab mr checkout 243
-$ glab pipeline ci view
-$ glab mr view
-$ glab mr approve
-$ glab mr merge
+```plaintext
+glab auth login --stdin < token.txt
+glab issue list
+glab mr for 123   # Create merge request for issue 123
+glab mr checkout 243
+glab pipeline ci view
+glab mr view
+glab mr approve
+glab mr merge
 ```
 
 ## Installation

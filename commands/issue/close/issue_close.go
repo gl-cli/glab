@@ -18,8 +18,8 @@ func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
 		Short: `Close an issue`,
 		Long:  ``,
 		Example: heredoc.Doc(`
-			$ glab issue close 123
-			$ glab issue close https://gitlab.com/profclems/glab/-/issues/123
+			glab issue close 123
+			glab issue close https://gitlab.com/profclems/glab/-/issues/123
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

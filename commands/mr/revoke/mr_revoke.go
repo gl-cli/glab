@@ -14,15 +14,15 @@ import (
 func NewCmdRevoke(f *cmdutils.Factory) *cobra.Command {
 	var mrRevokeCmd = &cobra.Command{
 		Use:     "revoke [<id> | <branch>]",
-		Short:   `Revoke approval on a merge request <id>`,
+		Short:   `Revoke approval on a merge request`,
 		Long:    ``,
 		Aliases: []string{"unapprove"},
 		Example: heredoc.Doc(`
-			$ glab mr revoke 123
-			$ glab mr unapprove 123
-			$ glab mr revoke branch
-			$ glab mr revoke  # use checked out branch
-			$ glab mr revoke 123 branch 456
+			glab mr revoke 123
+			glab mr unapprove 123
+			glab mr revoke branch
+			glab mr revoke  # use checked out branch
+			glab mr revoke 123 branch 456
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error

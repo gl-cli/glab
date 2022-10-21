@@ -34,8 +34,8 @@ func NewCmdMirror(f *cmdutils.Factory) *cobra.Command {
 
 	var projectMirrorCmd = &cobra.Command{
 		Use:   "mirror [ID | URL | PATH] [flags]",
-		Short: "Mirror a project/repository",
-		Long:  `Mirrors a project/repository to the specified location using pull or push method.`,
+		Short: "Mirror a project/repository to the specified location using pull or push method.",
+		Long:  ``,
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error

@@ -33,9 +33,9 @@ func NewCmdMR(f *cmdutils.Factory) *cobra.Command {
 		Short: `Create, view and manage merge requests`,
 		Long:  ``,
 		Example: heredoc.Doc(`
-			$ glab mr create --fill --label bugfix
-			$ glab mr merge 123
-			$ glab mr note -m "needs to do X before it can be merged" branch-foo
+			glab mr create --fill --label bugfix
+			glab mr merge 123
+			glab mr note -m "needs to do X before it can be merged" branch-foo
 		`),
 		Annotations: map[string]string{
 			"help:arguments": heredoc.Doc(`

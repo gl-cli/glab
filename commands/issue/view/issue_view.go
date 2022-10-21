@@ -42,11 +42,11 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"show"},
 		Example: heredoc.Doc(`
-			$ glab issue view 123
-			$ glab issue show 123
-			$ glab issue view --web 123
-			$ glab issue view --comments 123
-			$ glab issue view https://gitlab.com/profclems/glab/-/issues/123
+			glab issue view 123
+			glab issue show 123
+			glab issue view --web 123
+			glab issue view --comments 123
+			glab issue view https://gitlab.com/profclems/glab/-/issues/123
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

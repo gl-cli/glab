@@ -22,10 +22,10 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 		Short:   `View a running CI pipeline on current or other branch specified`,
 		Aliases: []string{"stats"},
 		Example: heredoc.Doc(`
-	$ glab ci status --live
-	$ glab ci status --compact // more compact view
-	$ glab ci status --branch=master   // Get pipeline for master branch
-	$ glab ci status   // Get pipeline for current branch
+	glab ci status --live
+	glab ci status --compact // more compact view
+	glab ci status --branch=master   // Get pipeline for master branch
+	glab ci status   // Get pipeline for current branch
 	`),
 		Long: ``,
 		Args: cobra.ExactArgs(0),

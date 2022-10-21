@@ -17,7 +17,7 @@ func NewCmdRetry(f *cmdutils.Factory) *cobra.Command {
 		Short:   `Retry a CI job`,
 		Aliases: []string{},
 		Example: heredoc.Doc(`
-	$ glab ci retry 871528
+	glab ci retry 871528
 `),
 		Long: ``,
 		Args: cobra.ExactArgs(1),

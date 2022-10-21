@@ -48,16 +48,16 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 		Long: heredoc.Docf(`
 			Authenticate with a GitLab instance.
 			You can pass in a token on standard input by using %[1]s--stdin%[1]s.
-			The minimum required scopes for the token are: "api", "write_repository".
+			The minimum required scopes for the token are: %[1]sapi%[1]s, %[1]swrite_repository%[1]s.
 		`, "`"),
-		Example: heredoc.Doc(`
+		Example: heredoc.Docf(`
 			# start interactive setup
 			$ glab auth login
-			# authenticate against gitlab.com by reading the token from a file
+			# authenticate against %[1]sgitlab.com%[1]s by reading the token from a file
 			$ glab auth login --stdin < myaccesstoken.txt
 			# authenticate with a self-hosted GitLab instance
 			$ glab auth login --hostname salsa.debian.org
-		`),
+		`, "`"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !opts.IO.PromptEnabled() && !tokenStdin && opts.Token == "" {
 				return &cmdutils.FlagError{Err: errors.New("--stdin or --token required when not running interactively")}

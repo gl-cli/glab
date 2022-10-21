@@ -39,10 +39,10 @@ func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comma
 		Use:   "diff [<id> | <branch>]",
 		Short: "View changes in a merge request",
 		Example: heredoc.Doc(`
-			$ glab mr diff 123
-			$ glab mr diff branch
-			$ glab mr diff  # get from current branch
-			$ glab mr diff 123 --color=never
+			glab mr diff 123
+			glab mr diff branch
+			glab mr diff  # get from current branch
+			glab mr diff 123 --color=never
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

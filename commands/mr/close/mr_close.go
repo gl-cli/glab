@@ -18,12 +18,12 @@ func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
 		Short: `Close merge requests`,
 		Long:  ``,
 		Example: heredoc.Doc(`
-			$ glab mr close 1
-			$ glab mr close 1 2 3 4  # close multiple branches at once
-			$ glab mr close  # use checked out branch
-			$ glab mr close branch
-			$ glab mr close username:branch
-			$ glab mr close branch -R another/repo
+			glab mr close 1
+			glab mr close 1 2 3 4  # close multiple branches at once
+			glab mr close  # use checked out branch
+			glab mr close branch
+			glab mr close username:branch
+			glab mr close branch -R another/repo
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error

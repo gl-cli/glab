@@ -19,9 +19,9 @@ func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"open"},
 		Example: heredoc.Doc(`
-			$ glab issue reopen 123
-			$ glab issue open 123
-			$ glab issue reopen https://gitlab.com/profclems/glab/-/issues/123
+			glab issue reopen 123
+			glab issue open 123
+			glab issue reopen https://gitlab.com/profclems/glab/-/issues/123
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

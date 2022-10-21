@@ -89,11 +89,11 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 		Long:    ``,
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
-			$ glab mr new
-			$ glab mr create -a username -t "fix annoying bug"
-			$ glab mr create -f --draft --label RFC
-			$ glab mr create --fill --yes --web
-			$ glab mr create --fill --fill-commit-body --yes
+			glab mr new
+			glab mr create -a username -t "fix annoying bug"
+			glab mr create -f --draft --label RFC
+			glab mr create --fill --yes --web
+			glab mr create --fill --fill-commit-body --yes
 		`),
 		Args: cobra.ExactArgs(0),
 		PreRun: func(cmd *cobra.Command, args []string) {

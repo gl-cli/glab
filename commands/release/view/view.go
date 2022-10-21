@@ -35,10 +35,10 @@ func NewCmdView(f *cmdutils.Factory, runE func(opts *ViewOpts) error) *cobra.Com
 	cmd := &cobra.Command{
 		Use:   "view <tag>",
 		Short: "View information about a GitLab Release",
-		Long: heredoc.Docf(`View information about a GitLab Release.
+		Long: heredoc.Doc(`View information about a GitLab Release.
 
 			Without an explicit tag name argument, the latest release in the project is shown.
-		`, "`"),
+		`,),
 		Example: heredoc.Doc(`
 			View the latest release of a GitLab repository
 			$ glab release view

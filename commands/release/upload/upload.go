@@ -70,14 +70,14 @@ func NewCmdUpload(f *cmdutils.Factory, runE func(opts *UploadOpts) error) *cobra
 
 			Upload release assets links specified as JSON string
 			$ glab release upload v1.0.1 --assets-links='
-				[
-					{
-						"name": "Asset1", 
-						"url":"https://<domain>/some/location/1", 
-						"link_type": "other", 
-						"filepath": "path/to/file"
-					}
-				]'
+			  [
+			    {
+			      "name": "Asset1", 
+			      "url":"https://<domain>/some/location/1", 
+			      "link_type": "other", 
+			      "filepath": "path/to/file"
+			    }
+			  ]'
 `),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error

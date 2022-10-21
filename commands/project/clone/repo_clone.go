@@ -62,7 +62,7 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 
 	var repoCloneCmd = &cobra.Command{
 		Use:   "clone <repo> [<dir>] [-- [<gitflags>...]]",
-		Short: `Clone a Gitlab repository/project`,
+		Short: `Clone a GitLab repository/project`,
 		Example: heredoc.Doc(`
 	$ glab repo clone profclems/glab
 
@@ -81,13 +81,12 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 	$ GITLAB_HOST=salsa.debian.org glab repo clone myrepo  
 	`),
 		Long: heredoc.Doc(`
-Clone a GitLab repository/project
-
-	Clone supports these shorthands
-	- repo
-	- namespace/repo
-	- org/group/repo
-	- project ID
+		Clone supports these shorthands
+		
+		- repo
+		- namespace/repo
+		- org/group/repo
+		- project ID
 	`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if nArgs := len(args); nArgs > 0 {

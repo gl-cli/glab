@@ -44,7 +44,7 @@ func NewCmdSet(f *cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command
 			arguments, you must explicitly accept them using "$1", "$2", etc., or "$@" to accept all of them.
 
 			Platform note: on Windows, shell aliases are executed via "sh" as installed by Git For Windows. If
-			you have installed git on Windows in some other way, shell aliases may not work for you.
+			you have installed Git on Windows in some other way, shell aliases may not work for you.
 			Quotes must always be used when defining a command as in the examples.
 		`),
 		Example: heredoc.Doc(`

@@ -34,8 +34,8 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 
 	var projectCreateCmd = &cobra.Command{
 		Use:   "delete [<NAMESPACE>/]<NAME>",
-		Short: `Delete an existing repository on GitLab`,
-		Long:  `Delete an existing repository on GitLab`,
+		Short: `Delete an existing repository on GitLab.`,
+		Long:  ``,
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

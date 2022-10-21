@@ -50,13 +50,13 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		'Ctrl+C' to cancel job -- (Quits CI view if selected job isn't running or pending).
 		'Ctrl+Q' to Quit CI View.
 		'Ctrl+Space' suspend application and view logs (similar to glab pipeline ci trace)
-		Supports vi style (hjkl,Gg) bindings and arrow keys for navigating jobs and logs.
+		Supports vi style bindings and arrow keys for navigating jobs and logs.
 	`),
 		Example: heredoc.Doc(`
-	$ glab pipeline ci view   # Uses current branch
-	$ glab pipeline ci view master  # Get latest pipeline on master branch
-	$ glab pipeline ci view -b master  # just like the second example
-	$ glab pipeline ci view -b master -R profclems/glab  # Get latest pipeline on master branch of profclems/glab repo
+	glab pipeline ci view   # Uses current branch
+	glab pipeline ci view master  # Get latest pipeline on master branch
+	glab pipeline ci view -b master  # just like the second example
+	glab pipeline ci view -b master -R profclems/glab  # Get latest pipeline on master branch of profclems/glab repo
 	`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
