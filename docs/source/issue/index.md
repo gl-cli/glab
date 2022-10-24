@@ -37,7 +37,7 @@ glab issue note -m "closing because !123 was merged" <issue number>
 
 ## Subcommands
 
-- [board](board.md)
+- [board](board/index.md)
 - [close](close.md)
 - [create](create.md)
 - [delete](delete.md)

@@ -19,14 +19,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
-var tocTree = `.. toctree::
-   :glob:
-   :maxdepth: 0
-
-%s
-
-`
-
 func main() {
 	var flagErr pflag.ErrorHandling
 	docsCmd := pflag.NewFlagSet("", flagErr)
@@ -94,9 +86,36 @@ func genWebDocs(glabCli *cobra.Command, path string) error {
 
 		// Generate children commands
 		for _, cmdC := range cmd.Commands() {
-			err = GenMarkdownTreeCustom(cmdC, path+cmd.Name())
-			if err != nil {
-				return err
+			if cmdC.HasAvailableSubCommands() {
+				fmt.Println("Generating subcommand docs for " + cmdC.Name())
+				_ = os.MkdirAll(path+cmd.Name()+"/"+cmdC.Name(), 0750)
+
+				// Generate parent command
+				out := new(bytes.Buffer)
+				err := GenMarkdownCustom(cmdC, out)
+				if err != nil {
+					return err
+				}
+
+				err = config.WriteFile(path+cmd.Name()+"/"+cmdC.Name()+"/index.md", out.Bytes(), 0755)
+				if err != nil {
+					return err
+				}
+
+				for _, cmdCC := range cmdC.Commands() {
+					if cmdCC.Name() != "help" {
+						err = GenMarkdownTreeCustom(cmdCC, path+cmd.Name()+"/"+cmdC.Name())
+						if err != nil {
+							return err
+						}
+					}
+				}
+
+			} else {
+				err = GenMarkdownTreeCustom(cmdC, path+cmd.Name())
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -117,7 +136,11 @@ func printSubcommands(cmd *cobra.Command, buf *bytes.Buffer) {
 	// Generate children commands
 	for _, cmdC := range cmd.Commands() {
 		if cmdC.Name() != "help" {
-			subcommands += fmt.Sprintf("- [%s](%s.md)\n", cmdC.Name(), cmdC.Name())
+			if cmdC.HasAvailableSubCommands() {
+				subcommands += fmt.Sprintf("- [%s](%s/index.md)\n", cmdC.Name(), cmdC.Name())
+			} else {
+				subcommands += fmt.Sprintf("- [%s](%s.md)\n", cmdC.Name(), cmdC.Name())
+			}
 		}
 	}
 
