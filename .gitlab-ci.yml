@@ -34,6 +34,8 @@ include:
 
 check_docs_update:
   stage: review-docs
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_COMMIT_SHA
     - go run cmd/gen-docs/docs.go
