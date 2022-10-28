@@ -17,6 +17,14 @@ View project issue board.
 glab issue board view [flags]
 ```
 
+## Options
+
+```plaintext
+  -a, --assignee string    Filter board issues by assignee username
+  -l, --labels strings     Filter board issues by labels (comma separated)
+  -m, --milestone string   Filter board issues by milestone
+```
+
 ## Options inherited from parent commands
 
 ```plaintext
