@@ -57,3 +57,9 @@ cyclonedx-go-go.json
 
 # projectionist.vim 
 .projections.json
+
+# prevent .zip files from being accidentally added
+*.zip
+*.tar
+*.tar.gz
+*.tar.bz2
