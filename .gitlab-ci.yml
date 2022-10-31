@@ -9,7 +9,7 @@ default:
   image: golang:1.18
 
 stages:
-  - review-docs
+  - documentation
   - test
   - release
 
@@ -32,10 +32,13 @@ include:
     paths:
       - .go/pkg/mod/
 
-check_docs_update:
-  stage: review-docs
+.documentation:
+  stage: documentation
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+check_docs_update:
+  extends: .documentation
   script:
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_COMMIT_SHA
     - go run cmd/gen-docs/docs.go
@@ -51,7 +54,7 @@ check_docs_update:
 
 check_docs_markdown:
   image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.16-vale-2.20.1-markdownlint-0.32.2
-  stage: review-docs
+  extends: .documentation
   script:
     # Lint prose
     - vale --minAlertLevel error docs README.md
