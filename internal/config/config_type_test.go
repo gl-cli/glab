@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +23,34 @@ func Test_fileConfig_Set(t *testing.T) {
 	//assert.NoError(t, a.Set("co", "mr checkout"))
 	//assert.NoError(t, a.Write())
 
-	expected := "# What protocol to use when performing git operations. Supported values: ssh, https\ngit_protocol: ssh\n# What editor glab should run when creating issues, merge requests, etc.  This is a global config that cannot be overridden by hostname.\neditor: nano\n# What browser glab should run when opening links. This is a global config that cannot be overridden by hostname.\nbrowser:\n# Set your desired markdown renderer style. Available options are [dark, light, notty] or set a custom style. Refer to https://github.com/charmbracelet/glamour#styles\nglamour_style: dark\n# Allow glab to automatically check for updates and notify you when there are new updates\ncheck_update: false\n# Whether or not to display hyperlink escapes when listing things like issues or MRs\ndisplay_hyperlinks: false\n# configuration specific for gitlab instances\nhosts:\n    gitlab.com:\n        # What protocol to use to access the api endpoint. Supported values: http, https\n        api_protocol: https\n        # Configure host for api endpoint, defaults to the host itself\n        api_host: gitlab.com\n        # Your GitLab access token. Get an access token at https://gitlab.com/-/profile/personal_access_tokens\n        token:\n        git_protocol: ssh\n        username: hubot\n    example.com:\n        editor: vim\n"
+	expected := heredoc.Doc(`# What protocol to use when performing git operations. Supported values: ssh, https
+git_protocol: ssh
+# What editor glab should run when creating issues, merge requests, etc.  This is a global config that cannot be overridden by hostname.
+editor: nano
+# What browser glab should run when opening links. This is a global config that cannot be overridden by hostname.
+browser:
+# Set your desired markdown renderer style. Available options are [dark, light, notty] or set a custom style. Refer to https://github.com/charmbracelet/glamour#styles
+glamour_style: dark
+# Allow glab to automatically check for updates and notify you when there are new updates
+check_update: false
+# Whether or not to display hyperlink escapes when listing things like issues or MRs
+display_hyperlinks: false
+# configuration specific for gitlab instances
+hosts:
+    gitlab.com:
+        # What protocol to use to access the api endpoint. Supported values: http, https
+        api_protocol: https
+        # Configure host for api endpoint, defaults to the host itself
+        api_host: gitlab.com
+        # Your GitLab access token. Get an access token at https://gitlab.com/-/profile/personal_access_tokens
+        token:
+        git_protocol: ssh
+        username: hubot
+    example.com:
+        editor: vim
+# Default GitLab hostname to use
+host: gitlab.com
+`)
 	assert.Equal(t, expected, mainBuf.String())
 	assert.Equal(t, `ci: pipeline ci
 co: mr checkout
@@ -37,7 +65,30 @@ func Test_defaultConfig(t *testing.T) {
 	cfg := NewBlankConfig()
 	assert.NoError(t, cfg.Write())
 
-	expected := "# What protocol to use when performing git operations. Supported values: ssh, https\ngit_protocol: ssh\n# What editor glab should run when creating issues, merge requests, etc.  This is a global config that cannot be overridden by hostname.\neditor:\n# What browser glab should run when opening links. This is a global config that cannot be overridden by hostname.\nbrowser:\n# Set your desired markdown renderer style. Available options are [dark, light, notty] or set a custom style. Refer to https://github.com/charmbracelet/glamour#styles\nglamour_style: dark\n# Allow glab to automatically check for updates and notify you when there are new updates\ncheck_update: false\n# Whether or not to display hyperlink escapes when listing things like issues or MRs\ndisplay_hyperlinks: false\n# configuration specific for gitlab instances\nhosts:\n    gitlab.com:\n        # What protocol to use to access the api endpoint. Supported values: http, https\n        api_protocol: https\n        # Configure host for api endpoint, defaults to the host itself\n        api_host: gitlab.com\n        # Your GitLab access token. Get an access token at https://gitlab.com/-/profile/personal_access_tokens\n        token:\n"
+	expected := heredoc.Doc(`# What protocol to use when performing git operations. Supported values: ssh, https
+git_protocol: ssh
+# What editor glab should run when creating issues, merge requests, etc.  This is a global config that cannot be overridden by hostname.
+editor:
+# What browser glab should run when opening links. This is a global config that cannot be overridden by hostname.
+browser:
+# Set your desired markdown renderer style. Available options are [dark, light, notty] or set a custom style. Refer to https://github.com/charmbracelet/glamour#styles
+glamour_style: dark
+# Allow glab to automatically check for updates and notify you when there are new updates
+check_update: false
+# Whether or not to display hyperlink escapes when listing things like issues or MRs
+display_hyperlinks: false
+# configuration specific for gitlab instances
+hosts:
+    gitlab.com:
+        # What protocol to use to access the api endpoint. Supported values: http, https
+        api_protocol: https
+        # Configure host for api endpoint, defaults to the host itself
+        api_host: gitlab.com
+        # Your GitLab access token. Get an access token at https://gitlab.com/-/profile/personal_access_tokens
+        token:
+# Default GitLab hostname to use
+host: gitlab.com
+`)
 	assert.Equal(t, expected, mainBuf.String())
 	assert.Equal(t, "", hostsBuf.String())
 
