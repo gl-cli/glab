@@ -181,6 +181,31 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 	})
 }
 
+func TestIssueList_tty_withIssueType(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
+		httpmock.NewFileResponse(200, "./fixtures/incidentList.json"))
+
+	output, err := runCommand(fakeHTTP, true, "--issue-type=incident", nil, "")
+	if err != nil {
+		t.Errorf("error running command `issue list`: %v", err)
+	}
+
+	out := output.String()
+	timeRE := regexp.MustCompile(`\d+ years`)
+	out = timeRE.ReplaceAllString(out, "X years")
+
+	assert.Equal(t, heredoc.Doc(`
+		Showing 1 open issue in OWNER/REPO that match your search (Page 1)
+
+		#8	OWNER/REPO/issues/8	Incident	(foo, baz)	about X years ago
+
+	`), out)
+	assert.Equal(t, ``, output.Stderr())
+}
+
 func TestIssueList_tty_mine(t *testing.T) {
 	t.Run("mine with all flag and user exists", func(t *testing.T) {
 

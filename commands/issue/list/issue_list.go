@@ -30,6 +30,7 @@ type ListOptions struct {
 	Mine        bool
 	Search      string
 	Group       string
+	IssueType   string
 
 	// issue states
 	State        string
@@ -126,6 +127,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 	issueListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
 	issueListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page. (default 30)")
 	issueListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Get issues from group and it's subgroups")
+	issueListCmd.Flags().StringVarP(&opts.IssueType, "issue-type", "t", "", "Filter issue by its type {issue|incident|test_case}")
 
 	issueListCmd.Flags().BoolP("opened", "o", false, "Get only opened issues")
 	_ = issueListCmd.Flags().MarkHidden("opened")
@@ -213,6 +215,10 @@ func listRun(opts *ListOptions) error {
 	}
 	if opts.PerPage != 0 {
 		listOpts.PerPage = opts.PerPage
+		opts.ListType = "search"
+	}
+	if opts.IssueType != "" {
+		listOpts.IssueType = gitlab.String(opts.IssueType)
 		opts.ListType = "search"
 	}
 
