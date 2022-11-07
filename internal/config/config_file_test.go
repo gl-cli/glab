@@ -239,3 +239,49 @@ func Test_parseConfigFile(t *testing.T) {
 		})
 	}
 }
+
+func Test_parseConfigHostEnv(t *testing.T) {
+	os.Setenv("GITLAB_URI", "https://gitlab.mycompany.env")
+	defer os.Unsetenv("GITLAB_URI")
+
+	defer StubConfig(`---
+host: https://gitlab.mycompany.global
+local:
+  host: https://gitlab.mycompany.local
+`, `
+`)()
+	config, err := ParseConfig("config.yml")
+	eq(t, err, nil)
+
+	val, err := config.Get("", "host")
+	eq(t, err, nil)
+	eq(t, val, "https://gitlab.mycompany.env")
+}
+
+func Test_parseConfigHostLocal(t *testing.T) {
+	defer StubConfig(`---
+host: https://gitlab.mycompany.global
+local:
+  host: https://gitlab.mycompany.local
+`, `
+`)()
+	config, err := ParseConfig("config.yml")
+	eq(t, err, nil)
+
+	val, err := config.Get("", "host")
+	eq(t, err, nil)
+	eq(t, val, "https://gitlab.mycompany.local")
+}
+
+func Test_parseConfigHostGlobal(t *testing.T) {
+	defer StubConfig(`---
+host: https://gitlab.mycompany.org
+`, `
+`)()
+	config, err := ParseConfig("config.yml")
+	eq(t, err, nil)
+
+	val, err := config.Get("", "host")
+	eq(t, err, nil)
+	eq(t, val, "https://gitlab.mycompany.org")
+}

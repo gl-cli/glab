@@ -47,7 +47,13 @@ func main() {
 
 	cmdFactory := cmdutils.NewFactory()
 
-	maybeOverrideDefaultHost(cmdFactory)
+	cfg, err := cmdFactory.Config()
+	if err != nil {
+		cmdFactory.IO.Logf("failed to read configuration:  %s\n", err)
+		os.Exit(2)
+	}
+
+	maybeOverrideDefaultHost(cmdFactory, cfg)
 
 	if !cmdFactory.IO.ColorEnabled() {
 		surveyCore.DisableColor = true
@@ -70,12 +76,6 @@ func main() {
 	}
 
 	rootCmd := commands.NewCmdRoot(cmdFactory, version, build)
-
-	cfg, err := cmdFactory.Config()
-	if err != nil {
-		cmdFactory.IO.Logf("failed to read configuration:  %s\n", err)
-		os.Exit(2)
-	}
 
 	// Set Debug mode
 	debugMode, _ = cfg.Get("", "debug")
@@ -207,17 +207,20 @@ func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, deb
 	}
 }
 
-func maybeOverrideDefaultHost(f *cmdutils.Factory) {
+func maybeOverrideDefaultHost(f *cmdutils.Factory, cfg config.Config) {
 	baseRepo, err := f.BaseRepo()
 	if err == nil {
 		glinstance.OverrideDefault(baseRepo.RepoHost())
 	}
-	if glHostFromEnv := config.GetFromEnv("host"); glHostFromEnv != "" {
-		if utils.IsValidURL(glHostFromEnv) {
+
+	// Fetch the custom host config from env vars, then local config.yml, then global config,yml.
+	customGLHost, _ := cfg.Get("", "host")
+	if customGLHost != "" {
+		if utils.IsValidURL(customGLHost) {
 			var protocol string
-			glHostFromEnv, protocol = glinstance.StripHostProtocol(glHostFromEnv)
+			customGLHost, protocol = glinstance.StripHostProtocol(customGLHost)
 			glinstance.OverrideDefaultProtocol(protocol)
 		}
-		glinstance.OverrideDefault(glHostFromEnv)
+		glinstance.OverrideDefault(customGLHost)
 	}
 }

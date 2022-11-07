@@ -288,6 +288,15 @@ func NewBlankRoot() *yaml.Node {
 							},
 						},
 					},
+					{
+						HeadComment: "Default GitLab hostname to use",
+						Kind:        yaml.ScalarNode,
+						Value:       "host",
+					},
+					{
+						Kind:  yaml.ScalarNode,
+						Value: defaultHostname,
+					},
 				},
 			},
 		},
