@@ -37,6 +37,7 @@ glab issue list --milestone release-2.0.0 --opened
   -C, --confidential           Filter by confidential issues
   -g, --group string           Get issues from group and it's subgroups
       --in string              search in {title|description} (default "title,description")
+  -t, --issue-type string      Filter issue by its type {issue|incident|test_case}
   -l, --label strings          Filter issue by label <name>
   -m, --milestone string       Filter issue by milestone <id>
       --not-assignee strings   Filter issue by not being assigneed to <username>

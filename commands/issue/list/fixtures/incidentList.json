@@ -1,0 +1,23 @@
+[
+  {
+    "state": "opened",
+    "description": "description incident here",
+    "project_id": 1,
+    "updated_at": "2016-01-04T16:31:51.081Z",
+    "id": 78,
+    "title": "Incident",
+    "created_at": "2016-01-04T16:31:51.081Z",
+    "iid": 8,
+    "labels": [
+      "foo",
+      "baz"
+    ],
+    "web_url": "http://gitlab.com/OWNER/REPO/issues/8",
+    "references": {
+      "full": "OWNER/REPO/issues/8",
+      "relative": "#8",
+      "short": "#8"
+    },
+    "issue_type": "incident"
+  }
+]
