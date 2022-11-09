@@ -30,6 +30,7 @@ Work with GitLab CI pipelines and jobs
 - [artifact](artifact.md)
 - [ci](ci/index.md)
 - [delete](delete.md)
+- [get](get.md)
 - [lint](lint.md)
 - [list](list.md)
 - [retry](retry.md)
