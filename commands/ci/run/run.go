@@ -1,8 +1,9 @@
 package run
 
 import (
+	"encoding/json"
 	"fmt"
-	"regexp"
+	"os"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/api"
@@ -14,9 +15,12 @@ import (
 	"github.com/xanzy/go-gitlab"
 )
 
-const keyValuePair = ".+:.+"
+var (
+	PipelineVarTypeEnv  = "env_var"
+	PipelineVarTypeFile = "file"
+)
 
-var re = regexp.MustCompile(keyValuePair)
+var envVariables = []string{}
 
 func getDefaultBranch(f *cmdutils.Factory) string {
 	repo, err := f.BaseRepo()
@@ -39,6 +43,47 @@ func getDefaultBranch(f *cmdutils.Factory) string {
 	return branch
 }
 
+func parseVarArg(s string) (*gitlab.PipelineVariableOptions, error) {
+	// From https://pkg.go.dev/strings#Split:
+	//
+	// > If s does not contain sep and sep is not empty,
+	// > Split returns a slice of length 1 whose only element is s.
+	//
+	// Therefore, the function will always return a slice of min length 1.
+	v := strings.SplitN(s, ":", 2)
+	if len(v) == 1 {
+		return nil, fmt.Errorf("invalid argument structure")
+	}
+	return &gitlab.PipelineVariableOptions{
+		Key:   &v[0],
+		Value: &v[1],
+	}, nil
+}
+
+func extractEnvVar(s string) (*gitlab.PipelineVariableOptions, error) {
+	pvar, err := parseVarArg(s)
+	if err != nil {
+		return nil, err
+	}
+	pvar.VariableType = &PipelineVarTypeEnv
+	return pvar, nil
+}
+
+func extractFileVar(s string) (*gitlab.PipelineVariableOptions, error) {
+	pvar, err := parseVarArg(s)
+	if err != nil {
+		return nil, err
+	}
+	b, err := os.ReadFile(*pvar.Value)
+	if err != nil {
+		return nil, err
+	}
+	content := string(b)
+	pvar.VariableType = &PipelineVarTypeFile
+	pvar.Value = &content
+	return pvar, nil
+}
+
 func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 	var pipelineRunCmd = &cobra.Command{
 		Use:     "run [flags]",
@@ -47,8 +92,10 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 		Example: heredoc.Doc(`
 	glab ci run
 	glab ci run -b main
-	glab ci run -b main --variables MYKEY:some_value
-	glab ci run -b main --variables MYKEY:some_value --variables KEY2:another_value
+	glab ci run -b main --variables-env key1:val1
+	glab ci run -b main --variables-env key1:val1,key2:val2
+	glab ci run -b main --variables-env key1:val1 --variables-env key2:val2
+	glab ci run -b main --variables-file MYKEY:file1 --variables KEY2:some_value
 	`),
 		Long: ``,
 		Args: cobra.ExactArgs(0),
@@ -67,27 +114,54 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 
 			pipelineVars := []*gitlab.PipelineVariableOptions{}
 
-			if customPipelineVars, _ := cmd.Flags().GetStringSlice("variables"); len(customPipelineVars) > 0 {
-				varType := "env_var"
+			if customPipelineVars, _ := cmd.Flags().GetStringSlice("variables-env"); len(customPipelineVars) > 0 {
 				for _, v := range customPipelineVars {
-					if !re.MatchString(v) {
-						return fmt.Errorf("Bad pipeline variable : \"%s\" should be of format KEY:VALUE", v)
+					pvar, err := extractEnvVar(v)
+					if err != nil {
+						return fmt.Errorf("parsing pipeline variable expected format KEY:VALUE: %w", err)
 					}
-					s := strings.SplitN(v, ":", 2)
-					pipelineVars = append(pipelineVars, &gitlab.PipelineVariableOptions{
-						Key:          &s[0],
-						Value:        &s[1],
-						VariableType: &varType,
-					})
+					pipelineVars = append(pipelineVars, pvar)
 				}
+			}
+
+			if customPipelineFileVars, _ := cmd.Flags().GetStringSlice("variables-file"); len(customPipelineFileVars) > 0 {
+				for _, v := range customPipelineFileVars {
+					pvar, err := extractFileVar(v)
+					if err != nil {
+						return fmt.Errorf("parsing pipeline variable expected format KEY:FILENAME: %w", err)
+					}
+					pipelineVars = append(pipelineVars, pvar)
+				}
+			}
+
+			vf, err := cmd.Flags().GetString("variables-from")
+			if err != nil {
+				return err
+			}
+			if vf != "" {
+				b, err := os.ReadFile(vf)
+				if err != nil {
+					// Return the error encountered
+					return fmt.Errorf("opening variable file: %s", vf)
+				}
+				var result []*gitlab.PipelineVariableOptions
+				err = json.Unmarshal(b, &result)
+				if err != nil {
+					return fmt.Errorf("loading pipeline values: %w", err)
+				}
+				pipelineVars = append(pipelineVars, result...)
 			}
 
 			c := &gitlab.CreatePipelineOptions{
 				Variables: &pipelineVars,
 			}
 
-			if m, _ := cmd.Flags().GetString("branch"); m != "" {
-				c.Ref = gitlab.String(m)
+			branch, err := cmd.Flags().GetString("branch")
+			if err != nil {
+				return err
+			}
+			if branch != "" {
+				c.Ref = gitlab.String(branch)
 			} else {
 				c.Ref = gitlab.String(getDefaultBranch(f))
 			}
@@ -102,7 +176,10 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 	pipelineRunCmd.Flags().StringP("branch", "b", "", "Create pipeline on branch/ref <string>")
-	pipelineRunCmd.Flags().StringSliceP("variables", "", []string{}, "Pass variables to pipeline")
+	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables", "", []string{}, "Pass variables to pipeline in format <key>:<value>")
+	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables-env", "", []string{}, "Pass variables to pipeline in format <key>:<value>")
+	pipelineRunCmd.Flags().StringSliceP("variables-file", "", []string{}, "Pass file contents as a file variable to pipeline in format <key>:<filename>")
+	pipelineRunCmd.Flags().StringP("variables-from", "f", "", "JSON file containing variables for pipeline execution")
 
 	return pipelineRunCmd
 }

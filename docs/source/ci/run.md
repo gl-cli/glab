@@ -22,16 +22,21 @@ glab ci run [flags]
 ```plaintext
 glab ci run
 glab ci run -b main
-glab ci run -b main --variables MYKEY:some_value
-glab ci run -b main --variables MYKEY:some_value --variables KEY2:another_value
+glab ci run -b main --variables-env key1:val1
+glab ci run -b main --variables-env key1:val1,key2:val2
+glab ci run -b main --variables-env key1:val1 --variables-env key2:val2
+glab ci run -b main --variables-file MYKEY:file1 --variables KEY2:some_value
 
 ```
 
 ## Options
 
 ```plaintext
-  -b, --branch string       Create pipeline on branch/ref <string>
-      --variables strings   Pass variables to pipeline
+  -b, --branch string            Create pipeline on branch/ref <string>
+      --variables strings        Pass variables to pipeline in format <key>:<value>
+      --variables-env strings    Pass variables to pipeline in format <key>:<value>
+      --variables-file strings   Pass file contents as a file variable to pipeline in format <key>:<filename>
+  -f, --variables-from string    JSON file containing variables for pipeline execution
 ```
 
 ## Options inherited from parent commands
