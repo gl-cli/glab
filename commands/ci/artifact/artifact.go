@@ -4,12 +4,14 @@ import (
 	"archive/zip"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
@@ -33,7 +35,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			p, err := cmd.Flags().GetString("path")
+			path, err := cmd.Flags().GetString("path")
 			if err != nil {
 				return err
 			}
@@ -43,27 +45,33 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			zr, err := zip.NewReader(artifact, artifact.Size())
+			zipReader, err := zip.NewReader(artifact, artifact.Size())
 			if err != nil {
 				return err
 			}
 
-			if err := os.Mkdir(p, 0755); err != nil {
-				return err
+			if !config.CheckPathExists(path) {
+				if err := os.Mkdir(path, 0755); err != nil {
+					return err
+				}
 			}
 
-			for _, v := range zr.File {
+			if !strings.HasSuffix(path, "/") {
+				path = path + "/"
+			}
+
+			for _, v := range zipReader.File {
 				if v.FileInfo().IsDir() {
-					if err := os.Mkdir(p+v.Name, v.Mode()); err != nil {
+					if err := os.Mkdir(path+v.Name, v.Mode()); err != nil {
 						return err
 					}
 				} else {
-					srcFile, err := zr.Open(v.Name)
+					srcFile, err := zipReader.Open(v.Name)
 					if err != nil {
 						return err
 					}
 					defer srcFile.Close()
-					dstFile, err := os.OpenFile(p+v.Name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, v.Mode())
+					dstFile, err := os.OpenFile(path+v.Name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, v.Mode())
 					if err != nil {
 						return err
 					}
@@ -75,7 +83,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	jobArtifactCmd.Flags().StringP("path", "p", "", "Path to download the Artifact files (default ./)")
+	jobArtifactCmd.Flags().StringP("path", "p", "./", "Path to download the Artifact files")
 
 	return jobArtifactCmd
 }

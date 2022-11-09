@@ -28,7 +28,7 @@ glab ci artifact main deploy --path="artifacts/"
 ## Options
 
 ```plaintext
-  -p, --path string   Path to download the Artifact files (default ./)
+  -p, --path string   Path to download the Artifact files (default "./")
 ```
 
 ## Options inherited from parent commands
