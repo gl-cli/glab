@@ -218,3 +218,43 @@ func Test_mrNoteCreate_prompt(t *testing.T) {
 		assert.Equal(t, err.Error(), "aborted... Note has an empty message")
 	})
 }
+
+func Test_mrNoteCreate_no_duplicate(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	defer fakeHTTP.Verify(t)
+
+	t.Run("message provided", func(t *testing.T) {
+
+		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/merge_requests/1",
+			httpmock.NewStringResponse(200, `
+		{
+  			"id": 1,
+  			"iid": 1,
+			"web_url": "https://gitlab.com/OWNER/REPO/merge_requests/1"
+		}
+	`))
+
+		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/merge_requests/1/notes",
+			httpmock.NewStringResponse(200, `
+		[
+			{"id": 0, "body": "aaa"},
+			{"id": 111, "body": "bbb"},
+			{"id": 222, "body": "some note message"},
+			{"id": 333, "body": "ccc"}
+		]
+	`))
+		as, teardown := prompt.InitAskStubber()
+		defer teardown()
+		as.StubOne("some note message")
+
+		// glab mr note 1
+		output, err := runCommand(fakeHTTP, true, `1 --unique`)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		println(output.String())
+		assert.Equal(t, output.Stderr(), "")
+		assert.Equal(t, output.String(), "https://gitlab.com/OWNER/REPO/merge_requests/1#note_222\n")
+	})
+}
