@@ -21,6 +21,7 @@ glab mr note [<id> | <branch>] [flags]
 
 ```plaintext
   -m, --message string   Comment/Note message
+      --unique           Don't create a comment/note if it already exists
 ```
 
 ## Options inherited from parent commands
