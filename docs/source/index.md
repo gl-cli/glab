@@ -1,47 +1,80 @@
-# GLab - A GitLab CLI Tool
+---
+stage: Create
+group: Code Review
+info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://about.gitlab.com/handbook/product/ux/technical-writing/#assignments
+---
 
-GLab is an open source GitLab Cli tool written in Go (golang) to help
-work seamlessly with GitLab from the command line. Work with issues,
-merge requests, **watch running pipelines directly from your CLI** among
-other features.
+# GitLab CLI - `glab`
 
-## Usage
+GLab is an open source GitLab CLI tool. It brings GitLab to your terminal:
+next to where you are already working with Git and your code, without
+switching between windows and browser tabs.
 
-```plaintext
-glab <command> <subcommand> [flags]
-```
+- Work with issues.
+- Work with merge requests.
+- Watch running pipelines directly from your CLI.
 
-## Core Commands
+![command example](../assets/command-example.png)
 
-- `glab mr [list, create, close, reopen, delete, ...]`
-- `glab issue [list, create, close, reopen, delete, ...]`
-- `glab pipeline [list, delete, ci status, ci view, ...]`
-- `glab release`
-- `glab repo`
-- `glab label`
-- `glab alias`
+The GitLab CLI uses commands structured like `glab <command> <subcommand> [flags]`
+to perform many of the actions you normally do from the GitLab user interface:
 
-### Examples
-
-```plaintext
+```shell
+# Sign in
 glab auth login --stdin < token.txt
+
+# View a list of issues
 glab issue list
-glab mr for 123   # Create merge request for issue 123
+
+# Create merge request for issue 123
+glab mr for 123
+
+# Check out the branch for merge request 243
 glab mr checkout 243
+
+# Watch the pipeline in progress
 glab pipeline ci view
+
+# View, approve, and merge the merge request
 glab mr view
 glab mr approve
 glab mr merge
 ```
 
-## Installation
+## Core commands
 
-You can find installation instructions on our [README](https://gitlab.com/gitlab-org/cli/#installation).
+- `glab alias`
+- `glab api`
+- `glab auth`
+- `glab ci`
+- `glab issue`
+- `glab label`
+- `glab mr`
+- `glab project`
+- `glab release`
+- `glab snippet`
+- `glab ssh-key`
+- `glab user`
+- `glab variable`
 
-## Authentication
+## Install the CLI
 
-Run `glab auth login` to authenticate with your GitLab account. `glab` will respect tokens set using `GITLAB_TOKEN`.
+Installation instructions are available in the GLab
+[`README`](https://gitlab.com/gitlab-org/cli/#installation).
 
-### Feedback
+## Authenticate with GitLab
 
-Thank you for checking out GLab! Please open an [issue](https://gitlab.com/gitlab-org/cli/issues/new). to send us feedback. We're looking forward to hearing it.
+To authenticate with your GitLab account, run `glab auth login`.
+`glab` respects tokens set using `GITLAB_TOKEN`.
+
+## Report issues
+
+Open an issue in the [`gitlab-org/cli` repository](https://gitlab.com/gitlab-org/cli/issues/new)
+to send us feedback.
+
+## Related topics
+
+- [Install the CLI](https://gitlab.com/gitlab-org/cli/-/blob/main/README.md#installation)
+- [Documentation](https://gitlab.com/gitlab-org/cli/-/tree/main/docs/source)
+- The extension source code is available in the
+  [`cli`](https://gitlab.com/gitlab-org/cli/) project.

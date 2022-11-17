@@ -60,7 +60,7 @@ glab <command> <subcommand> [flags]
 
 ## Documentation
 
-Read the [documentation](https://glab.readthedocs.io/) for usage instructions.
+Read the [documentation](https://gitlab.com/gitlab-org/cli/-/tree/main/docs/source) for usage instructions or check out `glab help`.
 
 ## Installation
 
