@@ -20,8 +20,6 @@ include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
-  - local: .gitlab/ci/*.gitlab-ci.yml
-
 
 # From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
 .go-cache:
@@ -76,6 +74,23 @@ lint_commit:
   rules:
     - if: '$CI_MERGE_REQUEST_IID && $CI_PROJECT_VISIBILITY == "public"' # lint.js script makes an API call without authentication
       when: always
+
+lint:
+  extends: .go-cache
+  image: registry.gitlab.com/gitlab-org/gitlab-build-images:golangci-lint-alpine
+  stage: test
+  script:
+    - golangci-lint --version
+    # Use default .golangci.yml file from the image if one is not present in the project root.
+    - '[ -e .golangci.yml ] || cp /golangci/.golangci.yml .'
+    # Write the code coverage report to gl-code-quality-report.json
+    # remove `--issues-exit-code 0` or set to non-zero to fail the job if linting issues are detected
+    - golangci-lint run --out-format colored-line-number:stdout,code-climate:gl-code-quality-report.json
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+    paths:
+      - gl-code-quality-report.json
 
 code_navigation:
   stage: test
