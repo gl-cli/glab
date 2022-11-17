@@ -15,7 +15,7 @@ import (
 )
 
 func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
-	var mrUpdateCmd = &cobra.Command{
+	mrUpdateCmd := &cobra.Command{
 		Use:   "update [<id> | <branch>]",
 		Short: `Update merge requests`,
 		Long:  ``,

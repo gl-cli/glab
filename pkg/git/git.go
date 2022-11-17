@@ -119,7 +119,6 @@ func Config(name string) (string, error) {
 	}
 
 	return firstLine(output), nil
-
 }
 
 var GitCommand = func(args ...string) *exec.Cmd {
@@ -336,13 +335,11 @@ var ToplevelDir = func() (string, error) {
 	showCmd := exec.Command("git", "rev-parse", "--show-toplevel")
 	output, err := run.PrepareCmd(showCmd).Output()
 	return firstLine(output), err
-
 }
 
 func outputLines(output []byte) []string {
 	lines := strings.TrimSuffix(string(output), "\n")
 	return strings.Split(lines, "\n")
-
 }
 
 func firstLine(output []byte) string {

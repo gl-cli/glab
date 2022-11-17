@@ -81,7 +81,6 @@ func Test_HelperFunctions(t *testing.T) {
 				assert.False(t, got)
 			})
 		})
-
 	})
 
 	t.Run("SetPager()", func(t *testing.T) {
@@ -113,7 +112,6 @@ func Test_HelperFunctions(t *testing.T) {
 				ios.promptDisabled = true
 				got = ios.PromptEnabled()
 				assert.False(t, got)
-
 			})
 
 			t.Run("IsaTTY=false", func(t *testing.T) {

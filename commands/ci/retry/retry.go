@@ -12,7 +12,7 @@ import (
 )
 
 func NewCmdRetry(f *cmdutils.Factory) *cobra.Command {
-	var pipelineRetryCmd = &cobra.Command{
+	pipelineRetryCmd := &cobra.Command{
 		Use:     "retry <job-id>",
 		Short:   `Retry a CI job`,
 		Aliases: []string{},
@@ -48,7 +48,6 @@ func NewCmdRetry(f *cmdutils.Factory) *cobra.Command {
 			fmt.Fprintln(f.IO.StdOut, "Retried job (id:", job.ID, "), status:", job.Status, ", ref:", job.Ref, ", weburl: ", job.WebURL, ")")
 
 			return nil
-
 		},
 	}
 

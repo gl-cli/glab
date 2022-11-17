@@ -7,7 +7,7 @@ import (
 )
 
 func NewCmdUser(f *cmdutils.Factory) *cobra.Command {
-	var userCmd = &cobra.Command{
+	userCmd := &cobra.Command{
 		Use:   "user <command> [flags]",
 		Short: "Interact with user",
 		Long:  "",

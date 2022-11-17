@@ -17,7 +17,7 @@ import (
 )
 
 func NewCmdFor(f *cmdutils.Factory) *cobra.Command {
-	var mrForCmd = &cobra.Command{
+	mrForCmd := &cobra.Command{
 		Use:     "for",
 		Short:   `Create new merge request for an issue`,
 		Long:    ``,
@@ -84,7 +84,6 @@ func NewCmdFor(f *cmdutils.Factory) *cobra.Command {
 					_, branchErr = api.CreateBranch(apiClient, repo.FullName(), lb)
 					fmt.Println(branchErr)
 				}
-
 			}
 
 			var mergeTitle string

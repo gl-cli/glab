@@ -12,7 +12,6 @@ func TestTruncate(t *testing.T) {
 		args args
 		want string
 	}{
-
 		{
 			name: "short",
 			args: args{

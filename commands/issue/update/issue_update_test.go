@@ -102,7 +102,6 @@ func TestNewCmdUpdate(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-
 			args, _ := shlex.Split(tc.Issue)
 			cmd.SetArgs(args)
 			cmd.SetOut(ioutil.Discard)

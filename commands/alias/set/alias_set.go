@@ -28,7 +28,7 @@ func NewCmdSet(f *cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command
 		Config: f.Config,
 	}
 
-	var aliasSetCmd = &cobra.Command{
+	aliasSetCmd := &cobra.Command{
 		Use:   "set <alias name> '<command>' [flags]",
 		Short: `Set an alias.`,
 		Long: heredoc.Doc(`

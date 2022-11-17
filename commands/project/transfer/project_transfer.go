@@ -10,7 +10,7 @@ import (
 )
 
 func NewCmdTransfer(f *cmdutils.Factory) *cobra.Command {
-	var repoTransferCmd = &cobra.Command{
+	repoTransferCmd := &cobra.Command{
 		Use:   "transfer [repo] [flags]",
 		Short: `Transfer a repository to a new namespace.`,
 		Example: heredoc.Doc(`

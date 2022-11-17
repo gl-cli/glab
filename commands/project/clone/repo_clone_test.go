@@ -189,20 +189,20 @@ hosts:
 }
 
 func Test_repoClone_group(t *testing.T) {
-	var names = []string{"glab-cli/test", "glab-cli/test-pv"}
-	var urls = []string{"git@gitlab.com:glab-cli/test.git", "git@gitlab.com:glab-cli/test-pv.git"}
+	names := []string{"glab-cli/test", "glab-cli/test-pv"}
+	urls := []string{"git@gitlab.com:glab-cli/test.git", "git@gitlab.com:glab-cli/test-pv.git"}
 	repoCloneTest(t, names, urls, 0, false)
 }
 
 func Test_repoClone_group_single(t *testing.T) {
-	var names = []string{"glab-cli/test"}
-	var urls = []string{"git@gitlab.com:glab-cli/test.git"}
+	names := []string{"glab-cli/test"}
+	urls := []string{"git@gitlab.com:glab-cli/test.git"}
 	repoCloneTest(t, names, urls, 1, false)
 }
 
 func Test_repoClone_group_paginate(t *testing.T) {
-	var names = []string{"glab-cli/test", "glab-cli/test-pv"}
-	var urls = []string{"git@gitlab.com:glab-cli/test.git", "git@gitlab.com:glab-cli/test-pv.git"}
+	names := []string{"glab-cli/test", "glab-cli/test-pv"}
+	urls := []string{"git@gitlab.com:glab-cli/test.git", "git@gitlab.com:glab-cli/test-pv.git"}
 	repoCloneTest(t, names, urls, 1, true)
 }
 
@@ -234,7 +234,7 @@ hosts:
 	defer restore()
 
 	cmd := NewCmdClone(fac, nil)
-	var cli = "-g glab-cli"
+	cli := "-g glab-cli"
 	if perPage != 0 {
 		cli += fmt.Sprintf(" --per-page %d", perPage)
 	}

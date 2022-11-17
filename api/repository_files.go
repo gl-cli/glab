@@ -12,7 +12,6 @@ var GetFile = func(client *gitlab.Client, projectID interface{}, path string, re
 		Ref: &ref,
 	}
 	file, _, err := client.RepositoryFiles.GetFile(projectID, path, fileOpts)
-
 	if err != nil {
 		return nil, err
 	}

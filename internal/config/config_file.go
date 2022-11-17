@@ -13,8 +13,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var cachedConfig Config
-var configError error
+var (
+	cachedConfig Config
+	configError  error
+)
 
 // ConfigDir returns the config directory
 func ConfigDir() string {
@@ -69,7 +71,7 @@ var ReadConfigFile = func(filename string) ([]byte, error) {
 }
 
 var WriteConfigFile = func(filename string, data []byte) error {
-	err := os.MkdirAll(path.Dir(filename), 0750)
+	err := os.MkdirAll(path.Dir(filename), 0o750)
 	if err != nil {
 		return pathError(err)
 	}
@@ -77,7 +79,7 @@ var WriteConfigFile = func(filename string, data []byte) error {
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
-	err = WriteFile(filename, data, 0600)
+	err = WriteFile(filename, data, 0o600)
 	return err
 }
 
@@ -160,7 +162,6 @@ func pathError(err error) error {
 		if p := findRegularFile(pathError.Path); p != "" {
 			return fmt.Errorf("remove or rename regular file `%s` (must be a directory)", p)
 		}
-
 	}
 	return err
 }

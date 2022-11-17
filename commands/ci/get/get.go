@@ -22,7 +22,7 @@ type PipelineMergedResponse struct {
 }
 
 func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
-	var pipelineGetCmd = &cobra.Command{
+	pipelineGetCmd := &cobra.Command{
 		Use:     "get [flags]",
 		Short:   `Get JSON of a running CI pipeline on current or other branch specified`,
 		Aliases: []string{"stats"},
@@ -64,7 +64,14 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			jobs, err := api.GetPipelineJobs(apiClient, pipelineId, repo.FullName())
+			if err != nil {
+				return err
+			}
+
 			variables, err := api.GetPipelineVariables(apiClient, pipelineId, nil, repo.FullName())
+			if err != nil {
+				return err
+			}
 
 			mergedPipelineObject := &PipelineMergedResponse{
 				Pipeline:  pipeline,

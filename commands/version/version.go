@@ -10,7 +10,7 @@ import (
 )
 
 func NewCmdVersion(s *iostreams.IOStreams, version, buildDate string) *cobra.Command {
-	var versionCmd = &cobra.Command{
+	versionCmd := &cobra.Command{
 		Use:     "version",
 		Short:   "Show glab version information",
 		Long:    ``,

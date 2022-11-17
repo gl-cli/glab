@@ -114,5 +114,4 @@ func printEvent(w io.Writer, e *gitlab.ContributionEvent, project *gitlab.Projec
 		fmt.Fprintf(w, "%s %q", e.TargetType, e.Title)
 	}
 	fmt.Fprintln(w) // to leave a blank line
-
 }

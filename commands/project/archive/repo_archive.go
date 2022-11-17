@@ -16,7 +16,7 @@ import (
 )
 
 func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
-	var repoArchiveCmd = &cobra.Command{
+	repoArchiveCmd := &cobra.Command{
 		Use:   "archive <command> [flags]",
 		Short: `Get an archive of the repository.`,
 		Example: heredoc.Doc(`

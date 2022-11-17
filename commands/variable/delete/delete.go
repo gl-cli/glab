@@ -1,9 +1,8 @@
 package delete
 
 import (
-	"fmt"
-
 	"errors"
+	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
 	"gitlab.com/gitlab-org/cli/api"
@@ -71,7 +70,6 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra.Co
 	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Delete variable from a group")
 
 	return cmd
-
 }
 
 func deleteRun(opts *DeleteOpts) error {

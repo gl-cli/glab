@@ -35,7 +35,7 @@ func (opts CreateOpts) isSnippetFromFile() bool {
 
 func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{}
-	var snippetCreateCmd = &cobra.Command{
+	snippetCreateCmd := &cobra.Command{
 		Use:     "create [path]",
 		Short:   `Create new snippet`,
 		Long:    ``,

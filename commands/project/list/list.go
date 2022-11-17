@@ -32,7 +32,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	opts := &Options{
 		IO: f.IO,
 	}
-	var repoListCmd = &cobra.Command{
+	repoListCmd := &cobra.Command{
 		Use:   "list",
 		Short: `Get list of repositories.`,
 		Example: heredoc.Doc(`

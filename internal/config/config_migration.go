@@ -244,5 +244,5 @@ func copy(src string, dst string) error {
 		return err
 	}
 	// Write data to dst
-	return WriteFile(dst, data, 0600)
+	return WriteFile(dst, data, 0o600)
 }

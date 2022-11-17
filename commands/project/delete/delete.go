@@ -26,13 +26,13 @@ type DeleteOpts struct {
 }
 
 func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
-	var opts = &DeleteOpts{
+	opts := &DeleteOpts{
 		IO:       f.IO,
 		Lab:      f.HttpClient,
 		BaseRepo: f.BaseRepo,
 	}
 
-	var projectCreateCmd = &cobra.Command{
+	projectCreateCmd := &cobra.Command{
 		Use:   "delete [<NAMESPACE>/]<NAME>",
 		Short: `Delete an existing repository on GitLab.`,
 		Long:  ``,

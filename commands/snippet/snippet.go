@@ -8,7 +8,7 @@ import (
 )
 
 func NewCmdSnippet(f *cmdutils.Factory) *cobra.Command {
-	var snippetCmd = &cobra.Command{
+	snippetCmd := &cobra.Command{
 		Use:   "snippet <command> [flags]",
 		Short: `Create, view and manage snippets`,
 		Long:  ``,

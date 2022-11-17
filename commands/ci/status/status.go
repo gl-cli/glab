@@ -17,7 +17,7 @@ import (
 )
 
 func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
-	var pipelineStatusCmd = &cobra.Command{
+	pipelineStatusCmd := &cobra.Command{
 		Use:     "status [flags]",
 		Short:   `View a running CI pipeline on current or other branch specified`,
 		Aliases: []string{"stats"},
@@ -96,7 +96,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 					default:
 						status = c.Gray(s)
 					}
-					//fmt.Println(job.Tag)
+					// fmt.Println(job.Tag)
 					if compact {
 						fmt.Fprintf(writer, "(%s) • %s [%s]\n", status, job.Name, job.Stage)
 					} else {

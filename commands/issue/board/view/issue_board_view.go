@@ -14,6 +14,9 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -22,8 +25,10 @@ var (
 	repo      glrepo.Interface
 )
 
-const closed string = "closed"
-const opened string = "opened"
+const (
+	closed string = "closed"
+	opened string = "opened"
+)
 
 type issueBoardViewOptions struct {
 	assignee  string
@@ -40,8 +45,8 @@ type boardMeta struct {
 }
 
 func NewCmdView(f *cmdutils.Factory) *cobra.Command {
-	var opts = &issueBoardViewOptions{}
-	var viewCmd = &cobra.Command{
+	opts := &issueBoardViewOptions{}
+	viewCmd := &cobra.Command{
 		Use:   "view [flags]",
 		Short: `View project issue board.`,
 		Long:  ``,
@@ -149,16 +154,17 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			// format table title
+			caser := cases.Title(language.English)
 			var boardType, boardContext string
 			if selectedBoard.group != nil {
-				boardType = strings.Title("group")
+				boardType = caser.String("group")
 				boardContext = project.Namespace.Name
 			} else {
-				boardType = strings.Title("project")
+				boardType = caser.String("project")
 				boardContext = project.NameWithNamespace
 			}
 			root.SetBorderPadding(1, 1, 2, 2).SetBorder(true).SetTitle(
-				fmt.Sprintf(" %s • %s ", strings.Title(boardType+" issue board"), boardContext),
+				fmt.Sprintf(" %s • %s ", caser.String(boardType+" issue board"), boardContext),
 			)
 
 			screen, err := tcell.NewScreen()
@@ -245,7 +251,7 @@ func buildLabelString(labelDetails []*gitlab.LabelDetails) string {
 		labels += fmt.Sprintf("[white:%s:-]%s[white:-:-] ", ld.Color, ld.Name)
 	}
 	if labels != "" {
-		labels = strings.TrimSpace(labels) + fmt.Sprintf("\n")
+		labels = strings.TrimSpace(labels) + "\n"
 	}
 	return labels
 }
@@ -269,7 +275,6 @@ func mapBoardData(
 	projectIssueBoards []*gitlab.IssueBoard,
 	projectGroupIssueBoards []*gitlab.GroupIssueBoard,
 ) ([]string, map[string]boardMeta) {
-
 	// find longest board name to base padding on
 	maxNameLength := 0
 	for _, board := range projectIssueBoards {

@@ -116,7 +116,6 @@ hosts:
 			assert.Equal(t, tt.wantOpts.IO, actualOpts.IO)
 		})
 	}
-
 }
 
 func TestTraceRun(t *testing.T) {
@@ -182,5 +181,4 @@ func TestTraceRun(t *testing.T) {
 			tt.assertContains(t, stdout.String())
 		})
 	}
-
 }

@@ -100,7 +100,7 @@ hosts:
 	if envIsSet && originalEnvVarToken != "" {
 		_ = os.Setenv("GITLAB_TOKEN", "")
 	}
-	var client = &http.Client{}
+	client := &http.Client{}
 	client.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
 		t.Log("Tsti")
 		return &http.Response{

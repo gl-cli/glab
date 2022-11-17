@@ -23,7 +23,7 @@ func Test_WriteFile(t *testing.T) {
 
 	t.Run("regular", func(t *testing.T) {
 		require.Nilf(t,
-			WriteFile(fpath, []byte("profclems/glab"), 0644),
+			WriteFile(fpath, []byte("profclems/glab"), 0o644),
 			"unexpected error = %s", err,
 		)
 
@@ -41,7 +41,7 @@ func Test_WriteFile(t *testing.T) {
 		symPath := filepath.Join(dir, "test-symlink")
 		require.Nil(t, os.Symlink(fpath, symPath), "failed to create a symlink")
 		require.Nilf(t,
-			WriteFile(symPath, []byte("profclems/glab/symlink"), 0644),
+			WriteFile(symPath, []byte("profclems/glab/symlink"), 0o644),
 			"unexpected error = %s", err,
 		)
 

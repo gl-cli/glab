@@ -13,7 +13,7 @@ import (
 )
 
 func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
-	var issueCloseCmd = &cobra.Command{
+	issueCloseCmd := &cobra.Command{
 		Use:   "close <id>",
 		Short: `Close an issue`,
 		Long:  ``,

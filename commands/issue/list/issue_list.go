@@ -56,11 +56,11 @@ type ListOptions struct {
 }
 
 func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.Command {
-	var opts = &ListOptions{
+	opts := &ListOptions{
 		IO: f.IO,
 	}
 
-	var issueListCmd = &cobra.Command{
+	issueListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List project issues`,
 		Long:    ``,

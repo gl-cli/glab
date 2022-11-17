@@ -31,7 +31,7 @@ import (
 // NewCmdRoot is the main root/parent command
 func NewCmdRoot(f *cmdutils.Factory, version, buildDate string) *cobra.Command {
 	c := f.IO.Color()
-	var rootCmd = &cobra.Command{
+	rootCmd := &cobra.Command{
 		Use:           "glab <command> <subcommand> [flags]",
 		Short:         "A GitLab CLI Tool",
 		Long:          `GLab is an open source GitLab CLI tool bringing GitLab to your command line`,

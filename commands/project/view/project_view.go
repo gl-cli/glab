@@ -32,12 +32,12 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		IO: f.IO,
 	}
 
-	var projectViewCmd = &cobra.Command{
+	projectViewCmd := &cobra.Command{
 		Use:   "view [repository] [flags]",
 		Short: "View a project/repository",
-		Long:  heredoc.Doc(`Display the description and README of a project or open it in the browser.
+		Long: heredoc.Doc(`Display the description and README of a project or open it in the browser.
 		`),
-		Args:  cobra.MaximumNArgs(1),
+		Args: cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
 			# view project information for the current directory
 			$ glab repo view
@@ -175,7 +175,6 @@ func getReadmeFile(opts *ViewOptions, project *gitlab.Project) (*gitlab.File, er
 	}
 
 	readmeFile, err := api.GetFile(opts.APIClient, project.PathWithNamespace, readmeFileName, opts.Branch)
-
 	if err != nil {
 		return nil, cmdutils.WrapError(err, fmt.Sprintf("Failed to retrieve README file on the %s branch", opts.Branch))
 	}

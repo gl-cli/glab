@@ -83,7 +83,6 @@ func TestAliasSet_empty_aliases(t *testing.T) {
 	`))
 
 	output, err := runCommand(cfg, true, "co 'mr checkout'")
-
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -135,13 +134,17 @@ func TestAliasSet_arg_processing(t *testing.T) {
 
 		{`iz 'issue list'`, "- Adding alias for.*iz.*issue list", "iz: issue list"},
 
-		{`ii 'issue list --author="$1" --label="$2"'`,
+		{
+			`ii 'issue list --author="$1" --label="$2"'`,
 			`- Adding alias for.*ii.*issue list --author="\$1" --label="\$2"`,
-			`ii: issue list --author="\$1" --label="\$2"`},
+			`ii: issue list --author="\$1" --label="\$2"`,
+		},
 
-		{`ix "issue list --author='\$1' --label='\$2'"`,
+		{
+			`ix "issue list --author='\$1' --label='\$2'"`,
 			`- Adding alias for.*ix.*issue list --author='\$1' --label='\$2'`,
-			`ix: issue list --author='\$1' --label='\$2'`},
+			`ix: issue list --author='\$1' --label='\$2'`,
+		},
 	}
 
 	for _, c := range cases {
@@ -198,7 +201,6 @@ view: mr view
 
 	test.ExpectLines(t, output.Stderr(), "Adding alias for.*view.*mr view", "Added alias.")
 	assert.Equal(t, expected, mainBuf.String())
-
 }
 
 func TestAliasSet_invalid_command(t *testing.T) {

@@ -31,5 +31,4 @@ func TestPipelineCmd(t *testing.T) {
 	out := <-outC
 
 	assert.Contains(t, out, "Use \"ci [command] --help\" for more information about a command.\n")
-
 }

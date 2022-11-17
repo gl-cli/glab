@@ -36,7 +36,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	opts := &ViewOpts{
 		IO: f.IO,
 	}
-	var issueViewCmd = &cobra.Command{
+	issueViewCmd := &cobra.Command{
 		Use:     "view <id>",
 		Short:   `Display the title, body, and other information about an issue.`,
 		Long:    ``,
@@ -50,7 +50,6 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			apiClient, err := f.HttpClient()
 			if err != nil {
 				return err
@@ -64,7 +63,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 
 			opts.Issue = issue
 
-			//open in browser if --web flag is specified
+			// open in browser if --web flag is specified
 			if opts.Web {
 				if f.IO.IsaTTY && f.IO.IsErrTTY {
 					fmt.Fprintf(opts.IO.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(opts.Issue.WebURL))

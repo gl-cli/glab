@@ -19,7 +19,7 @@ import (
 )
 
 func NewCmdIssue(f *cmdutils.Factory) *cobra.Command {
-	var issueCmd = &cobra.Command{
+	issueCmd := &cobra.Command{
 		Use:   "issue [command] [flags]",
 		Short: `Work with GitLab issues`,
 		Long:  ``,

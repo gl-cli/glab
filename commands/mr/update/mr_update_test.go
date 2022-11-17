@@ -117,14 +117,16 @@ hosts:
 		{
 			Name: "Remove source branch",
 			Args: "1 --remove-source-branch",
-			ExpectedMsg: []string{"- Updating merge request !1",
+			ExpectedMsg: []string{
+				"- Updating merge request !1",
 				"✓ enabled removal of source branch on merge",
 			},
 		},
 		{
 			Name: "Restore remove source branch",
 			Args: "1 --remove-source-branch",
-			ExpectedMsg: []string{"- Updating merge request !1",
+			ExpectedMsg: []string{
+				"- Updating merge request !1",
 				"✓ disabled removal of source branch on merge",
 			},
 		},

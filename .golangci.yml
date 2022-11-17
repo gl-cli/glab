@@ -1,7 +1,17 @@
-linters:
-    enable:
-        - gofmt
-
 run:
     timeout: 5m
     modules-download-mode: readonly
+
+linters:
+    disable-all: true
+    enable:
+        - errcheck
+        - exportloopref
+        - gofumpt
+        - goimports
+        - gosimple
+        - govet
+        - ineffassign
+        - staticcheck
+        - typecheck
+        - unused

@@ -51,7 +51,7 @@ func NewCmdFork(f *cmdutils.Factory, runE func(*cmdutils.Factory) error) *cobra.
 		Config:             f.Config,
 		CurrentDirIsParent: true,
 	}
-	var forkCmd = &cobra.Command{
+	forkCmd := &cobra.Command{
 		Use:   "fork <repo>",
 		Short: "Create a fork of a GitLab repository",
 		Example: heredoc.Doc(`
@@ -152,9 +152,9 @@ func forkRun(opts *ForkOptions) error {
 	// we query the import_status for the new project.
 	importStatus := ""
 	var importError error
-	var maximumRetries = 3
-	var retries = 0
-	var skipFirstCheck = true
+	maximumRetries := 3
+	retries := 0
+	skipFirstCheck := true
 loop:
 	for {
 		if !skipFirstCheck {

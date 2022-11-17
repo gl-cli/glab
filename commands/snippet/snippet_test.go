@@ -31,5 +31,4 @@ func TestCmdSnippet_noARgs(t *testing.T) {
 	out := <-outC
 
 	assert.Contains(t, out, "Use \"snippet [command] --help\" for more information about a command.\n")
-
 }

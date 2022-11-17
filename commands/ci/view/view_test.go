@@ -23,7 +23,7 @@ func assertScreen(t *testing.T, screen tcell.Screen, expected []string) {
 			r, _, _, _ := screen.GetContent(x, y)
 			runes[x] = r
 			_ = expectedRune
-			//assert.Equal(t, expectedRune, r, "%s != %s at (%d,%d)",
+			// assert.Equal(t, expectedRune, r, "%s != %s at (%d,%d)",
 			//	strconv.QuoteRune(expectedRune), strconv.QuoteRune(r), x, y)
 		}
 
@@ -411,7 +411,6 @@ func Test_LinkJobsNegative(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 			assert.Error(t, linkJobs(screen, test.jobs, test.boxes))
-
 		})
 	}
 }

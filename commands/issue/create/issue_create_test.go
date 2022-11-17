@@ -64,7 +64,8 @@ func Test_IssueCreate(t *testing.T) {
 	cmd := NewCmdCreate(f)
 	cmd.Flags().StringP("repo", "R", "", "")
 
-	cliStr := []string{"-t", "myissuetitle",
+	cliStr := []string{
+		"-t", "myissuetitle",
 		"-d", "myissuebody",
 		"-l", "test,bug",
 		"--weight", "1",

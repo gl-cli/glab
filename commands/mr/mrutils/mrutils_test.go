@@ -492,7 +492,6 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.Nil(t, gotMR)
 			assert.Nil(t, gotRepo)
 			assert.EqualError(t, err, `no merge requests from branch "foo"`)
-
 		})
 		t.Run("api.GetMR", func(t *testing.T) {
 			f := *f

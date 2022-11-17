@@ -76,7 +76,6 @@ func TestNewCmdCreate(t *testing.T) {
 
 			assert.Contains(t, out, tc.want)
 			assert.Contains(t, stderr.String(), "")
-
 		})
 	}
 }

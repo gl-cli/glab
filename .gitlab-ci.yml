@@ -20,17 +20,20 @@ include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
+  - local: .gitlab/ci/*.gitlab-ci.yml
 
 
 # From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
 .go-cache:
   variables:
     GOPATH: $CI_PROJECT_DIR/.go
+    GOLANGCI_LINT_CACHE: $CI_PROJECT_DIR/.golangci-lint
   before_script:
-    - mkdir -p .go
+    - mkdir -p .go .golangci-lint
   cache:
     paths:
       - .go/pkg/mod/
+      - .golangci-lint/
 
 .documentation:
   stage: documentation

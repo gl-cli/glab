@@ -21,7 +21,6 @@ import (
 )
 
 func TestNewCmdReleaseList(t *testing.T) {
-
 	oldGetRelease := api.GetRelease
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
 	api.GetRelease = func(client *gitlab.Client, projectID interface{}, tag string) (*gitlab.Release, error) {
@@ -123,7 +122,6 @@ func TestNewCmdReleaseList(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			cmd := NewCmdReleaseList(f)
 			cmdutils.EnableRepoOverride(cmd, f)
 

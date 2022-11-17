@@ -15,7 +15,7 @@ import (
 )
 
 func NewCmdNote(f *cmdutils.Factory) *cobra.Command {
-	var issueNoteCreateCmd = &cobra.Command{
+	issueNoteCreateCmd := &cobra.Command{
 		Use:     "note <issue-id>",
 		Aliases: []string{"comment"},
 		Short:   "Add a comment or note to an issue on GitLab",

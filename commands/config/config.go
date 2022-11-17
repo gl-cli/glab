@@ -147,7 +147,7 @@ func NewCmdConfigInit(f *cmdutils.Factory) *cobra.Command {
 		$ glab config init
 		? Enter default GitLab Host (Current Value: https://gitlab.com):
 		%[1]s
-`,"```"),
+`, "```"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return configInit(f)
 		},

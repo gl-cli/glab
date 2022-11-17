@@ -164,7 +164,6 @@ func TestMRView(t *testing.T) {
 		cmdutils.EnableRepoOverride(cmd, stubFactory)
 
 		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R glab-cli/test")
-
 		if err != nil {
 			t.Error(err)
 			return

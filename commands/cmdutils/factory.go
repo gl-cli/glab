@@ -107,7 +107,6 @@ func HTTPClientFactory(f *Factory) {
 }
 
 func NewFactory() *Factory {
-
 	return &Factory{
 		Config:  configFunc,
 		Remotes: remotesFunc,

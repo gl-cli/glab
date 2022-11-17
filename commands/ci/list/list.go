@@ -14,7 +14,7 @@ import (
 )
 
 func NewCmdList(f *cmdutils.Factory) *cobra.Command {
-	var pipelineListCmd = &cobra.Command{
+	pipelineListCmd := &cobra.Command{
 		Use:   "list [flags]",
 		Short: `Get the list of CI pipelines`,
 		Example: heredoc.Doc(`

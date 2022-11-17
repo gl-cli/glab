@@ -19,12 +19,10 @@ type mrCheckoutConfig struct {
 	upstream string
 }
 
-var (
-	mrCheckoutCfg mrCheckoutConfig
-)
+var mrCheckoutCfg mrCheckoutConfig
 
 func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
-	var mrCheckoutCmd = &cobra.Command{
+	mrCheckoutCmd := &cobra.Command{
 		Use:   "checkout [<id> | <branch>]",
 		Short: "Checkout to an open merge request",
 		Long:  ``,
@@ -93,7 +91,6 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 				fmt.Println(err)
 			}
 			repoRemote, err := remotes.FindByRepo(repo.RepoOwner(), repo.RepoName())
-
 			if err != nil {
 				fmt.Println(err)
 			}

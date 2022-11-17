@@ -38,7 +38,7 @@ func NewCmdView(f *cmdutils.Factory, runE func(opts *ViewOpts) error) *cobra.Com
 		Long: heredoc.Doc(`View information about a GitLab Release.
 
 			Without an explicit tag name argument, the latest release in the project is shown.
-		`,),
+		`),
 		Example: heredoc.Doc(`
 			View the latest release of a GitLab repository
 			$ glab release view
@@ -105,7 +105,7 @@ func viewRun(opts *ViewOpts) error {
 		}
 	}
 
-	if opts.OpenInBrowser { //open in browser if --web flag is specified
+	if opts.OpenInBrowser { // open in browser if --web flag is specified
 		url := fmt.Sprintf("%s://%s/%s/-/releases/%s",
 			glinstance.OverridableDefaultProtocol(), glinstance.OverridableDefault(),
 			repo.FullName(), release.TagName)

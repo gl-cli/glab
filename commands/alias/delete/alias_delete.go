@@ -23,7 +23,7 @@ func NewCmdDelete(f *cmdutils.Factory, runF func(*DeleteOptions) error) *cobra.C
 		IO:     f.IO,
 	}
 
-	var aliasDeleteCmd = &cobra.Command{
+	aliasDeleteCmd := &cobra.Command{
 		Use:   "delete <alias name> [flags]",
 		Short: `Delete an alias.`,
 		Long:  ``,
@@ -54,7 +54,6 @@ func deleteRun(cmd *cobra.Command, opts *DeleteOptions) error {
 	expansion, ok := aliasCfg.Get(opts.Name)
 	if !ok {
 		return fmt.Errorf("no such alias %s", opts.Name)
-
 	}
 	err = aliasCfg.Delete(opts.Name)
 	if err != nil {

@@ -15,7 +15,7 @@ import (
 )
 
 func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
-	var pipelineDeleteCmd = &cobra.Command{
+	pipelineDeleteCmd := &cobra.Command{
 		Use:   "delete <id> [flags]",
 		Short: `Delete a CI pipeline`,
 		Example: heredoc.Doc(`
@@ -25,7 +25,6 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		Long: ``,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			var err error
 			c := f.IO.Color()
 			apiClient, err := f.HttpClient()
@@ -71,7 +70,6 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			return nil
-
 		},
 	}
 

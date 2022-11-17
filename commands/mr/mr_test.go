@@ -37,5 +37,4 @@ func TestMrCmd_noARgs(t *testing.T) {
 	out := <-outC
 
 	assert.Contains(t, out, "Use \"mr [command] --help\" for more information about a command.\n")
-
 }

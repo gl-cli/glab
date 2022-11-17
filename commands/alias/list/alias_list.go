@@ -25,7 +25,7 @@ func NewCmdList(f *cmdutils.Factory, runF func(*ListOptions) error) *cobra.Comma
 		IO:     f.IO,
 	}
 
-	var aliasListCmd = &cobra.Command{
+	aliasListCmd := &cobra.Command{
 		Use:   "list [flags]",
 		Short: `List the available aliases.`,
 		Long:  ``,

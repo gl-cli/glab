@@ -137,7 +137,6 @@ func loginRun() error {
 				"GitLab Self-hosted Instance",
 			},
 		}, &hostType)
-
 		if err != nil {
 			return fmt.Errorf("could not prompt: %w", err)
 		}

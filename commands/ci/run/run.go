@@ -85,7 +85,7 @@ func extractFileVar(s string) (*gitlab.PipelineVariableOptions, error) {
 }
 
 func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
-	var pipelineRunCmd = &cobra.Command{
+	pipelineRunCmd := &cobra.Command{
 		Use:     "run [flags]",
 		Short:   `Create or run a new CI pipeline`,
 		Aliases: []string{"create"},

@@ -14,7 +14,7 @@ import (
 )
 
 func NewCmdCI(f *cmdutils.Factory) *cobra.Command {
-	var pipelineCICmd = &cobra.Command{
+	pipelineCICmd := &cobra.Command{
 		Use:   "ci <command> [flags]",
 		Short: `Work with GitLab CI pipelines and jobs`,
 		Example: heredoc.Doc(`

@@ -19,9 +19,9 @@ func Test_fileConfig_Set(t *testing.T) {
 	assert.NoError(t, c.Set("example.com", "editor", "vim"))
 	assert.NoError(t, c.Set("gitlab.com", "username", "hubot"))
 	assert.NoError(t, c.WriteAll())
-	//a, _ := c.Aliases()
-	//assert.NoError(t, a.Set("co", "mr checkout"))
-	//assert.NoError(t, a.Write())
+	// a, _ := c.Aliases()
+	// assert.NoError(t, a.Set("co", "mr checkout"))
+	// assert.NoError(t, a.Write())
 
 	expected := heredoc.Doc(`# What protocol to use when performing git operations. Supported values: ssh, https
 git_protocol: ssh
