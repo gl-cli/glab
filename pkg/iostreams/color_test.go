@@ -10,7 +10,7 @@ import (
 func Test_isColorEnabled(t *testing.T) {
 	preRun := func() {
 		os.Unsetenv("NO_COLOR")
-		os.Unsetenv("COLOR_ENALBED")
+		os.Unsetenv("COLOR_ENABLED")
 		checkedNoColor = false // Reset it before each run
 	}
 
