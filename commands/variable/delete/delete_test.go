@@ -105,11 +105,11 @@ func Test_deleteRun(t *testing.T) {
 		httpmock.NewStringResponse(204, " "),
 	)
 
-	var httpClient = func() (*gitlab.Client, error) {
+	httpClient := func() (*gitlab.Client, error) {
 		a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 		return a.Lab(), nil
 	}
-	var baseRepo = func() (glrepo.Interface, error) {
+	baseRepo := func() (glrepo.Interface, error) {
 		return glrepo.FromFullName("owner/repo")
 	}
 

@@ -68,7 +68,6 @@ func httpRequest(client *api.Client, config config.Config, hostname string, meth
 
 	baseURL, _ = url.Parse(baseURLStr)
 	req, err := api.NewHTTPRequest(client, method, baseURL, body, headers, bodyIsJSON)
-
 	if err != nil {
 		return nil, err
 	}

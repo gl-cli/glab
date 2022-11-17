@@ -14,7 +14,7 @@ import (
 var boardName string
 
 func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
-	var issueCmd = &cobra.Command{
+	issueCmd := &cobra.Command{
 		Use:     "create [flags]",
 		Short:   `Create a project issue board.`,
 		Long:    ``,

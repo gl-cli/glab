@@ -11,8 +11,10 @@ const (
 	defaultProtocol = "https"
 )
 
-var hostnameOverride string
-var protocolOverride string
+var (
+	hostnameOverride string
+	protocolOverride string
+)
 
 // Default returns the host name of the default GitLab instance
 func Default() string {

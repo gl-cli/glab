@@ -28,7 +28,7 @@ import (
 )
 
 func NewCmdMR(f *cmdutils.Factory) *cobra.Command {
-	var mrCmd = &cobra.Command{
+	mrCmd := &cobra.Command{
 		Use:   "mr <command> [flags]",
 		Short: `Create, view and manage merge requests`,
 		Long:  ``,

@@ -151,7 +151,6 @@ func TestNewCmdView(t *testing.T) {
 	}
 
 	t.Run("show", func(t *testing.T) {
-
 		cmd := NewCmdView(stubFactory)
 		cmdutils.EnableRepoOverride(cmd, stubFactory)
 		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R glab-cli/test")

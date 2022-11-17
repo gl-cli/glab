@@ -150,7 +150,8 @@ func TestNewCmdCreate_tty(t *testing.T) {
 		deadbeef refs/remotes/origin/feat-new-mr
 	`))
 
-	cliStr := []string{"-t", "myMRtitle",
+	cliStr := []string{
+		"-t", "myMRtitle",
 		"-d", "myMRbody",
 		"-l", "test,bug",
 		"--milestone", "1",

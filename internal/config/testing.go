@@ -49,7 +49,6 @@ func StubConfig(main, aliases string) func() {
 		default:
 			return []byte(nil), fmt.Errorf("read from unstubbed file: %q", fn)
 		}
-
 	}
 	return func() {
 		ReadConfigFile = orig

@@ -29,7 +29,7 @@ func NewCmdContributors(f *cmdutils.Factory) *cobra.Command {
 	opts := &Options{
 		IO: f.IO,
 	}
-	var repoContributorsCmd = &cobra.Command{
+	repoContributorsCmd := &cobra.Command{
 		Use:   "contributors",
 		Short: `Get repository contributors list.`,
 		Example: heredoc.Doc(`

@@ -2,14 +2,13 @@ package config
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"sort"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-
-	"errors"
 
 	"gopkg.in/yaml.v3"
 )

@@ -32,7 +32,7 @@ func NewCmdMirror(f *cmdutils.Factory) *cobra.Command {
 		IO: f.IO,
 	}
 
-	var projectMirrorCmd = &cobra.Command{
+	projectMirrorCmd := &cobra.Command{
 		Use:   "mirror [ID | URL | PATH] [flags]",
 		Short: "Mirror a project/repository to the specified location using pull or push method.",
 		Long:  ``,
@@ -123,7 +123,7 @@ func runProjectMirror(opts *MirrorOptions) error {
 func createPushMirror(opts *MirrorOptions) error {
 	var pm *gitlab.ProjectMirror
 	var err error
-	var pushOptions = api.CreatePushMirrorOptions{
+	pushOptions := api.CreatePushMirrorOptions{
 		Url:                   opts.URL,
 		Enabled:               opts.Enabled,
 		OnlyProtectedBranches: opts.ProtectedBranchesOnly,
@@ -147,7 +147,7 @@ func createPushMirror(opts *MirrorOptions) error {
 }
 
 func createPullMirror(opts *MirrorOptions) error {
-	var pullOptions = api.CreatePullMirrorOptions{
+	pullOptions := api.CreatePullMirrorOptions{
 		Url:                   opts.URL,
 		Enabled:               opts.Enabled,
 		OnlyProtectedBranches: opts.ProtectedBranchesOnly,

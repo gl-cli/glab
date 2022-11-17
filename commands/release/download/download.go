@@ -142,6 +142,7 @@ func downloadRun(opts *DownloadOpts) error {
 	}
 
 	for _, source := range release.Assets.Sources {
+		source := source
 		name := path.Base(source.URL)
 		if len(opts.AssetNames) > 0 && (!matchAny(opts.AssetNames, name)) {
 			continue
@@ -200,7 +201,7 @@ func downloadAssets(httpClient *api.Client, io *iostreams.IOStreams, toDownload 
 
 func downloadAsset(client *api.Client, assetURL, destinationPath string) error {
 	var body io.Reader
-	//color := streams.Color()
+	// color := streams.Color()
 
 	baseURL, _ := url.Parse(assetURL)
 
@@ -219,7 +220,7 @@ func downloadAsset(client *api.Client, assetURL, destinationPath string) error {
 		return errors.New(resp.Status)
 	}
 
-	f, err := os.OpenFile(destinationPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+	f, err := os.OpenFile(destinationPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
 		return err
 	}

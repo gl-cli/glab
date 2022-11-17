@@ -465,7 +465,6 @@ func (ua *UserAssignments) UsersFromAddRemove(
 	apiClient *gitlab.Client,
 	actions []string,
 ) (*[]int, []string, error) {
-
 	var assignedIDs []int
 	var usernames []string
 

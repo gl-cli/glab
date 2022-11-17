@@ -12,7 +12,7 @@ import (
 )
 
 func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
-	var mrDeleteCmd = &cobra.Command{
+	mrDeleteCmd := &cobra.Command{
 		Use:     "delete [<id> | <branch>]",
 		Short:   `Delete merge requests`,
 		Long:    ``,

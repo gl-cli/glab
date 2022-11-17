@@ -11,7 +11,7 @@ func Test_tlsConfig(t *testing.T) {
 	type args struct {
 		host string
 	}
-	var tests = []struct {
+	tests := []struct {
 		name string
 		args args
 		want []uint16
@@ -38,7 +38,6 @@ func Test_tlsConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			client := tlsConfig(tt.args.host)
 
 			assert.Equal(t, tt.want, client.CipherSuites)

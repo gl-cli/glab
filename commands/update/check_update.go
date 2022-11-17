@@ -14,7 +14,7 @@ import (
 const defaultProjectURL = "https://gitlab.com/gitlab-org/cli"
 
 func NewCheckUpdateCmd(f *cmdutils.Factory, version string) *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "check-update",
 		Short:   "Check for latest glab releases",
 		Long:    ``,

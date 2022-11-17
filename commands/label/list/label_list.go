@@ -14,7 +14,7 @@ import (
 )
 
 func NewCmdList(f *cmdutils.Factory) *cobra.Command {
-	var labelListCmd = &cobra.Command{
+	labelListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List labels in repository`,
 		Long:    ``,
@@ -76,7 +76,6 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			//}
 
 			return nil
-
 		},
 	}
 

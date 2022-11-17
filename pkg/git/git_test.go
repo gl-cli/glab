@@ -193,7 +193,6 @@ func TestParseExtraCloneArgs(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestReadBranchConfig(t *testing.T) {

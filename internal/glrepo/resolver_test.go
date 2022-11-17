@@ -220,7 +220,6 @@ func Test_resolveNetwork(t *testing.T) {
 
 		for i := 0; i < maxRemotesForLookup; i++ {
 			rem.remotes = append(rem.remotes, rem.remotes[i])
-
 		}
 		// Make sure we have at least one more remote than the limit set from maxRemotesForLookup
 		assert.Len(t, rem.remotes, maxRemotesForLookup+1)

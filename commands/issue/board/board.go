@@ -8,7 +8,7 @@ import (
 )
 
 func NewCmdBoard(f *cmdutils.Factory) *cobra.Command {
-	var issueCmd = &cobra.Command{
+	issueCmd := &cobra.Command{
 		Use:   "board [command] [flags]",
 		Short: `Work with GitLab Issue Boards in the given project.`,
 		Long:  ``,

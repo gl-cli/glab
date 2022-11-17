@@ -60,7 +60,7 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 
 	ctxOpts := &ContextOpts{}
 
-	var repoCloneCmd = &cobra.Command{
+	repoCloneCmd := &cobra.Command{
 		Use:   "clone <repo> [<dir>] [-- [<gitflags>...]]",
 		Short: `Clone a GitLab repository/project`,
 		Example: heredoc.Doc(`
@@ -158,7 +158,7 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 
 func listProjects(opts *CloneOptions, ListGroupProjectOpts *gitlab.ListGroupProjectsOptions) ([]*gitlab.Project, error) {
 	var projects []*gitlab.Project
-	var hasRemaining = true
+	hasRemaining := true
 
 	for hasRemaining {
 		currentPage, resp, err := api.ListGroupProjects(opts.APIClient.Lab(), opts.GroupName, ListGroupProjectOpts)
@@ -216,7 +216,7 @@ func groupClone(opts *CloneOptions, ctxOpts *ContextOpts) error {
 		ListGroupProjectOpts.Page = opts.Page
 	}
 
-	var projects, err = listProjects(opts, ListGroupProjectOpts)
+	projects, err := listProjects(opts, ListGroupProjectOpts)
 	var finalOutput []string
 	for _, project := range projects {
 		ctxOpt := *ctxOpts

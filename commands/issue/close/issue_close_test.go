@@ -60,7 +60,6 @@ func Test_issueClose(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-
 			io, _, stdout, stderr := iostreams.Test()
 			f := cmdtest.StubFactory("https://gitlab.com/glab-cli/test")
 			f.IO = io
@@ -81,7 +80,7 @@ func Test_issueClose(t *testing.T) {
 			}
 
 			out := stripansi.Strip(stdout.String())
-			//outErr := stripansi.Strip(stderr.String())
+			// outErr := stripansi.Strip(stderr.String())
 
 			for _, msg := range tc.ExpectedMsg {
 				assert.Contains(t, out, msg)

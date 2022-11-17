@@ -36,7 +36,6 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Comman
             glab variable get -g GROUP VAR_KEY
 		`),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-
 			opts.HTTPClient = f.HttpClient
 			opts.BaseRepo = f.BaseRepo
 

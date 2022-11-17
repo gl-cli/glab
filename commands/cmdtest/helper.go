@@ -95,7 +95,7 @@ func InitTest(m *testing.M, suffix string) {
 }
 
 func RunCommand(cmd *cobra.Command, cli string, stds ...*bytes.Buffer) (*test.CmdOut, error) {
-	//var stdin *bytes.Buffer
+	// var stdin *bytes.Buffer
 	var stderr *bytes.Buffer
 	var stdout *bytes.Buffer
 

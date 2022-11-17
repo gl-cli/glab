@@ -12,7 +12,7 @@ import (
 )
 
 func NewCmdUnsubscribe(f *cmdutils.Factory) *cobra.Command {
-	var mrUnsubscribeCmd = &cobra.Command{
+	mrUnsubscribeCmd := &cobra.Command{
 		Use:     "unsubscribe [<id> | <branch>]",
 		Short:   `Unsubscribe from merge requests`,
 		Long:    ``,

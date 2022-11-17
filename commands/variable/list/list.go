@@ -53,7 +53,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 }
 
 func listRun(opts *ListOpts) error {
-	//c := opts.IO.Color()
+	// c := opts.IO.Color()
 	httpClient, err := opts.HTTPClient()
 	if err != nil {
 		return err

@@ -15,7 +15,7 @@ import (
 )
 
 func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
-	var jobArtifactCmd = &cobra.Command{
+	jobArtifactCmd := &cobra.Command{
 		Use:     "artifact <refName> <jobName> [flags]",
 		Short:   `Download all Artifacts from the last pipeline`,
 		Aliases: []string{"push"},
@@ -26,7 +26,6 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 		Long: ``,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			repo, err := f.BaseRepo()
 			if err != nil {
 				return err
@@ -51,7 +50,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if !config.CheckPathExists(path) {
-				if err := os.Mkdir(path, 0755); err != nil {
+				if err := os.Mkdir(path, 0o755); err != nil {
 					return err
 				}
 			}

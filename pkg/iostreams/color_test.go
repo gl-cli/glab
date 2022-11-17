@@ -49,5 +49,4 @@ func Test_isColorEnabled(t *testing.T) {
 		got := isColorEnabled()
 		assert.True(t, got)
 	})
-
 }

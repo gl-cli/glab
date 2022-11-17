@@ -37,7 +37,7 @@ func NewCmdTrace(f *cmdutils.Factory, runE func(traceOpts *TraceOpts) error) *co
 	opts := &TraceOpts{
 		IO: f.IO,
 	}
-	var pipelineCITraceCmd = &cobra.Command{
+	pipelineCITraceCmd := &cobra.Command{
 		Use:   "trace [<job-id>] [flags]",
 		Short: `Trace a CI job log in real time`,
 		Example: heredoc.Doc(`

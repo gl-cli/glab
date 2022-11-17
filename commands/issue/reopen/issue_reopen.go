@@ -13,7 +13,7 @@ import (
 )
 
 func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
-	var issueReopenCmd = &cobra.Command{
+	issueReopenCmd := &cobra.Command{
 		Use:     "reopen <id>",
 		Short:   `Reopen a closed issue`,
 		Long:    ``,
@@ -30,7 +30,6 @@ func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
 			c := f.IO.Color()
 
 			apiClient, err := f.HttpClient()
-
 			if err != nil {
 				return err
 			}

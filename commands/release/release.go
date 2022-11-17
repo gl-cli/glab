@@ -12,7 +12,7 @@ import (
 )
 
 func NewCmdRelease(f *cmdutils.Factory) *cobra.Command {
-	var releaseCmd = &cobra.Command{
+	releaseCmd := &cobra.Command{
 		Use:   "release <command> [flags]",
 		Short: `Manage GitLab releases`,
 		Long:  ``,

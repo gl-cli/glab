@@ -104,7 +104,8 @@ hosts:
 		{
 			Name:  "Issue on another repo",
 			Issue: "1 -R profclems/glab",
-			ExpectedMsg: []string{"- Subscribing to merge request !1",
+			ExpectedMsg: []string{
+				"- Subscribing to merge request !1",
 				"✓ You have successfully subscribed to merge request !1",
 				"https://gitlab.com/profclems/glab/-/merge_requests/1\n",
 			},

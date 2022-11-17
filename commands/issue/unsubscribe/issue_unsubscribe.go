@@ -12,7 +12,7 @@ import (
 )
 
 func NewCmdUnsubscribe(f *cmdutils.Factory) *cobra.Command {
-	var issueUnsubscribeCmd = &cobra.Command{
+	issueUnsubscribeCmd := &cobra.Command{
 		Use:     "unsubscribe <id>",
 		Short:   `Unsubscribe to an issue`,
 		Long:    ``,

@@ -78,6 +78,7 @@ func GetClient() *Client {
 
 // HTTPClient returns the httpClient instance used to initialise the gitlab api client
 func HTTPClient() *http.Client { return apiClient.HTTPClient() }
+
 func (c *Client) HTTPClient() *http.Client {
 	if c.httpClientOverride != nil {
 		return c.httpClientOverride
@@ -90,12 +91,14 @@ func (c *Client) HTTPClient() *http.Client {
 
 // OverrideHTTPClient overrides the default http client
 func OverrideHTTPClient(client *http.Client) { apiClient.OverrideHTTPClient(client) }
+
 func (c *Client) OverrideHTTPClient(client *http.Client) {
 	c.httpClientOverride = client
 }
 
 // Token returns the authentication token
 func Token() string { return apiClient.Token() }
+
 func (c *Client) Token() string {
 	return c.token
 }

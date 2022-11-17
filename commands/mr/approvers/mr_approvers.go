@@ -10,7 +10,7 @@ import (
 )
 
 func NewCmdApprovers(f *cmdutils.Factory) *cobra.Command {
-	var mrApproversCmd = &cobra.Command{
+	mrApproversCmd := &cobra.Command{
 		Use:     "approvers [<id> | <branch>] [flags]",
 		Short:   `List eligible approvers for merge requests in any state`,
 		Long:    ``,

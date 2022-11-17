@@ -42,11 +42,11 @@ type MergeOpts struct {
 }
 
 func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
-	var opts = &MergeOpts{
+	opts := &MergeOpts{
 		MergeMethod: MRMergeMethodMerge,
 	}
 
-	var mrMergeCmd = &cobra.Command{
+	mrMergeCmd := &cobra.Command{
 		Use:     "merge {<id> | <branch>}",
 		Short:   `Merge/Accept merge requests`,
 		Long:    ``,
@@ -264,7 +264,7 @@ func mergeMethodSurvey() (MRMergeMethod, error) {
 		method MRMergeMethod
 	}
 
-	var mergeOpts = []mergeOption{
+	mergeOpts := []mergeOption{
 		{title: "Create a merge commit", method: MRMergeMethodMerge},
 		{title: "Rebase and merge", method: MRMergeMethodRebase},
 		{title: "Squash and merge", method: MRMergeMethodSquash},

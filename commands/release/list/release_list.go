@@ -17,7 +17,7 @@ var factory *cmdutils.Factory
 
 func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
 	factory = f
-	var releaseListCmd = &cobra.Command{
+	releaseListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List releases in a repository`,
 		Long:    ``,
@@ -43,7 +43,6 @@ func listReleases(cmd *cobra.Command, args []string) error {
 	l := &gitlab.ListReleasesOptions{}
 
 	tag, err := cmd.Flags().GetString("tag")
-
 	if err != nil {
 		return err
 	}

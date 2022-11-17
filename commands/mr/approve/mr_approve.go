@@ -12,7 +12,7 @@ import (
 )
 
 func NewCmdApprove(f *cmdutils.Factory) *cobra.Command {
-	var mrApproveCmd = &cobra.Command{
+	mrApproveCmd := &cobra.Command{
 		Use:   "approve {<id> | <branch>}",
 		Short: `Approve merge requests`,
 		Long:  ``,
@@ -63,7 +63,7 @@ func NewCmdApprove(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	//mrApproveCmd.Flags().StringP("password", "p", "", "Current user’s password. Required if 'Require user password to approve' is enabled in the project settings.")
+	// mrApproveCmd.Flags().StringP("password", "p", "", "Current user’s password. Required if 'Require user password to approve' is enabled in the project settings.")
 	mrApproveCmd.Flags().StringP("sha", "s", "", "SHA which must match the SHA of the HEAD commit of the merge request")
 	return mrApproveCmd
 }

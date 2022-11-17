@@ -24,6 +24,9 @@ import (
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type ViewOpts struct {
@@ -38,7 +41,7 @@ type ViewOpts struct {
 
 func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	opts := ViewOpts{}
-	var pipelineCIView = &cobra.Command{
+	pipelineCIView := &cobra.Command{
 		Use:   "view [branch/tag]",
 		Short: "View, run, trace/logs, and cancel CI jobs current pipeline",
 		Long: heredoc.Doc(`Supports viewing, running, tracing, and canceling jobs.
@@ -448,7 +451,8 @@ func jobsView(app *tview.Application, jobsCh chan []*gitlab.Job, inputCh chan st
 			x, y, w, h := boxX, maxY/6-4, maxTitle+2, 3
 			b := box(root, key, x, y, w, h)
 
-			b.SetText(strings.Title(j.Stage))
+			caser := cases.Title(language.English)
+			b.SetText(caser.String(j.Stage))
 			b.SetTextAlign(tview.AlignCenter)
 
 		}
@@ -525,8 +529,8 @@ func jobsView(app *tview.Application, jobsCh chan []*gitlab.Job, inputCh chan st
 
 	}
 	root.SendToFront("jobs-" + curJob.Name)
-
 }
+
 func box(root *tview.Pages, key string, x, y, w, h int) *tview.TextView {
 	b, ok := boxes[key]
 	if !ok {

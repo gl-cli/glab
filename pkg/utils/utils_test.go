@@ -6,7 +6,6 @@ import (
 )
 
 func Test_PrettyTimeAgo(t *testing.T) {
-
 	cases := map[string]string{
 		"1s":         "less than a minute ago",
 		"30s":        "less than a minute ago",
@@ -106,6 +105,7 @@ func Test_PresentInIntSlice(t *testing.T) {
 		})
 	}
 }
+
 func Test_CommonElementsInStringSlice(t *testing.T) {
 	testCases := []struct {
 		name   string

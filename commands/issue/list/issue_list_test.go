@@ -208,7 +208,6 @@ func TestIssueList_tty_withIssueType(t *testing.T) {
 
 func TestIssueList_tty_mine(t *testing.T) {
 	t.Run("mine with all flag and user exists", func(t *testing.T) {
-
 		fakeHTTP := httpmock.New()
 		defer fakeHTTP.Verify(t)
 
@@ -230,7 +229,6 @@ func TestIssueList_tty_mine(t *testing.T) {
 `)
 	})
 	t.Run("user does not exists", func(t *testing.T) {
-
 		fakeHTTP := httpmock.New()
 		defer fakeHTTP.Verify(t)
 

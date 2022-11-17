@@ -72,7 +72,6 @@ func Test_NewCmdNote(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	t.Run("--message flag specified", func(t *testing.T) {
-
 		fakeHTTP.RegisterResponder("POST", "/projects/OWNER/REPO/issues/1/notes",
 			httpmock.NewStringResponse(201, `
 		{
@@ -153,7 +152,6 @@ func Test_mrNoteCreate_prompt(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	t.Run("message provided", func(t *testing.T) {
-
 		fakeHTTP.RegisterResponder("POST", "/projects/OWNER/REPO/issues/1/notes",
 			httpmock.NewStringResponse(201, `
 		{
@@ -190,7 +188,6 @@ func Test_mrNoteCreate_prompt(t *testing.T) {
 	})
 
 	t.Run("message is empty", func(t *testing.T) {
-
 		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues/1",
 			httpmock.NewStringResponse(200, `
 		{

@@ -100,7 +100,6 @@ func IssuesFromArgs(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interfac
 		return nil, nil, err
 	}
 	return issues, baseRepo, nil
-
 }
 
 func IssueFromArg(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), arg string) (*gitlab.Issue, glrepo.Interface, error) {
@@ -139,8 +138,10 @@ func IssueFromArg(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interface,
 //
 //	OWNER/REPO/issues/id
 //	GROUP/NAMESPACE/REPO/issues/id
-var issueURLPersonalRE = regexp.MustCompile(`^/([^/]+)/([^/]+)/issues/(\d+)`)
-var issueURLGroupRE = regexp.MustCompile(`^/([^/]+)/([^/]+)/([^/]+)/issues/(\d+)`)
+var (
+	issueURLPersonalRE = regexp.MustCompile(`^/([^/]+)/([^/]+)/issues/(\d+)`)
+	issueURLGroupRE    = regexp.MustCompile(`^/([^/]+)/([^/]+)/([^/]+)/issues/(\d+)`)
+)
 
 func issueMetadataFromURL(s string) (int, glrepo.Interface) {
 	u, err := url.Parse(s)

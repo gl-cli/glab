@@ -83,7 +83,6 @@ func Test_ParseAssignees(t *testing.T) {
 			assert.ElementsMatch(t, uaGot.ToReplace, tC.wantReplace)
 		})
 	}
-
 }
 
 func Test_VerifyAssignees(t *testing.T) {
@@ -743,7 +742,6 @@ func Test_AssigneesPrompt(t *testing.T) {
 				assert.Equal(t, tC.expectedStdErr, outErr)
 			}
 			assert.ElementsMatch(t, got, tC.output)
-
 		})
 	}
 
@@ -1114,8 +1112,8 @@ func Test_LabelsPromptPromptsFail(t *testing.T) {
 		assert.Nil(t, got)
 		assert.EqualError(t, err, "AskQuestionWithInput prompt failed")
 	})
-
 }
+
 func Test_LabelsPromptMultiSelect(t *testing.T) {
 	// mock glrepo.Remote object
 	repo := glrepo.New("foo", "bar")
@@ -1380,5 +1378,4 @@ func TestListGitLabTemplates(t *testing.T) {
 			assert.EqualValues(t, test.wantTemplates, gotTemplates, "Templates got didn't match")
 		})
 	}
-
 }

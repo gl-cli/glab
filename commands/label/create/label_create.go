@@ -12,7 +12,7 @@ import (
 )
 
 func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
-	var labelCreateCmd = &cobra.Command{
+	labelCreateCmd := &cobra.Command{
 		Use:     "create [flags]",
 		Short:   `Create labels for repository/project`,
 		Long:    ``,
@@ -24,7 +24,6 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			var err error
 
 			apiClient, err := f.HttpClient()

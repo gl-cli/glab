@@ -61,7 +61,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 		Remotes: f.Remotes,
 		Config:  f.Config,
 	}
-	var issueCreateCmd = &cobra.Command{
+	issueCreateCmd := &cobra.Command{
 		Use:     "create [flags]",
 		Short:   `Create an issue`,
 		Long:    ``,

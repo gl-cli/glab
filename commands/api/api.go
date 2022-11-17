@@ -104,7 +104,7 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 		there are no more pages of results. For GraphQL requests, this requires that the
 		original query accepts an '$endCursor: String' variable and that it fetches the
 		'pageInfo{ hasNextPage, endCursor }' set of fields from a collection.
-		`,"`"),
+		`, "`"),
 		Example: heredoc.Doc(`
 			$ glab api projects/:fullpath/releases
 

@@ -346,7 +346,6 @@ hosts:
 }
 
 func TestFullNameFromURL(t *testing.T) {
-
 	tests := []struct {
 		remoteURL string
 		want      string

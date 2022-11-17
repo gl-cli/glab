@@ -15,7 +15,7 @@ import (
 )
 
 func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
-	var issueUpdateCmd = &cobra.Command{
+	issueUpdateCmd := &cobra.Command{
 		Use:   "update <id>",
 		Short: `Update issue`,
 		Long:  ``,

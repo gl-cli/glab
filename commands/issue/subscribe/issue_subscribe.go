@@ -11,7 +11,7 @@ import (
 )
 
 func NewCmdSubscribe(f *cmdutils.Factory) *cobra.Command {
-	var issueSubscribeCmd = &cobra.Command{
+	issueSubscribeCmd := &cobra.Command{
 		Use:     "subscribe <id>",
 		Short:   `Subscribe to an issue`,
 		Long:    ``,

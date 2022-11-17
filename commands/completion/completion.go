@@ -17,7 +17,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		excludeDesc = false
 	)
 
-	var completionCmd = &cobra.Command{
+	completionCmd := &cobra.Command{
 		Use:   "completion",
 		Short: "Generate shell completion scripts",
 		Long: heredoc.Docf(`

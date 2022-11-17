@@ -83,7 +83,7 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 		HeadRepo: resolvedHeadRepo(f),
 	}
 
-	var mrCreateCmd = &cobra.Command{
+	mrCreateCmd := &cobra.Command{
 		Use:     "create",
 		Short:   `Create new merge request`,
 		Long:    ``,
@@ -607,7 +607,7 @@ func mrBodyAndTitle(opts *CreateOpts) error {
 
 func handlePush(opts *CreateOpts, remote *glrepo.Remote) error {
 	if opts.ShouldPush {
-		var sourceRemote = remote
+		sourceRemote := remote
 
 		sourceBranch := opts.SourceBranch
 

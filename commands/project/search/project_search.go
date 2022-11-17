@@ -14,7 +14,7 @@ import (
 )
 
 func NewCmdSearch(f *cmdutils.Factory) *cobra.Command {
-	var projectSearchCmd = &cobra.Command{
+	projectSearchCmd := &cobra.Command{
 		Use:     "search [flags]",
 		Short:   `Search for GitLab repositories and projects by name`,
 		Long:    ``,
@@ -43,7 +43,6 @@ func NewCmdSearch(f *cmdutils.Factory) *cobra.Command {
 				PerPage: perPage,
 			}
 			projects, _, err := apiClient.Search.Projects(search, &gitlab.SearchOptions{ListOptions: listOpts})
-
 			if err != nil {
 				return err
 			}

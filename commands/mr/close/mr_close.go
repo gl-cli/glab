@@ -13,7 +13,7 @@ import (
 )
 
 func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
-	var mrCloseCmd = &cobra.Command{
+	mrCloseCmd := &cobra.Command{
 		Use:   "close [<id> | <branch>]",
 		Short: `Close merge requests`,
 		Long:  ``,

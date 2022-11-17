@@ -121,7 +121,6 @@ hosts:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			cli := strings.Join(tt.args, " ")
 			t.Log(cli)
 			argv, err := shlex.Split(cli)

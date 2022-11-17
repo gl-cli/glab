@@ -282,7 +282,6 @@ git_protocol: ssh
 		IO: io,
 	}
 	t.Run("no instance authenticated", func(t *testing.T) {
-
 		err := statusRun(opts)
 		assert.Equal(t, err, cmdutils.SilentError)
 		assert.Equal(t, stdout.String(), "")

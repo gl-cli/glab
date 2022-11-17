@@ -21,7 +21,7 @@ import (
 )
 
 func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
-	var projectCreateCmd = &cobra.Command{
+	projectCreateCmd := &cobra.Command{
 		Use:   "create [path] [flags]",
 		Short: `Create a new GitLab project/repository.`,
 		Long:  ``,
@@ -237,7 +237,6 @@ func initGit(defaultBranch string) error {
 }
 
 func initialiseRepo(projectPath, remoteURL string) error {
-
 	gitInit := git.GitCommand("init", projectPath)
 	gitInit.Stdout = os.Stdout
 	gitInit.Stderr = os.Stderr

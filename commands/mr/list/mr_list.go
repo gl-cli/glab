@@ -53,11 +53,11 @@ type ListOptions struct {
 }
 
 func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.Command {
-	var opts = &ListOptions{
+	opts := &ListOptions{
 		IO: f.IO,
 	}
 
-	var mrListCmd = &cobra.Command{
+	mrListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List merge requests`,
 		Long:    ``,
@@ -230,7 +230,6 @@ func listRun(opts *ListOptions) error {
 
 	if len(assigneeIds) > 0 || len(reviewerIds) > 0 {
 		mergeRequests, err = api.ListMRsWithAssigneesOrReviewers(apiClient, repo.FullName(), l, assigneeIds, reviewerIds)
-
 	} else if opts.Group != "" {
 		mergeRequests, err = api.ListGroupMRs(apiClient, opts.Group, api.ProjectListMROptionsToGroup(l))
 		title.RepoName = opts.Group

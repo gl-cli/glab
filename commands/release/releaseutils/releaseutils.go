@@ -36,7 +36,7 @@ func RenderReleaseAssertLinks(assets []*gitlab.ReleaseLink) string {
 	t := tableprinter.NewTablePrinter()
 	for _, asset := range assets {
 		t.AddRow(asset.Name, asset.DirectAssetURL)
-		//assetsPrint += asset.DirectAssetURL + "\n"
+		// assetsPrint += asset.DirectAssetURL + "\n"
 	}
 	return t.String()
 }
@@ -47,7 +47,6 @@ func DisplayRelease(io *iostreams.IOStreams, r *gitlab.Release, repo glrepo.Inte
 	description, err := utils.RenderMarkdown(r.Description, io.BackgroundColor())
 	if err != nil {
 		description = r.Description
-
 	}
 
 	var assetsSources string

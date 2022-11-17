@@ -1,3 +1,5 @@
+# Contributing Guide
+
 ## Developer Certificate of Origin + License
 
 Contributions to this repository are subject to the [Developer Certificate of Origin](https://docs.gitlab.com/ee/legal/developer_certificate_of_origin.html#developer-certificate-of-origin-version-11).
@@ -16,26 +18,29 @@ Use your best judgement, and feel free to propose changes to this document in a 
 
 Please do:
 
-* Check existing issues to verify that the bug or feature request has not already been submitted.
-* Open an issue if things aren't working as expected.
-* Open an issue to propose a significant change.
-* Open an issue to propose a feature.
-* Open a merge request to fix a bug.
-* Open a merge request to fix documentation about a command.
-* Open a merge request for an issue and leave a comment claiming it.
+- Check existing issues to verify that the bug or feature request has not already been submitted.
+- Open an issue if things aren't working as expected.
+- Open an issue to propose a significant change.
+- Open an issue to propose a feature.
+- Open a merge request to fix a bug.
+- Open a merge request to fix documentation about a command.
+- Open a merge request for an issue and leave a comment claiming it.
 
 Please avoid:
 
-* Opening merge requests for issues marked `blocked`.
-* Opening merge requests for documentation for a new command specifically. Manual pages are auto-generated from source after every release
+- Opening merge requests for issues marked `blocked`.
+- Opening merge requests for documentation for a new command specifically. Manual pages are auto-generated from source after every release
+
 ## Code of Conduct
 
 We want to create a welcoming environment for everyone who is interested in contributing. Visit our [Code of Conduct page](https://about.gitlab.com/community/contribute/code-of-conduct/) to learn more about our commitment to an open and welcoming environment.
 
 ## Getting Started
+
 ### Building the project
 
 Prerequisites:
+
 - Go 1.16+
 
 Build with: `make` or `go build -o bin/glab ./cmd/glab/main.go`
@@ -59,6 +64,15 @@ on [GitLab.com](https://gitlab.com).
 1. Make your change, add tests, and ensure tests pass
 1. Submit a merge request
 
+### Formatting your code
+
+We use [`golangci-lint`](https://golangci-lint.run/) to lint and format
+the code in this project. The linter configuration can be seen
+[here](https://gitlab.com/gitlab-org/cli/-/blob/main/.golangci.yml).
+
+Additional details about code style and format are in the
+[go guide](https://docs.gitlab.com/ee/development/go_guide/#code-style-and-format).
+
 ## Commit Messages
 
 ### TL;DR: Your commit message should be semantic
@@ -76,6 +90,7 @@ Any line of the commit message cannot be longer than 100 characters! This allows
 ```
 
 ### Message Header
+
 Ideally, the commit message heading which contains the description, should not be more than 50 characters
 
 The message header is a single line that contains a succinct description of the change containing a type, an optional scope, and a subject.
@@ -100,9 +115,9 @@ Scope can be anything specifying the place of the commit change. For example eve
 
 This is a very short description of the change
 
-* `use imperative, present tense: “change” not “changed” nor “changes”`
-* `don't capitalize the first letter`
-* `no dot (.) at the end`
+- `use imperative, present tense: “change” not “changed” nor “changes”`
+- `don't capitalize the first letter`
+- `no dot (.) at the end`
 
 ### Message Body
 
@@ -137,4 +152,3 @@ fix(login): allow provided user preferences to override default preferences
 
 Fixes #025
 ```
-
