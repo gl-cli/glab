@@ -75,37 +75,53 @@ Additional details about code style and format are in the
 
 ## Commit Messages
 
-### TL;DR: Your commit message should be semantic
+Each commit message consists of a **header**, a **body**, and a **footer**. The header has a special format that includes a **type**, a **scope**, and a **description**:
 
-A commit message consists of a header, a body and a footer, separated by a blank line.
-
-Any line of the commit message cannot be longer than 100 characters! This allows the message to be easier to read as well as in various git tools.
-
-```sh
-<type>[optional scope]: <description>
+```plaintext
+<type>(<scope>): <description>
 <BLANK LINE>
-[optional body]
+<body>
 <BLANK LINE>
 <footer>
 ```
 
+Each line in the commit message should be no longer than 72 characters.
+
 ### Message Header
 
-Ideally, the commit message heading which contains the description, should not be more than 50 characters
+The message header is mandatory, and should be a single line that contains a succinct description of the change containing a type, an optional scope, and a description. Ideally, it should not be more than 50 characters in length.
 
-The message header is a single line that contains a succinct description of the change containing a type, an optional scope, and a subject.
+Following these conventions results in a clear changelog for every version.
+
+It's generally a good idea to follow the conventions for your MR's title as well as for commit messages. This way, if your merge request is squashed upon merge, the maintainer can use its title as the final commit message, creating a properly-formatted history.
+
+If your MR contains multiple commits but only one logical change, the [Squash commits when merge request is accepted](https://gitlab.com/help/user/project/merge_requests/squash_and_merge) option (enabled by default in this project) will allow GitLab to use the MR title as the commit message.
 
 #### `<type>`
 
 This describes the kind of change that this commit is providing
 
-- feat (feature)
-- fix (bug fix)
-- docs (documentation)
-- style (formatting, missing semicolons, …)
-- refactor(restructuring codebase)
-- test (when adding missing tests)
-- chore (maintain)
+- **feat:** A new feature (adding a new component, providing new variants for an existing component, etc.).
+- **fix:** A bug fix (correcting a styling issue, addressing a bug in a component's API, etc.).
+  When updating non-dev dependencies, mark your changes with the `fix:` type.
+- **docs:** Documentation-only changes.
+- **style:** Changes that do not affect the meaning of the code
+  (whitespace, formatting, missing semicolons, etc). _Not_ to be used for UI changes as those are
+  meaningful changes, consider using `feat:` of `fix:` instead.
+- **refactor:** A code change that neither fixes a bug nor adds a feature.
+- **perf:** A code change that improves performance.
+- **test:** Adding missing tests or correcting existing tests.
+- **build:** Changes that affect the build system.
+- **ci:** Changes to our CI/CD configuration files and scripts.
+- **chore:** Other changes that don't modify source or test files. Use this type when adding or
+  updating dev dependencies.
+- **revert:** Reverts a previous commit.
+
+Each commit type can have an optional scope to specify the place of the commit change: `type(scope):`. It is up to you to add or omit a commit's scope. When a commit affects a specific component, use the component's PascalCase name as the commit's scope. For example:
+
+```plaintext
+feat(statusbar): automatically switch pipelines
+```
 
 #### `<scope>`
 
@@ -121,12 +137,12 @@ This is a very short description of the change
 
 ### Message Body
 
-- just as in subject use imperative, present tense: “change” not “changed” nor “changes”
-- includes motivation for the change and contrasts with previous behavior
+Just as in the description, use imperative, present tense: “change” not “changed” nor “changes.” Include motivation for the change and contrast it with previous behavior.
 
-<http://365git.tumblr.com/post/3308646748/writing-git-commit-messages>
+#### More info on writing good git commit messages
 
-<http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>
+- [Writing Git commit messages](http://365git.tumblr.com/post/3308646748/writing-git-commit-messages)
+- [A Note About Git Commit Messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
 
 ### Message Footer
 
@@ -148,7 +164,21 @@ Delivers #065
 ```sh
 fix(login): allow provided user preferences to override default preferences
 
-- This allows the preferences associated with a user account to override and customize the default app preference like theme, timezone e.t.c
+- This allows the preferences associated with a user account to
+override and customize the default app preference like theme,
+timezone e.t.c
 
 Fixes #025
+```
+
+### Linting
+
+We use the following logic to lint your MR's commit messages:
+
+```mermaid
+graph TD
+A{Are there multiple commits?} --no--> B[Commit must be valid]
+A --yes--> C
+C{Is MR set to be squashed?} --no--> D[Every commit must be valid]
+C --yes--> E[MR title must be valid]
 ```
