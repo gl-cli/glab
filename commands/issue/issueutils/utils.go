@@ -134,14 +134,15 @@ func IssueFromArg(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interface,
 	return issue, baseRepo, err
 }
 
-// FIXME: have a single regex to match either of the following
+// issueURLPathRE is a regex which matches the following patterns:
 //
-//	OWNER/REPO/issues/id
-//	GROUP/NAMESPACE/REPO/issues/id
-var (
-	issueURLPersonalRE = regexp.MustCompile(`^/([^/]+)/([^/]+)/issues/(\d+)`)
-	issueURLGroupRE    = regexp.MustCompile(`^/([^/]+)/([^/]+)/([^/]+)/issues/(\d+)`)
-)
+//		OWNER/REPO/issues/id
+//		OWNER/REPO/-/issues/id
+//		GROUP/NAMESPACE/REPO/issues/id
+//		GROUP/NAMESPACE/REPO/-/issues/id
+//	including nested subgroups:
+//		GROUP/SUBGROUP/../../REPO/-/issues/id
+var issueURLPathRE = regexp.MustCompile(`^(/(?:[^-][^/]+/){2,})+(?:-/)?issues/(\d+)$`)
 
 func issueMetadataFromURL(s string) (int, glrepo.Interface) {
 	u, err := url.Parse(s)
@@ -153,21 +154,16 @@ func issueMetadataFromURL(s string) (int, glrepo.Interface) {
 		return 0, nil
 	}
 
-	u.Path = strings.Replace(u.Path, "/-/issues", "/issues", 1)
-
-	m := issueURLPersonalRE.FindStringSubmatch(u.Path)
+	m := issueURLPathRE.FindStringSubmatch(u.Path)
 	if m == nil {
-		m = issueURLGroupRE.FindStringSubmatch(u.Path)
-		if m == nil {
-			return 0, nil
-		}
-	}
-	var issueIID int
-	if len(m) > 0 {
-		issueIID, _ = strconv.Atoi(m[len(m)-1])
+		return 0, nil
 	}
 
-	u.Path = strings.Replace(u.Path, fmt.Sprintf("/issues/%d", issueIID), "", 1)
+	issueIID, err := strconv.Atoi(m[2])
+	if err != nil {
+		return 0, nil
+	}
+	u.Path = m[1]
 
 	repo, err := glrepo.FromURL(u)
 	if err != nil {
