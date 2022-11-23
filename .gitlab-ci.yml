@@ -141,6 +141,7 @@ secret_detection:
     # Disable shallow cloning so that goreleaser can diff between tags to
     # generate a changelog.
     GIT_DEPTH: 0
+  dependencies: [] # Don't download artifacts, goreleaser fails if the repository folder is dirty
 
 release_test:
   extends: .release
