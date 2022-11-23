@@ -27,7 +27,11 @@ func DisplayIssueList(streams *iostreams.IOStreams, issues []*gitlab.Issue, proj
 	table.SetIsTTY(streams.IsOutputTTY())
 	for _, issue := range issues {
 		table.AddCell(streams.Hyperlink(IssueState(c, issue), issue.WebURL))
-		table.AddCell(issue.References.Full)
+		// list of MR closing issues doesn't contain references
+		// https://gitlab.com/gitlab-org/cli/-/merge_requests/1092
+		if issue.References != nil {
+			table.AddCell(issue.References.Full)
+		}
 		table.AddCell(issue.Title)
 
 		if len(issue.Labels) > 0 {
