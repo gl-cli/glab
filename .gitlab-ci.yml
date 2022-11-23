@@ -20,6 +20,8 @@ include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
+  - project: 'gitlab-org/quality/pipeline-common'
+    file: '/ci/danger-review.yml'  # danger-review job below
 
 # From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
 .go-cache:
