@@ -43,7 +43,7 @@ async function getCommitsInMr() {
 }
 
 async function isConventional(message) {
-  return lint(message, { ...config.rules, ...customRules }, { defaultIgnores: false });
+  return lint(message, { ...config.rules, ...customRules }, { defaultIgnores: true });
 }
 
 async function lintMr() {
