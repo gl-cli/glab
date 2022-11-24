@@ -52,9 +52,6 @@ vendor
 log.txt.glab-cli
 .git
 
-# goreleaser struggled with this file being generated during the release build
-cyclonedx-go-go.json
-
 # projectionist.vim 
 .projections.json
 
