@@ -13,15 +13,18 @@ stages:
   - test
   - release
 
-variables:
-  SAST_EXCLUDED_ANALYZERS: "bandit,gosec,eslint"
-
 include:
-  - template: Security/SAST.gitlab-ci.yml
-  - template: Security/Dependency-Scanning.gitlab-ci.yml
-  - template: Security/Secret-Detection.gitlab-ci.yml
+  # remove the `.latest` from the following templates after 16.0 GitLab release
+  # the `.latest` indicates the "nightly" version of the job definition
+  # when we remove the `.latest`, we'll be using the stable job definition
+  # https://gitlab.com/gitlab-org/cli/-/merge_requests/1100#note_1186302003
+  - template: Jobs/SAST.latest.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
+  - template: Jobs/License-Scanning.latest.gitlab-ci.yml
   - project: 'gitlab-org/quality/pipeline-common'
     file: '/ci/danger-review.yml'  # danger-review job below
+
 
 # From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
 .go-cache:
@@ -125,15 +128,6 @@ run_tests:
     reports:
       junit: coverage.xml
 
-secret_detection:
-  rules:
-    - if: $SECRET_DETECTION_DISABLED
-      when: never
-    - if: '$CI_MERGE_REQUEST_IID'
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  needs: []
-  dependencies: [] # Don't download artifacts, especially `./public/`
-
 .release:
   stage: release
   image: docker:stable
@@ -175,3 +169,6 @@ release:
       -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY  \
       -e GITLAB_TOKEN=$GITLAB_TOKEN_RELEASE \
       goreleaser/goreleaser release
+
+secret_detection:
+  dependencies: [] # Don't download artifacts, especially `./public/`
