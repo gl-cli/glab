@@ -377,43 +377,21 @@ By default, `glab` follows the XDG Base Directory [Spec](https://specifications.
 
 ## Environment variables
 
-```plaintext
-GITLAB_TOKEN: an authentication token for API requests. Setting this avoids being
-prompted to authenticate and overrides any previously stored credentials.
-Can be set in the config with 'glab config set token xxxxxx'
-
-GITLAB_URI or GITLAB_HOST: specify the url of the gitlab server if self hosted (eg: https://gitlab.example.com). Default is https://gitlab.com.
-
-GITLAB_API_HOST: specify the host where the API endpoint is found. Useful when there are separate [sub]domains or hosts for git and the API endpoint: defaults to the hostname found in the git URL
-
-REMOTE_ALIAS or GIT_REMOTE_URL_VAR: git remote variable or alias that contains the gitlab url.
-Can be set in the config with 'glab config set remote_alias origin'
-
-VISUAL, EDITOR (in order of precedence): the editor tool to use for authoring text.
-Can be set in the config with 'glab config set editor vim'
-
-BROWSER: the web browser to use for opening links.
-Can be set in the config with 'glab config set browser mybrowser'
-
-GLAMOUR_STYLE: environment variable to set your desired markdown renderer style
-Available options are (dark|light|notty) or set a custom style
-https://github.com/charmbracelet/glamour#styles
-
-NO_COLOR: set to any value to avoid printing ANSI escape sequences for color output.
-
-FORCE_HYPERLINKS: set to 1 to force hyperlinks to be output, even when not outputing to a TTY
-```
-
-## What about Lab?
-
-Both `glab` and [lab] are open-source tools with the same goal of bringing GitLab to your command line and simplifying the developer workflow.
-
-If you want a tool that's more opinionated and intended to help simplify your GitLab workflows from the command line, then `glab` is for you. However, if you want a tool like [hub] that feels like using Git and allows you to interact with GitLab, consider using [lab].
-
-Some `glab` commands such as `ci view` and `ci trace` were adopted from [lab].
-
-[hub]:https://github.com/github/hub
-[lab]:https://github.com/zaquestion/lab
+- `GITLAB_TOKEN`: an authentication token for API requests. Setting this avoids being
+  prompted to authenticate and overrides any previously stored credentials.
+  Can be set in the config with `glab config set token xxxxxx`
+- `GITLAB_URI` or `GITLAB_HOST`: specify the URL of the GitLab server if self-managed (eg: `https://gitlab.example.com`). Default is `https://gitlab.com`.
+- `GITLAB_API_HOST`: specify the host where the API endpoint is found. Useful when there are separate (sub)domains or hosts for Git and the API endpoint: defaults to the hostname found in the Git URL
+- `REMOTE_ALIAS` or `GIT_REMOTE_URL_VAR`: `git remote` variable or alias that contains the GitLab URL.
+  Can be set in the config with `glab config set remote_alias origin`
+- `VISUAL`, `EDITOR` (in order of precedence): the editor tool to use for authoring text.
+  Can be set in the config with `glab config set editor vim`
+- `BROWSER`: the web browser to use for opening links.
+   Can be set in the configuration with `glab config set browser mybrowser`
+- `GLAMOUR_STYLE`: environment variable to set your desired Markdown renderer style
+  Available options are (`dark`|`light`|`notty`) or set a [custom style](https://github.com/charmbracelet/glamour#styles)
+- `NO_COLOR`: set to any value to avoid printing ANSI escape sequences for color output.
+- `FORCE_HYPERLINKS`: set to `1` to force hyperlinks to be output, even when not outputing to a TTY
 
 ## Issues
 
