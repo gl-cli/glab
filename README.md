@@ -3,7 +3,7 @@
 ![GLab](docs/assets/glab-logo.png)
 
 [![Go Report Card](https://goreportcard.com/badge/gitlab.com/gitlab-org/cli)](https://goreportcard.com/report/gitlab.com/gitlab-org/cli)
-[![Coverage](https://gitlab.com/gitlab-org/cli/badges/main/coverage.svg)](https://gitlab.com/gitlab-org/cli/badges/main)
+![Coverage](https://gitlab.com/gitlab-org/cli/badges/main/coverage.svg)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go#version-control)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?style=flat&logo=gitpod&logoColor=white)](https://gitpod.io/#https://gitlab.com/gitlab-org/cli/-/tree/main/)
 
@@ -19,11 +19,8 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 - [Demo](#demo)
 - [Documentation](#documentation)
 - [Installation](#installation)
-  - [Quick Install](#quick-install)
+  - [macOS](#macos)
   - [Windows](#windows)
-    - [WinGet](#winget)
-    - [Scoop](#scoop)
-    - [EXE Installer](#exe-installer)
   - [Linux](#linux)
     - [Linuxbrew (Homebrew)](#linuxbrew-homebrew)
     - [Snapcraft](#snapcraft)
@@ -36,9 +33,6 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
     - [MPR (Debian/Ubuntu)](#mpr-debianubuntu)
       - [Prebuilt-MPR](#prebuilt-mpr)
     - [Spack](#spack)
-  - [macOS](#macos)
-    - [Homebrew](#homebrew)
-    - [MacPorts](#macports)
   - [Building From Source](#building-from-source)
     - [Prerequisites](#prerequisites-for-building-from-source-are)
 - [Authentication](#authentication)
@@ -65,104 +59,61 @@ Read the [documentation](https://gitlab.com/gitlab-org/cli/-/tree/main/docs/sour
 ## Installation
 
 Download a binary suitable for your OS at the [releases page](https://gitlab.com/gitlab-org/cli/-/releases).
+Other installation methods depend on your operating system.
 
-### Quick install
+### macOS
 
-**Supported Platforms**: Linux and macOS
+- Install from Homebrew: `brew install glab`
+  - Update from Homebrew: `brew upgrade glab`
+- Install from [MacPorts](https://ports.macports.org/port/glab/summary): `sudo port install glab`
+  - Update from MacPorts: `sudo port selfupdate && sudo port upgrade glab`
+- Install into `usr/bin` with a shell script:
+  `curl -s "https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh" | sudo sh`
 
-#### Homebrew quick install
-
-```shell
-brew install glab
-```
-
-Updating (Homebrew):
-
-```shell
-brew upgrade glab
-```
-
-Alternatively, you can install `glab` by shell script:
-
-```shell
-curl -s "https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh" | sudo sh
-```
-
-*Installs into `usr/bin`*
-
-**NOTE**: Take care when running scripts in this fashion. Consider peeking at the install script itself and verify that it works as intended.
+  Before running any install script, review its contents.
 
 ### Windows
 
-Available for download via [WinGet](https://github.com/microsoft/winget-cli), [scoop](https://scoop.sh), or downloadable EXE installer file.
-
-#### WinGet
-
-```shell
-winget install glab.glab
-```
-
-Updating (WinGet):
-
-```shell
-winget install glab.glab
-```
-
-#### Scoop
-
-```shell
-scoop install glab
-```
-
-Updating (Scoop):
-
-```shell
-scoop update glab
-```
-
-#### EXE Installer
-
-EXE installers are available for download on the [releases page](https://gitlab.com/gitlab-org/cli/-/releases).
+- Download from [WinGet](https://github.com/microsoft/winget-cli): `winget install glab.glab`
+  - Update from WinGet: `winget install glab.glab`
+- Download from [scoop](https://scoop.sh): `scoop install glab`
+  - Update from scoop: `scoop update glab`
+- Download an EXE installer file from the [releases page](https://gitlab.com/gitlab-org/cli/-/releases)
 
 ### Linux
 
-Prebuilt binaries available at the [releases page](https://gitlab.com/gitlab-org/cli/-/releases).
-
-#### Linuxbrew (Homebrew)
-
-```shell
-brew install glab
-```
-
-Updating (Homebrew):
-
-```shell
-brew upgrade glab
-```
+- Download prebuilt binaries from the [releases page](https://gitlab.com/gitlab-org/cli/-/releases)
+- Install from Homebrew: `brew install glab`
+- Update from Homebrew: `brew upgrade glab`
 
 #### Snapcraft
 
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/glab)
+To install `glab` from the [Snap Store](https://snapcraft.io/glab):
 
-1. Make sure you have [snap installed on your Linux distribution](https://snapcraft.io/docs/installing-snapd).
-1. `sudo snap install --edge glab`
-1. `sudo snap connect glab:ssh-keys` to grant SSH access
+1. Make sure you have [snap installed](https://snapcraft.io/docs/installing-snapd) on your Linux distribution.
+1. Install the package: `sudo snap install --edge glab`
+1. Grant `glab` access to SSH keys: `sudo snap connect glab:ssh-keys`
+
+[![Download from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/glab)
 
 #### Arch Linux
 
-`glab` is available through the [community/glab](https://archlinux.org/packages/community/x86_64/glab/) package or download and install an archive from the [releases page](https://gitlab.com/gitlab-org/cli/-/releases). Arch Linux also supports [snap](https://snapcraft.io/docs/installing-snap-on-arch-linux).
+For Arch Linux, `glab` is available:
 
-```shell
-pacman -S glab
-```
+- From the [`community/glab`](https://archlinux.org/packages/community/x86_64/glab/) package.
+- By downloading and installing an archive from the
+  [releases page](https://gitlab.com/gitlab-org/cli/-/releases).
+- From the [Snap Store](https://snapcraft.io/glab), if
+  [snap](https://snapcraft.io/docs/installing-snap-on-arch-linux) is installed.
+- Installing with the package manager: `pacman -S glab`
 
 #### KISS Linux
 
 WARNING:
-It seems that KISS Linux may no longer be actively maintained, so links to its web domain have been removed from this README.
+KISS Linux may no longer be actively maintained.
 
 `glab` is available on the [KISS Linux Community Repository](https://github.com/kisslinux/community) as `gitlab-glab`.
-If you already have the community repository configured in your `KISS_PATH` you can install `glab` through your terminal.
+If you already have the community repository configured in your `KISS_PATH` you can install `glab` through your terminal:
 
 ```shell
 kiss b gitlab-glab && kiss i gitlab-glab
@@ -172,9 +123,7 @@ kiss b gitlab-glab && kiss i gitlab-glab
 
 `glab` is available on the [Alpine Community Repository](https://git.alpinelinux.org/aports/tree/community/glab?h=master) as `glab`.
 
-##### Install
-
-We use `--no-cache` so an `apk update` is not required.
+When installing, use `--no-cache` so no `apk update` is required:
 
 ```shell
 apk add --no-cache glab
@@ -250,36 +199,6 @@ Updating (Spack):
 spack uninstall glab && spack install glab
 ```
 
-### macOS
-
-#### Homebrew
-
-`glab` is available via [Homebrew](https://formulae.brew.sh/formula/glab)
-
-```shell
-brew install glab
-```
-
-Updating:
-
-```shell
-brew upgrade glab
-```
-
-#### MacPorts
-
-`glab`is also available via [MacPorts](https://ports.macports.org/port/glab/summary)
-
-```shell
-sudo port install glab
-```
-
-Updating:
-
-```shell
-sudo port selfupdate && sudo port upgrade glab
-```
-
 ### Building from source
 
 If a supported binary for your OS is not found at the [releases page](https://gitlab.com/gitlab-org/cli/-/releases), you can build from source:
@@ -321,31 +240,17 @@ If a supported binary for your OS is not found at the [releases page](https://gi
 
 ## Authentication
 
-Get a GitLab access token at <https://gitlab.com/-/profile/personal_access_tokens> or <https://gitlab.example.com/-/profile/personal_access_tokens> if self-managed:
+Get a GitLab access token at <https://gitlab.com/-/profile/personal_access_tokens> or
+`https://gitlab.example.com/-/profile/personal_access_tokens` if self-managed:
 
-- Start interactive setup:
-
-  ```shell
-  glab auth login
-  ```
-
-- Authenticate against `gitlab.com` by reading the token from a file:
-
-  ```shell
-  glab auth login --stdin < myaccesstoken.txt
-  ```
-
-- Authenticate against a self-managed GitLab instance by reading from a file:
-
-  ```shell
-  glab auth login --hostname salsa.debian.org --stdin < myaccesstoken.txt
-  ```
-
-- Authenticate with token and hostname. Not recommended for shared environments:
-
-  ```shell
-  glab auth login --hostname gitlab.example.org --token xxxxx
-  ```
+1. Start interactive setup: `glab auth login`
+1. Authenticate with the method appropriate for your GitLab instance:
+   - For GitLab SaaS, authenticate against `gitlab.com` by reading the token
+     from a file: `glab auth login --stdin < myaccesstoken.txt`
+   - For self-managed instances, authenticate by reading from a file:
+     `glab auth login --hostname salsa.debian.org --stdin < myaccesstoken.txt`
+   - Authenticate with token and hostname: `glab auth login --hostname gitlab.example.org --token xxxxx`
+     Not recommended for shared environments.
 
 ## Configuration
 
