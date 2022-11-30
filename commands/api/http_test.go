@@ -2,7 +2,7 @@ package api
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -249,7 +249,7 @@ hosts:
 				t.Errorf("Request.URL = %q, want %q", req.URL.String(), tt.want.u)
 			}
 			if tt.want.body != "" {
-				bb, err := ioutil.ReadAll(req.Body)
+				bb, err := io.ReadAll(req.Body)
 				if err != nil {
 					t.Errorf("Request.Body ReadAll error = %v", err)
 					return

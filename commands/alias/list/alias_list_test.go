@@ -2,7 +2,7 @@ package list
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -46,27 +46,27 @@ func TestAliasList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// TODO: change underlying config implementation so Write is not
 			// automatically called when editing aliases in-memory
-			defer config.StubWriteConfig(ioutil.Discard, ioutil.Discard)()
+			defer config.StubWriteConfig(io.Discard, io.Discard)()
 
 			cfg := config.NewFromString(tt.config)
 
-			io, _, stdout, stderr := iostreams.Test()
-			io.IsaTTY = tt.isaTTy
-			io.IsErrTTY = tt.isaTTy
+			ios, _, stdout, stderr := iostreams.Test()
+			ios.IsaTTY = tt.isaTTy
+			ios.IsErrTTY = tt.isaTTy
 
 			factoryConf := &cmdutils.Factory{
 				Config: func() (config.Config, error) {
 					return cfg, nil
 				},
-				IO: io,
+				IO: ios,
 			}
 
 			cmd := NewCmdList(factoryConf, nil)
 			cmd.SetArgs([]string{})
 
 			cmd.SetIn(&bytes.Buffer{})
-			cmd.SetOut(ioutil.Discard)
-			cmd.SetErr(ioutil.Discard)
+			cmd.SetOut(io.Discard)
+			cmd.SetErr(io.Discard)
 
 			_, err := cmd.ExecuteC()
 			require.NoError(t, err)

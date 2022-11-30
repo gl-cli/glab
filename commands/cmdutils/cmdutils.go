@@ -3,7 +3,7 @@ package cmdutils
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -54,7 +54,7 @@ func LoadGitLabTemplate(tmplType, tmplName string) (string, error) {
 		return "", err
 	}
 
-	tmpl, err := ioutil.ReadAll(f)
+	tmpl, err := io.ReadAll(f)
 	if err != nil {
 		return "", err
 	}

@@ -2,7 +2,7 @@ package issues
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"testing"
@@ -22,13 +22,13 @@ import (
 )
 
 func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	io, _, stdout, stderr := iostreams.Test()
-	io.IsaTTY = isTTY
-	io.IsInTTY = isTTY
-	io.IsErrTTY = isTTY
+	ios, _, stdout, stderr := iostreams.Test()
+	ios.IsaTTY = isTTY
+	ios.IsInTTY = isTTY
+	ios.IsErrTTY = isTTY
 
 	factory := &cmdutils.Factory{
-		IO: io,
+		IO: ios,
 		HttpClient: func() (*gitlab.Client, error) {
 			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
 			if err != nil {
@@ -53,8 +53,8 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, err
 	}
 	cmd.SetArgs(argv)
 	cmd.SetIn(&bytes.Buffer{})
-	cmd.SetOut(ioutil.Discard)
-	cmd.SetErr(ioutil.Discard)
+	cmd.SetOut(io.Discard)
+	cmd.SetErr(io.Discard)
 
 	_, err = cmd.ExecuteC()
 	return &test.CmdOut{

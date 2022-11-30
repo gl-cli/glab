@@ -2,7 +2,7 @@ package set
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -20,15 +20,15 @@ import (
 )
 
 func runCommand(cfg config.Config, isTTY bool, cli string) (*test.CmdOut, error) {
-	io, _, stdout, stderr := iostreams.Test()
-	io.IsaTTY = isTTY
-	io.IsErrTTY = isTTY
+	ios, _, stdout, stderr := iostreams.Test()
+	ios.IsaTTY = isTTY
+	ios.IsErrTTY = isTTY
 
 	factoryConf := &cmdutils.Factory{
 		Config: func() (config.Config, error) {
 			return cfg, nil
 		},
-		IO: io,
+		IO: ios,
 	}
 
 	cmd := NewCmdSet(factoryConf, nil)
@@ -51,8 +51,8 @@ func runCommand(cfg config.Config, isTTY bool, cli string) (*test.CmdOut, error)
 	rootCmd.SetArgs(argv)
 
 	rootCmd.SetIn(&bytes.Buffer{})
-	rootCmd.SetOut(ioutil.Discard)
-	rootCmd.SetErr(ioutil.Discard)
+	rootCmd.SetOut(io.Discard)
+	rootCmd.SetErr(io.Discard)
 
 	_, err = rootCmd.ExecuteC()
 	return &test.CmdOut{
@@ -62,7 +62,7 @@ func runCommand(cfg config.Config, isTTY bool, cli string) (*test.CmdOut, error)
 }
 
 func TestAliasSet_glab_command(t *testing.T) {
-	defer config.StubWriteConfig(ioutil.Discard, ioutil.Discard)()
+	defer config.StubWriteConfig(io.Discard, io.Discard)()
 
 	cfg := config.NewFromString(``)
 
@@ -75,7 +75,7 @@ func TestAliasSet_glab_command(t *testing.T) {
 
 func TestAliasSet_empty_aliases(t *testing.T) {
 	mainBuf := bytes.Buffer{}
-	defer config.StubWriteConfig(ioutil.Discard, &mainBuf)()
+	defer config.StubWriteConfig(io.Discard, &mainBuf)()
 
 	cfg := config.NewFromString(heredoc.Doc(`
 		aliases:
@@ -97,7 +97,7 @@ func TestAliasSet_empty_aliases(t *testing.T) {
 
 func TestAliasSet_existing_alias(t *testing.T) {
 	mainBuf := bytes.Buffer{}
-	defer config.StubWriteConfig(ioutil.Discard, &mainBuf)()
+	defer config.StubWriteConfig(io.Discard, &mainBuf)()
 
 	cfg := config.NewFromString(heredoc.Doc(`
 		aliases:
@@ -112,7 +112,7 @@ func TestAliasSet_existing_alias(t *testing.T) {
 
 func TestAliasSet_space_args(t *testing.T) {
 	mainBuf := bytes.Buffer{}
-	defer config.StubWriteConfig(ioutil.Discard, &mainBuf)()
+	defer config.StubWriteConfig(io.Discard, &mainBuf)()
 
 	cfg := config.NewFromString(``)
 
@@ -150,7 +150,7 @@ func TestAliasSet_arg_processing(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.Cmd, func(t *testing.T) {
 			mainBuf := bytes.Buffer{}
-			defer config.StubWriteConfig(ioutil.Discard, &mainBuf)()
+			defer config.StubWriteConfig(io.Discard, &mainBuf)()
 
 			cfg := config.NewFromString(``)
 
@@ -167,7 +167,7 @@ func TestAliasSet_arg_processing(t *testing.T) {
 
 func TestAliasSet_init_alias_cfg(t *testing.T) {
 	mainBuf := bytes.Buffer{}
-	defer config.StubWriteConfig(ioutil.Discard, &mainBuf)()
+	defer config.StubWriteConfig(io.Discard, &mainBuf)()
 
 	cfg := config.NewFromString(heredoc.Doc(`
 		editor: vim
@@ -185,7 +185,7 @@ func TestAliasSet_init_alias_cfg(t *testing.T) {
 
 func TestAliasSet_existing_aliases(t *testing.T) {
 	mainBuf := bytes.Buffer{}
-	defer config.StubWriteConfig(ioutil.Discard, &mainBuf)()
+	defer config.StubWriteConfig(io.Discard, &mainBuf)()
 
 	cfg := config.NewFromString(heredoc.Doc(`
 		aliases:
@@ -204,7 +204,7 @@ view: mr view
 }
 
 func TestAliasSet_invalid_command(t *testing.T) {
-	defer config.StubWriteConfig(ioutil.Discard, ioutil.Discard)()
+	defer config.StubWriteConfig(io.Discard, io.Discard)()
 
 	cfg := config.NewFromString(``)
 
@@ -216,7 +216,7 @@ func TestAliasSet_invalid_command(t *testing.T) {
 
 func TestShellAlias_flag(t *testing.T) {
 	mainBuf := bytes.Buffer{}
-	defer config.StubWriteConfig(ioutil.Discard, &mainBuf)()
+	defer config.StubWriteConfig(io.Discard, &mainBuf)()
 
 	cfg := config.NewFromString(``)
 
@@ -234,7 +234,7 @@ func TestShellAlias_flag(t *testing.T) {
 
 func TestShellAlias_bang(t *testing.T) {
 	mainBuf := bytes.Buffer{}
-	defer config.StubWriteConfig(ioutil.Discard, &mainBuf)()
+	defer config.StubWriteConfig(io.Discard, &mainBuf)()
 
 	cfg := config.NewFromString(``)
 
