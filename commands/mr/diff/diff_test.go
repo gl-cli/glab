@@ -3,7 +3,7 @@ package diff
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -72,13 +72,13 @@ func Test_NewCmdDiff(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, _, _, _ := iostreams.Test()
-			io.IsaTTY = tt.isTTY
-			io.IsInTTY = tt.isTTY
-			io.IsErrTTY = tt.isTTY
+			ios, _, _, _ := iostreams.Test()
+			ios.IsaTTY = tt.isTTY
+			ios.IsInTTY = tt.isTTY
+			ios.IsErrTTY = tt.isTTY
 
 			f := &cmdutils.Factory{
-				IO: io,
+				IO: ios,
 			}
 
 			var opts *DiffOptions
@@ -93,8 +93,8 @@ func Test_NewCmdDiff(t *testing.T) {
 			cmd.SetArgs(argv)
 
 			cmd.SetIn(&bytes.Buffer{})
-			cmd.SetOut(ioutil.Discard)
-			cmd.SetErr(ioutil.Discard)
+			cmd.SetOut(io.Discard)
+			cmd.SetErr(io.Discard)
 
 			_, err = cmd.ExecuteC()
 			if tt.wantErr != "" {
@@ -111,13 +111,13 @@ func Test_NewCmdDiff(t *testing.T) {
 }
 
 func runCommand(remotes glrepo.Remotes, isTTY bool, cli string) (*test.CmdOut, error) {
-	io, _, stdout, stderr := iostreams.Test()
-	io.IsaTTY = isTTY
-	io.IsInTTY = isTTY
-	io.IsErrTTY = isTTY
+	ios, _, stdout, stderr := iostreams.Test()
+	ios.IsaTTY = isTTY
+	ios.IsInTTY = isTTY
+	ios.IsErrTTY = isTTY
 
 	factory := &cmdutils.Factory{
-		IO: io,
+		IO: ios,
 		Config: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
 		},
@@ -157,8 +157,8 @@ func runCommand(remotes glrepo.Remotes, isTTY bool, cli string) (*test.CmdOut, e
 	cmd.SetArgs(argv)
 
 	cmd.SetIn(&bytes.Buffer{})
-	cmd.SetOut(ioutil.Discard)
-	cmd.SetErr(ioutil.Discard)
+	cmd.SetOut(io.Discard)
+	cmd.SetErr(io.Discard)
 
 	_, err = cmd.ExecuteC()
 	return &test.CmdOut{

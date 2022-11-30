@@ -2,7 +2,7 @@ package update
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"testing"
 	"time"
 
@@ -91,9 +91,9 @@ func TestNewCmdUpdate(t *testing.T) {
 		},
 	}
 
-	io, _, stdout, stderr := iostreams.Test()
+	ios, _, stdout, stderr := iostreams.Test()
 	f := cmdtest.StubFactory("https://gitlab.com/glab-cli/test")
-	f.IO = io
+	f.IO = ios
 	f.IO.IsaTTY = true
 	f.IO.IsErrTTY = true
 
@@ -104,8 +104,8 @@ func TestNewCmdUpdate(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			args, _ := shlex.Split(tc.Issue)
 			cmd.SetArgs(args)
-			cmd.SetOut(ioutil.Discard)
-			cmd.SetErr(ioutil.Discard)
+			cmd.SetOut(io.Discard)
+			cmd.SetErr(io.Discard)
 
 			_, err := cmd.ExecuteC()
 			if tc.wantErr {

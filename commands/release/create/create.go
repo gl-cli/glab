@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -135,10 +136,10 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 				var b []byte
 				var err error
 				if opts.NotesFile == "-" {
-					b, err = ioutil.ReadAll(opts.IO.In)
+					b, err = io.ReadAll(opts.IO.In)
 					_ = opts.IO.In.Close()
 				} else {
-					b, err = ioutil.ReadFile(opts.NotesFile)
+					b, err = os.ReadFile(opts.NotesFile)
 				}
 
 				if err != nil {

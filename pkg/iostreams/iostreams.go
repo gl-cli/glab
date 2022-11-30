@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -237,7 +236,7 @@ func Test() (streams *IOStreams, in *bytes.Buffer, out *bytes.Buffer, errOut *by
 	out = &bytes.Buffer{}
 	errOut = &bytes.Buffer{}
 	streams = &IOStreams{
-		In:     ioutil.NopCloser(in),
+		In:     io.NopCloser(in),
 		StdOut: out,
 		StdErr: errOut,
 	}

@@ -3,7 +3,7 @@ package list
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
@@ -27,17 +27,17 @@ import (
 )
 
 func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *ListOptions) error, doHyperlinks string) (*test.CmdOut, error) {
-	io, _, stdout, stderr := iostreams.Test()
-	io.IsaTTY = isTTY
-	io.IsInTTY = isTTY
-	io.IsErrTTY = isTTY
+	ios, _, stdout, stderr := iostreams.Test()
+	ios.IsaTTY = isTTY
+	ios.IsInTTY = isTTY
+	ios.IsErrTTY = isTTY
 
 	if doHyperlinks != "" {
-		io.SetDisplayHyperlinks(doHyperlinks)
+		ios.SetDisplayHyperlinks(doHyperlinks)
 	}
 
 	factory := &cmdutils.Factory{
-		IO: io,
+		IO: ios,
 		HttpClient: func() (*gitlab.Client, error) {
 			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
 			if err != nil {
@@ -65,8 +65,8 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *Li
 	cmd.SetArgs(argv)
 
 	cmd.SetIn(&bytes.Buffer{})
-	cmd.SetOut(ioutil.Discard)
-	cmd.SetErr(ioutil.Discard)
+	cmd.SetOut(io.Discard)
+	cmd.SetErr(io.Discard)
 
 	_, err = cmd.ExecuteC()
 	return &test.CmdOut{
@@ -76,16 +76,16 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *Li
 }
 
 func TestNewCmdList(t *testing.T) {
-	io, _, _, _ := iostreams.Test()
-	io.IsaTTY = true
-	io.IsInTTY = true
-	io.IsErrTTY = true
+	ios, _, _, _ := iostreams.Test()
+	ios.IsaTTY = true
+	ios.IsInTTY = true
+	ios.IsErrTTY = true
 
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
 	factory := &cmdutils.Factory{
-		IO: io,
+		IO: ios,
 		HttpClient: func() (*gitlab.Client, error) {
 			a, err := api.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
 			if err != nil {

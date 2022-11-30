@@ -3,7 +3,6 @@ package add
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/MakeNowJust/heredoc"
@@ -95,7 +94,7 @@ func addRun(opts *AddOpts) error {
 		keyFileReader = f
 	}
 
-	keyInBytes, err := ioutil.ReadAll(keyFileReader)
+	keyInBytes, err := io.ReadAll(keyFileReader)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to read ssh key file")
 	}

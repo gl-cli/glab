@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,7 +11,7 @@ import (
 )
 
 func Test_WriteFile(t *testing.T) {
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	if err != nil {
 		t.Skipf("unexpected error while creating temporary directory = %s", err)
 	}
@@ -27,7 +26,7 @@ func Test_WriteFile(t *testing.T) {
 			"unexpected error = %s", err,
 		)
 
-		result, err := ioutil.ReadFile(fpath)
+		result, err := os.ReadFile(fpath)
 		require.Nilf(t, err, "failed to read file %q due to %q", fpath, err)
 		assert.Equal(t, "profclems/glab", string(result))
 
@@ -45,7 +44,7 @@ func Test_WriteFile(t *testing.T) {
 			"unexpected error = %s", err,
 		)
 
-		result, err := ioutil.ReadFile(symPath)
+		result, err := os.ReadFile(symPath)
 		require.Nilf(t, err, "failed to read file %q due to %q", symPath, err)
 		assert.Equal(t, "profclems/glab/symlink", string(result))
 

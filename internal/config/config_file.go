@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -62,7 +61,7 @@ func ParseDefaultConfig() (Config, error) {
 }
 
 var ReadConfigFile = func(filename string) ([]byte, error) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, pathError(err)
 	}
@@ -75,7 +74,7 @@ var WriteConfigFile = func(filename string, data []byte) error {
 	if err != nil {
 		return pathError(err)
 	}
-	_, err = ioutil.ReadFile(filename)
+	_, err = os.ReadFile(filename)
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -67,7 +66,7 @@ func lintRun(f *cmdutils.Factory, path string) error {
 		}
 		content = stdout.Bytes()
 	} else {
-		content, err = ioutil.ReadFile(path)
+		content, err = os.ReadFile(path)
 		if err != nil {
 			if os.IsNotExist(err) {
 				return fmt.Errorf("%s: no such file or directory", path)

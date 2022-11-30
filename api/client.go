@@ -5,10 +5,10 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -165,7 +165,7 @@ func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool) (*Client,
 	apiClient.isGraphQL = isGraphQL
 
 	if apiClient.httpClientOverride == nil {
-		caCert, err := ioutil.ReadFile(apiClient.caFile)
+		caCert, err := os.ReadFile(apiClient.caFile)
 		if err != nil {
 			return nil, fmt.Errorf("error reading cert file: %w", err)
 		}
@@ -207,7 +207,7 @@ func NewClientWithCustomCAClientCert(host, token, caFile string, certFile string
 	apiClient.isGraphQL = isGraphQL
 
 	if apiClient.httpClientOverride == nil {
-		caCert, err := ioutil.ReadFile(apiClient.caFile)
+		caCert, err := os.ReadFile(apiClient.caFile)
 		if err != nil {
 			return nil, fmt.Errorf("error reading cert file: %w", err)
 		}

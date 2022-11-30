@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -10,7 +9,7 @@ import (
 
 func Test_CheckPathExists(t *testing.T) {
 	t.Run("exists", func(t *testing.T) {
-		dir, err := ioutil.TempDir("", "")
+		dir, err := os.MkdirTemp("", "")
 		if err != nil {
 			t.Skipf("unexpected error creating temporary directory for testing = %s", err)
 		}
@@ -26,7 +25,7 @@ func Test_CheckPathExists(t *testing.T) {
 }
 
 func Test_CheckFileExists(t *testing.T) {
-	file, err := ioutil.TempFile("", "")
+	file, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Skipf("Unexpected error creating temporary file for testing = %s", err)
 	}
@@ -46,7 +45,7 @@ func Test_CheckFileExists(t *testing.T) {
 
 func Test_BackupConfigFile(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		file, err := ioutil.TempFile("", "")
+		file, err := os.CreateTemp("", "")
 		if err != nil {
 			t.Skipf("Unexpected error creating temporary file for testing = %s", err)
 		}

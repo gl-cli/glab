@@ -6,7 +6,6 @@ package surveyext
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -175,7 +174,7 @@ func Edit(editorCommand, fn, initialValue string, stdin io.Reader, stdout io.Wri
 	if pattern == "" {
 		pattern = "survey*.txt"
 	}
-	f, err := ioutil.TempFile("", pattern)
+	f, err := os.CreateTemp("", pattern)
 	if err != nil {
 		return "", err
 	}
@@ -230,7 +229,7 @@ func Edit(editorCommand, fn, initialValue string, stdin io.Reader, stdout io.Wri
 	}
 
 	// raw is a BOM-unstripped UTF8 byte slice
-	raw, err := ioutil.ReadFile(f.Name())
+	raw, err := os.ReadFile(f.Name())
 	if err != nil {
 		return "", err
 	}

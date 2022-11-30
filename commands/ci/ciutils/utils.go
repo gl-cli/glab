@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"sync"
 	"time"
 
@@ -93,7 +92,7 @@ func RunTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid in
 			}
 			fmt.Fprintf(w, "Showing logs for %s job #%d\n", job.Name, job.ID)
 		})
-		_, _ = io.CopyN(ioutil.Discard, trace, offset)
+		_, _ = io.CopyN(io.Discard, trace, offset)
 		lenT, err := io.Copy(w, trace)
 		if err != nil {
 			return err

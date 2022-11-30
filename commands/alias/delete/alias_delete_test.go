@@ -2,7 +2,7 @@ package delete
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -50,16 +50,16 @@ func TestAliasDelete(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer config.StubWriteConfig(ioutil.Discard, ioutil.Discard)()
+			defer config.StubWriteConfig(io.Discard, io.Discard)()
 
 			cfg := config.NewFromString(tt.config)
 
-			io, _, stdout, stderr := iostreams.Test()
-			io.IsaTTY = tt.isTTY
-			io.IsErrTTY = tt.isTTY
+			ios, _, stdout, stderr := iostreams.Test()
+			ios.IsaTTY = tt.isTTY
+			ios.IsErrTTY = tt.isTTY
 
 			factoryConf := &cmdutils.Factory{
-				IO: io,
+				IO: ios,
 				Config: func() (config.Config, error) {
 					return cfg, nil
 				},
@@ -72,8 +72,8 @@ func TestAliasDelete(t *testing.T) {
 			cmd.SetArgs(argv)
 
 			cmd.SetIn(&bytes.Buffer{})
-			cmd.SetOut(ioutil.Discard)
-			cmd.SetErr(ioutil.Discard)
+			cmd.SetOut(io.Discard)
+			cmd.SetErr(io.Discard)
 
 			_, err = cmd.ExecuteC()
 			if tt.wantErr != "" {

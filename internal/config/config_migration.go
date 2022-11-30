@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -68,7 +67,7 @@ func getAllOldAliases(aliasFile string) map[string]string {
 		return nil
 	}
 
-	contents, err := ioutil.ReadFile(aliasFile)
+	contents, err := os.ReadFile(aliasFile)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -166,7 +165,7 @@ func migrateUserConfigs(filePath string, cfg Config, isGlobal bool) error {
 	oldConfigFile := filepath.Join(filePath, ".env")
 	if CheckFileExists(oldConfigFile) {
 		log.Println("- Migrating configuration")
-		data, _ := ioutil.ReadFile(oldConfigFile)
+		data, _ := os.ReadFile(oldConfigFile)
 		file := string(data)
 		temp := strings.Split(file, "\n")
 
@@ -239,7 +238,7 @@ func writeConfig(cfg Config, key, value string, isGlobal bool) (nCfg Config, err
 
 func copy(src string, dst string) error {
 	// Read all content of src to data
-	data, err := ioutil.ReadFile(src)
+	data, err := os.ReadFile(src)
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,6 @@ package request
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -26,7 +25,7 @@ func MakeRequest(payload, url, method string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	bodyBytes, _ := io.ReadAll(resp.Body)
 	bodyString := string(bodyBytes)
 
 	return bodyString, nil

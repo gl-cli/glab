@@ -2,7 +2,7 @@ package iostreams
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -194,11 +194,11 @@ func Test_HelperFunctions(t *testing.T) {
 	})
 
 	t.Run("IOTest()", func(t *testing.T) {
-		io, in, out, err := Test()
+		ios, in, out, err := Test()
 
-		assert.Equal(t, io.In, ioutil.NopCloser(in))
-		assert.Equal(t, io.StdOut, out)
-		assert.Equal(t, io.StdErr, err)
+		assert.Equal(t, ios.In, io.NopCloser(in))
+		assert.Equal(t, ios.StdOut, out)
+		assert.Equal(t, ios.StdErr, err)
 
 		assert.Equal(t, in, &bytes.Buffer{})
 		assert.Equal(t, out, &bytes.Buffer{})

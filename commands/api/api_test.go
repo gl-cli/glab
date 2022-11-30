@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -256,7 +256,7 @@ func Test_apiRun(t *testing.T) {
 			name: "success",
 			httpResponse: &http.Response{
 				StatusCode: 200,
-				Body:       ioutil.NopCloser(bytes.NewBufferString(`bam!`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`bam!`)),
 			},
 			err:    nil,
 			stdout: `bam!`,
@@ -271,7 +271,7 @@ func Test_apiRun(t *testing.T) {
 				Proto:      "HTTP/1.1",
 				Status:     "200 Okey-dokey",
 				StatusCode: 200,
-				Body:       ioutil.NopCloser(bytes.NewBufferString(`body`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`body`)),
 				Header:     http.Header{"Content-Type": []string{"text/plain"}},
 			},
 			err:    nil,
@@ -292,7 +292,7 @@ func Test_apiRun(t *testing.T) {
 			name: "REST error",
 			httpResponse: &http.Response{
 				StatusCode: 400,
-				Body:       ioutil.NopCloser(bytes.NewBufferString(`{"message": "THIS IS FINE"}`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`{"message": "THIS IS FINE"}`)),
 				Header:     http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
 			},
 			err:    cmdutils.SilentError,
@@ -303,7 +303,7 @@ func Test_apiRun(t *testing.T) {
 			name: "REST string errors",
 			httpResponse: &http.Response{
 				StatusCode: 400,
-				Body:       ioutil.NopCloser(bytes.NewBufferString(`{"errors": ["ALSO", "FINE"]}`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`{"errors": ["ALSO", "FINE"]}`)),
 				Header:     http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
 			},
 			err:    cmdutils.SilentError,
@@ -317,7 +317,7 @@ func Test_apiRun(t *testing.T) {
 			},
 			httpResponse: &http.Response{
 				StatusCode: 200,
-				Body:       ioutil.NopCloser(bytes.NewBufferString(`{"errors": [{"message":"AGAIN"}, {"message":"FINE"}]}`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`{"errors": [{"message":"AGAIN"}, {"message":"FINE"}]}`)),
 				Header:     http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
 			},
 			err:    cmdutils.SilentError,
@@ -328,7 +328,7 @@ func Test_apiRun(t *testing.T) {
 			name: "failure",
 			httpResponse: &http.Response{
 				StatusCode: 502,
-				Body:       ioutil.NopCloser(bytes.NewBufferString(`gateway timeout`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`gateway timeout`)),
 			},
 			err:    cmdutils.SilentError,
 			stdout: `gateway timeout`,
@@ -341,7 +341,7 @@ func Test_apiRun(t *testing.T) {
 			},
 			httpResponse: &http.Response{
 				StatusCode: 200,
-				Body:       ioutil.NopCloser(bytes.NewBufferString(`body`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`body`)),
 			},
 			err:    nil,
 			stdout: ``,
@@ -357,7 +357,7 @@ func Test_apiRun(t *testing.T) {
 				Proto:      "HTTP/1.1",
 				Status:     "200 Okey-dokey",
 				StatusCode: 200,
-				Body:       ioutil.NopCloser(bytes.NewBufferString(`body`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`body`)),
 				Header:     http.Header{"Content-Type": []string{"text/plain"}},
 			},
 			err:    nil,
@@ -368,9 +368,9 @@ func Test_apiRun(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, _, stdout, stderr := iostreams.Test()
+			ios, _, stdout, stderr := iostreams.Test()
 
-			tt.options.IO = io
+			tt.options.IO = ios
 			tt.options.Config = config.NewBlankConfig()
 			tt.options.HttpClient = func() (*gitlab.Client, error) {
 				var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
@@ -401,33 +401,33 @@ func Test_apiRun(t *testing.T) {
 }
 
 func Test_apiRun_paginationREST(t *testing.T) {
-	io, _, stdout, stderr := iostreams.Test()
+	ios, _, stdout, stderr := iostreams.Test()
 
 	requestCount := 0
 	responses := []*http.Response{
 		{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(`{"page":1}`)),
+			Body:       io.NopCloser(bytes.NewBufferString(`{"page":1}`)),
 			Header: http.Header{
 				"Link": []string{`<https://gitlab.com/api/v4/projects/1227/issues?page=2>; rel="next", <https://gitlab.com/api/v4/projects/1227/issues?page=3>; rel="last"`},
 			},
 		},
 		{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(`{"page":2}`)),
+			Body:       io.NopCloser(bytes.NewBufferString(`{"page":2}`)),
 			Header: http.Header{
 				"Link": []string{`<https://gitlab.com/api/v4/projects/1227/issues?page=3>; rel="next", <https://gitlab.com/api/v4/projects/1227/issues?page=3>; rel="last"`},
 			},
 		},
 		{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(`{"page":3}`)),
+			Body:       io.NopCloser(bytes.NewBufferString(`{"page":3}`)),
 			Header:     http.Header{},
 		},
 	}
 
 	options := ApiOptions{
-		IO:     io,
+		IO:     ios,
 		Config: config.NewBlankConfig(),
 		HttpClient: func() (*gitlab.Client, error) {
 			var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
@@ -459,14 +459,14 @@ func Test_apiRun_paginationREST(t *testing.T) {
 }
 
 func Test_apiRun_paginationGraphQL(t *testing.T) {
-	io, _, stdout, stderr := iostreams.Test()
+	ios, _, stdout, stderr := iostreams.Test()
 
 	requestCount := 0
 	responses := []*http.Response{
 		{
 			StatusCode: 200,
 			Header:     http.Header{"Content-Type": []string{`application/json`}},
-			Body: ioutil.NopCloser(bytes.NewBufferString(`{
+			Body: io.NopCloser(bytes.NewBufferString(`{
 				"data": {
 					"nodes": ["page one"],
 					"pageInfo": {
@@ -479,7 +479,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 		{
 			StatusCode: 200,
 			Header:     http.Header{"Content-Type": []string{`application/json`}},
-			Body: ioutil.NopCloser(bytes.NewBufferString(`{
+			Body: io.NopCloser(bytes.NewBufferString(`{
 				"data": {
 					"nodes": ["page two"],
 					"pageInfo": {
@@ -492,7 +492,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 	}
 
 	options := ApiOptions{
-		IO:     io,
+		IO:     ios,
 		Config: config.NewBlankConfig(),
 		HttpClient: func() (*gitlab.Client, error) {
 			var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
@@ -524,14 +524,14 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 		Variables map[string]interface{}
 	}
 
-	bb, err := ioutil.ReadAll(responses[0].Request.Body)
+	bb, err := io.ReadAll(responses[0].Request.Body)
 	require.NoError(t, err)
 	err = json.Unmarshal(bb, &requestData)
 	require.NoError(t, err)
 	_, hasCursor := requestData.Variables["endCursor"].(string)
 	assert.Equal(t, false, hasCursor)
 
-	bb, err = ioutil.ReadAll(responses[1].Request.Body)
+	bb, err = io.ReadAll(responses[1].Request.Body)
 	require.NoError(t, err)
 	err = json.Unmarshal(bb, &requestData)
 	require.NoError(t, err)
@@ -564,14 +564,14 @@ func Test_apiRun_inputFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, stdin, _, _ := iostreams.Test()
+			ios, stdin, _, _ := iostreams.Test()
 			resp := &http.Response{StatusCode: 204}
 
 			inputFile := tt.inputFile
 			if tt.inputFile == "-" {
 				_, _ = stdin.Write(tt.inputContents)
 			} else {
-				f, err := ioutil.TempFile("", tt.inputFile)
+				f, err := os.CreateTemp("", tt.inputFile)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -587,12 +587,12 @@ func Test_apiRun_inputFile(t *testing.T) {
 				RequestInputFile: inputFile,
 				RawFields:        []string{"a=b", "c=d"},
 
-				IO:     io,
+				IO:     ios,
 				Config: config.NewBlankConfig(),
 				HttpClient: func() (*gitlab.Client, error) {
 					var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
 						var err error
-						if bodyBytes, err = ioutil.ReadAll(req.Body); err != nil {
+						if bodyBytes, err = io.ReadAll(req.Body); err != nil {
 							return nil, err
 						}
 						resp.Request = req
@@ -621,11 +621,11 @@ func Test_apiRun_inputFile(t *testing.T) {
 }
 
 func Test_parseFields(t *testing.T) {
-	io, stdin, _, _ := iostreams.Test()
+	ios, stdin, _, _ := iostreams.Test()
 	fmt.Fprint(stdin, "pasted contents")
 
 	opts := ApiOptions{
-		IO: io,
+		IO: ios,
 		RawFields: []string{
 			"robot=Hubot",
 			"destroyer=false",
@@ -657,7 +657,7 @@ func Test_parseFields(t *testing.T) {
 }
 
 func Test_magicFieldValue(t *testing.T) {
-	f, err := ioutil.TempFile("", "gitlab-test")
+	f, err := os.CreateTemp("", "gitlab-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -665,7 +665,7 @@ func Test_magicFieldValue(t *testing.T) {
 	f.Close()
 	t.Cleanup(func() { os.Remove(f.Name()) })
 
-	io, _, _, _ := iostreams.Test()
+	ios, _, _, _ := iostreams.Test()
 
 	type args struct {
 		v    string
@@ -706,7 +706,7 @@ func Test_magicFieldValue(t *testing.T) {
 			args: args{
 				v: ":namespace",
 				opts: &ApiOptions{
-					IO: io,
+					IO: ios,
 					BaseRepo: func() (glrepo.Interface, error) {
 						return glrepo.New("gitlab-com", "www-gitlab-com"), nil
 					},
@@ -719,7 +719,7 @@ func Test_magicFieldValue(t *testing.T) {
 			name: "file",
 			args: args{
 				v:    "@" + f.Name(),
-				opts: &ApiOptions{IO: io},
+				opts: &ApiOptions{IO: ios},
 			},
 			want:    []byte("file contents"),
 			wantErr: false,
@@ -728,7 +728,7 @@ func Test_magicFieldValue(t *testing.T) {
 			name: "file error",
 			args: args{
 				v:    "@",
-				opts: &ApiOptions{IO: io},
+				opts: &ApiOptions{IO: ios},
 			},
 			want:    nil,
 			wantErr: true,
@@ -750,7 +750,7 @@ func Test_magicFieldValue(t *testing.T) {
 }
 
 func Test_openUserFile(t *testing.T) {
-	f, err := ioutil.TempFile("", "gitlab-test")
+	f, err := os.CreateTemp("", "gitlab-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -764,7 +764,7 @@ func Test_openUserFile(t *testing.T) {
 	}
 	defer file.Close()
 
-	fb, err := ioutil.ReadAll(file)
+	fb, err := io.ReadAll(file)
 	if err != nil {
 		t.Fatal(err)
 	}
