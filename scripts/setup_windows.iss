@@ -4,8 +4,8 @@
 ; `iscc /dVersion="<version_here>" "setup_windows.iss"`
 
 #define MyAppName "glab"
-#define MyAppPublisher "GLab"
-#define MyAppURL "https://github.com/profclems/glab"
+#define MyAppPublisher "GitLab"
+#define MyAppURL "https://gitlab.com/gitlab-org/cli"
 
 #ifndef Version
   #define Version "DEV"
