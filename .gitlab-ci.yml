@@ -184,18 +184,19 @@ release:
   extends: .release
   rules:
     - if: $CI_COMMIT_TAG
-  variables:
-    DOCKER_REGISTRY: $CI_REGISTRY
-    DOCKER_USERNAME: $CI_REGISTRY_USER
-    DOCKER_PASSWORD: $CI_REGISTRY_PASSWORD
   script: |
     docker run --rm --privileged \
       -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
       -w /go/src/gitlab.com/gitlab-org/cli \
       -v /var/run/docker.sock:/var/run/docker.sock \
-      -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY  \
       -e GITLAB_TOKEN=$GITLAB_TOKEN_RELEASE \
-      goreleaser/goreleaser release
+      --entrypoint "" \
+      goreleaser/goreleaser \
+      bash -c "
+        docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+        docker login -u $DOCKER_IO_USER -p $DOCKER_IO_PASSWORD
+        goreleaser release
+      "
 
 secret_detection:
   dependencies: [] # Don't download artifacts, especially `./public/`
