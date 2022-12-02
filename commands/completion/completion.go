@@ -22,26 +22,83 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		Short: "Generate shell completion scripts",
 		Long: heredoc.Docf(`
 		The output of this command will be computer code and is meant to be saved 
-		to a file or immediately evaluated by an interactive shell.
-		
-		For example, for bash you could add this to your %[1]s~/.bash_profile%[1]s:
+		to a file or immediately evaluated by an interactive shell. To load completions:
+
+		### Bash
+
+		To load completions in your current shell session:
 		
 		%[2]splaintext
-		eval "$(glab completion -s bash)"
+		source <(glab completion -s bash)
 		%[2]s
 
-		Generate a %[1]s_glab%[1]s completion script and put it somewhere in your %[1]s$fpath%[1]s:
+		To load completions for every new session, execute once:
+
+		#### Linux
+
+		%[2]splaintext
+		glab completion -s bash > /etc/bash_completion.d/glab
+		%[2]s
+
+		#### macOS
+
+		%[2]splaintext
+		glab completion -s bash > /usr/local/etc/bash_completion.d/glab
+		%[2]s
+		
+		### Zsh
+		
+		If shell completion is not already enabled in your environment you will need
+		to enable it. You can execute the following once:
+
+		%[2]splaintext
+		echo "autoload -U compinit; compinit" >> ~/.zshrc
+		%[2]s
+
+		To load completions in your current shell session:
+		
+		%[2]splaintext
+		source "$(glab completion -s zsh); compdef _glab glab
+		%[2]s
+		
+		To load completions for every new session, execute once:
+
+		#### Linux
+		
+		%[2]splaintext
+		glab completion -s zsh > "${fpath[1]}/_glab"
+		%[2]s
+
+		#### macOS
 
 		%[2]splaintext
 		glab completion -s zsh > /usr/local/share/zsh/site-functions/_glab
 		%[2]s
 
-		Ensure that the following is present in your %[1]s~/.zshrc%[1]s:
+		### fish
 
-		- %[1]sautoload -U compinit%[1]s
-		- %[1]scompinit -i%[1]s
+		To load completions in your current shell session:
 
-		Zsh version 5.7 or later is recommended.
+		%[2]splaintext
+		glab completion -s fish | source
+		%[2]s
+
+		To load completions for every new session, execute once:
+
+		%[2]splaintext
+		glab completion -s fish > ~/.config/fish/completions/glab.fish
+		%[2]s
+
+		### PowerShell
+
+		To load completions in your current shell session:
+
+		%[2]splaintext
+		glab completion -s powershell | Out-String | Invoke-Expression
+		%[2]s
+
+		To load completions for every new session, add the output of the above command
+		to your powershell profile.
 
 		When installing glab through a package manager, however, it's possible that
 		no additional shell configuration is necessary to gain completion support. 
