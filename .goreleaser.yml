@@ -32,8 +32,9 @@ builds:
 
 dockers:
   - image_templates:
-      # TODO: once we have access to docker container registry, add gitlab/glab image here
       - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-amd64"
+      - "gitlab/glab:{{ .Tag }}-amd64"
+      - "profclems/glab:{{ .Tag }}-amd64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -48,6 +49,8 @@ dockers:
       - scripts/entrypoint.sh
   - image_templates:
       - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-arm64"
+      - "gitlab/glab:{{ .Tag }}-arm64"
+      - "profclems/glab:{{ .Tag }}-arm64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -70,7 +73,22 @@ docker_manifests:
     image_templates:
       - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-amd64"
       - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-arm64"
-
+  - name_template: "gitlab/glab:{{ .Tag }}"
+    image_templates:
+      - "gitlab/glab:{{ .Tag }}-amd64"
+      - "gitlab/glab:{{ .Tag }}-arm64"
+  - name_template: "gitlab/glab:latest"
+    image_templates:
+      - "gitlab/glab:{{ .Tag }}-amd64"
+      - "gitlab/glab:{{ .Tag }}-arm64"
+  - name_template: "profclems/glab:{{ .Tag }}"
+    image_templates:
+      - "profclems/glab:{{ .Tag }}-amd64"
+      - "profclems/glab:{{ .Tag }}-arm64"
+  - name_template: "profclems/glab:latest"
+    image_templates:
+      - "profclems/glab:{{ .Tag }}-amd64"
+      - "profclems/glab:{{ .Tag }}-arm64"
 archives:
   - id: nix
     builds: [macos, linux]
