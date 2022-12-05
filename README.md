@@ -63,10 +63,12 @@ Other installation methods depend on your operating system.
 
 ### macOS
 
-- Install from Homebrew: `brew install glab`
-  - Update from Homebrew: `brew upgrade glab`
-- Install from [MacPorts](https://ports.macports.org/port/glab/summary): `sudo port install glab`
-  - Update from MacPorts: `sudo port selfupdate && sudo port upgrade glab`
+- Homebrew (officially supported)
+  - Install with: `brew install glab`
+  - Update with: `brew upgrade glab`
+- [MacPorts](https://ports.macports.org/port/glab/summary): 
+  - Install with: `sudo port install glab`
+  - Update with: `sudo port selfupdate && sudo port upgrade glab`
 - Install into `usr/bin` with a shell script:
   `curl -s "https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh" | sudo sh`
 
@@ -74,19 +76,26 @@ Other installation methods depend on your operating system.
 
 ### Windows
 
-- Download from [WinGet](https://github.com/microsoft/winget-cli): `winget install glab.glab`
-  - Update from WinGet: `winget install glab.glab`
-- Download from [scoop](https://scoop.sh): `scoop install glab`
-  - Update from scoop: `scoop update glab`
-- Download an EXE installer file from the [releases page](https://gitlab.com/gitlab-org/cli/-/releases)
+- [WinGet](https://github.com/microsoft/winget-cli)
+  - Install with: `winget install glab.glab`
+  - Update with: `winget install glab.glab`
+- [scoop](https://scoop.sh)
+  - Install with: `scoop install glab`
+  - Update with: `scoop update glab`
+- Download an EXE installer or the `glab.exe` binary from the [releases page](https://gitlab.com/gitlab-org/cli/-/releases)
 
 ### Linux
 
 - Download prebuilt binaries from the [releases page](https://gitlab.com/gitlab-org/cli/-/releases)
-- Install from Homebrew: `brew install glab`
-- Update from Homebrew: `brew upgrade glab`
 
-#### Snapcraft
+#### Homebrew
+
+Installing from Homebrew is the officially supported installation method for Linux.
+
+- Install with: `brew install glab`
+- Update with: `brew upgrade glab`
+
+#### Snapcraft (currently [out of date](https://gitlab.com/gitlab-org/cli/-/issues/1127))
 
 To install `glab` from the [Snap Store](https://snapcraft.io/glab):
 
@@ -106,18 +115,6 @@ For Arch Linux, `glab` is available:
 - From the [Snap Store](https://snapcraft.io/glab), if
   [snap](https://snapcraft.io/docs/installing-snap-on-arch-linux) is installed.
 - Installing with the package manager: `pacman -S glab`
-
-#### KISS Linux
-
-WARNING:
-KISS Linux may no longer be actively maintained.
-
-`glab` is available on the [KISS Linux Community Repository](https://github.com/kisslinux/community) as `gitlab-glab`.
-If you already have the community repository configured in your `KISS_PATH` you can install `glab` through your terminal:
-
-```shell
-kiss b gitlab-glab && kiss i gitlab-glab
-```
 
 #### Alpine Linux
 
