@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
@@ -20,39 +21,41 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/issue/issueutils"
+	"gitlab.com/gitlab-org/cli/internal/recovery"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
 
 type CreateOpts struct {
-	Title       string
-	Description string
-	Labels      []string
-	Assignees   []string
+	Title       string   `json:"title,omitempty"`
+	Description string   `json:"description,omitempty"`
+	Labels      []string `json:"labels,omitempty"`
+	Assignees   []string `json:"assignees,omitempty"`
 
-	Weight        int
-	MileStone     int
-	LinkedMR      int
-	LinkedIssues  []int
-	IssueLinkType string
-	TimeEstimate  string
-	TimeSpent     string
+	Weight        int    `json:"weight,omitempty"`
+	Milestone     int    `json:"milestone,omitempty"`
+	LinkedMR      int    `json:"linked_mr,omitempty"`
+	LinkedIssues  []int  `json:"linked_issues,omitempty"`
+	IssueLinkType string `json:"issue_link_type,omitempty"`
+	TimeEstimate  string `json:"time_estimate,omitempty"`
+	TimeSpent     string `json:"time_spent,omitempty"`
 
-	MilestoneFlag string
+	MilestoneFlag string `json:"milestone_flag"`
 
-	NoEditor       bool
-	IsConfidential bool
-	IsInteractive  bool
-	OpenInWeb      bool
-	Yes            bool
-	Web            bool
+	NoEditor       bool `json:"-"`
+	IsConfidential bool `json:"is_confidential,omitempty"`
+	IsInteractive  bool `json:"-"`
+	OpenInWeb      bool `json:"-"`
+	Yes            bool `json:"-"`
+	Web            bool `json:"-"`
+	Recover        bool `json:"-"`
 
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
-	HTTPClient func() (*gitlab.Client, error)
-	Remotes    func() (glrepo.Remotes, error)
-	Config     func() (config.Config, error)
+	IO         *iostreams.IOStreams             `json:"-"`
+	BaseRepo   func() (glrepo.Interface, error) `json:"-"`
+	HTTPClient func() (*gitlab.Client, error)   `json:"-"`
+	Remotes    func() (glrepo.Remotes, error)   `json:"-"`
+	Config     func() (config.Config, error)    `json:"-"`
 
-	BaseProject *gitlab.Project
+	BaseProject *gitlab.Project `json:"-"`
 }
 
 func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
@@ -71,7 +74,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			glab issue new
 			glab issue create -m release-2.0.0 -t "we need this feature" --label important
 			glab issue new -t "Fix CVE-YYYY-XXXX" -l security --linked-mr 123
-			glab issue create -m release-1.0.1 -t "security fix" --label security --web
+			glab issue create -m release-1.0.1 -t "security fix" --label security --web --recover
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -120,7 +123,17 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 				return cmdutils.SilentError
 			}
 
-			return createRun(opts)
+			if err := createRun(opts); err != nil {
+				// always save options to file
+				recoverErr := createRecoverSaveFile(repo.FullName(), opts)
+				if recoverErr != nil {
+					fmt.Fprintf(opts.IO.StdErr, "Could not create recovery file: %v", recoverErr)
+				}
+
+				return err
+			}
+
+			return nil
 		},
 	}
 	issueCreateCmd.Flags().StringVarP(&opts.Title, "title", "t", "", "Supply a title for issue")
@@ -138,6 +151,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	issueCreateCmd.Flags().StringVarP(&opts.IssueLinkType, "link-type", "", "relates_to", "Type for the issue link")
 	issueCreateCmd.Flags().StringVarP(&opts.TimeEstimate, "time-estimate", "e", "", "Set time estimate for the issue")
 	issueCreateCmd.Flags().StringVarP(&opts.TimeSpent, "time-spent", "s", "", "Set time spent for the issue")
+	issueCreateCmd.Flags().BoolVar(&opts.Recover, "recover", false, "Save the options to a file if the issue fails to be created. If the file exists, the options will be loaded from the recovery file (EXPERIMENTAL)")
 
 	return issueCreateCmd
 }
@@ -159,9 +173,20 @@ func createRun(opts *CreateOpts) error {
 	issueCreateOpts := &gitlab.CreateIssueOptions{}
 
 	if opts.MilestoneFlag != "" {
-		opts.MileStone, err = cmdutils.ParseMilestone(apiClient, repo, opts.MilestoneFlag)
+		opts.Milestone, err = cmdutils.ParseMilestone(apiClient, repo, opts.MilestoneFlag)
 		if err != nil {
 			return err
+		}
+	}
+
+	if opts.Recover {
+		if err := recovery.FromFile(repo.FullName(), "issue.json", opts); err != nil {
+			// if the file to recover doesn't exist, we can just ignore the error and move on
+			if !errors.Is(err, os.ErrNotExist) {
+				fmt.Fprintf(opts.IO.StdErr, "Failed to recover from file: %v", err)
+			}
+		} else {
+			fmt.Fprintln(opts.IO.StdOut, "Recovered create options from file")
 		}
 	}
 
@@ -290,7 +315,7 @@ func createRun(opts *CreateOpts) error {
 				}
 			}
 			if x == cmdutils.AddMilestoneAction {
-				err = cmdutils.MilestonesPrompt(&opts.MileStone, apiClient, repoRemote, opts.IO)
+				err = cmdutils.MilestonesPrompt(&opts.Milestone, apiClient, repoRemote, opts.IO)
 				if err != nil {
 					return err
 				}
@@ -327,8 +352,8 @@ func createRun(opts *CreateOpts) error {
 		if opts.LinkedMR != 0 {
 			issueCreateOpts.MergeRequestToResolveDiscussionsOf = gitlab.Int(opts.LinkedMR)
 		}
-		if opts.MileStone != 0 {
-			issueCreateOpts.MilestoneID = gitlab.Int(opts.MileStone)
+		if opts.Milestone != 0 {
+			issueCreateOpts.MilestoneID = gitlab.Int(opts.Milestone)
 		}
 		if len(opts.Assignees) > 0 {
 			users, err := api.UsersByNames(apiClient, opts.Assignees)
@@ -427,9 +452,9 @@ func generateIssueWebURL(opts *CreateOpts) (string, error) {
 		// this uses the slash commands to add assignees to the description
 		description += fmt.Sprintf("\n/assign %s", strings.Join(opts.Assignees, ", "))
 	}
-	if opts.MileStone != 0 {
+	if opts.Milestone != 0 {
 		// this uses the slash commands to add milestone to the description
-		description += fmt.Sprintf("\n/milestone %%%d", opts.MileStone)
+		description += fmt.Sprintf("\n/milestone %%%d", opts.Milestone)
 	}
 	if opts.Weight != 0 {
 		// this uses the slash commands to add weight to the description
@@ -449,5 +474,17 @@ func generateIssueWebURL(opts *CreateOpts) (string, error) {
 		"issue[title]=%s&issue[description]=%s",
 		strings.ReplaceAll(url.PathEscape(opts.Title), "+", "%2B"),
 		strings.ReplaceAll(url.PathEscape(description), "+", "%2B"))
+
 	return u.String(), nil
+}
+
+// createRecoverSaveFile will try save the issue create options to a file
+func createRecoverSaveFile(repoName string, opts *CreateOpts) error {
+	recoverFile, err := recovery.CreateFile(repoName, "issue.json", opts)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(opts.IO.StdErr, "Failed to create issue. Created recovery file: %s\nRun the command again with the '--recover' option to retry", recoverFile)
+	return nil
 }

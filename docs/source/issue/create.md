@@ -24,7 +24,7 @@ glab issue create
 glab issue new
 glab issue create -m release-2.0.0 -t "we need this feature" --label important
 glab issue new -t "Fix CVE-YYYY-XXXX" -l security --linked-mr 123
-glab issue create -m release-1.0.1 -t "security fix" --label security --web
+glab issue create -m release-1.0.1 -t "security fix" --label security --web --recover
 
 ```
 
@@ -40,6 +40,7 @@ glab issue create -m release-1.0.1 -t "security fix" --label security --web
       --linked-mr int          The IID of a merge request in which to resolve all issues
   -m, --milestone string       The global ID or title of a milestone to assign
       --no-editor              Don't open editor to enter description. If set to true, uses prompt. Default is false
+      --recover                Save the options to a file if the issue fails to be created. If the file exists, the options will be loaded from the recovery file (EXPERIMENTAL)
   -e, --time-estimate string   Set time estimate for the issue
   -s, --time-spent string      Set time spent for the issue
   -t, --title string           Supply a title for issue
