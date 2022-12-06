@@ -38,7 +38,7 @@ type IOStreams struct {
 	displayHyperlinks string
 }
 
-var controlCharRegEx = regexp.MustCompile(`\[(\d*(;\d+)*[^m])`)
+var controlCharRegEx = regexp.MustCompile(`(\x1b\[)((?:(\d*)(;*))*)([A-Z,a-l,n-z])`)
 
 func Init() *IOStreams {
 	stdoutIsTTY := IsTerminal(os.Stdout)
@@ -72,7 +72,7 @@ func Init() *IOStreams {
 }
 
 func stripControlCharacters(input string) string {
-	return controlCharRegEx.ReplaceAllString(input, "^[[${1}")
+	return controlCharRegEx.ReplaceAllString(input, "^[[$2$5")
 }
 
 func (s *IOStreams) PromptEnabled() bool {
