@@ -205,3 +205,63 @@ func Test_HelperFunctions(t *testing.T) {
 		assert.Equal(t, err, &bytes.Buffer{})
 	})
 }
+
+func Test_stripControlCharacters(t *testing.T) {
+	type args struct {
+		badString string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "With moving 2 lines up",
+			args: args{
+				badString: "echo evil!" + //
+					"exit 0" + //
+					"[2Aecho Hello World!",
+			},
+			want: "echo evil!exit 0^[[2Aecho Hello World!",
+		},
+		{
+			name: "With obfuscating characters",
+			args: args{
+				badString: "echo evil!" + //
+					"exit 0" + //
+					"[2;0;0;5;3;2;Aecho Hello World!",
+			},
+			want: "echo evil!exit 0^[[2;0;0;5;3;2;Aecho Hello World!",
+		},
+		{
+			name: "With clearing the screen",
+			args: args{
+				badString: "echo evil!" + //
+					"exit 0" + //
+					"[2Lecho Hello World!",
+			},
+			want: "echo evil!exit 0^[[2Lecho Hello World!",
+		},
+		{
+			name: "control character with empty parameters",
+			args: args{
+				badString: "[2;;;Aecho Hello World!",
+			},
+			want: "^[[2;;;Aecho Hello World!",
+		},
+		{
+			name: "With colors",
+			args: args{
+				badString: "\033[0;30mSome text",
+			},
+			want: "^[[0;30mSome text",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := stripControlCharacters(tt.args.badString)
+			assert.Equal(t, got, tt.want)
+		})
+	}
+}

@@ -1,11 +1,13 @@
 package iostreams
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
@@ -36,6 +38,8 @@ type IOStreams struct {
 	displayHyperlinks string
 }
 
+var controlCharRegEx = regexp.MustCompile(`\[(\d*(;\d+)*[^m])`)
+
 func Init() *IOStreams {
 	stdoutIsTTY := IsTerminal(os.Stdout)
 	stderrIsTTY := IsTerminal(os.Stderr)
@@ -65,6 +69,10 @@ func Init() *IOStreams {
 	_isColorEnabled = isColorEnabled() && stdoutIsTTY && stderrIsTTY
 
 	return ioStream
+}
+
+func stripControlCharacters(input string) string {
+	return controlCharRegEx.ReplaceAllString(input, "^[[${1}")
 }
 
 func (s *IOStreams) PromptEnabled() bool {
@@ -111,6 +119,8 @@ func (s *IOStreams) StartPager() error {
 		}
 	}
 
+	pagerEnv = append(pagerEnv, "LESSSECURE=1")
+
 	if s.shouldDisplayHyperlinks() {
 		pagerEnv = append(pagerEnv, "LESS=FrX")
 	} else if _, ok := os.LookupEnv("LESS"); !ok {
@@ -128,7 +138,28 @@ func (s *IOStreams) StartPager() error {
 	if err != nil {
 		return err
 	}
-	s.StdOut = pagedOut
+
+	pipeReader, pipeWriter := io.Pipe()
+	s.StdOut = pipeWriter
+
+	// TODO: Unfortunately, trying to add an error channel introduces a wait that locks up the code.
+	// We should eventually add some error reporting for the go function
+
+	go func() {
+		defer pagedOut.Close()
+
+		scanner := bufio.NewScanner(pipeReader)
+
+		for scanner.Scan() {
+			newData := stripControlCharacters(scanner.Text())
+
+			_, err = fmt.Fprintln(pagedOut, newData)
+			if err != nil {
+				return
+			}
+		}
+	}()
+
 	err = pagerCmd.Start()
 	if err != nil {
 		return err
@@ -142,7 +173,7 @@ func (s *IOStreams) StopPager() {
 		return
 	}
 
-	_ = s.StdOut.(io.ReadCloser).Close()
+	_ = s.StdOut.(io.WriteCloser).Close()
 	_, _ = s.pagerProcess.Wait()
 	s.pagerProcess = nil
 }

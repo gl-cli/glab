@@ -4,7 +4,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"strings"
 
 	"github.com/google/shlex"
 )
@@ -19,22 +18,16 @@ func Command(url, launcher string) (*exec.Cmd, error) {
 
 // ForOS produces an exec.Cmd to open the web browser for different OS
 func ForOS(goos, url string) *exec.Cmd {
-	exe := "open"
-	var args []string
+	cmd := exec.Command("xdg-open", url)
 	switch goos {
 	case "darwin":
-		args = append(args, url)
+		cmd = exec.Command("open", url)
 	case "windows":
-		exe = "cmd"
-		r := strings.NewReplacer("&", "^&")
-		args = append(args, "/c", "start", r.Replace(url))
-	default:
-		exe = "xdg-open"
-		args = append(args, url)
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
 	}
 
-	cmd := exec.Command(exe, args...)
 	cmd.Stderr = os.Stderr
+
 	return cmd
 }
 

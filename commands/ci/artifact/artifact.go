@@ -2,8 +2,10 @@ package ci
 
 import (
 	"archive/zip"
+	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -13,6 +15,27 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
+
+func ensurePathIsCreated(filename string) error {
+	dir, _ := filepath.Split(filename)
+
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, 0o700) // Create your file
+		if err != nil {
+			return fmt.Errorf("could not create new path: %v", err)
+		}
+	}
+	return nil
+}
+
+func sanitizeAssetName(asset string) string {
+	if !strings.HasPrefix(asset, "/") {
+		// Prefix the asset with "/" ensures that filepath.Clean removes all `/..`
+		// See rule 4 of filepath.Clean for more information: https://pkg.go.dev/path/filepath#Clean
+		asset = "/" + asset
+	}
+	return filepath.Clean(asset)
+}
 
 func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 	jobArtifactCmd := &cobra.Command{
@@ -60,8 +83,19 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			for _, v := range zipReader.File {
+				sanitizedAssetName := sanitizeAssetName(v.Name)
+
+				destDir, err := filepath.Abs(path)
+				if err != nil {
+					return fmt.Errorf("resolving absolute download directory path: %v", err)
+				}
+				destPath := filepath.Join(destDir, sanitizedAssetName)
+				if !strings.HasPrefix(destPath, destDir) {
+					return fmt.Errorf("invalid file path name")
+				}
+
 				if v.FileInfo().IsDir() {
-					if err := os.Mkdir(path+v.Name, v.Mode()); err != nil {
+					if err := os.Mkdir(destPath, v.Mode()); err != nil {
 						return err
 					}
 				} else {
@@ -70,7 +104,19 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 						return err
 					}
 					defer srcFile.Close()
-					dstFile, err := os.OpenFile(path+v.Name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, v.Mode())
+
+					err = ensurePathIsCreated(destPath)
+					if err != nil {
+						return err
+					}
+
+					symlinkCheck, _ := os.Lstat(destPath)
+
+					if symlinkCheck != nil && symlinkCheck.Mode()&os.ModeSymlink != 0 {
+						return fmt.Errorf("file in artifact would overwrite a symbolic link- cannot extract")
+					}
+
+					dstFile, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, v.Mode())
 					if err != nil {
 						return err
 					}
