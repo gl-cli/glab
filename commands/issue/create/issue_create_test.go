@@ -92,3 +92,27 @@ func Test_IssueCreate(t *testing.T) {
 
 	api.CreateIssue = oldCreateIssue
 }
+
+func TestGenerateIssueWebURL(t *testing.T) {
+	opts := &CreateOpts{
+		Labels:         []string{"backend", "frontend"},
+		Assignees:      []string{"johndoe", "janedoe"},
+		Milestone:      15,
+		Weight:         3,
+		IsConfidential: true,
+		BaseProject: &gitlab.Project{
+			ID:     101,
+			WebURL: "https://gitlab.example.com/gitlab-org/gitlab",
+		},
+		Title: "Autofill tests | for this @project",
+	}
+
+	u, err := generateIssueWebURL(opts)
+
+	expectedUrl := "https://gitlab.example.com/gitlab-org/gitlab/-/issues/new?" +
+		"issue%5Bdescription%5D=%0A%2Flabel+~%22backend%22+~%22frontend%22%0A%2Fassign+johndoe%2C+janedoe%0A%2Fmilestone+%2515%0A%2Fweight+3%0A%2Fconfidential&" +
+		"issue%5Btitle%5D=Autofill+tests+%7C+for+this+%40project"
+
+	assert.NoError(t, err)
+	assert.Equal(t, expectedUrl, u)
+}

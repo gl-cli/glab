@@ -37,7 +37,7 @@ func TestForOS(t *testing.T) {
 				goos: "windows",
 				url:  "https://example.com/path?a=1&b=2&c=3",
 			},
-			want: []string{"cmd", "/c", "start", "https://example.com/path?a=1^&b=2^&c=3"},
+			want: []string{"rundll32", "url.dll,FileProtocolHandler", "https://example.com/path?a=1&b=2&c=3"},
 		},
 	}
 	for _, tt := range tests {

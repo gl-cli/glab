@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -190,13 +191,37 @@ func downloadAssets(httpClient *api.Client, io *iostreams.IOStreams, toDownload 
 			color.ProgressIcon(),
 			color.Blue("name"), *asset.Name,
 			color.Blue("url"), *asset.URL)
-		err := downloadAsset(httpClient, *asset.URL, filepath.Join(destDir, *asset.Name))
+
+		var sanitizedAssetName string
+		if asset.Name != nil {
+			sanitizedAssetName = sanitizeAssetName(*asset.Name)
+		}
+		destDir, err := filepath.Abs(destDir)
+		if err != nil {
+			return fmt.Errorf("resolving absolute download directory path: %v", err)
+		}
+
+		destPath := filepath.Join(destDir, sanitizedAssetName)
+		if !strings.HasPrefix(destPath, destDir) {
+			return fmt.Errorf("invalid file path name")
+		}
+
+		err = downloadAsset(httpClient, *asset.URL, destPath)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func sanitizeAssetName(asset string) string {
+	if !strings.HasPrefix(asset, "/") {
+		// Prefix the asset with "/" ensures that filepath.Clean removes all `/..`
+		// See rule 4 of filepath.Clean for more information: https://pkg.go.dev/path/filepath#Clean
+		asset = "/" + asset
+	}
+	return filepath.Clean(asset)
 }
 
 func downloadAsset(client *api.Client, assetURL, destinationPath string) error {

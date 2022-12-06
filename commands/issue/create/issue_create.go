@@ -443,9 +443,9 @@ func generateIssueWebURL(opts *CreateOpts) (string, error) {
 		// this uses the slash commands to add labels to the description
 		// See https://docs.gitlab.com/ee/user/project/quick_actions.html
 		// See also https://gitlab.com/gitlab-org/gitlab-foss/-/issues/19731#note_32550046
-		description += "\n/label "
+		description += "\n/label"
 		for _, label := range opts.Labels {
-			description += fmt.Sprintf("~%q", label)
+			description += fmt.Sprintf(" ~%q", label)
 		}
 	}
 	if len(opts.Assignees) > 0 {
@@ -470,10 +470,11 @@ func generateIssueWebURL(opts *CreateOpts) (string, error) {
 		return "", err
 	}
 	u.Path += "/-/issues/new"
-	u.RawQuery = fmt.Sprintf(
-		"issue[title]=%s&issue[description]=%s",
-		strings.ReplaceAll(url.PathEscape(opts.Title), "+", "%2B"),
-		strings.ReplaceAll(url.PathEscape(description), "+", "%2B"))
+
+	q := u.Query()
+	q.Set("issue[title]", opts.Title)
+	q.Add("issue[description]", description)
+	u.RawQuery = q.Encode()
 
 	return u.String(), nil
 }
