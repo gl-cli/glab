@@ -65,7 +65,7 @@ Other installation methods depend on your operating system.
 - Homebrew (officially supported)
   - Install with: `brew install glab`
   - Update with: `brew upgrade glab`
-- [MacPorts](https://ports.macports.org/port/glab/summary): 
+- [MacPorts](https://ports.macports.org/port/glab/summary):
   - Install with: `sudo port install glab`
   - Update with: `sudo port selfupdate && sudo port upgrade glab`
 - Install into `usr/bin` with a shell script:
@@ -157,11 +157,7 @@ RUN apk add --no-cache glab@edge
 
 #### Nix/NixOS
 
-Nix (NixOS) users can install from [nixpkgs](https://search.nixos.org/packages?channel=unstable&show=glab&from=0&size=30&sort=relevance&query=glab):
-
-```shell
-nix-env -iA nixos.glab
-```
+Nix (NixOS) users can install from [nixpkgs](https://search.nixos.org/packages?channel=unstable&show=glab&from=0&size=30&sort=relevance&query=glab) with the command `nix-env -iA nixos.glab`.
 
 #### MPR (Debian/Ubuntu)
 
@@ -175,25 +171,15 @@ makedeb -si
 
 ##### Prebuilt-MPR
 
-The above method downloads glab from source and builds it before packaging it into a `.deb` package. If you don't want to compile or just want a prebuilt package, you can also install glab from the Prebuilt-MPR.
+The above method downloads glab from source and builds it before packaging it into a `.deb` package. If you don't want to compile or just want a prebuilt package, you can also install glab from the Prebuilt-MPR:
 
-First [set up the Prebuilt-MPR on your system](https://docs.makedeb.org/prebuilt-mpr/getting-started/#setting-up-the-repository), and then run the following:
-
-```shell
-sudo apt install glab
-```
+1. Set up [the Prebuilt-MPR on your system](https://docs.makedeb.org/prebuilt-mpr/getting-started/#setting-up-the-repository).
+1. Install with the command `sudo apt install glab`.
 
 #### Spack
 
-```shell
-spack install glab
-```
-
-Updating (Spack):
-
-```shell
-spack uninstall glab && spack install glab
-```
+- To install: `spack install glab`.
+- To update: `spack uninstall glab && spack install glab`
 
 ### Building from source
 
@@ -204,34 +190,16 @@ If a supported binary for your OS is not found at the [releases page](https://gi
 - `make`
 - Go 1.13+
 
-1. Verify that you have Go 1.13+ installed
+To build from source:
 
-   ```shell
-   $ go version
-   go version go1.14
-   ```
-
-   If `go` is not installed, follow instructions on [the Go website](https://golang.org/doc/install).
-1. Clone this repository
-
-   ```shell
-   git clone https://gitlab.com/gitlab-org/cli.git glab
-   cd glab
-   ```
-
-   If you have `$GOPATH/bin` or `$GOBIN` in your `$PATH`, you can just install with `make install` (install glab in `$GOPATH/bin`) and **skip steps 3 and 4**.
-1. Build the project:
-
-   ```shell
-   make
-   ```
-
-1. Change PATH to find newly compiled `glab`
-
-   ```shell
-   export PATH=$PWD/bin:$PATH
-   ```
-
+1. Run the command `go version` to verify that Go version 1.13 or later is installed.
+   If `go` is not installed, follow instructions on [the Go website](https://go.dev/doc/install).
+1. Clone this repository: `git clone https://gitlab.com/gitlab-org/cli.git glab`
+1. Change into the project directory: `cd glab`
+1. If you have `$GOPATH/bin` or `$GOBIN` in your `$PATH`, run `make install` to install in `$GOPATH/bin`).
+1. If you do not have `$GOPATH/bin` or `$GOBIN` in your `$PATH`:
+   1. Run `make` to build the project.
+   1. Run `export PATH=$PWD/bin:$PATH` to update your PATH with the newly compiled project.
 1. Run `glab version` to confirm that it worked.
 
 ## Authentication
