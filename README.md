@@ -38,7 +38,6 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 - [Authentication](#authentication)
 - [Configuration](#configuration)
 - [Environment Variables](#environment-variables)
-- [What about lab](#what-about-lab)
 - [Issues](#issues)
 - [Contributing](#contributing)
 
