@@ -254,7 +254,7 @@ func Test_stripControlCharacters(t *testing.T) {
 			args: args{
 				badString: "\033[0;30mSome text",
 			},
-			want: "^[[0;30mSome text",
+			want: "\x1b[0;30mSome text",
 		},
 	}
 
