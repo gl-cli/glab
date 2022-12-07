@@ -43,9 +43,26 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 
 ## Usage
 
+To get started with `glab`:
+
+1. Follow the [installation instructions](#installation) appropriate for your operating system.
+1. [Authenticate](#authentication) into your instance of GitLab.
+1. Optional. Configure `glab` further to meet your needs:
+   - Set any needed global, per-project, or per-host [configuration](#configuration).
+   - Set any needed [environment variables](#environment-variables).
+
+You're ready! Run `glab --help` to view a list of core commands. Commands follow this pattern:
+
 ```shell
 glab <command> <subcommand> [flags]
 ```
+
+Many core commands also have sub-commands. Some examples:
+
+- List merge requests assigned to me: `glab mr list --assignee=@me`
+- List review requests for me: `glab mr list --reviewer=@me`
+- Approve a merge request: `glab mr approve 235`
+- Create an issue, and add milestone, title, and label: `glab issue create -m release-2.0.0 -t "My title here" --label important`
 
 ## Demo
 
@@ -218,31 +235,18 @@ Get a GitLab access token at <https://gitlab.com/-/profile/personal_access_token
 
 ## Configuration
 
-By default, `glab` follows the XDG Base Directory [Spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html):
+By default, `glab` follows the
+[XDG Base Directory Spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html).
+Configure it globally, locally, or per-host:
 
-- The global configuration file is saved at `~/.config/glab-cli`.
-- The local configuration file is saved at `.git/glab-cli` in the current working Git directory.
-- Advanced workflows may override the location of the global configuration by setting the `GLAB_CONFIG_DIR` environment variable.
-
-- **To set configuration globally**
-
-  ```shell
-  glab config set --global editor vim
-  ```
-
-- **To set configuration for current directory (must be a Git repository)**
-
-  ```shell
-  glab config set editor vim
-  ```
-
-- **To set configuration for a specific host**
-
-  Use the `--host` flag to set configuration for a specific host. This configuration is always stored in the global configuration file, with or without the `global` flag.
-
-  ```shell
-  glab config set editor vim --host gitlab.example.org
-  ```
+- **Globally**: run `glab config set --global editor vim`.
+  - The global configuration file is available at `~/.config/glab-cli`.
+  - To override this location, set the `GLAB_CONFIG_DIR` environment variable.
+- **The current directory**: run `glab config set editor vim` in any folder in a Git repository.
+  - The local configuration file is available at `.git/glab-cli` in the current working Git directory.
+- **Per host**: run `glab config set editor vim --host gitlab.example.org`, changing
+  the `--host` parameter to meet your needs.
+  - Per-host configuration info is always stored in the global configuration file, with or without the `global` flag.
 
 ## Environment variables
 
