@@ -14,7 +14,7 @@ import (
 func NewCmdRetry(f *cmdutils.Factory) *cobra.Command {
 	pipelineRetryCmd := &cobra.Command{
 		Use:     "retry <job-id>",
-		Short:   `Retry a CI job`,
+		Short:   `Retry a CI/CD job`,
 		Aliases: []string{},
 		Example: heredoc.Doc(`
 	glab ci retry 871528

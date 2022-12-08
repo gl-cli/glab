@@ -40,7 +40,7 @@ func sanitizeAssetName(asset string) string {
 func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 	jobArtifactCmd := &cobra.Command{
 		Use:     "artifact <refName> <jobName> [flags]",
-		Short:   `Download all Artifacts from the last pipeline`,
+		Short:   `Download all artifacts from the last pipeline`,
 		Aliases: []string{"push"},
 		Example: heredoc.Doc(`
 	glab ci artifact main build
@@ -128,7 +128,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	jobArtifactCmd.Flags().StringP("path", "p", "./", "Path to download the Artifact files")
+	jobArtifactCmd.Flags().StringP("path", "p", "./", "Path to download the artifact files")
 
 	return jobArtifactCmd
 }

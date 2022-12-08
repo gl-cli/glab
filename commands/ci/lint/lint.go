@@ -21,7 +21,7 @@ func NewCmdLint(f *cmdutils.Factory) *cobra.Command {
 		Short: "Checks if your `.gitlab-ci.yml` file is valid.",
 		Args:  cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
-		$ glab ci lint  
+		$ glab ci lint
 		#=> Uses .gitlab-ci.yml in the current directory
 
 		$ glab ci lint .gitlab-ci.yml
@@ -91,6 +91,6 @@ func lintRun(f *cmdutils.Factory, path string) error {
 		// Returning the error to cobra here causes the process to exit with code 0, so we exit manually.
 		os.Exit(1)
 	}
-	fmt.Fprintln(out, c.GreenCheck(), "CI yml is Valid!")
+	fmt.Fprintln(out, c.GreenCheck(), "CI/CD YAML is valid!")
 	return nil
 }
