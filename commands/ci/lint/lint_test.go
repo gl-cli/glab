@@ -30,13 +30,13 @@ func Test_pipelineCILint(t *testing.T) {
 		{
 			Name:   "with no path specified",
 			Args:   "",
-			StdOut: "✓ CI yml is Valid!\n",
+			StdOut: "✓ CI/CD YAML is valid!\n",
 			StdErr: "Getting contents in .gitlab-ci.yml\nValidating...\n",
 		},
 		{
 			Name:   "with path specified as url",
 			Args:   "https://gitlab.com/gitlab-org/cli/-/raw/main/.gitlab-ci.yml",
-			StdOut: "✓ CI yml is Valid!\n",
+			StdOut: "✓ CI/CD YAML is valid!\n",
 			StdErr: "Getting contents in https://gitlab.com/gitlab-org/cli/-/raw/main/.gitlab-ci.yml\nValidating...\n",
 		},
 	}

@@ -20,7 +20,7 @@ glab ci lint [flags]
 ## Examples
 
 ```plaintext
-$ glab ci lint  
+$ glab ci lint
 #=> Uses .gitlab-ci.yml in the current directory
 
 $ glab ci lint .gitlab-ci.yml

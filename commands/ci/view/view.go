@@ -43,15 +43,15 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	opts := ViewOpts{}
 	pipelineCIView := &cobra.Command{
 		Use:   "view [branch/tag]",
-		Short: "View, run, trace/logs, and cancel CI jobs current pipeline",
+		Short: "View, run, trace/logs, and cancel CI/CD jobs current pipeline",
 		Long: heredoc.Doc(`Supports viewing, running, tracing, and canceling jobs.
 
 		Use arrow keys to navigate jobs and logs.
 
 		'Enter' to toggle a job's logs or trace.
 		'Ctrl+R', 'Ctrl+P' to run/retry/play a job -- Use Tab / Arrow keys to navigate modal and Enter to confirm.
-		'Ctrl+C' to cancel job -- (Quits CI view if selected job isn't running or pending).
-		'Ctrl+Q' to Quit CI View.
+		'Ctrl+C' to cancel job -- (Quits CI/CD view if selected job isn't running or pending).
+		'Ctrl+Q' to Quit CI/CD View.
 		'Ctrl+Space' suspend application and view logs (similar to glab pipeline ci trace)
 		Supports vi style bindings and arrow keys for navigating jobs and logs.
 	`),

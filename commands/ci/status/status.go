@@ -19,7 +19,7 @@ import (
 func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 	pipelineStatusCmd := &cobra.Command{
 		Use:     "status [flags]",
-		Short:   `View a running CI pipeline on current or other branch specified`,
+		Short:   `View a running CI/CD pipeline on current or other branch specified`,
 		Aliases: []string{"stats"},
 		Example: heredoc.Doc(`
 	glab ci status --live
@@ -56,7 +56,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 			runningPipeline, err := api.GetLastPipeline(apiClient, repo.FullName(), branch)
 			if err != nil {
 				redCheck := c.Red("✘")
-				fmt.Fprintf(f.IO.StdOut, "%s No pipelines running or available on %s branch\n", redCheck, branch)
+				fmt.Fprintf(f.IO.StdOut, "%s No pipelines running or available on branch: %s\n", redCheck, branch)
 				return err
 			}
 

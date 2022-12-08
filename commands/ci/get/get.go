@@ -24,10 +24,10 @@ type PipelineMergedResponse struct {
 func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 	pipelineGetCmd := &cobra.Command{
 		Use:     "get [flags]",
-		Short:   `Get JSON of a running CI pipeline on current or other branch specified`,
+		Short:   `Get JSON of a running CI/CD pipeline on the current or other specified branch`,
 		Aliases: []string{"stats"},
 		Example: heredoc.Doc(`
-	glab ci get 
+	glab ci get
 	glab ci -R some/project -p 12345
 	`),
 		Long: ``,
@@ -59,7 +59,7 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 			pipeline, err := api.GetPipeline(apiClient, pipelineId, nil, repo.FullName())
 			if err != nil {
 				redCheck := c.Red("✘")
-				fmt.Fprintf(f.IO.StdOut, "%s No pipelines running or available on %s branch\n", redCheck, branch)
+				fmt.Fprintf(f.IO.StdOut, "%s No pipelines running or available on branch: %s\n", redCheck, branch)
 				return err
 			}
 

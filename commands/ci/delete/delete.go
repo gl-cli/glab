@@ -17,7 +17,7 @@ import (
 func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 	pipelineDeleteCmd := &cobra.Command{
 		Use:   "delete <id> [flags]",
-		Short: `Delete a CI pipeline`,
+		Short: `Delete a CI/CD pipeline`,
 		Example: heredoc.Doc(`
 	glab ci delete 34
 	glab ci delete 12,34,2
@@ -50,7 +50,7 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 						return err
 					}
 
-					fmt.Fprintln(f.IO.StdOut, c.RedCheck(), "Pipeline #"+strconv.Itoa(item.ID)+" Deleted Successfully")
+					fmt.Fprintln(f.IO.StdOut, c.RedCheck(), "Pipeline #"+strconv.Itoa(item.ID)+" deleted successfully")
 				}
 
 			} else {
@@ -58,13 +58,13 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 
 				arrIds := strings.Split(strings.Trim(pipelineID, "[] "), ",")
 				for _, i2 := range arrIds {
-					fmt.Fprintln(f.IO.StdOut, "Deleting Pipeline #"+i2)
+					fmt.Fprintln(f.IO.StdOut, "Deleting pipeline #"+i2)
 					err := api.DeletePipeline(apiClient, repo.FullName(), utils.StringToInt(i2))
 					if err != nil {
 						return err
 					}
 
-					fmt.Fprintln(f.IO.StdOut, c.RedCheck(), "Pipeline #"+i2+" Deleted Successfully")
+					fmt.Fprintln(f.IO.StdOut, c.RedCheck(), "Pipeline #"+i2+" deleted successfully")
 				}
 				fmt.Println()
 			}

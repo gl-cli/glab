@@ -9,9 +9,9 @@ You need to perform the following steps to release a new version of the cli.
 
 ## Access to distribution channels
 
-[TODO](https://gitlab.com/groups/gitlab-org/-/epics/8251): Here we'll add information about how we set up release for Homberew, WinGet and others.
+[TODO](https://gitlab.com/groups/gitlab-org/-/epics/8251): Here we'll add information about how we set up release for Homebrew, WinGet and others.
 
-## Setting up CI for releasing
+## Setting up CI/CD for releasing
 
 For automated testing, you need to [set up credentials](https://gitlab.com/groups/gitlab-org/-/epics/8251) for unit testing.
 
@@ -19,4 +19,4 @@ For releasing, you also need to add a `GITLAB_TOKEN_RELEASE`. This is how you cr
 
 1. Go to Settings -> [Access Tokens](https://gitlab.com/gitlab-org/cli/-/settings/access_tokens)
 1. Generate a new project token with `api` scope and `Maintainer` role.
-1. Add the new token as `GITLAB_TOKEN_RELEASE` **protected** and **masked** CI variables.
+1. Add the new token as `GITLAB_TOKEN_RELEASE` **protected** and **masked** CI/CD variables.
