@@ -70,8 +70,8 @@ func TestCiDelete(t *testing.T) {
 	out := output.String()
 
 	assert.Equal(t, heredoc.Doc(`
-		Deleting Pipeline #11111111
-		✓ Pipeline #11111111 Deleted Successfully
+		Deleting pipeline #11111111
+		✓ Pipeline #11111111 deleted successfully
 		`), out)
 	assert.Empty(t, output.Stderr())
 }
@@ -96,10 +96,10 @@ func TestCiDeleteMultiple(t *testing.T) {
 	out := output.String()
 
 	assert.Equal(t, heredoc.Doc(`
-		Deleting Pipeline #11111111
-		✓ Pipeline #11111111 Deleted Successfully
-		Deleting Pipeline #22222222
-		✓ Pipeline #22222222 Deleted Successfully
+		Deleting pipeline #11111111
+		✓ Pipeline #11111111 deleted successfully
+		Deleting pipeline #22222222
+		✓ Pipeline #22222222 deleted successfully
 		`), out)
 	assert.Empty(t, output.Stderr())
 }
