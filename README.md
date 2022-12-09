@@ -11,7 +11,7 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 
 `glab` is available for repositories hosted on GitLab.com and self-managed GitLab instances. `glab` supports multiple authenticated GitLab instances and automatically detects the authenticated hostname from the remotes available in the working Git directory.
 
-![command example](docs/assets/command-example.png)
+![command example](docs/assets/glabgettingstarted.gif)
 
 ## Table of contents
 
