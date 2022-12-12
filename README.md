@@ -15,6 +15,7 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 
 ## Table of contents
 
+- [Table of contents](#table-of-contents)
 - [Usage](#usage)
 - [Demo](#demo)
 - [Documentation](#documentation)
@@ -22,10 +23,9 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
   - [macOS](#macos)
   - [Windows](#windows)
   - [Linux](#linux)
-    - [Linuxbrew (Homebrew)](#linuxbrew-homebrew)
-    - [Snapcraft](#snapcraft)
+    - [Homebrew](#homebrew)
+    - [Snapcraft (currently out of date)](#snapcraft-currently-out-of-date)
     - [Arch Linux](#arch-linux)
-    - [KISS Linux](#kiss-linux)
     - [Alpine Linux](#alpine-linux)
       - [Install a pinned version from edge](#install-a-pinned-version-from-edge)
       - [Alpine Linux Docker-way](#alpine-linux-docker-way)
@@ -33,11 +33,11 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
     - [MPR (Debian/Ubuntu)](#mpr-debianubuntu)
       - [Prebuilt-MPR](#prebuilt-mpr)
     - [Spack](#spack)
-  - [Building From Source](#building-from-source)
-    - [Prerequisites](#prerequisites-for-building-from-source-are)
+  - [Building from source](#building-from-source)
+    - [Prerequisites for building from source](#prerequisites-for-building-from-source)
 - [Authentication](#authentication)
 - [Configuration](#configuration)
-- [Environment Variables](#environment-variables)
+- [Environment variables](#environment-variables)
 - [Issues](#issues)
 - [Contributing](#contributing)
 
@@ -221,9 +221,13 @@ To build from source:
 
 ## Authentication
 
-Get a GitLab access token at <https://gitlab.com/-/profile/personal_access_tokens> or
-`https://gitlab.example.com/-/profile/personal_access_tokens` if self-managed:
+To authenticate your installation of `glab`:
 
+1. Get a GitLab personal access token with at least the `api`
+   and `write_repository` scopes. Use the method appropriate for your instance:
+   - For GitLab.com, create one at the [Personal access tokens](https://gitlab.com/-/profile/personal_access_tokens) page.
+   - For self-managed instances, visit `https://gitlab.example.com/-/profile/personal_access_tokens`,
+     modifying `gitlab.example.com` to match the domain name of your instance.
 1. Start interactive setup: `glab auth login`
 1. Authenticate with the method appropriate for your GitLab instance:
    - For GitLab SaaS, authenticate against `gitlab.com` by reading the token
