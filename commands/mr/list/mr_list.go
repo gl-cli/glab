@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/flag"
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
@@ -105,6 +106,12 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 				opts.TitleQualifier = "open"
 			}
 
+			group, err := flag.GroupOverride(cmd)
+			if err != nil {
+				return err
+			}
+			opts.Group = group
+
 			if runE != nil {
 				return runE(opts)
 			}
@@ -113,6 +120,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 		},
 	}
 
+	cmdutils.EnableRepoOverride(mrListCmd, f)
 	mrListCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, "Filter merge request by label <name>")
 	mrListCmd.Flags().StringSliceVar(&opts.NotLabels, "not-label", []string{}, "Filter merge requests by not having label <name>")
 	mrListCmd.Flags().StringVar(&opts.Author, "author", "", "Filter merge request by Author <username>")
@@ -136,7 +144,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 	mrListCmd.Flags().BoolVarP(&opts.Mine, "mine", "", false, "Get only merge requests assigned to me")
 	_ = mrListCmd.Flags().MarkHidden("mine")
 	_ = mrListCmd.Flags().MarkDeprecated("mine", "use --assignee=@me")
-	mrListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Get MRs from group and it's subgroups")
+	mrListCmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
 
 	return mrListCmd
 }

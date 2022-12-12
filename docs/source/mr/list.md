@@ -41,7 +41,7 @@ glab mr list -M --per-page 10
       --author string          Filter merge request by Author <username>
   -c, --closed                 Get only closed merge requests
   -d, --draft                  Filter by draft merge requests
-  -g, --group string           Get MRs from group and it's subgroups
+  -g, --group string           Select a group/subgroup. This option is ignored if a repo argument is set.
   -l, --label strings          Filter merge request by label <name>
   -M, --merged                 Get only merged merge requests
   -m, --milestone string       Filter merge request by milestone <id>

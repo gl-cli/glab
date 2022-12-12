@@ -6,6 +6,7 @@ import (
 	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/flag"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
@@ -38,6 +39,12 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 			opts.HTTPClient = f.HttpClient
 			opts.BaseRepo = f.BaseRepo
 
+			group, err := flag.GroupOverride(cmd)
+			if err != nil {
+				return err
+			}
+			opts.Group = group
+
 			if runE != nil {
 				err = runE(opts)
 				return
@@ -47,7 +54,8 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "List group variables")
+	cmdutils.EnableRepoOverride(cmd, f)
+	cmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
 
 	return cmd
 }

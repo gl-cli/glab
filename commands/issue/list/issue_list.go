@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/flag"
 	"gitlab.com/gitlab-org/cli/commands/issue/issueutils"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
@@ -105,6 +106,12 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 				opts.TitleQualifier = "open"
 			}
 
+			group, err := flag.GroupOverride(cmd)
+			if err != nil {
+				return err
+			}
+			opts.Group = group
+
 			if runE != nil {
 				return runE(opts)
 			}
@@ -112,6 +119,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 			return listRun(opts)
 		},
 	}
+	cmdutils.EnableRepoOverride(issueListCmd, f)
 	issueListCmd.Flags().StringVarP(&opts.Assignee, "assignee", "a", "", "Filter issue by assignee <username>")
 	issueListCmd.Flags().StringSliceVar(&opts.NotAssignee, "not-assignee", []string{}, "Filter issue by not being assigneed to <username>")
 	issueListCmd.Flags().StringVar(&opts.Author, "author", "", "Filter issue by author <username>")
@@ -126,7 +134,8 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 	issueListCmd.Flags().BoolVarP(&opts.Confidential, "confidential", "C", false, "Filter by confidential issues")
 	issueListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
 	issueListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page. (default 30)")
-	issueListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Get issues from group and it's subgroups")
+	issueListCmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
+
 	issueListCmd.Flags().StringVarP(&opts.IssueType, "issue-type", "t", "", "Filter issue by its type {issue|incident|test_case}")
 
 	issueListCmd.Flags().BoolP("opened", "o", false, "Get only opened issues")

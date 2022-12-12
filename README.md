@@ -259,6 +259,8 @@ Configure it globally, locally, or per-host:
   Can be set in the config with `glab config set token xxxxxx`
 - `GITLAB_URI` or `GITLAB_HOST`: specify the URL of the GitLab server if self-managed (eg: `https://gitlab.example.com`). Default is `https://gitlab.com`.
 - `GITLAB_API_HOST`: specify the host where the API endpoint is found. Useful when there are separate (sub)domains or hosts for Git and the API endpoint: defaults to the hostname found in the Git URL
+- `GITLAB_REPO`: Default GitLab repository used for commands accepting the `--repo` option. Only used if no `--repo` option is given.
+- `GITLAB_GROUP`: Default GitLab group used for listing merge requests, issues and variables. Only used if no `--group` option is given.
 - `REMOTE_ALIAS` or `GIT_REMOTE_URL_VAR`: `git remote` variable or alias that contains the GitLab URL.
   Can be set in the config with `glab config set remote_alias origin`
 - `VISUAL`, `EDITOR` (in order of precedence): the editor tool to use for authoring text.
