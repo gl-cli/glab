@@ -27,7 +27,7 @@ glab variable list
 ## Options
 
 ```plaintext
-  -g, --group string   List group variables
+  -g, --group string   Select a group/subgroup. This option is ignored if a repo argument is set.
 ```
 
 ## Options inherited from parent commands

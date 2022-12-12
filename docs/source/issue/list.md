@@ -35,7 +35,7 @@ glab issue list --milestone release-2.0.0 --opened
       --author string          Filter issue by author <username>
   -c, --closed                 Get only closed issues
   -C, --confidential           Filter by confidential issues
-  -g, --group string           Get issues from group and it's subgroups
+  -g, --group string           Select a group/subgroup. This option is ignored if a repo argument is set.
       --in string              search in {title|description} (default "title,description")
   -t, --issue-type string      Filter issue by its type {issue|incident|test_case}
   -l, --label strings          Filter issue by label <name>
