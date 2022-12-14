@@ -288,8 +288,14 @@ func createRun(opts *CreateOpts) error {
 		if opts.CopyIssueLabels {
 			mrCreateOpts.Labels = &issue.Labels
 		}
-		opts.Description = fmt.Sprintf("Closes #%d", issue.IID)
-		opts.Title = fmt.Sprintf("Resolve \"%s\"", issue.Title)
+
+		opts.Description += fmt.Sprintf("\n\nCloses #%d", issue.IID)
+
+		if opts.Title == "" {
+			opts.Title = fmt.Sprintf("Resolve \"%s\"", issue.Title)
+		}
+
+		// MRs created with a related issue will always be created as a draft, same as the UI
 		if !opts.IsDraft && !opts.IsWIP {
 			opts.IsDraft = true
 		}
