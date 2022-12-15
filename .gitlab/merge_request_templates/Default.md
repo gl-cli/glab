@@ -22,4 +22,4 @@ Resolves #[issue_number]
 - [ ] Documentation
 - [ ] Chore (Related to CI or Packaging to platforms)
 
-/label ~"devops::create" ~"group::code review" ~"Category:Editor Extension" ~"cli"
+/label ~"devops::create" ~"group::code review" ~"Category:GitLab CLI" ~"cli"

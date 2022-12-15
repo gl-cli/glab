@@ -23,4 +23,4 @@ and verify the issue you're about to submit isn't a duplicate.
 
 ### Links / references
 
-/label ~"type::feature" ~"devops::create" ~"group::code review" ~"Category:Editor Extension" ~"cli"
+/label ~"type::feature" ~"devops::create" ~"group::code review" ~"Category:GitLab CLI" ~"cli"
