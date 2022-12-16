@@ -186,7 +186,7 @@ func TestIssueList_tty_withIssueType(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/incidentList.json"))
+		httpmock.NewFileResponse(200, "../../incident/list/fixtures/incidentList.json"))
 
 	output, err := runCommand(fakeHTTP, true, "--issue-type=incident", nil, "")
 	if err != nil {
@@ -198,7 +198,7 @@ func TestIssueList_tty_withIssueType(t *testing.T) {
 	out = timeRE.ReplaceAllString(out, "X years")
 
 	assert.Equal(t, heredoc.Doc(`
-		Showing 1 open issue in OWNER/REPO that match your search (Page 1)
+		Showing 1 open incident in OWNER/REPO that match your search (Page 1)
 
 		#8	OWNER/REPO/issues/8	Incident	(foo, baz)	about X years ago
 
