@@ -34,38 +34,39 @@ func NewCmdRoot(f *cmdutils.Factory, version, buildDate string) *cobra.Command {
 	c := f.IO.Color()
 	rootCmd := &cobra.Command{
 		Use:           "glab <command> <subcommand> [flags]",
-		Short:         "A GitLab CLI Tool",
-		Long:          `GLab is an open source GitLab CLI tool bringing GitLab to your command line`,
+		Short:         "A GitLab CLI tool.",
+		Long:          `GLab is an open source GitLab CLI tool that brings GitLab to your command line.`,
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		Annotations: map[string]string{
 			"help:environment": heredoc.Doc(`
-			GITLAB_TOKEN: an authentication token for API requests. Setting this avoids being
-			prompted to authenticate and overrides any previously stored credentials.
-			Can be set in the config with 'glab config set token xxxxxx'
+			GITLAB_TOKEN: An authentication token for API requests. Set this variable to
+			avoid prompts to authenticate. Overrides any previously-stored credentials.
+			Can be set in the config with 'glab config set token xxxxxx'.
 
-			GITLAB_HOST or GL_HOST: specify the url of the gitlab server if self hosted (eg: https://gitlab.example.com). Default is https://gitlab.com.
+			GITLAB_HOST or GL_HOST: Specify the URL of the GitLab server if self-managed.
+			(Example: https://gitlab.example.com) Defaults to https://gitlab.com.
 
-			REMOTE_ALIAS or GIT_REMOTE_URL_VAR: git remote variable or alias that contains the gitlab url.
-			Can be set in the config with 'glab config set remote_alias origin'
+			REMOTE_ALIAS or GIT_REMOTE_URL_VAR: A 'git remote' variable or alias that contains
+			the GitLab URL. Can be set in the config with 'glab config set remote_alias origin'.
 
-			VISUAL, EDITOR (in order of precedence): the editor tool to use for authoring text.
-			Can be set in the config with 'glab config set editor vim'
+			VISUAL, EDITOR (in order of precedence): The editor tool to use for authoring text.
+			Can be set in the config with 'glab config set editor vim'.
 
-			BROWSER: the web browser to use for opening links.
-			Can be set in the config with 'glab config set browser mybrowser'
+			BROWSER: The web browser to use for opening links.
+			Can be set in the config with 'glab config set browser mybrowser'.
 
-			GLAMOUR_STYLE: environment variable to set your desired markdown renderer style
-			Available options are (dark|light|notty) or set a custom style
+			GLAMOUR_STYLE: The environment variable to set your desired Markdown renderer style.
+			Available options: dark, light, notty. To set a custom style, read
 			https://github.com/charmbracelet/glamour#styles
 
-			NO_PROMPT: set to 1 (true) or 0 (false) to disable and enable prompts respectively
+			NO_PROMPT: Set to 1 (true) or 0 (false) to disable or enable prompts.
 
-			NO_COLOR: set to any value to avoid printing ANSI escape sequences for color output.
+			NO_COLOR: Set to any value to avoid printing ANSI escape sequences for color output.
 
-			FORCE_HYPERLINKS: set to 1 to force hyperlinks to be output, even when not outputing to a TTY
+			FORCE_HYPERLINKS: Set to 1 to force hyperlinks in output, even when not outputting to a TTY.
 
-			GLAB_CONFIG_DIR: set to a directory path to override the global configuration location 
+			GLAB_CONFIG_DIR: Set to a directory path to override the global configuration location.
 		`),
 			"help:feedback": heredoc.Docf(`
 			Encountered a bug or want to suggest a feature?
