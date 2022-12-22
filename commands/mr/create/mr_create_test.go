@@ -474,7 +474,7 @@ func TestGenerateMRCompareURL(t *testing.T) {
 		Labels:        []string{"backend", "frontend"},
 		Assignees:     []string{"johndoe", "janedoe"},
 		Reviewers:     []string{"user", "person"},
-		MileStone:     15,
+		Milestone:     15,
 		TargetProject: &gitlab.Project{ID: 100},
 		SourceProject: &gitlab.Project{
 			ID:     101,
