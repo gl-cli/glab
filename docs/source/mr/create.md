@@ -44,6 +44,7 @@ glab mr create --fill --fill-commit-body --yes
   -m, --milestone string       The global ID or title of a milestone to assign
       --no-editor              Don't open editor to enter description. If set to true, uses prompt. Default is false
       --push                   Push committed changes after creating merge request. Make sure you have committed changes
+      --recover                Save the options to a file if the merge request fails to be created. If the file exists, the options will be loaded from the recovery file (EXPERIMENTAL)
   -i, --related-issue string   Create merge request for an issue. The merge request title will be created from the issue if --title is not provided.
       --remove-source-branch   Remove Source Branch on merge
       --reviewer usernames     Request review from users by their usernames
