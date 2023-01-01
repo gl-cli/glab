@@ -24,7 +24,7 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
   - [Windows](#windows)
   - [Linux](#linux)
     - [Homebrew](#homebrew)
-    - [Snapcraft (currently out of date)](#snapcraft-currently-out-of-date)
+    - [Snapcraft (out of date)](#snapcraft-out-of-date)
     - [Arch Linux](#arch-linux)
     - [Alpine Linux](#alpine-linux)
       - [Install a pinned version from edge](#install-a-pinned-version-from-edge)
@@ -59,8 +59,8 @@ glab <command> <subcommand> [flags]
 
 Many core commands also have sub-commands. Some examples:
 
-- List merge requests assigned to me: `glab mr list --assignee=@me`
-- List review requests for me: `glab mr list --reviewer=@me`
+- List merge requests assigned to you: `glab mr list --assignee=@me`
+- List review requests for you: `glab mr list --reviewer=@me`
 - Approve a merge request: `glab mr approve 235`
 - Create an issue, and add milestone, title, and label: `glab issue create -m release-2.0.0 -t "My title here" --label important`
 
@@ -111,7 +111,7 @@ Installing from Homebrew is the officially supported installation method for Lin
 - Install with: `brew install glab`
 - Update with: `brew upgrade glab`
 
-#### Snapcraft (currently [out of date](https://gitlab.com/gitlab-org/cli/-/issues/1127))
+#### Snapcraft ([out of date](https://gitlab.com/gitlab-org/cli/-/issues/1127))
 
 To install `glab` from the [Snap Store](https://snapcraft.io/glab):
 
@@ -270,7 +270,7 @@ Configure it globally, locally, or per-host:
 - `GLAMOUR_STYLE`: environment variable to set your desired Markdown renderer style
   Available options are (`dark`|`light`|`notty`) or set a [custom style](https://github.com/charmbracelet/glamour#styles)
 - `NO_COLOR`: set to any value to avoid printing ANSI escape sequences for color output.
-- `FORCE_HYPERLINKS`: set to `1` to force hyperlinks to be output, even when not outputing to a TTY
+- `FORCE_HYPERLINKS`: set to `1` to force hyperlinks to be output, even when not outputting to a TTY
 
 ## Issues
 
