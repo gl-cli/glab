@@ -20,6 +20,7 @@ import (
 	mrCmd "gitlab.com/gitlab-org/cli/commands/mr"
 	projectCmd "gitlab.com/gitlab-org/cli/commands/project"
 	releaseCmd "gitlab.com/gitlab-org/cli/commands/release"
+	scheduleCmd "gitlab.com/gitlab-org/cli/commands/schedule"
 	snippetCmd "gitlab.com/gitlab-org/cli/commands/snippet"
 	sshCmd "gitlab.com/gitlab-org/cli/commands/ssh-key"
 	updateCmd "gitlab.com/gitlab-org/cli/commands/update"
@@ -117,6 +118,7 @@ func NewCmdRoot(f *cmdutils.Factory, version, buildDate string) *cobra.Command {
 	rootCmd.AddCommand(userCmd.NewCmdUser(f))
 	rootCmd.AddCommand(variableCmd.NewVariableCmd(f))
 	rootCmd.AddCommand(apiCmd.NewCmdApi(f, nil))
+	rootCmd.AddCommand(scheduleCmd.NewCmdSchedule(f))
 	rootCmd.AddCommand(snippetCmd.NewCmdSnippet(f))
 
 	rootCmd.Flags().BoolP("version", "v", false, "show glab version information")

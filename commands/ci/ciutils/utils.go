@@ -26,6 +26,21 @@ func makeHyperlink(s *iostreams.IOStreams, pipeline *gitlab.PipelineInfo) string
 	return s.Hyperlink(fmt.Sprintf("%d", pipeline.ID), pipeline.WebURL)
 }
 
+func DisplaySchedules(i *iostreams.IOStreams, s []*gitlab.PipelineSchedule, projectID string) string {
+	if len(s) > 0 {
+		table := tableprinter.NewTablePrinter()
+		table.AddRow("ID", "Description", "Cron", "Owner", "Active")
+		for _, schedule := range s {
+			table.AddRow(schedule.ID, schedule.Description, schedule.Cron, schedule.Owner.Username, schedule.Active)
+		}
+
+		return table.Render()
+	}
+
+	// return empty string, since when there is no schedule, the title will already display it accordingly
+	return ""
+}
+
 func DisplayMultiplePipelines(s *iostreams.IOStreams, p []*gitlab.PipelineInfo, projectID string) string {
 	c := s.Color()
 
