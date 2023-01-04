@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -169,17 +168,13 @@ func TestMergeRequestList_tty(t *testing.T) {
 		t.Errorf("error running command `issue list`: %v", err)
 	}
 
-	out := output.String()
-	timeRE := regexp.MustCompile(`\d+ years`)
-	out = timeRE.ReplaceAllString(out, "X years")
-
 	assert.Equal(t, heredoc.Doc(`
 		Showing 2 open merge requests on OWNER/REPO (Page 1)
 
 		!6	OWNER/REPO/merge_requests/6	MergeRequest one	(master) ← (test1)
 		!7	OWNER/REPO/merge_requests/7	MergeRequest two	(master) ← (test2)
 
-	`), out)
+	`), output.String())
 	assert.Equal(t, ``, output.Stderr())
 }
 
@@ -343,6 +338,60 @@ func TestMergeRequestList_hyperlinks(t *testing.T) {
 					assert.Equal(t, expectedCell, strings.Trim(gotCell, " "))
 				}
 			}
+		})
+	}
+}
+
+func TestMergeRequestList_labels(t *testing.T) {
+	type labelTest struct {
+		cli           string
+		expectedQuery string
+	}
+
+	tests := []labelTest{
+		{cli: "--label foo", expectedQuery: "labels=foo&page=1&per_page=30&state=opened"},
+		{cli: "--not-label fooz", expectedQuery: "not%5Blabels%5D=fooz&page=1&per_page=30&state=opened"},
+	}
+
+	for _, test := range tests {
+		t.Run("", func(t *testing.T) {
+			fakeHTTP := &httpmock.Mocker{
+				MatchURL: httpmock.PathAndQuerystring,
+			}
+			defer fakeHTTP.Verify(t)
+
+			path := fmt.Sprintf("/api/v4/projects/OWNER/REPO/merge_requests?%s", test.expectedQuery)
+			fakeHTTP.RegisterResponder("GET", path,
+				httpmock.NewStringResponse(200, `
+		[
+		  {
+			"state" : "opened",
+			"description" : "a description here",
+			"project_id" : 1,
+			"updated_at" : "2016-01-04T15:31:51.081Z",
+			"id" : 76,
+			"title" : "MergeRequest one",
+			"created_at" : "2016-01-04T15:31:51.081Z",
+			"iid" : 6,
+			"labels" : ["foo", "bar"],
+			"target_branch": "master",
+			"source_branch": "test1",
+			"web_url": "http://gitlab.com/OWNER/REPO/merge_requests/6",
+			"references": {
+			  "full": "OWNER/REPO/merge_requests/6",
+			  "relative": "#6",
+			  "short": "#6"
+			}
+		  }
+		]
+		`))
+			output, err := runCommand(fakeHTTP, true, test.cli, nil, "")
+			if err != nil {
+				t.Errorf("error running command `issue list %s`: %v", test.cli, err)
+			}
+
+			assert.Contains(t, output.String(), "!6	OWNER/REPO/merge_requests/6")
+			assert.Empty(t, output.Stderr())
 		})
 	}
 }
