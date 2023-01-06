@@ -205,11 +205,11 @@ If a supported binary for your OS is not found at the [releases page](https://gi
 #### Prerequisites for building from source
 
 - `make`
-- Go 1.13+
+- Go 1.18+
 
 To build from source:
 
-1. Run the command `go version` to verify that Go version 1.13 or later is installed.
+1. Run the command `go version` to verify that Go version 1.18 or later is installed.
    If `go` is not installed, follow instructions on [the Go website](https://go.dev/doc/install).
 1. Clone this repository: `git clone https://gitlab.com/gitlab-org/cli.git glab`
 1. Change into the project directory: `cd glab`
