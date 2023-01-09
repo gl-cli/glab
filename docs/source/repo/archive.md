@@ -38,7 +38,7 @@ glab repo archive profclems/glab --format=zip   # Finds repo for current user an
 ## Options
 
 ```plaintext
-  -f, --format string   Optionally Specify format if you want a downloaded archive: {tar.gz|tar.bz2|tbz|tbz2|tb2|bz2|tar|zip} (Default: zip) (default "zip")
+  -f, --format string   Optionally Specify format if you want a downloaded archive: {tar.gz|tar.bz2|tbz|tbz2|tb2|bz2|tar|zip}. (default "zip")
   -s, --sha string      The commit SHA to download. A tag, branch reference, or SHA can be used. This defaults to the tip of the default branch if not specified
 ```
 

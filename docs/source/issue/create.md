@@ -32,14 +32,14 @@ glab issue create -m release-1.0.1 -t "security fix" --label security --web --re
 
 ```plaintext
   -a, --assignee usernames     Assign issue to people by their usernames
-  -c, --confidential           Set an issue to be confidential. Default is false
+  -c, --confidential           Set an issue to be confidential. (default false)
   -d, --description string     Supply a description for issue
   -l, --label strings          Add label by name. Multiple labels should be comma separated
       --link-type string       Type for the issue link (default "relates_to")
       --linked-issues ints     The IIDs of issues that this issue links to
       --linked-mr int          The IID of a merge request in which to resolve all issues
   -m, --milestone string       The global ID or title of a milestone to assign
-      --no-editor              Don't open editor to enter description. If set to true, uses prompt. Default is false
+      --no-editor              Don't open editor to enter description. If set to true, uses prompt. (default false)
       --recover                Save the options to a file if the issue fails to be created. If the file exists, the options will be loaded from the recovery file (EXPERIMENTAL)
   -e, --time-estimate string   Set time estimate for the issue
   -s, --time-spent string      Set time spent for the issue

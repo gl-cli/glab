@@ -74,9 +74,9 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	}
 	pipelineListCmd.Flags().StringP("status", "s", "", "Get pipeline with status: {running|pending|success|failed|canceled|skipped|created|manual}")
 	pipelineListCmd.Flags().StringP("orderBy", "o", "", "Order pipeline by <string>")
-	pipelineListCmd.Flags().StringP("sort", "", "desc", "Sort pipeline by {asc|desc}. (Defaults to desc)")
+	pipelineListCmd.Flags().StringP("sort", "", "desc", "Sort pipeline by {asc|desc}.")
 	pipelineListCmd.Flags().IntP("page", "p", 1, "Page number")
-	pipelineListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page. (default 30)")
+	pipelineListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page.")
 
 	return pipelineListCmd
 }

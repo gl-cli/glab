@@ -29,7 +29,7 @@ glab label create -R owner/repo
 ## Options
 
 ```plaintext
-  -c, --color string         Color of label in plain or HEX code. (Default: #428BCA) (default "#428BCA")
+  -c, --color string         Color of label in plain or HEX code. (default "#428BCA")
   -d, --description string   Label description
   -n, --name string          Name of label
 ```

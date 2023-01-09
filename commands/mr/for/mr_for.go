@@ -142,7 +142,7 @@ func NewCmdFor(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	mrForCmd.Flags().BoolP("draft", "", true, "Mark merge request as a draft. Default is true")
+	mrForCmd.Flags().BoolP("draft", "", true, "Mark merge request as a draft.")
 	mrForCmd.Flags().BoolP("wip", "", false, "Mark merge request as a work in progress. Overrides --draft")
 	mrForCmd.Flags().StringP("label", "l", "", "Add label by name. Multiple labels should be comma separated")
 	mrForCmd.Flags().StringP("assignee", "a", "", "Assign merge request to people by their IDs. Multiple values should be comma separated ")
