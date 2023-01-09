@@ -42,7 +42,7 @@ glab mr create --fill --fill-commit-body --yes
   -H, --head OWNER/REPO        Select another head repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or the project ID or full URL
   -l, --label strings          Add label by name. Multiple labels should be comma separated
   -m, --milestone string       The global ID or title of a milestone to assign
-      --no-editor              Don't open editor to enter description. If set to true, uses prompt. Default is false
+      --no-editor              Don't open editor to enter description. If set to true, uses prompt. (default false)
       --push                   Push committed changes after creating merge request. Make sure you have committed changes
       --recover                Save the options to a file if the merge request fails to be created. If the file exists, the options will be loaded from the recovery file (EXPERIMENTAL)
   -i, --related-issue string   Create merge request for an issue. The merge request title will be created from the issue if --title is not provided.

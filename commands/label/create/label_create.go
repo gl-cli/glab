@@ -59,7 +59,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	}
 	labelCreateCmd.Flags().StringP("name", "n", "", "Name of label")
 	_ = labelCreateCmd.MarkFlagRequired("name")
-	labelCreateCmd.Flags().StringP("color", "c", "#428BCA", "Color of label in plain or HEX code. (Default: #428BCA)")
+	labelCreateCmd.Flags().StringP("color", "c", "#428BCA", "Color of label in plain or HEX code.")
 	labelCreateCmd.Flags().StringP("description", "d", "", "Label description")
 
 	return labelCreateCmd

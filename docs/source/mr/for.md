@@ -32,7 +32,7 @@ glab mr create-for 34
 ```plaintext
       --allow-collaboration    Allow commits from other members
   -a, --assignee string        Assign merge request to people by their IDs. Multiple values should be comma separated 
-      --draft                  Mark merge request as a draft. Default is true (default true)
+      --draft                  Mark merge request as a draft. (default true)
   -l, --label string           Add label by name. Multiple labels should be comma separated
   -m, --milestone int          add milestone by <id> for merge request (default -1)
       --remove-source-branch   Remove Source Branch on merge
