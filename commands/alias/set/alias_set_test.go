@@ -5,10 +5,8 @@ import (
 	"io"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/MakeNowJust/heredoc"
-	"github.com/google/shlex"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -20,9 +18,7 @@ import (
 )
 
 func runCommand(cfg config.Config, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
-	ios.IsaTTY = isTTY
-	ios.IsErrTTY = isTTY
+	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 
 	factoryConf := &cmdutils.Factory{
 		Config: func() (config.Config, error) {
@@ -44,21 +40,7 @@ func runCommand(cfg config.Config, isTTY bool, cli string) (*test.CmdOut, error)
 	issueCmd.AddCommand(&cobra.Command{Use: "list"})
 	rootCmd.AddCommand(issueCmd)
 
-	argv, err := shlex.Split("set " + cli)
-	if err != nil {
-		return nil, err
-	}
-	rootCmd.SetArgs(argv)
-
-	rootCmd.SetIn(&bytes.Buffer{})
-	rootCmd.SetOut(io.Discard)
-	rootCmd.SetErr(io.Discard)
-
-	_, err = rootCmd.ExecuteC()
-	return &test.CmdOut{
-		OutBuf: stdout,
-		ErrBuf: stderr,
-	}, err
+	return cmdtest.ExecuteCommand(rootCmd, "set "+cli, stdout, stderr)
 }
 
 func TestAliasSet_glab_command(t *testing.T) {

@@ -1,21 +1,11 @@
 package note
 
 import (
-	"bytes"
-	"io"
 	"net/http"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/alecthomas/assert"
-	"github.com/google/shlex"
-	"github.com/xanzy/go-gitlab"
-	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
@@ -27,49 +17,16 @@ func TestMain(m *testing.M) {
 }
 
 func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
-	ios.IsaTTY = isTTY
-	ios.IsInTTY = isTTY
-	ios.IsErrTTY = isTTY
-
-	factory := &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		Config: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
-		},
-		BaseRepo: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
-		},
-		Branch: git.CurrentBranch,
-	}
+	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+	factory := cmdtest.InitFactory(ios, rt)
+	factory.Branch = git.CurrentBranch
 
 	// TODO: shouldn't be there but the stub doesn't work without it
 	_, _ = factory.HttpClient()
 
 	cmd := NewCmdNote(factory)
 
-	argv, err := shlex.Split(cli)
-	if err != nil {
-		return nil, err
-	}
-	cmd.SetArgs(argv)
-
-	cmd.SetIn(&bytes.Buffer{})
-	cmd.SetOut(io.Discard)
-	cmd.SetErr(io.Discard)
-
-	_, err = cmd.ExecuteC()
-	return &test.CmdOut{
-		OutBuf: stdout,
-		ErrBuf: stderr,
-	}, err
+	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
 func Test_NewCmdNote(t *testing.T) {

@@ -4,53 +4,25 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/shlex"
-
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
 
 	"github.com/alecthomas/assert"
-	"github.com/xanzy/go-gitlab"
-	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
 func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := iostreams.Test()
-
-	factory := &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		BaseRepo: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
-		},
-	}
+	factory := cmdtest.InitFactory(ios, rt)
 
 	_, _ = factory.HttpClient()
 
 	cmd := NewCmdRetry(factory)
 
-	argv, err := shlex.Split(cli)
-	if err != nil {
-		return nil, err
-	}
-	cmd.SetArgs(argv)
-
-	_, err = cmd.ExecuteC()
-	return &test.CmdOut{
-		OutBuf: stdout,
-		ErrBuf: stderr,
-	}, err
+	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
 func TestCiRetry(t *testing.T) {

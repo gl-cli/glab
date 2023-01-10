@@ -17,8 +17,8 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/test"
@@ -111,60 +111,34 @@ func Test_NewCmdDiff(t *testing.T) {
 }
 
 func runCommand(remotes glrepo.Remotes, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
-	ios.IsaTTY = isTTY
-	ios.IsInTTY = isTTY
-	ios.IsErrTTY = isTTY
+	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 
-	factory := &cmdutils.Factory{
-		IO: ios,
-		Config: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
-		},
-		HttpClient: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{}, "xxxx", "gitlab.com", false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		BaseRepo: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
-		},
-		Remotes: func() (glrepo.Remotes, error) {
-			if remotes == nil {
-				return glrepo.Remotes{
-					{
-						Remote: &git.Remote{Name: "origin"},
-						Repo:   glrepo.New("OWNER", "REPO"),
-					},
-				}, nil
-			}
-
-			return remotes, nil
-		},
-		Branch: func() (string, error) {
-			return "feature", nil
-		},
+	factory := cmdtest.InitFactory(ios, nil)
+	factory.HttpClient = func() (*gitlab.Client, error) {
+		a, err := api.TestClient(&http.Client{}, "xxxx", "gitlab.com", false)
+		if err != nil {
+			return nil, err
+		}
+		return a.Lab(), err
+	}
+	factory.Remotes = func() (glrepo.Remotes, error) {
+		if remotes == nil {
+			return glrepo.Remotes{
+				{
+					Remote: &git.Remote{Name: "origin"},
+					Repo:   glrepo.New("OWNER", "REPO"),
+				},
+			}, nil
+		}
+		return remotes, nil
+	}
+	factory.Branch = func() (string, error) {
+		return "feature", nil
 	}
 
 	cmd := NewCmdDiff(factory, nil)
 
-	argv, err := shlex.Split(cli)
-	if err != nil {
-		return nil, err
-	}
-	cmd.SetArgs(argv)
-
-	cmd.SetIn(&bytes.Buffer{})
-	cmd.SetOut(io.Discard)
-	cmd.SetErr(io.Discard)
-
-	_, err = cmd.ExecuteC()
-	return &test.CmdOut{
-		OutBuf: stdout,
-		ErrBuf: stderr,
-	}, err
+	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
 func TestPRDiff_no_current_mr(t *testing.T) {
