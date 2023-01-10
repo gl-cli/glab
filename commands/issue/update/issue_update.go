@@ -50,7 +50,9 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if cmd.Flags().Changed("lock-discussion") && cmd.Flags().Changed("unlock-discussion") {
-				return &cmdutils.FlagError{Err: errors.New("--lock-discussion and --unlock-discussion can't be used together")}
+				return &cmdutils.FlagError{
+					Err: errors.New("--lock-discussion and --unlock-discussion can't be used together"),
+				}
 			}
 			if cmd.Flags().Changed("confidential") && cmd.Flags().Changed("public") {
 				return &cmdutils.FlagError{Err: errors.New("--public and --confidential can't be used together")}
@@ -81,7 +83,33 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 
 			if m, _ := cmd.Flags().GetString("description"); m != "" {
 				actions = append(actions, "updated description")
-				l.Description = gitlab.String(m)
+
+				// Edit the description via editor
+				if m == "-" {
+
+					// Fetch the current issue and description
+					apiClient, err := f.HttpClient()
+					if err != nil {
+						return err
+					}
+					issue, _, err := issueutils.IssueFromArg(apiClient, f.BaseRepo, args[0])
+					if err != nil {
+						return err
+					}
+
+					editor, err := cmdutils.GetEditor(f.Config)
+					if err != nil {
+						return err
+					}
+
+					l.Description = gitlab.String("")
+					err = cmdutils.EditorPrompt(l.Description, "Description", issue.Description, editor)
+					if err != nil {
+						return err
+					}
+				} else {
+					l.Description = gitlab.String(m)
+				}
 			}
 			if m, _ := cmd.Flags().GetStringSlice("label"); len(m) != 0 {
 				actions = append(actions, fmt.Sprintf("added labels %s", strings.Join(m, " ")))
@@ -154,13 +182,14 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 	issueUpdateCmd.Flags().StringP("title", "t", "", "Title of issue")
 	issueUpdateCmd.Flags().BoolP("lock-discussion", "", false, "Lock discussion on issue")
 	issueUpdateCmd.Flags().BoolP("unlock-discussion", "", false, "Unlock discussion on issue")
-	issueUpdateCmd.Flags().StringP("description", "d", "", "Issue description")
+	issueUpdateCmd.Flags().StringP("description", "d", "", "Issue description; set to \"-\" to open an editor")
 	issueUpdateCmd.Flags().StringSliceP("label", "l", []string{}, "add labels")
 	issueUpdateCmd.Flags().StringSliceP("unlabel", "u", []string{}, "remove labels")
 	issueUpdateCmd.Flags().BoolP("public", "p", false, "Make issue public")
 	issueUpdateCmd.Flags().BoolP("confidential", "c", false, "Make issue confidential")
 	issueUpdateCmd.Flags().StringP("milestone", "m", "", "title of the milestone to assign, pass \"\" or 0 to unassign")
-	issueUpdateCmd.Flags().StringSliceP("assignee", "a", []string{}, "assign users via username, prefix with '!' or '-' to remove from existing assignees, '+' to add, otherwise replace existing assignees with given users")
+	issueUpdateCmd.Flags().
+		StringSliceP("assignee", "a", []string{}, "assign users via username, prefix with '!' or '-' to remove from existing assignees, '+' to add, otherwise replace existing assignees with given users")
 	issueUpdateCmd.Flags().Bool("unassign", false, "unassign all users")
 
 	return issueUpdateCmd
