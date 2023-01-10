@@ -1,17 +1,15 @@
 package list
 
 import (
-	"bytes"
-	"io"
 	"net/http"
 	"regexp"
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/alecthomas/assert"
-	"github.com/google/shlex"
 	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	issueListCmd "gitlab.com/gitlab-org/cli/commands/issue/list"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -21,53 +19,16 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *issueListCmd.ListOptions) error, doHyperLinks string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
-	ios.IsaTTY = isTTY
-	ios.IsInTTY = isTTY
-	ios.IsErrTTY = isTTY
-
-	if doHyperLinks != "" {
-		ios.SetDisplayHyperlinks(doHyperLinks)
-	}
-
-	factory := &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		Config: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
-		},
-		BaseRepo: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
-		},
-	}
+func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *issueListCmd.ListOptions) error, doHyperlinks string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, doHyperlinks)
+	factory := cmdtest.InitFactory(ios, rt)
 
 	// TODO: shouldn't be there but the stub doesn't work without it
 	_, _ = factory.HttpClient()
 
 	cmd := NewCmdList(factory, runE)
 
-	argv, err := shlex.Split(cli)
-	if err != nil {
-		return nil, err
-	}
-	cmd.SetArgs(argv)
-
-	cmd.SetIn(&bytes.Buffer{})
-	cmd.SetOut(io.Discard)
-	cmd.SetErr(io.Discard)
-
-	_, err = cmd.ExecuteC()
-	return &test.CmdOut{
-		OutBuf: stdout,
-		ErrBuf: stderr,
-	}, err
+	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
 func TestNewCmdList(t *testing.T) {

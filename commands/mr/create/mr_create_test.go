@@ -1,7 +1,6 @@
 package create
 
 import (
-	"bytes"
 	"errors"
 	"io"
 	"net/http"
@@ -9,18 +8,13 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/MakeNowJust/heredoc"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
-	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
 	"github.com/xanzy/go-gitlab"
-	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -28,50 +22,32 @@ import (
 )
 
 func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
-	ios.IsaTTY = isTTY
-	ios.IsInTTY = isTTY
-	ios.IsErrTTY = isTTY
+	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 
-	factory := &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		Config: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
-		},
-		Remotes: func() (glrepo.Remotes, error) {
-			return glrepo.Remotes{
-				{
-					Remote: &git.Remote{
-						Name:     "upstream",
-						Resolved: "base",
-						PushURL:  pu,
-					},
-					Repo: glrepo.New("OWNER", "REPO"),
+	factory := cmdtest.InitFactory(ios, rt)
+	factory.Remotes = func() (glrepo.Remotes, error) {
+		return glrepo.Remotes{
+			{
+				Remote: &git.Remote{
+					Name:     "upstream",
+					Resolved: "base",
+					PushURL:  pu,
 				},
-				{
-					Remote: &git.Remote{
-						Name:     "origin",
-						Resolved: "base",
-						PushURL:  pu,
-					},
-					Repo: glrepo.New("monalisa", "REPO"),
+				Repo: glrepo.New("OWNER", "REPO"),
+			},
+			{
+				Remote: &git.Remote{
+					Name:     "origin",
+					Resolved: "base",
+					PushURL:  pu,
 				},
-			}, nil
-		},
-		Branch: func() (string, error) {
-			return branch, nil
-		},
-		BaseRepo: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
-		},
+				Repo: glrepo.New("monalisa", "REPO"),
+			},
+		}, nil
+	}
+	factory.Branch = func() (string, error) {
+		return branch, nil
 	}
 
 	// TODO: shouldn't be there but the stub doesn't work without it
@@ -87,21 +63,7 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string) (*t
 	cmd := NewCmdCreate(factory, runE)
 	cmd.PersistentFlags().StringP("repo", "R", "", "")
 
-	argv, err := shlex.Split(cli)
-	if err != nil {
-		return nil, err
-	}
-	cmd.SetArgs(argv)
-
-	cmd.SetIn(&bytes.Buffer{})
-	cmd.SetOut(io.Discard)
-	cmd.SetErr(io.Discard)
-
-	_, err = cmd.ExecuteC()
-	return &test.CmdOut{
-		OutBuf: stdout,
-		ErrBuf: stderr,
-	}, err
+	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
 func TestNewCmdCreate_tty(t *testing.T) {

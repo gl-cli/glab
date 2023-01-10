@@ -9,30 +9,14 @@ import (
 	"github.com/MakeNowJust/heredoc"
 
 	"github.com/alecthomas/assert"
-	"github.com/xanzy/go-gitlab"
-	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
 func runCommand(rt http.RoundTripper) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := iostreams.Test()
-
-	factory := &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		BaseRepo: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
-		},
-	}
+	factory := cmdtest.InitFactory(ios, rt)
 
 	// TODO: shouldn't be there but the stub doesn't work without it
 	_, _ = factory.HttpClient()

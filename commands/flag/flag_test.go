@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert"
-	"github.com/google/shlex"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -59,13 +59,7 @@ func runCommand(cli string, runE func(opts *ListOptions) error, doHyperlinks str
 
 	cmd := NewDummyCmd(factory, runE)
 
-	argv, err := shlex.Split(cli)
-	if err != nil {
-		return err
-	}
-	cmd.SetArgs(argv)
-
-	_, err = cmd.ExecuteC()
+	_, err := cmdtest.ExecuteCommand(cmd, cli, nil, nil)
 	return err
 }
 

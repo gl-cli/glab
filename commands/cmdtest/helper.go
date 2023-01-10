@@ -2,8 +2,10 @@ package cmdtest
 
 import (
 	"bytes"
+	"io"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,13 +15,17 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/google/shlex"
 	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
+	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
@@ -123,6 +129,56 @@ func RunCommand(cmd *cobra.Command, cli string, stds ...*bytes.Buffer) (*test.Cm
 	cmd.SetArgs(argv)
 	_, err = cmd.ExecuteC()
 
+	return &test.CmdOut{
+		OutBuf: stdout,
+		ErrBuf: stderr,
+	}, err
+}
+
+func InitIOStreams(isTTY bool, doHyperlinks string) (*iostreams.IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
+	ios, stdin, stdout, stderr := iostreams.Test()
+	ios.IsaTTY = isTTY
+	ios.IsInTTY = isTTY
+	ios.IsErrTTY = isTTY
+
+	if doHyperlinks != "" {
+		ios.SetDisplayHyperlinks(doHyperlinks)
+	}
+
+	return ios, stdin, stdout, stderr
+}
+
+func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *cmdutils.Factory {
+	return &cmdutils.Factory{
+		IO: ios,
+		HttpClient: func() (*gitlab.Client, error) {
+			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
+			if err != nil {
+				return nil, err
+			}
+			return a.Lab(), err
+		},
+		Config: func() (config.Config, error) {
+			return config.NewBlankConfig(), nil
+		},
+		BaseRepo: func() (glrepo.Interface, error) {
+			return glrepo.New("OWNER", "REPO"), nil
+		},
+	}
+}
+
+func ExecuteCommand(cmd *cobra.Command, cli string, stdout *bytes.Buffer, stderr *bytes.Buffer) (*test.CmdOut, error) {
+	argv, err := shlex.Split(cli)
+	if err != nil {
+		return nil, err
+	}
+
+	cmd.SetArgs(argv)
+	cmd.SetIn(&bytes.Buffer{})
+	cmd.SetOut(io.Discard)
+	cmd.SetErr(io.Discard)
+
+	_, err = cmd.ExecuteC()
 	return &test.CmdOut{
 		OutBuf: stdout,
 		ErrBuf: stderr,
