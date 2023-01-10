@@ -30,7 +30,7 @@ glab mr update --draft  # Updates MR related to current branch
 
 ```plaintext
   -a, --assignee strings       assign users via username, prefix with '!' or '-' to remove from existing assignees, '+' to add, otherwise replace existing assignees with given users
-  -d, --description string     merge request description
+  -d, --description string     merge request description; set to "-" to open an editor
       --draft                  Mark merge request as a draft
   -l, --label strings          add labels
       --lock-discussion        Lock discussion on merge request

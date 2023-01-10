@@ -30,7 +30,7 @@ glab issue update 42 --unlabel working
 ```plaintext
   -a, --assignee strings     assign users via username, prefix with '!' or '-' to remove from existing assignees, '+' to add, otherwise replace existing assignees with given users
   -c, --confidential         Make issue confidential
-  -d, --description string   Issue description
+  -d, --description string   Issue description; set to "-" to open an editor
   -l, --label strings        add labels
       --lock-discussion      Lock discussion on issue
   -m, --milestone string     title of the milestone to assign, pass "" or 0 to unassign
