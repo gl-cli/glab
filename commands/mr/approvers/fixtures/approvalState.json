@@ -1,0 +1,42 @@
+{
+  "approval_rules_overwritten": true,
+  "rules": [
+    {
+      "id": 239,
+      "name": "All Members",
+      "rule_type": "any_approver",
+      "eligible_approvers": [
+        {
+          "id": 1,
+          "username": "approver_1",
+          "name": "Abc Approver",
+          "state": "active"
+        },
+        {
+          "id": 6,
+          "username": "approver_2",
+          "name": "Bar Approver",
+          "state": "active"
+        }
+      ],
+      "approvals_required": 1,
+      "users": [],
+      "groups": [],
+      "contains_hidden_groups": false,
+      "section": null,
+      "source_rule": null,
+      "overridden": false,
+      "code_owner": false,
+      "approved_by": [
+        {
+          "id": 1232,
+          "username": "foo_reviewer",
+          "name": "Foo Reviewer",
+          "state": "active",
+          "web_url": "https://gitlab.com/root"
+        }
+      ],
+      "approved": true
+    }
+  ]
+}

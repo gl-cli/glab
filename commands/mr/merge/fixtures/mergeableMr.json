@@ -1,0 +1,144 @@
+{
+  "id": 190608322,
+  "iid": 123,
+  "project_id": 37777023,
+  "title": "foo",
+  "description": "\nCloses #1",
+  "state": "opened",
+  "created_at": "2022-11-24T05:28:39.378Z",
+  "updated_at": "2022-12-21T04:18:44.799Z",
+  "merged_by": null,
+  "merge_user": null,
+  "merged_at": null,
+  "closed_by": null,
+  "closed_at": null,
+  "target_branch": "main",
+  "source_branch": "1-issue-20",
+  "user_notes_count": 0,
+  "upvotes": 0,
+  "downvotes": 0,
+  "author":
+  {
+    "id": 11809982,
+    "username": "OWNER",
+    "name": "Foo User",
+    "state": "active",
+    "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/11809982/avatar.png",
+    "web_url": "https://gitlab.com/OWNER"
+  },
+  "assignees": [],
+  "assignee": null,
+  "reviewers": [],
+  "source_project_id": 37777023,
+  "target_project_id": 37777023,
+  "labels": [],
+  "draft": false,
+  "work_in_progress": false,
+  "milestone": null,
+  "merge_when_pipeline_succeeds": false,
+  "merge_status": "can_be_merged",
+  "detailed_merge_status": "mergeable",
+  "sha": "ec1bf369429add869b418aac80f27ba5e173d72e",
+  "merge_commit_sha": null,
+  "squash_commit_sha": null,
+  "discussion_locked": null,
+  "should_remove_source_branch": null,
+  "force_remove_source_branch": null,
+  "reference": "!123",
+  "references":
+  {
+    "short": "!123",
+    "relative": "!123",
+    "full": "OWNER/REPO!123"
+  },
+  "web_url": "https://gitlab.com/OWNER/REPO/-/merge_requests/123",
+  "time_stats":
+  {
+    "time_estimate": 0,
+    "total_time_spent": 0,
+    "human_time_estimate": null,
+    "human_total_time_spent": null
+  },
+  "squash": false,
+  "task_completion_status":
+  {
+    "count": 0,
+    "completed_count": 0
+  },
+  "has_conflicts": false,
+  "blocking_discussions_resolved": true,
+  "approvals_before_merge": null,
+  "subscribed": true,
+  "changes_count": "1",
+  "latest_build_started_at": "2022-12-05T04:32:27.515Z",
+  "latest_build_finished_at": "2022-12-05T04:32:38.514Z",
+  "first_deployed_to_production_at": null,
+  "pipeline":
+  {
+    "id": 713043391,
+    "iid": 46,
+    "project_id": 37777023,
+    "sha": "90d5e389771f79e2f4c36cdac95928551a63afdf",
+    "ref": "1-issue-20",
+    "status": "success",
+    "source": "push",
+    "created_at": "2022-12-05T04:32:26.801Z",
+    "updated_at": "2022-12-05T04:32:38.518Z",
+    "web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/713043391"
+  },
+  "head_pipeline":
+  {
+    "id": 728433563,
+    "iid": 58,
+    "project_id": 37777023,
+    "sha": "ec1bf369429add869b418aac80f27ba5e173d72e",
+    "ref": "refs/merge-requests/123/head",
+    "status": "skipped",
+    "source": "merge_request_event",
+    "created_at": "2022-12-21T04:18:45.951Z",
+    "updated_at": "2022-12-21T04:18:45.951Z",
+    "web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/713043391",
+    "before_sha": "0000000000000000000000000000000000000000",
+    "tag": false,
+    "yaml_errors": null,
+    "user":
+    {
+      "id": 11809982,
+      "username": "OWNER",
+      "name": "Foo User",
+      "state": "active",
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/11809982/avatar.png",
+      "web_url": "https://gitlab.com/OWNER"
+    },
+    "started_at": null,
+    "finished_at": null,
+    "committed_at": null,
+    "duration": null,
+    "queued_duration": null,
+    "coverage": null,
+    "detailed_status":
+    {
+      "icon": "status_skipped",
+      "text": "skipped",
+      "label": "skipped",
+      "group": "skipped",
+      "tooltip": "skipped",
+      "has_details": true,
+      "details_path": "/OWNER/REPO/-/pipelines/728433563",
+      "illustration": null,
+      "favicon": "/assets/ci_favicons/favicon_status_skipped-0b9c5e543588945e8c4ca57786bbf2d0c56631959c9f853300392d0315be829b.png"
+    }
+  },
+  "diff_refs":
+  {
+    "base_sha": "61b3f41a59b7ba46a9306ab8297652482476e1c8",
+    "head_sha": "ec1bf369429add869b418aac80f27ba5e173d72e",
+    "start_sha": "61b3f41a59b7ba46a9306ab8297652482476e1c8"
+  },
+  "merge_error": null,
+  "first_contribution": false,
+  "user":
+  {
+    "can_merge": true
+  }
+}
