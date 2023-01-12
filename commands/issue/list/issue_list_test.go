@@ -102,6 +102,45 @@ func TestIssueList_tty(t *testing.T) {
 	assert.Equal(t, ``, output.Stderr())
 }
 
+func TestIssueList_ids(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
+		httpmock.NewFileResponse(200, "./fixtures/issueList.json"))
+
+	output, err := runCommand(fakeHTTP, true, "-F ids", nil, "")
+	if err != nil {
+		t.Errorf("error running command `issue list -F ids`: %v", err)
+	}
+
+	out := output.String()
+
+	assert.Equal(t, "6\n7\n", out)
+	assert.Equal(t, ``, output.Stderr())
+}
+
+func TestIssueList_urls(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
+		httpmock.NewFileResponse(200, "./fixtures/issueList.json"))
+
+	output, err := runCommand(fakeHTTP, true, "-F urls", nil, "")
+	if err != nil {
+		t.Errorf("error running command `issue list -F urls`: %v", err)
+	}
+
+	out := output.String()
+
+	assert.Equal(t, heredoc.Doc(`
+		http://gitlab.com/OWNER/REPO/issues/6
+		http://gitlab.com/OWNER/REPO/issues/7
+	`), out)
+	assert.Equal(t, ``, output.Stderr())
+}
+
 func TestIssueList_tty_withFlags(t *testing.T) {
 	t.Run("project", func(t *testing.T) {
 		fakeHTTP := httpmock.New()

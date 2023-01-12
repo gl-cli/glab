@@ -43,6 +43,7 @@ glab issue list --milestone release-2.0.0 --opened
       --not-assignee strings   Filter issue by not being assigneed to <username>
       --not-author strings     Filter by not being by author(s) <username>
       --not-label strings      Filter issue by lack of label <name>
+  -F, --output-format string   One of 'details', 'ids', or 'urls' (default "details")
   -p, --page int               Page number (default 1)
   -P, --per-page int           Number of items to list per page. (default 30)
       --search string          Search <string> in the fields defined by --in
