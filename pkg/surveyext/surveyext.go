@@ -25,7 +25,7 @@ var (
 )
 
 type showable interface {
-	Show()
+	Show() error
 }
 
 func init() {
@@ -101,8 +101,10 @@ func (e *GLabEditor) prompt(initialValue string, config *survey.PromptConfig) (i
 	defer func() { _ = rr.RestoreTermMode() }()
 
 	cursor := e.NewCursor()
-	cursor.Hide()
-	defer cursor.Show()
+	_ = cursor.Hide()
+	defer func() {
+		_ = cursor.Show()
+	}()
 
 	for {
 		// EXTENDED to handle the Enter or e to edit / s or Esc to skip behavior + BlankAllowed
@@ -220,7 +222,7 @@ func Edit(editorCommand, fn, initialValue string, stdin io.Reader, stdout io.Wri
 	cmd.Stderr = stderr
 
 	if cursor != nil {
-		cursor.Show()
+		_ = cursor.Show()
 	}
 
 	// open the editor
