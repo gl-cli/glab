@@ -30,12 +30,16 @@ var ListProjectVariables = func(client *gitlab.Client, projectID interface{}, op
 	return vars, nil
 }
 
-var GetProjectVariable = func(client *gitlab.Client, projectID interface{}, key string, opts *gitlab.RequestOptionFunc) (*gitlab.ProjectVariable, error) {
+var GetProjectVariable = func(client *gitlab.Client, projectID interface{}, key string, scope string) (*gitlab.ProjectVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
 
-	reqOpts := &gitlab.GetProjectVariableOptions{}
+	reqOpts := &gitlab.GetProjectVariableOptions{
+		Filter: &gitlab.VariableFilter{
+			EnvironmentScope: scope,
+		},
+	}
 	vars, _, err := client.ProjectVariables.GetVariable(projectID, key, reqOpts)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package get
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
@@ -20,6 +21,7 @@ type GetOps struct {
 
 	Key   string
 	Group string
+	Scope string
 }
 
 func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Command {
@@ -34,6 +36,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Comman
 		Example: heredoc.Doc(`
 			glab variable get VAR_KEY
             glab variable get -g GROUP VAR_KEY
+			glab variable get -s SCOPE VAR_KEY
 		`),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			opts.HTTPClient = f.HttpClient
@@ -46,6 +49,11 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Comman
 				return
 			}
 
+			if cmd.Flags().Changed("scope") && opts.Group != "" {
+				err = cmdutils.FlagError{Err: errors.New("Scope is not required for group variables.")}
+				return
+			}
+
 			if runE != nil {
 				err = runE(opts)
 				return
@@ -55,6 +63,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Comman
 		},
 	}
 
+	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. All (*), or specific environments.")
 	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Get variable for a group")
 	return cmd
 }
@@ -79,7 +88,7 @@ func getRun(opts *GetOps) error {
 			return err
 		}
 
-		variable, err := api.GetProjectVariable(httpClient, baseRepo.FullName(), opts.Key, nil)
+		variable, err := api.GetProjectVariable(httpClient, baseRepo.FullName(), opts.Key, opts.Scope)
 		if err != nil {
 			return err
 		}
