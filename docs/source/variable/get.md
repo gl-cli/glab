@@ -22,6 +22,7 @@ glab variable get <key> [flags]
 ```plaintext
 glab variable get VAR_KEY
          glab variable get -g GROUP VAR_KEY
+glab variable get -s SCOPE VAR_KEY
 
 ```
 
@@ -29,6 +30,7 @@ glab variable get VAR_KEY
 
 ```plaintext
   -g, --group string   Get variable for a group
+  -s, --scope string   The environment_scope of the variable. All (*), or specific environments. (default "*")
 ```
 
 ## Options inherited from parent commands
