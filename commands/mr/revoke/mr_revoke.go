@@ -47,7 +47,7 @@ func NewCmdRevoke(f *cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "- Revoking approval for Merge Request #%d...\n", mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "- Revoking approval for Merge Request !%d...\n", mr.IID)
 
 				err = api.UnapproveMR(apiClient, repo.FullName(), mr.IID)
 				if err != nil {

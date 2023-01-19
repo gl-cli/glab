@@ -70,23 +70,23 @@ func TestNewCmdCreate_tty(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("POST", "/projects/OWNER/REPO/merge_requests",
-		httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/merge_requests",
+		httpmock.NewStringResponse(http.StatusCreated, `
 			{
  				"id": 1,
  				"iid": 12,
  				"project_id": 3,
  				"title": "myMRtitle",
  				"description": "myMRbody",
- 				"state": "open",
+ 				"state": "opened",
  				"target_branch": "master",
  				"source_branch": "feat-new-mr",
 				"web_url": "https://gitlab.com/OWNER/REPO/-/merge_requests/12"
 			}
 		`),
 	)
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO",
-		httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO",
+		httpmock.NewStringResponse(http.StatusOK, `
 			{
  				"id": 1,
 				"description": null,
@@ -99,8 +99,8 @@ func TestNewCmdCreate_tty(t *testing.T) {
 			}
 		`),
 	)
-	fakeHTTP.RegisterResponder("GET", "/users",
-		httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "/users",
+		httpmock.NewStringResponse(http.StatusOK, `
 			[{
  				"username": "testuser"
 			}]
@@ -147,7 +147,7 @@ func TestNewCmdCreate_tty(t *testing.T) {
 		return
 	}
 
-	assert.Contains(t, cmdtest.FirstLine([]byte(output.String())), `!12 myMRtitle (feat-new-mr)`)
+	assert.Contains(t, cmdtest.FirstLine([]byte(output.String())), "!12 myMRtitle (feat-new-mr)")
 	assert.Contains(t, output.Stderr(), "\nCreating merge request for feat-new-mr into master in OWNER/REPO\n\n")
 	assert.Contains(t, output.String(), "https://gitlab.com/OWNER/REPO/-/merge_requests/12")
 }
@@ -156,19 +156,19 @@ func TestNewCmdCreate_RelatedIssue(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("POST", "/projects/OWNER/REPO/merge_requests",
+	fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/merge_requests",
 		func(req *http.Request) (*http.Response, error) {
 			rb, _ := io.ReadAll(req.Body)
 			assert.Contains(t, string(rb), "\"title\":\"Draft: Resolve \\\"this is a issue title\\\"")
 			assert.Contains(t, string(rb), "\"description\":\"\\n\\nCloses #1\"")
-			resp, _ := httpmock.NewStringResponse(200, `
+			resp, _ := httpmock.NewStringResponse(http.StatusCreated, `
 				{
 	 				"id": 1,
 	 				"iid": 12,
 	 				"project_id": 3,
 	 				"title": "Draft: Resolve \"this is a issue title\"",
 	 				"description": "\n\nCloses #1",
-	 				"state": "open",
+	 				"state": "opened",
 	 				"target_branch": "master",
 	 				"source_branch": "feat-new-mr",
 					"web_url": "https://gitlab.com/OWNER/REPO/-/merge_requests/12"
@@ -177,8 +177,8 @@ func TestNewCmdCreate_RelatedIssue(t *testing.T) {
 			return resp, nil
 		},
 	)
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO",
-		httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO",
+		httpmock.NewStringResponse(http.StatusOK, `
 			{
  				"id": 1,
 				"description": null,
@@ -191,8 +191,8 @@ func TestNewCmdCreate_RelatedIssue(t *testing.T) {
 			}
 		`),
 	)
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues/1",
-		httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues/1",
+		httpmock.NewStringResponse(http.StatusOK, `
 			{
 				"id":1,
 				"iid":1,
@@ -239,19 +239,19 @@ func TestNewCmdCreate_RelatedIssueWithTitleAndDescription(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("POST", "/projects/OWNER/REPO/merge_requests",
+	fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/merge_requests",
 		func(req *http.Request) (*http.Response, error) {
 			rb, _ := io.ReadAll(req.Body)
 			assert.Contains(t, string(rb), "\"title\":\"Draft: my custom MR title\"")
 			assert.Contains(t, string(rb), "\"description\":\"my custom MR description\\n\\nCloses #1\"")
-			resp, _ := httpmock.NewStringResponse(200, `
+			resp, _ := httpmock.NewStringResponse(http.StatusCreated, `
 				{
 	 				"id": 1,
 	 				"iid": 12,
 	 				"project_id": 3,
 	 				"title": "my custom MR title",
 	 				"description": "myMRbody",
-	 				"state": "open",
+	 				"state": "opened",
 	 				"target_branch": "master",
 	 				"source_branch": "feat-new-mr",
 					"web_url": "https://gitlab.com/OWNER/REPO/-/merge_requests/12"
@@ -260,8 +260,8 @@ func TestNewCmdCreate_RelatedIssueWithTitleAndDescription(t *testing.T) {
 			return resp, nil
 		},
 	)
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO",
-		httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO",
+		httpmock.NewStringResponse(http.StatusOK, `
 			{
  				"id": 1,
 				"description": null,
@@ -274,8 +274,8 @@ func TestNewCmdCreate_RelatedIssueWithTitleAndDescription(t *testing.T) {
 			}
 		`),
 	)
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues/1",
-		httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues/1",
+		httpmock.NewStringResponse(http.StatusOK, `
 			{
 				"id":1,
 				"iid":1,
@@ -314,7 +314,7 @@ func TestNewCmdCreate_RelatedIssueWithTitleAndDescription(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	assert.Contains(t, cmdtest.FirstLine([]byte(output.String())), `!12 my custom MR title (feat-new-mr)`)
+	assert.Contains(t, cmdtest.FirstLine([]byte(output.String())), "!12 my custom MR title (feat-new-mr)")
 	assert.Contains(t, output.Stderr(), "\nCreating draft merge request for feat-new-mr into master in OWNER/REPO\n\n")
 	assert.Contains(t, output.String(), "https://gitlab.com/OWNER/REPO/-/merge_requests/12")
 }
