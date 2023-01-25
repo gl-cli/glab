@@ -53,7 +53,7 @@ type CreateOpts struct {
 	Config     func() (config.Config, error)
 }
 
-func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra.Command {
+func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{
 		IO:     f.IO,
 		Config: f.Config,
@@ -88,16 +88,16 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 			Use release notes from a file
 			$ glab release create v1.0.1 -F changelog.md
 
-			Upload a release asset with a display name
+			Upload a release asset with a display name (type will default to 'other')
 			$ glab release create v1.0.1 '/path/to/asset.zip#My display label'
 
 			Upload a release asset with a display name and type
 			$ glab release create v1.0.1 '/path/to/asset.png#My display label#image'
 
-			Upload all assets in a specified folder
+			Upload all assets in a specified folder (types will default to 'other')
 			$ glab release create v1.0.1 ./dist/*
 
-			Upload all tarballs in a specified folder
+			Upload all tarballs in a specified folder (types will default to 'other')
 			$ glab release create v1.0.1 ./dist/*.tar.gz
 
 			Create a release with assets specified as JSON object
@@ -148,10 +148,6 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 
 				opts.Notes = string(b)
 				opts.NoteProvided = true
-			}
-
-			if runE != nil {
-				return runE(opts)
 			}
 
 			return createRun(opts)
@@ -294,7 +290,7 @@ func createRun(opts *CreateOpts) error {
 	}
 	start := time.Now()
 
-	opts.IO.Logf("%s creating or updating release %s=%s %s=%s\n",
+	opts.IO.Logf("%s Creating or updating release %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), opts.TagName)
@@ -346,7 +342,7 @@ func createRun(opts *CreateOpts) error {
 		if err != nil {
 			return releaseFailedErr(err, start)
 		}
-		opts.IO.Logf("%s release created\t%s=%s\n", color.GreenCheck(),
+		opts.IO.Logf("%s Release created\t%s=%s\n", color.GreenCheck(),
 			color.Blue("url"), fmt.Sprintf("%s://%s/%s/-/releases/%s",
 				glinstance.OverridableDefaultProtocol(), glinstance.OverridableDefault(),
 				repo.FullName(), release.TagName))
@@ -371,35 +367,23 @@ func createRun(opts *CreateOpts) error {
 			return releaseFailedErr(err, start)
 		}
 
-		opts.IO.Logf("%s release updated\t%s=%s\n", color.GreenCheck(),
+		opts.IO.Logf("%s Release updated\t%s=%s\n", color.GreenCheck(),
 			color.Blue("url"), fmt.Sprintf("%s://%s/%s/-/releases/%s",
 				glinstance.OverridableDefaultProtocol(), glinstance.OverridableDefault(),
 				repo.FullName(), release.TagName))
 	}
 
-	// upload files and create asset link
-	if opts.AssetFiles != nil || opts.AssetLinks != nil {
-		opts.IO.Logf("\n%s Uploading release assets\n", color.ProgressIcon())
-		uploadCtx := upload.Context{
-			IO:          opts.IO,
-			Client:      client,
-			AssetsLinks: opts.AssetLinks,
-			AssetFiles:  opts.AssetFiles,
-		}
-		if err = uploadCtx.UploadFiles(repo.FullName(), release.TagName); err != nil {
-			return releaseFailedErr(err, start)
-		}
-
-		// create asset link for assets provided as json
-		if err = uploadCtx.CreateReleaseAssetLinks(repo.FullName(), release.TagName); err != nil {
-			return releaseFailedErr(err, start)
-		}
+	// upload files and create asset links
+	err = releaseutils.CreateReleaseAssets(opts.IO, client, opts.AssetFiles, opts.AssetLinks, repo.FullName(), release.TagName)
+	if err != nil {
+		return releaseFailedErr(err, start)
 	}
+
 	if len(opts.Milestone) > 0 {
 		// close all associated milestones
 		for _, milestone := range opts.Milestone {
 			// run loading msg
-			opts.IO.StartSpinner("closing milestone %q", milestone)
+			opts.IO.StartSpinner("Closing milestone %q", milestone)
 			// close milestone
 			err := closeMilestone(opts, milestone)
 			// stop loading
@@ -407,11 +391,11 @@ func createRun(opts *CreateOpts) error {
 			if err != nil {
 				opts.IO.Log(color.FailedIcon(), err.Error())
 			} else {
-				opts.IO.Logf("%s closed milestone %q\n", color.GreenCheck(), milestone)
+				opts.IO.Logf("%s Closed milestone %q\n", color.GreenCheck(), milestone)
 			}
 		}
 	}
-	opts.IO.Logf(color.Bold("%s release succeeded after %0.2fs\n"), color.GreenCheck(), time.Since(start).Seconds())
+	opts.IO.Logf(color.Bold("%s Release succeeded after %0.2fs\n"), color.GreenCheck(), time.Since(start).Seconds())
 	return nil
 }
 

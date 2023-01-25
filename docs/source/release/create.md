@@ -46,16 +46,16 @@ $ glab release create v1.0.1 --notes "bugfix release"
 Use release notes from a file
 $ glab release create v1.0.1 -F changelog.md
 
-Upload a release asset with a display name
+Upload a release asset with a display name (type will default to 'other')
 $ glab release create v1.0.1 '/path/to/asset.zip#My display label'
 
 Upload a release asset with a display name and type
 $ glab release create v1.0.1 '/path/to/asset.png#My display label#image'
 
-Upload all assets in a specified folder
+Upload all assets in a specified folder (types will default to 'other')
 $ glab release create v1.0.1 ./dist/*
 
-Upload all tarballs in a specified folder
+Upload all tarballs in a specified folder (types will default to 'other')
 $ glab release create v1.0.1 ./dist/*.tar.gz
 
 Create a release with assets specified as JSON object

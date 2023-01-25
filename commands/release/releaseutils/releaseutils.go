@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 
@@ -87,20 +89,53 @@ func AssetsFromArgs(args []string) (assets []*upload.ReleaseFile, err error) {
 		if label == "" {
 			label = fi.Name()
 		}
-		var linkTypeVal gitlab.LinkTypeValue
-		if linkType != "" {
-			linkTypeVal = gitlab.LinkTypeValue(linkType)
-		}
 
-		assets = append(assets, &upload.ReleaseFile{
+		rf := &upload.ReleaseFile{
 			Open: func() (io.ReadCloser, error) {
 				return os.Open(fn)
 			},
 			Name:  fi.Name(),
 			Label: label,
 			Path:  fn,
-			Type:  &linkTypeVal,
-		})
+		}
+
+		// Only add a link type if it was specified
+		// Otherwise the GitLab API will default to 'other' if it was omitted
+		if linkType != "" {
+			linkTypeVal := gitlab.LinkTypeValue(linkType)
+			rf.Type = &linkTypeVal
+		}
+
+		assets = append(assets, rf)
 	}
 	return
+}
+
+func CreateReleaseAssets(io *iostreams.IOStreams, client *gitlab.Client, assetFiles []*upload.ReleaseFile, assetLinks []*upload.ReleaseAsset, repoName string, tagName string) error {
+	if assetFiles == nil && assetLinks == nil {
+		return nil
+	}
+
+	uploadCtx := upload.Context{
+		IO:          io,
+		Client:      client,
+		AssetsLinks: assetLinks,
+		AssetFiles:  assetFiles,
+	}
+
+	color := io.Color()
+	io.Logf("%s Uploading release assets %s=%s %s=%s\n",
+		color.ProgressIcon(),
+		color.Blue("repo"), repoName,
+		color.Blue("tag"), tagName)
+
+	if err := uploadCtx.UploadFiles(repoName, tagName); err != nil {
+		return cmdutils.WrapError(err, "upload failed")
+	}
+
+	// create asset link for assets provided as json
+	if err := uploadCtx.CreateReleaseAssetLinks(repoName, tagName); err != nil {
+		return cmdutils.WrapError(err, "failed to create release link")
+	}
+	return nil
 }
