@@ -27,16 +27,16 @@ glab release upload <tag> [<files>...] [flags]
 ## Examples
 
 ```plaintext
-Upload a release asset with a display name
+Upload a release asset with a display name (type will default to 'other')
 $ glab release upload v1.0.1 '/path/to/asset.zip#My display label'
 
 Upload a release asset with a display name and type
 $ glab release upload v1.0.1 '/path/to/asset.png#My display label#image'
 
-Upload all assets in a specified folder
+Upload all assets in a specified folder (types will default to 'other')
 $ glab release upload v1.0.1 ./dist/*
 
-Upload all tarballs in a specified folder
+Upload all tarballs in a specified folder (types will default to 'other')
 $ glab release upload v1.0.1 ./dist/*.tar.gz
 
 Upload release assets links specified as JSON string

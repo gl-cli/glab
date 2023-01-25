@@ -30,7 +30,7 @@ type UploadOpts struct {
 	Config     func() (config.Config, error)
 }
 
-func NewCmdUpload(f *cmdutils.Factory, runE func(opts *UploadOpts) error) *cobra.Command {
+func NewCmdUpload(f *cmdutils.Factory) *cobra.Command {
 	opts := &UploadOpts{
 		IO:     f.IO,
 		Config: f.Config,
@@ -56,16 +56,16 @@ func NewCmdUpload(f *cmdutils.Factory, runE func(opts *UploadOpts) error) *cobra
 			}
 		}(),
 		Example: heredoc.Doc(`
-			Upload a release asset with a display name
+			Upload a release asset with a display name (type will default to 'other')
 			$ glab release upload v1.0.1 '/path/to/asset.zip#My display label'
 
 			Upload a release asset with a display name and type
 			$ glab release upload v1.0.1 '/path/to/asset.png#My display label#image'
 
-			Upload all assets in a specified folder
+			Upload all assets in a specified folder (types will default to 'other')
 			$ glab release upload v1.0.1 ./dist/*
 
-			Upload all tarballs in a specified folder
+			Upload all tarballs in a specified folder (types will default to 'other')
 			$ glab release upload v1.0.1 ./dist/*.tar.gz
 
 			Upload release assets links specified as JSON string
@@ -102,11 +102,7 @@ func NewCmdUpload(f *cmdutils.Factory, runE func(opts *UploadOpts) error) *cobra
 				}
 			}
 
-			if runE != nil {
-				return runE(opts)
-			}
-
-			return deleteRun(opts)
+			return uploadRun(opts)
 		},
 	}
 
@@ -115,7 +111,7 @@ func NewCmdUpload(f *cmdutils.Factory, runE func(opts *UploadOpts) error) *cobra
 	return cmd
 }
 
-func deleteRun(opts *UploadOpts) error {
+func uploadRun(opts *UploadOpts) error {
 	start := time.Now()
 
 	client, err := opts.HTTPClient()
@@ -130,7 +126,7 @@ func deleteRun(opts *UploadOpts) error {
 	color := opts.IO.Color()
 	var resp *gitlab.Response
 
-	opts.IO.Logf("%s validating tag %s=%s %s=%s\n",
+	opts.IO.Logf("%s Validating tag %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), opts.TagName)
@@ -143,28 +139,12 @@ func deleteRun(opts *UploadOpts) error {
 		return cmdutils.WrapError(err, "failed to fetch release")
 	}
 
-	opts.IO.Logf("%s uploading release assets %s=%s %s=%s\n",
-		color.ProgressIcon(),
-		color.Blue("repo"), repo.FullName(),
-		color.Blue("tag"), opts.TagName)
-	// upload files and create asset link
-	if opts.AssetFiles != nil || opts.AssetLinks != nil {
-		uploadCtx := upload.Context{
-			IO:          opts.IO,
-			Client:      client,
-			AssetsLinks: opts.AssetLinks,
-			AssetFiles:  opts.AssetFiles,
-		}
-		if err = uploadCtx.UploadFiles(repo.FullName(), release.TagName); err != nil {
-			return cmdutils.WrapError(err, "upload failed")
-		}
-
-		// create asset link for assets provided as json
-		if err = uploadCtx.CreateReleaseAssetLinks(repo.FullName(), release.TagName); err != nil {
-			return cmdutils.WrapError(err, "failed to create release link")
-		}
+	// upload files and create asset links
+	err = releaseutils.CreateReleaseAssets(opts.IO, client, opts.AssetFiles, opts.AssetLinks, repo.FullName(), release.TagName)
+	if err != nil {
+		return cmdutils.WrapError(err, "creating release assets failed")
 	}
 
-	opts.IO.Logf(color.Bold("%s upload succeeded after %0.2fs\n"), color.GreenCheck(), time.Since(start).Seconds())
+	opts.IO.Logf(color.Bold("%s Upload succeeded after %0.2fs\n"), color.GreenCheck(), time.Since(start).Seconds())
 	return nil
 }

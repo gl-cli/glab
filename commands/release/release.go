@@ -21,8 +21,8 @@ func NewCmdRelease(f *cmdutils.Factory) *cobra.Command {
 	cmdutils.EnableRepoOverride(releaseCmd, f)
 
 	releaseCmd.AddCommand(releaseListCmd.NewCmdReleaseList(f))
-	releaseCmd.AddCommand(releaseCreateCmd.NewCmdCreate(f, nil))
-	releaseCmd.AddCommand(releaseUploadCmd.NewCmdUpload(f, nil))
+	releaseCmd.AddCommand(releaseCreateCmd.NewCmdCreate(f))
+	releaseCmd.AddCommand(releaseUploadCmd.NewCmdUpload(f))
 	releaseCmd.AddCommand(releaseDeleteCmd.NewCmdDelete(f, nil))
 	releaseCmd.AddCommand(releaseViewCmd.NewCmdView(f, nil))
 	releaseCmd.AddCommand(releaseDownloadCmd.NewCmdDownload(f, nil))
