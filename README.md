@@ -85,10 +85,6 @@ Other installation methods depend on your operating system.
 - [MacPorts](https://ports.macports.org/port/glab/summary):
   - Install with: `sudo port install glab`
   - Update with: `sudo port selfupdate && sudo port upgrade glab`
-- Install into `usr/bin` with a shell script:
-  `curl -s "https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh" | sudo sh`
-
-  Before running any install script, review its contents.
 
 ### Windows
 
