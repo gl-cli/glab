@@ -29,7 +29,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 	cmd := &cobra.Command{
 		Use:     "list",
 		Short:   "List project or group variables",
-		Aliases: []string{"new", "create"},
+		Aliases: []string{"ls"},
 		Args:    cobra.ExactArgs(0),
 		Example: heredoc.Doc(`
 			glab variable list
