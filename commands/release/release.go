@@ -23,8 +23,8 @@ func NewCmdRelease(f *cmdutils.Factory) *cobra.Command {
 	releaseCmd.AddCommand(releaseListCmd.NewCmdReleaseList(f))
 	releaseCmd.AddCommand(releaseCreateCmd.NewCmdCreate(f))
 	releaseCmd.AddCommand(releaseUploadCmd.NewCmdUpload(f))
-	releaseCmd.AddCommand(releaseDeleteCmd.NewCmdDelete(f, nil))
-	releaseCmd.AddCommand(releaseViewCmd.NewCmdView(f, nil))
+	releaseCmd.AddCommand(releaseDeleteCmd.NewCmdDelete(f))
+	releaseCmd.AddCommand(releaseViewCmd.NewCmdView(f))
 	releaseCmd.AddCommand(releaseDownloadCmd.NewCmdDownload(f, nil))
 
 	return releaseCmd
