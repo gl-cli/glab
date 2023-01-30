@@ -52,7 +52,7 @@ echo "autoload -U compinit; compinit" >> ~/.zshrc
 To load completions in your current shell session:
 
 ```plaintext
-source "$(glab completion -s zsh); compdef _glab glab
+source <(glab completion -s zsh); compdef _glab glab
 ```
 
 To load completions for every new session, execute once:

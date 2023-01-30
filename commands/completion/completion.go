@@ -58,7 +58,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		To load completions in your current shell session:
 		
 		%[2]splaintext
-		source "$(glab completion -s zsh); compdef _glab glab
+		source <(glab completion -s zsh); compdef _glab glab
 		%[2]s
 		
 		To load completions for every new session, execute once:
