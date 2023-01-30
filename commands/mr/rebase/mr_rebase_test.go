@@ -79,6 +79,42 @@ func TestMrRebase(t *testing.T) {
 			expectedOut: "✓ Rebase successful\n",
 		},
 		{
+			name: "when an MR is rebased with skip-ci flag",
+			cli:  "123 --skip-ci",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER/REPO/merge_requests/123",
+					http.StatusOK,
+					`{
+								"id": 123,
+								"iid": 123,
+								"project_id": 3,
+								"title": "test mr title",
+								"description": "test mr description",
+								"state": "opened"
+							}`,
+				},
+				{
+					http.MethodPut,
+					"/api/v4/projects/OWNER/REPO/merge_requests/123/rebase?skip_ci=true",
+					http.StatusAccepted,
+					`{ "rebase_in_progress": true }`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER/REPO/merge_requests/123?include_rebase_in_progress=true",
+					http.StatusOK,
+					`{
+							 "rebase_in_progress": false,
+							 "merge_error": null
+						   }`,
+				},
+			},
+
+			expectedOut: "✓ Rebase successful\n",
+		},
+		{
 			name: "when an MR is rebased using current branch",
 			cli:  "",
 			httpMocks: []httpMock{
