@@ -173,7 +173,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if opts.RebaseBeforeMerge {
-				err := mrutils.RebaseMR(f.IO, apiClient, repo, mr)
+				err := mrutils.RebaseMR(f.IO, apiClient, repo, mr, nil)
 				if err != nil {
 					return err
 				}

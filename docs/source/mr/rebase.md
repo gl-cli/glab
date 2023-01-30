@@ -27,7 +27,14 @@ glab mr rebase [<id> | <branch>] [flags]
 glab mr rebase 123
 glab mr rebase  # get from current branch
 glab mr rebase branch
+glab mr rebase branch --skip-ci
 
+```
+
+## Options
+
+```plaintext
+      --skip-ci   Rebase merge request while skipping CI/CD pipeline.
 ```
 
 ## Options inherited from parent commands
