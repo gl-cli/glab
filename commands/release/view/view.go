@@ -26,7 +26,7 @@ type ViewOpts struct {
 	Config     func() (config.Config, error)
 }
 
-func NewCmdView(f *cmdutils.Factory, runE func(opts *ViewOpts) error) *cobra.Command {
+func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	opts := &ViewOpts{
 		IO:     f.IO,
 		Config: f.Config,
@@ -53,10 +53,6 @@ func NewCmdView(f *cmdutils.Factory, runE func(opts *ViewOpts) error) *cobra.Com
 
 			if len(args) == 1 {
 				opts.TagName = args[0]
-			}
-
-			if runE != nil {
-				return runE(opts)
 			}
 
 			return viewRun(opts)

@@ -28,7 +28,7 @@ type DeleteOpts struct {
 	Config     func() (config.Config, error)
 }
 
-func NewCmdDelete(f *cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra.Command {
+func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 	opts := &DeleteOpts{
 		IO:     f.IO,
 		Config: f.Config,
@@ -63,10 +63,6 @@ func NewCmdDelete(f *cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra
 				return &cmdutils.FlagError{Err: fmt.Errorf("--yes or -y flag is required when not running interactively")}
 			}
 
-			if runE != nil {
-				return runE(opts)
-			}
-
 			return deleteRun(opts)
 		},
 	}
@@ -90,7 +86,7 @@ func deleteRun(opts *DeleteOpts) error {
 	color := opts.IO.Color()
 	var resp *gitlab.Response
 
-	opts.IO.Logf("%s validating tag %s=%s %s=%s\n",
+	opts.IO.Logf("%s Validating tag %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), opts.TagName)
@@ -115,7 +111,7 @@ func deleteRun(opts *DeleteOpts) error {
 		return cmdutils.CancelError()
 	}
 
-	opts.IO.Logf("%s deleting release %s=%s %s=%s\n",
+	opts.IO.Logf("%s Deleting release %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), opts.TagName)
@@ -125,11 +121,11 @@ func deleteRun(opts *DeleteOpts) error {
 		return cmdutils.WrapError(err, "failed to delete release")
 	}
 
-	opts.IO.Logf(color.Bold("%s release %q deleted\n"), color.RedCheck(), release.Name)
+	opts.IO.Logf(color.Bold("%s Release %q deleted\n"), color.RedCheck(), release.Name)
 
 	if opts.DeleteTag {
 
-		opts.IO.Logf("%s deleting associated tag %q\n",
+		opts.IO.Logf("%s Deleting associated tag %q\n",
 			color.ProgressIcon(), opts.TagName)
 
 		_, err = client.Tags.DeleteTag(repo.FullName(), release.TagName)
@@ -137,7 +133,7 @@ func deleteRun(opts *DeleteOpts) error {
 			return cmdutils.WrapError(err, "failed to delete tag")
 		}
 
-		opts.IO.Logf(color.Bold("%s tag %q deleted\n"), color.RedCheck(), release.Name)
+		opts.IO.Logf(color.Bold("%s Tag %q deleted\n"), color.RedCheck(), release.Name)
 	}
 	return nil
 }
