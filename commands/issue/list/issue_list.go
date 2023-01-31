@@ -12,6 +12,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/flag"
+	"gitlab.com/gitlab-org/cli/commands/issuable"
 	"gitlab.com/gitlab-org/cli/commands/issue/issueutils"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
@@ -58,16 +59,14 @@ type ListOptions struct {
 }
 
 func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.Command {
-	return NewCmdListByType(f, runE, "issue")
+	return NewCmdListByType(f, runE, issuable.TypeIssue)
 }
 
-func NewCmdListByType(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueType string) *cobra.Command {
-	name := "issue"
+func NewCmdListByType(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueType issuable.IssueType) *cobra.Command {
 	var incident bool
 
-	if issueType == "incident" {
+	if issueType == issuable.TypeIncident {
 		incident = true
-		name = "incident"
 	}
 
 	opts := &ListOptions{
@@ -76,7 +75,7 @@ func NewCmdListByType(f *cmdutils.Factory, runE func(opts *ListOptions) error, i
 
 	issueListCmd := &cobra.Command{
 		Use:     "list [flags]",
-		Short:   fmt.Sprintf(`List project %ss`, name),
+		Short:   fmt.Sprintf(`List project %ss`, issueType),
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Example: heredoc.Doc(fmt.Sprintf(`
@@ -84,7 +83,7 @@ func NewCmdListByType(f *cmdutils.Factory, runE func(opts *ListOptions) error, i
 			glab %[1]s ls --all
 			glab %[1]s list --assignee=@me
 			glab %[1]s list --milestone release-2.0.0 --opened
-		`, name)),
+		`, issueType)),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// support repo override
@@ -133,34 +132,34 @@ func NewCmdListByType(f *cmdutils.Factory, runE func(opts *ListOptions) error, i
 		},
 	}
 	cmdutils.EnableRepoOverride(issueListCmd, f)
-	issueListCmd.Flags().StringVarP(&opts.Assignee, "assignee", "a", "", fmt.Sprintf("Filter %s by assignee <username>", name))
-	issueListCmd.Flags().StringSliceVar(&opts.NotAssignee, "not-assignee", []string{}, fmt.Sprintf("Filter %s by not being assigneed to <username>", name))
-	issueListCmd.Flags().StringVar(&opts.Author, "author", "", fmt.Sprintf("Filter %s by author <username>", name))
+	issueListCmd.Flags().StringVarP(&opts.Assignee, "assignee", "a", "", fmt.Sprintf("Filter %s by assignee <username>", issueType))
+	issueListCmd.Flags().StringSliceVar(&opts.NotAssignee, "not-assignee", []string{}, fmt.Sprintf("Filter %s by not being assigneed to <username>", issueType))
+	issueListCmd.Flags().StringVar(&opts.Author, "author", "", fmt.Sprintf("Filter %s by author <username>", issueType))
 	issueListCmd.Flags().StringSliceVar(&opts.NotAuthor, "not-author", []string{}, "Filter by not being by author(s) <username>")
 	issueListCmd.Flags().StringVar(&opts.Search, "search", "", "Search <string> in the fields defined by --in")
 	issueListCmd.Flags().StringVar(&opts.In, "in", "title,description", "search in {title|description}")
-	issueListCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, fmt.Sprintf("Filter %s by label <name>", name))
-	issueListCmd.Flags().StringSliceVar(&opts.NotLabels, "not-label", []string{}, fmt.Sprintf("Filter %s by lack of label <name>", name))
-	issueListCmd.Flags().StringVarP(&opts.Milestone, "milestone", "m", "", fmt.Sprintf("Filter %s by milestone <id>", name))
-	issueListCmd.Flags().BoolVarP(&opts.All, "all", "A", false, fmt.Sprintf("Get all %ss", name))
-	issueListCmd.Flags().BoolVarP(&opts.Closed, "closed", "c", false, fmt.Sprintf("Get only closed %ss", name))
-	issueListCmd.Flags().BoolVarP(&opts.Confidential, "confidential", "C", false, fmt.Sprintf("Filter by confidential %ss", name))
+	issueListCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, fmt.Sprintf("Filter %s by label <name>", issueType))
+	issueListCmd.Flags().StringSliceVar(&opts.NotLabels, "not-label", []string{}, fmt.Sprintf("Filter %s by lack of label <name>", issueType))
+	issueListCmd.Flags().StringVarP(&opts.Milestone, "milestone", "m", "", fmt.Sprintf("Filter %s by milestone <id>", issueType))
+	issueListCmd.Flags().BoolVarP(&opts.All, "all", "A", false, fmt.Sprintf("Get all %ss", issueType))
+	issueListCmd.Flags().BoolVarP(&opts.Closed, "closed", "c", false, fmt.Sprintf("Get only closed %ss", issueType))
+	issueListCmd.Flags().BoolVarP(&opts.Confidential, "confidential", "C", false, fmt.Sprintf("Filter by confidential %ss", issueType))
 	issueListCmd.Flags().StringVarP(&opts.OutputFormat, "output-format", "F", "details", "One of 'details', 'ids', or 'urls'")
 	issueListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
 	issueListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
 	issueListCmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
 
 	if incident {
-		opts.IssueType = issueType
+		opts.IssueType = string(issueType)
 	} else {
 		issueListCmd.Flags().StringVarP(&opts.IssueType, "issue-type", "t", "", "Filter issue by its type {issue|incident|test_case}")
 	}
 
-	issueListCmd.Flags().BoolP("opened", "o", false, fmt.Sprintf("Get only open %ss", name))
+	issueListCmd.Flags().BoolP("opened", "o", false, fmt.Sprintf("Get only open %ss", issueType))
 	_ = issueListCmd.Flags().MarkHidden("opened")
 	_ = issueListCmd.Flags().MarkDeprecated("opened", "default if --closed is not used")
 
-	issueListCmd.Flags().BoolVarP(&opts.Mine, "mine", "M", false, fmt.Sprintf("Filter only %ss assigned to me", name))
+	issueListCmd.Flags().BoolVarP(&opts.Mine, "mine", "M", false, fmt.Sprintf("Filter only %ss assigned to me", issueType))
 	_ = issueListCmd.Flags().MarkHidden("mine")
 	_ = issueListCmd.Flags().MarkDeprecated("mine", "use --assignee=@me")
 

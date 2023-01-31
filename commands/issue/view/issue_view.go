@@ -6,6 +6,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
+	"gitlab.com/gitlab-org/cli/commands/issuable"
 	"gitlab.com/gitlab-org/cli/commands/issue/issueutils"
 
 	"gitlab.com/gitlab-org/cli/api"
@@ -33,21 +34,31 @@ type ViewOpts struct {
 }
 
 func NewCmdView(f *cmdutils.Factory) *cobra.Command {
+	return NewCmdViewByType(f, issuable.TypeIssue)
+}
+
+func NewCmdViewByType(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+	examplePath := "issues/123"
+
+	if issueType == issuable.TypeIncident {
+		examplePath = "issues/incident/123"
+	}
+
 	opts := &ViewOpts{
 		IO: f.IO,
 	}
 	issueViewCmd := &cobra.Command{
 		Use:     "view <id>",
-		Short:   `Display the title, body, and other information about an issue.`,
+		Short:   fmt.Sprintf(`Display the title, body, and other information about an %s.`, issueType),
 		Long:    ``,
 		Aliases: []string{"show"},
-		Example: heredoc.Doc(`
-			glab issue view 123
-			glab issue show 123
-			glab issue view --web 123
-			glab issue view --comments 123
-			glab issue view https://gitlab.com/profclems/glab/-/issues/123
-		`),
+		Example: heredoc.Doc(fmt.Sprintf(`
+			glab %[1]s view 123
+			glab %[1]s show 123
+			glab %[1]s view --web 123
+			glab %[1]s view --comments 123
+			glab %[1]s view https://gitlab.com/NAMESPACE/REPO/-/%s
+		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			apiClient, err := f.HttpClient()
@@ -62,6 +73,16 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			opts.Issue = issue
+
+			// Issues and incidents are the same kind, but with different issueType.
+			// `issue view` can display issues of all types including incidents
+			// `incident view` on the other hand, should display only incidents, and treat all other issue types as not found
+			//
+			// When using `incident view` with non incident's IDs, print an error.
+			if issueType == issuable.TypeIncident && *opts.Issue.IssueType != string(issuable.TypeIncident) {
+				fmt.Fprintln(opts.IO.StdErr, "Incident not found, but an issue with the provided ID exists. Run `glab issue view <id>` to view it.")
+				return nil
+			}
 
 			// open in browser if --web flag is specified
 			if opts.Web {
@@ -103,9 +124,9 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	issueViewCmd.Flags().BoolVarP(&opts.ShowComments, "comments", "c", false, "Show issue comments and activities")
+	issueViewCmd.Flags().BoolVarP(&opts.ShowComments, "comments", "c", false, fmt.Sprintf("Show %s comments and activities", issueType))
 	issueViewCmd.Flags().BoolVarP(&opts.ShowSystemLogs, "system-logs", "s", false, "Show system activities / logs")
-	issueViewCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, "Open issue in a browser. Uses default browser or browser specified in BROWSER variable")
+	issueViewCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, fmt.Sprintf("Open %s in a browser. Uses default browser or browser specified in BROWSER variable", issueType))
 	issueViewCmd.Flags().IntVarP(&opts.CommentPageNumber, "page", "p", 1, "Page number")
 	issueViewCmd.Flags().IntVarP(&opts.CommentLimit, "per-page", "P", 20, "Number of items to list per page")
 
@@ -201,12 +222,11 @@ func printTTYIssuePreview(opts *ViewOpts) error {
 				fmt.Fprintln(opts.IO.StdOut)
 			}
 		} else {
-			fmt.Fprintln(opts.IO.StdOut, "There are no comments on this issue")
+			fmt.Fprintf(opts.IO.StdOut, "There are no comments on this %s\n", *opts.Issue.IssueType)
 		}
 	}
 
-	fmt.Fprintln(opts.IO.StdOut)
-	fmt.Fprintf(opts.IO.StdOut, c.Gray("View this issue on GitLab: %s\n"), opts.Issue.WebURL)
+	fmt.Fprintf(opts.IO.StdOut, c.Gray("\nView this %s on GitLab: %s\n"), *opts.Issue.IssueType, opts.Issue.WebURL)
 
 	return nil
 }
