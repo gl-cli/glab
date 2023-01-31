@@ -142,11 +142,14 @@ func IssueFromArg(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interface,
 //
 //		OWNER/REPO/issues/id
 //		OWNER/REPO/-/issues/id
+//		OWNER/REPO/-/issues/incident/id
 //		GROUP/NAMESPACE/REPO/issues/id
 //		GROUP/NAMESPACE/REPO/-/issues/id
+//		GROUP/NAMESPACE/REPO/-/issues/incident/id
 //	including nested subgroups:
 //		GROUP/SUBGROUP/../../REPO/-/issues/id
-var issueURLPathRE = regexp.MustCompile(`^(/(?:[^-][^/]+/){2,})+(?:-/)?issues/(\d+)$`)
+//		GROUP/SUBGROUP/../../REPO/-/issues/incident/id
+var issueURLPathRE = regexp.MustCompile(`^(/(?:[^-][^/]+/){2,})+(?:-/)?issues/(?:incident/)?(\d+)$`)
 
 func issueMetadataFromURL(s string) (int, glrepo.Interface) {
 	u, err := url.Parse(s)

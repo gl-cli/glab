@@ -35,3 +35,4 @@ glab incident list
 ## Subcommands
 
 - [list](list.md)
+- [view](view.md)

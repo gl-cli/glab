@@ -44,7 +44,7 @@ hosts:
 	stubFactory.IO.IsErrTTY = true
 
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	issueType := "issue"
+	issueType := "incident"
 	api.GetIssue = func(client *gitlab.Client, projectID interface{}, issueID int) (*gitlab.Issue, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
@@ -56,10 +56,10 @@ hosts:
 		return &gitlab.Issue{
 			ID:          issueID,
 			IID:         issueID,
-			Title:       "issueTitle",
-			Labels:      gitlab.Labels{"test", "bug"},
+			Title:       "Incident title",
+			Labels:      gitlab.Labels{"test", "incident"},
 			State:       "opened",
-			Description: "issueBody",
+			Description: "Incident body",
 			References: &gitlab.IssueReferences{
 				Full: fmt.Sprintf("%s#%d", repo.FullName(), issueID),
 			},
@@ -138,7 +138,7 @@ func TestNewCmdView(t *testing.T) {
 			},
 			{
 				ID:    1,
-				Body:  "Marked issue as stale",
+				Body:  "Marked incident as stale",
 				Title: "",
 				Author: cmdtest.Author{
 					ID:       1,
@@ -166,11 +166,11 @@ func TestNewCmdView(t *testing.T) {
 		stdout.Reset()
 		stderr.Reset()
 
-		require.Contains(t, out, "issueTitle #13")
-		require.Contains(t, out, "issueBody")
+		require.Contains(t, out, "Incident title #13")
+		require.Contains(t, out, "Incident body")
 		require.Equal(t, outErr, "")
 		assert.Contains(t, out, "https://gitlab.com/glab-cli/test/-/issues/13")
-		assert.Contains(t, out, "johnwick Marked issue as stale")
+		assert.Contains(t, out, "johnwick Marked incident as stale")
 	})
 
 	t.Run("no_tty", func(t *testing.T) {
@@ -187,15 +187,15 @@ func TestNewCmdView(t *testing.T) {
 		}
 
 		expectedOutputs := []string{
-			`title:\tissueTitle`,
+			`title:\tIncident title`,
 			`assignees:\tmona, lisa`,
 			`author:\tjdwick`,
 			`state:\topen`,
 			`comments:\t2`,
-			`labels:\ttest, bug`,
+			`labels:\ttest, incident`,
 			`milestone:\tMilestoneTitle\n`,
 			`--`,
-			`issueBody`,
+			`Incident body`,
 		}
 
 		out := stripansi.Strip(stdout.String())

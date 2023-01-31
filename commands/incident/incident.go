@@ -5,6 +5,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	incidentListCmd "gitlab.com/gitlab-org/cli/commands/incident/list"
+	incidentViewCmd "gitlab.com/gitlab-org/cli/commands/incident/view"
 
 	"github.com/spf13/cobra"
 )
@@ -29,5 +30,6 @@ func NewCmdIncident(f *cmdutils.Factory) *cobra.Command {
 	cmdutils.EnableRepoOverride(incidentCmd, f)
 
 	incidentCmd.AddCommand(incidentListCmd.NewCmdList(f, nil))
+	incidentCmd.AddCommand(incidentViewCmd.NewCmdView(f))
 	return incidentCmd
 }
