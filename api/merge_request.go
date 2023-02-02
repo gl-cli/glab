@@ -1,8 +1,13 @@
 package api
 
 import (
+	"errors"
+	"net/http"
+
 	"github.com/xanzy/go-gitlab"
 )
+
+var ErrTodoExists = errors.New("To-do already exists.")
 
 var ApproveMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.ApproveMergeRequestOptions) (*gitlab.MergeRequestApprovals, error) {
 	if client == nil {
@@ -277,7 +282,12 @@ var MRTodo = func(client *gitlab.Client, projectID interface{}, mrID int, opts g
 		client = apiClient.Lab()
 	}
 
-	mr, _, err := client.MergeRequests.CreateTodo(projectID, mrID, opts)
+	mr, resp, err := client.MergeRequests.CreateTodo(projectID, mrID, opts)
+
+	if resp.StatusCode == http.StatusNotModified {
+		return nil, ErrTodoExists
+	}
+
 	if err != nil {
 		return nil, err
 	}
