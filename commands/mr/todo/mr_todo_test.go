@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 
 	"github.com/stretchr/testify/assert"
@@ -36,7 +37,8 @@ func TestMrTodo(t *testing.T) {
 		cli       string
 		httpMocks []httpMock
 
-		expectedOut string
+		expectedError error
+		expectedOut   string
 	}{
 		{
 			name: "when an MR is added as a todo using an MR id",
@@ -62,7 +64,8 @@ func TestMrTodo(t *testing.T) {
 					"{}",
 				},
 			},
-			expectedOut: "✓ Done!!\n",
+			expectedError: nil,
+			expectedOut:   "✓ Done!!\n",
 		},
 		{
 			name: "when an MR is added as a todo using a branch name",
@@ -101,7 +104,48 @@ func TestMrTodo(t *testing.T) {
 					"{}",
 				},
 			},
-			expectedOut: "✓ Done!!\n",
+			expectedError: nil,
+			expectedOut:   "✓ Done!!\n",
+		},
+		{
+			name: "when todo already exists",
+			cli:  "foo",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER/REPO/merge_requests/123",
+					http.StatusOK,
+					`{
+								"id": 123,
+								"iid": 123,
+								"project_id": 3,
+								"title": "test mr title",
+								"description": "test mr description",
+								"state": "opened"
+							}`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER/REPO/merge_requests?per_page=30&source_branch=foo",
+					http.StatusOK,
+					`[{
+								"id": 123,
+								"iid": 123,
+								"project_id": 3,
+								"title": "test mr title",
+								"description": "test mr description",
+								"state": "opened"
+							}]`,
+				},
+				{
+					http.MethodPost,
+					"/api/v4/projects/OWNER/REPO/merge_requests/123/todo",
+					http.StatusNotModified,
+					"{}",
+				},
+			},
+			expectedError: api.ErrTodoExists,
+			expectedOut:   "",
 		},
 	}
 
@@ -117,6 +161,10 @@ func TestMrTodo(t *testing.T) {
 			}
 
 			output, err := runCommand(fakeHTTP, false, tc.cli)
+			if tc.expectedError != nil {
+				assert.Equal(t, tc.expectedError, err, "error expected when running command `mr todo %s`", tc.cli)
+				return
+			}
 
 			if assert.NoErrorf(t, err, "error running command `mr todo %s`: %v", tc.cli, err) {
 				out := output.String()
