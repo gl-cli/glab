@@ -28,6 +28,7 @@ Manage GitLab Project and Group Variables
 ## Subcommands
 
 - [delete](delete.md)
+- [export](export.md)
 - [get](get.md)
 - [list](list.md)
 - [set](set.md)
