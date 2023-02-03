@@ -79,9 +79,13 @@ func runE(opts *Options) error {
 	if !opts.FilterAll {
 		if opts.FilterOwned {
 			l.Owned = gitlab.Bool(opts.FilterOwned)
-		} else if opts.FilterStarred {
+		}
+
+		if opts.FilterStarred {
 			l.Starred = gitlab.Bool(opts.FilterStarred)
-		} else if opts.FilterMember {
+		}
+
+		if opts.FilterMember {
 			l.Membership = gitlab.Bool(opts.FilterMember)
 		}
 	}
