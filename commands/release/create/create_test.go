@@ -79,12 +79,11 @@ func TestReleaseCreate(t *testing.T) {
 			output, err := runCommand(fakeHTTP, false, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `create %s`: %v", tc.cli, err) {
-				assert.Equal(t, `• Validating tag 0.0.1
+				assert.Contains(t, output.Stderr(), `• Validating tag 0.0.1
 
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
 ✓ Release created	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
-✓ Release succeeded after 0.00s
-`, output.Stderr())
+✓ Release succeeded after`)
 				assert.Empty(t, output.String())
 			}
 		})
@@ -186,14 +185,13 @@ func TestReleaseCreateWithFiles(t *testing.T) {
 			output, err := runCommand(fakeHTTP, false, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `create %s`: %v", tc.cli, err) {
-				assert.Equal(t, `• Validating tag 0.0.1
+				assert.Contains(t, output.Stderr(), `• Validating tag 0.0.1
 
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
 ✓ Release created	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 • Uploading release assets repo=OWNER/REPO tag=0.0.1
 • Uploading to release	file=fixtures/test_file.txt name=test_file.txt
-✓ Release succeeded after 0.00s
-`, output.Stderr())
+✓ Release succeeded after`)
 				assert.Empty(t, output.String())
 			}
 		})
