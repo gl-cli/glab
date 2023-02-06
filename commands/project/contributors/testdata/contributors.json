@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Test User",
+    "email": "tu@gitlab.com",
+    "commits": 41,
+    "additions": 0,
+    "deletions": 0
+  },
+  {
+    "name": "Test User2",
+    "email": "tu2@gitlab.com",
+    "commits": 12,
+    "additions": 4,
+    "deletions": 4
+  }
+]

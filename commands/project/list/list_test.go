@@ -31,74 +31,82 @@ func TestProjectList(t *testing.T) {
 		body   string
 	}
 
+	projectResponse := `[{
+							"id": 123,
+ 							"description": "This is a test project",
+ 							"path_with_namespace": "gitlab-org/incubation-engineering/service-desk/meta"
+					}]`
+
 	tests := []struct {
 		name        string
-		httpMocks   []httpMock
+		httpMock    httpMock
 		args        string
 		expectedOut string
 	}{
 		{
 			name: "when no projects are found shows an empty list",
-			httpMocks: []httpMock{
-				{
-					http.MethodGet,
-					"/api/v4/projects?order_by=last_activity_at&owned=true&page=1&per_page=30",
-					http.StatusOK,
-					"[]",
-				},
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?order_by=last_activity_at&owned=true&page=1&per_page=30",
+				http.StatusOK,
+				"[]",
 			},
 			args:        "",
 			expectedOut: "Showing 0 of 0 projects (Page 0 of 0)\n\n\n",
 		},
 		{
 			name: "when projects are found shows list",
-			httpMocks: []httpMock{
-				{
-					http.MethodGet,
-					"/api/v4/projects?order_by=last_activity_at&owned=true&page=1&per_page=30",
-					http.StatusOK,
-					`[{
-							"id": 123,
- 							"description": "This is a test project",
- 							"path_with_namespace": "gitlab-org/incubation-engineering/service-desk/meta"
-					}]`,
-				},
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?order_by=last_activity_at&owned=true&page=1&per_page=30",
+				http.StatusOK,
+				projectResponse,
 			},
 			args:        "",
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
 		{
 			name: "when starred is passed as an arg filters by starred",
-			httpMocks: []httpMock{
-				{
-					http.MethodGet,
-					"/api/v4/projects?order_by=last_activity_at&owned=true&page=1&per_page=30&starred=true",
-					http.StatusOK,
-					`[{
-							"id": 123,
- 							"description": "This is a test project",
- 							"path_with_namespace": "gitlab-org/incubation-engineering/service-desk/meta"
-					}]`,
-				},
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?order_by=last_activity_at&owned=true&page=1&per_page=30&starred=true",
+				http.StatusOK,
+				projectResponse,
 			},
 			args:        "--starred",
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
 		{
 			name: "when member is passed as an arg filters by member",
-			httpMocks: []httpMock{
-				{
-					http.MethodGet,
-					"/api/v4/projects?membership=true&order_by=last_activity_at&owned=true&page=1&per_page=30",
-					http.StatusOK,
-					`[{
-							"id": 123,
- 							"description": "This is a test project",
- 							"path_with_namespace": "gitlab-org/incubation-engineering/service-desk/meta"
-					}]`,
-				},
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?membership=true&order_by=last_activity_at&owned=true&page=1&per_page=30",
+				http.StatusOK,
+				projectResponse,
 			},
 			args:        "--member",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
+		{
+			name: "view all projects",
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?order_by=last_activity_at&page=1&per_page=30",
+				http.StatusOK,
+				projectResponse,
+			},
+			args:        "--all",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
+		{
+			name: "view all projects ordered by created_at date sorted descending",
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?order_by=created_at&owned=true&page=1&per_page=30&sort=desc",
+				http.StatusOK,
+				projectResponse,
+			},
+			args:        "--order created_at --sort desc",
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
 	}
@@ -110,13 +118,12 @@ func TestProjectList(t *testing.T) {
 			}
 			defer fakeHTTP.Verify(t)
 
-			for _, mock := range tc.httpMocks {
-				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
-			}
+			fakeHTTP.RegisterResponder(tc.httpMock.method, tc.httpMock.path,
+				httpmock.NewStringResponse(tc.httpMock.status, tc.httpMock.body))
 
 			output, err := runCommand(fakeHTTP, false, tc.args)
 
-			if assert.NoErrorf(t, err, "error running command `project list %s`: %v", err) {
+			if assert.NoErrorf(t, err, "error running command `project list %s`: %v", tc.args, err) {
 				out := output.String()
 
 				assert.Equal(t, tc.expectedOut, out)
