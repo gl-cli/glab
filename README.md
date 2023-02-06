@@ -20,19 +20,8 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 - [Demo](#demo)
 - [Documentation](#documentation)
 - [Installation](#installation)
-  - [macOS](#macos)
-  - [Windows](#windows)
-  - [Linux](#linux)
-    - [Homebrew](#homebrew)
-    - [Snapcraft (out of date)](#snapcraft-out-of-date)
-    - [Arch Linux](#arch-linux)
-    - [Alpine Linux](#alpine-linux)
-      - [Install a pinned version from edge](#install-a-pinned-version-from-edge)
-      - [Alpine Linux Docker-way](#alpine-linux-docker-way)
-    - [Nix/NixOS](#nixnixos)
-    - [MPR (Debian/Ubuntu)](#mpr-debianubuntu)
-      - [Prebuilt-MPR](#prebuilt-mpr)
-    - [Spack](#spack)
+  - [Homebrew](#homebrew)
+  - [Other installation methods](#other-installation-methods)
   - [Building from source](#building-from-source)
     - [Prerequisites for building from source](#prerequisites-for-building-from-source)
 - [Authentication](#authentication)
@@ -77,122 +66,17 @@ Read the [documentation](https://gitlab.com/gitlab-org/cli/-/tree/main/docs/sour
 Download a binary suitable for your OS at the [releases page](https://gitlab.com/gitlab-org/cli/-/releases).
 Other installation methods depend on your operating system.
 
-### macOS
+### Homebrew
 
-- Homebrew (officially supported)
+Homebrew is the officially supported method for macOS, Linux, and Windows (through [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install))
+
+- Homebrew
   - Install with: `brew install glab`
   - Update with: `brew upgrade glab`
-- [MacPorts](https://ports.macports.org/port/glab/summary):
-  - Install with: `sudo port install glab`
-  - Update with: `sudo port selfupdate && sudo port upgrade glab`
 
-### Windows
+### Other installation methods
 
-- [WinGet](https://github.com/microsoft/winget-cli)
-  - Install with: `winget install glab.glab`
-  - Update with: `winget install glab.glab`
-- [scoop](https://scoop.sh)
-  - Install with: `scoop install glab`
-  - Update with: `scoop update glab`
-- Download an EXE installer or the `glab.exe` binary from the [releases page](https://gitlab.com/gitlab-org/cli/-/releases)
-
-### Linux
-
-- Download prebuilt binaries from the [releases page](https://gitlab.com/gitlab-org/cli/-/releases)
-
-#### Homebrew
-
-Installing from Homebrew is the officially supported installation method for Linux.
-
-- Install with: `brew install glab`
-- Update with: `brew upgrade glab`
-
-#### Snapcraft ([out of date](https://gitlab.com/gitlab-org/cli/-/issues/1127))
-
-To install `glab` from the [Snap Store](https://snapcraft.io/glab):
-
-1. Make sure you have [snap installed](https://snapcraft.io/docs/installing-snapd) on your Linux distribution.
-1. Install the package: `sudo snap install --edge glab`
-1. Grant `glab` access to SSH keys: `sudo snap connect glab:ssh-keys`
-
-[![Download from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/glab)
-
-#### Arch Linux
-
-For Arch Linux, `glab` is available:
-
-- From the [`community/glab`](https://archlinux.org/packages/community/x86_64/glab/) package.
-- By downloading and installing an archive from the
-  [releases page](https://gitlab.com/gitlab-org/cli/-/releases).
-- From the [Snap Store](https://snapcraft.io/glab), if
-  [snap](https://snapcraft.io/docs/installing-snap-on-arch-linux) is installed.
-- Installing with the package manager: `pacman -S glab`
-
-#### Alpine Linux
-
-`glab` is available on the [Alpine Community Repository](https://git.alpinelinux.org/aports/tree/community/glab?h=master) as `glab`.
-
-When installing, use `--no-cache` so no `apk update` is required:
-
-```shell
-apk add --no-cache glab
-```
-
-##### Install a pinned version from edge
-
-To ensure that by default edge is used to get the latest updates. We need the edge repository in `/etc/apk/repositories`.
-
-Afterwards you can install it with `apk add --no-cache glab@edge`
-
-We use `--no-cache` so an `apk update` is not required.
-
-```shell
-echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
-apk add --no-cache glab@edge
-```
-
-##### Alpine Linux Docker-way
-
-Use edge directly
-
-```shell
-FROM alpine:3.13
-RUN apk add --no-cache glab
-```
-
-Fetching latest glab version from edge
-
-```shell
-FROM alpine:3.13
-RUN echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
-RUN apk add --no-cache glab@edge
-```
-
-#### Nix/NixOS
-
-Nix (NixOS) users can install from [nixpkgs](https://search.nixos.org/packages?channel=unstable&show=glab&from=0&size=30&sort=relevance&query=glab) with the command `nix-env -iA nixos.glab`.
-
-#### MPR (Debian/Ubuntu)
-
-`glab` is available inside the [makedeb package repository](https://mpr.makedeb.org/packages/glab). To install, run the following:
-
-```shell
-git clone 'https://mpr.makedeb.org/glab'
-cd glab/
-makedeb -si
-```
-
-##### Prebuilt-MPR
-
-The above method downloads glab from source and builds it before packaging it into a `.deb` package. If you don't want to compile or just want a prebuilt package, you can also install glab from the Prebuilt-MPR:
-
-1. Set up [the Prebuilt-MPR on your system](https://docs.makedeb.org/prebuilt-mpr/getting-started/#setting-up-the-repository).
-1. Install with the command `sudo apt install glab`.
-
-#### Spack
-
-- To install: `spack install glab`.
-- To update: `spack uninstall glab && spack install glab`
+Other options to install the GitLab CLI that may not be officially support or are maintained by the community are [also available](docs/installation_options.md)
 
 ### Building from source
 
