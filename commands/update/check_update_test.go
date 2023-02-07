@@ -43,16 +43,16 @@ func TestNewCheckUpdateCmd(t *testing.T) {
 			args: args{
 				version: "v1.11.1",
 			},
-			stdOut: "✓ You are already using the latest version of glab\n",
-			stdErr: "",
+			stdOut: "",
+			stdErr: "✓ You are already using the latest version of glab\n",
 		},
 		{
 			name: "older version",
 			args: args{
 				version: "v1.11.0",
 			},
-			stdOut: "A new version of glab has been released: v1.11.0 → v1.11.1\nhttps://gitlab.com/gitlab-org/cli/-/releases/v1.11.1\n",
-			stdErr: "",
+			stdOut: "",
+			stdErr: "A new version of glab has been released: v1.11.0 → v1.11.1\nhttps://gitlab.com/gitlab-org/cli/-/releases/v1.11.1\n",
 		},
 	}
 	for _, tt := range tests {
