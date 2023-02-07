@@ -1,3 +1,6 @@
+variables:
+  GO_VERSION: "1.18"
+
 # run the pipeline only on MRs, tags, and default branch
 workflow:
   rules:
@@ -6,7 +9,7 @@ workflow:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 default:
-  image: golang:1.18
+  image: golang:${GO_VERSION}
 
 stages:
   - documentation
@@ -111,6 +114,9 @@ code_navigation:
 run_tests:
   stage: test
   extends: .go-cache
+  parallel:
+    matrix:
+      - GO_VERSION: ["1.18", "1.19", "1.20"]
   before_script:
     ## Adding private SSH key to the executor, more information: https://docs.gitlab.com/ee/ci/ssh_keys/#ssh-keys-when-using-the-docker-executor
     - mkdir -p ~/.ssh
