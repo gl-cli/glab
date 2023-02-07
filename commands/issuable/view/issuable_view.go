@@ -33,11 +33,7 @@ type ViewOpts struct {
 	IO *iostreams.IOStreams
 }
 
-func NewCmdView(f *cmdutils.Factory) *cobra.Command {
-	return NewCmdViewByType(f, issuable.TypeIssue)
-}
-
-func NewCmdViewByType(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
 	examplePath := "issues/123"
 
 	if issueType == issuable.TypeIncident {

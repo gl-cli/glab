@@ -17,6 +17,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	mainTest "gitlab.com/gitlab-org/cli/test"
@@ -89,7 +90,7 @@ hosts:
 }
 
 func TestNewCmdView_web_numberArg(t *testing.T) {
-	cmd := NewCmdView(stubFactory)
+	cmd := NewCmdView(stubFactory, issuable.TypeIssue)
 	cmdutils.EnableRepoOverride(cmd, stubFactory)
 
 	var seenCmd *exec.Cmd
@@ -153,7 +154,7 @@ func TestNewCmdView(t *testing.T) {
 	}
 
 	t.Run("show", func(t *testing.T) {
-		cmd := NewCmdView(stubFactory)
+		cmd := NewCmdView(stubFactory, issuable.TypeIssue)
 		cmdutils.EnableRepoOverride(cmd, stubFactory)
 		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R glab-cli/test")
 		if err != nil {
@@ -177,7 +178,7 @@ func TestNewCmdView(t *testing.T) {
 		stubFactory.IO.IsaTTY = false
 		stubFactory.IO.IsErrTTY = false
 
-		cmd := NewCmdView(stubFactory)
+		cmd := NewCmdView(stubFactory, issuable.TypeIssue)
 		cmdutils.EnableRepoOverride(cmd, stubFactory)
 
 		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R glab-cli/test")
