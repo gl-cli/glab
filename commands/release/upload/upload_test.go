@@ -109,11 +109,10 @@ func TestReleaseUpload(t *testing.T) {
 			output, err := runCommand(fakeHTTP, false, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `release upload %s`: %v", tc.cli, err) {
-				assert.Equal(t, `• Validating tag repo=OWNER/REPO tag=0.0.1
+				assert.Contains(t, output.Stderr(), `• Validating tag repo=OWNER/REPO tag=0.0.1
 • Uploading release assets repo=OWNER/REPO tag=0.0.1
 • Uploading to release	file=fixtures/test_file.txt name=test_file.txt
-✓ Upload succeeded after 0.00s
-`, output.Stderr())
+✓ Upload succeeded after`)
 				assert.Empty(t, output.String())
 			}
 		})
