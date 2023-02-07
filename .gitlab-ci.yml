@@ -47,7 +47,7 @@ check_docs_update:
   extends: .documentation
   script:
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_COMMIT_SHA
-    - go run cmd/gen-docs/docs.go
+    - make gen-docs
     - |-
         git status
         if [[ $(git add -A --dry-run) ]]; then

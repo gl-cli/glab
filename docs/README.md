@@ -9,5 +9,5 @@ Just add the commands and the docs will be generated
 If you add a new command or update the existing information for a command you need to generate the doc updates in your merge request. To generate the docs run the following command from the project directory:
 
 ```shell
-go run cmd/gen-docs/docs.go
+make gen-docs
 ```
