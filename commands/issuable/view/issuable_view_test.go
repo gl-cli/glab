@@ -1,0 +1,267 @@
+package view
+
+import (
+	"bytes"
+	"fmt"
+	"os/exec"
+	"regexp"
+	"strings"
+	"testing"
+	"time"
+
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+
+	"github.com/acarl005/stripansi"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/issuable"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/run"
+	mainTest "gitlab.com/gitlab-org/cli/test"
+)
+
+var (
+	stubFactory *cmdutils.Factory
+	stdout      *bytes.Buffer
+	stderr      *bytes.Buffer
+)
+
+type issuableData struct {
+	title       string
+	description string
+	issueType   issuable.IssueType
+	labels      gitlab.Labels
+}
+
+var testIssuables = map[int]issuableData{
+	13: {
+		title:       "Incident title",
+		description: "Incident body",
+		issueType:   issuable.TypeIncident,
+		labels:      gitlab.Labels{"test", "incident"},
+	},
+	14: {
+		title:       "Issue title",
+		description: "Issue body",
+		issueType:   issuable.TypeIssue,
+		labels:      gitlab.Labels{"test", "bug"},
+	},
+	225: {
+		title:       "Incident title",
+		description: "Incident body",
+		issueType:   issuable.TypeIncident,
+		labels:      gitlab.Labels{"test", "incident"},
+	},
+}
+
+func TestMain(m *testing.M) {
+	defer config.StubConfig(`---
+hosts:
+  gitlab.com:
+    username: monalisa
+    token: OTOKEN
+`, "")()
+
+	var io *iostreams.IOStreams
+	io, _, stdout, stderr = iostreams.Test()
+	stubFactory, _ = cmdtest.StubFactoryWithConfig("")
+	stubFactory.IO = io
+	stubFactory.IO.IsaTTY = true
+	stubFactory.IO.IsErrTTY = true
+
+	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
+	api.GetIssue = func(client *gitlab.Client, projectID interface{}, issueID int) (*gitlab.Issue, error) {
+		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
+			return nil, fmt.Errorf("error expected")
+		}
+		repo, err := stubFactory.BaseRepo()
+		if err != nil {
+			return nil, err
+		}
+
+		testIssuable := testIssuables[issueID]
+		issueType := string(testIssuable.issueType)
+
+		return &gitlab.Issue{
+			ID:          issueID,
+			IID:         issueID,
+			Title:       testIssuable.title,
+			Labels:      testIssuable.labels,
+			State:       "opened",
+			Description: testIssuable.description,
+			References: &gitlab.IssueReferences{
+				Full: fmt.Sprintf("%s#%d", repo.FullName(), issueID),
+			},
+			Milestone: &gitlab.Milestone{
+				Title: "MilestoneTitle",
+			},
+			Assignees: []*gitlab.IssueAssignee{
+				{
+					Username: "mona",
+				},
+				{
+					Username: "lisa",
+				},
+			},
+			Author: &gitlab.IssueAuthor{
+				ID:       issueID,
+				Name:     "John Dev Wick",
+				Username: "jdwick",
+			},
+			WebURL:         fmt.Sprintf("https://%s/%s/-/issues/%d", repo.RepoHost(), repo.FullName(), issueID),
+			CreatedAt:      &timer,
+			UserNotesCount: 2,
+			IssueType:      &issueType,
+		}, nil
+	}
+	cmdtest.InitTest(m, "mr_view_test")
+}
+
+func TestNewCmdView_web_numberArg(t *testing.T) {
+	cmd := NewCmdView(stubFactory, issuable.TypeIncident)
+	cmdutils.EnableRepoOverride(cmd, stubFactory)
+
+	var seenCmd *exec.Cmd
+	restoreCmd := run.SetPrepareCmd(func(cmd *exec.Cmd) run.Runnable {
+		seenCmd = cmd
+		return &mainTest.OutputStub{}
+	})
+	defer restoreCmd()
+
+	_, err := cmdtest.RunCommand(cmd, "225 -w -R glab-cli/test")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Contains(t, stderr.String(), "Opening gitlab.com/glab-cli/test/-/issues/225 in your browser.")
+	assert.Equal(t, "", stdout.String())
+
+	if seenCmd == nil {
+		t.Log("expected a command to run")
+	}
+	stdout.Reset()
+	stderr.Reset()
+}
+
+func TestNewCmdView(t *testing.T) {
+	tests := []struct {
+		name          string
+		issueID       int
+		viewIssueType issuable.IssueType
+		isTTY         bool
+	}{
+		{"incident_view", 13, issuable.TypeIncident, true},
+		{"issue_view", 14, issuable.TypeIssue, true},
+		{"incident_view_no_tty", 13, issuable.TypeIncident, false},
+		{"issue_view_no_tty", 14, issuable.TypeIssue, false},
+		{"incident_view_with_issue_id", 14, issuable.TypeIncident, true},
+		{"issue_view_view_with_incident_id", 13, issuable.TypeIssue, true},
+		{"incident_view_with_issue_id_no_tty", 14, issuable.TypeIncident, false},
+		{"issue_view_view_with_incident_id_no_tty", 13, issuable.TypeIssue, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testIssuable := testIssuables[tt.issueID]
+			oldListIssueNotes := api.ListIssueNotes
+			timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
+			api.ListIssueNotes = func(client *gitlab.Client, projectID interface{}, issueID int, opts *gitlab.ListIssueNotesOptions) ([]*gitlab.Note, error) {
+				if projectID == "PROJECT_MR_WITH_EMPTY_NOTE" {
+					return []*gitlab.Note{}, nil
+				}
+				return []*gitlab.Note{
+					{
+						ID:    1,
+						Body:  "Note Body",
+						Title: "Note Title",
+						Author: cmdtest.Author{
+							ID:       1,
+							Username: "johnwick",
+							Name:     "John Wick",
+						},
+						System:     false,
+						CreatedAt:  &timer,
+						NoteableID: 0,
+					},
+					{
+						ID:    1,
+						Body:  fmt.Sprintf("Marked %s as stale", testIssuable.issueType),
+						Title: "",
+						Author: cmdtest.Author{
+							ID:       1,
+							Username: "johnwick",
+							Name:     "John Wick",
+						},
+						System:     true,
+						CreatedAt:  &timer,
+						NoteableID: 0,
+					},
+				}, nil
+			}
+
+			stubFactory.IO.IsaTTY = tt.isTTY
+			stubFactory.IO.IsErrTTY = tt.isTTY
+			cmd := NewCmdView(stubFactory, tt.viewIssueType)
+			cmdutils.EnableRepoOverride(cmd, stubFactory)
+			_, err := cmdtest.RunCommand(cmd, fmt.Sprintf("%d -c -s -R glab-cli/test", tt.issueID))
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			out := stripansi.Strip(stdout.String())
+			outErr := stripansi.Strip(stderr.String())
+			stdout.Reset()
+			stderr.Reset()
+
+			viewIncidentWithIssueID := tt.viewIssueType == issuable.TypeIncident && testIssuable.issueType != issuable.TypeIncident
+			wantErrorMsg := "Incident not found, but an issue with the provided ID exists. Run `glab issue view <id>` to view it.\n"
+
+			if tt.isTTY {
+				if viewIncidentWithIssueID {
+					require.Equal(t, wantErrorMsg, outErr)
+				} else {
+					require.Equal(t, "", outErr)
+					require.Contains(t, out, fmt.Sprintf("%s #%d", testIssuable.title, tt.issueID))
+					require.Contains(t, out, testIssuable.description)
+					assert.Contains(t, out, fmt.Sprintf("https://gitlab.com/glab-cli/test/-/issues/%d", tt.issueID))
+					assert.Contains(t, out, fmt.Sprintf("johnwick Marked %s as stale", testIssuable.issueType))
+				}
+			} else {
+				if viewIncidentWithIssueID {
+					cmdtest.Eq(t, outErr, wantErrorMsg)
+				} else {
+					expectedOutputs := []string{
+						fmt.Sprintf(`title:\t%s`, testIssuable.title),
+						`assignees:\tmona, lisa`,
+						`author:\tjdwick`,
+						`state:\topen`,
+						`comments:\t2`,
+						fmt.Sprintf(`labels:\t%s`, strings.Join([]string(testIssuable.labels), ", ")),
+						`milestone:\tMilestoneTitle\n`,
+						`--`,
+						testIssuable.description,
+					}
+
+					cmdtest.Eq(t, outErr, "")
+					t.Helper()
+					var r *regexp.Regexp
+					for _, l := range expectedOutputs {
+						r = regexp.MustCompile(l)
+						if !r.MatchString(out) {
+							t.Errorf("output did not match regexp /%s/\n> output\n%s\n", r, out)
+							return
+						}
+					}
+				}
+			}
+
+			api.ListIssueNotes = oldListIssueNotes
+		})
+	}
+}
