@@ -123,7 +123,11 @@ run_tests:
     # `goreleaser` also uses GITLAB_TOKEN and so we need to distinguish between
     # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token
     - GITLAB_TOKEN=$GITLAB_TOKEN_TEST make test
-  coverage: '/coverage: \d+.\d+% of statements/'
+  after_script:
+    - echo -e "\e[0Ksection_start:`date +%s`:coverage[collapsed=true]\r\e[0KRunning coverage report"
+    - make coverage
+    - echo -e "\e[0Ksection_end:`date +%s`:coverage\r\e[0K"
+  coverage: /^total:\t+\(statements\)\t+\d+\.\d+%$/
   artifacts:
     reports:
       junit: coverage.xml
