@@ -146,6 +146,10 @@ bin/golangci-lint-${GOLANGCI_VERSION}:
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b ./bin/ v${GOLANGCI_VERSION}
 	@mv bin/golangci-lint $@
 
+.PHONY: coverage
+coverage: ## Run coverage report
+	go tool cover -func coverage.txt
+
 .PHONY: lint
 lint: bin/golangci-lint ## Run linter
 	$(GOLINT) run
