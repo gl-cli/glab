@@ -172,16 +172,10 @@ var GetPipeline = func(client *gitlab.Client, pid int, l *gitlab.RequestOptionFu
 	return pipe, nil
 }
 
-var GetPipelineVariables = func(client *gitlab.Client, pid int, l *gitlab.RequestOptionFunc, repo interface{}) ([]*gitlab.PipelineVariable, error) {
+var GetPipelineVariables = func(client *gitlab.Client, pid int, l *gitlab.RequestOptionFunc, projectID int) ([]*gitlab.PipelineVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
-
-	pipe, _, err := client.Pipelines.GetPipeline(repo, pid)
-	if err != nil {
-		return nil, err
-	}
-	projectID := pipe.ProjectID
 
 	pipelineVars, _, err := client.Pipelines.GetPipelineVariables(projectID, pid)
 	if err != nil {
