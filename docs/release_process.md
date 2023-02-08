@@ -17,11 +17,14 @@ are available in CLI 1Password Vault in the **Maintainers of Community packages*
 
 ### Homebrew
 
+Homebrew releases were [automated by the CI build](https://gitlab.com/gitlab-org/cli/-/merge_requests/1137) in 15.9.
+These manual instructions are provided if the automation fails.
+
 Prerequisites:
 
 - An account on GitHub. (Any account is fine.)
 
-To update the version available through Homebrew:
+To manually update the version available through Homebrew:
 
 1. Generate a new token with the `repo`, `workflow`, and `gist` scopes  [using this link](https://github.com/settings/tokens/new?scopes=gist,repo,workflow&description=Homebrew). If you have an existing token with the correct scope, you can use it instead.
 1. On the [**Releases** page for this project](https://gitlab.com/gitlab-org/cli/-/releases), identify the release version you want to publish.
