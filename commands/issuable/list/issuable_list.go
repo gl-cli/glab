@@ -59,14 +59,9 @@ type ListOptions struct {
 }
 
 func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueType issuable.IssueType) *cobra.Command {
-	var incident bool
-
-	if issueType == issuable.TypeIncident {
-		incident = true
-	}
-
 	opts := &ListOptions{
-		IO: f.IO,
+		IO:        f.IO,
+		IssueType: string(issueType),
 	}
 
 	issueListCmd := &cobra.Command{
@@ -145,9 +140,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueTy
 	issueListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
 	issueListCmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
 
-	if incident {
-		opts.IssueType = string(issueType)
-	} else {
+	if issueType == issuable.TypeIssue {
 		issueListCmd.Flags().StringVarP(&opts.IssueType, "issue-type", "t", "", "Filter issue by its type {issue|incident|test_case}")
 	}
 
