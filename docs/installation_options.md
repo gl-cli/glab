@@ -20,6 +20,7 @@ are maintained by the community.
   - [Alpine Linux](#alpine-linux)
     - [Install a pinned version from edge](#install-a-pinned-version-from-edge)
     - [Alpine Linux Docker-way](#alpine-linux-docker-way)
+  - [Fedora](#fedora)
   - [Nix/NixOS](#nixnixos)
   - [MPR (Debian/Ubuntu)](#mpr-debianubuntu)
     - [Prebuilt-MPR](#prebuilt-mpr)
@@ -124,6 +125,12 @@ FROM alpine:3.13
 RUN echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
 RUN apk add --no-cache glab@edge
 ```
+
+### Fedora
+
+Fedora users can find `glab` as `glab` in the official repositories.
+
+Install it with the command `dnf install glab`.
 
 ### Nix/NixOS
 
