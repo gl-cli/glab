@@ -58,11 +58,7 @@ type ListOptions struct {
 	HTTPClient func() (*gitlab.Client, error)
 }
 
-func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.Command {
-	return NewCmdListByType(f, runE, issuable.TypeIssue)
-}
-
-func NewCmdListByType(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueType issuable.IssueType) *cobra.Command {
+func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueType issuable.IssueType) *cobra.Command {
 	var incident bool
 
 	if issueType == issuable.TypeIncident {

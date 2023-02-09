@@ -4,9 +4,9 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/issuable"
-	issueListCmd "gitlab.com/gitlab-org/cli/commands/issue/list"
+	issuableListCmd "gitlab.com/gitlab-org/cli/commands/issuable/list"
 )
 
-func NewCmdList(f *cmdutils.Factory, runE func(opts *issueListCmd.ListOptions) error) *cobra.Command {
-	return issueListCmd.NewCmdListByType(f, runE, issuable.TypeIncident)
+func NewCmdList(f *cmdutils.Factory, runE func(opts *issuableListCmd.ListOptions) error) *cobra.Command {
+	return issuableListCmd.NewCmdList(f, runE, issuable.TypeIncident)
 }

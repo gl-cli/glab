@@ -10,6 +10,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/commands/issuable"
 
 	"github.com/MakeNowJust/heredoc"
 
@@ -30,7 +31,7 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *Li
 	// TODO: shouldn't be there but the stub doesn't work without it
 	_, _ = factory.HttpClient()
 
-	cmd := NewCmdList(factory, runE)
+	cmd := NewCmdList(factory, runE, issuable.TypeIssue)
 
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
@@ -65,7 +66,7 @@ func TestNewCmdList(t *testing.T) {
 		err := NewCmdList(factory, func(opts *ListOptions) error {
 			gotOpts = opts
 			return nil
-		}).Execute()
+		}, issuable.TypeIssue).Execute()
 
 		assert.Nil(t, err)
 		assert.Equal(t, factory.IO, gotOpts.IO)
@@ -81,7 +82,7 @@ func TestIssueList_tty(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/issueList.json"))
+		httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
 
 	output, err := runCommand(fakeHTTP, true, "", nil, "")
 	if err != nil {
@@ -107,7 +108,7 @@ func TestIssueList_ids(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/issueList.json"))
+		httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
 
 	output, err := runCommand(fakeHTTP, true, "-F ids", nil, "")
 	if err != nil {
@@ -125,7 +126,7 @@ func TestIssueList_urls(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/issueList.json"))
+		httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
 
 	output, err := runCommand(fakeHTTP, true, "-F urls", nil, "")
 	if err != nil {
@@ -289,7 +290,7 @@ func TestIssueList_hyperlinks(t *testing.T) {
 			defer fakeHTTP.Verify(t)
 
 			fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-				httpmock.NewFileResponse(200, "./fixtures/issueList.json"))
+				httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
 
 			doHyperlinks := "never"
 			if test.forceHyperlinksEnv == "1" {

@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	issueListCmd "gitlab.com/gitlab-org/cli/commands/issue/list"
+	issuableListCmd "gitlab.com/gitlab-org/cli/commands/issuable/list"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -19,7 +19,7 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *issueListCmd.ListOptions) error, doHyperlinks string) (*test.CmdOut, error) {
+func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *issuableListCmd.ListOptions) error, doHyperlinks string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, doHyperlinks)
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -57,8 +57,8 @@ func TestNewCmdList(t *testing.T) {
 		},
 	}
 	t.Run("Incident_NewCmdList", func(t *testing.T) {
-		gotOpts := &issueListCmd.ListOptions{}
-		err := NewCmdList(factory, func(opts *issueListCmd.ListOptions) error {
+		gotOpts := &issuableListCmd.ListOptions{}
+		err := NewCmdList(factory, func(opts *issuableListCmd.ListOptions) error {
 			gotOpts = opts
 			return nil
 		}).Execute()
