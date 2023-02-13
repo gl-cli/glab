@@ -132,6 +132,22 @@ else
 	$(GOTEST) --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
 endif
 
+.PHONY: test-race
+test-race: SHELL = /bin/bash # set environment variables to ensure consistent test behavior
+test-race: VISUAL=
+test-race: EDITOR=
+test-race: PAGER=
+test-race: export CI_PROJECT_PATH=$(shell git remote get-url origin)
+test-race: export CGO_ENABLED=1
+test-race: bin/gotestsum ## Run tests with race detection
+ifndef GITLAB_TOKEN
+	@echo -e '\033[31mTo run tests, add your GitLab personal access token to GITLAB_TOKEN env variable.\033[0m'
+	@echo -e '\033[31mSee: https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html\033[0m'
+	@exit 1
+else
+	$(GOTEST) -- -race ./...
+endif
+
 
 ifdef HASGOCILINT
 bin/golangci-lint:
