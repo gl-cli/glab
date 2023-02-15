@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 )
 
@@ -23,7 +22,6 @@ type Options struct {
 	FilterMember  bool
 	FilterStarred bool
 
-	BaseRepo   func() (glrepo.Interface, error)
 	HTTPClient func() (*gitlab.Client, error)
 	IO         *iostreams.IOStreams
 }
@@ -41,15 +39,11 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"users"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Support `-R, --repo` override
-			opts.BaseRepo = f.BaseRepo
 			opts.HTTPClient = f.HttpClient
 
 			return runE(opts)
 		},
 	}
-
-	cmdutils.EnableRepoOverride(repoListCmd, f)
 
 	repoListCmd.Flags().StringVarP(&opts.OrderBy, "order", "o", "last_activity_at", "Return repositories ordered by id, created_at, or other fields")
 	repoListCmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Return repositories sorted in asc or desc order")

@@ -27,15 +27,14 @@ glab repo list
 ## Options
 
 ```plaintext
-  -a, --all               List all projects on the instance
-      --member            Only list projects which you are a member
-  -m, --mine              Only list projects you own (default true)
-  -o, --order string      Return repositories ordered by id, created_at, or other fields (default "last_activity_at")
-  -p, --page int          Page number (default 1)
-  -P, --per-page int      Number of items to list per page. (default 30)
-  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
-  -s, --sort string       Return repositories sorted in asc or desc order
-      --starred           Only list starred projects
+  -a, --all            List all projects on the instance
+      --member         Only list projects which you are a member
+  -m, --mine           Only list projects you own (default true)
+  -o, --order string   Return repositories ordered by id, created_at, or other fields (default "last_activity_at")
+  -p, --page int       Page number (default 1)
+  -P, --per-page int   Number of items to list per page. (default 30)
+  -s, --sort string    Return repositories sorted in asc or desc order
+      --starred        Only list starred projects
 ```
 
 ## Options inherited from parent commands
