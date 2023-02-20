@@ -3,6 +3,7 @@ package view
 import (
 	"encoding/base64"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -137,13 +138,20 @@ func runViewProject(opts *ViewOptions) error {
 	}
 
 	if opts.Web {
-		openURL := generateProjectURL(project, opts.Branch)
+		projectURL := project.WebURL
 
 		if opts.IO.IsaTTY {
-			fmt.Fprintf(opts.IO.StdOut, "Opening %s in your browser.\n", utils.DisplayURL(openURL))
+			fmt.Fprintf(
+				opts.IO.StdOut,
+				"Opening %s in your browser.\n",
+				generateProjectOpenURL(utils.DisplayURL(projectURL), project.DefaultBranch, opts.Branch),
+			)
 		}
 
-		return utils.OpenInBrowser(openURL, opts.Browser)
+		return utils.OpenInBrowser(
+			generateProjectOpenURL(projectURL, project.DefaultBranch, opts.Branch),
+			opts.Browser,
+		)
 	} else {
 		if opts.IO.IsaTTY {
 			if err := opts.IO.StartPager(); err != nil {
@@ -189,12 +197,12 @@ func getReadmeFile(opts *ViewOptions, project *gitlab.Project) (*gitlab.File, er
 	return readmeFile, nil
 }
 
-func generateProjectURL(project *gitlab.Project, branch string) string {
-	if branch != "" && project.DefaultBranch != branch {
-		return project.WebURL + "/-/tree/" + branch
+func generateProjectOpenURL(projectWebURL string, defaultBranch string, branch string) string {
+	if branch != "" && defaultBranch != branch {
+		return projectWebURL + "/-/tree/" + url.PathEscape(branch)
 	}
 
-	return project.WebURL
+	return projectWebURL
 }
 
 func printProjectContentTTY(opts *ViewOptions, project *gitlab.Project, readme *gitlab.File) {

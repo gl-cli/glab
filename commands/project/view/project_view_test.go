@@ -2,6 +2,7 @@ package view
 
 import (
 	"net/http"
+	"os/exec"
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
@@ -10,24 +11,34 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-
+	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
+func runCommand(rt http.RoundTripper, isTTY bool, cli string, stub bool) (*test.CmdOut, error, func()) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 
 	factory := cmdtest.InitFactory(ios, rt)
 
 	factory.Branch = func() (string, error) {
-		return "current-branch", nil
+		return "#current-branch", nil
 	}
 
 	_, _ = factory.HttpClient()
 
 	cmd := NewCmdView(factory)
 
-	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
+	var restoreCmd func()
+
+	if stub {
+		restoreCmd = run.SetPrepareCmd(func(cmd *exec.Cmd) run.Runnable {
+			return &test.OutputStub{}
+		})
+	}
+
+	cmdOut, err := cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
+
+	return cmdOut, err, restoreCmd
 }
 
 func TestProjectView(t *testing.T) {
@@ -42,6 +53,8 @@ func TestProjectView(t *testing.T) {
 		name      string
 		cli       string
 		httpMocks []httpMock
+		isTTY     bool
+		stub      bool
 
 		expectedOutput string
 	}{
@@ -69,7 +82,7 @@ func TestProjectView(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO/repository/files/README%2Emd?ref=current-branch",
+					"/api/v4/projects/OWNER/REPO/repository/files/README%2Emd?ref=%23current-branch",
 					http.StatusOK,
 					`{"file_name": "README.md",
 							  "file_path": "README.md",
@@ -221,6 +234,84 @@ func TestProjectView(t *testing.T) {
 
 										`),
 		},
+		{
+			name: "view project branch on web",
+			cli:  "--web",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER/REPO?license=true&statistics=true&with_custom_attributes=true",
+					http.StatusOK,
+					`{
+							  "id": 37777023,
+							  "description": "this is a test description",
+							  "name": "REPO",
+							  "name_with_namespace": "Test User / REPO",
+							  "path": "REPO",
+							  "path_with_namespace": "OWNER/REPO",
+							  "created_at": "2022-07-13T02:04:56.151Z",
+							  "default_branch": "main",
+							  "http_url_to_repo": "https://gitlab.com/OWNER/REPO.git",
+							  "web_url": "https://gitlab.com/OWNER/REPO",
+							  "readme_url": "https://gitlab.com/OWNER/REPO/-/blob/main/README.md"
+							}`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER/REPO/repository/files/README%2Emd?ref=%23current-branch",
+					http.StatusOK,
+					`{"file_name": "README.md",
+							  "file_path": "README.md",
+							  "encoding": "base64",
+							  "ref": "main",
+							  "execute_filemode": false,
+							  "content": "dGVzdCByZWFkbWUK"
+							}`,
+				},
+			},
+			isTTY:          true,
+			stub:           true,
+			expectedOutput: "Opening gitlab.com/OWNER/REPO/-/tree/%23current-branch in your browser.\n",
+		},
+		{
+			name: "view project default branch on web",
+			cli:  "--web",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER/REPO?license=true&statistics=true&with_custom_attributes=true",
+					http.StatusOK,
+					`{
+							  "id": 37777023,
+							  "description": "this is a test description",
+							  "name": "REPO",
+							  "name_with_namespace": "Test User / REPO",
+							  "path": "REPO",
+							  "path_with_namespace": "OWNER/REPO",
+							  "created_at": "2022-07-13T02:04:56.151Z",
+							  "default_branch": "#current-branch",
+							  "http_url_to_repo": "https://gitlab.com/OWNER/REPO.git",
+							  "web_url": "https://gitlab.com/OWNER/REPO",
+							  "readme_url": "https://gitlab.com/OWNER/REPO/-/blob/main/README.md"
+							}`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER/REPO/repository/files/README%2Emd?ref=%23current-branch",
+					http.StatusOK,
+					`{"file_name": "README.md",
+							  "file_path": "README.md",
+							  "encoding": "base64",
+							  "ref": "main",
+							  "execute_filemode": false,
+							  "content": "dGVzdCByZWFkbWUK"
+							}`,
+				},
+			},
+			isTTY:          true,
+			stub:           true,
+			expectedOutput: "Opening gitlab.com/OWNER/REPO in your browser.\n",
+		},
 	}
 
 	for _, tc := range tests {
@@ -234,7 +325,10 @@ func TestProjectView(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err := runCommand(fakeHTTP, false, tc.cli)
+			output, err, restoreCmd := runCommand(fakeHTTP, tc.isTTY, tc.cli, tc.stub)
+			if restoreCmd != nil {
+				defer restoreCmd()
+			}
 
 			if assert.NoErrorf(t, err, "error running command `project view %s`: %v", tc.cli, err) {
 				assert.Equal(t, tc.expectedOutput, output.String())
