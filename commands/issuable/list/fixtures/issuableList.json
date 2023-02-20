@@ -1,0 +1,63 @@
+[
+  {
+    "state": "opened",
+    "description": "a description here",
+    "project_id": 1,
+    "updated_at": "2016-01-04T15:31:51.081Z",
+    "id": 76,
+    "title": "Issue one",
+    "created_at": "2016-01-04T15:31:51.081Z",
+    "iid": 6,
+    "labels": [
+      "foo",
+      "bar"
+    ],
+    "web_url": "http://gitlab.com/OWNER/REPO/issues/6",
+    "references": {
+      "full": "OWNER/REPO/issues/6",
+      "relative": "#6",
+      "short": "#6"
+    }
+  },
+  {
+    "state": "opened",
+    "description": "description two here",
+    "project_id": 1,
+    "updated_at": "2016-01-04T15:31:51.081Z",
+    "id": 77,
+    "title": "Issue two",
+    "created_at": "2016-01-04T15:31:51.081Z",
+    "iid": 7,
+    "labels": [
+      "fooz",
+      "baz"
+    ],
+    "web_url": "http://gitlab.com/OWNER/REPO/issues/7",
+    "references": {
+      "full": "OWNER/REPO/issues/7",
+      "relative": "#7",
+      "short": "#7"
+    }
+  },
+  {
+    "state": "opened",
+    "description": "description incident here",
+    "project_id": 1,
+    "updated_at": "2016-01-04T16:31:51.081Z",
+    "id": 78,
+    "title": "Incident",
+    "created_at": "2016-01-04T16:31:51.081Z",
+    "iid": 8,
+    "labels": [
+      "foo",
+      "baz"
+    ],
+    "web_url": "http://gitlab.com/OWNER/REPO/issues/8",
+    "references": {
+      "full": "OWNER/REPO/issues/8",
+      "relative": "#8",
+      "short": "#8"
+    },
+    "issue_type": "incident"
+  }
+]

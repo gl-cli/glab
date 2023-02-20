@@ -10,6 +10,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/commands/issuable"
 
 	"github.com/MakeNowJust/heredoc"
 
@@ -23,14 +24,19 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *ListOptions) error, doHyperlinks string) (*test.CmdOut, error) {
+func runCommand(command string, rt http.RoundTripper, isTTY bool, cli string, runE func(opts *ListOptions) error, doHyperlinks string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, doHyperlinks)
 	factory := cmdtest.InitFactory(ios, rt)
 
 	// TODO: shouldn't be there but the stub doesn't work without it
 	_, _ = factory.HttpClient()
 
-	cmd := NewCmdList(factory, runE)
+	issueType := issuable.TypeIssue
+	if command == "incident" {
+		issueType = issuable.TypeIncident
+	}
+
+	cmd := NewCmdList(factory, runE, issueType)
 
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
@@ -65,7 +71,7 @@ func TestNewCmdList(t *testing.T) {
 		err := NewCmdList(factory, func(opts *ListOptions) error {
 			gotOpts = opts
 			return nil
-		}).Execute()
+		}, issuable.TypeIssue).Execute()
 
 		assert.Nil(t, err)
 		assert.Equal(t, factory.IO, gotOpts.IO)
@@ -81,9 +87,9 @@ func TestIssueList_tty(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/issueList.json"))
+		httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
 
-	output, err := runCommand(fakeHTTP, true, "", nil, "")
+	output, err := runCommand("issue", fakeHTTP, true, "", nil, "")
 	if err != nil {
 		t.Errorf("error running command `issue list`: %v", err)
 	}
@@ -93,10 +99,11 @@ func TestIssueList_tty(t *testing.T) {
 	out = timeRE.ReplaceAllString(out, "X years")
 
 	assert.Equal(t, heredoc.Doc(`
-		Showing 2 open issues in OWNER/REPO that match your search (Page 1)
+		Showing 3 open issues in OWNER/REPO that match your search (Page 1)
 
 		#6	OWNER/REPO/issues/6	Issue one	(foo, bar) 	about X years ago
 		#7	OWNER/REPO/issues/7	Issue two	(fooz, baz)	about X years ago
+		#8	OWNER/REPO/issues/8	Incident 	(foo, baz) 	about X years ago
 
 	`), out)
 	assert.Equal(t, ``, output.Stderr())
@@ -107,16 +114,16 @@ func TestIssueList_ids(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/issueList.json"))
+		httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
 
-	output, err := runCommand(fakeHTTP, true, "-F ids", nil, "")
+	output, err := runCommand("issue", fakeHTTP, true, "-F ids", nil, "")
 	if err != nil {
 		t.Errorf("error running command `issue list -F ids`: %v", err)
 	}
 
 	out := output.String()
 
-	assert.Equal(t, "6\n7\n", out)
+	assert.Equal(t, "6\n7\n8\n", out)
 	assert.Equal(t, ``, output.Stderr())
 }
 
@@ -125,9 +132,9 @@ func TestIssueList_urls(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/issueList.json"))
+		httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
 
-	output, err := runCommand(fakeHTTP, true, "-F urls", nil, "")
+	output, err := runCommand("issue", fakeHTTP, true, "-F urls", nil, "")
 	if err != nil {
 		t.Errorf("error running command `issue list -F urls`: %v", err)
 	}
@@ -137,6 +144,7 @@ func TestIssueList_urls(t *testing.T) {
 	assert.Equal(t, heredoc.Doc(`
 		http://gitlab.com/OWNER/REPO/issues/6
 		http://gitlab.com/OWNER/REPO/issues/7
+		http://gitlab.com/OWNER/REPO/issues/8
 	`), out)
 	assert.Equal(t, ``, output.Stderr())
 }
@@ -149,7 +157,7 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
 			httpmock.NewStringResponse(200, `[]`))
 
-		output, err := runCommand(fakeHTTP, true, "--opened -P1 -p100 --confidential -a someuser -l bug -m1", nil, "")
+		output, err := runCommand("issue", fakeHTTP, true, "--opened -P1 -p100 --confidential -a someuser -l bug -m1", nil, "")
 		if err != nil {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
@@ -167,7 +175,7 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 		fakeHTTP.RegisterResponder("GET", "/groups/GROUP/issues",
 			httpmock.NewStringResponse(200, `[]`))
 
-		output, err := runCommand(fakeHTTP, true, "--group GROUP", nil, "")
+		output, err := runCommand("issue", fakeHTTP, true, "--group GROUP", nil, "")
 		if err != nil {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
@@ -185,9 +193,9 @@ func TestIssueList_tty_withIssueType(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "../../incident/list/fixtures/incidentList.json"))
+		httpmock.NewFileResponse(200, "./fixtures/incidentList.json"))
 
-	output, err := runCommand(fakeHTTP, true, "--issue-type=incident", nil, "")
+	output, err := runCommand("issue", fakeHTTP, true, "--issue-type=incident", nil, "")
 	if err != nil {
 		t.Errorf("error running command `issue list`: %v", err)
 	}
@@ -205,6 +213,21 @@ func TestIssueList_tty_withIssueType(t *testing.T) {
 	assert.Equal(t, ``, output.Stderr())
 }
 
+func TestIncidentList_tty_withIssueType(t *testing.T) {
+	fakeHTTP := httpmock.New()
+
+	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
+		httpmock.NewFileResponse(200, "./fixtures/incidentList.json"))
+
+	output, err := runCommand("incident", fakeHTTP, true, "--issue-type=incident", nil, "")
+	if err == nil {
+		t.Error("expected an `unknown flag: --issue-type` error, but got nothing")
+	}
+
+	assert.Equal(t, ``, output.String())
+	assert.Equal(t, ``, output.Stderr())
+}
+
 func TestIssueList_tty_mine(t *testing.T) {
 	t.Run("mine with all flag and user exists", func(t *testing.T) {
 		fakeHTTP := httpmock.New()
@@ -216,7 +239,7 @@ func TestIssueList_tty_mine(t *testing.T) {
 		fakeHTTP.RegisterResponder("GET", "/user",
 			httpmock.NewStringResponse(200, `{"username": "john_smith"}`))
 
-		output, err := runCommand(fakeHTTP, true, "--mine -A", nil, "")
+		output, err := runCommand("issue", fakeHTTP, true, "--mine -A", nil, "")
 		if err != nil {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
@@ -234,7 +257,7 @@ func TestIssueList_tty_mine(t *testing.T) {
 		fakeHTTP.RegisterResponder("GET", "/user",
 			httpmock.NewStringResponse(404, `{message: 404 Not found}`))
 
-		output, err := runCommand(fakeHTTP, true, "--mine -A", nil, "")
+		output, err := runCommand("issue", fakeHTTP, true, "--mine -A", nil, "")
 		assert.NotNil(t, err)
 
 		cmdtest.Eq(t, output.Stderr(), "")
@@ -250,11 +273,13 @@ func TestIssueList_hyperlinks(t *testing.T) {
 	noHyperlinkCells := [][]string{
 		{"#6", "OWNER/REPO/issues/6", "Issue one", "(foo, bar)", "about X years ago"},
 		{"#7", "OWNER/REPO/issues/7", "Issue two", "(fooz, baz)", "about X years ago"},
+		{"#8", "OWNER/REPO/issues/8", "Incident", "(foo, baz)", "about X years ago"},
 	}
 
 	hyperlinkCells := [][]string{
 		{makeHyperlink("#6", "http://gitlab.com/OWNER/REPO/issues/6"), "OWNER/REPO/issues/6", "Issue one", "(foo, bar)", "about X years ago"},
 		{makeHyperlink("#7", "http://gitlab.com/OWNER/REPO/issues/7"), "OWNER/REPO/issues/7", "Issue two", "(fooz, baz)", "about X years ago"},
+		{makeHyperlink("#8", "http://gitlab.com/OWNER/REPO/issues/8"), "OWNER/REPO/issues/8", "Incident", "(foo, baz)", "about X years ago"},
 	}
 
 	type hyperlinkTest struct {
@@ -289,7 +314,7 @@ func TestIssueList_hyperlinks(t *testing.T) {
 			defer fakeHTTP.Verify(t)
 
 			fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-				httpmock.NewFileResponse(200, "./fixtures/issueList.json"))
+				httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
 
 			doHyperlinks := "never"
 			if test.forceHyperlinksEnv == "1" {
@@ -298,7 +323,7 @@ func TestIssueList_hyperlinks(t *testing.T) {
 				doHyperlinks = "auto"
 			}
 
-			output, err := runCommand(fakeHTTP, test.isTTY, "", nil, doHyperlinks)
+			output, err := runCommand("issue", fakeHTTP, test.isTTY, "", nil, doHyperlinks)
 			if err != nil {
 				t.Errorf("error running command `issue list`: %v", err)
 			}
