@@ -112,27 +112,23 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 }
 
 func labelsList(mr *gitlab.MergeRequest) string {
-	var labels string
-	for _, l := range mr.Labels {
-		labels += " " + l + ","
-	}
-	return strings.Trim(labels, ", ")
+	return strings.Join(mr.Labels, ", ")
 }
 
 func assigneesList(mr *gitlab.MergeRequest) string {
-	var assignees string
-	for _, a := range mr.Assignees {
-		assignees += " " + a.Username + ","
-	}
-	return strings.Trim(assignees, ", ")
+	assignees := utils.Map(mr.Assignees, func(a *gitlab.BasicUser) string {
+		return a.Username
+	})
+
+	return strings.Join(assignees, ", ")
 }
 
 func reviewersList(mr *gitlab.MergeRequest) string {
-	var reviewers string
-	for _, a := range mr.Reviewers {
-		reviewers += " " + a.Username + ","
-	}
-	return strings.Trim(reviewers, ", ")
+	reviewers := utils.Map(mr.Reviewers, func(r *gitlab.BasicUser) string {
+		return r.Username
+	})
+
+	return strings.Join(reviewers, ", ")
 }
 
 func mrState(c *iostreams.ColorPalette, mr *gitlab.MergeRequest) (mrState string) {
