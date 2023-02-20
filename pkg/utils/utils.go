@@ -204,3 +204,14 @@ func ByteToHumanReadableFormat(b int) string {
 	return fmt.Sprintf("%.1f%cB",
 		float64(b)/float64(div), "kMGTPE"[exp])
 }
+
+// Map transfers the elements of its first argument using the result of the second fn(e)
+func Map[T1, T2 any](elems []T1, fn func(T1) T2) []T2 {
+	r := make([]T2, len(elems))
+
+	for i, v := range elems {
+		r[i] = fn(v)
+	}
+
+	return r
+}

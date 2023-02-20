@@ -130,19 +130,15 @@ func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 }
 
 func labelsList(opts *ViewOpts) string {
-	var labels string
-	for _, l := range opts.Issue.Labels {
-		labels += " " + l + ","
-	}
-	return strings.Trim(labels, ", ")
+	return strings.Join(opts.Issue.Labels, ", ")
 }
 
 func assigneesList(opts *ViewOpts) string {
-	var assignees string
-	for _, a := range opts.Issue.Assignees {
-		assignees += " " + a.Username + ","
-	}
-	return strings.Trim(assignees, ", ")
+	assignees := utils.Map(opts.Issue.Assignees, func(a *gitlab.IssueAssignee) string {
+		return a.Username
+	})
+
+	return strings.Join(assignees, ", ")
 }
 
 func issueState(opts *ViewOpts, c *iostreams.ColorPalette) (state string) {

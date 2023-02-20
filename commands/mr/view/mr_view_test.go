@@ -222,3 +222,105 @@ func TestMRView(t *testing.T) {
 	})
 	api.ListMRNotes = oldListMrNotes
 }
+
+func Test_labelsList(t *testing.T) {
+	tests := []struct {
+		name string
+		mr   *gitlab.MergeRequest
+		want string
+	}{
+		{
+			"no labels",
+			&gitlab.MergeRequest{Labels: gitlab.Labels{}},
+			"",
+		},
+		{
+			"one label",
+			&gitlab.MergeRequest{Labels: gitlab.Labels{"label1"}},
+			"label1",
+		},
+		{
+			"two labels",
+			&gitlab.MergeRequest{Labels: gitlab.Labels{"label1", "label2"}},
+			"label1, label2",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := labelsList(test.mr)
+
+			if test.want != got {
+				t.Errorf(`want "%s"; got "%s"`, test.want, got)
+			}
+		})
+	}
+}
+
+func Test_assigneesList(t *testing.T) {
+	tests := []struct {
+		name string
+		mr   *gitlab.MergeRequest
+		want string
+	}{
+		{
+			"no assignee",
+			&gitlab.MergeRequest{Assignees: []*gitlab.BasicUser{}},
+			"",
+		},
+		{
+			"one assignee",
+			&gitlab.MergeRequest{Assignees: []*gitlab.BasicUser{{Username: "Alice"}}},
+			"Alice",
+		},
+		{
+			"two assignees",
+			&gitlab.MergeRequest{Assignees: []*gitlab.BasicUser{{Username: "Alice"}, {Username: "Bob"}}},
+			"Alice, Bob",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := assigneesList(test.mr)
+
+			if test.want != got {
+				t.Errorf(`want "%s"; got "%s"`, test.want, got)
+			}
+		})
+	}
+}
+
+func Test_reviewersList(t *testing.T) {
+	tests := []struct {
+		name string
+		mr   *gitlab.MergeRequest
+		want string
+	}{
+		{
+			"no assignee",
+			&gitlab.MergeRequest{Reviewers: []*gitlab.BasicUser{}},
+			"",
+		},
+		{
+			"one assignee",
+			&gitlab.MergeRequest{Reviewers: []*gitlab.BasicUser{{Username: "Alice"}}},
+			"Alice",
+		},
+		{
+			"two assignees",
+			&gitlab.MergeRequest{Reviewers: []*gitlab.BasicUser{{Username: "Alice"}, {Username: "Bob"}}},
+			"Alice, Bob",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := reviewersList(test.mr)
+
+			if test.want != got {
+				t.Errorf(`want "%s"; got "%s"`, test.want, got)
+			}
+		})
+	}
+}

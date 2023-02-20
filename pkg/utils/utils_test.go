@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
@@ -137,6 +138,50 @@ func Test_CommonElementsInStringSlice(t *testing.T) {
 				if got[i] != tC.want[i] {
 					t.Errorf("CommonElementsInStringSlice() got = %s, want = %s", got[i], tC.want[i])
 				}
+			}
+		})
+	}
+}
+
+func Test_Map(t *testing.T) {
+	type SomeType struct {
+		name string
+	}
+
+	type Tests[T1, T2 any] struct {
+		name  string
+		slice []T1
+		fn    func(T1) T2
+		want  []T2
+	}
+
+	tests := []Tests[any, any]{
+		{
+			"list of strings",
+			[]any{"foo", "bar", "baz"},
+			func(e any) any { return e },
+			[]any{"foo", "bar", "baz"},
+		},
+		{
+			"list of structs",
+			[]any{SomeType{"foo"}, SomeType{"bar"}, SomeType{"baz"}},
+			func(e any) any { return e.(SomeType).name },
+			[]any{"foo", "bar", "baz"},
+		},
+		{
+			"no elements",
+			[]any{},
+			func(e any) any { return e },
+			[]any{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Map(tt.slice, tt.fn)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf(`want %v; but got %v`, tt.want, got)
 			}
 		})
 	}

@@ -265,3 +265,71 @@ func TestNewCmdView(t *testing.T) {
 		})
 	}
 }
+
+func Test_labelsList(t *testing.T) {
+	tests := []struct {
+		name string
+		opts *ViewOpts
+		want string
+	}{
+		{
+			"no labels",
+			&ViewOpts{Issue: &gitlab.Issue{Labels: gitlab.Labels{}}},
+			"",
+		},
+		{
+			"one label",
+			&ViewOpts{Issue: &gitlab.Issue{Labels: gitlab.Labels{"label1"}}},
+			"label1",
+		},
+		{
+			"two labels",
+			&ViewOpts{Issue: &gitlab.Issue{Labels: gitlab.Labels{"label1", "label2"}}},
+			"label1, label2",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := labelsList(test.opts)
+
+			if test.want != got {
+				t.Errorf(`want "%s"; got "%s"`, test.want, got)
+			}
+		})
+	}
+}
+
+func Test_assigneesList(t *testing.T) {
+	tests := []struct {
+		name string
+		opts *ViewOpts
+		want string
+	}{
+		{
+			"no assignee",
+			&ViewOpts{Issue: &gitlab.Issue{Assignees: []*gitlab.IssueAssignee{}}},
+			"",
+		},
+		{
+			"one assignee",
+			&ViewOpts{Issue: &gitlab.Issue{Assignees: []*gitlab.IssueAssignee{{Username: "Alice"}}}},
+			"Alice",
+		},
+		{
+			"two assignees",
+			&ViewOpts{Issue: &gitlab.Issue{Assignees: []*gitlab.IssueAssignee{{Username: "Alice"}, {Username: "Bob"}}}},
+			"Alice, Bob",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := assigneesList(test.opts)
+
+			if test.want != got {
+				t.Errorf(`want "%s"; got "%s"`, test.want, got)
+			}
+		})
+	}
+}
