@@ -2,6 +2,7 @@ package schedule
 
 import (
 	scheduleListCmd "gitlab.com/gitlab-org/cli/commands/schedule/list"
+	scheduleRunCmd "gitlab.com/gitlab-org/cli/commands/schedule/run"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
@@ -19,6 +20,7 @@ func NewCmdSchedule(f *cmdutils.Factory) *cobra.Command {
 	cmdutils.EnableRepoOverride(scheduleCmd, f)
 
 	scheduleCmd.AddCommand(scheduleListCmd.NewCmdList(f))
+	scheduleCmd.AddCommand(scheduleRunCmd.NewCmdRun(f))
 
 	return scheduleCmd
 }
