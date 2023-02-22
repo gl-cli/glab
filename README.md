@@ -40,7 +40,32 @@ To get started with `glab`:
    - Set any needed global, per-project, or per-host [configuration](#configuration).
    - Set any needed [environment variables](#environment-variables).
 
-You're ready! Run `glab --help` to view a list of core commands. Commands follow this pattern:
+You're ready!
+
+### Core commands
+
+Run `glab --help` to view a list of core commands in your terminal.
+
+- [`glab alias`](docs/source/alias)
+- [`glab api`](docs/source/api)
+- [`glab auth`](docs/source/auth)
+- [`glab check-update`](docs/source/check-update)
+- [`glab ci`](docs/source/ci)
+- [`glab completion`](docs/source/completion)
+- [`glab config`](docs/source/config)
+- [`glab incident`](docs/source/incident)
+- [`glab issue`](docs/source/ci)
+- [`glab label`](docs/source/label)
+- [`glab mr`](docs/source/mr)
+- [`glab release`](docs/source/release)
+- [`glab repo`](docs/source/repo)
+- [`glab schedule`](docs/source/schedule)
+- [`glab snippet`](docs/source/snippet)
+- [`glab ssh-key`](docs/source/ssh-key)
+- [`glab user`](docs/source/user)
+- [`glab variable`](docs/source/variable)
+
+Commands follow this pattern:
 
 ```shell
 glab <command> <subcommand> [flags]
