@@ -1,7 +1,8 @@
 ---
 stage: Create
 group: Code Review
-info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://about.gitlab.com/handbook/product/ux/technical-writing/#assignments
+info: To determine the technical writer assigned to the Stage/Group associated with
+this page, see https://about.gitlab.com/handbook/product/ux/technical-writing/#assignments
 ---
 
 # Other options to install the GitLab CLI
@@ -34,6 +35,8 @@ are maintained by the community.
 - [MacPorts](https://ports.macports.org/port/glab/summary):
   - Install with: `sudo port install glab`
   - Update with: `sudo port selfupdate && sudo port upgrade glab`
+- [ASDF tool version manager](https://asdf-vm.com/guide/introduction.html):
+  - Install with: `asdf plugin add glab; asdf install glab latest; asdf global glab latest`
 - Install into `usr/bin` with a shell script:
   `curl -s "https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh" | sudo sh`
 
@@ -50,6 +53,9 @@ are maintained by the community.
 - [scoop](https://scoop.sh)
   - Install with: `scoop install glab`
   - Update with: `scoop update glab`
+- [ASDF tool version manager](https://asdf-vm.com/guide/introduction.html):
+  - Requires [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install).
+  - Install with: `asdf plugin add glab; asdf install glab latest; asdf global glab latest`
 - Download an EXE installer or the `glab.exe` binary from the [releases page](https://gitlab.com/gitlab-org/cli/-/releases)
 
 ## Linux
@@ -62,6 +68,14 @@ Installing from Homebrew is the officially supported installation method for Lin
 
 - Install with: `brew install glab`
 - Update with: `brew upgrade glab`
+
+### ASDF
+
+To install with the [ASDF tool version manager](https://asdf-vm.com/guide/introduction.html), run these commands:
+
+```shell
+asdf plugin add glab; asdf install glab latest; asdf global glab latest
+```
 
 ### Snapcraft
 
