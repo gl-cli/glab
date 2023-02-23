@@ -93,7 +93,7 @@ Other installation methods depend on your operating system.
 
 ### Homebrew
 
-Homebrew is the officially supported method for macOS, Linux, and Windows (through [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install))
+Homebrew is the officially supported package manager for macOS, Linux, and Windows (through [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install))
 
 - Homebrew
   - Install with: `brew install glab`
