@@ -119,7 +119,9 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if !opts.BaseProject.IssuesEnabled {
-				fmt.Fprintf(opts.IO.StdErr, "Issues are disabled for %q\n", opts.BaseProject.PathWithNamespace)
+				fmt.Fprintf(opts.IO.StdErr, "Issues are disabled for project %q or require project membership. ", opts.BaseProject.PathWithNamespace)
+				fmt.Fprintf(opts.IO.StdErr, "Please ensure issues are enabled for the %q project, and if required, you are a member of the project.\n",
+					opts.BaseProject.PathWithNamespace)
 				return cmdutils.SilentError
 			}
 
