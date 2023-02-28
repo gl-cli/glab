@@ -43,19 +43,24 @@ glab mr merge
 
 ## Core commands
 
-- `glab alias`
-- `glab api`
-- `glab auth`
-- `glab ci`
-- `glab issue`
-- `glab label`
-- `glab mr`
-- `glab project`
-- `glab release`
-- `glab snippet`
-- `glab ssh-key`
-- `glab user`
-- `glab variable`
+- [`glab alias`](alias)
+- [`glab api`](api)
+- [`glab auth`](auth)
+- [`glab check-update`](check-update)
+- [`glab ci`](ci)
+- [`glab completion`](completion)
+- [`glab config`](config)
+- [`glab incident`](incident)
+- [`glab issue`](ci)
+- [`glab label`](label)
+- [`glab mr`](mr)
+- [`glab release`](release)
+- [`glab repo`](repo)
+- [`glab schedule`](schedule)
+- [`glab snippet`](snippet)
+- [`glab ssh-key`](ssh-key)
+- [`glab user`](user)
+- [`glab variable`](variable)
 
 ## Install the CLI
 
