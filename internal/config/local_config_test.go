@@ -19,12 +19,6 @@ func Test_LocalConfigFile(t *testing.T) {
 		assert.Equal(t, expectedPath, got)
 	})
 
-	t.Run("old config file", func(t *testing.T) {
-		expectedPath := filepath.Join(".glab-cli", "config", "config.yml")
-		got := OldLocalConfigFile()
-		assert.Equal(t, expectedPath, got)
-	})
-
 	t.Run("modified-LocalConfigDir()", func(t *testing.T) {
 		expectedPath := filepath.Join(".config", "glab-cli", "config.yml")
 
