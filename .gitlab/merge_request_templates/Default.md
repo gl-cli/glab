@@ -2,7 +2,7 @@
 <!--- Describe your changes in detail -->
 
 ## Related Issues
-<!--- This project only accepts pull requests related to open issues -->
+<!--- This project only accepts merge requests related to open issues -->
 <!--- If suggesting a new feature or change, please discuss it in an issue first -->
 <!--- If fixing a bug, there should be an issue describing it with steps to reproduce -->
 Resolves #[issue_number]
@@ -21,5 +21,6 @@ Resolves #[issue_number]
 - [ ] Breaking change (fix or feature that would cause existing functionality to change)
 - [ ] Documentation
 - [ ] Chore (Related to CI or Packaging to platforms)
+- [ ] Test gap
 
 /label ~"devops::create" ~"group::code review" ~"Category:GitLab CLI" ~"cli"
