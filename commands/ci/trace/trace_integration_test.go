@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/test"
+
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/alecthomas/assert"
@@ -28,7 +30,9 @@ func TestMain(m *testing.M) {
 	cmdtest.InitTest(m, "ci_trace_test")
 }
 
-func TestNewCmdTrace(t *testing.T) {
+func TestNewCmdTrace_Integration(t *testing.T) {
+	glTestHost := test.GetHostOrSkip(t)
+
 	defer config.StubConfig(`---
 git_protocol: https
 hosts:
@@ -38,7 +42,7 @@ hosts:
 
 	var io *iostreams.IOStreams
 	io, _, stdout, _ = iostreams.Test()
-	stubFactory, _ = cmdtest.StubFactoryWithConfig("https://gitlab.com/glab-cli/test.git")
+	stubFactory, _ = cmdtest.StubFactoryWithConfig(glTestHost + "/glab-cli/test.git")
 	stubFactory.IO = io
 	stubFactory.IO.IsaTTY = true
 	stubFactory.IO.IsErrTTY = true
@@ -119,9 +123,11 @@ hosts:
 }
 
 func TestTraceRun(t *testing.T) {
+	glTestHost := test.GetHostOrSkip(t)
+
 	var io *iostreams.IOStreams
 	io, _, stdout, _ = iostreams.Test()
-	stubFactory = cmdtest.StubFactory("https://gitlab.com/glab-cli/test.git")
+	stubFactory = cmdtest.StubFactory(glTestHost + "/glab-cli/test.git")
 	stubFactory.IO = io
 	stubFactory.IO.IsaTTY = true
 	stubFactory.IO.IsErrTTY = true

@@ -3,8 +3,10 @@ package test
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"regexp"
+	"testing"
 
 	"gitlab.com/gitlab-org/cli/internal/run"
 
@@ -101,4 +103,17 @@ func ExpectLines(t T, output string, lines ...string) {
 			return
 		}
 	}
+}
+
+func GetHostOrSkip(t testing.TB) string {
+	t.Helper()
+	glTestHost := os.Getenv("GITLAB_TEST_HOST")
+	if glTestHost == "" || os.Getenv("GITLAB_TOKEN") == "" {
+		if os.Getenv("CI") == "true" {
+			t.Log("Expected GITLAB_TEST_HOST and GITLAB_TOKEN to be set in CI. Marking as failed.")
+			t.Fail()
+		}
+		t.Skip("Set GITLAB_TEST_HOST and GITLAB_TOKEN to run this integration test")
+	}
+	return glTestHost
 }

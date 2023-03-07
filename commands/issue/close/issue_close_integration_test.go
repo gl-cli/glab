@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/test"
+
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/acarl005/stripansi"
@@ -16,7 +18,9 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
-func Test_issueClose(t *testing.T) {
+func Test_issueClose_Integration(t *testing.T) {
+	glTestHost := test.GetHostOrSkip(t)
+
 	t.Parallel()
 
 	oldUpdateIssue := api.UpdateIssue
@@ -61,7 +65,7 @@ func Test_issueClose(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			io, _, stdout, stderr := iostreams.Test()
-			f := cmdtest.StubFactory("https://gitlab.com/glab-cli/test")
+			f := cmdtest.StubFactory(glTestHost + "/glab-cli/test")
 			f.IO = io
 			f.IO.IsaTTY = true
 			f.IO.IsErrTTY = true
@@ -80,7 +84,6 @@ func Test_issueClose(t *testing.T) {
 			}
 
 			out := stripansi.Strip(stdout.String())
-			// outErr := stripansi.Strip(stderr.String())
 
 			for _, msg := range tc.ExpectedMsg {
 				assert.Contains(t, out, msg)

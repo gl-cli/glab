@@ -51,11 +51,12 @@ Run the new binary as: `./bin/glab`
 
 Run tests with: `go test ./...` or `make test`.
 
-To run `make test`, the `GITLAB_TOKEN` environment variable must be set.
-`GITLAB_TOKEN` must be a
-[personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
-on [GitLab.com](https://gitlab.com).
+There are some integration tests that perform API requests to a real GitLab instance.
+If environment variables `GITLAB_TEST_HOST` and `GITLAB_TOKEN` are not set, the integration tests will fail in CI or will be skipped locally.
+Integration tests use the `_Integration` test suffix and use the `_integration_test.go` file suffix.
 
+`GITLAB_TOKEN` must be a
+[personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).
 > WARNING: Do not run `make test` outside of an isolated environment, it will overwrite your global config.
 
 ### Submitting a merge request
