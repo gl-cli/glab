@@ -4,6 +4,8 @@ import (
 	"os/exec"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/test"
+
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
@@ -12,7 +14,9 @@ func TestMain(m *testing.M) {
 	cmdtest.InitTest(m, "repo_archive_test")
 }
 
-func Test_repoArchive(t *testing.T) {
+func Test_repoArchive_Integration(t *testing.T) {
+	glTestHost := test.GetHostOrSkip(t)
+	t.Setenv("GITLAB_HOST", glTestHost)
 	repo := cmdtest.CopyTestRepo(t, "repo_archive_test")
 
 	type argFlags struct {

@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/test"
+
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +16,9 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
-func TestNewCmdSubscribe(t *testing.T) {
+func TestNewCmdSubscribe_Integration(t *testing.T) {
+	glTestHost := test.GetHostOrSkip(t)
+
 	t.Parallel()
 
 	oldSubscribeIssue := api.SubscribeToIssue
@@ -59,7 +63,7 @@ func TestNewCmdSubscribe(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			io, _, _, stderr := iostreams.Test()
-			f := cmdtest.StubFactory("https://gitlab.com/glab-cli/test")
+			f := cmdtest.StubFactory(glTestHost + "/glab-cli/test")
 			f.IO = io
 			f.IO.IsaTTY = true
 			f.IO.IsErrTTY = true

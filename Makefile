@@ -114,8 +114,11 @@ TEST_PKGS ?= ./pkg/... ./internal/... ./commands/... ./cmd/...
 .PHONY: test
 # NOTE: some tests require uncustomized environment variables for VISUAL, EDITOR, and PAGER to test
 # certain behaviors related to glab output preferences. Also, the CI_PROJECT_PATH environment variable
-# is set to support forked clones that will have a different origin remote url. Finally, some tests
-# perform actualy API calls and thus require a GitLab personal access token.
+# is set to support forked clones that will have a different origin remote url.
+#
+# Finally, there are some integration tests perform actual API calls and require GITLAB_TOKEN (personal access token)
+# and GITLAB_TEST_HOST (GitLab instance to test) to be set. If either of these are not set the integration tests
+# will be skipped and only the unit tests will be run.
 test: TEST_FORMAT ?= short
 test: SHELL = /bin/bash # set environment variables to ensure consistent test behavior
 test: VISUAL=
@@ -124,13 +127,7 @@ test: PAGER=
 test: export CI_PROJECT_PATH=$(shell git remote get-url origin)
 test: export CGO_ENABLED=1
 test: bin/gotestsum ## Run tests
-ifndef GITLAB_TOKEN
-	@echo -e '\033[31mTo run tests, add your GitLab personal access token to GITLAB_TOKEN env variable.\033[0m'
-	@echo -e '\033[31mSee: https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html\033[0m'
-	@exit 1
-else
 	$(GOTEST) --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
-endif
 
 .PHONY: test-race
 test-race: SHELL = /bin/bash # set environment variables to ensure consistent test behavior
@@ -140,14 +137,7 @@ test-race: PAGER=
 test-race: export CI_PROJECT_PATH=$(shell git remote get-url origin)
 test-race: export CGO_ENABLED=1
 test-race: bin/gotestsum ## Run tests with race detection
-ifndef GITLAB_TOKEN
-	@echo -e '\033[31mTo run tests, add your GitLab personal access token to GITLAB_TOKEN env variable.\033[0m'
-	@echo -e '\033[31mSee: https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html\033[0m'
-	@exit 1
-else
 	$(GOTEST) -- -race ./...
-endif
-
 
 ifdef HASGOCILINT
 bin/golangci-lint:

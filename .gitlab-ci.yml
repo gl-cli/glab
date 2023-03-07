@@ -128,7 +128,8 @@ run_tests:
   script:
     # `goreleaser` also uses GITLAB_TOKEN and so we need to distinguish between
     # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token
-    - GITLAB_TOKEN=$GITLAB_TOKEN_TEST make test
+    # GITLAB_TEST_HOST is the GitLab instance used for the integration tests
+    - GITLAB_TOKEN=$GITLAB_TOKEN_TEST GITLAB_TEST_HOST=$GITLAB_TEST_HOST make test
   after_script:
     - echo -e "\e[0Ksection_start:`date +%s`:coverage[collapsed=true]\r\e[0KRunning coverage report"
     - make coverage

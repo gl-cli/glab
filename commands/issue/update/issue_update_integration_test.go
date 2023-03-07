@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/test"
+
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/google/shlex"
@@ -18,7 +20,9 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
-func TestNewCmdUpdate(t *testing.T) {
+func TestNewCmdUpdate_Integration(t *testing.T) {
+	glTestHost := test.GetHostOrSkip(t)
+
 	t.Parallel()
 
 	oldUpdateIssue := api.UpdateIssue
@@ -92,7 +96,7 @@ func TestNewCmdUpdate(t *testing.T) {
 	}
 
 	ios, _, stdout, stderr := iostreams.Test()
-	f := cmdtest.StubFactory("https://gitlab.com/glab-cli/test")
+	f := cmdtest.StubFactory(glTestHost + "/glab-cli/test")
 	f.IO = ios
 	f.IO.IsaTTY = true
 	f.IO.IsErrTTY = true
