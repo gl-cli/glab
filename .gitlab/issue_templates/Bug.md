@@ -15,7 +15,11 @@ and verify the issue you're about to submit isn't a duplicate.
 
 - [ ] I'm using the latest version of the extension (Run `glab --version`)
   - Extension version: _Put your extension version here_
-- [ ] Operating System and version: __Put your version here_
+- [ ] Operating system and version: _Put your version here_
+- [ ] Gitlab.com or self-managed instance? _gitlab.com/self-managed instance/both_
+- [ ] GitLab version (if self-managed) _GitLab version here_
+  (Use the `version` endpoint, like this: gitlab.my-company.com/api/v4/version) 
+- [ ] I have performed `glab auth status` to check for authentication issues
 
 ### Summary
 

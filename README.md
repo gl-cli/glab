@@ -138,7 +138,9 @@ To authenticate your installation of `glab`:
    - For GitLab SaaS, authenticate against `gitlab.com` by reading the token
      from a file: `glab auth login --stdin < myaccesstoken.txt`
    - For self-managed instances, authenticate by reading from a file:
-     `glab auth login --hostname salsa.debian.org --stdin < myaccesstoken.txt`
+     `glab auth login --hostname gitlab.example.com --stdin < myaccesstoken.txt`. This will allow you to perform
+     authenticated `glab` commands against a self-managed instance when you are in a Git repository with a remote 
+     matching your self-managed instance's host. Alternatively set `GITLAB_HOST` to direct your command to your self-managed instance.  
    - Authenticate with token and hostname: `glab auth login --hostname gitlab.example.org --token xxxxx`
      Not recommended for shared environments.
 
@@ -156,6 +158,29 @@ Configure it globally, locally, or per-host:
 - **Per host**: run `glab config set editor vim --host gitlab.example.org`, changing
   the `--host` parameter to meet your needs.
   - Per-host configuration info is always stored in the global configuration file, with or without the `global` flag.
+
+### Configure `glab` to use your self-managed instance
+
+When outside a Git repository, `glab` uses `gitlab.com` by default. For `glab` to default
+to your self-managed instance when you are not in a Git repository, change the host
+configuration settings. Use this command, changing `gitlab.example.com` to the domain name
+of your instance:
+
+```shell
+glab config set -g host gitlab.example.com
+```
+
+Setting this configuration enables you to perform commands outside a Git repository while
+using your self-managed instance. For example:
+
+- `glab repo clone group/project`
+- `glab issue list -R group/project`
+
+If you don't set a default domain name, you can declare one for the current command with
+the `GITLAB_HOST` environment variable, like this:
+
+- `GITLAB_HOST=gitlab.example.com glab repo clone group/project`
+- `GITLAB_HOST=gitlab.example.com glab issue list -R group/project`
 
 ## Environment variables
 
