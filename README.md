@@ -54,7 +54,7 @@ Run `glab --help` to view a list of core commands in your terminal.
 - [`glab completion`](docs/source/completion)
 - [`glab config`](docs/source/config)
 - [`glab incident`](docs/source/incident)
-- [`glab issue`](docs/source/ci)
+- [`glab issue`](docs/source/issue)
 - [`glab label`](docs/source/label)
 - [`glab mr`](docs/source/mr)
 - [`glab release`](docs/source/release)
