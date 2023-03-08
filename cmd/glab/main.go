@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/mgutz/ansi"
@@ -28,11 +29,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// version is set dynamically at build
-var version = "DEV"
-
-// build is set dynamically at build
-var build string
+var (
+	// version is set dynamically at build
+	version = "DEV"
+	// buildDate is set dynamically at build
+	buildDate string
+	// platform is set dynamically at build
+	platform string
+)
 
 // debug is set dynamically at build and can be overridden by
 // the configuration file or environment variable
@@ -53,6 +57,7 @@ func main() {
 		os.Exit(2)
 	}
 
+	api.SetUserAgent(version, buildDate, platform)
 	maybeOverrideDefaultHost(cmdFactory, cfg)
 
 	if !cmdFactory.IO.ColorEnabled() {
@@ -75,7 +80,7 @@ func main() {
 		}
 	}
 
-	rootCmd := commands.NewCmdRoot(cmdFactory, version, build)
+	rootCmd := commands.NewCmdRoot(cmdFactory, version, buildDate)
 
 	// Set Debug mode
 	debugMode, _ = cfg.Get("", "debug")
