@@ -256,18 +256,6 @@ func TestProjectView(t *testing.T) {
 							  "readme_url": "https://gitlab.com/OWNER/REPO/-/blob/main/README.md"
 							}`,
 				},
-				{
-					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO/repository/files/README%2Emd?ref=%23current-branch",
-					http.StatusOK,
-					`{"file_name": "README.md",
-							  "file_path": "README.md",
-							  "encoding": "base64",
-							  "ref": "main",
-							  "execute_filemode": false,
-							  "content": "dGVzdCByZWFkbWUK"
-							}`,
-				},
 			},
 			isTTY:          true,
 			stub:           true,
@@ -293,18 +281,6 @@ func TestProjectView(t *testing.T) {
 							  "http_url_to_repo": "https://gitlab.com/OWNER/REPO.git",
 							  "web_url": "https://gitlab.com/OWNER/REPO",
 							  "readme_url": "https://gitlab.com/OWNER/REPO/-/blob/main/README.md"
-							}`,
-				},
-				{
-					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO/repository/files/README%2Emd?ref=%23current-branch",
-					http.StatusOK,
-					`{"file_name": "README.md",
-							  "file_path": "README.md",
-							  "encoding": "base64",
-							  "ref": "main",
-							  "execute_filemode": false,
-							  "content": "dGVzdCByZWFkbWUK"
 							}`,
 				},
 			},
