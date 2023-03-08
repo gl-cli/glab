@@ -27,7 +27,11 @@ const (
 	PrivateToken
 )
 
-const UserAgent = "GLab - GitLab CLI"
+type glabInstall struct {
+	version, platform, build string
+}
+
+var currentGlabInstall glabInstall
 
 // Global api client to be used throughout glab
 var apiClient *Client
@@ -54,6 +58,19 @@ type Client struct {
 	isGraphQL          bool
 	allowInsecure      bool
 	refreshLabInstance bool
+}
+
+func (i glabInstall) UserAgent() string {
+	// UserAgent format: glab/v1.25.3-27-g7ec258fb - built 2023-02-16, (darwin)
+	return fmt.Sprintf("glab/%s - built %s, (%s)", i.version, i.build, i.platform)
+}
+
+func SetUserAgent(version string, build string, platform string) {
+	currentGlabInstall = glabInstall{
+		version:  version,
+		build:    build,
+		platform: platform,
+	}
 }
 
 func init() {
@@ -303,7 +320,7 @@ func (c *Client) NewLab() error {
 		if err != nil {
 			return fmt.Errorf("failed to initialize GitLab client: %v", err)
 		}
-		c.LabClient.UserAgent = UserAgent
+		c.LabClient.UserAgent = currentGlabInstall.UserAgent()
 
 		if c.token != "" {
 			c.AuthType = PrivateToken
