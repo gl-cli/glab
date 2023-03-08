@@ -132,11 +132,6 @@ func runViewProject(opts *ViewOptions) error {
 		return cmdutils.WrapError(err, "Failed to retrieve project information")
 	}
 
-	readmeFile, err := getReadmeFile(opts, project)
-	if err != nil {
-		return err
-	}
-
 	if opts.Web {
 		projectURL := project.WebURL
 
@@ -152,17 +147,22 @@ func runViewProject(opts *ViewOptions) error {
 			generateProjectOpenURL(projectURL, project.DefaultBranch, opts.Branch),
 			opts.Browser,
 		)
-	} else {
-		if opts.IO.IsaTTY {
-			if err := opts.IO.StartPager(); err != nil {
-				return err
-			}
-			defer opts.IO.StopPager()
+	}
 
-			printProjectContentTTY(opts, project, readmeFile)
-		} else {
-			printProjectContentRaw(opts, project, readmeFile)
+	readmeFile, err := getReadmeFile(opts, project)
+	if err != nil {
+		return err
+	}
+
+	if opts.IO.IsaTTY {
+		if err := opts.IO.StartPager(); err != nil {
+			return err
 		}
+		defer opts.IO.StopPager()
+
+		printProjectContentTTY(opts, project, readmeFile)
+	} else {
+		printProjectContentRaw(opts, project, readmeFile)
 	}
 
 	return nil
