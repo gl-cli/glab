@@ -83,9 +83,11 @@ func main() {
 
 	rootCmd := commands.NewCmdRoot(cmdFactory, version, buildDate)
 
-	// Set Debug mode
-	debugMode, _ = cfg.Get("", "debug")
-	debug = debugMode == "true" || debugMode == "1"
+	// Set Debug mode from config if not previously set by debugMode
+	if !debug {
+		debugModeCfg, _ := cfg.Get("", "debug")
+		debug = debugModeCfg == "true" || debugModeCfg == "1"
+	}
 
 	if pager, _ := cfg.Get("", "glab_pager"); pager != "" {
 		cmdFactory.IO.SetPager(pager)

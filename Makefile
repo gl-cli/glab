@@ -1,4 +1,5 @@
 OS = $(shell uname | tr A-Z a-z)
+DEBUG ?= false
 export PATH := $(abspath bin/):${PATH}
 
 
@@ -62,7 +63,7 @@ GOLANGCI_VERSION = 1.32.2
 .PHONY: build
 .DEFAULT_GOAL := build
 build:
-	go build -trimpath -ldflags "$(GO_LDFLAGS) -X main.debugMode=false" -o $(BUILDLOC) $(GOURL)/cmd/glab
+	go build -trimpath -ldflags "$(GO_LDFLAGS) -X main.debugMode=$(DEBUG)" -o $(BUILDLOC) $(GOURL)/cmd/glab
 
 clean: ## Clear the working area and the project
 	rm -rf ./bin ./.glab-cli ./test/testdata-* ./coverage.txt coverage-*
@@ -70,11 +71,11 @@ clean: ## Clear the working area and the project
 
 .PHONY: install
 install: ## Install glab in $GOPATH/bin
-	GO111MODULE=on go install -trimpath -ldflags "$(GO_LDFLAGS) -X main.debugMode=false" $(GOURL)/cmd/glab
+	GO111MODULE=on go install -trimpath -ldflags "$(GO_LDFLAGS) -X main.debugMode=$(DEBUG)" $(GOURL)/cmd/glab
 
 .PHONY: run
 run:
-	go run -trimpath -ldflags "$(GO_LDFLAGS) -X main.debugMode=true" ./cmd/glab $(run)
+	go run -trimpath -ldflags "$(GO_LDFLAGS) -X main.debugMode=$(DEBUG)" ./cmd/glab $(run)
 
 .PHONY: rt
 rt: ## Test release without publishing
