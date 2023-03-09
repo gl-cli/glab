@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -57,7 +58,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	api.SetUserAgent(version, buildDate, platform)
+	api.SetUserAgent(version, platform, runtime.GOARCH)
 	maybeOverrideDefaultHost(cmdFactory, cfg)
 
 	if !cmdFactory.IO.ColorEnabled() {

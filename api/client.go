@@ -28,7 +28,7 @@ const (
 )
 
 type glabInstall struct {
-	version, platform, build string
+	version, platform, architecture string
 }
 
 var currentGlabInstall glabInstall
@@ -61,15 +61,14 @@ type Client struct {
 }
 
 func (i glabInstall) UserAgent() string {
-	// UserAgent format: glab/v1.25.3-27-g7ec258fb - built 2023-02-16, (darwin)
-	return fmt.Sprintf("glab/%s - built %s, (%s)", i.version, i.build, i.platform)
+	return fmt.Sprintf("glab/%s (%s, %s)", i.version, i.platform, i.architecture)
 }
 
-func SetUserAgent(version string, build string, platform string) {
+func SetUserAgent(version string, platform string, architecture string) {
 	currentGlabInstall = glabInstall{
-		version:  version,
-		build:    build,
-		platform: platform,
+		version:      version,
+		platform:     platform,
+		architecture: architecture,
 	}
 }
 

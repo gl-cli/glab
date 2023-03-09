@@ -96,14 +96,15 @@ hosts:
     username: monalisa
     token: OTOKEN
 `, "")()
+
 	originalEnvVarToken, envIsSet := os.LookupEnv("GITLAB_TOKEN")
-
-	api.SetUserAgent("v1.2.3", "12-31-1999", "darwin")
-	versionString := "glab/v1.2.3 - built 12-31-1999, (darwin)"
-
 	if envIsSet && originalEnvVarToken != "" {
 		_ = os.Setenv("GITLAB_TOKEN", "")
 	}
+
+	api.SetUserAgent("v1.2.3", "darwin", "arm64")
+	versionString := "glab/v1.2.3 (darwin, arm64)"
+
 	client := &http.Client{}
 	client.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
 		t.Log("Tsti")
