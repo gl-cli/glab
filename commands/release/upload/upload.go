@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
@@ -133,7 +134,7 @@ func uploadRun(opts *UploadOpts) error {
 
 	release, resp, err := client.Releases.GetRelease(repo.FullName(), opts.TagName)
 	if err != nil {
-		if resp != nil && (resp.StatusCode == 404 || resp.StatusCode == 403) {
+		if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
 			return cmdutils.WrapError(err, "release does not exist. Create a new release with `glab release create "+opts.TagName+"`")
 		}
 		return cmdutils.WrapError(err, "failed to fetch release")

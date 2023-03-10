@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -182,10 +183,10 @@ func createRun(opts *CreateOpts) error {
 	if opts.Ref == "" {
 		opts.IO.Log(color.ProgressIcon(), "Validating tag", opts.TagName)
 		tag, resp, err = client.Tags.GetTag(repo.FullName(), opts.TagName)
-		if err != nil && resp != nil && resp.StatusCode != 404 {
+		if err != nil && resp != nil && resp.StatusCode != http.StatusNotFound {
 			return cmdutils.WrapError(err, "could not fetch tag")
 		}
-		if tag == nil && resp != nil && resp.StatusCode == 404 {
+		if tag == nil && resp != nil && resp.StatusCode == http.StatusNotFound {
 			opts.IO.Log(color.DotWarnIcon(), "Tag does not exist.")
 			opts.IO.Log(color.DotWarnIcon(), "No ref was provided. Tag will be created from the latest state of the default branch")
 			project, err := repo.Project(client)
@@ -296,7 +297,7 @@ func createRun(opts *CreateOpts) error {
 		color.Blue("tag"), opts.TagName)
 
 	release, resp, err := client.Releases.GetRelease(repo.FullName(), opts.TagName)
-	if err != nil && (resp == nil || (resp.StatusCode != 403 && resp.StatusCode != 404)) {
+	if err != nil && (resp == nil || (resp.StatusCode != http.StatusForbidden && resp.StatusCode != http.StatusNotFound)) {
 		return releaseFailedErr(err, start)
 	}
 
@@ -315,7 +316,7 @@ func createRun(opts *CreateOpts) error {
 		opts.Name = opts.TagName
 	}
 
-	if (resp.StatusCode == 403 || resp.StatusCode == 404) || release == nil {
+	if (resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusNotFound) || release == nil {
 		createOpts := &gitlab.CreateReleaseOptions{
 			Name:    &opts.Name,
 			TagName: &opts.TagName,

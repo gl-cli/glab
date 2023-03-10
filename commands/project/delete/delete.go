@@ -2,6 +2,7 @@ package delete
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -107,7 +108,7 @@ func deleteRun(opts *DeleteOpts) error {
 		if err != nil && resp == nil {
 			return err
 		}
-		if resp.StatusCode == 401 {
+		if resp.StatusCode == http.StatusUnauthorized {
 			return fmt.Errorf("you are not authorized to delete %s.\nPlease edit your token used for glab and make sure it has `api` and `write_repository` scopes enabled", opts.RepoName)
 		}
 		return err

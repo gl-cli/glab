@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
@@ -122,7 +123,7 @@ func downloadRun(opts *DownloadOpts) error {
 
 		release, resp, err = client.Releases.GetRelease(repo.FullName(), opts.TagName)
 		if err != nil {
-			if resp != nil && (resp.StatusCode == 404 || resp.StatusCode == 403) {
+			if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
 				return cmdutils.WrapError(err, "release does not exist.")
 			}
 			return cmdutils.WrapError(err, "failed to fetch release")
@@ -230,7 +231,7 @@ func downloadAsset(client *api.Client, assetURL, destinationPath string) error {
 
 	baseURL, _ := url.Parse(assetURL)
 
-	req, err := api.NewHTTPRequest(client, "GET", baseURL, body, []string{"Accept:application/octet-stream"}, false)
+	req, err := api.NewHTTPRequest(client, http.MethodGet, baseURL, body, []string{"Accept:application/octet-stream"}, false)
 	if err != nil {
 		return err
 	}

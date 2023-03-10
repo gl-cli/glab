@@ -166,7 +166,7 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 				}
 			}
 
-			if opts.Paginate && !strings.EqualFold(opts.RequestMethod, "GET") && opts.RequestPath != "graphql" {
+			if opts.Paginate && !strings.EqualFold(opts.RequestMethod, http.MethodGet) && opts.RequestPath != "graphql" {
 				return &cmdutils.FlagError{Err: errors.New(`the '--paginate' option is not supported for non-GET requests`)}
 			}
 			if opts.Paginate && opts.RequestInputFile != "" {
@@ -207,7 +207,7 @@ func apiRun(opts *ApiOptions) error {
 	var requestBody interface{} = params
 
 	if !opts.RequestMethodPassed && (len(params) > 0 || opts.RequestInputFile != "") {
-		method = "POST"
+		method = http.MethodPost
 	}
 
 	if opts.Paginate && !isGraphQL {
@@ -291,7 +291,7 @@ func processResponse(resp *http.Response, opts *ApiOptions, headersOutputStream 
 		fmt.Fprint(headersOutputStream, "\r\n")
 	}
 
-	if resp.StatusCode == 204 {
+	if resp.StatusCode == http.StatusNoContent {
 		return
 	}
 	var responseBody io.Reader = resp.Body
@@ -299,7 +299,7 @@ func processResponse(resp *http.Response, opts *ApiOptions, headersOutputStream 
 	isJSON, _ := regexp.MatchString(`[/+]json(;|$)`, resp.Header.Get("Content-Type"))
 
 	var serverError string
-	if isJSON && (opts.RequestPath == "graphql" || resp.StatusCode >= 400) {
+	if isJSON && (opts.RequestPath == "graphql" || resp.StatusCode >= http.StatusBadRequest) {
 		responseBody, serverError, err = parseErrorResponse(responseBody, resp.StatusCode)
 		if err != nil {
 			return
@@ -307,7 +307,7 @@ func processResponse(resp *http.Response, opts *ApiOptions, headersOutputStream 
 	}
 
 	var bodyCopy *bytes.Buffer
-	isGraphQLPaginate := isJSON && resp.StatusCode == 200 && opts.Paginate && opts.RequestPath == "graphql"
+	isGraphQLPaginate := isJSON && resp.StatusCode == http.StatusOK && opts.Paginate && opts.RequestPath == "graphql"
 	if isGraphQLPaginate {
 		bodyCopy = &bytes.Buffer{}
 		responseBody = io.TeeReader(responseBody, bodyCopy)
