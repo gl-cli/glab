@@ -37,7 +37,7 @@ func httpRequest(client *api.Client, config config.Config, hostname string, meth
 	var bodyIsJSON bool
 	switch pp := params.(type) {
 	case map[string]interface{}:
-		if strings.EqualFold(method, "GET") || strings.EqualFold(method, "DELETE") {
+		if strings.EqualFold(method, http.MethodGet) || strings.EqualFold(method, http.MethodDelete) {
 			baseURLStr, err = parseQuery(baseURLStr, pp)
 			if err != nil {
 				return nil, err

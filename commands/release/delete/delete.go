@@ -2,6 +2,7 @@ package delete
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -93,7 +94,7 @@ func deleteRun(opts *DeleteOpts) error {
 
 	release, resp, err := client.Releases.GetRelease(repo.FullName(), opts.TagName)
 	if err != nil {
-		if resp != nil && (resp.StatusCode == 404 || resp.StatusCode == 403) {
+		if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
 			return cmdutils.WrapError(err, fmt.Sprintf("no release found for %q", repo.FullName()))
 		}
 		return cmdutils.WrapError(err, "failed to fetch release")

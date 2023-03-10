@@ -3,6 +3,7 @@ package api
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/xanzy/go-gitlab"
 )
@@ -151,7 +152,7 @@ var SubscribeToIssue = func(client *gitlab.Client, projectID interface{}, issueI
 	if err != nil {
 		if resp != nil {
 			// If the user is already subscribed to the issue, the status code 304 is returned.
-			if resp.StatusCode == 304 {
+			if resp.StatusCode == http.StatusNotModified {
 				return nil, errors.New("you are already subscribed to this issue")
 			}
 		}
@@ -170,7 +171,7 @@ var UnsubscribeFromIssue = func(client *gitlab.Client, projectID interface{}, is
 	if err != nil {
 		if resp != nil {
 			// If the user is not subscribed to the issue, the status code 304 is returned.
-			if resp.StatusCode == 304 {
+			if resp.StatusCode == http.StatusNotModified {
 				return nil, errors.New("you are not subscribed to this issue")
 			}
 		}

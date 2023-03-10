@@ -3,6 +3,7 @@ package merge
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"gitlab.com/gitlab-org/cli/pkg/surveyext"
@@ -198,7 +199,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 					// is not mergeable right after a rebase), but we want to catch
 					// situations where the user rebased via external sources like
 					// the WebUI or running `glab rebase` before trying to merge
-					if resp.StatusCode == 406 {
+					if resp.StatusCode == http.StatusNotAcceptable {
 						return err
 					}
 

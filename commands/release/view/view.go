@@ -3,6 +3,7 @@ package view
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -94,7 +95,7 @@ func viewRun(opts *ViewOpts) error {
 	} else {
 		release, resp, err = client.Releases.GetRelease(repo.FullName(), opts.TagName)
 		if err != nil {
-			if resp != nil && (resp.StatusCode == 404 || resp.StatusCode == 403) {
+			if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
 				return cmdutils.WrapError(err, "release does not exist.")
 			}
 			return cmdutils.WrapError(err, "failed to fetch release")
