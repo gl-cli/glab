@@ -39,7 +39,7 @@ func Test_NewCmdApi(t *testing.T) {
 			cli:  "graphql",
 			wants: ApiOptions{
 				Hostname:            "",
-				RequestMethod:       "GET",
+				RequestMethod:       http.MethodGet,
 				RequestMethodPassed: false,
 				RequestPath:         "graphql",
 				RequestInputFile:    "",
@@ -57,7 +57,7 @@ func Test_NewCmdApi(t *testing.T) {
 			cli:  "projects/octocat%2FSpoon-Knife -XDELETE",
 			wants: ApiOptions{
 				Hostname:            "",
-				RequestMethod:       "DELETE",
+				RequestMethod:       http.MethodDelete,
 				RequestMethodPassed: true,
 				RequestPath:         "projects/octocat%2FSpoon-Knife",
 				RequestInputFile:    "",
@@ -75,7 +75,7 @@ func Test_NewCmdApi(t *testing.T) {
 			cli:  "graphql -f query=QUERY -F body=@file.txt",
 			wants: ApiOptions{
 				Hostname:            "",
-				RequestMethod:       "GET",
+				RequestMethod:       http.MethodGet,
 				RequestMethodPassed: false,
 				RequestPath:         "graphql",
 				RequestInputFile:    "",
@@ -93,7 +93,7 @@ func Test_NewCmdApi(t *testing.T) {
 			cli:  "user -H 'accept: text/plain' -i",
 			wants: ApiOptions{
 				Hostname:            "",
-				RequestMethod:       "GET",
+				RequestMethod:       http.MethodGet,
 				RequestMethodPassed: false,
 				RequestPath:         "user",
 				RequestInputFile:    "",
@@ -111,7 +111,7 @@ func Test_NewCmdApi(t *testing.T) {
 			cli:  "projects/OWNER%2FREPO/issues --paginate",
 			wants: ApiOptions{
 				Hostname:            "",
-				RequestMethod:       "GET",
+				RequestMethod:       http.MethodGet,
 				RequestMethodPassed: false,
 				RequestPath:         "projects/OWNER%2FREPO/issues",
 				RequestInputFile:    "",
@@ -129,7 +129,7 @@ func Test_NewCmdApi(t *testing.T) {
 			cli:  "projects/OWNER%2FREPO/issues --silent",
 			wants: ApiOptions{
 				Hostname:            "",
-				RequestMethod:       "GET",
+				RequestMethod:       http.MethodGet,
 				RequestMethodPassed: false,
 				RequestPath:         "projects/OWNER%2FREPO/issues",
 				RequestInputFile:    "",
@@ -152,7 +152,7 @@ func Test_NewCmdApi(t *testing.T) {
 			cli:  "-XPOST graphql --paginate",
 			wants: ApiOptions{
 				Hostname:            "",
-				RequestMethod:       "POST",
+				RequestMethod:       http.MethodPost,
 				RequestMethodPassed: true,
 				RequestPath:         "graphql",
 				RequestInputFile:    "",
@@ -175,7 +175,7 @@ func Test_NewCmdApi(t *testing.T) {
 			cli:  "user --input myfile",
 			wants: ApiOptions{
 				Hostname:            "",
-				RequestMethod:       "GET",
+				RequestMethod:       http.MethodGet,
 				RequestMethodPassed: false,
 				RequestPath:         "user",
 				RequestInputFile:    "myfile",
@@ -198,7 +198,7 @@ func Test_NewCmdApi(t *testing.T) {
 			cli:  "graphql --hostname tom.petty",
 			wants: ApiOptions{
 				Hostname:            "tom.petty",
-				RequestMethod:       "GET",
+				RequestMethod:       http.MethodGet,
 				RequestMethodPassed: false,
 				RequestPath:         "graphql",
 				RequestInputFile:    "",
@@ -255,7 +255,7 @@ func Test_apiRun(t *testing.T) {
 		{
 			name: "success",
 			httpResponse: &http.Response{
-				StatusCode: 200,
+				StatusCode: http.StatusOK,
 				Body:       io.NopCloser(bytes.NewBufferString(`bam!`)),
 			},
 			err:    nil,
@@ -270,7 +270,7 @@ func Test_apiRun(t *testing.T) {
 			httpResponse: &http.Response{
 				Proto:      "HTTP/1.1",
 				Status:     "200 Okey-dokey",
-				StatusCode: 200,
+				StatusCode: http.StatusOK,
 				Body:       io.NopCloser(bytes.NewBufferString(`body`)),
 				Header:     http.Header{"Content-Type": []string{"text/plain"}},
 			},
@@ -281,7 +281,7 @@ func Test_apiRun(t *testing.T) {
 		{
 			name: "success 204",
 			httpResponse: &http.Response{
-				StatusCode: 204,
+				StatusCode: http.StatusNoContent,
 				Body:       nil,
 			},
 			err:    nil,
@@ -291,7 +291,7 @@ func Test_apiRun(t *testing.T) {
 		{
 			name: "REST error",
 			httpResponse: &http.Response{
-				StatusCode: 400,
+				StatusCode: http.StatusBadRequest,
 				Body:       io.NopCloser(bytes.NewBufferString(`{"message": "THIS IS FINE"}`)),
 				Header:     http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
 			},
@@ -302,7 +302,7 @@ func Test_apiRun(t *testing.T) {
 		{
 			name: "REST string errors",
 			httpResponse: &http.Response{
-				StatusCode: 400,
+				StatusCode: http.StatusBadRequest,
 				Body:       io.NopCloser(bytes.NewBufferString(`{"errors": ["ALSO", "FINE"]}`)),
 				Header:     http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
 			},
@@ -316,7 +316,7 @@ func Test_apiRun(t *testing.T) {
 				RequestPath: "graphql",
 			},
 			httpResponse: &http.Response{
-				StatusCode: 200,
+				StatusCode: http.StatusOK,
 				Body:       io.NopCloser(bytes.NewBufferString(`{"errors": [{"message":"AGAIN"}, {"message":"FINE"}]}`)),
 				Header:     http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
 			},
@@ -327,7 +327,7 @@ func Test_apiRun(t *testing.T) {
 		{
 			name: "failure",
 			httpResponse: &http.Response{
-				StatusCode: 502,
+				StatusCode: http.StatusBadGateway,
 				Body:       io.NopCloser(bytes.NewBufferString(`gateway timeout`)),
 			},
 			err:    cmdutils.SilentError,
@@ -340,7 +340,7 @@ func Test_apiRun(t *testing.T) {
 				Silent: true,
 			},
 			httpResponse: &http.Response{
-				StatusCode: 200,
+				StatusCode: http.StatusOK,
 				Body:       io.NopCloser(bytes.NewBufferString(`body`)),
 			},
 			err:    nil,
@@ -356,7 +356,7 @@ func Test_apiRun(t *testing.T) {
 			httpResponse: &http.Response{
 				Proto:      "HTTP/1.1",
 				Status:     "200 Okey-dokey",
-				StatusCode: 200,
+				StatusCode: http.StatusOK,
 				Body:       io.NopCloser(bytes.NewBufferString(`body`)),
 				Header:     http.Header{"Content-Type": []string{"text/plain"}},
 			},
@@ -406,21 +406,21 @@ func Test_apiRun_paginationREST(t *testing.T) {
 	requestCount := 0
 	responses := []*http.Response{
 		{
-			StatusCode: 200,
+			StatusCode: http.StatusOK,
 			Body:       io.NopCloser(bytes.NewBufferString(`{"page":1}`)),
 			Header: http.Header{
 				"Link": []string{`<https://gitlab.com/api/v4/projects/1227/issues?page=2>; rel="next", <https://gitlab.com/api/v4/projects/1227/issues?page=3>; rel="last"`},
 			},
 		},
 		{
-			StatusCode: 200,
+			StatusCode: http.StatusOK,
 			Body:       io.NopCloser(bytes.NewBufferString(`{"page":2}`)),
 			Header: http.Header{
 				"Link": []string{`<https://gitlab.com/api/v4/projects/1227/issues?page=3>; rel="next", <https://gitlab.com/api/v4/projects/1227/issues?page=3>; rel="last"`},
 			},
 		},
 		{
-			StatusCode: 200,
+			StatusCode: http.StatusOK,
 			Body:       io.NopCloser(bytes.NewBufferString(`{"page":3}`)),
 			Header:     http.Header{},
 		},
@@ -464,7 +464,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 	requestCount := 0
 	responses := []*http.Response{
 		{
-			StatusCode: 200,
+			StatusCode: http.StatusOK,
 			Header:     http.Header{"Content-Type": []string{`application/json`}},
 			Body: io.NopCloser(bytes.NewBufferString(`{
 				"data": {
@@ -477,7 +477,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 			}`)),
 		},
 		{
-			StatusCode: 200,
+			StatusCode: http.StatusOK,
 			Header:     http.Header{"Content-Type": []string{`application/json`}},
 			Body: io.NopCloser(bytes.NewBufferString(`{
 				"data": {
@@ -508,7 +508,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 			return a.Lab(), nil
 		},
 
-		RequestMethod: "POST",
+		RequestMethod: http.MethodPost,
 		RequestPath:   "graphql",
 		Paginate:      true,
 	}
@@ -565,7 +565,7 @@ func Test_apiRun_inputFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ios, stdin, _, _ := iostreams.Test()
-			resp := &http.Response{StatusCode: 204}
+			resp := &http.Response{StatusCode: http.StatusNoContent}
 
 			inputFile := tt.inputFile
 			if tt.inputFile == "-" {
@@ -611,7 +611,7 @@ func Test_apiRun_inputFile(t *testing.T) {
 				t.Errorf("got error %v", err)
 			}
 
-			assert.Equal(t, "POST", resp.Request.Method)
+			assert.Equal(t, http.MethodPost, resp.Request.Method)
 			assert.Equal(t, "/api/v4/hello?a=b&c=d", resp.Request.URL.RequestURI())
 			assert.Equal(t, tt.contentLength, resp.Request.ContentLength)
 			assert.Equal(t, "", resp.Request.Header.Get("Content-Type"))

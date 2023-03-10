@@ -57,8 +57,8 @@ func TestMrApprove(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", `/projects/OWNER/REPO/merge_requests/123`,
-		httpmock.NewStringResponse(200, `{
+	fakeHTTP.RegisterResponder(http.MethodGet, `/projects/OWNER/REPO/merge_requests/123`,
+		httpmock.NewStringResponse(http.StatusOK, `{
 			"id": 123,
 			"iid": 123,
 			"project_id": 3,
@@ -66,8 +66,8 @@ func TestMrApprove(t *testing.T) {
 			"description": "test mr description",
 			"state": "opened"}`))
 
-	fakeHTTP.RegisterResponder("POST", `/projects/OWNER/REPO/merge_requests/123/approve`,
-		httpmock.NewStringResponse(201, "{}"),
+	fakeHTTP.RegisterResponder(http.MethodPost, `/projects/OWNER/REPO/merge_requests/123/approve`,
+		httpmock.NewStringResponse(http.StatusCreated, "{}"),
 	)
 
 	mrID := "123"

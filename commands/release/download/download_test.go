@@ -53,7 +53,7 @@ func Test_downloadAssets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fullUrl := assetUrl + tt.filename
-			fakeHTTP.RegisterResponder("GET", fullUrl, httpmock.NewStringResponse(200, `test_data`))
+			fakeHTTP.RegisterResponder(http.MethodGet, fullUrl, httpmock.NewStringResponse(http.StatusOK, `test_data`))
 
 			io, _, _, _ := iostreams.Test()
 

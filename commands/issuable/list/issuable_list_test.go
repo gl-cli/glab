@@ -86,8 +86,8 @@ func TestIssueList_tty(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
+		httpmock.NewFileResponse(http.StatusOK, "./fixtures/issuableList.json"))
 
 	output, err := runCommand("issue", fakeHTTP, true, "", nil, "")
 	if err != nil {
@@ -113,8 +113,8 @@ func TestIssueList_ids(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
+		httpmock.NewFileResponse(http.StatusOK, "./fixtures/issuableList.json"))
 
 	output, err := runCommand("issue", fakeHTTP, true, "-F ids", nil, "")
 	if err != nil {
@@ -131,8 +131,8 @@ func TestIssueList_urls(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
+		httpmock.NewFileResponse(http.StatusOK, "./fixtures/issuableList.json"))
 
 	output, err := runCommand("issue", fakeHTTP, true, "-F urls", nil, "")
 	if err != nil {
@@ -154,8 +154,8 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 		fakeHTTP := httpmock.New()
 		defer fakeHTTP.Verify(t)
 
-		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-			httpmock.NewStringResponse(200, `[]`))
+		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
+			httpmock.NewStringResponse(http.StatusOK, `[]`))
 
 		output, err := runCommand("issue", fakeHTTP, true, "--opened -P1 -p100 --confidential -a someuser -l bug -m1", nil, "")
 		if err != nil {
@@ -172,8 +172,8 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 		fakeHTTP := httpmock.New()
 		defer fakeHTTP.Verify(t)
 
-		fakeHTTP.RegisterResponder("GET", "/groups/GROUP/issues",
-			httpmock.NewStringResponse(200, `[]`))
+		fakeHTTP.RegisterResponder(http.MethodGet, "/groups/GROUP/issues",
+			httpmock.NewStringResponse(http.StatusOK, `[]`))
 
 		output, err := runCommand("issue", fakeHTTP, true, "--group GROUP", nil, "")
 		if err != nil {
@@ -192,8 +192,8 @@ func TestIssueList_tty_withIssueType(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/incidentList.json"))
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
+		httpmock.NewFileResponse(http.StatusOK, "./fixtures/incidentList.json"))
 
 	output, err := runCommand("issue", fakeHTTP, true, "--issue-type=incident", nil, "")
 	if err != nil {
@@ -216,8 +216,8 @@ func TestIssueList_tty_withIssueType(t *testing.T) {
 func TestIncidentList_tty_withIssueType(t *testing.T) {
 	fakeHTTP := httpmock.New()
 
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(200, "./fixtures/incidentList.json"))
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
+		httpmock.NewFileResponse(http.StatusOK, "./fixtures/incidentList.json"))
 
 	output, err := runCommand("incident", fakeHTTP, true, "--issue-type=incident", nil, "")
 	if err == nil {
@@ -233,11 +233,11 @@ func TestIssueList_tty_mine(t *testing.T) {
 		fakeHTTP := httpmock.New()
 		defer fakeHTTP.Verify(t)
 
-		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-			httpmock.NewStringResponse(200, `[]`))
+		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
+			httpmock.NewStringResponse(http.StatusOK, `[]`))
 
-		fakeHTTP.RegisterResponder("GET", "/user",
-			httpmock.NewStringResponse(200, `{"username": "john_smith"}`))
+		fakeHTTP.RegisterResponder(http.MethodGet, "/user",
+			httpmock.NewStringResponse(http.StatusOK, `{"username": "john_smith"}`))
 
 		output, err := runCommand("issue", fakeHTTP, true, "--mine -A", nil, "")
 		if err != nil {
@@ -254,8 +254,8 @@ func TestIssueList_tty_mine(t *testing.T) {
 		fakeHTTP := httpmock.New()
 		defer fakeHTTP.Verify(t)
 
-		fakeHTTP.RegisterResponder("GET", "/user",
-			httpmock.NewStringResponse(404, `{message: 404 Not found}`))
+		fakeHTTP.RegisterResponder(http.MethodGet, "/user",
+			httpmock.NewStringResponse(http.StatusNotFound, `{message: 404 Not found}`))
 
 		output, err := runCommand("issue", fakeHTTP, true, "--mine -A", nil, "")
 		assert.NotNil(t, err)
@@ -313,8 +313,8 @@ func TestIssueList_hyperlinks(t *testing.T) {
 			fakeHTTP := httpmock.New()
 			defer fakeHTTP.Verify(t)
 
-			fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues",
-				httpmock.NewFileResponse(200, "./fixtures/issuableList.json"))
+			fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
+				httpmock.NewFileResponse(http.StatusOK, "./fixtures/issuableList.json"))
 
 			doHyperlinks := "never"
 			if test.forceHyperlinksEnv == "1" {

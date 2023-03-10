@@ -19,7 +19,7 @@ func TestNewCheckUpdateCmd(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases`,
 		httpmock.NewStringResponder(200, `[{"tag_name": "v1.11.1",
   "name": "v1.11.1",
   "created_at": "2020-11-03T05:33:29Z",
@@ -76,7 +76,7 @@ func TestNewCheckUpdateCmd_error(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases`,
 		httpmock.NewErrorResponder(fmt.Errorf("an error expected")))
 
 	factory, _, stdout, stderr, err := makeTestFactory()
@@ -93,7 +93,7 @@ func TestNewCheckUpdateCmd_no_release(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases`,
 		httpmock.NewStringResponder(200, `[]`))
 
 	factory, _, stdout, stderr, err := makeTestFactory()

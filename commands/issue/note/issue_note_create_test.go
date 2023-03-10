@@ -30,8 +30,8 @@ func Test_NewCmdNote(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	t.Run("--message flag specified", func(t *testing.T) {
-		fakeHTTP.RegisterResponder("POST", "/projects/OWNER/REPO/issues/1/notes",
-			httpmock.NewStringResponse(201, `
+		fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/issues/1/notes",
+			httpmock.NewStringResponse(http.StatusCreated, `
 		{
 			"id": 301,
   			"created_at": "2013-10-02T08:57:14Z",
@@ -43,8 +43,8 @@ func Test_NewCmdNote(t *testing.T) {
 		}
 	`))
 
-		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues/1",
-			httpmock.NewStringResponse(200, `
+		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues/1",
+			httpmock.NewStringResponse(http.StatusOK, `
 		{
   			"id": 1,
   			"iid": 1,
@@ -63,8 +63,8 @@ func Test_NewCmdNote(t *testing.T) {
 	})
 
 	t.Run("issue not found", func(t *testing.T) {
-		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues/122",
-			httpmock.NewStringResponse(404, `
+		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues/122",
+			httpmock.NewStringResponse(http.StatusNotFound, `
 		{
   			"message" : "issue not found"
 		}
@@ -82,15 +82,15 @@ func Test_NewCmdNote_error(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	t.Run("note could not be created", func(t *testing.T) {
-		fakeHTTP.RegisterResponder("POST", "/projects/OWNER/REPO/issues/1/notes",
-			httpmock.NewStringResponse(401, `
+		fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/issues/1/notes",
+			httpmock.NewStringResponse(http.StatusUnauthorized, `
 		{
 			"message" : "Unauthorized"
 		}
 	`))
 
-		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues/1",
-			httpmock.NewStringResponse(200, `
+		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues/1",
+			httpmock.NewStringResponse(http.StatusOK, `
 		{
   			"id": 1,
   			"iid": 1,
@@ -110,8 +110,8 @@ func Test_mrNoteCreate_prompt(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	t.Run("message provided", func(t *testing.T) {
-		fakeHTTP.RegisterResponder("POST", "/projects/OWNER/REPO/issues/1/notes",
-			httpmock.NewStringResponse(201, `
+		fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/issues/1/notes",
+			httpmock.NewStringResponse(http.StatusCreated, `
 		{
 			"id": 301,
   			"created_at": "2013-10-02T08:57:14Z",
@@ -123,8 +123,8 @@ func Test_mrNoteCreate_prompt(t *testing.T) {
 		}
 	`))
 
-		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues/1",
-			httpmock.NewStringResponse(200, `
+		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues/1",
+			httpmock.NewStringResponse(http.StatusOK, `
 		{
   			"id": 1,
   			"iid": 1,
@@ -146,8 +146,8 @@ func Test_mrNoteCreate_prompt(t *testing.T) {
 	})
 
 	t.Run("message is empty", func(t *testing.T) {
-		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/issues/1",
-			httpmock.NewStringResponse(200, `
+		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues/1",
+			httpmock.NewStringResponse(http.StatusOK, `
 		{
   			"id": 1,
   			"iid": 1,

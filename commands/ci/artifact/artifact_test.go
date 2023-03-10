@@ -184,8 +184,8 @@ func Test_NewCmdRun(t *testing.T) {
 			tempPath, tempFileName := createZipFile(t, tt.filename)
 			// defer os.Remove(tempFileName)
 
-			fakeHTTP.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/jobs/artifacts/main/download?job=secret_detection`,
-				httpmock.NewFileResponse(200, tempFileName))
+			fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/jobs/artifacts/main/download?job=secret_detection`,
+				httpmock.NewFileResponse(http.StatusOK, tempFileName))
 
 			cmd := NewCmdRun(factory)
 
@@ -228,8 +228,8 @@ func Test_NewCmdRun(t *testing.T) {
 		tempPath, tempFileName := createSymlinkZip(t)
 		defer os.Remove(tempFileName)
 
-		fakeHTTP.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/jobs/artifacts/main/download?job=secret_detection`,
-			httpmock.NewFileResponse(200, tempFileName))
+		fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/jobs/artifacts/main/download?job=secret_detection`,
+			httpmock.NewFileResponse(http.StatusOK, tempFileName))
 
 		cmd := NewCmdRun(factory)
 

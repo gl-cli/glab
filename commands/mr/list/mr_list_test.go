@@ -79,8 +79,8 @@ func TestMergeRequestList_tty(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/merge_requests",
-		httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/merge_requests",
+		httpmock.NewStringResponse(http.StatusOK, `
 [
   {
     "state" : "opened",
@@ -143,11 +143,11 @@ func TestMergeRequestList_tty_withFlags(t *testing.T) {
 		fakeHTTP := httpmock.New()
 		defer fakeHTTP.Verify(t)
 
-		fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/merge_requests",
-			httpmock.NewStringResponse(200, `[]`))
+		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/merge_requests",
+			httpmock.NewStringResponse(http.StatusOK, `[]`))
 
-		fakeHTTP.RegisterResponder("GET", "/users",
-			httpmock.NewStringResponse(200, `[{"id" : 1, "iid" : 1, "username": "john_smith"}]`))
+		fakeHTTP.RegisterResponder(http.MethodGet, "/users",
+			httpmock.NewStringResponse(http.StatusOK, `[{"id" : 1, "iid" : 1, "username": "john_smith"}]`))
 
 		output, err := runCommand(fakeHTTP, true, "--opened -P1 -p100 -a someuser -l bug -m1", nil, "")
 		if err != nil {
@@ -164,8 +164,8 @@ func TestMergeRequestList_tty_withFlags(t *testing.T) {
 		fakeHTTP := httpmock.New()
 		defer fakeHTTP.Verify(t)
 
-		fakeHTTP.RegisterResponder("GET", "/groups/GROUP/merge_requests",
-			httpmock.NewStringResponse(200, `[]`))
+		fakeHTTP.RegisterResponder(http.MethodGet, "/groups/GROUP/merge_requests",
+			httpmock.NewStringResponse(http.StatusOK, `[]`))
 
 		output, err := runCommand(fakeHTTP, true, "--group GROUP", nil, "")
 		if err != nil {
@@ -225,8 +225,8 @@ func TestMergeRequestList_hyperlinks(t *testing.T) {
 			fakeHTTP := httpmock.New()
 			defer fakeHTTP.Verify(t)
 
-			fakeHTTP.RegisterResponder("GET", "/projects/OWNER/REPO/merge_requests",
-				httpmock.NewStringResponse(200, `
+			fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/merge_requests",
+				httpmock.NewStringResponse(http.StatusOK, `
 [
   {
     "state" : "opened",
@@ -321,8 +321,8 @@ func TestMergeRequestList_labels(t *testing.T) {
 			defer fakeHTTP.Verify(t)
 
 			path := fmt.Sprintf("/api/v4/projects/OWNER/REPO/merge_requests?%s", test.expectedQuery)
-			fakeHTTP.RegisterResponder("GET", path,
-				httpmock.NewStringResponse(200, `
+			fakeHTTP.RegisterResponder(http.MethodGet, path,
+				httpmock.NewStringResponse(http.StatusOK, `
 		[
 		  {
 			"state" : "opened",

@@ -57,11 +57,11 @@ func TestMrApprove(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", `/projects/OWNER/REPO/merge_requests/123`,
-		httpmock.NewFileResponse(200, "./fixtures/mergeableMr.json"))
+	fakeHTTP.RegisterResponder(http.MethodGet, `/projects/OWNER/REPO/merge_requests/123`,
+		httpmock.NewFileResponse(http.StatusOK, "./fixtures/mergeableMr.json"))
 
-	fakeHTTP.RegisterResponder("PUT", `/projects/OWNER/REPO/merge_requests/123/merge`,
-		httpmock.NewFileResponse(200, "./fixtures/mergedMr.json"))
+	fakeHTTP.RegisterResponder(http.MethodPut, `/projects/OWNER/REPO/merge_requests/123/merge`,
+		httpmock.NewFileResponse(http.StatusOK, "./fixtures/mergedMr.json"))
 
 	mrID := "123"
 	output, err := runCommand(fakeHTTP, mrID)

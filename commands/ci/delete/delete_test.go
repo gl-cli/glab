@@ -29,8 +29,8 @@ func TestCiDelete(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("DELETE", "/api/v4/projects/OWNER/REPO/pipelines/11111111",
-		httpmock.NewStringResponse(204, ""),
+	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/11111111",
+		httpmock.NewStringResponse(http.StatusNoContent, ""),
 	)
 
 	pipelineId := "11111111"
@@ -52,11 +52,11 @@ func TestCiDeleteMultiple(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("DELETE", "/api/v4/projects/OWNER/REPO/pipelines/11111111",
-		httpmock.NewStringResponse(204, ""),
+	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/11111111",
+		httpmock.NewStringResponse(http.StatusNoContent, ""),
 	)
-	fakeHTTP.RegisterResponder("DELETE", "/api/v4/projects/OWNER/REPO/pipelines/22222222",
-		httpmock.NewStringResponse(204, ""),
+	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/22222222",
+		httpmock.NewStringResponse(http.StatusNoContent, ""),
 	)
 
 	pipelineId := "11111111,22222222"

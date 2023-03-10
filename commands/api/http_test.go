@@ -140,7 +140,7 @@ hosts:
 			name: "simple GET",
 			args: args{
 				host:    "gitlab.com",
-				method:  "GET",
+				method:  http.MethodGet,
 				p:       "projects/gitlab-com%2Fwww-gitlab-com",
 				params:  nil,
 				headers: []string{},
@@ -148,7 +148,7 @@ hosts:
 			wantErr:   false,
 			isGraphQL: false,
 			want: expects{
-				method:  "GET",
+				method:  http.MethodGet,
 				u:       "https://gitlab.com/api/v4/projects/gitlab-com%2Fwww-gitlab-com",
 				body:    "",
 				headers: fmt.Sprintf("Private-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
@@ -158,7 +158,7 @@ hosts:
 			name: "GET with leading slash",
 			args: args{
 				host:    "gitlab.com",
-				method:  "GET",
+				method:  http.MethodGet,
 				p:       "/projects/gitlab-com%2Fwww-gitlab-com",
 				params:  nil,
 				headers: []string{},
@@ -166,7 +166,7 @@ hosts:
 			wantErr:   false,
 			isGraphQL: false,
 			want: expects{
-				method:  "GET",
+				method:  http.MethodGet,
 				u:       "https://gitlab.com/api/v4/projects/gitlab-com%2Fwww-gitlab-com",
 				body:    "",
 				headers: fmt.Sprintf("Private-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
@@ -176,7 +176,7 @@ hosts:
 			name: "GET with params",
 			args: args{
 				host:   "gitlab.com",
-				method: "GET",
+				method: http.MethodGet,
 				p:      "projects/gitlab-com%2Fwww-gitlab-com",
 				params: map[string]interface{}{
 					"a": "b",
@@ -186,7 +186,7 @@ hosts:
 			wantErr:   false,
 			isGraphQL: false,
 			want: expects{
-				method:  "GET",
+				method:  http.MethodGet,
 				u:       "https://gitlab.com/api/v4/projects/gitlab-com%2Fwww-gitlab-com?a=b",
 				body:    "",
 				headers: fmt.Sprintf("Private-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
@@ -196,7 +196,7 @@ hosts:
 			name: "POST GraphQL",
 			args: args{
 				host:   "gitlab.com",
-				method: "POST",
+				method: http.MethodPost,
 				p:      "graphql",
 				params: map[string]interface{}{
 					"a": []byte("b"),
@@ -206,7 +206,7 @@ hosts:
 			wantErr:   false,
 			isGraphQL: true,
 			want: expects{
-				method:  "POST",
+				method:  http.MethodPost,
 				u:       "https://gitlab.com/api/graphql/",
 				body:    `{"variables":{"a":"b"}}`,
 				headers: fmt.Sprintf("Content-Type: application/json; charset=utf-8\r\nPrivate-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
@@ -216,7 +216,7 @@ hosts:
 			name: "POST with body and type",
 			args: args{
 				host:   "gitlab.com",
-				method: "POST",
+				method: http.MethodPost,
 				p:      "projects",
 				params: bytes.NewBufferString("CUSTOM"),
 				headers: []string{
@@ -227,7 +227,7 @@ hosts:
 			wantErr:   false,
 			isGraphQL: false,
 			want: expects{
-				method:  "POST",
+				method:  http.MethodPost,
 				u:       "https://gitlab.com/api/v4/projects",
 				body:    `CUSTOM`,
 				headers: fmt.Sprintf("Accept: application/json\r\nContent-Type: text/plain\r\nPrivate-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),

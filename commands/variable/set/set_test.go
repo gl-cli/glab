@@ -122,8 +122,8 @@ func Test_setRun_project(t *testing.T) {
 	reg := &httpmock.Mocker{}
 	defer reg.Verify(t)
 
-	reg.RegisterResponder("POST", "/projects/owner/repo/variables",
-		httpmock.NewStringResponse(201, `
+	reg.RegisterResponder(http.MethodPost, "/projects/owner/repo/variables",
+		httpmock.NewStringResponse(http.StatusCreated, `
 			{
     			"key": "NEW_VARIABLE",
     			"value": "new value",
@@ -160,8 +160,8 @@ func Test_setRun_group(t *testing.T) {
 	reg := &httpmock.Mocker{}
 	defer reg.Verify(t)
 
-	reg.RegisterResponder("POST", "/groups/mygroup/variables",
-		httpmock.NewStringResponse(201, `
+	reg.RegisterResponder(http.MethodPost, "/groups/mygroup/variables",
+		httpmock.NewStringResponse(http.StatusCreated, `
 			{
     			"key": "NEW_VARIABLE",
     			"value": "new value",

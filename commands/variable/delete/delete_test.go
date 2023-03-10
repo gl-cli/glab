@@ -93,16 +93,16 @@ func Test_deleteRun(t *testing.T) {
 	}
 	defer reg.Verify(t)
 
-	reg.RegisterResponder("DELETE", "/api/v4/projects/owner%2Frepo/variables/TEST_VAR?filter%5Benvironment_scope%5D=%2A",
-		httpmock.NewStringResponse(204, " "),
+	reg.RegisterResponder(http.MethodDelete, "/api/v4/projects/owner%2Frepo/variables/TEST_VAR?filter%5Benvironment_scope%5D=%2A",
+		httpmock.NewStringResponse(http.StatusNoContent, " "),
 	)
 
-	reg.RegisterResponder("DELETE", "/api/v4/projects/owner%2Frepo/variables/TEST_VAR?filter%5Benvironment_scope%5D=stage",
-		httpmock.NewStringResponse(204, " "),
+	reg.RegisterResponder(http.MethodDelete, "/api/v4/projects/owner%2Frepo/variables/TEST_VAR?filter%5Benvironment_scope%5D=stage",
+		httpmock.NewStringResponse(http.StatusNoContent, " "),
 	)
 
-	reg.RegisterResponder("DELETE", "/api/v4/groups/testGroup/variables/TEST_VAR",
-		httpmock.NewStringResponse(204, " "),
+	reg.RegisterResponder(http.MethodDelete, "/api/v4/groups/testGroup/variables/TEST_VAR",
+		httpmock.NewStringResponse(http.StatusNoContent, " "),
 	)
 
 	httpClient := func() (*gitlab.Client, error) {
