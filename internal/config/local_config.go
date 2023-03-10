@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"path"
-	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
@@ -13,8 +12,6 @@ type LocalConfig struct {
 	ConfigMap
 	Parent Config
 }
-
-const oldLocalConfigFile = ".glab-cli/config/config.yml"
 
 // LocalConfigDir returns the local config path in map
 // which must be joined for complete path
@@ -26,11 +23,6 @@ var LocalConfigDir = func() []string {
 var LocalConfigFile = func() string {
 	configFile := append(LocalConfigDir(), "config.yml")
 	return path.Join(configFile...)
-}
-
-// OldLocalConfigFile returns the path to the old local config path.
-func OldLocalConfigFile() string {
-	return filepath.Clean(oldLocalConfigFile)
 }
 
 func (a *LocalConfig) Get(key string) (string, bool) {
