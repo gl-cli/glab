@@ -34,8 +34,8 @@ func TestLabelList(t *testing.T) {
 	fakeHTTP := &httpmock.Mocker{}
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", "/api/v4/projects/OWNER/REPO/labels",
-		httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/labels",
+		httpmock.NewStringResponse(http.StatusOK, `
 	[
 		{
 			"id":1,

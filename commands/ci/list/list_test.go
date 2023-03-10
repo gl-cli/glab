@@ -34,8 +34,8 @@ func TestCiList(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", "/api/v4/projects/OWNER/REPO/pipelines",
-		httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/pipelines",
+		httpmock.NewStringResponse(http.StatusOK, `
 		[
 			{
 				"id": 1,

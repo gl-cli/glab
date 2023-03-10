@@ -58,8 +58,8 @@ func TestMrApprove(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", `/projects/OWNER/REPO/merge_requests/123`,
-		httpmock.NewStringResponse(200, `{
+	fakeHTTP.RegisterResponder(http.MethodGet, `/projects/OWNER/REPO/merge_requests/123`,
+		httpmock.NewStringResponse(http.StatusOK, `{
 			"id": 123,
 			"iid": 123,
 			"project_id": 3,
@@ -67,13 +67,13 @@ func TestMrApprove(t *testing.T) {
 			"description": "test mr description",
 			"state": "opened"}`))
 
-	fakeHTTP.RegisterResponder("PUT", `/projects/OWNER/REPO/merge_requests/123`,
+	fakeHTTP.RegisterResponder(http.MethodPut, `/projects/OWNER/REPO/merge_requests/123`,
 		func(req *http.Request) (*http.Response, error) {
 			rb, _ := io.ReadAll(req.Body)
 
 			// ensure CLI updates MR to closed
 			assert.Contains(t, string(rb), "\"state_event\":\"close\"")
-			resp, _ := httpmock.NewStringResponse(200, `{
+			resp, _ := httpmock.NewStringResponse(http.StatusOK, `{
 			"id": 123,
 			"iid": 123,
 			"project_id": 3,

@@ -93,8 +93,8 @@ func Test_exportRun_project(t *testing.T) {
 	}
 	defer reg.Verify(t)
 
-	reg.RegisterResponder("GET", "https://gitlab.com/api/v4/projects/owner%2Frepo/variables?page=1&per_page=10",
-		httpmock.NewJSONResponse(200, nil),
+	reg.RegisterResponder(http.MethodGet, "https://gitlab.com/api/v4/projects/owner%2Frepo/variables?page=1&per_page=10",
+		httpmock.NewJSONResponse(http.StatusOK, nil),
 	)
 
 	io, _, stdout, _ := iostreams.Test()
@@ -124,8 +124,8 @@ func Test_exportRun_group(t *testing.T) {
 	}
 	defer reg.Verify(t)
 
-	reg.RegisterResponder("GET", "https://gitlab.com/api/v4/groups/GROUP/variables?page=7&per_page=77",
-		httpmock.NewJSONResponse(200, nil),
+	reg.RegisterResponder(http.MethodGet, "https://gitlab.com/api/v4/groups/GROUP/variables?page=7&per_page=77",
+		httpmock.NewJSONResponse(http.StatusOK, nil),
 	)
 
 	io, _, stdout, _ := iostreams.Test()

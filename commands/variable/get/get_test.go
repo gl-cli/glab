@@ -122,8 +122,8 @@ func Test_getRun_project(t *testing.T) {
 		EnvironmentScope: "*",
 	}
 
-	reg.RegisterResponder("GET", "/projects/owner/repo/variables/TEST_VAR",
-		httpmock.NewJSONResponse(200, body),
+	reg.RegisterResponder(http.MethodGet, "/projects/owner/repo/variables/TEST_VAR",
+		httpmock.NewJSONResponse(http.StatusOK, body),
 	)
 
 	io, _, stdout, _ := iostreams.Test()

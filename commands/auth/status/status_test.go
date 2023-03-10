@@ -146,12 +146,12 @@ hosts:
 	}
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder("GET", "https://gitlab.alpinelinux.org/api/v4/user", httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "https://gitlab.alpinelinux.org/api/v4/user", httpmock.NewStringResponse(http.StatusOK, `
 		{
   			"username": "john_smith"
 		}
 	`))
-	fakeHTTP.RegisterResponder("GET", "https://gitlab.foo.bar/api/v4/user", httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "https://gitlab.foo.bar/api/v4/user", httpmock.NewStringResponse(http.StatusOK, `
 		{
   			"username": "john_doe"
 		}
@@ -200,19 +200,19 @@ hosts:
 
 	cfgFile := config.ConfigFile()
 
-	fakeHTTP.RegisterResponder("GET", "https://gitlab.alpinelinux.org/api/v4/user", httpmock.NewStringResponse(200, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "https://gitlab.alpinelinux.org/api/v4/user", httpmock.NewStringResponse(http.StatusOK, `
 		{
   			"username": "john_smith"
 		}
 	`))
 
-	fakeHTTP.RegisterResponder("GET", "https://another.host/api/v4/user?u=1", httpmock.NewStringResponse(401, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "https://another.host/api/v4/user?u=1", httpmock.NewStringResponse(http.StatusUnauthorized, `
 		{
   			"message": "invalid token"
 		}
 	`))
 
-	fakeHTTP.RegisterResponder("GET", "https://gl.io/api/v4/user?u=1", httpmock.NewStringResponse(401, `
+	fakeHTTP.RegisterResponder(http.MethodGet, "https://gl.io/api/v4/user?u=1", httpmock.NewStringResponse(http.StatusUnauthorized, `
 		{
   			"message": "no token provided"
 		}

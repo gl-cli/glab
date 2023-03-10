@@ -122,8 +122,8 @@ func Test_updateRun_project(t *testing.T) {
 	reg := &httpmock.Mocker{}
 	defer reg.Verify(t)
 
-	reg.RegisterResponder("PUT", "/projects/owner/repo/variables/TEST_VARIABLE",
-		httpmock.NewStringResponse(201, `
+	reg.RegisterResponder(http.MethodPut, "/projects/owner/repo/variables/TEST_VARIABLE",
+		httpmock.NewStringResponse(http.StatusCreated, `
 			{
     			"key": "TEST_VARIABLE",
     			"value": "foo",
@@ -160,8 +160,8 @@ func Test_updateRun_group(t *testing.T) {
 	reg := &httpmock.Mocker{}
 	defer reg.Verify(t)
 
-	reg.RegisterResponder("PUT", "/groups/mygroup/variables/TEST_VARIABLE",
-		httpmock.NewStringResponse(201, `
+	reg.RegisterResponder(http.MethodPut, "/groups/mygroup/variables/TEST_VARIABLE",
+		httpmock.NewStringResponse(http.StatusCreated, `
 			{
     			"key": "TEST_VARIABLE",
     			"value": "blargh",

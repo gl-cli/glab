@@ -30,8 +30,8 @@ func TestCiRetry(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	// test will fail with unmatched HTTP stub if this POST is not performed
-	fakeHTTP.RegisterResponder("POST", "/projects/OWNER/REPO/jobs/1122/retry",
-		httpmock.NewStringResponse(201, `
+	fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/jobs/1122/retry",
+		httpmock.NewStringResponse(http.StatusCreated, `
 		{
 			"id": 1123,
 			"status": "pending",

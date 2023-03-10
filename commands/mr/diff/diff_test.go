@@ -145,9 +145,9 @@ func TestPRDiff_no_current_mr(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests`,
 		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(200, `[]`), nil
+			return httpmock.NewStringResponse(http.StatusOK, `[]`), nil
 		},
 	)
 	_, err := runCommand(nil, false, "")
@@ -161,9 +161,9 @@ func TestMRDiff_argument_not_found(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
 		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(200, `{
+			return httpmock.NewStringResponse(http.StatusOK, `{
     "id": 123,
     "iid": 123,
     "project_id": 3,
@@ -173,9 +173,9 @@ func TestMRDiff_argument_not_found(t *testing.T) {
 		},
 	)
 
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions`,
 		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(404, ""), errors.New("404 not found")
+			return httpmock.NewStringResponse(http.StatusNotFound, ""), errors.New("404 not found")
 		},
 	)
 
@@ -190,9 +190,9 @@ func TestMRDiff_notty(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests`,
 		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(200, `[{
+			return httpmock.NewStringResponse(http.StatusOK, `[{
     "id": 123,
     "iid": 123,
     "project_id": 3,
@@ -201,9 +201,9 @@ func TestMRDiff_notty(t *testing.T) {
     "state": "merged"}]`), nil
 		},
 	)
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
 		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(200, `{
+			return httpmock.NewStringResponse(http.StatusOK, `{
     "id": 123,
     "iid": 123,
     "project_id": 3,
@@ -227,9 +227,9 @@ func TestMRDiff_tty(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests`,
 		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(200, `[{
+			return httpmock.NewStringResponse(http.StatusOK, `[{
     "id": 123,
     "iid": 123,
     "project_id": 3,
@@ -239,9 +239,9 @@ func TestMRDiff_tty(t *testing.T) {
 		},
 	)
 
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
 		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(200, `{
+			return httpmock.NewStringResponse(http.StatusOK, `{
     "id": 123,
     "iid": 123,
     "project_id": 3,
@@ -260,9 +260,9 @@ func TestMRDiff_tty(t *testing.T) {
 }
 
 func DiffTest() string {
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions`,
 		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(200, `[{
+			return httpmock.NewStringResponse(http.StatusOK, `[{
   "id": 110,
   "head_commit_sha": "33e2ee8579fda5bc36accc9c6fbd0b4fefda9e30",
   "base_commit_sha": "eeb57dffe83deb686a60a71c16c32f71046868fd",
@@ -274,9 +274,9 @@ func DiffTest() string {
 }]`), nil
 		},
 	)
-	httpmock.RegisterResponder("GET", `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions/110`,
+	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions/110`,
 		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(200, `{
+			return httpmock.NewStringResponse(http.StatusOK, `{
   "id": 110,
   "head_commit_sha": "33e2ee8579fda5bc36accc9c6fbd0b4fefda9e30",
   "base_commit_sha": "eeb57dffe83deb686a60a71c16c32f71046868fd",
