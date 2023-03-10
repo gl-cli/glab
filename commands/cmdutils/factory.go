@@ -129,8 +129,5 @@ func NewFactory() *Factory {
 }
 
 func initConfig() (config.Config, error) {
-	if err := config.MigrateOldConfig(); err != nil {
-		return nil, err
-	}
 	return config.Init()
 }
