@@ -57,11 +57,11 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d on %s\n\n", len(labels), len(labels), repo.FullName())
 			var labelPrintInfo string
 			for _, label := range labels {
-				labelPrintInfo += label.Name
+				var description string
 				if label.Description != "" {
-					labelPrintInfo += " -> " + label.Description
+					description = fmt.Sprintf(" -> %s", label.Description)
 				}
-				labelPrintInfo += "\n"
+				labelPrintInfo += fmt.Sprintf("%s%s (%s)\n", label.Name, description, label.Color)
 			}
 			fmt.Fprintln(f.IO.StdOut, utils.Indent(labelPrintInfo, " "))
 

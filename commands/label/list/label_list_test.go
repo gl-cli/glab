@@ -49,7 +49,7 @@ func TestLabelList(t *testing.T) {
 		{
 			"id":2,
 			"name":"ux",
-			"description":null,
+			"description":"User Experience",
 			"text_color":"#FFFFFF",
 			"color":"#3cb371",
 			"priority":null,
@@ -68,8 +68,8 @@ func TestLabelList(t *testing.T) {
 	assert.Equal(t, heredoc.Doc(`
 		Showing label 2 of 2 on OWNER/REPO
 
-		 bug
-		 ux
+		 bug (#6699cc)
+		 ux -> User Experience (#3cb371)
  
 	`), out)
 	assert.Empty(t, output.Stderr())
