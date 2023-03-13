@@ -148,13 +148,13 @@ To authenticate your installation of `glab`:
 
 By default, `glab` follows the
 [XDG Base Directory Spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html).
-Configure it globally, locally, or per-host:
+Configure it globally, locally, or per host:
 
 - **Globally**: run `glab config set --global editor vim`.
-  - The global configuration file is available at `~/.config/glab-cli`.
+  - The global configuration file is available at `~/.config/glab-cli/config.yml`.
   - To override this location, set the `GLAB_CONFIG_DIR` environment variable.
-- **The current directory**: run `glab config set editor vim` in any folder in a Git repository.
-  - The local configuration file is available at `.git/glab-cli` in the current working Git directory.
+- **The current repository**: run `glab config set editor vim` in any folder in a Git repository.
+  - The local configuration file is available at `.git/glab-cli/config.yml` in the current working Git directory.
 - **Per host**: run `glab config set editor vim --host gitlab.example.org`, changing
   the `--host` parameter to meet your needs.
   - Per-host configuration info is always stored in the global configuration file, with or without the `global` flag.
@@ -192,6 +192,7 @@ the `GITLAB_HOST` environment variable, like this:
 - `GITLAB_REPO`: Default GitLab repository used for commands accepting the `--repo` option. Only used if no `--repo` option is given.
 - `GITLAB_GROUP`: Default GitLab group used for listing merge requests, issues and variables. Only used if no `--group` option is given.
 - `REMOTE_ALIAS` or `GIT_REMOTE_URL_VAR`: `git remote` variable or alias that contains the GitLab URL.
+- `GLAB_CONFIG_DIR`: Directory where glab's global configuration file is located. Defaults to `~/.config/glab-cli/` if not set.
   Can be set in the config with `glab config set remote_alias origin`
 - `VISUAL`, `EDITOR` (in order of precedence): the editor tool to use for authoring text.
   Can be set in the config with `glab config set editor vim`
