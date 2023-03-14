@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -221,6 +222,146 @@ func TestMRView(t *testing.T) {
 		}
 	})
 	api.ListMRNotes = oldListMrNotes
+}
+
+func Test_rawMRPreview(t *testing.T) {
+	fakeNote1 := &gitlab.Note{}
+	fakeNote1.Author.Username = "bob"
+	fakeNote2 := &gitlab.Note{}
+	fakeNote2.Author.Username = "alice"
+
+	time1, _ := time.Parse(time.RFC3339, "2023-03-09T16:50:20.111Z")
+	time2, _ := time.Parse(time.RFC3339, "2023-03-09T16:52:30.222Z")
+
+	mr := &gitlab.MergeRequest{
+		IID:            503,
+		Title:          "MR title",
+		Description:    "MR description",
+		State:          "merged",
+		Author:         &gitlab.BasicUser{Username: "alice"},
+		Labels:         gitlab.Labels{"label1", "label2"},
+		Assignees:      []*gitlab.BasicUser{{Username: "alice"}, {Username: "bob"}},
+		Reviewers:      []*gitlab.BasicUser{{Username: "john"}, {Username: "paul"}},
+		UserNotesCount: 2,
+		Milestone:      &gitlab.Milestone{Title: "Some milestone"},
+		WebURL:         "https://gitlab.com/OWNER/REPO/-/merge_requests/503",
+	}
+
+	notes := []*gitlab.Note{
+		{
+			System:    true,
+			Author:    fakeNote1.Author,
+			Body:      "assigned to @alice",
+			CreatedAt: &time1,
+		},
+		{
+			System:    false,
+			Author:    fakeNote1.Author,
+			Body:      "Some comment",
+			CreatedAt: &time1,
+		},
+		{
+			System:    false,
+			Author:    fakeNote2.Author,
+			Body:      "Another comment",
+			CreatedAt: &time2,
+		},
+	}
+
+	tests := []struct {
+		name  string
+		opts  *ViewOpts
+		mr    *gitlab.MergeRequest
+		notes []*gitlab.Note
+		want  []string
+	}{
+		{
+			"mr_default",
+			&ViewOpts{},
+			mr,
+			notes,
+			[]string{
+				"title:\tMR title",
+				"state:\tmerged",
+				"author:\talice",
+				"labels:\tlabel1, label2",
+				"assignees:\talice, bob",
+				"reviewers:\tjohn, paul",
+				"comments:\t2",
+				"milestone:\tSome milestone",
+				"number:\t503",
+				"url:\thttps://gitlab.com/OWNER/REPO/-/merge_requests/503",
+				"--",
+				"MR description",
+			},
+		},
+		{
+			"mr_show_comments_no_comments",
+			&ViewOpts{
+				ShowComments:   true,
+				ShowSystemLogs: true,
+			},
+			mr,
+			[]*gitlab.Note{},
+			[]string{
+				"title:\tMR title",
+				"state:\tmerged",
+				"author:\talice",
+				"labels:\tlabel1, label2",
+				"assignees:\talice, bob",
+				"reviewers:\tjohn, paul",
+				"comments:\t2",
+				"milestone:\tSome milestone",
+				"number:\t503",
+				"url:\thttps://gitlab.com/OWNER/REPO/-/merge_requests/503",
+				"--",
+				"MR description",
+				"\n--\ncomments/notes:\n",
+				"There are no comments on this merge request",
+			},
+		},
+		{
+			"mr_with_comments_and_notes",
+			&ViewOpts{
+				ShowComments:   true,
+				ShowSystemLogs: true,
+			},
+			mr,
+			notes,
+			[]string{
+				"title:\tMR title",
+				"state:\tmerged",
+				"author:\talice",
+				"labels:\tlabel1, label2",
+				"assignees:\talice, bob",
+				"reviewers:\tjohn, paul",
+				"comments:\t2",
+				"milestone:\tSome milestone",
+				"number:\t503",
+				"url:\thttps://gitlab.com/OWNER/REPO/-/merge_requests/503",
+				"--",
+				"MR description",
+				"\n--\ncomments/notes:\n",
+				fmt.Sprintf("bob assigned to @alice %s", time1),
+				"",
+				fmt.Sprintf("bob commented %s", time1),
+				"Some comment",
+				"",
+				fmt.Sprintf("alice commented %s", time2),
+				"Another comment",
+				"",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			want := strings.Join(tt.want, "\n") + "\n"
+			got := rawMRPreview(tt.opts, tt.mr, tt.notes)
+
+			require.Equal(t, want, got)
+		})
+	}
 }
 
 func Test_labelsList(t *testing.T) {

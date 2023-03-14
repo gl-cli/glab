@@ -224,20 +224,58 @@ func printTTYIssuePreview(opts *ViewOpts) error {
 }
 
 func printRawIssuePreview(opts *ViewOpts) error {
+	fmt.Fprint(opts.IO.StdOut, rawIssuePreview(opts))
+
+	return nil
+}
+
+func rawIssuePreview(opts *ViewOpts) string {
+	var out string
+
 	assignees := assigneesList(opts)
 	labels := labelsList(opts)
 
-	fmt.Fprintf(opts.IO.StdOut, "title:\t%s\n", opts.Issue.Title)
-	fmt.Fprintf(opts.IO.StdOut, "state:\t%s\n", issueState(opts, opts.IO.Color()))
-	fmt.Fprintf(opts.IO.StdOut, "author:\t%s\n", opts.Issue.Author.Username)
-	fmt.Fprintf(opts.IO.StdOut, "labels:\t%s\n", labels)
-	fmt.Fprintf(opts.IO.StdOut, "comments:\t%d\n", opts.Issue.UserNotesCount)
-	fmt.Fprintf(opts.IO.StdOut, "assignees:\t%s\n", assignees)
+	out += fmt.Sprintf("title:\t%s\n", opts.Issue.Title)
+	out += fmt.Sprintf("state:\t%s\n", issueState(opts, opts.IO.Color()))
+	out += fmt.Sprintf("author:\t%s\n", opts.Issue.Author.Username)
+	out += fmt.Sprintf("labels:\t%s\n", labels)
+	out += fmt.Sprintf("comments:\t%d\n", opts.Issue.UserNotesCount)
+	out += fmt.Sprintf("assignees:\t%s\n", assignees)
 	if opts.Issue.Milestone != nil {
-		fmt.Fprintf(opts.IO.StdOut, "milestone:\t%s\n", opts.Issue.Milestone.Title)
+		out += fmt.Sprintf("milestone:\t%s\n", opts.Issue.Milestone.Title)
 	}
 
-	fmt.Fprintln(opts.IO.StdOut, "--")
-	fmt.Fprintln(opts.IO.StdOut, opts.Issue.Description)
-	return nil
+	out += "--\n"
+	out += fmt.Sprintf("%s\n", opts.Issue.Description)
+
+	out += RawIssuableNotes(opts.Notes, opts.ShowComments, opts.ShowSystemLogs, *opts.Issue.IssueType)
+
+	return out
+}
+
+// RawIssuableNotes returns a list of comments/notes in a raw format
+func RawIssuableNotes(notes []*gitlab.Note, showComments bool, showSystemLogs bool, issuableName string) string {
+	var out string
+
+	if showComments {
+		out += "\n--\ncomments/notes:\n\n"
+
+		if len(notes) > 0 {
+			for _, note := range notes {
+				if note.System && !showSystemLogs {
+					continue
+				}
+
+				if note.System {
+					out += fmt.Sprintf("%s %s %s\n\n", note.Author.Username, note.Body, note.CreatedAt.String())
+				} else {
+					out += fmt.Sprintf("%s commented %s\n%s\n\n", note.Author.Username, note.CreatedAt.String(), note.Body)
+				}
+			}
+		} else {
+			out += fmt.Sprintf("There are no comments on this %s\n", issuableName)
+		}
+	}
+
+	return out
 }

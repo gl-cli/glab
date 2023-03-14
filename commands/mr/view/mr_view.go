@@ -8,6 +8,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	issuableView "gitlab.com/gitlab-org/cli/commands/issuable/view"
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
@@ -98,7 +99,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			if f.IO.IsOutputTTY() {
 				return printTTYMRPreview(opts, mr, mrApprovals, notes)
 			}
-			return printRawMRPreview(opts, mr)
+			return printRawMRPreview(opts, mr, notes)
 		},
 	}
 
@@ -248,27 +249,35 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 	return nil
 }
 
-func printRawMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest) error {
-	out := opts.IO.StdOut
+func printRawMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.Note) error {
+	fmt.Fprint(opts.IO.StdOut, rawMRPreview(opts, mr, notes))
+
+	return nil
+}
+
+func rawMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.Note) string {
+	var out string
+
 	assignees := assigneesList(mr)
 	reviewers := reviewersList(mr)
 	labels := labelsList(mr)
 
-	fmt.Fprintf(out, "title:\t%s\n", mr.Title)
-	fmt.Fprintf(out, "state:\t%s\n", mrState(opts.IO.Color(), mr))
-	fmt.Fprintf(out, "author:\t%s\n", mr.Author.Username)
-	fmt.Fprintf(out, "labels:\t%s\n", labels)
-	fmt.Fprintf(out, "assignees:\t%s\n", assignees)
-	fmt.Fprintf(out, "reviewers:\t%s\n", reviewers)
-	fmt.Fprintf(out, "comments:\t%d\n", mr.UserNotesCount)
+	out += fmt.Sprintf("title:\t%s\n", mr.Title)
+	out += fmt.Sprintf("state:\t%s\n", mrState(opts.IO.Color(), mr))
+	out += fmt.Sprintf("author:\t%s\n", mr.Author.Username)
+	out += fmt.Sprintf("labels:\t%s\n", labels)
+	out += fmt.Sprintf("assignees:\t%s\n", assignees)
+	out += fmt.Sprintf("reviewers:\t%s\n", reviewers)
+	out += fmt.Sprintf("comments:\t%d\n", mr.UserNotesCount)
 	if mr.Milestone != nil {
-		fmt.Fprintf(out, "milestone:\t%s\n", mr.Milestone.Title)
+		out += fmt.Sprintf("milestone:\t%s\n", mr.Milestone.Title)
 	}
-	fmt.Fprintf(out, "number:\t%d\n", mr.IID)
-	fmt.Fprintf(out, "url:\t%s\n", mr.WebURL)
+	out += fmt.Sprintf("number:\t%d\n", mr.IID)
+	out += fmt.Sprintf("url:\t%s\n", mr.WebURL)
+	out += "--\n"
+	out += fmt.Sprintf("%s\n", mr.Description)
 
-	fmt.Fprintln(out, "--")
-	fmt.Fprintln(out, mr.Description)
+	out += issuableView.RawIssuableNotes(notes, opts.ShowComments, opts.ShowSystemLogs, "merge request")
 
-	return nil
+	return out
 }
