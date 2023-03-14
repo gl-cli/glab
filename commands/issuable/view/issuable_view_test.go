@@ -266,6 +266,172 @@ func TestNewCmdView(t *testing.T) {
 	}
 }
 
+func Test_rawIssuePreview(t *testing.T) {
+	issueType := string(issuable.TypeIssue)
+	incidentType := string(issuable.TypeIncident)
+
+	fakeNote1 := &gitlab.Note{}
+	fakeNote1.Author.Username = "bob"
+	fakeNote2 := &gitlab.Note{}
+	fakeNote2.Author.Username = "alice"
+
+	time1, _ := time.Parse(time.RFC3339, "2023-03-09T16:50:20.111Z")
+	time2, _ := time.Parse(time.RFC3339, "2023-03-09T16:52:30.222Z")
+
+	tests := []struct {
+		name string
+		opts *ViewOpts
+		want []string
+	}{
+		{
+			"issue_default",
+			&ViewOpts{
+				Issue: &gitlab.Issue{
+					Title:          "Issue title",
+					State:          "opened",
+					Author:         &gitlab.IssueAuthor{Username: "alice"},
+					Labels:         gitlab.Labels{"label1", "label2"},
+					Assignees:      []*gitlab.IssueAssignee{{Username: "Alice"}, {Username: "Bob"}},
+					UserNotesCount: 2,
+					Description:    "Issue description",
+					IssueType:      &issueType,
+					Milestone:      &gitlab.Milestone{Title: "Milestone 5"},
+				},
+				ShowComments: false,
+			},
+			[]string{
+				"title:\tIssue title",
+				"state:\topen",
+				"author:\talice",
+				"labels:\tlabel1, label2",
+				"comments:\t2",
+				"assignees:\tAlice, Bob",
+				"milestone:\tMilestone 5",
+				"--",
+				"Issue description",
+			},
+		},
+		{
+			"issue_show_comments_no_comments",
+			&ViewOpts{
+				Issue: &gitlab.Issue{
+					Title:          "Issue title",
+					Author:         &gitlab.IssueAuthor{Username: "alice"},
+					UserNotesCount: 2,
+					Description:    "Issue description",
+					IssueType:      &issueType,
+					Milestone:      &gitlab.Milestone{Title: "Milestone 5"},
+				},
+				ShowComments: true,
+			},
+			[]string{
+				"title:\tIssue title",
+				"state:\t",
+				"author:\talice",
+				"labels:\t",
+				"comments:\t2",
+				"assignees:\t",
+				"milestone:\tMilestone 5",
+				"--",
+				"Issue description",
+				"\n--\ncomments/notes:\n",
+				"There are no comments on this issue",
+			},
+		},
+		{
+			"incident_show_comments_no_comments",
+			&ViewOpts{
+				Issue: &gitlab.Issue{
+					Title:          "Incident title",
+					Author:         &gitlab.IssueAuthor{Username: "alice"},
+					UserNotesCount: 2,
+					Description:    "Incident description",
+					IssueType:      &incidentType,
+					Milestone:      &gitlab.Milestone{Title: "Milestone 5"},
+				},
+				ShowComments: true,
+			},
+			[]string{
+				"title:\tIncident title",
+				"state:\t",
+				"author:\talice",
+				"labels:\t",
+				"comments:\t2",
+				"assignees:\t",
+				"milestone:\tMilestone 5",
+				"--",
+				"Incident description",
+				"\n--\ncomments/notes:\n",
+				"There are no comments on this incident",
+			},
+		},
+		{
+			"issue_show_comments_with_comments_and_system_notes",
+			&ViewOpts{
+				Issue: &gitlab.Issue{
+					Title:          "Issue title",
+					Author:         &gitlab.IssueAuthor{Username: "alice"},
+					UserNotesCount: 2,
+					Description:    "Issue description",
+					IssueType:      &issueType,
+					Milestone:      &gitlab.Milestone{Title: "Milestone 5"},
+				},
+				ShowComments:   true,
+				ShowSystemLogs: true,
+				Notes: []*gitlab.Note{
+					{
+						System:    true,
+						Author:    fakeNote1.Author,
+						Body:      "assigned to @alice",
+						CreatedAt: &time1,
+					},
+					{
+						System:    false,
+						Author:    fakeNote1.Author,
+						Body:      "Some comment",
+						CreatedAt: &time1,
+					},
+					{
+						System:    false,
+						Author:    fakeNote2.Author,
+						Body:      "Another comment",
+						CreatedAt: &time2,
+					},
+				},
+			},
+			[]string{
+				"title:\tIssue title",
+				"state:\t",
+				"author:\talice",
+				"labels:\t",
+				"comments:\t2",
+				"assignees:\t",
+				"milestone:\tMilestone 5",
+				"--",
+				"Issue description",
+				"\n--\ncomments/notes:\n",
+				fmt.Sprintf("bob assigned to @alice %s", time1),
+				"",
+				fmt.Sprintf("bob commented %s", time1),
+				"Some comment",
+				"",
+				fmt.Sprintf("alice commented %s", time2),
+				"Another comment",
+				"",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			want := strings.Join(tt.want, "\n") + "\n"
+			got := rawIssuePreview(tt.opts)
+
+			require.Equal(t, want, got)
+		})
+	}
+}
+
 func Test_labelsList(t *testing.T) {
 	tests := []struct {
 		name string
