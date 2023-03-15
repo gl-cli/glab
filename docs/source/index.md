@@ -51,7 +51,7 @@ glab mr merge
 - [`glab completion`](completion)
 - [`glab config`](config)
 - [`glab incident`](incident)
-- [`glab issue`](ci)
+- [`glab issue`](issue)
 - [`glab label`](label)
 - [`glab mr`](mr)
 - [`glab release`](release)
