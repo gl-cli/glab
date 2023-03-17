@@ -104,6 +104,9 @@ func Test_NewCmdLogin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			d := t.TempDir()
+			t.Setenv("GLAB_CONFIG_DIR", d)
+
 			io, stdin, _, _ := iostreams.Test()
 			f := cmdtest.StubFactory("https://gitlab.com/glab-cli/test")
 
