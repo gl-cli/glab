@@ -57,7 +57,6 @@ Integration tests use the `_Integration` test suffix and use the `_integration_t
 
 `GITLAB_TOKEN` must be a
 [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).
-> WARNING: Do not run `make test` outside of an isolated environment, it will overwrite your global config.
 
 ### Submitting a merge request
 
