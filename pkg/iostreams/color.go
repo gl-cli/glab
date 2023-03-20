@@ -1,6 +1,7 @@
 package iostreams
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -55,6 +56,12 @@ func NewColorable(out io.Writer) io.Writer {
 }
 
 func makeColorFunc(color string) func(string) string {
+	if color == "black+h" && isColorEnabled() && Is256ColorSupported() {
+		return func(t string) string {
+			return fmt.Sprintf("\x1b[%d;5;%dm%s\x1b[m", 38, 242, t)
+		}
+	}
+
 	cf := ansi.ColorFunc(color)
 	return func(arg string) string {
 		if isColorEnabled() && isStdoutTerminal() {
