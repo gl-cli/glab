@@ -1,10 +1,12 @@
 package iostreams
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/alecthomas/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_isColorEnabled(t *testing.T) {
@@ -49,4 +51,46 @@ func Test_isColorEnabled(t *testing.T) {
 		got := isColorEnabled()
 		assert.True(t, got)
 	})
+}
+
+func Test_makeColorFunc(t *testing.T) {
+	tests := []struct {
+		name         string
+		color        string
+		colorEnabled bool
+		is256color   bool
+		want         string
+	}{
+		{
+			"gray",
+			"black+h",
+			true,
+			false,
+			"text",
+		},
+		{
+			"gray_256",
+			"black+h",
+			true,
+			true,
+			fmt.Sprintf("\x1b[38;5;242m%s\x1b[m", "text"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.colorEnabled {
+				t.Setenv("COLOR_ENABLED", "true")
+			}
+
+			if tt.is256color {
+				t.Setenv("TERM", "256")
+			}
+
+			fn := makeColorFunc(tt.color)
+			got := fn("text")
+
+			require.Equal(t, tt.want, got)
+		})
+	}
 }
