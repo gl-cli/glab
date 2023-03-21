@@ -56,7 +56,9 @@ func NewColorable(out io.Writer) io.Writer {
 }
 
 func makeColorFunc(color string) func(string) string {
-	if color == "black+h" && isColorEnabled() && Is256ColorSupported() {
+	isColorfulOutput := isColorEnabled() && isStdoutTerminal()
+
+	if isColorfulOutput && color == "black+h" && Is256ColorSupported() {
 		return func(t string) string {
 			return fmt.Sprintf("\x1b[%d;5;%dm%s\x1b[m", 38, 242, t)
 		}
@@ -64,7 +66,7 @@ func makeColorFunc(color string) func(string) string {
 
 	cf := ansi.ColorFunc(color)
 	return func(arg string) string {
-		if isColorEnabled() && isStdoutTerminal() {
+		if isColorfulOutput {
 			return cf(arg)
 		}
 		return arg
