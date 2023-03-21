@@ -22,7 +22,7 @@ func NewCmdConfig(f *cmdutils.Factory) *cobra.Command {
 Current respected settings:
 
 - token: Your GitLab access token, defaults to environment variables
-- gitlab_uri: if unset, defaults to %[1]shttps://gitlab.com%[1]s
+- host: if unset, defaults to %[1]shttps://gitlab.com%[1]s
 - browser: if unset, defaults to environment variables
 - editor: if unset, defaults to environment variables.
 - visual: alternative for editor. if unset, defaults to environment variables.
@@ -32,7 +32,7 @@ Current respected settings:
 		Aliases: []string{"conf"},
 	}
 
-	configCmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "use global config file")
+	configCmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "Use global config file")
 
 	configCmd.AddCommand(NewCmdConfigGet(f))
 	configCmd.AddCommand(NewCmdConfigSet(f))
@@ -130,7 +130,7 @@ Specifying the --hostname flag also saves in the global config file
 	}
 
 	cmd.Flags().StringVarP(&hostname, "host", "h", "", "Set per-host setting")
-	cmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "write to global ~/.config/glab-cli/config.yml file rather than the repository .glab-cli/config/config")
+	cmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "Write to global ~/.config/glab-cli/config.yml file rather than the repository .git/glab-cli/config.yml file")
 	return cmd
 }
 

@@ -20,7 +20,7 @@ Get and set key/value strings.
 Current respected settings:
 
 - token: Your GitLab access token, defaults to environment variables
-- gitlab_uri: if unset, defaults to `https://gitlab.com`
+- host: if unset, defaults to `https://gitlab.com`
 - browser: if unset, defaults to environment variables
 - editor: if unset, defaults to environment variables.
 - visual: alternative for editor. if unset, defaults to environment variables.
@@ -30,7 +30,7 @@ Current respected settings:
 ## Options
 
 ```plaintext
-  -g, --global   use global config file
+  -g, --global   Use global config file
 ```
 
 ## Options inherited from parent commands
