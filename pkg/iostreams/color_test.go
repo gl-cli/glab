@@ -79,12 +79,18 @@ func Test_makeColorFunc(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Tests do not output to the "terminal" so they ignore colors in the output.
+			// This setting needs to be forced for these tests to check colors properly.
+			_isStdoutTerminal = true
+
 			if tt.colorEnabled {
 				t.Setenv("COLOR_ENABLED", "true")
+			} else {
+				t.Setenv("NO_COLOR", "true")
 			}
 
 			if tt.is256color {
-				t.Setenv("TERM", "256")
+				t.Setenv("TERM", "xterm-256color")
 			}
 
 			fn := makeColorFunc(tt.color)
