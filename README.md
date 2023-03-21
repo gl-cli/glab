@@ -182,6 +182,22 @@ the `GITLAB_HOST` environment variable, like this:
 - `GITLAB_HOST=gitlab.example.com glab repo clone group/project`
 - `GITLAB_HOST=gitlab.example.com glab issue list -R group/project`
 
+### Configure `glab` to use self-signed certificates for self-managed instances
+
+The GitLab CLI can be configured to support self-managed instances using self-signed certificate authorities by making either of the following changes:
+
+You can disable TLS verification with:
+
+```shell
+glab config set skip_tls_verify true --host gitlab.example.com
+```
+
+Or add the path to the self signed CA:
+
+```shell
+glab config set ca_cert /path/to/server.pem --host gitlab.example.com
+```
+
 ## Environment variables
 
 - `GITLAB_TOKEN`: an authentication token for API requests. Setting this avoids being
