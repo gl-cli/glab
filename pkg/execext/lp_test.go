@@ -22,12 +22,11 @@ func TestLookPath(t *testing.T) {
 	if wderr != nil {
 		t.Fatal(wderr)
 	}
-	defaultPath := os.Getenv("PATH")
 	paths := []string{
 		filepath.Join(root, "testdata", "nonexist"),
 		filepath.Join(root, "testdata", "PATH"),
 	}
-	os.Setenv("PATH", strings.Join(paths, string(filepath.ListSeparator)))
+	t.Setenv("PATH", strings.Join(paths, string(filepath.ListSeparator)))
 
 	if err := os.Chdir(filepath.Join(root, "testdata", "cwd")); err != nil {
 		t.Fatal(err)
@@ -127,5 +126,4 @@ func TestLookPath(t *testing.T) {
 			}
 		})
 	}
-	_ = os.Setenv("PATH", defaultPath)
 }

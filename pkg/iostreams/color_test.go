@@ -2,7 +2,6 @@ package iostreams
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/alecthomas/assert"
@@ -11,8 +10,6 @@ import (
 
 func Test_isColorEnabled(t *testing.T) {
 	preRun := func() {
-		os.Unsetenv("NO_COLOR")
-		os.Unsetenv("COLOR_ENABLED")
 		checkedNoColor = false // Reset it before each run
 	}
 
@@ -26,7 +23,7 @@ func Test_isColorEnabled(t *testing.T) {
 	t.Run("NO_COLOR", func(t *testing.T) {
 		preRun()
 
-		_ = os.Setenv("NO_COLOR", "")
+		t.Setenv("NO_COLOR", "")
 
 		got := isColorEnabled()
 		assert.False(t, got)
@@ -35,8 +32,8 @@ func Test_isColorEnabled(t *testing.T) {
 	t.Run("COLOR_ENABLED == 1", func(t *testing.T) {
 		preRun()
 
-		_ = os.Setenv("NO_COLOR", "")
-		_ = os.Setenv("COLOR_ENABLED", "1")
+		t.Setenv("NO_COLOR", "")
+		t.Setenv("COLOR_ENABLED", "1")
 
 		got := isColorEnabled()
 		assert.True(t, got)
@@ -45,8 +42,8 @@ func Test_isColorEnabled(t *testing.T) {
 	t.Run("COLOR_ENABLED == true", func(t *testing.T) {
 		preRun()
 
-		_ = os.Setenv("NO_COLOR", "")
-		_ = os.Setenv("COLOR_ENABLED", "true")
+		t.Setenv("NO_COLOR", "")
+		t.Setenv("COLOR_ENABLED", "true")
 
 		got := isColorEnabled()
 		assert.True(t, got)

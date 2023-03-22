@@ -38,7 +38,7 @@ func Test_HelperFunctions(t *testing.T) {
 			assert.Equal(t, ios.pagerCommand, got.pagerCommand)
 		})
 		t.Run("GLAB_PAGER=", func(t *testing.T) {
-			os.Setenv("GLAB_PAGER", "more")
+			t.Setenv("GLAB_PAGER", "more")
 
 			got := Init()
 
