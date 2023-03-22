@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -96,11 +95,7 @@ hosts:
     username: monalisa
     token: OTOKEN
 `, "")()
-
-	originalEnvVarToken, envIsSet := os.LookupEnv("GITLAB_TOKEN")
-	if envIsSet && originalEnvVarToken != "" {
-		_ = os.Setenv("GITLAB_TOKEN", "")
-	}
+	t.Setenv("GITLAB_TOKEN", "")
 
 	api.SetUserAgent("v1.2.3", "darwin", "arm64")
 	versionString := "glab/v1.2.3 (darwin, arm64)"
@@ -274,10 +269,6 @@ hosts:
 				t.Errorf("Request.Header = %q, want %q", h.String(), tt.want.headers)
 			}
 		})
-	}
-
-	if envIsSet && originalEnvVarToken != "" {
-		_ = os.Setenv("GITLAB_TOKEN", originalEnvVarToken)
 	}
 }
 

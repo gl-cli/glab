@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 
@@ -17,21 +16,11 @@ func eq(t *testing.T, got interface{}, expected interface{}) {
 	}
 }
 
-func clearEnvironmentVariables() (string, string, string) {
+func clearEnvironmentVariables(t *testing.T) {
 	// prevent using environment variables for test
-	envToken := os.Getenv("GITLAB_TOKEN")
-	if envToken != "" {
-		_ = os.Setenv("GITLAB_TOKEN", "")
-	}
-	envVisual := os.Getenv("VISUAL")
-	if envVisual != "" {
-		_ = os.Setenv("VISUAL", "")
-	}
-	envEditor := os.Getenv("EDITOR")
-	if envEditor != "" {
-		_ = os.Setenv("EDITOR", "")
-	}
-	return envToken, envVisual, envEditor
+	t.Setenv("GITLAB_TOKEN", "")
+	t.Setenv("VISUAL", "")
+	t.Setenv("EDITOR", "")
 }
 
 func Test_parseConfig(t *testing.T) {
@@ -42,8 +31,7 @@ hosts:
     token: OTOKEN
 aliases:
 `, "")()
-
-	envToken, _, _ := clearEnvironmentVariables()
+	clearEnvironmentVariables(t)
 
 	config, err := ParseConfig("config.yml")
 	eq(t, err, nil)
@@ -53,9 +41,6 @@ aliases:
 	token, err := config.Get("gitlab.com", "token")
 	eq(t, err, nil)
 	eq(t, token, "OTOKEN")
-	if envToken != "" {
-		_ = os.Setenv("GITLAB_TOKEN", "")
-	}
 }
 
 func Test_parseConfig_multipleHosts(t *testing.T) {
@@ -68,8 +53,7 @@ hosts:
     username: monalisa
     token: OTOKEN
 `, "")()
-
-	envToken, _, _ := clearEnvironmentVariables()
+	clearEnvironmentVariables(t)
 
 	config, err := ParseConfig("config.yml")
 	eq(t, err, nil)
@@ -79,9 +63,6 @@ hosts:
 	token, err := config.Get("gitlab.com", "token")
 	eq(t, err, nil)
 	eq(t, token, "OTOKEN")
-	if envToken != "" {
-		_ = os.Setenv("GITLAB_TOKEN", envToken)
-	}
 }
 
 func Test_parseConfig_Hosts(t *testing.T) {
@@ -92,8 +73,7 @@ hosts:
     token: OTOKEN
 `, `
 `)()
-
-	envToken, _, _ := clearEnvironmentVariables()
+	clearEnvironmentVariables(t)
 
 	config, err := ParseConfig("config.yml")
 	eq(t, err, nil)
@@ -103,10 +83,6 @@ hosts:
 	token, err := config.Get("gitlab.com", "token")
 	eq(t, err, nil)
 	eq(t, token, "OTOKEN")
-
-	if envToken != "" {
-		_ = os.Setenv("GITLAB_TOKEN", envToken)
-	}
 }
 
 func Test_parseConfig_Local(t *testing.T) {
@@ -139,9 +115,7 @@ local:
   browser: chrome
 `, `
 `)()
-
-	envVar := os.Getenv("BROWSER")
-	_ = os.Setenv("BROWSER", "opera")
+	t.Setenv("BROWSER", "opera")
 
 	config, err := ParseConfig("config.yml")
 	eq(t, err, nil)
@@ -156,9 +130,6 @@ local:
 	eq(t, browser, "opera")
 	l, _ := config.Local()
 	t.Log(l.All())
-	if envVar != "" {
-		_ = os.Setenv("BROWSER", envVar)
-	}
 }
 
 func Test_parseConfig_AliasesFile(t *testing.T) {
@@ -241,8 +212,7 @@ func Test_parseConfigFile(t *testing.T) {
 }
 
 func Test_parseConfigHostEnv(t *testing.T) {
-	os.Setenv("GITLAB_URI", "https://gitlab.mycompany.env")
-	defer os.Unsetenv("GITLAB_URI")
+	t.Setenv("GITLAB_URI", "https://gitlab.mycompany.env")
 
 	defer StubConfig(`---
 host: https://gitlab.mycompany.global

@@ -3,7 +3,6 @@ package clone
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -153,10 +152,8 @@ hosts:
   gitlab.com:
     token: qRC87Xg9Wd46RhB8J8sp
 `, "")()
-	token := os.Getenv("GITLAB_TOKEN")
-	if token != "" {
-		_ = os.Setenv("GITLAB_TOKEN", "")
-	}
+	t.Setenv("GITLAB_TOKEN", "")
+
 	io, stdin, stdout, stderr := iostreams.Test()
 	fac := &cmdutils.Factory{
 		IO: io,
@@ -183,9 +180,6 @@ hosts:
 	assert.Equal(t, "", out.Stderr())
 	assert.Equal(t, 1, cs.Count)
 	assert.Equal(t, "git clone git@gitlab.com:clemsbot/test.git", strings.Join(cs.Calls[0].Args, " "))
-	if token != "" {
-		_ = os.Setenv("GITLAB_TOKEN", token)
-	}
 }
 
 func Test_repoClone_group(t *testing.T) {
@@ -214,10 +208,8 @@ hosts:
   gitlab.com:
     token: qRC87Xg9Wd46RhB8J8sp
 `, "")()
-	token := os.Getenv("GITLAB_TOKEN")
-	if token != "" {
-		_ = os.Setenv("GITLAB_TOKEN", "")
-	}
+	t.Setenv("GITLAB_TOKEN", "")
+
 	io, stdin, stdout, stderr := iostreams.Test()
 	fac := &cmdutils.Factory{
 		IO: io,
@@ -255,9 +247,5 @@ hosts:
 
 	for i := 0; i < len(expectedRepoUrls); i++ {
 		assert.Equal(t, fmt.Sprintf("git clone %s", expectedRepoUrls[i]), strings.Join(cs.Calls[i].Args, " "))
-	}
-
-	if token != "" {
-		_ = os.Setenv("GITLAB_TOKEN", token)
 	}
 }
