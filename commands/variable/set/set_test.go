@@ -80,6 +80,16 @@ func Test_NewCmdSet(t *testing.T) {
 			cli:      `BAD-SECRET -v"cool"`,
 			wantsErr: true,
 		},
+		{
+			name: "environment scope in group",
+			cli:  `cool_secret --group coolGroup -v"cool"`,
+			wants: SetOpts{
+				Key:   "cool_secret",
+				Scope: "production",
+				Value: "cool",
+				Group: "coolGroup",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -129,7 +139,8 @@ func Test_setRun_project(t *testing.T) {
     			"value": "new value",
     			"variable_type": "env_var",
     			"protected": false,
-    			"masked": false
+    			"masked": false,
+				"scope": "production"
 			}
 		`),
 	)
@@ -167,7 +178,8 @@ func Test_setRun_group(t *testing.T) {
     			"value": "new value",
     			"variable_type": "env_var",
     			"protected": false,
-    			"masked": false
+    			"masked": false,
+				"scope": "production"
 			}
 		`),
 	)

@@ -65,11 +65,6 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Comma
 				return
 			}
 
-			if cmd.Flags().Changed("scope") && opts.Group != "" {
-				err = cmdutils.FlagError{Err: errors.New("scope is not required for group variables")}
-				return
-			}
-
 			opts.Value, err = variableutils.GetValue(opts.Value, opts.IO, args)
 			if err != nil {
 				return
@@ -110,11 +105,12 @@ func setRun(opts *SetOpts) error {
 	if opts.Group != "" {
 		// creating group-level variable
 		createVarOpts := &gitlab.CreateGroupVariableOptions{
-			Key:          gitlab.String(opts.Key),
-			Value:        gitlab.String(opts.Value),
-			VariableType: gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
-			Masked:       gitlab.Bool(opts.Masked),
-			Protected:    gitlab.Bool(opts.Protected),
+			Key:              gitlab.String(opts.Key),
+			Value:            gitlab.String(opts.Value),
+			EnvironmentScope: gitlab.String(opts.Scope),
+			Masked:           gitlab.Bool(opts.Masked),
+			Protected:        gitlab.Bool(opts.Protected),
+			VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
 		}
 		_, err = api.CreateGroupVariable(httpClient, opts.Group, createVarOpts)
 		if err != nil {
