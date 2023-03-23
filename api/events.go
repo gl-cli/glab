@@ -4,12 +4,16 @@ import (
 	"github.com/xanzy/go-gitlab"
 )
 
-var CurrentUserEvents = func(client *gitlab.Client) ([]*gitlab.ContributionEvent, error) {
+var CurrentUserEvents = func(client *gitlab.Client, opts *gitlab.ListContributionEventsOptions) ([]*gitlab.ContributionEvent, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
 
-	events, _, err := client.Events.ListCurrentUserContributionEvents(&gitlab.ListContributionEventsOptions{})
+	if opts.PerPage == 0 {
+		opts.PerPage = DefaultListLimit
+	}
+
+	events, _, err := client.Events.ListCurrentUserContributionEvents(opts)
 	if err != nil {
 		return nil, err
 	}
