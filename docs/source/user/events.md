@@ -20,7 +20,9 @@ glab user events [flags]
 ## Options
 
 ```plaintext
-  -a, --all   Get events from all projects
+  -a, --all            Get events from all projects
+  -p, --page int       Page number (default 1)
+  -P, --per-page int   Number of items to list per page (default 30)
 ```
 
 ## Options inherited from parent commands

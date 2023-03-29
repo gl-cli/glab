@@ -15,7 +15,7 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "events",
 		Short: "View user events",
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			apiClient, err := f.HttpClient()
 			if err != nil {
@@ -27,7 +27,16 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			events, err := api.CurrentUserEvents(apiClient)
+			l := &gitlab.ListContributionEventsOptions{}
+
+			if p, _ := cmd.Flags().GetInt("page"); p != 0 {
+				l.Page = p
+			}
+			if p, _ := cmd.Flags().GetInt("per-page"); p != 0 {
+				l.PerPage = p
+			}
+
+			events, err := api.CurrentUserEvents(apiClient, l)
 			if err != nil {
 				return err
 			}
@@ -65,6 +74,8 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 	}
 
 	cmd.Flags().BoolP("all", "a", false, "Get events from all projects")
+	cmd.Flags().IntP("page", "p", 1, "Page number")
+	cmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page")
 
 	return cmd
 }
