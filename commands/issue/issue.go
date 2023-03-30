@@ -3,8 +3,8 @@ package issue
 import (
 	"github.com/MakeNowJust/heredoc"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	issuableCloseCmd "gitlab.com/gitlab-org/cli/commands/issuable/close"
 	issueBoardCmd "gitlab.com/gitlab-org/cli/commands/issue/board"
-	issueCloseCmd "gitlab.com/gitlab-org/cli/commands/issue/close"
 	issueCreateCmd "gitlab.com/gitlab-org/cli/commands/issue/create"
 	issueDeleteCmd "gitlab.com/gitlab-org/cli/commands/issue/delete"
 	issueListCmd "gitlab.com/gitlab-org/cli/commands/issue/list"
@@ -40,7 +40,7 @@ func NewCmdIssue(f *cmdutils.Factory) *cobra.Command {
 
 	cmdutils.EnableRepoOverride(issueCmd, f)
 
-	issueCmd.AddCommand(issueCloseCmd.NewCmdClose(f))
+	issueCmd.AddCommand(issuableCloseCmd.NewCmdClose(f))
 	issueCmd.AddCommand(issueBoardCmd.NewCmdBoard(f))
 	issueCmd.AddCommand(issueCreateCmd.NewCmdCreate(f))
 	issueCmd.AddCommand(issueDeleteCmd.NewCmdDelete(f))
