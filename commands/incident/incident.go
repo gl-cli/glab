@@ -4,6 +4,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
+	incidentCloseCmd "gitlab.com/gitlab-org/cli/commands/incident/close"
 	incidentListCmd "gitlab.com/gitlab-org/cli/commands/incident/list"
 	incidentViewCmd "gitlab.com/gitlab-org/cli/commands/incident/view"
 
@@ -31,5 +32,6 @@ func NewCmdIncident(f *cmdutils.Factory) *cobra.Command {
 
 	incidentCmd.AddCommand(incidentListCmd.NewCmdList(f, nil))
 	incidentCmd.AddCommand(incidentViewCmd.NewCmdView(f))
+	incidentCmd.AddCommand(incidentCloseCmd.NewCmdClose(f))
 	return incidentCmd
 }

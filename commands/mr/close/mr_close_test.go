@@ -54,7 +54,7 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	}, err
 }
 
-func TestMrApprove(t *testing.T) {
+func TestMrClose(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
