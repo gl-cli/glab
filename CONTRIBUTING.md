@@ -152,7 +152,7 @@ Finished, fixed or delivered stories should be listed on a separate line in the 
 
 ### Message Example
 
-```sh
+```shell
 feat(kafka): implement exactly once delivery
 
 - ensure every event published to kafka is delivered exactly once
@@ -161,7 +161,7 @@ feat(kafka): implement exactly once delivery
 Delivers #065
 ```
 
-```sh
+```shell
 fix(login): allow provided user preferences to override default preferences
 
 - This allows the preferences associated with a user account to
