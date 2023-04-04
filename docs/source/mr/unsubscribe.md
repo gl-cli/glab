@@ -17,6 +17,12 @@ Unsubscribe from merge requests
 glab mr unsubscribe [<id> | <branch>] [flags]
 ```
 
+## Aliases
+
+```plaintext
+unsub
+```
+
 ## Examples
 
 ```plaintext

@@ -17,6 +17,12 @@ Add a to-do item to merge request
 glab mr todo [<id> | <branch>] [flags]
 ```
 
+## Aliases
+
+```plaintext
+add-todo
+```
+
 ## Options inherited from parent commands
 
 ```plaintext

@@ -17,6 +17,12 @@ Create labels for repository/project
 glab label create [flags]
 ```
 
+## Aliases
+
+```plaintext
+new
+```
+
 ## Examples
 
 ```plaintext

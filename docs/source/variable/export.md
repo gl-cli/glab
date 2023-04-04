@@ -17,6 +17,12 @@ Export project or group variables.
 glab variable export [flags]
 ```
 
+## Aliases
+
+```plaintext
+ex
+```
+
 ## Examples
 
 ```plaintext

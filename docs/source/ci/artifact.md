@@ -17,6 +17,12 @@ Download all artifacts from the last pipeline
 glab ci artifact <refName> <jobName> [flags]
 ```
 
+## Aliases
+
+```plaintext
+push
+```
+
 ## Examples
 
 ```plaintext

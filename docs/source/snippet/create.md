@@ -17,6 +17,12 @@ Create new snippet
 glab snippet create [path] [flags]
 ```
 
+## Aliases
+
+```plaintext
+new
+```
+
 ## Examples
 
 ```plaintext

@@ -17,6 +17,13 @@ Search for GitLab repositories and projects by name
 glab repo search [flags]
 ```
 
+## Aliases
+
+```plaintext
+find
+lookup
+```
+
 ## Examples
 
 ```plaintext

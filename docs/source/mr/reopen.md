@@ -17,6 +17,12 @@ Reopen merge requests
 glab mr reopen [<id>... | <branch>...] [flags]
 ```
 
+## Aliases
+
+```plaintext
+open
+```
+
 ## Examples
 
 ```plaintext

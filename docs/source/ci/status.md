@@ -17,6 +17,12 @@ View a running CI/CD pipeline on current or other branch specified
 glab ci status [flags]
 ```
 
+## Aliases
+
+```plaintext
+stats
+```
+
 ## Examples
 
 ```plaintext

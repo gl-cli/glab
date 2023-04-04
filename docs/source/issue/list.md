@@ -17,6 +17,12 @@ List project issues
 glab issue list [flags]
 ```
 
+## Aliases
+
+```plaintext
+ls
+```
+
 ## Examples
 
 ```plaintext

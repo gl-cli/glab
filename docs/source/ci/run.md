@@ -17,6 +17,12 @@ Create or run a new CI/CD pipeline
 glab ci run [flags]
 ```
 
+## Aliases
+
+```plaintext
+create
+```
+
 ## Examples
 
 ```plaintext

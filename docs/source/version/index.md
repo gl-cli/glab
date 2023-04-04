@@ -17,6 +17,12 @@ Show glab version information
 glab version [flags]
 ```
 
+## Aliases
+
+```plaintext
+v
+```
+
 ## Options inherited from parent commands
 
 ```plaintext

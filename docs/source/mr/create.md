@@ -17,6 +17,12 @@ Create new merge request
 glab mr create [flags]
 ```
 
+## Aliases
+
+```plaintext
+new
+```
+
 ## Examples
 
 ```plaintext

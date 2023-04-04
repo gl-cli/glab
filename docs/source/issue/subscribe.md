@@ -17,6 +17,12 @@ Subscribe to an issue
 glab issue subscribe <id> [flags]
 ```
 
+## Aliases
+
+```plaintext
+sub
+```
+
 ## Examples
 
 ```plaintext

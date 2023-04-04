@@ -27,6 +27,12 @@ Current respected settings:
 - glamour_style: Your desired Markdown renderer style. Options are dark, light, notty. Custom styles are allowed using [glamour](https://github.com/charmbracelet/glamour#styles)
 - glab_pager: Your desired pager command to use (e.g. less -R)
 
+## Aliases
+
+```plaintext
+conf
+```
+
 ## Options
 
 ```plaintext

@@ -217,6 +217,11 @@ func GenMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 		buf.WriteString(fmt.Sprintf("\n```plaintext\n%s\n```\n", cmd.UseLine()))
 	}
 
+	if len(cmd.Aliases) > 0 {
+		buf.WriteString("\n## Aliases\n\n")
+		buf.WriteString(fmt.Sprintf("```plaintext\n%s\n```\n", strings.Join(cmd.Aliases, "\n")))
+	}
+
 	if len(cmd.Example) > 0 {
 		buf.WriteString("\n## Examples\n\n")
 		buf.WriteString(fmt.Sprintf("```plaintext\n%s\n```\n", cmd.Example))

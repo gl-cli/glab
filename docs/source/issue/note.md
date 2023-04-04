@@ -17,6 +17,12 @@ Add a comment or note to an issue on GitLab
 glab issue note <issue-id> [flags]
 ```
 
+## Aliases
+
+```plaintext
+comment
+```
+
 ## Options
 
 ```plaintext

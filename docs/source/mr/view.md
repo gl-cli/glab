@@ -17,6 +17,12 @@ Display the title, body, and other information about a merge request.
 glab mr view {<id> | <branch>} [flags]
 ```
 
+## Aliases
+
+```plaintext
+show
+```
+
 ## Options
 
 ```plaintext

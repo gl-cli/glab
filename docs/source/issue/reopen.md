@@ -17,6 +17,12 @@ Reopen a closed issue
 glab issue reopen <id> [flags]
 ```
 
+## Aliases
+
+```plaintext
+open
+```
+
 ## Examples
 
 ```plaintext

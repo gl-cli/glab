@@ -17,6 +17,12 @@ Delete merge requests
 glab mr delete [<id> | <branch>] [flags]
 ```
 
+## Aliases
+
+```plaintext
+del
+```
+
 ## Examples
 
 ```plaintext

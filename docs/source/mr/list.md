@@ -17,6 +17,12 @@ List merge requests
 glab mr list [flags]
 ```
 
+## Aliases
+
+```plaintext
+ls
+```
+
 ## Examples
 
 ```plaintext
