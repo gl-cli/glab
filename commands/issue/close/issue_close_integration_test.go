@@ -65,7 +65,7 @@ func Test_issueClose_Integration(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			io, _, stdout, stderr := iostreams.Test()
-			f := cmdtest.StubFactory(glTestHost + "/glab-cli/test")
+			f := cmdtest.StubFactory(glTestHost + "/cli-automated-testing/test")
 			f.IO = io
 			f.IO.IsaTTY = true
 			f.IO.IsErrTTY = true

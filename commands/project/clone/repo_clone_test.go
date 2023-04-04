@@ -183,20 +183,20 @@ hosts:
 }
 
 func Test_repoClone_group(t *testing.T) {
-	names := []string{"glab-cli/test", "glab-cli/test-pv"}
-	urls := []string{"git@gitlab.com:glab-cli/test.git", "git@gitlab.com:glab-cli/test-pv.git"}
+	names := []string{"cli-automated-testing/test", "cli-automated-testing/homebrew-testing"}
+	urls := []string{"git@gitlab.com:cli-automated-testing/test.git", "git@gitlab.com:cli-automated-testing/homebrew-testing.git"}
 	repoCloneTest(t, names, urls, 0, false)
 }
 
 func Test_repoClone_group_single(t *testing.T) {
-	names := []string{"glab-cli/test"}
-	urls := []string{"git@gitlab.com:glab-cli/test.git"}
+	names := []string{"cli-automated-testing/test"}
+	urls := []string{"git@gitlab.com:cli-automated-testing/test.git"}
 	repoCloneTest(t, names, urls, 1, false)
 }
 
 func Test_repoClone_group_paginate(t *testing.T) {
-	names := []string{"glab-cli/test", "glab-cli/test-pv"}
-	urls := []string{"git@gitlab.com:glab-cli/test.git", "git@gitlab.com:glab-cli/test-pv.git"}
+	names := []string{"cli-automated-testing/test", "cli-automated-testing/homebrew-testing"}
+	urls := []string{"git@gitlab.com:cli-automated-testing/test.git", "git@gitlab.com:cli-automated-testing/homebrew-testing.git"}
 	repoCloneTest(t, names, urls, 1, true)
 }
 
@@ -226,7 +226,7 @@ hosts:
 	defer restore()
 
 	cmd := NewCmdClone(fac, nil)
-	cli := "-g glab-cli"
+	cli := "-g cli-automated-testing"
 	if perPage != 0 {
 		cli += fmt.Sprintf(" --per-page %d", perPage)
 	}

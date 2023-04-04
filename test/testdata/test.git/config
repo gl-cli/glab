@@ -4,7 +4,7 @@
 	bare = false
 	logallrefupdates = true
 [remote "origin"]
-	url = git@gitlab.com:glab-cli/test.git
+	url = git@gitlab.com:cli-automated-testing/test.git
 	fetch = +refs/heads/*:refs/remotes/origin/*
 	glab-resolved = base
 [branch "master"]

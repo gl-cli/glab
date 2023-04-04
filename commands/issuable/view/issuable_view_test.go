@@ -132,13 +132,13 @@ func TestNewCmdView_web_numberArg(t *testing.T) {
 	})
 	defer restoreCmd()
 
-	_, err := cmdtest.RunCommand(cmd, "225 -w -R glab-cli/test")
+	_, err := cmdtest.RunCommand(cmd, "225 -w -R cli-automated-testing/test")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	assert.Contains(t, stderr.String(), "Opening gitlab.com/glab-cli/test/-/issues/225 in your browser.")
+	assert.Contains(t, stderr.String(), "Opening gitlab.com/cli-automated-testing/test/-/issues/225 in your browser.")
 	assert.Equal(t, "", stdout.String())
 
 	if seenCmd == nil {
@@ -208,7 +208,7 @@ func TestNewCmdView(t *testing.T) {
 			stubFactory.IO.IsErrTTY = tt.isTTY
 			cmd := NewCmdView(stubFactory, tt.viewIssueType)
 			cmdutils.EnableRepoOverride(cmd, stubFactory)
-			_, err := cmdtest.RunCommand(cmd, fmt.Sprintf("%d -c -s -R glab-cli/test", tt.issueID))
+			_, err := cmdtest.RunCommand(cmd, fmt.Sprintf("%d -c -s -R cli-automated-testing/test", tt.issueID))
 			if err != nil {
 				t.Error(err)
 				return
@@ -229,7 +229,7 @@ func TestNewCmdView(t *testing.T) {
 					require.Equal(t, "", outErr)
 					require.Contains(t, out, fmt.Sprintf("%s #%d", testIssuable.title, tt.issueID))
 					require.Contains(t, out, testIssuable.description)
-					assert.Contains(t, out, fmt.Sprintf("https://gitlab.com/glab-cli/test/-/issues/%d", tt.issueID))
+					assert.Contains(t, out, fmt.Sprintf("https://gitlab.com/cli-automated-testing/test/-/issues/%d", tt.issueID))
 					assert.Contains(t, out, fmt.Sprintf("johnwick Marked %s as stale", testIssuable.issueType))
 				}
 			} else {

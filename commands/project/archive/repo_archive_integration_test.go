@@ -34,18 +34,18 @@ func Test_repoArchive_Integration(t *testing.T) {
 	}{
 		{
 			name:    "Has invalid format",
-			args:    argFlags{"asp", "master", "glab-cli/test", "test"},
+			args:    argFlags{"asp", "master", "cli-automated-testing/test", "test"},
 			wantMsg: []string{"format must be one of"},
 			wantErr: true,
 		},
 		{
 			name:    "Has valid format",
-			args:    argFlags{"zip", "master", "glab-cli/test", "test"},
+			args:    argFlags{"zip", "master", "cli-automated-testing/test", "test"},
 			wantMsg: []string{"Cloning...", "Complete... test.zip"},
 		},
 		{
 			name:    "Repo is invalid",
-			args:    argFlags{"zip", "master", "glab-cli/testzz", "test"},
+			args:    argFlags{"zip", "master", "cli-automated-testing/testzz", "test"},
 			wantMsg: []string{"404 Project Not Found"},
 			wantErr: true,
 		},

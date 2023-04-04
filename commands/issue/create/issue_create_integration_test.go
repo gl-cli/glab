@@ -54,13 +54,13 @@ func Test_IssueCreate_Integration(t *testing.T) {
 				Name:     "John Dev Wick",
 				Username: "jdwick",
 			},
-			WebURL:    glTestHost + "/glab-cli/test/-/issues/1",
+			WebURL:    glTestHost + "/cli-automated-testing/test/-/issues/1",
 			CreatedAt: &timer,
 		}, nil
 	}
 
 	io, _, stdout, stderr := iostreams.Test()
-	f := cmdtest.StubFactory(glTestHost + "/glab-cli/test")
+	f := cmdtest.StubFactory(glTestHost + "/cli-automated-testing/test")
 	f.IO = io
 	f.IO.IsaTTY = true
 	f.IO.IsErrTTY = true
@@ -77,7 +77,7 @@ func Test_IssueCreate_Integration(t *testing.T) {
 		"--linked-mr", "3",
 		"--confidential",
 		"--assignee", "testuser",
-		"-R", "glab-cli/test",
+		"-R", "cli-automated-testing/test",
 	}
 
 	cli := strings.Join(cliStr, " ")
@@ -88,8 +88,8 @@ func Test_IssueCreate_Integration(t *testing.T) {
 	outErr := stripansi.Strip(stderr.String())
 	expectedOut := fmt.Sprintf("#1 myissuetitle (%s)", utils.TimeToPrettyTimeAgo(timer))
 	cmdtest.Eq(t, cmdtest.FirstLine([]byte(out)), expectedOut)
-	cmdtest.Eq(t, outErr, "- Creating issue in glab-cli/test\n")
-	assert.Contains(t, out, glTestHost+"/glab-cli/test/-/issues/1")
+	cmdtest.Eq(t, outErr, "- Creating issue in cli-automated-testing/test\n")
+	assert.Contains(t, out, glTestHost+"/cli-automated-testing/test/-/issues/1")
 
 	api.CreateIssue = oldCreateIssue
 }

@@ -83,7 +83,7 @@ func TestNewCmdReleaseList(t *testing.T) {
 			name:    "releases list on test repo",
 			wantErr: false,
 			stdOutFunc: func(t *testing.T, out string) {
-				assert.Contains(t, out, "Showing 1 release on glab-cli/test")
+				assert.Contains(t, out, "Showing 1 release on cli-automated-testing/test")
 			},
 		},
 		{
@@ -115,7 +115,7 @@ func TestNewCmdReleaseList(t *testing.T) {
 	}
 
 	io, _, stdout, stderr := iostreams.Test()
-	f := cmdTestUtils.StubFactory("https://gitlab.com/glab-cli/test")
+	f := cmdTestUtils.StubFactory("https://gitlab.com/cli-automated-testing/test")
 	f.IO = io
 	f.IO.IsaTTY = true
 	f.IO.IsErrTTY = true
