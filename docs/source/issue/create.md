@@ -17,6 +17,12 @@ Create an issue
 glab issue create [flags]
 ```
 
+## Aliases
+
+```plaintext
+new
+```
+
 ## Examples
 
 ```plaintext

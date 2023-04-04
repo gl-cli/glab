@@ -17,6 +17,13 @@ Create a new project or group variable
 glab variable set <key> <value> [flags]
 ```
 
+## Aliases
+
+```plaintext
+new
+create
+```
+
 ## Examples
 
 ```plaintext

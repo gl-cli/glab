@@ -17,6 +17,12 @@ Get repository contributors list.
 glab repo contributors [flags]
 ```
 
+## Aliases
+
+```plaintext
+users
+```
+
 ## Examples
 
 ```plaintext

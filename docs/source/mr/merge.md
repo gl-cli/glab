@@ -17,6 +17,12 @@ Merge/Accept merge requests
 glab mr merge {<id> | <branch>} [flags]
 ```
 
+## Aliases
+
+```plaintext
+accept
+```
+
 ## Examples
 
 ```plaintext

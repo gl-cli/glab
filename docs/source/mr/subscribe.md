@@ -17,6 +17,12 @@ Subscribe to merge requests
 glab mr subscribe [<id> | <branch>] [flags]
 ```
 
+## Aliases
+
+```plaintext
+sub
+```
+
 ## Examples
 
 ```plaintext

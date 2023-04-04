@@ -17,6 +17,12 @@ Add a comment or note to merge request
 glab mr note [<id> | <branch>] [flags]
 ```
 
+## Aliases
+
+```plaintext
+comment
+```
+
 ## Options
 
 ```plaintext

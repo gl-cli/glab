@@ -17,6 +17,12 @@ Get issues related to a particular merge request.
 glab mr issues [<id> | <branch>] [flags]
 ```
 
+## Aliases
+
+```plaintext
+issue
+```
+
 ## Examples
 
 ```plaintext

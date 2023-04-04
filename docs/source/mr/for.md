@@ -17,6 +17,14 @@ Create new merge request for an issue
 glab mr for [flags]
 ```
 
+## Aliases
+
+```plaintext
+new-for
+create-for
+for-issue
+```
+
 ## Examples
 
 ```plaintext

@@ -17,6 +17,12 @@ List labels in repository
 glab label list [flags]
 ```
 
+## Aliases
+
+```plaintext
+ls
+```
+
 ## Examples
 
 ```plaintext

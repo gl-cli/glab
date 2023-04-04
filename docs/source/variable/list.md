@@ -17,6 +17,12 @@ List project or group variables
 glab variable list [flags]
 ```
 
+## Aliases
+
+```plaintext
+ls
+```
+
 ## Examples
 
 ```plaintext

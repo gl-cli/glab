@@ -17,6 +17,12 @@ Get list of repositories.
 glab repo list [flags]
 ```
 
+## Aliases
+
+```plaintext
+users
+```
+
 ## Examples
 
 ```plaintext

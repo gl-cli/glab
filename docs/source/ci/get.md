@@ -17,6 +17,12 @@ Get JSON of a running CI/CD pipeline on the current or other specified branch
 glab ci get [flags]
 ```
 
+## Aliases
+
+```plaintext
+stats
+```
+
 ## Examples
 
 ```plaintext

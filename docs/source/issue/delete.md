@@ -17,6 +17,12 @@ Delete an issue
 glab issue delete <id> [flags]
 ```
 
+## Aliases
+
+```plaintext
+del
+```
+
 ## Examples
 
 ```plaintext

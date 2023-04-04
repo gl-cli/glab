@@ -17,6 +17,12 @@ Revoke approval on a merge request
 glab mr revoke [<id> | <branch>] [flags]
 ```
 
+## Aliases
+
+```plaintext
+unapprove
+```
+
 ## Examples
 
 ```plaintext

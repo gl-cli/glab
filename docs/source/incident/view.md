@@ -17,6 +17,12 @@ Display the title, body, and other information about an incident.
 glab incident view <id> [flags]
 ```
 
+## Aliases
+
+```plaintext
+show
+```
+
 ## Examples
 
 ```plaintext

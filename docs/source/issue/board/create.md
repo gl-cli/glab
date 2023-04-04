@@ -17,6 +17,12 @@ Create a project issue board.
 glab issue board create [flags]
 ```
 
+## Aliases
+
+```plaintext
+new
+```
+
 ## Options
 
 ```plaintext

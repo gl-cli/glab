@@ -17,6 +17,12 @@ List project incidents
 glab incident list [flags]
 ```
 
+## Aliases
+
+```plaintext
+ls
+```
+
 ## Examples
 
 ```plaintext

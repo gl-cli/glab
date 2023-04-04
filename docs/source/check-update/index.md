@@ -17,6 +17,12 @@ Check for latest glab releases
 glab check-update [flags]
 ```
 
+## Aliases
+
+```plaintext
+update
+```
+
 ## Options inherited from parent commands
 
 ```plaintext

@@ -17,6 +17,12 @@ Delete a project or group variable
 glab variable delete <key> [flags]
 ```
 
+## Aliases
+
+```plaintext
+remove
+```
+
 ## Examples
 
 ```plaintext

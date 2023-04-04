@@ -17,6 +17,12 @@ List releases in a repository
 glab release list [flags]
 ```
 
+## Aliases
+
+```plaintext
+ls
+```
+
 ## Options inherited from parent commands
 
 ```plaintext

@@ -17,6 +17,12 @@ Unsubscribe to an issue
 glab issue unsubscribe <id> [flags]
 ```
 
+## Aliases
+
+```plaintext
+unsub
+```
+
 ## Examples
 
 ```plaintext
