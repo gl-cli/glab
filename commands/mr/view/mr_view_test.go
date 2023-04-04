@@ -104,7 +104,7 @@ func TestMRView_web_numberArg(t *testing.T) {
 	})
 	defer restoreCmd()
 
-	_, err := cmdtest.RunCommand(cmd, "225 -w -R glab-cli/test")
+	_, err := cmdtest.RunCommand(cmd, "225 -w -R cli-automated-testing/test")
 	if err != nil {
 		t.Error(err)
 		return
@@ -115,7 +115,7 @@ func TestMRView_web_numberArg(t *testing.T) {
 	stdout.Reset()
 	stderr.Reset()
 
-	assert.Contains(t, outErr, "Opening gitlab.com/glab-cli/test/-/merge_requests/225 in your browser.")
+	assert.Contains(t, outErr, "Opening gitlab.com/cli-automated-testing/test/-/merge_requests/225 in your browser.")
 	assert.Equal(t, out, "")
 
 	if seenCmd == nil {
@@ -164,7 +164,7 @@ func TestMRView(t *testing.T) {
 		cmd := NewCmdView(stubFactory)
 		cmdutils.EnableRepoOverride(cmd, stubFactory)
 
-		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R glab-cli/test")
+		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R cli-automated-testing/test")
 		if err != nil {
 			t.Error(err)
 			return
@@ -177,7 +177,7 @@ func TestMRView(t *testing.T) {
 
 		require.Contains(t, out, "mrTitle !13")
 		require.Equal(t, outErr, "")
-		assert.Contains(t, out, "https://gitlab.com/glab-cli/test/-/merge_requests/13")
+		assert.Contains(t, out, "https://gitlab.com/cli-automated-testing/test/-/merge_requests/13")
 		assert.Contains(t, out, "johnwick Marked MR as ready")
 	})
 
@@ -188,7 +188,7 @@ func TestMRView(t *testing.T) {
 		cmd := NewCmdView(stubFactory)
 		cmdutils.EnableRepoOverride(cmd, stubFactory)
 
-		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R glab-cli/test")
+		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R cli-automated-testing/test")
 		if err != nil {
 			t.Error(err)
 			return

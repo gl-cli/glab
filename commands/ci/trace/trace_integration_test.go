@@ -42,7 +42,7 @@ hosts:
 
 	var io *iostreams.IOStreams
 	io, _, stdout, _ = iostreams.Test()
-	stubFactory, _ = cmdtest.StubFactoryWithConfig(glTestHost + "/glab-cli/test.git")
+	stubFactory, _ = cmdtest.StubFactoryWithConfig(glTestHost + "/cli-automated-testing/test.git")
 	stubFactory.IO = io
 	stubFactory.IO.IsaTTY = true
 	stubFactory.IO.IsErrTTY = true
@@ -55,7 +55,7 @@ hosts:
 		t.Fatal(err)
 	}
 
-	gitCmd = exec.Command("git", "checkout", "test-cli")
+	gitCmd = exec.Command("git", "checkout", "master")
 	gitCmd.Dir = repo
 	if out, err := gitCmd.CombinedOutput(); err != nil {
 		t.Error(string(out))
@@ -71,24 +71,24 @@ hosts:
 			name: "Has no arg",
 			args: ``,
 			wantOpts: &TraceOpts{
-				Branch: "test-cli",
+				Branch: "master",
 				JobID:  0,
 			},
 		},
 		{
 			name: "Has arg with job-id",
-			args: `224356863`,
+			args: `3509632552`,
 			wantOpts: &TraceOpts{
-				Branch: "test-cli",
-				JobID:  224356863,
+				Branch: "master",
+				JobID:  3509632552,
 			},
 		},
 		{
 			name: "On a specified repo with job ID",
-			args: "224356863 -X glab-cli/test",
+			args: "3509632552 -X cli-automated-testing/test",
 			wantOpts: &TraceOpts{
-				Branch: "test-cli",
-				JobID:  224356863,
+				Branch: "master",
+				JobID:  3509632552,
 			},
 		},
 	}
@@ -127,7 +127,7 @@ func TestTraceRun(t *testing.T) {
 
 	var io *iostreams.IOStreams
 	io, _, stdout, _ = iostreams.Test()
-	stubFactory = cmdtest.StubFactory(glTestHost + "/glab-cli/test.git")
+	stubFactory = cmdtest.StubFactory(glTestHost + "/cli-automated-testing/test.git")
 	stubFactory.IO = io
 	stubFactory.IO.IsaTTY = true
 	stubFactory.IO.IsErrTTY = true
@@ -144,20 +144,20 @@ func TestTraceRun(t *testing.T) {
 				assert.Contains(t, out, "Getting job trace...")
 				assert.Contains(t, out, "Showing logs for ")
 				assert.Contains(t, out, `Preparing the "docker+machine"`)
-				assert.Contains(t, out, `$ echo "After script section"`)
+				assert.Contains(t, out, `$ echo "This is a after script section"`)
 				assert.Contains(t, out, "Job succeeded")
 			},
 		},
 		{
 			desc: "Has arg with job-id",
-			args: `886379752`,
+			args: `3509632552`,
 			assertContains: func(t *testing.T, out string) {
 				assert.Contains(t, out, "Getting job trace...\n")
 			},
 		},
 		{
 			desc: "On a specified repo with job ID",
-			args: "886379752 -X glab-cli/test",
+			args: "3509632552 -X cli-automated-testing/test",
 			assertContains: func(t *testing.T, out string) {
 				assert.Contains(t, out, "Getting job trace...\n")
 			},
@@ -173,7 +173,7 @@ func TestTraceRun(t *testing.T) {
 				as, teardown := prompt.InitAskStubber()
 				defer teardown()
 
-				as.StubOne("cleanup4 (886379752) - success")
+				as.StubOne("cleanup4 (3509632552) - success")
 			}
 			argv, err := shlex.Split(tt.args)
 			if err != nil {

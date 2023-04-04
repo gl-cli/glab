@@ -108,7 +108,7 @@ func Test_NewCmdLogin(t *testing.T) {
 			t.Setenv("GLAB_CONFIG_DIR", d)
 
 			io, stdin, _, _ := iostreams.Test()
-			f := cmdtest.StubFactory("https://gitlab.com/glab-cli/test")
+			f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test")
 
 			f.IO = io
 			io.IsaTTY = true

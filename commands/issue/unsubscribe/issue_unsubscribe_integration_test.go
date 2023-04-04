@@ -50,12 +50,12 @@ func TestNewCmdUnsubscribe_Integration(t *testing.T) {
 		{
 			Name:   "Issue Exists",
 			Issue:  "1",
-			stderr: "- Unsubscribing from Issue #1 in glab-cli/test\n✓ Unsubscribed\n",
+			stderr: "- Unsubscribing from Issue #1 in cli-automated-testing/test\n✓ Unsubscribed\n",
 		},
 		{
 			Name:    "Issue Does Not Exist",
 			Issue:   "0",
-			stderr:  "- Unsubscribing from Issue #0 in glab-cli/test\nerror expected\n",
+			stderr:  "- Unsubscribing from Issue #0 in cli-automated-testing/test\nerror expected\n",
 			wantErr: true,
 		},
 	}
@@ -63,7 +63,7 @@ func TestNewCmdUnsubscribe_Integration(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			io, _, _, stderr := iostreams.Test()
-			f := cmdtest.StubFactory(glTestHost + "/glab-cli/test")
+			f := cmdtest.StubFactory(glTestHost + "/cli-automated-testing/test")
 			f.IO = io
 			f.IO.IsaTTY = true
 			f.IO.IsErrTTY = true
