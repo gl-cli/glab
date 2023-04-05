@@ -40,7 +40,8 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentErr bool) error {
 	if err != nil {
 		return err
 	}
-	releases, _, err := apiClient.Releases.ListReleases(repo.FullName(), &gitlab.ListReleasesOptions{Page: 1, PerPage: 1})
+	releases, _, err := apiClient.Releases.ListReleases(
+		repo.FullName(), &gitlab.ListReleasesOptions{ListOptions: gitlab.ListOptions{Page: 1, PerPage: 1}})
 	if err != nil {
 		if silentErr {
 			return nil

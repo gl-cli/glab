@@ -25,7 +25,8 @@ var PlayPipelineJob = func(client *gitlab.Client, pid int, repo string) (*gitlab
 	if client == nil {
 		client = apiClient.Lab()
 	}
-	pipe, _, err := client.Jobs.PlayJob(repo, pid)
+	playOptions := gitlab.PlayJobOptions{}
+	pipe, _, err := client.Jobs.PlayJob(repo, pid, &playOptions)
 	if err != nil {
 		return nil, err
 	}
