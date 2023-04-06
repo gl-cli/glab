@@ -9,5 +9,5 @@ import (
 )
 
 func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
-	return issuableCloseCmd.NewCmdClose(f, issuable.TypeIssue)
+	return issuableCloseCmd.NewCmdClose(f, issuable.TypeIncident)
 }
