@@ -29,6 +29,7 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 - [Environment variables](#environment-variables)
 - [Issues](#issues)
 - [Contributing](#contributing)
+- [Inspiration](#inspiration)
 
 ## Usage
 
@@ -226,3 +227,9 @@ If you have an issue: report it on the [issue tracker](https://gitlab.com/gitlab
 ## Contributing
 
 Feel like contributing? That's awesome! We have a [contributing guide](https://gitlab.com/gitlab-org/cli/-/blob/main/CONTRIBUTING.md) and [Code of conduct](https://gitlab.com/gitlab-org/cli/-/blob/main/CODE_OF_CONDUCT.md) to help guide you.
+
+## Inspiration
+
+The GitLab CLI was adopted from [Clement Sam](https://gitlab.com/profclems) in 2022 to serve as the official CLI of GitLab. Over the years the project has been inspired by both the [GitHub CLI](https://github.com/cli/cli) and [Zaq? Wiedmann's](https://gitlab.com/zaquestion) [lab](https://github.com/zaquestion/lab).
+
+Lab has served as the foundation for many of the GitLab CI/CD commands including `ci view` and `ci trace`.
