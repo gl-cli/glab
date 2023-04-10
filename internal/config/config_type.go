@@ -342,15 +342,15 @@ func (c *fileConfig) GetWithSource(hostname, key string, searchENVVars bool) (st
 		if hostCfg != nil {
 			hostValue, err = hostCfg.GetStringValue(key)
 
-			if err != nil {
-				if !errors.As(err, &notFound) {
-					return "", "", err
-				} else if key == "token" {
-					token, err := keyring.Get("glab:"+hostname, "")
+			if err != nil && !errors.As(err, &notFound) {
+				return "", "", err
+			}
 
-					if err == nil {
-						return token, "keyring", nil
-					}
+			if (err != nil || hostValue == "") && key == "token" {
+				token, err := keyring.Get("glab:"+hostname, "")
+
+				if err == nil {
+					return token, "keyring", nil
 				}
 			}
 

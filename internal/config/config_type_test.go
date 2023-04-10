@@ -6,6 +6,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/stretchr/testify/assert"
+	"github.com/zalando/go-keyring"
 )
 
 func Test_fileConfig_Set(t *testing.T) {
@@ -105,4 +106,24 @@ host: gitlab.com
 	assert.Equal(t, len(aliases.All()), 2)
 	expansion, _ := aliases.Get("co")
 	assert.Equal(t, expansion, "mr checkout")
+}
+
+func Test_getFromKeyring(t *testing.T) {
+	c := NewBlankConfig()
+
+	err := c.Set("gitlab.com", "api_host", "gitlab.com")
+	assert.NoError(t, err)
+
+	keyring.MockInit()
+	token, err := c.Get("gitlab.com", "token")
+	assert.Nil(t, err)
+	assert.Equal(t, token, "")
+
+	err = keyring.Set("glab:gitlab.com", "", "glpat-1234")
+	assert.NoError(t, err)
+
+	token, err = c.Get("gitlab.com", "token")
+
+	assert.Nil(t, err)
+	assert.Equal(t, token, "glpat-1234")
 }

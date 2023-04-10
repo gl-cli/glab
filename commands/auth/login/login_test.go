@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
+	"github.com/zalando/go-keyring"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
@@ -100,7 +101,28 @@ func Test_NewCmdLogin(t *testing.T) {
 			cli:      "--token xxxx --stdin",
 			wantsErr: true,
 		},
+		{
+			name: "no keyring, token",
+			cli:  "--token glpat-123",
+			wants: LoginOptions{
+				Hostname:   "gitlab.com",
+				Token:      "glpat-123",
+				UseKeyring: false,
+			},
+		},
+		{
+			name: "keyring, token",
+			cli:  "--token glpat-123 --use-keyring",
+			wants: LoginOptions{
+				Hostname:   "gitlab.com",
+				Token:      "glpat-123",
+				UseKeyring: true,
+			},
+		},
 	}
+
+	// Enable keyring mocking, so no changes are made to it accidentaly and to prevent failing in some environments
+	keyring.MockInit()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -230,4 +252,25 @@ func Test_hostnameValidator(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_keyringLogin(t *testing.T) {
+	keyring.MockInit()
+
+	token, err := keyring.Get("glab:gitlab.com", "")
+	assert.Error(t, err)
+	assert.Equal(t, "", token)
+
+	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test")
+	cmd := NewCmdLogin(f)
+	cmd.Flags().BoolP("help", "x", false, "")
+
+	cmd.SetArgs([]string{"--use-keyring", "--token", "glpat-1234"})
+
+	_, err = cmd.ExecuteC()
+	assert.Nil(t, err)
+
+	token, err = keyring.Get("glab:gitlab.com", "")
+	assert.NoError(t, err)
+	assert.Equal(t, "glpat-1234", token)
 }
