@@ -343,7 +343,6 @@ func (c *fileConfig) GetWithSource(hostname, key string, searchENVVars bool) (st
 			hostValue, err = hostCfg.GetStringValue(key)
 
 			if err != nil {
-
 				if !errors.As(err, &notFound) {
 					return "", "", err
 				} else if key == "token" {
