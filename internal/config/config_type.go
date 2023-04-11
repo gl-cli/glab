@@ -203,7 +203,7 @@ func NewBlankRoot() *yaml.Node {
 					},
 					{
 						Kind:  yaml.ScalarNode,
-						Value: "false",
+						Value: "true",
 					},
 					{
 						HeadComment: "Whether or not to display hyperlink escapes when listing things like issues or MRs",

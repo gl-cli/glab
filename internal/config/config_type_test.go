@@ -32,7 +32,7 @@ browser:
 # Set your desired markdown renderer style. Available options are [dark, light, notty] or set a custom style. Refer to https://github.com/charmbracelet/glamour#styles
 glamour_style: dark
 # Allow glab to automatically check for updates and notify you when there are new updates
-check_update: false
+check_update: true
 # Whether or not to display hyperlink escapes when listing things like issues or MRs
 display_hyperlinks: false
 # configuration specific for gitlab instances
@@ -74,7 +74,7 @@ browser:
 # Set your desired markdown renderer style. Available options are [dark, light, notty] or set a custom style. Refer to https://github.com/charmbracelet/glamour#styles
 glamour_style: dark
 # Allow glab to automatically check for updates and notify you when there are new updates
-check_update: false
+check_update: true
 # Whether or not to display hyperlink escapes when listing things like issues or MRs
 display_hyperlinks: false
 # configuration specific for gitlab instances
