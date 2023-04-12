@@ -6,6 +6,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/zalando/go-keyring"
 )
 
@@ -111,19 +112,20 @@ host: gitlab.com
 func Test_getFromKeyring(t *testing.T) {
 	c := NewBlankConfig()
 
-	err := c.Set("gitlab.com", "api_host", "gitlab.com")
-	assert.NoError(t, err)
+	// Ensure host exists and its token is empty
+	err := c.Set("gitlab.com", "token", "")
+	require.NoError(t, err)
 
 	keyring.MockInit()
 	token, err := c.Get("gitlab.com", "token")
-	assert.Nil(t, err)
-	assert.Equal(t, token, "")
+	assert.NoError(t, err)
+	assert.Equal(t, "", token)
 
 	err = keyring.Set("glab:gitlab.com", "", "glpat-1234")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	token, err = c.Get("gitlab.com", "token")
 
-	assert.Nil(t, err)
-	assert.Equal(t, token, "glpat-1234")
+	assert.NoError(t, err)
+	assert.Equal(t, "glpat-1234", token)
 }
