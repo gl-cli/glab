@@ -5,7 +5,6 @@ export PATH := $(abspath bin/):${PATH}
 
 # Build variables
 export CGO_ENABLED ?= 0
-export GOOS = $(shell go env GOOS)
 ifeq (${VERBOSE}, 1)
 ifeq ($(filter -v,${GOARGS}),)
 	GOARGS += -v
@@ -48,7 +47,6 @@ endif
 
 GO_LDFLAGS := -X main.buildDate=$(BUILD_DATE) $(GO_LDFLAGS)
 GO_LDFLAGS := $(GO_LDFLAGS) -X main.version=$(GLAB_VERSION)
-GO_LDFLAGS := $(GO_LDFLAGS) -X main.platform=$(GOOS)
 GOURL ?= gitlab.com/gitlab-org/cli
 BUILDLOC ?= ./bin/glab
 

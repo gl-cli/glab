@@ -36,7 +36,7 @@ var (
 	// buildDate is set dynamically at build
 	buildDate string
 	// platform is set dynamically at build
-	platform string
+	platform = runtime.GOOS
 )
 
 // debug is set dynamically at build and can be overridden by
