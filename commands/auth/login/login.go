@@ -102,7 +102,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.Hostname, "hostname", "h", "", "The hostname of the GitLab instance to authenticate with")
 	cmd.Flags().StringVarP(&opts.Token, "token", "t", "", "Your GitLab access token")
 	cmd.Flags().BoolVar(&tokenStdin, "stdin", false, "Read token from standard input")
-	cmd.Flags().BoolVar(&opts.UseKeyring, "use-keyring", false, "Store token in your operating system keyring")
+	cmd.Flags().BoolVar(&opts.UseKeyring, "use-keyring", false, "Store token in your operating system's keyring")
 
 	return cmd
 }
