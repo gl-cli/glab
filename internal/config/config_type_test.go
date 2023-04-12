@@ -115,16 +115,18 @@ func Test_getFromKeyring(t *testing.T) {
 	// Ensure host exists and its token is empty
 	err := c.Set("gitlab.com", "token", "")
 	require.NoError(t, err)
+	err = c.Write()
+	require.NoError(t, err)
 
 	keyring.MockInit()
-	token, err := c.Get("gitlab.com", "token")
+	token, _, err := c.GetWithSource("gitlab.com", "token", false)
 	assert.NoError(t, err)
 	assert.Equal(t, "", token)
 
 	err = keyring.Set("glab:gitlab.com", "", "glpat-1234")
 	require.NoError(t, err)
 
-	token, err = c.Get("gitlab.com", "token")
+	token, _, err = c.GetWithSource("gitlab.com", "token", false)
 
 	assert.NoError(t, err)
 	assert.Equal(t, "glpat-1234", token)
