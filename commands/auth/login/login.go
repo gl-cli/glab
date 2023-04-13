@@ -15,6 +15,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
+	"github.com/zalando/go-keyring"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -29,6 +30,8 @@ type LoginOptions struct {
 
 	Hostname string
 	Token    string
+
+	UseKeyring bool
 }
 
 var opts *LoginOptions
@@ -99,6 +102,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.Hostname, "hostname", "h", "", "The hostname of the GitLab instance to authenticate with")
 	cmd.Flags().StringVarP(&opts.Token, "token", "t", "", "Your GitLab access token")
 	cmd.Flags().BoolVar(&tokenStdin, "stdin", false, "Read token from standard input")
+	cmd.Flags().BoolVar(&opts.UseKeyring, "use-keyring", false, "Store token in your operating system's keyring")
 
 	return cmd
 }
@@ -115,12 +119,17 @@ func loginRun() error {
 			return errors.New("empty hostname would leak oauth_token")
 		}
 
-		err := cfg.Set(opts.Hostname, "token", opts.Token)
-		if err != nil {
-			return err
+		if opts.UseKeyring {
+			return keyring.Set("glab:"+opts.Hostname, "", opts.Token)
+		} else {
+			err := cfg.Set(opts.Hostname, "token", opts.Token)
+			if err != nil {
+				return err
+			}
+
+			return cfg.Write()
 		}
 
-		return cfg.Write()
 	}
 
 	hostname := opts.Hostname
@@ -211,9 +220,16 @@ func loginRun() error {
 		return errors.New("empty hostname would leak token")
 	}
 
-	err = cfg.Set(hostname, "token", token)
-	if err != nil {
-		return err
+	if opts.UseKeyring {
+		err = keyring.Set("glab:"+hostname, "", token)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = cfg.Set(hostname, "token", token)
+		if err != nil {
+			return err
+		}
 	}
 	err = cfg.Set(hostname, "api_host", apiHostname)
 	if err != nil {

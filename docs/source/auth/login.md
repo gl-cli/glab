@@ -41,6 +41,7 @@ $ glab auth login --hostname salsa.debian.org
   -h, --hostname string   The hostname of the GitLab instance to authenticate with
       --stdin             Read token from standard input
   -t, --token string      Your GitLab access token
+      --use-keyring       Store token in your operating system's keyring
 ```
 
 ## Options inherited from parent commands
