@@ -137,7 +137,7 @@ hosts:
 				Hostname: "invalid.instance",
 			},
 			wantErr: true,
-			stderr:  "x invalid.instance not authenticated with glab. Run `glab auth login --hostname invalid.instance` to authenticate",
+			stderr:  "x invalid.instance not authenticated with glab. Run `glab auth login --hostname invalid.instance` to authenticate\n",
 		},
 	}
 

@@ -130,7 +130,7 @@ func statusRun(opts *StatusOpts) error {
 	}
 
 	if opts.Hostname != "" && hostNotAuthenticated {
-		fmt.Fprintf(stderr, "%s %s not authenticated with glab. Run `%s %s` to authenticate", c.FailedIcon(), opts.Hostname, c.Bold("glab auth login --hostname"), c.Bold(opts.Hostname))
+		fmt.Fprintf(stderr, "%s %s not authenticated with glab. Run `%s %s` to authenticate\n", c.FailedIcon(), opts.Hostname, c.Bold("glab auth login --hostname"), c.Bold(opts.Hostname))
 		return cmdutils.SilentError
 	}
 
