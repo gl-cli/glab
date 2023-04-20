@@ -1,1 +1,1 @@
-This [documentation](https://about.gitlab.com/contributing/code-of-conduct/) has been moved.
+This [documentation](https://about.gitlab.com/community/contribute/code-of-conduct/) has been moved.
