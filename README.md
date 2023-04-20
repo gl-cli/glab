@@ -97,7 +97,7 @@ Homebrew is the officially supported package manager for macOS, Linux, and Windo
 
 ### Other installation methods
 
-Other options to install the GitLab CLI that may not be officially support or are maintained by the community are [also available](docs/installation_options.md)
+Other options to install the GitLab CLI that may not be officially support or are maintained by the community are [also available](docs/installation_options.md).
 
 ### Building from source
 
