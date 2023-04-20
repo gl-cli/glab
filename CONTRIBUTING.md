@@ -165,8 +165,7 @@ Delivers #065
 fix(login): allow provided user preferences to override default preferences
 
 - This allows the preferences associated with a user account to
-override and customize the default app preference like theme,
-timezone e.t.c
+override and customize the default app preferences like theme or timezone.
 
 Fixes #025
 ```
