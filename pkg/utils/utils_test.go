@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_PrettyTimeAgo(t *testing.T) {
@@ -183,6 +185,37 @@ func Test_Map(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf(`want %v; but got %v`, tt.want, got)
 			}
+		})
+	}
+}
+
+func TestIsValidURL(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected bool
+	}{
+		{
+			name:     "invalid empty url",
+			input:    "",
+			expected: false,
+		},
+		{
+			name:     "invalid url without correct scheme",
+			input:    "https:/gitlab.com/group",
+			expected: false,
+		},
+		{
+			name:     "ok with correct url",
+			input:    "https://gitlab.com/group",
+			expected: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actualIsValid := IsValidURL(test.input)
+			assert.Equal(t, test.expected, actualIsValid)
 		})
 	}
 }

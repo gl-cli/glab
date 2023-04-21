@@ -281,6 +281,20 @@ func TestGetDefaultBranch(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("get branch from HEAD", func(t *testing.T) {
+		cs, teardown := test.InitCmdStubber()
+		defer teardown()
+
+		cs.Stub(`* remote origin
+Fetch URL: https://gitlab.com/gitlab-community/cli.git
+Push  URL: https://gitlab.com/gitlab-community/cli.git
+HEAD branch: main`)
+
+		got, err := GetDefaultBranch("origin")
+		assert.Nil(t, err)
+		assert.Equal(t, "main", got)
+	})
 }
 
 func TestGetRemoteURL(t *testing.T) {
