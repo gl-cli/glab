@@ -139,7 +139,7 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 	repoCloneCmd.Flags().BoolVarP(&opts.Owned, "mine", "m", false, "Limit by projects in the group owned by the current authenticated user. Used with --group flag")
 	repoCloneCmd.Flags().StringVarP(&opts.Visibility, "visibility", "v", "", "Limit by visibility {public, internal, or private}. Used with --group flag")
 	repoCloneCmd.Flags().BoolVarP(&opts.WithIssuesEnabled, "with-issues-enabled", "I", false, "Limit by projects with issues feature enabled. Default is false. Used with --group flag")
-	repoCloneCmd.Flags().BoolVarP(&opts.WithMREnabled, "with-mr-enabled", "M", false, "Limit by projects with issues feature enabled. Default is false. Used with --group flag")
+	repoCloneCmd.Flags().BoolVarP(&opts.WithMREnabled, "with-mr-enabled", "M", false, "Limit by projects with merge requests feature enabled. Default is false. Used with --group flag")
 	repoCloneCmd.Flags().BoolVarP(&opts.WithShared, "with-shared", "S", false, "Include projects shared to this group. Default is false. Used with --group flag")
 	repoCloneCmd.Flags().BoolVarP(&opts.Paginate, "paginate", "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects --per-page")
 	repoCloneCmd.Flags().IntVarP(&opts.Page, "page", "", 1, "Page number")
