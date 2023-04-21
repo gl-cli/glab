@@ -50,6 +50,9 @@ are maintained by the community.
 - [WinGet](https://github.com/microsoft/winget-cli)
   - Install with: `winget install glab.glab`
   - Update with: `winget install glab.glab`
+- [Chocolatey](https://chocolatey.org)
+  - Install with: `choco install glab`
+  - Update with: `choco upgrade glab`
 - [scoop](https://scoop.sh)
   - Install with: `scoop install glab`
   - Update with: `scoop update glab`
