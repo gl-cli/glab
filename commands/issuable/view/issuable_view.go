@@ -70,13 +70,9 @@ func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 
 			opts.Issue = issue
 
-			// Issues and incidents are the same kind, but with different issueType.
-			// `issue view` can display issues of all types including incidents
-			// `incident view` on the other hand, should display only incidents, and treat all other issue types as not found
-			//
-			// When using `incident view` with non incident's IDs, print an error.
-			if issueType == issuable.TypeIncident && *opts.Issue.IssueType != string(issuable.TypeIncident) {
-				fmt.Fprintln(opts.IO.StdErr, "Incident not found, but an issue with the provided ID exists. Run `glab issue view <id>` to view it.")
+			valid, msg := issuable.ValidateIncidentCmd(issueType, "view", opts.Issue)
+			if !valid {
+				fmt.Fprintln(opts.IO.StdErr, msg)
 				return nil
 			}
 

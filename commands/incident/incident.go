@@ -6,6 +6,7 @@ import (
 
 	incidentCloseCmd "gitlab.com/gitlab-org/cli/commands/incident/close"
 	incidentListCmd "gitlab.com/gitlab-org/cli/commands/incident/list"
+	incidentReopenCmd "gitlab.com/gitlab-org/cli/commands/incident/reopen"
 	incidentViewCmd "gitlab.com/gitlab-org/cli/commands/incident/view"
 
 	"github.com/spf13/cobra"
@@ -33,5 +34,6 @@ func NewCmdIncident(f *cmdutils.Factory) *cobra.Command {
 	incidentCmd.AddCommand(incidentListCmd.NewCmdList(f, nil))
 	incidentCmd.AddCommand(incidentViewCmd.NewCmdView(f))
 	incidentCmd.AddCommand(incidentCloseCmd.NewCmdClose(f))
+	incidentCmd.AddCommand(incidentReopenCmd.NewCmdReopen(f))
 	return incidentCmd
 }
