@@ -55,7 +55,6 @@
         "name": "test asset",
         "url": "https://gitlab.com/some/location/1133",
         "direct_asset_url": "https://gitlab.com/OWNER/REPO/-/releases/0.0.1/downloads/test_asset",
-        "external": true,
         "link_type": "other"
       }
     ]
