@@ -21,8 +21,6 @@ If no tag is specified, assets are downloaded from the latest release.
 Use `--asset-name` to specify a file name to download from the release assets.
 `--asset-name` flag accepts glob patterns.
 
-Unless `--include-external` flag is specified, external files are not downloaded.
-
 ```plaintext
 glab release download <tag> [flags]
 ```
@@ -46,7 +44,6 @@ $ glab release download v1.10.1 --asset-name="*.tar.gz"
 ```plaintext
   -n, --asset-name stringArray   Download only assets that match the name or a glob pattern
   -D, --dir string               Directory to download the release assets to (default ".")
-  -x, --include-external         Include external asset files
 ```
 
 ## Options inherited from parent commands

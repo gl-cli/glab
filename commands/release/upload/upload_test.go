@@ -99,7 +99,6 @@ func TestReleaseUpload(t *testing.T) {
 						"name":"test_file.txt",
 						"url":"https://gitlab.example.com/mynamespace/hello/-/jobs/688/artifacts/raw/fixtures/test_file.txt",
 						"direct_asset_url":"https://gitlab.example.com/mynamespace/hello/-/releases/0.0.1/downloads/fixtures/test_file.txt",
-						"external":false,
 						"link_type":"other"
 						}`)(req)
 					return resp, nil

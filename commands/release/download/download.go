@@ -26,7 +26,6 @@ type DownloadOpts struct {
 	Asset      string
 	AssetNames []string
 	Dir        string
-	External   bool
 
 	IO         *iostreams.IOStreams
 	HTTPClient func() (*gitlab.Client, error)
@@ -48,8 +47,6 @@ func NewCmdDownload(f *cmdutils.Factory, runE func(opts *DownloadOpts) error) *c
 			If no tag is specified, assets are downloaded from the latest release.
 			Use %[1]s--asset-name%[1]s to specify a file name to download from the release assets.
 			%[1]s--asset-name%[1]s flag accepts glob patterns.
-
-			Unless %[1]s--include-external%[1]s flag is specified, external files are not downloaded.
 		`, "`"),
 		Args: cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
@@ -80,7 +77,6 @@ func NewCmdDownload(f *cmdutils.Factory, runE func(opts *DownloadOpts) error) *c
 
 	cmd.Flags().StringArrayVarP(&opts.AssetNames, "asset-name", "n", []string{}, "Download only assets that match the name or a glob pattern")
 	cmd.Flags().StringVarP(&opts.Dir, "dir", "D", ".", "Directory to download the release assets to")
-	cmd.Flags().BoolVarP(&opts.External, "include-external", "x", false, "Include external asset files")
 
 	return cmd
 }
@@ -130,9 +126,6 @@ func downloadRun(opts *DownloadOpts) error {
 	}
 
 	for _, link := range release.Assets.Links {
-		if link.External && !opts.External {
-			continue
-		}
 		if len(opts.AssetNames) > 0 && (!matchAny(opts.AssetNames, link.Name)) {
 			continue
 		}
