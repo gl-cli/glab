@@ -97,7 +97,7 @@ func genWebDocs(glabCli *cobra.Command, path string) error {
 					return err
 				}
 
-				err = config.WriteFile(path+cmd.Name()+"/"+cmdC.Name()+"/index.md", out.Bytes(), 0o755)
+				err = config.WriteFile(path+cmd.Name()+"/"+cmdC.Name()+"/index.md", out.Bytes(), 0o644)
 				if err != nil {
 					return err
 				}
@@ -119,7 +119,7 @@ func genWebDocs(glabCli *cobra.Command, path string) error {
 			}
 		}
 
-		err = config.WriteFile(path+cmd.Name()+"/index.md", out.Bytes(), 0o755)
+		err = config.WriteFile(path+cmd.Name()+"/index.md", out.Bytes(), 0o644)
 		if err != nil {
 			return err
 		}
