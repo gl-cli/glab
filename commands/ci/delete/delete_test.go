@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
@@ -45,6 +47,86 @@ func TestCiDelete(t *testing.T) {
 		Deleting pipeline #11111111
 		✓ Pipeline #11111111 deleted successfully
 		`), out)
+	assert.Empty(t, output.Stderr())
+}
+
+func TestCiDeleteByStatus(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/pipelines?status=success",
+		httpmock.NewStringResponse(http.StatusOK, `
+		[
+			{
+				"id": 11111111,
+				"iid": 3,
+				"project_id": 5,
+				"sha": "c366255c71600e17519e802850ddcf7105d3cf66",
+				"ref": "refs/merge-requests/1107/merge",
+				"status": "success",
+				"source": "merge_request_event",
+				"created_at": "2020-12-01T01:15:50.559Z",
+				"updated_at": "2020-12-01T01:36:41.737Z",
+				"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/710046436"
+			},
+			{
+				"id": 22222222,
+				"iid": 4,
+				"project_id": 5,
+				"sha": "c9a7c0d9351cd1e71d1c2ad8277f3bc7e3c47d1f",
+				"ref": "main",
+				"status": "success",
+				"source": "push",
+				"created_at": "2020-11-30T18:20:47.571Z",
+				"updated_at": "2020-11-30T18:39:40.092Z",
+				"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/709793838"
+			}
+	]
+	`))
+	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/11111111",
+		httpmock.NewStringResponse(http.StatusNoContent, ""),
+	)
+	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/22222222",
+		httpmock.NewStringResponse(http.StatusNoContent, ""),
+	)
+
+	args := "--status=success"
+	output, err := runCommand(fakeHTTP, args)
+	require.NoError(t, err)
+
+	out := output.String()
+
+	assert.Equal(t, heredoc.Doc(`
+		✓ Pipeline #11111111 deleted successfully
+		✓ Pipeline #22222222 deleted successfully
+		`), out)
+	assert.Empty(t, output.Stderr())
+}
+
+func TestCiDeleteByStatusFailsWithArgument(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
+	defer fakeHTTP.Verify(t)
+
+	args := "--status=success 11111111"
+	output, err := runCommand(fakeHTTP, args)
+	assert.EqualError(t, err, "either a status filter or a pipeline id must be passed, but not both")
+
+	assert.Empty(t, output.String())
+	assert.Empty(t, output.Stderr())
+}
+
+func TestCiDeleteWithoutFilterFailsWithoutArgument(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
+	defer fakeHTTP.Verify(t)
+
+	pipelineId := ""
+	output, err := runCommand(fakeHTTP, pipelineId)
+	assert.EqualError(t, err, "accepts 1 arg(s), received 0")
+
+	assert.Empty(t, output.String())
 	assert.Empty(t, output.Stderr())
 }
 

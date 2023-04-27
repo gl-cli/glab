@@ -5,13 +5,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/xanzy/go-gitlab"
+
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/xanzy/go-gitlab"
 )
 
 func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
@@ -21,9 +22,18 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		Example: heredoc.Doc(`
 	glab ci delete 34
 	glab ci delete 12,34,2
+	glab ci delete --status=failed
 	`),
 		Long: ``,
-		Args: cobra.ExactArgs(1),
+		Args: func(cmd *cobra.Command, args []string) error {
+			if m, _ := cmd.Flags().GetString("status"); m != "" && len(args) > 0 {
+				return fmt.Errorf("either a status filter or a pipeline id must be passed, but not both")
+			} else if m == "" {
+				return cobra.ExactArgs(1)(cmd, args)
+			} else {
+				return nil
+			}
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			c := f.IO.Color()

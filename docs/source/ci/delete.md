@@ -22,6 +22,7 @@ glab ci delete <id> [flags]
 ```plaintext
 glab ci delete 34
 glab ci delete 12,34,2
+glab ci delete --status=failed
 
 ```
 
