@@ -82,7 +82,7 @@ var WriteConfigFile = func(filename string, data []byte) error {
 	return err
 }
 
-func parseConfigFile(filename string) ([]byte, *yaml.Node, error) {
+func ParseConfigFile(filename string) ([]byte, *yaml.Node, error) {
 	data, err := ReadConfigFile(filename)
 	if err != nil {
 		return nil, nil, err
@@ -115,7 +115,7 @@ func parseConfigData(data []byte) (*yaml.Node, error) {
 }
 
 func ParseConfig(filename string) (Config, error) {
-	_, root, err := parseConfigFile(filename)
+	_, root, err := ParseConfigFile(filename)
 	var confError error
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -127,7 +127,7 @@ func ParseConfig(filename string) (Config, error) {
 	}
 
 	// Load local config file
-	if _, localRoot, err := parseConfigFile(LocalConfigFile()); err == nil {
+	if _, localRoot, err := ParseConfigFile(LocalConfigFile()); err == nil {
 		if len(localRoot.Content[0].Content) > 0 {
 			newContent := []*yaml.Node{
 				{Value: "local"},
@@ -139,7 +139,7 @@ func ParseConfig(filename string) (Config, error) {
 	}
 
 	// Load aliases config file
-	if _, aliasesRoot, err := parseConfigFile(aliasesConfigFile()); err == nil {
+	if _, aliasesRoot, err := ParseConfigFile(aliasesConfigFile()); err == nil {
 		if len(aliasesRoot.Content[0].Content) > 0 {
 			newContent := []*yaml.Node{
 				{Value: "aliases"},

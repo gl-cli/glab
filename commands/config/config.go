@@ -168,7 +168,7 @@ func configInit(f *cmdutils.Factory) error {
 	} else {
 		host = baseRepo.RepoHost()
 	}
-	host, err = config.Prompt(fmt.Sprintf("Enter Gitlab Host (Current Value: %s): ", host), host)
+	host, err = config.Prompt(fmt.Sprintf("Enter Gitlab Host (Current Value: %s): ", host), host) //nolint:staticcheck
 	if err != nil {
 		return err
 	}
@@ -179,7 +179,7 @@ func configInit(f *cmdutils.Factory) error {
 	}
 
 	token, _ := cfg.Get(host, "token")
-	token, err = config.Prompt("Enter Gitlab Token: ", token)
+	token, err = config.Prompt("Enter Gitlab Token: ", token) //nolint:staticcheck
 	if err != nil {
 		return err
 	}
