@@ -170,6 +170,10 @@ fix: bin/golangci-lint ## Fix lint violations
 list-todo: ## Detect FIXME, TODO and other comment keywords
 	golangci-lint run --enable=godox --disable-all
 
+.PHONY: gen-config
+gen-config: ## Generate config stub from lockfile
+	cd internal/config && go generate
+
 # Add custom targets here
 -include custom.mk
 

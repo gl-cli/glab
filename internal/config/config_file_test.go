@@ -198,7 +198,7 @@ func Test_parseConfigFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("contents: %q", tt.contents), func(t *testing.T) {
 			defer StubConfig(tt.contents, "")()
-			_, yamlRoot, err := parseConfigFile("config.yml")
+			_, yamlRoot, err := ParseConfigFile("config.yml")
 			if tt.wantsErr != (err != nil) {
 				t.Fatalf("got error: %v", err)
 			}
