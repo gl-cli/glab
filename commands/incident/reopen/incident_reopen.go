@@ -10,5 +10,5 @@ import (
 )
 
 func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
-	return issuableReopenCmd.NewCmdReopen(f, issuable.TypeIssue)
+	return issuableReopenCmd.NewCmdReopen(f, issuable.TypeIncident)
 }

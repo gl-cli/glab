@@ -59,13 +59,9 @@ func NewCmdClose(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 			c := f.IO.Color()
 
 			for _, issue := range issues {
-				// Issues and incidents are the same kind, but with different issueType.
-				// `issue close` can close issues of all types including incidents
-				// `incident close` on the other hand, should close only incidents, and treat all other issue types as not found
-				//
-				// When using `incident close` with non incident's IDs, print an error.
-				if issueType == issuable.TypeIncident && *issue.IssueType != string(issuable.TypeIncident) {
-					fmt.Fprintln(f.IO.StdOut, "Incident not found, but an issue with the provided ID exists. Run `glab issue close <id>` to close it.")
+				valid, msg := issuable.ValidateIncidentCmd(issueType, "close", issue)
+				if !valid {
+					fmt.Fprintln(f.IO.StdOut, msg)
 					continue
 				}
 
