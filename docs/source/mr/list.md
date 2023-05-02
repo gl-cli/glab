@@ -54,6 +54,7 @@ glab mr list -M --per-page 10
       --not-label strings      Filter merge requests by not having label <name>
   -p, --page int               Page number (default 1)
   -P, --per-page int           Number of items to list per page (default 30)
+  -R, --repo OWNER/REPO        Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
   -r, --reviewer strings       Get only merge requests with users as reviewer
       --search string          Filter by <string> in title and description
   -s, --source-branch string   Filter by source branch <name>
@@ -63,6 +64,5 @@ glab mr list -M --per-page 10
 ## Options inherited from parent commands
 
 ```plaintext
-      --help              Show help for command
-  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
+      --help   Show help for command
 ```

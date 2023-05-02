@@ -26,7 +26,7 @@ func TestNewCmdCompletion(t *testing.T) {
 		{
 			name:    "zsh completion",
 			args:    "completion -s zsh",
-			wantOut: "#compdef _glab glab",
+			wantOut: "#compdef glab",
 		},
 		{
 			name:    "fish completion",

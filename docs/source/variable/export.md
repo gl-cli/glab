@@ -36,14 +36,14 @@ glab variable export --group gitlab-org --per-page 1000 --page 1
 ## Options
 
 ```plaintext
-  -g, --group string   Select a group or subgroup. Ignored if a repository argument is set.
-  -p, --page int       Page number. (default 1)
-  -P, --per-page int   Number of items to list per page. (default 100)
+  -g, --group string      Select a group or subgroup. Ignored if a repository argument is set.
+  -p, --page int          Page number. (default 1)
+  -P, --per-page int      Number of items to list per page. (default 100)
+  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --help              Show help for command
-  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
+      --help   Show help for command
 ```
