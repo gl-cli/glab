@@ -16,6 +16,7 @@ import (
 	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/pkg/oauth2"
 )
 
 // AuthType represents an authentication type within GitLab.
@@ -56,6 +57,7 @@ type Client struct {
 	token string
 
 	isGraphQL          bool
+	isOauth2           bool
 	allowInsecure      bool
 	refreshLabInstance bool
 }
@@ -145,11 +147,12 @@ func tlsConfig(host string) *tls.Config {
 }
 
 // NewClient initializes a api client for use throughout glab.
-func NewClient(host, token string, allowInsecure bool, isGraphQL bool) (*Client, error) {
+func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 bool) (*Client, error) {
 	apiClient.host = host
 	apiClient.token = token
 	apiClient.allowInsecure = allowInsecure
 	apiClient.isGraphQL = isGraphQL
+	apiClient.isOauth2 = isOAuth2
 
 	if apiClient.httpClientOverride == nil {
 		apiClient.httpClient = &http.Client{
@@ -174,11 +177,12 @@ func NewClient(host, token string, allowInsecure bool, isGraphQL bool) (*Client,
 }
 
 // NewClientWithCustomCA initializes the global api client with a self-signed certificate
-func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool) (*Client, error) {
+func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 bool) (*Client, error) {
 	apiClient.host = host
 	apiClient.token = token
 	apiClient.caFile = caFile
 	apiClient.isGraphQL = isGraphQL
+	apiClient.isOauth2 = isOAuth2
 
 	if apiClient.httpClientOverride == nil {
 		caCert, err := os.ReadFile(apiClient.caFile)
@@ -216,11 +220,12 @@ func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool) (*Client,
 }
 
 // NewClientWithCustomCAClientCert initializes the global api client with a self-signed certificate and client certificates
-func NewClientWithCustomCAClientCert(host, token, caFile string, certFile string, keyFile string, isGraphQL bool) (*Client, error) {
+func NewClientWithCustomCAClientCert(host, token, caFile string, certFile string, keyFile string, isGraphQL bool, isOAuth2 bool) (*Client, error) {
 	apiClient.host = host
 	apiClient.token = token
 	apiClient.caFile = caFile
 	apiClient.isGraphQL = isGraphQL
+	apiClient.isOauth2 = isOAuth2
 
 	if apiClient.httpClientOverride == nil {
 		caCert, err := os.ReadFile(apiClient.caFile)
@@ -281,6 +286,16 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (clien
 		SetProtocol(apiProtocol)
 	}
 
+	isOAuth2Cfg, _ := cfg.Get(repoHost, "is_oauth2")
+	isOAuth2 := false
+	if isOAuth2Cfg == "true" {
+		isOAuth2 = true
+		err = oauth2.RefreshToken(repoHost, cfg, "https")
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	token, _ := cfg.Get(repoHost, "token")
 	tlsVerify, _ := cfg.Get(repoHost, "skip_tls_verify")
 	skipTlsVerify := tlsVerify == "true" || tlsVerify == "1"
@@ -288,11 +303,11 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (clien
 	clientCert, _ := cfg.Get(repoHost, "client_cert")
 	keyFile, _ := cfg.Get(repoHost, "client_key")
 	if caCert != "" && clientCert != "" && keyFile != "" {
-		client, err = NewClientWithCustomCAClientCert(apiHost, token, caCert, clientCert, keyFile, isGraphQL)
+		client, err = NewClientWithCustomCAClientCert(apiHost, token, caCert, clientCert, keyFile, isGraphQL, isOAuth2)
 	} else if caCert != "" {
-		client, err = NewClientWithCustomCA(apiHost, token, caCert, isGraphQL)
+		client, err = NewClientWithCustomCA(apiHost, token, caCert, isGraphQL, isOAuth2)
 	} else {
-		client, err = NewClient(apiHost, token, skipTlsVerify, isGraphQL)
+		client, err = NewClient(apiHost, token, skipTlsVerify, isGraphQL, isOAuth2)
 	}
 	return
 }
@@ -315,14 +330,24 @@ func (c *Client) NewLab() error {
 		} else {
 			baseURL = glinstance.APIEndpoint(c.host, c.Protocol)
 		}
-		c.LabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+
+		if c.isOauth2 {
+			c.LabClient, err = gitlab.NewOAuthClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+		} else {
+			c.LabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+		}
+
 		if err != nil {
 			return fmt.Errorf("failed to initialize GitLab client: %v", err)
 		}
 		c.LabClient.UserAgent = currentGlabInstall.UserAgent()
 
 		if c.token != "" {
-			c.AuthType = PrivateToken
+			if c.isOauth2 {
+				c.AuthType = OAuthToken
+			} else {
+				c.AuthType = PrivateToken
+			}
 		}
 	}
 	return nil
@@ -389,7 +414,7 @@ func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, 
 }
 
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*Client, error) {
-	testClient, err := NewClient(host, token, true, isGraphQL)
+	testClient, err := NewClient(host, token, true, isGraphQL, false)
 	if err != nil {
 		return nil, err
 	}
