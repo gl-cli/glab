@@ -20,6 +20,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/pkg/oauth2"
 )
 
 type LoginOptions struct {
@@ -206,18 +207,32 @@ func loginRun() error {
 		}
 	}
 
-	fmt.Fprintln(opts.IO.StdErr)
-	fmt.Fprintln(opts.IO.StdErr, heredoc.Doc(getAccessTokenTip(hostname)))
-	var token string
-	err = survey.AskOne(&survey.Password{
-		Message: "Paste your authentication token:",
-	}, &token, survey.WithValidator(survey.Required))
-	if err != nil {
-		return fmt.Errorf("could not prompt: %w", err)
+	loginType := 0
+
+	if opts.Interactive {
+		err := survey.AskOne(&survey.Select{
+			Message: "How would you like to login?",
+			Options: []string{
+				"Token",
+				"Web",
+			},
+		}, &loginType)
+		if err != nil {
+			return fmt.Errorf("could not get login type: %w", err)
+		}
 	}
 
-	if hostname == "" {
-		return errors.New("empty hostname would leak token")
+	var token string
+	if loginType == 0 {
+		token, err = showTokenPrompt(cfg, hostname)
+		if err != nil {
+			return err
+		}
+	} else {
+		token, err = oauth2.StartFlow(cfg, opts.IO, hostname)
+		if err != nil {
+			return err
+		}
 	}
 
 	if opts.UseKeyring {
@@ -231,6 +246,11 @@ func loginRun() error {
 			return err
 		}
 	}
+
+	if hostname == "" {
+		return errors.New("empty hostname would leak token")
+	}
+
 	err = cfg.Set(hostname, "api_host", apiHostname)
 	if err != nil {
 		return err
@@ -351,4 +371,19 @@ func getAccessTokenTip(hostname string) string {
 	return fmt.Sprintf(`
 	Tip: you can generate a Personal Access Token here https://%s/-/profile/personal_access_tokens
 	The minimum required scopes are 'api' and 'write_repository'.`, glHostname)
+}
+
+func showTokenPrompt(cfg config.Config, hostname string) (string, error) {
+	fmt.Fprintln(opts.IO.StdErr)
+	fmt.Fprintln(opts.IO.StdErr, heredoc.Doc(getAccessTokenTip(hostname)))
+
+	var token string
+	err := survey.AskOne(&survey.Password{
+		Message: "Paste your authentication token:",
+	}, &token, survey.WithValidator(survey.Required))
+	if err != nil {
+		return "", fmt.Errorf("could not prompt: %w", err)
+	}
+
+	return "", nil
 }
