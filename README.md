@@ -120,7 +120,20 @@ To build from source:
 
 ## Authentication
 
-To authenticate your installation of `glab`:
+### OAuth (GitLab.com only)
+
+To authenticate your installation of `glab` with OAuth:
+
+1. Start interactive setup with `glab auth login`.
+1. For the GitLab instance you want to sign in to, select **GitLab.com**.
+1. For the login method, select **Web**. This selection launches your web browser
+   to request authorization for the GitLab CLI to use your GitLab.com account.
+1. Select **Authorize**.
+1. Complete the authentication process in your terminal, selecting the appropriate options for your needs.
+
+### Personal Access Token
+
+To authenticate your installation of `glab` with a personal access token:
 
 1. Get a GitLab personal access token with at least the `api`
    and `write_repository` scopes. Use the method appropriate for your instance:
