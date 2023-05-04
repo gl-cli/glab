@@ -3,7 +3,6 @@ package issue
 import (
 	"github.com/MakeNowJust/heredoc"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	issuableUnsubscribeCmd "gitlab.com/gitlab-org/cli/commands/issuable/unsubscribe"
 	issueBoardCmd "gitlab.com/gitlab-org/cli/commands/issue/board"
 	issueCloseCmd "gitlab.com/gitlab-org/cli/commands/issue/close"
 	issueCreateCmd "gitlab.com/gitlab-org/cli/commands/issue/create"
@@ -12,6 +11,7 @@ import (
 	issueNoteCmd "gitlab.com/gitlab-org/cli/commands/issue/note"
 	issueReopenCmd "gitlab.com/gitlab-org/cli/commands/issue/reopen"
 	issueSubscribeCmd "gitlab.com/gitlab-org/cli/commands/issue/subscribe"
+	issueUnsubscribeCmd "gitlab.com/gitlab-org/cli/commands/issue/unsubscribe"
 	issueUpdateCmd "gitlab.com/gitlab-org/cli/commands/issue/update"
 	issueViewCmd "gitlab.com/gitlab-org/cli/commands/issue/view"
 
@@ -49,7 +49,7 @@ func NewCmdIssue(f *cmdutils.Factory) *cobra.Command {
 	issueCmd.AddCommand(issueReopenCmd.NewCmdReopen(f))
 	issueCmd.AddCommand(issueViewCmd.NewCmdView(f))
 	issueCmd.AddCommand(issueSubscribeCmd.NewCmdSubscribe(f))
-	issueCmd.AddCommand(issuableUnsubscribeCmd.NewCmdUnsubscribe(f))
+	issueCmd.AddCommand(issueUnsubscribeCmd.NewCmdUnsubscribe(f))
 	issueCmd.AddCommand(issueUpdateCmd.NewCmdUpdate(f))
 	return issueCmd
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_PrettyTimeAgo(t *testing.T) {
@@ -217,5 +218,22 @@ func TestIsValidURL(t *testing.T) {
 			actualIsValid := IsValidURL(test.input)
 			assert.Equal(t, test.expected, actualIsValid)
 		})
+	}
+}
+
+func TestPtr(t *testing.T) {
+	tests := []struct {
+		name string
+		val  any
+	}{
+		{"string", "GitLab"},
+		{"int", 503},
+		{"float", 50.3},
+		{"time", time.Now()},
+		{"struct", struct{}{}},
+	}
+
+	for _, tt := range tests {
+		require.Equal(t, Ptr(tt.val), &tt.val)
 	}
 }

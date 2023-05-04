@@ -220,7 +220,7 @@ func TestNewCmdView(t *testing.T) {
 			stderr.Reset()
 
 			viewIncidentWithIssueID := tt.viewIssueType == issuable.TypeIncident && testIssuable.issueType != issuable.TypeIncident
-			wantErrorMsg := "Incident not found, but an issue with the provided ID exists. Run `glab issue view <id>` to view it.\n"
+			wantErrorMsg := "Incident not found, but an issue with the provided ID exists. Run `glab issue view <id>` to view.\n"
 
 			if tt.isTTY {
 				if viewIncidentWithIssueID {

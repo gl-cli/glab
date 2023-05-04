@@ -172,7 +172,7 @@ var UnsubscribeFromIssue = func(client *gitlab.Client, projectID interface{}, is
 		if resp != nil {
 			// If the user is not subscribed to the issue, the status code 304 is returned.
 			if resp.StatusCode == http.StatusNotModified {
-				return nil, errors.New("you are not subscribed to this issue")
+				return nil, ErrIssuableUserNotSubscribed
 			}
 		}
 		return issue, err

@@ -64,7 +64,7 @@ func TestValidateIncidentCmd(t *testing.T) {
 			if !valid {
 				assert.Equal(
 					t,
-					fmt.Sprintf("Incident not found, but an issue with the provided ID exists. Run `glab issue %[1]s <id>` to %[1]s it.", tt.subcmd),
+					fmt.Sprintf("Incident not found, but an issue with the provided ID exists. Run `glab issue %[1]s <id>` to %[1]s.", tt.subcmd),
 					msg,
 				)
 			}
