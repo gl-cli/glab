@@ -88,10 +88,11 @@ func NewCmd(f *cmdutils.Factory) *cobra.Command {
 
 			opts.displayResult(result)
 
-			if err := opts.executeCommands(result.Commands); err != nil {
-				return err
+			if len(result.Commands) > 0 {
+				if err := opts.executeCommands(result.Commands); err != nil {
+					return err
+				}
 			}
-
 			return nil
 		},
 	}
