@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/pflag"
 	aliasCmd "gitlab.com/gitlab-org/cli/commands/alias"
 	apiCmd "gitlab.com/gitlab-org/cli/commands/api"
+	askCmd "gitlab.com/gitlab-org/cli/commands/ask"
 	authCmd "gitlab.com/gitlab-org/cli/commands/auth"
 	pipelineCmd "gitlab.com/gitlab-org/cli/commands/ci"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
@@ -120,6 +121,7 @@ func NewCmdRoot(f *cmdutils.Factory, version, buildDate string) *cobra.Command {
 	rootCmd.AddCommand(apiCmd.NewCmdApi(f, nil))
 	rootCmd.AddCommand(scheduleCmd.NewCmdSchedule(f))
 	rootCmd.AddCommand(snippetCmd.NewCmdSnippet(f))
+	rootCmd.AddCommand(askCmd.NewCmd(f))
 
 	rootCmd.Flags().BoolP("version", "v", false, "show glab version information")
 	return rootCmd
