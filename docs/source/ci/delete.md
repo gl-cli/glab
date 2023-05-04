@@ -29,6 +29,7 @@ glab ci delete --status=failed
 ## Options
 
 ```plaintext
+      --dry-run         simulate process, but do not delete anything
   -s, --status string   delete pipelines by status: {running|pending|success|failed|canceled|skipped|created|manual}
 ```
 

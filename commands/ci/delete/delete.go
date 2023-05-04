@@ -9,7 +9,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -47,42 +46,48 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
+			var pipelineIDs []int
+
 			if m, _ := cmd.Flags().GetString("status"); m != "" {
-				l := &gitlab.ListProjectPipelinesOptions{}
-				l.Status = gitlab.BuildState(gitlab.BuildStateValue(m))
-				pipes, err := api.ListProjectPipelines(apiClient, repo.FullName(), l)
+				pipes, err := api.ListProjectPipelines(apiClient, repo.FullName(), &gitlab.ListProjectPipelinesOptions{
+					Status: gitlab.BuildState(gitlab.BuildStateValue(m)),
+				})
 				if err != nil {
 					return err
 				}
+
 				for _, item := range pipes {
-					err := api.DeletePipeline(apiClient, repo.FullName(), item.ID)
-					if err != nil {
-						return err
-					}
-
-					fmt.Fprintln(f.IO.StdOut, c.RedCheck(), "Pipeline #"+strconv.Itoa(item.ID)+" deleted successfully")
+					pipelineIDs = append(pipelineIDs, item.ID)
 				}
-
 			} else {
-				pipelineID := args[0]
+				for _, stringID := range strings.Split(strings.Trim(args[0], "[] "), ",") {
+					id, err := strconv.Atoi(stringID)
+					if err != nil {
+						return err
+					}
+					pipelineIDs = append(pipelineIDs, id)
+				}
+			}
 
-				arrIds := strings.Split(strings.Trim(pipelineID, "[] "), ",")
-				for _, i2 := range arrIds {
-					fmt.Fprintln(f.IO.StdOut, "Deleting pipeline #"+i2)
-					err := api.DeletePipeline(apiClient, repo.FullName(), utils.StringToInt(i2))
+			for _, id := range pipelineIDs {
+				if dryRun, _ := cmd.Flags().GetBool("dry-run"); dryRun {
+					fmt.Fprintf(f.IO.StdOut, "%s Pipeline #%d will be deleted\n", c.DotWarnIcon(), id)
+				} else {
+					err := api.DeletePipeline(apiClient, repo.FullName(), id)
 					if err != nil {
 						return err
 					}
 
-					fmt.Fprintln(f.IO.StdOut, c.RedCheck(), "Pipeline #"+i2+" deleted successfully")
+					fmt.Fprintf(f.IO.StdOut, "%s Pipeline #%d deleted successfully\n", c.RedCheck(), id)
 				}
-				fmt.Println()
 			}
+			fmt.Println()
 
 			return nil
 		},
 	}
 
+	pipelineDeleteCmd.Flags().BoolP("dry-run", "", false, "simulate process, but do not delete anything")
 	pipelineDeleteCmd.Flags().StringP("status", "s", "", "delete pipelines by status: {running|pending|success|failed|canceled|skipped|created|manual}")
 
 	return pipelineDeleteCmd
