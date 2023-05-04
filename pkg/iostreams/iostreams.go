@@ -30,6 +30,7 @@ type IOStreams struct {
 
 	pagerCommand string
 	pagerProcess *os.Process
+	systemStdOut io.Writer
 
 	spinner *spinner.Spinner
 
@@ -55,6 +56,7 @@ func Init() *IOStreams {
 		In:                os.Stdin,
 		StdOut:            NewColorable(os.Stdout),
 		StdErr:            NewColorable(os.Stderr),
+		systemStdOut:      NewColorable(os.Stdout),
 		pagerCommand:      pagerCommand,
 		IsaTTY:            stdoutIsTTY,
 		IsErrTTY:          stderrIsTTY,
@@ -165,6 +167,12 @@ func (s *IOStreams) StartPager() error {
 		return err
 	}
 	s.pagerProcess = pagerCmd.Process
+
+	go func() {
+		_, _ = s.pagerProcess.Wait()
+		_ = pipeWriter.Close()
+	}()
+
 	return nil
 }
 
@@ -175,6 +183,7 @@ func (s *IOStreams) StopPager() {
 
 	_ = s.StdOut.(io.WriteCloser).Close()
 	_, _ = s.pagerProcess.Wait()
+	s.StdOut = s.systemStdOut
 	s.pagerProcess = nil
 }
 
