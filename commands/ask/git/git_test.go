@@ -26,7 +26,8 @@ func runCommand(rt http.RoundTripper, isTTY bool, args string) (*test.CmdOut, er
 }
 
 func TestGitCmd(t *testing.T) {
-	outputWithoutExecution := `Commands:
+	outputWithoutExecution := "Experiment:\n" + experimentMsg + `
+Commands:
 
 git log --pretty=format:'%h'
 non-git cmd
@@ -62,7 +63,7 @@ The appropriate Git command for listing commit SHAs.
 			desc:           "no commands",
 			content:        `{\"commands\": [], \"explanation\":\"There are no git commands related to the text\"}`,
 			withPrompt:     false,
-			expectedResult: "Commands:\n\n\nExplanation:\n\nThere are no git commands related to the text\n\n",
+			expectedResult: "Experiment:\n" + experimentMsg + "\nCommands:\n\n\nExplanation:\n\nThere are no git commands related to the text\n\n",
 		},
 	}
 	cmdLogResult := "git log executed"
