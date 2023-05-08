@@ -29,7 +29,7 @@ require (
 	github.com/muesli/termenv v0.15.1
 	github.com/otiai10/copy v1.11.0
 	github.com/pkg/errors v0.9.1
-	github.com/rivo/tview v0.0.0-20230406072732-e22ce9588bb4
+	github.com/rivo/tview v0.0.0-20211029142923-a4acb08f513e
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
