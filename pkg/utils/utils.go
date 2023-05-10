@@ -215,3 +215,8 @@ func Map[T1, T2 any](elems []T1, fn func(T1) T2) []T2 {
 
 	return r
 }
+
+// Ptr takes any value and returns a pointer to that value
+func Ptr[T any](v T) *T {
+	return &v
+}

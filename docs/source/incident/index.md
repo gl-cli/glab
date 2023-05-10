@@ -37,4 +37,5 @@ glab incident list
 - [close](close.md)
 - [list](list.md)
 - [reopen](reopen.md)
+- [unsubscribe](unsubscribe.md)
 - [view](view.md)

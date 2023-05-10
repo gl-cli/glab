@@ -157,7 +157,7 @@ func TestIssuableReopen(t *testing.T) {
 			iid:        1,
 			name:       "issue_reopen_using_incident_command",
 			issueType:  issuable.TypeIncident,
-			wantOutput: "Incident not found, but an issue with the provided ID exists. Run `glab issue reopen <id>` to reopen it.\n",
+			wantOutput: "Incident not found, but an issue with the provided ID exists. Run `glab issue reopen <id>` to reopen.\n",
 		},
 		{
 			iid:        404,

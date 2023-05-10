@@ -157,7 +157,7 @@ func TestIssuableClose(t *testing.T) {
 			iid:        1,
 			name:       "issue_close_using_incident_command",
 			issueType:  issuable.TypeIncident,
-			wantOutput: "Incident not found, but an issue with the provided ID exists. Run `glab issue close <id>` to close it.\n",
+			wantOutput: "Incident not found, but an issue with the provided ID exists. Run `glab issue close <id>` to close.\n",
 		},
 		{
 			iid:        404,

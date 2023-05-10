@@ -10,5 +10,5 @@ import (
 )
 
 func NewCmdUnsubscribe(f *cmdutils.Factory) *cobra.Command {
-	return issuableUnsubscribeCmd.NewCmdUnsubscribe(f, issuable.TypeIssue)
+	return issuableUnsubscribeCmd.NewCmdUnsubscribe(f, issuable.TypeIncident)
 }

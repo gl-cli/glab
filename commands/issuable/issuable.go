@@ -23,7 +23,7 @@ const (
 func ValidateIncidentCmd(cmd IssueType, subcmd string, issue *gitlab.Issue) (bool, string) {
 	if cmd == TypeIncident && *issue.IssueType != string(TypeIncident) {
 		return false, fmt.Sprintf(
-			"Incident not found, but an issue with the provided ID exists. Run `glab issue %[1]s <id>` to %[1]s it.",
+			"Incident not found, but an issue with the provided ID exists. Run `glab issue %[1]s <id>` to %[1]s.",
 			subcmd,
 		)
 	}
