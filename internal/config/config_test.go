@@ -105,6 +105,10 @@ func Test_defaultConfig(t *testing.T) {
 }
 
 func Test_getFromKeyring(t *testing.T) {
+	mainBuf := bytes.Buffer{}
+	hostsBuf := bytes.Buffer{}
+	defer StubWriteConfig(&mainBuf, &hostsBuf)()
+
 	c := NewBlankConfig()
 
 	// Ensure host exists and its token is empty
