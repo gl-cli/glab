@@ -67,7 +67,7 @@ func TestMrApprove(t *testing.T) {
 			"state": "opened"}`))
 
 	fakeHTTP.RegisterResponder(http.MethodGet, `/projects/OWNER/REPO/merge_requests/123/approval_state`,
-		httpmock.NewFileResponse(http.StatusOK, "./fixtures/approvalState.json"))
+		httpmock.NewFileResponse(http.StatusOK, "./testdata/approvalState.json"))
 
 	mrID := "123"
 	output, err := runCommand(fakeHTTP, mrID)

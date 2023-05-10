@@ -36,20 +36,20 @@ func TestReleaseUpload(t *testing.T) {
 	}{
 		{
 			name: "when a file is uploaded using filename only, and does not send a link_type",
-			cli:  "0.0.1 fixtures/test_file.txt",
+			cli:  "0.0.1 testdata/test_file.txt",
 
 			wantType: false,
 		},
 		{
 			name: "when a file is uploaded using a filename, display name and type",
-			cli:  "0.0.1 fixtures/test_file.txt#test_file#other",
+			cli:  "0.0.1 testdata/test_file.txt#test_file#other",
 
 			wantType:     true,
 			expectedType: `"link_type":"other"`,
 		},
 		{
 			name: "when a file is uploaded using a filename and type only",
-			cli:  "0.0.1 fixtures/test_file.txt##package",
+			cli:  "0.0.1 testdata/test_file.txt##package",
 
 			wantType:     true,
 			expectedType: `"link_type":"package"`,
@@ -79,9 +79,9 @@ func TestReleaseUpload(t *testing.T) {
 				httpmock.NewStringResponse(http.StatusCreated,
 					`{
 							  "alt": "test_file",
-							  "url": "/uploads/66dbcd21ec5d24ed6ea225176098d52b/fixtures/test_file.txt",
-							  "full_path": "/namespace1/project1/uploads/66dbcd21ec5d24ed6ea225176098d52b/fixtures/test_file.txt",
-							  "markdown": "![test_file](/uploads/66dbcd21ec5d24ed6ea225176098d52b/fixtures/test_file.txt)"
+							  "url": "/uploads/66dbcd21ec5d24ed6ea225176098d52b/testdata/test_file.txt",
+							  "full_path": "/namespace1/project1/uploads/66dbcd21ec5d24ed6ea225176098d52b/testdata/test_file.txt",
+							  "markdown": "![test_file](/uploads/66dbcd21ec5d24ed6ea225176098d52b/testdata/test_file.txt)"
 							}`))
 
 			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/releases/0%2E0%2E1/assets/links",
@@ -97,8 +97,8 @@ func TestReleaseUpload(t *testing.T) {
 					resp, _ := httpmock.NewStringResponse(http.StatusCreated, `{
 						"id":2,
 						"name":"test_file.txt",
-						"url":"https://gitlab.example.com/mynamespace/hello/-/jobs/688/artifacts/raw/fixtures/test_file.txt",
-						"direct_asset_url":"https://gitlab.example.com/mynamespace/hello/-/releases/0.0.1/downloads/fixtures/test_file.txt",
+						"url":"https://gitlab.example.com/mynamespace/hello/-/jobs/688/artifacts/raw/testdata/test_file.txt",
+						"direct_asset_url":"https://gitlab.example.com/mynamespace/hello/-/releases/0.0.1/downloads/testdata/test_file.txt",
 						"link_type":"other"
 						}`)(req)
 					return resp, nil
@@ -110,7 +110,7 @@ func TestReleaseUpload(t *testing.T) {
 			if assert.NoErrorf(t, err, "error running command `release upload %s`: %v", tc.cli, err) {
 				assert.Contains(t, output.Stderr(), `• Validating tag repo=OWNER/REPO tag=0.0.1
 • Uploading release assets repo=OWNER/REPO tag=0.0.1
-• Uploading to release	file=fixtures/test_file.txt name=test_file.txt
+• Uploading to release	file=testdata/test_file.txt name=test_file.txt
 ✓ Upload succeeded after`)
 				assert.Empty(t, output.String())
 			}

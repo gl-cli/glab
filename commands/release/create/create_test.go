@@ -101,20 +101,20 @@ func TestReleaseCreateWithFiles(t *testing.T) {
 	}{
 		{
 			name: "when a release is created and a file is uploaded using filename only",
-			cli:  "0.0.1 fixtures/test_file.txt",
+			cli:  "0.0.1 testdata/test_file.txt",
 
 			wantType: false,
 		},
 		{
 			name: "when a release is created and a filename is uploaded with display name and type",
-			cli:  "0.0.1 fixtures/test_file.txt#test_file#other",
+			cli:  "0.0.1 testdata/test_file.txt#test_file#other",
 
 			wantType:     true,
 			expectedType: `"link_type":"other"`,
 		},
 		{
 			name: "when a release is created and a filename is uploaded with a type",
-			cli:  "0.0.1 fixtures/test_file.txt##package",
+			cli:  "0.0.1 testdata/test_file.txt##package",
 
 			wantType:     true,
 			expectedType: `"link_type":"package"`,
@@ -155,9 +155,9 @@ func TestReleaseCreateWithFiles(t *testing.T) {
 				httpmock.NewStringResponse(http.StatusCreated,
 					`{
 							  "alt": "test_file",
-							  "url": "/uploads/66dbcd21ec5d24ed6ea225176098d52b/fixtures/test_file.txt",
-							  "full_path": "/namespace1/project1/uploads/66dbcd21ec5d24ed6ea225176098d52b/fixtures/test_file.txt",
-							  "markdown": "![test_file](/uploads/66dbcd21ec5d24ed6ea225176098d52b/fixtures/test_file.txt)"
+							  "url": "/uploads/66dbcd21ec5d24ed6ea225176098d52b/testdata/test_file.txt",
+							  "full_path": "/namespace1/project1/uploads/66dbcd21ec5d24ed6ea225176098d52b/testdata/test_file.txt",
+							  "markdown": "![test_file](/uploads/66dbcd21ec5d24ed6ea225176098d52b/testdata/test_file.txt)"
 							}`))
 
 			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/releases/0%2E0%2E1/assets/links",
@@ -173,8 +173,8 @@ func TestReleaseCreateWithFiles(t *testing.T) {
 					resp, _ := httpmock.NewStringResponse(http.StatusCreated, `{
 						"id":2,
 						"name":"test_file.txt",
-						"url":"https://gitlab.example.com/mynamespace/hello/-/jobs/688/artifacts/raw/fixtures/test_file.txt",
-						"direct_asset_url":"https://gitlab.example.com/mynamespace/hello/-/releases/0.0.1/downloads/fixtures/test_file.txt",
+						"url":"https://gitlab.example.com/mynamespace/hello/-/jobs/688/artifacts/raw/testdata/test_file.txt",
+						"direct_asset_url":"https://gitlab.example.com/mynamespace/hello/-/releases/0.0.1/downloads/testdata/test_file.txt",
 						"link_type":"other"
 						}`)(req)
 					return resp, nil
@@ -189,7 +189,7 @@ func TestReleaseCreateWithFiles(t *testing.T) {
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
 ✓ Release created	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 • Uploading release assets repo=OWNER/REPO tag=0.0.1
-• Uploading to release	file=fixtures/test_file.txt name=test_file.txt
+• Uploading to release	file=testdata/test_file.txt name=test_file.txt
 ✓ Release succeeded after`)
 				assert.Empty(t, output.String())
 			}
