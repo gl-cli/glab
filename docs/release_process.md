@@ -4,7 +4,7 @@ To release a new version of the CLI, you must:
 
 1. Do a quick test of the CLI in your local development. At this stage, you are only verifying there is no complete failure of the CLI.
 1. Tag the latest commit on `main` (such as `git tag v1.22.1`).
-1. Push with these commands: `git push origin main` and `git push --tags`
+1. Push with these commands: `git push origin main` and `git push origin v1.22.1`
 1. Manually add attribution to the changelog by editing the release entry on the [releases page](https://gitlab.com/gitlab-org/cli/-/releases).
 
 ## Notifying maintainers
