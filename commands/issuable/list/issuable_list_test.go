@@ -87,7 +87,7 @@ func TestIssueList_tty(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(http.StatusOK, "./fixtures/issuableList.json"))
+		httpmock.NewFileResponse(http.StatusOK, "./testdata/issuableList.json"))
 
 	output, err := runCommand("issue", fakeHTTP, true, "", nil, "")
 	if err != nil {
@@ -114,7 +114,7 @@ func TestIssueList_ids(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(http.StatusOK, "./fixtures/issuableList.json"))
+		httpmock.NewFileResponse(http.StatusOK, "./testdata/issuableList.json"))
 
 	output, err := runCommand("issue", fakeHTTP, true, "-F ids", nil, "")
 	if err != nil {
@@ -132,7 +132,7 @@ func TestIssueList_urls(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(http.StatusOK, "./fixtures/issuableList.json"))
+		httpmock.NewFileResponse(http.StatusOK, "./testdata/issuableList.json"))
 
 	output, err := runCommand("issue", fakeHTTP, true, "-F urls", nil, "")
 	if err != nil {
@@ -193,7 +193,7 @@ func TestIssueList_tty_withIssueType(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(http.StatusOK, "./fixtures/incidentList.json"))
+		httpmock.NewFileResponse(http.StatusOK, "./testdata/incidentList.json"))
 
 	output, err := runCommand("issue", fakeHTTP, true, "--issue-type=incident", nil, "")
 	if err != nil {
@@ -217,7 +217,7 @@ func TestIncidentList_tty_withIssueType(t *testing.T) {
 	fakeHTTP := httpmock.New()
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
-		httpmock.NewFileResponse(http.StatusOK, "./fixtures/incidentList.json"))
+		httpmock.NewFileResponse(http.StatusOK, "./testdata/incidentList.json"))
 
 	output, err := runCommand("incident", fakeHTTP, true, "--issue-type=incident", nil, "")
 	if err == nil {
@@ -314,7 +314,7 @@ func TestIssueList_hyperlinks(t *testing.T) {
 			defer fakeHTTP.Verify(t)
 
 			fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
-				httpmock.NewFileResponse(http.StatusOK, "./fixtures/issuableList.json"))
+				httpmock.NewFileResponse(http.StatusOK, "./testdata/issuableList.json"))
 
 			doHyperlinks := "never"
 			if test.forceHyperlinksEnv == "1" {

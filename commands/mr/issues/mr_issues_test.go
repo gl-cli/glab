@@ -40,7 +40,7 @@ func TestMergeRequestClosesIssues_byID(t *testing.T) {
 			`))
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/merge_requests/123/closes_issues",
-		httpmock.NewFileResponse(http.StatusOK, "./fixtures/closesIssuesList.json"))
+		httpmock.NewFileResponse(http.StatusOK, "./testdata/closesIssuesList.json"))
 
 	cli := "123"
 	output, err := runCommand(fakeHTTP, true, cli)
@@ -89,7 +89,7 @@ func TestMergeRequestClosesIssues_currentBranch(t *testing.T) {
 				`))
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/merge_requests/123/closes_issues",
-		httpmock.NewFileResponse(http.StatusOK, "./fixtures/closesIssuesList.json"))
+		httpmock.NewFileResponse(http.StatusOK, "./testdata/closesIssuesList.json"))
 
 	output, err := runCommand(fakeHTTP, true, "")
 	if err != nil {
