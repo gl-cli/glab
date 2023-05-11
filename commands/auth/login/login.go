@@ -224,7 +224,7 @@ func loginRun() error {
 
 	var token string
 	if loginType == 0 {
-		token, err = showTokenPrompt(cfg, hostname)
+		token, err = showTokenPrompt(hostname)
 		if err != nil {
 			return err
 		}
@@ -373,7 +373,7 @@ func getAccessTokenTip(hostname string) string {
 	The minimum required scopes are 'api' and 'write_repository'.`, glHostname)
 }
 
-func showTokenPrompt(cfg config.Config, hostname string) (string, error) {
+func showTokenPrompt(hostname string) (string, error) {
 	fmt.Fprintln(opts.IO.StdErr)
 	fmt.Fprintln(opts.IO.StdErr, heredoc.Doc(getAccessTokenTip(hostname)))
 
@@ -385,5 +385,5 @@ func showTokenPrompt(cfg config.Config, hostname string) (string, error) {
 		return "", fmt.Errorf("could not prompt: %w", err)
 	}
 
-	return "", nil
+	return token, nil
 }
