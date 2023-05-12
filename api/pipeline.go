@@ -357,11 +357,13 @@ var PipelineJobsWithSha = func(client *gitlab.Client, pid interface{}, sha strin
 	return jobsList, nil
 }
 
-var PipelineCILint = func(client *gitlab.Client, content string) (*gitlab.LintResult, error) {
+var ProjectNamespaceLint = func(client *gitlab.Client, projectID int, content string) (*gitlab.ProjectLintResult, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
-	c, _, err := client.Validate.Lint(&gitlab.LintOptions{Content: content})
+	c, _, err := client.Validate.ProjectNamespaceLint(projectID, &gitlab.ProjectNamespaceLintOptions{
+		Content: &content,
+	})
 	if err != nil {
 		return nil, err
 	}
