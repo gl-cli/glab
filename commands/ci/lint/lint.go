@@ -50,7 +50,17 @@ func lintRun(f *cmdutils.Factory, path string) error {
 		return err
 	}
 
-	fmt.Fprintln(f.IO.StdErr, "Getting contents in", path)
+	repo, err := f.BaseRepo()
+	if err != nil {
+		return fmt.Errorf("You need to be in a GitLab project repository for this action.\nError: %s", err)
+	}
+
+	project, err := repo.Project(apiClient)
+	if err != nil {
+		return fmt.Errorf("You need to be in a GitLab project repository for this action.\nError: %s", err)
+	}
+
+	projectID := project.ID
 
 	var content []byte
 	var stdout bytes.Buffer
@@ -75,14 +85,14 @@ func lintRun(f *cmdutils.Factory, path string) error {
 		}
 	}
 
-	fmt.Fprintln(f.IO.StdErr, "Validating...")
+	fmt.Fprintln(f.IO.StdOut, "Validating...")
 
-	lint, err := api.PipelineCILint(apiClient, string(content))
+	lint, err := api.ProjectNamespaceLint(apiClient, projectID, string(content))
 	if err != nil {
 		return err
 	}
 
-	if lint.Status == "invalid" {
+	if !lint.Valid {
 		fmt.Fprintln(out, c.Red(path+" is invalid"))
 		for i, err := range lint.Errors {
 			i++
