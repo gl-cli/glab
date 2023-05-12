@@ -61,9 +61,9 @@ The appropriate Git command for listing commit SHAs.
 		},
 		{
 			desc:           "no commands",
-			content:        `{\"commands\": [], \"explanation\":\"There are no git commands related to the text\"}`,
+			content:        `{\"commands\": [], \"explanation\":\"There are no Git commands related to the text.\"}`,
 			withPrompt:     false,
-			expectedResult: "Experiment:\n" + experimentMsg + "\nCommands:\n\n\nExplanation:\n\nThere are no git commands related to the text\n\n",
+			expectedResult: "Experiment:\n" + experimentMsg + "\nCommands:\n\n\nExplanation:\n\nThere are no Git commands related to the text.\n\n",
 		},
 	}
 	cmdLogResult := "git log executed"

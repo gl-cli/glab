@@ -51,7 +51,7 @@ const (
 	spinnerText       = "Generating Git commands..."
 	aiResponseErr     = "Error: AI response has not been generated correctly"
 	apiUnreachableErr = "Error: API is unreachable"
-	experimentMsg     = "AI generated these responses. Leave feeback: https://gitlab.com/gitlab-org/gitlab/-/issues/409636.\n"
+	experimentMsg     = "AI generated these responses. Leave feedback: https://gitlab.com/gitlab-org/gitlab/-/issues/409636\n"
 )
 
 func NewCmd(f *cmdutils.Factory) *cobra.Command {
