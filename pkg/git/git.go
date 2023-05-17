@@ -491,3 +491,34 @@ func RunCmd(args []string) (err error) {
 	err = run.PrepareCmd(gitCmd).Run()
 	return
 }
+
+// DescribeByTags gives a description of the current object.
+// Non-annotated tags are considered.
+// Reference: https://git-scm.com/docs/git-describe
+func DescribeByTags() (string, error) {
+	gitCmd := GitCommand("describe", "--tags")
+
+	output, err := run.PrepareCmd(gitCmd).Output()
+	if err != nil {
+		return "", fmt.Errorf("running cmd: %s out: %s: %w", gitCmd.String(), output, err)
+	}
+
+	return string(output), nil
+}
+
+// ListTags gives a slice of tags from the current repository.
+func ListTags() ([]string, error) {
+	gitCmd := GitCommand("tag", "-l")
+
+	output, err := run.PrepareCmd(gitCmd).Output()
+	if err != nil {
+		return nil, fmt.Errorf("running cmd: %s out: %s: %w", gitCmd.String(), output, err)
+	}
+
+	tagsStr := string(output)
+	if tagsStr == "" {
+		return nil, nil
+	}
+
+	return strings.Fields(tagsStr), nil
+}
