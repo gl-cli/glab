@@ -1,6 +1,7 @@
 package git
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"reflect"
@@ -323,6 +324,118 @@ func TestGetRemoteURL(t *testing.T) {
 				return
 			}
 			require.Contains(t, got, tt.want)
+		})
+	}
+}
+
+func TestDescribeByTags(t *testing.T) {
+	cases := map[string]struct {
+		expected   string
+		output     string
+		errorValue error
+	}{
+		"invalid repository": {
+			expected:   "",
+			output:     "",
+			errorValue: errors.New("fatal: not a git repository (or any of the parent directories): .git"),
+		},
+		"commit is tag": {
+			expected:   "1.0.0",
+			output:     "1.0.0",
+			errorValue: nil,
+		},
+		"commit is not tag": {
+			expected:   "1.0.0-1-g4aa1b8",
+			output:     "1.0.0-1-g4aa1b8",
+			errorValue: nil,
+		},
+	}
+
+	t.Cleanup(func() {
+		teardown := run.SetPrepareCmd(func(*exec.Cmd) run.Runnable {
+			return &test.OutputStub{}
+		})
+		teardown()
+	})
+
+	for name, v := range cases {
+		t.Run(name, func(t *testing.T) {
+			_ = run.SetPrepareCmd(func(*exec.Cmd) run.Runnable {
+				return &test.OutputStub{Out: []byte(v.output), Error: v.errorValue}
+			})
+
+			version, err := DescribeByTags()
+			require.Equal(t, v.errorValue, errors.Unwrap(err))
+			require.Equal(t, v.expected, version, "unexpected version value for case %s", name)
+		})
+	}
+}
+
+func TestListTags(t *testing.T) {
+	cases := map[string]struct {
+		expected []string
+		output   string
+		errorVal error
+	}{
+		"invalid repository": {
+			expected: nil,
+			output:   "",
+			errorVal: errors.New("fatal: not a git repository (or any of the parent directories): .git"),
+		},
+		"no tags": {
+			expected: nil,
+			output:   "",
+			errorVal: nil,
+		},
+		"no tags w/ extra newline": {
+			expected: []string{},
+			output:   "\n",
+			errorVal: nil,
+		},
+		"single semver tag": {
+			expected: []string{"1.0.0"},
+			output:   "1.0.0",
+			errorVal: nil,
+		},
+		"multiple semver tags": {
+			expected: []string{"1.0.0", "2.0.0", "3.0.0"},
+			output:   "1.0.0\n2.0.0\n3.0.0",
+			errorVal: nil,
+		},
+		"multiple semver tags with extra newlines": {
+			expected: []string{"1.0.0", "2.0.0", "3.0.0"},
+			output:   "1.0.0\n2.0.0\n3.0.0\n\n",
+			errorVal: nil,
+		},
+		"single non-semver tag": {
+			expected: []string{"a"},
+			output:   "a",
+			errorVal: nil,
+		},
+		"multiple non-semver tag": {
+			expected: []string{"a", "b"},
+			output:   "a\nb",
+			errorVal: nil,
+		},
+	}
+
+	t.Cleanup(func() {
+		teardown := run.SetPrepareCmd(func(*exec.Cmd) run.Runnable {
+			return &test.OutputStub{}
+		})
+		teardown()
+	})
+
+	for name, v := range cases {
+		t.Run(name, func(t *testing.T) {
+			_ = run.SetPrepareCmd(func(*exec.Cmd) run.Runnable {
+				return &test.OutputStub{Out: []byte(v.output), Error: v.errorVal}
+			})
+
+			tags, err := ListTags()
+
+			require.Equal(t, v.errorVal, errors.Unwrap(err))
+			require.Equal(t, v.expected, tags)
 		})
 	}
 }
