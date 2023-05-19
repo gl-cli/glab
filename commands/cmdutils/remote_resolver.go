@@ -69,7 +69,8 @@ func (rr *remoteResolver) Resolver(hostOverride string) func() (glrepo.Remotes, 
 			}
 
 			if len(cachedRemotes) == 0 {
-				remotesError = errors.New("none of the git remotes configured for this repository correspond to the GITLAB_HOST environment variable. Try adding a matching remote or unsetting the variable")
+				remotesError = errors.New("none of the git remotes configured for this repository correspond to the GITLAB_HOST environment variable. Try adding a matching remote or unsetting the variable.\n\n" +
+					"GITLAB_HOST is currently set to " + hostOverride + "\n\nConfigured remotes: " + resolvedRemotes.UniqueHosts())
 				return nil, remotesError
 			}
 
@@ -89,7 +90,8 @@ func (rr *remoteResolver) Resolver(hostOverride string) func() (glrepo.Remotes, 
 		}
 
 		if len(cachedRemotes) == 0 {
-			remotesError = errors.New("none of the git remotes configured for this repository points to a known GitLab host. Please use `glab auth login` to authenticate and configure a new host for glab")
+			remotesError = errors.New("none of the git remotes configured for this repository point to a known GitLab host. Please use `glab auth login` to authenticate and configure a new host for glab.\n\n" +
+				"Configured remotes: " + resolvedRemotes.UniqueHosts())
 			return nil, remotesError
 		}
 		return cachedRemotes, nil

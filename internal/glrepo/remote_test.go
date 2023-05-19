@@ -280,3 +280,58 @@ func Test_Less(t *testing.T) {
 	assert.False(t, r.Less(1, 3))
 	assert.False(t, r.Less(2, 3))
 }
+
+func TestRemotes_UniqueHosts(t *testing.T) {
+	tests := []struct {
+		name string
+		r    Remotes
+		want string
+	}{
+		{
+			name: "multiple remotes with duplicates",
+			r: Remotes{
+				&Remote{
+					Remote: &git.Remote{
+						Name: "origin",
+					},
+					Repo: NewWithHost("owner", "repo", "gitlab.com"),
+				},
+				&Remote{
+					Remote: &git.Remote{
+						Name: "fork",
+					},
+					Repo: NewWithHost("forkowner", "repo", "gitlab.com"),
+				},
+				&Remote{
+					Remote: &git.Remote{
+						Name: "upstream",
+					},
+					Repo: NewWithHost("owner", "repo", "mygitlab-xyz.com"),
+				},
+			},
+			want: "gitlab.com, mygitlab-xyz.com",
+		},
+		{
+			name: "single remote",
+			r: Remotes{
+				&Remote{
+					Remote: &git.Remote{
+						Name: "origin",
+					},
+					Repo: NewWithHost("owner", "repo", "gitlab.com"),
+				},
+			},
+			want: "gitlab.com",
+		},
+		{
+			name: "no remotes",
+			r:    Remotes{},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.r.UniqueHosts())
+		})
+	}
+}
