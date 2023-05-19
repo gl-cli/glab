@@ -25,6 +25,20 @@ func (r Remotes) FindByName(names ...string) (*Remote, error) {
 	return nil, fmt.Errorf("no GitLab remotes found")
 }
 
+// UniqueHosts returns a string of unique hostnames
+func (r Remotes) UniqueHosts() string {
+	unique := make(map[string]bool, r.Len())
+	uniqueHosts := make([]string, len(unique))
+	for _, remote := range r {
+		if !unique[remote.RepoHost()] {
+			uniqueHosts = append(uniqueHosts, remote.RepoHost())
+			unique[remote.RepoHost()] = true
+		}
+	}
+
+	return strings.Join(uniqueHosts, ", ")
+}
+
 // FindByRepo returns the first Remote that points to a specific GitLab repository
 func (r Remotes) FindByRepo(owner, name string) (*Remote, error) {
 	for _, rem := range r {
