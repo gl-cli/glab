@@ -603,6 +603,27 @@ func createRun(opts *CreateOpts) error {
 	return errors.New("expected to cancel, preview in browser, or submit")
 }
 
+func mrBody(commits []*git.Commit, fillCommitBody bool) (string, error) {
+	var body strings.Builder
+	re := regexp.MustCompile(`\r?\n\n`)
+
+	for i := len(commits) - 1; i >= 0; i-- {
+		// adds 2 spaces for markdown line wrapping
+		fmt.Fprintf(&body, "- %s  \n", commits[i].Title)
+
+		if fillCommitBody {
+			commitBody, err := git.CommitBody(commits[i].Sha)
+			if err != nil {
+				return "", err
+			}
+			commitBody = re.ReplaceAllString(commitBody, "  \n")
+			fmt.Fprintf(&body, "%s\n", commitBody)
+		}
+	}
+
+	return body.String(), nil
+}
+
 func mrBodyAndTitle(opts *CreateOpts) error {
 	// TODO: detect forks
 	commits, err := git.Commits(opts.TargetTrackingBranch, opts.SourceBranch)
@@ -626,22 +647,11 @@ func mrBodyAndTitle(opts *CreateOpts) error {
 		}
 
 		if opts.Description == "" {
-			var body strings.Builder
-			for i := len(commits) - 1; i >= 0; i-- {
-				// adds 2 spaces for markdown line wrapping
-				fmt.Fprintf(&body, "- %s  \n", commits[i].Title)
-
-				if opts.FillCommitBody {
-					commitBody, err := git.CommitBody(commits[i].Sha)
-					if err != nil {
-						return err
-					}
-					re := regexp.MustCompile(`\r?\n\n`)
-					commitBody = re.ReplaceAllString(commitBody, "  \n")
-					fmt.Fprintf(&body, "%s\n", commitBody)
-				}
+			description, err := mrBody(commits, opts.FillCommitBody)
+			if err != nil {
+				return err
 			}
-			opts.Description = body.String()
+			opts.Description = description
 		}
 	}
 	return nil
