@@ -55,7 +55,7 @@ func TestProjectList(t *testing.T) {
 			expectedOut: "Showing 0 of 0 projects (Page 0 of 0)\n\n\n",
 		},
 		{
-			name: "when projects are found shows list",
+			name: "when no arguments, filters by ownership",
 			httpMock: httpMock{
 				http.MethodGet,
 				"/api/v4/projects?order_by=last_activity_at&owned=true&page=1&per_page=30",
@@ -66,10 +66,10 @@ func TestProjectList(t *testing.T) {
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
 		{
-			name: "when starred is passed as an arg filters by starred",
+			name: "when starred is passed as an arg, filters by starred",
 			httpMock: httpMock{
 				http.MethodGet,
-				"/api/v4/projects?order_by=last_activity_at&owned=true&page=1&per_page=30&starred=true",
+				"/api/v4/projects?order_by=last_activity_at&page=1&per_page=30&starred=true",
 				http.StatusOK,
 				projectResponse,
 			},
@@ -77,10 +77,10 @@ func TestProjectList(t *testing.T) {
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
 		{
-			name: "when member is passed as an arg filters by member",
+			name: "when member is passed as an arg, filters by member",
 			httpMock: httpMock{
 				http.MethodGet,
-				"/api/v4/projects?membership=true&order_by=last_activity_at&owned=true&page=1&per_page=30",
+				"/api/v4/projects?membership=true&order_by=last_activity_at&page=1&per_page=30",
 				http.StatusOK,
 				projectResponse,
 			},
@@ -88,7 +88,62 @@ func TestProjectList(t *testing.T) {
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
 		{
-			name: "view all projects",
+			name: "when mine is passed explicitly as an arg, filters by ownership",
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?order_by=last_activity_at&owned=true&page=1&per_page=30",
+				http.StatusOK,
+				projectResponse,
+			},
+			args:        "--mine",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
+		{
+			name: "when mine and starred are passed as args, filters by ownership and starred",
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?order_by=last_activity_at&owned=true&page=1&per_page=30&starred=true",
+				http.StatusOK,
+				projectResponse,
+			},
+			args:        "--mine --starred",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
+		{
+			name: "when starred and member are passed as args, filters by starred and membership",
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?membership=true&order_by=last_activity_at&page=1&per_page=30&starred=true",
+				http.StatusOK,
+				projectResponse,
+			},
+			args:        "--starred --member",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
+		{
+			name: "when mine and membership are passed as args, filters by ownership and membership",
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?membership=true&order_by=last_activity_at&owned=true&page=1&per_page=30",
+				http.StatusOK,
+				projectResponse,
+			},
+			args:        "--mine --member",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
+		{
+			name: "when mine, membership and starred is passed explicitly as arguments, filters by ownership, membership and starred",
+			httpMock: httpMock{
+				http.MethodGet,
+				"/api/v4/projects?membership=true&order_by=last_activity_at&owned=true&page=1&per_page=30&starred=true",
+				http.StatusOK,
+				projectResponse,
+			},
+			args:        "--mine --member --starred",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0)\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
+		{
+			name: "view all projects, no filters",
 			httpMock: httpMock{
 				http.MethodGet,
 				"/api/v4/projects?order_by=last_activity_at&page=1&per_page=30",
