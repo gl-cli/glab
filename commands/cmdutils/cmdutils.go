@@ -225,11 +225,13 @@ var GroupMemberLevel = map[int]string{
 	50: "owner",
 }
 
-// AssigneesPrompt creates a multi-selection prompt of all the users below the given access level
-// for the remote referenced by the `*glrepo.Remote`
-func AssigneesPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote, io *iostreams.IOStreams, minimumAccessLevel int) (err error) {
-	var assigneeOptions []string
-	assigneeMap := map[string]string{}
+// UsersPrompt creates a multi-selection prompt of all the users above the given access level
+// for the remote referenced by the `*glrepo.Remote`.
+//
+// `role` will appear on the prompt to keep the user informed of the reason of the selection.
+func UsersPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote, io *iostreams.IOStreams, minimumAccessLevel int, role string) (err error) {
+	var userOptions []string
+	userMap := map[string]string{}
 
 	lOpts := &gitlab.ListProjectMembersOptions{}
 	lOpts.PerPage = 100
@@ -240,25 +242,25 @@ func AssigneesPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *g
 
 	for i := range members {
 		if members[i].AccessLevel >= gitlab.AccessLevelValue(minimumAccessLevel) {
-			assigneeOptions = append(assigneeOptions, fmt.Sprintf("%s (%s)",
+			userOptions = append(userOptions, fmt.Sprintf("%s (%s)",
 				members[i].Username,
 				GroupMemberLevel[int(members[i].AccessLevel)],
 			))
-			assigneeMap[fmt.Sprintf("%s (%s)", members[i].Username, GroupMemberLevel[int(members[i].AccessLevel)])] = members[i].Username
+			userMap[fmt.Sprintf("%s (%s)", members[i].Username, GroupMemberLevel[int(members[i].AccessLevel)])] = members[i].Username
 		}
 	}
-	if len(assigneeOptions) == 0 {
+	if len(userOptions) == 0 {
 		fmt.Fprintf(io.StdErr, "Couldn't fetch any members with minimum permission level %d\n", minimumAccessLevel)
 		return nil
 	}
 
-	var selectedAssignees []string
-	err = prompt.MultiSelect(&selectedAssignees, "assignees", "Select assignees", assigneeOptions)
+	var selectedUsers []string
+	err = prompt.MultiSelect(&selectedUsers, role, fmt.Sprintf("Select %s", role), userOptions)
 	if err != nil {
 		return err
 	}
-	for _, x := range selectedAssignees {
-		*response = append(*response, assigneeMap[x])
+	for _, x := range selectedUsers {
+		*response = append(*response, userMap[x])
 	}
 
 	return nil

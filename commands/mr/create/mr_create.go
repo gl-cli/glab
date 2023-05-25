@@ -503,30 +503,44 @@ func createRun(opts *CreateOpts) error {
 	}
 
 	if action == cmdutils.AddMetadataAction {
-		var metadataActions []cmdutils.Action
+		metadataOptions := []string{
+			"labels",
+			"assignees",
+			"milestones",
+			"reviewers",
+		}
+		var metadataActions []string
 
-		metadataActions, err = cmdutils.PickMetadata()
+		err := prompt.MultiSelect(&metadataActions, "metadata", "Which metadata types to add?", metadataOptions)
 		if err != nil {
 			return fmt.Errorf("failed to pick metadata to add: %w", err)
 		}
 
 		for _, x := range metadataActions {
-			if x == cmdutils.AddLabelAction {
+			if x == "labels" {
 				err = cmdutils.LabelsPrompt(&opts.Labels, labClient, baseRepoRemote)
 				if err != nil {
 					return err
 				}
 			}
-			if x == cmdutils.AddAssigneeAction {
+			if x == "assignees" {
 				// Use minimum permission level 30 (Maintainer) as it is the minimum level
 				// to accept a merge request
-				err = cmdutils.AssigneesPrompt(&opts.Assignees, labClient, baseRepoRemote, opts.IO, 30)
+				err = cmdutils.UsersPrompt(&opts.Assignees, labClient, baseRepoRemote, opts.IO, 30, x)
 				if err != nil {
 					return err
 				}
 			}
-			if x == cmdutils.AddMilestoneAction {
+			if x == "milestones" {
 				err = cmdutils.MilestonesPrompt(&opts.Milestone, labClient, baseRepoRemote, opts.IO)
+				if err != nil {
+					return err
+				}
+			}
+			if x == "reviewers" {
+				// Use minimum permission level 30 (Maintainer) as it is the minimum level
+				// to accept a merge request
+				err = cmdutils.UsersPrompt(&opts.Reviewers, labClient, baseRepoRemote, opts.IO, 30, x)
 				if err != nil {
 					return err
 				}
