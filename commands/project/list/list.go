@@ -48,9 +48,9 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	repoListCmd.Flags().StringVarP(&opts.OrderBy, "order", "o", "last_activity_at", "Return repositories ordered by id, created_at, or other fields")
 	repoListCmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Return repositories sorted in asc or desc order")
 	repoListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
-	repoListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
+	repoListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page")
 	repoListCmd.Flags().BoolVarP(&opts.FilterAll, "all", "a", false, "List all projects on the instance")
-	repoListCmd.Flags().BoolVarP(&opts.FilterOwned, "mine", "m", true, "Only list projects you own")
+	repoListCmd.Flags().BoolVarP(&opts.FilterOwned, "mine", "m", false, "Only list projects you own (default if no filters are passed)")
 	repoListCmd.Flags().BoolVar(&opts.FilterMember, "member", false, "Only list projects which you are a member")
 	repoListCmd.Flags().BoolVar(&opts.FilterStarred, "starred", false, "Only list starred projects")
 	return repoListCmd
@@ -71,6 +71,11 @@ func runE(opts *Options) error {
 
 	// Other filters only valid if FilterAll not true
 	if !opts.FilterAll {
+		if !opts.FilterStarred && !opts.FilterMember {
+			// if no other filters are passed, default to Owned filter
+			l.Owned = gitlab.Bool(true)
+		}
+
 		if opts.FilterOwned {
 			l.Owned = gitlab.Bool(opts.FilterOwned)
 		}
