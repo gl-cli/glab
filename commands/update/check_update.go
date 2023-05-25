@@ -56,7 +56,7 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentErr bool) error {
 
 	c := f.IO.Color()
 	if isOlderVersion(latestRelease.Name, version) {
-		fmt.Fprintf(f.IO.StdErr, "%s %s → %s\n%s\n",
+		fmt.Fprintf(f.IO.StdErr, "%s %s -> %s\n%s\n",
 			c.Yellow("A new version of glab has been released:"),
 			c.Red(version), c.Green(latestRelease.TagName),
 			releaseURL)
@@ -64,7 +64,7 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentErr bool) error {
 		if silentErr {
 			return nil
 		}
-		fmt.Fprintf(f.IO.StdErr, "%v %v", c.GreenCheck(),
+		fmt.Fprintf(f.IO.StdErr, "%v",
 			c.Green("You are already using the latest version of glab\n"))
 	}
 	return nil
