@@ -621,7 +621,7 @@ func Test_PickMetadata(t *testing.T) {
 	})
 }
 
-func Test_AssigneesPrompt(t *testing.T) {
+func Test_UsersPrompt(t *testing.T) {
 	// mock glrepo.Remote object
 	repo := glrepo.New("foo", "bar")
 	remote := &git.Remote{
@@ -722,7 +722,7 @@ func Test_AssigneesPrompt(t *testing.T) {
 
 			as.Stub([]*prompt.QuestionStub{
 				{
-					Name:  "assignees",
+					Name:  "some users",
 					Value: tC.choice,
 				},
 			})
@@ -730,7 +730,7 @@ func Test_AssigneesPrompt(t *testing.T) {
 			var got []string
 			io, _, _, stderr := iostreams.Test()
 
-			err := AssigneesPrompt(&got, &gitlab.Client{}, repoRemote, io, tC.minimumAccessLevel)
+			err := UsersPrompt(&got, &gitlab.Client{}, repoRemote, io, tC.minimumAccessLevel, "some users")
 			if tC.expectedError != "" {
 				assert.EqualError(t, err, tC.expectedError)
 			} else {
@@ -767,7 +767,7 @@ func Test_AssigneesPrompt(t *testing.T) {
 			},
 		})
 
-		err := AssigneesPrompt(&got, &gitlab.Client{}, repoRemote, nil, 20)
+		err := UsersPrompt(&got, &gitlab.Client{}, repoRemote, nil, 20, "assignees")
 		assert.Empty(t, got)
 		assert.EqualError(t, err, "meant to fail")
 	})
@@ -779,7 +779,7 @@ func Test_AssigneesPrompt(t *testing.T) {
 			return nil, errors.New("meant to fail")
 		}
 
-		err := AssigneesPrompt(&got, &gitlab.Client{}, repoRemote, nil, 20)
+		err := UsersPrompt(&got, &gitlab.Client{}, repoRemote, nil, 20, "assignees")
 		assert.Empty(t, got)
 		assert.EqualError(t, err, "meant to fail")
 	})
@@ -810,7 +810,7 @@ func Test_AssigneesPrompt(t *testing.T) {
 			},
 		})
 
-		err := AssigneesPrompt(&got, &gitlab.Client{}, repoRemote, nil, 20)
+		err := UsersPrompt(&got, &gitlab.Client{}, repoRemote, nil, 20, "assignees")
 		assert.NoError(t, err)
 		assert.ElementsMatch(t, []string{"foo", "bar"}, got)
 	})

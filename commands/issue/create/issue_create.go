@@ -311,7 +311,7 @@ func createRun(opts *CreateOpts) error {
 			if x == cmdutils.AddAssigneeAction {
 				// Involve only reporters and up, in the future this might be expanded to `guests`
 				// but that might hit the `100` limit for projects with large amounts of collaborators
-				err = cmdutils.AssigneesPrompt(&opts.Assignees, apiClient, repoRemote, opts.IO, 20)
+				err = cmdutils.UsersPrompt(&opts.Assignees, apiClient, repoRemote, opts.IO, 20, "assignees")
 				if err != nil {
 					return err
 				}
