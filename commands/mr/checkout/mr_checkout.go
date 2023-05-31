@@ -1,7 +1,6 @@
 package checkout
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -28,7 +27,7 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 		Long:  ``,
 		Example: heredoc.Doc(`
 			glab mr checkout 1
-			glab mr checkout branch --track
+			glab mr checkout branch
 			glab mr checkout 12 --branch todo-fix
 			glab mr checkout new-feature --set-upstream-to=upstream/main
 			glab mr checkout   # use checked out branch
@@ -39,11 +38,6 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 			var upstream string
 
 			if mrCheckoutCfg.upstream != "" {
-				// Make sure we don't have the mutually exclusive flags --track and --set-upstream-to
-				if mrCheckoutCfg.track {
-					return &cmdutils.FlagError{Err: errors.New("--track and --set-upstream-to are mutually exclusive")}
-				}
-
 				upstream = mrCheckoutCfg.upstream
 
 				if val := strings.Split(mrCheckoutCfg.upstream, "/"); len(val) > 1 {
@@ -64,7 +58,7 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			mr, repo, err := mrutils.MRFromArgs(f, args, "any")
+			mr, _, err := mrutils.MRFromArgs(f, args, "any")
 			if err != nil {
 				return err
 			}
@@ -72,39 +66,31 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 			if mrCheckoutCfg.branch == "" {
 				mrCheckoutCfg.branch = mr.SourceBranch
 			}
-			fetchToRef := mrCheckoutCfg.branch
 
-			if mrCheckoutCfg.track {
-				if _, err := git.Config("remote." + mr.Author.Username + ".url"); err != nil {
-					mrProject, err := api.GetProject(apiClient, mr.SourceProjectID)
-					if err != nil {
-						return err
-					}
-					if _, err := git.AddRemote(mr.Author.Username, mrProject.SSHURLToRepo); err != nil {
-						return err
-					}
-				}
-				fetchToRef = fmt.Sprintf("refs/remotes/%s/%s", mr.Author.Username, mr.SourceBranch)
-			}
-			remotes, err := f.Remotes()
+			mrProject, err := api.GetProject(apiClient, mr.SourceProjectID)
 			if err != nil {
-				fmt.Println(err)
-			}
-			repoRemote, err := remotes.FindByRepo(repo.RepoOwner(), repo.RepoName())
-			if err != nil {
-				fmt.Println(err)
-			}
-
-			mrRef := fmt.Sprintf("refs/merge-requests/%d/head", mr.IID)
-			fetchRefSpec := fmt.Sprintf("%s:%s", mrRef, fetchToRef)
-			if err := git.RunCmd([]string{"fetch", repoRemote.Name, fetchRefSpec}); err != nil {
 				return err
 			}
 
-			if mrCheckoutCfg.track {
-				if err := git.RunCmd([]string{"branch", "--track", mrCheckoutCfg.branch, fetchToRef}); err != nil {
+			mrRef := fmt.Sprintf("refs/heads/%s", mr.SourceBranch)
+			fetchRefSpec := fmt.Sprintf("%s:%s", mrRef, mrCheckoutCfg.branch)
+			if err := git.RunCmd([]string{"fetch", mrProject.SSHURLToRepo, fetchRefSpec}); err != nil {
+				return err
+			}
+
+			// .remote is needed for `git pull` to work
+			// .pushRemote is needed for `git push` to work, if user has set `remote.pushDefault`.
+			// see https://git-scm.com/docs/git-config#Documentation/git-config.txt-branchltnamegtremote
+			if err := git.RunCmd([]string{"config", fmt.Sprintf("branch.%s.remote", mrCheckoutCfg.branch), mrProject.SSHURLToRepo}); err != nil {
+				return err
+			}
+			if mr.AllowCollaboration {
+				if err := git.RunCmd([]string{"config", fmt.Sprintf("branch.%s.pushRemote", mrCheckoutCfg.branch), mrProject.SSHURLToRepo}); err != nil {
 					return err
 				}
+			}
+			if err := git.RunCmd([]string{"config", fmt.Sprintf("branch.%s.merge", mrCheckoutCfg.branch), mrRef}); err != nil {
+				return err
 			}
 
 			// Check out branch
@@ -122,7 +108,8 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 	mrCheckoutCmd.Flags().StringVarP(&mrCheckoutCfg.branch, "branch", "b", "", "checkout merge request with <branch> name")
-	mrCheckoutCmd.Flags().BoolVarP(&mrCheckoutCfg.track, "track", "t", false, "set checked out branch to track remote branch, adds remote if needed")
+	mrCheckoutCmd.Flags().BoolVarP(&mrCheckoutCfg.track, "track", "t", true, "set checked out branch to track remote branch")
+	_ = mrCheckoutCmd.Flags().MarkDeprecated("track", "Now enabled by default")
 	mrCheckoutCmd.Flags().StringVarP(&mrCheckoutCfg.upstream, "set-upstream-to", "u", "", "set tracking of checked out branch to [REMOTE/]BRANCH")
 	return mrCheckoutCmd
 }

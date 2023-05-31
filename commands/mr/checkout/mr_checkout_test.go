@@ -86,15 +86,28 @@ func TestMrCheckout(t *testing.T) {
 							"id": 123,
 							"iid": 123,
 							"project_id": 3,
+							"source_project_id": 3,
 							"title": "test mr title",
 							"description": "test mr description",
+							"allow_collaboration": false,
 							"state": "opened",
 							"source_branch":"feat-new-mr"
+							}`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/3",
+					http.StatusOK,
+					`{
+							"id": 3,
+							"ssh_url_to_repo": "git@gitlab.com:OWNER/REPO.git"
 							}`,
 				},
 			},
 			shelloutStubs: []string{
 				"HEAD branch: master\n",
+				"\n",
+				"\n",
 				heredoc.Doc(`
 				deadbeef HEAD
 				deadb00f refs/remotes/upstream/feat-new-mr
@@ -102,7 +115,12 @@ func TestMrCheckout(t *testing.T) {
 				`),
 			},
 
-			expectedShellouts: []string{"git fetch upstream refs/merge-requests/123/head:feat-new-mr", "git checkout feat-new-mr"},
+			expectedShellouts: []string{
+				"git fetch git@gitlab.com:OWNER/REPO.git refs/heads/feat-new-mr:feat-new-mr",
+				"git config branch.feat-new-mr.remote git@gitlab.com:OWNER/REPO.git",
+				"git config branch.feat-new-mr.merge refs/heads/feat-new-mr",
+				"git checkout feat-new-mr",
+			},
 		},
 		{
 			name:        "when a valid MR is checked out using MR id and specifying branch",
@@ -117,15 +135,29 @@ func TestMrCheckout(t *testing.T) {
 							"id": 123,
 							"iid": 123,
 							"project_id": 3,
+							"source_project_id": 4,
 							"title": "test mr title",
 							"description": "test mr description",
+							"allow_collaboration": true,
 							"state": "opened",
 							"source_branch":"feat-new-mr"
+							}`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/4",
+					http.StatusOK,
+					`{
+							"id": 3,
+							"ssh_url_to_repo": "git@gitlab.com:FORK_OWNER/REPO.git"
 							}`,
 				},
 			},
 			shelloutStubs: []string{
 				"HEAD branch: master\n",
+				"\n",
+				"\n",
+				"\n",
 				heredoc.Doc(`
 				deadbeef HEAD
 				deadb00f refs/remotes/upstream/feat-new-mr
@@ -133,7 +165,13 @@ func TestMrCheckout(t *testing.T) {
 				`),
 			},
 
-			expectedShellouts: []string{"git fetch upstream refs/merge-requests/123/head:foo", "git checkout foo"},
+			expectedShellouts: []string{
+				"git fetch git@gitlab.com:FORK_OWNER/REPO.git refs/heads/feat-new-mr:foo",
+				"git config branch.foo.remote git@gitlab.com:FORK_OWNER/REPO.git",
+				"git config branch.foo.pushRemote git@gitlab.com:FORK_OWNER/REPO.git",
+				"git config branch.foo.merge refs/heads/feat-new-mr",
+				"git checkout foo",
+			},
 		},
 	}
 
