@@ -84,7 +84,7 @@ func TestNewCheckUpdateCmd_error(t *testing.T) {
 
 	err = NewCheckUpdateCmd(factory, "1.11.0").Execute()
 	assert.NotNil(t, err)
-	assert.Equal(t, "could not check for update: Get \"https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases?page=1&per_page=1\": an error expected", err.Error())
+	assert.Equal(t, "failed checking for glab updates: Get \"https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases?page=1&per_page=1\": an error expected", err.Error())
 	assert.Equal(t, "", stdout.String())
 	assert.Equal(t, "", stderr.String())
 }
@@ -165,4 +165,25 @@ func makeTestFactory() (factory *cmdutils.Factory, in *bytes.Buffer, out *bytes.
 	}
 	factory.IO, _, out, errOut = iostreams.Test()
 	return
+}
+
+func TestCheckUpdate_NoRun(t *testing.T) {
+	tests := []struct {
+		name            string
+		previousCommand string
+	}{
+		{
+			name:            "when previous command is check-update",
+			previousCommand: "check-update",
+		},
+		{
+			name:            "when previous command is an alias for check-update",
+			previousCommand: "update",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Nil(t, CheckUpdate(nil, "1.1.1", true, tt.previousCommand))
+		})
+	}
 }

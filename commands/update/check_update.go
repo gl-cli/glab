@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/pkg/utils"
+
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"github.com/hashicorp/go-version"
@@ -11,23 +13,33 @@ import (
 	"github.com/xanzy/go-gitlab"
 )
 
-const defaultProjectURL = "https://gitlab.com/gitlab-org/cli"
+const (
+	defaultProjectURL = "https://gitlab.com/gitlab-org/cli"
+	commandUse        = "check-update"
+)
+
+var commandAliases = []string{"update"}
 
 func NewCheckUpdateCmd(f *cmdutils.Factory, version string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "check-update",
+		Use:     commandUse,
 		Short:   "Check for latest glab releases",
 		Long:    ``,
-		Aliases: []string{"update"},
+		Aliases: commandAliases,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return CheckUpdate(f, version, false)
+			return CheckUpdate(f, version, false, "")
 		},
 	}
 
 	return cmd
 }
 
-func CheckUpdate(f *cmdutils.Factory, version string, silentErr bool) error {
+func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previousCommand string) error {
+	// Don't CheckUpdate if previous command is CheckUpdate
+	if previousCommand == commandUse || utils.PresentInStringSlice(commandAliases, previousCommand) {
+		return nil
+	}
+
 	err := f.RepoOverride(defaultProjectURL)
 	if err != nil {
 		return err
@@ -43,10 +55,7 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentErr bool) error {
 	releases, _, err := apiClient.Releases.ListReleases(
 		repo.FullName(), &gitlab.ListReleasesOptions{ListOptions: gitlab.ListOptions{Page: 1, PerPage: 1}})
 	if err != nil {
-		if silentErr {
-			return nil
-		}
-		return fmt.Errorf("could not check for update: %s", err.Error())
+		return fmt.Errorf("failed checking for glab updates: %s", err.Error())
 	}
 	if len(releases) < 1 {
 		return fmt.Errorf("no release found for glab")
@@ -61,7 +70,7 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentErr bool) error {
 			c.Red(version), c.Green(latestRelease.TagName),
 			releaseURL)
 	} else {
-		if silentErr {
+		if silentSuccess {
 			return nil
 		}
 		fmt.Fprintf(f.IO.StdErr, "%v",
