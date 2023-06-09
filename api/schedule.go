@@ -33,3 +33,28 @@ var RunSchedule = func(client *gitlab.Client, repo string, schedule int, opts ..
 
 	return nil
 }
+
+var CreateSchedule = func(client *gitlab.Client, repo string, scheduleOpts *gitlab.CreatePipelineScheduleOptions, opts ...gitlab.RequestOptionFunc) error {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+
+	_, _, err := client.PipelineSchedules.CreatePipelineSchedule(repo, scheduleOpts, opts...)
+	if err != nil {
+		return fmt.Errorf("creating scheduled pipeline status: %w", err)
+	}
+
+	return nil
+}
+
+var DeleteSchedule = func(client *gitlab.Client, scheduleId int, repo string, opts ...gitlab.RequestOptionFunc) (err error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+
+	_, err = client.PipelineSchedules.DeletePipelineSchedule(repo, scheduleId, opts...)
+	if err != nil {
+		return fmt.Errorf("deleting scheduled pipeline status: %w", err)
+	}
+	return nil
+}
