@@ -1,7 +1,6 @@
 package delete
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -55,7 +54,6 @@ func Test_ScheduleDelete(t *testing.T) {
 			}
 
 			out, err := runCommand(fakeHTTP, false, tc.cli)
-			fmt.Print(err)
 			if err != nil {
 				if tc.wantErr == true {
 					if assert.Error(t, err) {
@@ -66,7 +64,6 @@ func Test_ScheduleDelete(t *testing.T) {
 			}
 
 			for _, msg := range tc.ExpectedMsg {
-				fmt.Print(msg)
 				require.Contains(t, out.String(), msg)
 			}
 		})
