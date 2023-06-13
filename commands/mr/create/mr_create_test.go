@@ -450,7 +450,7 @@ func TestGenerateMRCompareURL(t *testing.T) {
 	u, err := generateMRCompareURL(opts)
 
 	expectedUrl := "https://gitlab.example.com/gitlab-org/gitlab/-/merge_requests/new?" +
-		"merge_request%5Bdescription%5D=%0A%2Flabel+~%22backend%22~%22frontend%22%0A%2Fassign+johndoe%2C+janedoe%0A%2Freviewer+user%2C+person%0A%2Fmilestone+%2515&" +
+		"merge_request%5Bdescription%5D=%0A%2Flabel+~backend%2C+~frontend%0A%2Fassign+johndoe%2C+janedoe%0A%2Freviewer+user%2C+person%0A%2Fmilestone+%2515&" +
 		"merge_request%5Bsource_branch%5D=%40%7Ccalc&merge_request%5Bsource_project_id%5D=101&merge_request%5Btarget_branch%5D=project%2Fmy-branch&merge_request%5Btarget_project_id%5D=100&" +
 		"merge_request%5Btitle%5D=Autofill+tests+%7C+for+this+%40project"
 
