@@ -41,7 +41,7 @@ glab mr merge    # Finds open merge request from current branch
       --sha string               Merge Commit sha
   -s, --squash                   Squash commits on merge
       --squash-message string    Custom Squash commit message
-      --when-pipeline-succeeds   Merge only when pipeline succeeds (default true)
+      --when-pipeline-succeeds   Set auto-merge (default true)
   -y, --yes                      Skip submission confirmation prompt
 ```
 
