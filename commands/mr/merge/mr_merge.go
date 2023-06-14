@@ -96,7 +96,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 				mr.Pipeline != nil &&
 				f.IO.PromptEnabled() &&
 				!opts.SkipPrompts {
-				_ = prompt.Confirm(&opts.MergeWhenPipelineSucceeds, "Merge when pipeline succeeds?", true)
+				_ = prompt.Confirm(&opts.MergeWhenPipelineSucceeds, "Set to auto-merge?", true)
 			}
 
 			if f.IO.IsOutputTTY() && !opts.SkipPrompts {
@@ -226,7 +226,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 					default:
 						fmt.Fprintln(f.IO.StdOut, c.WarnIcon(), "Pipeline Status:", mr.Pipeline.Status)
 						if mr.State != "merged" {
-							fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Will merge when pipeline succeeds")
+							fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Will auto-merge")
 							isMerged = false
 						}
 					}
@@ -249,7 +249,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 
 	mrMergeCmd.Flags().StringVarP(&opts.SHA, "sha", "", "", "Merge Commit sha")
 	mrMergeCmd.Flags().BoolVarP(&opts.RemoveSourceBranch, "remove-source-branch", "d", false, "Remove source branch on merge")
-	mrMergeCmd.Flags().BoolVarP(&opts.MergeWhenPipelineSucceeds, "when-pipeline-succeeds", "", true, "Merge only when pipeline succeeds")
+	mrMergeCmd.Flags().BoolVarP(&opts.MergeWhenPipelineSucceeds, "when-pipeline-succeeds", "", true, "Set auto-merge")
 	mrMergeCmd.Flags().StringVarP(&opts.MergeCommitMessage, "message", "m", "", "Custom merge commit message")
 	mrMergeCmd.Flags().StringVarP(&opts.SquashMessage, "squash-message", "", "", "Custom Squash commit message")
 	mrMergeCmd.Flags().BoolVarP(&opts.SquashBeforeMerge, "squash", "s", false, "Squash commits on merge")
