@@ -416,7 +416,7 @@ func createRun(opts *CreateOpts) error {
 						}
 						templateContents, err = mrBody(commits, true)
 						if err != nil {
-							return fmt.Errorf("failed to get commit messages: %w", err)
+							return err
 						}
 					} else if templateName == mrEmptyTemplate {
 						// blank merge request was choosen, leave templateContents empty
@@ -631,7 +631,7 @@ func mrBody(commits []*git.Commit, fillCommitBody bool) (string, error) {
 		if fillCommitBody {
 			commitBody, err := git.CommitBody(commits[i].Sha)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("failed to get commit message for %s: %w", commits[i].Sha, err)
 			}
 			commitBody = re.ReplaceAllString(commitBody, "  \n")
 			fmt.Fprintf(&body, "%s\n", commitBody)
