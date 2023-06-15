@@ -387,8 +387,11 @@ func createRun(opts *CreateOpts) error {
 						return fmt.Errorf("error getting templates: %w", err)
 					}
 
-					templateNames = append(templateNames, "Open a merge request with commit messages")
-					templateNames = append(templateNames, "Open a blank merge request")
+					const mrWithCommitsTemplate = "Open a merge request with commit messages"
+					const mrEmptyTemplate = "Open a blank merge request"
+
+					templateNames = append(templateNames, mrWithCommitsTemplate)
+					templateNames = append(templateNames, mrEmptyTemplate)
 
 					selectQs := []*survey.Question{
 						{
@@ -403,13 +406,9 @@ func createRun(opts *CreateOpts) error {
 					if err := prompt.Ask(selectQs, &templateResponse); err != nil {
 						return fmt.Errorf("could not prompt: %w", err)
 					}
-					if templateResponse.Index < len(templateNames)-2 {
-						templateName = templateNames[templateResponse.Index]
-						templateContents, err = cmdutils.LoadGitLabTemplate(cmdutils.MergeRequestTemplate, templateName)
-						if err != nil {
-							return fmt.Errorf("failed to get template contents: %w", err)
-						}
-					} else if templateResponse.Index == len(templateNames)-2 {
+
+					templateName = templateNames[templateResponse.Index]
+					if templateName == mrWithCommitsTemplate {
 						// templateContents should be filled from commit messages
 						commits, err := git.Commits(opts.TargetTrackingBranch, opts.SourceBranch)
 						if err != nil {
@@ -419,8 +418,14 @@ func createRun(opts *CreateOpts) error {
 						if err != nil {
 							return fmt.Errorf("failed to get commit messages: %w", err)
 						}
+					} else if templateName == mrEmptyTemplate {
+						// blank merge request was choosen, leave templateContents empty
+					} else {
+						templateContents, err = cmdutils.LoadGitLabTemplate(cmdutils.MergeRequestTemplate, templateName)
+						if err != nil {
+							return fmt.Errorf("failed to get template contents: %w", err)
+						}
 					}
-					// else: blank merge request was choosen, leave templateContents empty
 				}
 			}
 
