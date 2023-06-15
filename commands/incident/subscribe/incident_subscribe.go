@@ -9,5 +9,5 @@ import (
 )
 
 func NewCmdSubscribe(f *cmdutils.Factory) *cobra.Command {
-	return issuableSubscribeCmd.NewCmdSubscribe(f, issuable.TypeIssue)
+	return issuableSubscribeCmd.NewCmdSubscribe(f, issuable.TypeIncident)
 }
