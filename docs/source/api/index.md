@@ -113,7 +113,7 @@ $ glab api graphql --paginate -f query='
 ## Options
 
 ```plaintext
-  -F, --field stringArray       Add a parameter of inferred type
+  -F, --field stringArray       Add a parameter of inferred type (changes default HTTP method to "POST")
   -H, --header stringArray      Add an additional HTTP request header
       --hostname string         The GitLab hostname for the request (default is "gitlab.com" or authenticated host in current git directory)
   -i, --include                 Include HTTP response headers in the output
