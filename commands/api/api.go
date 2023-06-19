@@ -182,7 +182,7 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 
 	cmd.Flags().StringVar(&opts.Hostname, "hostname", "", "The GitLab hostname for the request (default is \"gitlab.com\" or authenticated host in current git directory)")
 	cmd.Flags().StringVarP(&opts.RequestMethod, "method", "X", "GET", "The HTTP method for the request")
-	cmd.Flags().StringArrayVarP(&opts.MagicFields, "field", "F", nil, "Add a parameter of inferred type")
+	cmd.Flags().StringArrayVarP(&opts.MagicFields, "field", "F", nil, "Add a parameter of inferred type (changes default HTTP method to \"POST\")")
 	cmd.Flags().StringArrayVarP(&opts.RawFields, "raw-field", "f", nil, "Add a string parameter")
 	cmd.Flags().StringArrayVarP(&opts.RequestHeaders, "header", "H", nil, "Add an additional HTTP request header")
 	cmd.Flags().BoolVarP(&opts.ShowResponseHeaders, "include", "i", false, "Include HTTP response headers in the output")
