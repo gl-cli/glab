@@ -29,11 +29,11 @@ const (
 )
 
 type MergeOpts struct {
-	MergeWhenPipelineSucceeds bool
-	SquashBeforeMerge         bool
-	RebaseBeforeMerge         bool
-	RemoveSourceBranch        bool
-	SkipPrompts               bool
+	SetAutoMerge       bool
+	SquashBeforeMerge  bool
+	RebaseBeforeMerge  bool
+	RemoveSourceBranch bool
+	SkipPrompts        bool
 
 	SquashMessage      string
 	MergeCommitMessage string
@@ -92,11 +92,12 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if !cmd.Flags().Changed("when-pipeline-succeeds") &&
+				!cmd.Flags().Changed("auto-merge") &&
 				f.IO.IsOutputTTY() &&
 				mr.Pipeline != nil &&
 				f.IO.PromptEnabled() &&
 				!opts.SkipPrompts {
-				_ = prompt.Confirm(&opts.MergeWhenPipelineSucceeds, "Set to auto-merge?", true)
+				_ = prompt.Confirm(&opts.SetAutoMerge, "Set auto-merge?", true)
 			}
 
 			if f.IO.IsOutputTTY() && !opts.SkipPrompts {
@@ -161,7 +162,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 			if opts.RemoveSourceBranch {
 				mergeOpts.ShouldRemoveSourceBranch = gitlab.Bool(true)
 			}
-			if opts.MergeWhenPipelineSucceeds && mr.Pipeline != nil {
+			if opts.SetAutoMerge && mr.Pipeline != nil {
 				if mr.Pipeline.Status == "canceled" || mr.Pipeline.Status == "failed" {
 					fmt.Fprintln(f.IO.StdOut, c.FailedIcon(), "Pipeline Status:", mr.Pipeline.Status)
 					fmt.Fprintln(f.IO.StdOut, c.FailedIcon(), "Cannot perform merge action")
@@ -216,7 +217,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 			}
 			f.IO.StopSpinner("")
 			isMerged := true
-			if opts.MergeWhenPipelineSucceeds {
+			if opts.SetAutoMerge {
 				if mr.Pipeline == nil {
 					fmt.Fprintln(f.IO.StdOut, c.WarnIcon(), "No pipeline running on", mr.SourceBranch)
 				} else {
@@ -249,12 +250,15 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 
 	mrMergeCmd.Flags().StringVarP(&opts.SHA, "sha", "", "", "Merge Commit sha")
 	mrMergeCmd.Flags().BoolVarP(&opts.RemoveSourceBranch, "remove-source-branch", "d", false, "Remove source branch on merge")
-	mrMergeCmd.Flags().BoolVarP(&opts.MergeWhenPipelineSucceeds, "when-pipeline-succeeds", "", true, "Set auto-merge")
+	mrMergeCmd.Flags().BoolVarP(&opts.SetAutoMerge, "auto-merge", "", true, "Set auto-merge")
 	mrMergeCmd.Flags().StringVarP(&opts.MergeCommitMessage, "message", "m", "", "Custom merge commit message")
 	mrMergeCmd.Flags().StringVarP(&opts.SquashMessage, "squash-message", "", "", "Custom Squash commit message")
 	mrMergeCmd.Flags().BoolVarP(&opts.SquashBeforeMerge, "squash", "s", false, "Squash commits on merge")
 	mrMergeCmd.Flags().BoolVarP(&opts.RebaseBeforeMerge, "rebase", "r", false, "Rebase the commits onto the base branch")
 	mrMergeCmd.Flags().BoolVarP(&opts.SkipPrompts, "yes", "y", false, "Skip submission confirmation prompt")
+
+	mrMergeCmd.Flags().BoolVarP(&opts.SetAutoMerge, "when-pipeline-succeeds", "", true, "Merge only when pipeline succeeds")
+	_ = mrMergeCmd.Flags().MarkDeprecated("when-pipeline-succeeds", "please use --auto-merge instead.")
 
 	return mrMergeCmd
 }

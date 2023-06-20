@@ -35,14 +35,14 @@ glab mr merge    # Finds open merge request from current branch
 ## Options
 
 ```plaintext
-  -m, --message string           Custom merge commit message
-  -r, --rebase                   Rebase the commits onto the base branch
-  -d, --remove-source-branch     Remove source branch on merge
-      --sha string               Merge Commit sha
-  -s, --squash                   Squash commits on merge
-      --squash-message string    Custom Squash commit message
-      --when-pipeline-succeeds   Set auto-merge (default true)
-  -y, --yes                      Skip submission confirmation prompt
+      --auto-merge              Set auto-merge (default true)
+  -m, --message string          Custom merge commit message
+  -r, --rebase                  Rebase the commits onto the base branch
+  -d, --remove-source-branch    Remove source branch on merge
+      --sha string              Merge Commit sha
+  -s, --squash                  Squash commits on merge
+      --squash-message string   Custom Squash commit message
+  -y, --yes                     Skip submission confirmation prompt
 ```
 
 ## Options inherited from parent commands
