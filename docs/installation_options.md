@@ -163,6 +163,18 @@ cd glab/
 makedeb -si
 ```
 
+### WakeMeOps (Debian/Ubuntu)
+
+`glab` also exists in the [WakeMeOps repository](https://docs.wakemeops.com/packages/glab/):
+
+```shell
+# Add WakeMeOps repository
+curl -sSL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | sudo bash
+
+# Install glab
+sudo apt install glab
+```
+
 #### Prebuilt-MPR
 
 The above method downloads glab from source and builds it before packaging it into a `.deb` package. If you don't want to compile or just want a prebuilt package, you can also install glab from the Prebuilt-MPR:
