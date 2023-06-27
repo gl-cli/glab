@@ -133,7 +133,7 @@ func FromFullName(nwo string) (Interface, error) {
 			return NewWithHost(parts[1], repo, normalizeHostname(parts[0])), nil
 		}
 		// Dots (.) are allowed in group names by GitLab.
-		// So we check if if the first part contains a dot.
+		// So we check if the first part contains a dot.
 		// However, it could be that the user is specifying a hostname but we can't be sure of that
 		// So we check in the list of authenticated hosts and see if it matches any
 		// if not, we assume it is a group name that contains a dot

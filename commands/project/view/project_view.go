@@ -40,7 +40,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
-			# view project information for the current directory
+			# view project information for the current directory (must be a git repository)
 			$ glab repo view
 
 			# view project information of specified name
@@ -67,27 +67,31 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 				opts.ProjectID = args[0]
 			}
 
-			apiClient, err := f.HttpClient()
-			if err != nil {
-				return err
-			}
-			opts.APIClient = apiClient
-
+			// No project argument - use current repository
 			if opts.ProjectID == "" {
 				opts.Repo, err = f.BaseRepo()
 				if err != nil {
 					return cmdutils.WrapError(err, "`repository` is required when not running in a git repository")
 				}
-				opts.ProjectID = opts.Repo.FullName()
+
+				// Configure client to have host of current repository
+				client, err := api.NewClientWithCfg(opts.Repo.RepoHost(), cfg, false)
+				if err != nil {
+					return err
+				}
+				opts.APIClient = client.Lab()
 
 				if opts.Branch == "" {
 					opts.Branch, _ = f.Branch()
 				}
-			}
-
-			if opts.ProjectID != "" {
+			} else {
+				// If the ProjectID is a single token, use current user's namespace
 				if !strings.Contains(opts.ProjectID, "/") {
-					currentUser, err := api.CurrentUser(opts.APIClient)
+					apiClient, err := f.HttpClient()
+					if err != nil {
+						return err
+					}
+					currentUser, err := api.CurrentUser(apiClient)
 					if err != nil {
 						return cmdutils.WrapError(err, "Failed to retrieve your current user")
 					}
@@ -95,27 +99,22 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 					opts.ProjectID = currentUser.Username + "/" + opts.ProjectID
 				}
 
-				repo, err := glrepo.FromFullName(opts.ProjectID)
+				// Get the repo full name from the ProjectID which can be a full URL or a group/repo format
+				opts.Repo, err = glrepo.FromFullName(opts.ProjectID)
 				if err != nil {
 					return err
 				}
-
-				if !glrepo.IsSame(repo, opts.Repo) {
-					client, err := api.NewClientWithCfg(repo.RepoHost(), cfg, false)
-					if err != nil {
-						return err
-					}
-					opts.APIClient = client.Lab()
+				client, err := api.NewClientWithCfg(opts.Repo.RepoHost(), cfg, false)
+				if err != nil {
+					return err
 				}
-				opts.Repo = repo
-				opts.ProjectID = repo.FullName()
+				opts.APIClient = client.Lab()
 			}
 
 			browser, _ := cfg.Get(opts.Repo.RepoHost(), "browser")
 			opts.Browser = browser
 
 			opts.GlamourStyle, _ = cfg.Get(opts.Repo.RepoHost(), "glamour_style")
-
 			return runViewProject(&opts)
 		},
 	}

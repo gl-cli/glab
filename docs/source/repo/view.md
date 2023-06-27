@@ -24,7 +24,7 @@ glab repo view [repository] [flags]
 ## Examples
 
 ```plaintext
-# view project information for the current directory
+# view project information for the current directory (must be a git repository)
 $ glab repo view
 
 # view project information of specified name

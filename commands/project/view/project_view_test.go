@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+
 	"github.com/MakeNowJust/heredoc"
 
 	"github.com/stretchr/testify/assert"
@@ -15,13 +17,21 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string, stub bool) (*test.CmdOut, error, func()) {
+func runCommand(rt http.RoundTripper, isTTY bool, cli string, stub bool, repoHost string) (*test.CmdOut, error, func()) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 
 	factory := cmdtest.InitFactory(ios, rt)
 
 	factory.Branch = func() (string, error) {
 		return "#current-branch", nil
+	}
+
+	factory.BaseRepo = func() (glrepo.Interface, error) {
+		if repoHost == "" {
+			return glrepo.New("OWNER", "REPO"), nil
+		} else {
+			return glrepo.NewWithHost("OWNER", "REPO", repoHost), nil
+		}
 	}
 
 	_, _ = factory.HttpClient()
@@ -55,6 +65,7 @@ func TestProjectView(t *testing.T) {
 		httpMocks []httpMock
 		isTTY     bool
 		stub      bool
+		repoHost  string
 
 		expectedOutput string
 	}{
@@ -64,7 +75,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -82,7 +93,7 @@ func TestProjectView(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO/repository/files/README%2Emd?ref=%23current-branch",
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO/repository/files/README%2Emd?ref=%23current-branch",
 					http.StatusOK,
 					`{"file_name": "README.md",
 							  "file_path": "README.md",
@@ -106,13 +117,13 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/user",
+					"https://gitlab.com/api/v4/user",
 					http.StatusOK,
 					`{ "username": "test_user" }`,
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/test_user/foo?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/test_user%2Ffoo?license=true&statistics=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -130,7 +141,7 @@ func TestProjectView(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/test_user/foo/repository/files/README%2Emd?ref=main",
+					"https://gitlab.com/api/v4/projects/test_user%2Ffoo/repository/files/README%2Emd?ref=main",
 					http.StatusOK,
 					`{"file_name": "README.md",
 							  "file_path": "README.md",
@@ -154,7 +165,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/foo/bar?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/foo%2Fbar?license=true&statistics=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -172,7 +183,7 @@ func TestProjectView(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/foo/bar/repository/files/README%2Emd?ref=main",
+					"https://gitlab.com/api/v4/projects/foo%2Fbar/repository/files/README%2Emd?ref=main",
 					http.StatusOK,
 					`{
 							"file_name": "README.md",
@@ -197,7 +208,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/group/foo/bar?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/group%2Ffoo%2Fbar?license=true&statistics=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -215,7 +226,7 @@ func TestProjectView(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/group/foo/bar/repository/files/README%2Emd?ref=main",
+					"https://gitlab.com/api/v4/projects/group%2Ffoo%2Fbar/repository/files/README%2Emd?ref=main",
 					http.StatusOK,
 					`{
 							"file_name": "README.md",
@@ -235,12 +246,99 @@ func TestProjectView(t *testing.T) {
 										`),
 		},
 		{
-			name: "view project branch on web",
+			name: "view a project details from a project not hosted on the default host",
+			cli:  "",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					http.StatusOK,
+					`{
+							  "id": 37777023,
+							  "description": "this is a test description",
+							  "name": "bar",
+							  "name_with_namespace": "OWNER / REPO",
+							  "path": "bar",
+							  "path_with_namespace": "OWNER/REPO",
+							  "created_at": "2022-07-13T02:04:56.151Z",
+							  "default_branch": "main",
+							  "http_url_to_repo": "https://gitlab.company.org/OWNER/REPO.git",
+							  "web_url": "https://gitlab.company.org/OWNER/REPO",
+							  "readme_url": "https://gitlab.company.org/OWNER/REPO/-/blob/main/README.md"
+							}`,
+				},
+				{
+					http.MethodGet,
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO/repository/files/README%2Emd?ref=%23current-branch",
+					http.StatusOK,
+					`{
+							"file_name": "README.md",
+							"file_path": "README.md",
+							"encoding": "base64",
+							"ref": "main",
+							"execute_filemode": false,
+							"content": "dGVzdCByZWFkbWUK"
+							}`,
+				},
+			},
+			repoHost: "gitlab.company.org",
+			expectedOutput: heredoc.Doc(`name:	OWNER / REPO
+												description:	this is a test description
+												---
+												test readme
+
+										`),
+		},
+		{
+			name: "view project details from a git URL",
+			cli:  "https://gitlab.company.org/OWNER/REPO.git",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					http.StatusOK,
+					`{
+							  "id": 37777023,
+							  "description": "this is a test description",
+							  "name": "bar",
+							  "name_with_namespace": "OWNER / REPO",
+							  "path": "bar",
+							  "path_with_namespace": "OWNER/REPO",
+							  "created_at": "2022-07-13T02:04:56.151Z",
+							  "default_branch": "main",
+							  "http_url_to_repo": "https://gitlab.company.org/OWNER/REPO.git",
+							  "web_url": "https://gitlab.company.org/OWNER/REPO",
+							  "readme_url": "https://gitlab.company.org/OWNER/REPO/-/blob/main/README.md"
+							}`,
+				},
+				{
+					http.MethodGet,
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO/repository/files/README%2Emd?ref=main",
+					http.StatusOK,
+					`{
+							"file_name": "README.md",
+							"file_path": "README.md",
+							"encoding": "base64",
+							"ref": "main",
+							"execute_filemode": false,
+							"content": "dGVzdCByZWFkbWUK"
+							}`,
+				},
+			},
+			expectedOutput: heredoc.Doc(`name:	OWNER / REPO
+												description:	this is a test description
+												---
+												test readme
+
+										`),
+		},
+		{
+			name: "view project on web where current branch is different to default branch",
 			cli:  "--web",
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -267,7 +365,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -288,12 +386,175 @@ func TestProjectView(t *testing.T) {
 			stub:           true,
 			expectedOutput: "Opening gitlab.com/OWNER/REPO in your browser.\n",
 		},
+		{
+			name: "view project when passing a https git URL on web",
+			cli:  "https://gitlab.company.org/OWNER/REPO.git --web",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					http.StatusOK,
+					`{
+							  "id": 37777023,
+							  "description": "this is a test description",
+							  "name": "REPO",
+							  "name_with_namespace": "Test User / REPO",
+							  "path": "REPO",
+							  "path_with_namespace": "OWNER/REPO",
+							  "created_at": "2022-07-13T02:04:56.151Z",
+							  "default_branch": "#current-branch",
+							  "http_url_to_repo": "https://gitlab.company.org/OWNER/REPO.git",
+							  "web_url": "https://gitlab.company.org/OWNER/REPO",
+							  "readme_url": "https://gitlab.company.org/OWNER/REPO/-/blob/main/README.md"
+							}`,
+				},
+			},
+			isTTY:          true,
+			stub:           true,
+			expectedOutput: "Opening gitlab.company.org/OWNER/REPO in your browser.\n",
+		},
+		{
+			name: "view project when passing a https git URL on web",
+			cli:  "https://gitlab.company.org/OWNER/REPO.git --web --branch foobranch",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					http.StatusOK,
+					`{
+							  "id": 37777023,
+							  "description": "this is a test description",
+							  "name": "REPO",
+							  "name_with_namespace": "Test User / REPO",
+							  "path": "REPO",
+							  "path_with_namespace": "OWNER/REPO",
+							  "created_at": "2022-07-13T02:04:56.151Z",
+							  "default_branch": "#current-branch",
+							  "http_url_to_repo": "https://gitlab.company.org/OWNER/REPO.git",
+							  "web_url": "https://gitlab.company.org/OWNER/REPO",
+							  "readme_url": "https://gitlab.company.org/OWNER/REPO/-/blob/main/README.md"
+							}`,
+				},
+			},
+			isTTY:          true,
+			stub:           true,
+			expectedOutput: "Opening gitlab.company.org/OWNER/REPO/-/tree/foobranch in your browser.\n",
+		},
+		{
+			name: "view project when passing a https URL on web",
+			cli:  "https://gitlab.company.org/OWNER/REPO --web",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					http.StatusOK,
+					`{
+							  "id": 37777023,
+							  "description": "this is a test description",
+							  "name": "REPO",
+							  "name_with_namespace": "Test User / REPO",
+							  "path": "REPO",
+							  "path_with_namespace": "OWNER/REPO",
+							  "created_at": "2022-07-13T02:04:56.151Z",
+							  "default_branch": "#current-branch",
+							  "http_url_to_repo": "https://gitlab.company.org/OWNER/REPO.git",
+							  "web_url": "https://gitlab.company.org/OWNER/REPO",
+							  "readme_url": "https://gitlab.company.org/OWNER/REPO/-/blob/main/README.md"
+							}`,
+				},
+			},
+			isTTY:          true,
+			stub:           true,
+			expectedOutput: "Opening gitlab.company.org/OWNER/REPO in your browser.\n",
+		},
+		{
+			name: "view project when passing a git URL on web",
+			cli:  "git@gitlab.company.org:OWNER/REPO.git --web",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					http.StatusOK,
+					`{
+							  "id": 37777023,
+							  "description": "this is a test description",
+							  "name": "REPO",
+							  "name_with_namespace": "Test User / REPO",
+							  "path": "REPO",
+							  "path_with_namespace": "OWNER/REPO",
+							  "created_at": "2022-07-13T02:04:56.151Z",
+							  "default_branch": "#current-branch",
+							  "http_url_to_repo": "https://gitlab.company.org/OWNER/REPO.git",
+							  "web_url": "https://gitlab.company.org/OWNER/REPO",
+							  "readme_url": "https://gitlab.company.org/OWNER/REPO/-/blob/main/README.md"
+							}`,
+				},
+			},
+			isTTY:          true,
+			stub:           true,
+			expectedOutput: "Opening gitlab.company.org/OWNER/REPO in your browser.\n",
+		},
+		{
+			name: "view a project that isn't on the default host on web",
+			cli:  "--web",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					http.StatusOK,
+					`{
+							  "id": 37777023,
+							  "description": "this is a test description",
+							  "name": "REPO",
+							  "name_with_namespace": "Test User / REPO",
+							  "path": "REPO",
+							  "path_with_namespace": "OWNER/REPO",
+							  "created_at": "2022-07-13T02:04:56.151Z",
+							  "default_branch": "#current-branch",
+							  "http_url_to_repo": "https://gitlab.company.org/OWNER/REPO.git",
+							  "web_url": "https://gitlab.company.org/OWNER/REPO",
+							  "readme_url": "https://gitlab.company.org/OWNER/REPO/-/blob/main/README.md"
+							}`,
+				},
+			},
+			isTTY:          true,
+			stub:           true,
+			repoHost:       "gitlab.company.org",
+			expectedOutput: "Opening gitlab.company.org/OWNER/REPO in your browser.\n",
+		},
+		{
+			name: "view a specific project branch on the web",
+			cli:  "--branch foo --web",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					http.StatusOK,
+					`{
+							  "id": 37777023,
+							  "description": "this is a test description",
+							  "name": "REPO",
+							  "name_with_namespace": "Test User / REPO",
+							  "path": "REPO",
+							  "path_with_namespace": "OWNER/REPO",
+							  "created_at": "2022-07-13T02:04:56.151Z",
+							  "default_branch": "#current-branch",
+							  "http_url_to_repo": "https://gitlab.com/OWNER/REPO.git",
+							  "web_url": "https://gitlab.com/OWNER/REPO",
+							  "readme_url": "https://gitlab.com/OWNER/REPO/-/blob/main/README.md"
+							}`,
+				},
+			},
+			isTTY:          true,
+			stub:           true,
+			expectedOutput: "Opening gitlab.com/OWNER/REPO/-/tree/foo in your browser.\n",
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			fakeHTTP := &httpmock.Mocker{
-				MatchURL: httpmock.PathAndQuerystring,
+				MatchURL: httpmock.FullURL,
 			}
 			defer fakeHTTP.Verify(t)
 
@@ -301,7 +562,7 @@ func TestProjectView(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err, restoreCmd := runCommand(fakeHTTP, tc.isTTY, tc.cli, tc.stub)
+			output, err, restoreCmd := runCommand(fakeHTTP, tc.isTTY, tc.cli, tc.stub, tc.repoHost)
 			if restoreCmd != nil {
 				defer restoreCmd()
 			}
