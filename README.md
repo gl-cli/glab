@@ -189,6 +189,9 @@ the `GITLAB_HOST` environment variable, like this:
 - `GITLAB_HOST=gitlab.example.com glab repo clone group/project`
 - `GITLAB_HOST=gitlab.example.com glab issue list -R group/project`
 
+When inside a git repository `glab` will use that repository's GitLab host by default. For example `glab issue list`
+will list all issues of the current directory's git repository.
+
 ### Configure `glab` to use self-signed certificates for self-managed instances
 
 The GitLab CLI can be configured to support self-managed instances using self-signed certificate authorities by making either of the following changes:
