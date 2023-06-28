@@ -43,24 +43,24 @@ func Test_repoClone_Integration(t *testing.T) {
 	assert.Equal(t, "", out.String())
 	assert.Equal(t, "", out.Stderr())
 	assert.Equal(t, 1, cs.Count)
-	assert.Equal(t, "git clone git@gitlab.com:clemsbot/test.git", strings.Join(cs.Calls[0].Args, " "))
+	assert.Regexp(t, "git clone git@gitlab.com:.*/test.git", strings.Join(cs.Calls[0].Args, " "))
 }
 
 func Test_repoClone_group_Integration(t *testing.T) {
-	names := []string{"glab-cli/test", "glab-cli/test-pv"}
-	urls := []string{"git@gitlab.com:glab-cli/test.git", "git@gitlab.com:glab-cli/test-pv.git"}
+	names := []string{"cli-automated-testing/test", "cli-automated-testing/homebrew-testing"}
+	urls := []string{"git@gitlab.com:cli-automated-testing/test.git", "git@gitlab.com:cli-automated-testing/homebrew-testing.git"}
 	repoCloneTest(t, names, urls, 0, false)
 }
 
 func Test_repoClone_group_single_Integration(t *testing.T) {
-	names := []string{"glab-cli/test"}
-	urls := []string{"git@gitlab.com:glab-cli/test.git"}
+	names := []string{"cli-automated-testing/test"}
+	urls := []string{"git@gitlab.com:cli-automated-testing/test.git"}
 	repoCloneTest(t, names, urls, 1, false)
 }
 
 func Test_repoClone_group_paginate_Integration(t *testing.T) {
-	names := []string{"glab-cli/test", "glab-cli/test-pv"}
-	urls := []string{"git@gitlab.com:glab-cli/test.git", "git@gitlab.com:glab-cli/test-pv.git"}
+	names := []string{"cli-automated-testing/test", "cli-automated-testing/homebrew-testing"}
+	urls := []string{"git@gitlab.com:cli-automated-testing/test.git", "git@gitlab.com:cli-automated-testing/homebrew-testing.git"}
 	repoCloneTest(t, names, urls, 1, true)
 }
 
@@ -86,7 +86,7 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 	defer restore()
 
 	cmd := NewCmdClone(fac, nil)
-	cli := "-g glab-cli"
+	cli := "-g cli-automated-testing"
 	if perPage != 0 {
 		cli += fmt.Sprintf(" --per-page %d", perPage)
 	}
