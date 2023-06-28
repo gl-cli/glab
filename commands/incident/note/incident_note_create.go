@@ -9,5 +9,5 @@ import (
 )
 
 func NewCmdNote(f *cmdutils.Factory) *cobra.Command {
-	return issuableNoteCmd.NewCmdNote(f, issuable.TypeIssue)
+	return issuableNoteCmd.NewCmdNote(f, issuable.TypeIncident)
 }
