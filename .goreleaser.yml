@@ -85,37 +85,40 @@ archives:
   - id: nix
     builds: [macos, linux]
     <<: &archive_defaults
-      name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+      name_template: >-
+        {{ .ProjectName }}_
+        {{- .Version }}_
+        {{- if eq .Os "darwin" }}macOS
+        {{- else if eq .Os "linux" }}Linux
+        {{- else if eq .Os "windows" }}Windows{{ end }}_
+        {{- if eq .Arch "386" }}i386
+        {{- else if eq .Arch "amd64" }}x86_64
+        {{- else if eq .Arch "arm" }}arm
+        {{- else }}{{ .Arch }}{{ end }}
+        {{- if .Arm }}v{{ .Arm }}{{ end }}
       wrap_in_directory: false
     format: tar.gz
-    replacements:
-      darwin: macOS
-      linux: Linux
-      <<: &arch_replacemens
-        386: i386
-        amd64: x86_64
 
   - id: windows
     builds: [windows]
     <<: *archive_defaults
     format: zip
-    replacements:
-      windows: Windows
-      <<: *arch_replacemens
 
 nfpms:
   - id: foo
     package_name: glab
-    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    file_name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- if eq .Os "darwin" }}macOS
+      {{- else if eq .Os "linux" }}Linux{{ end }}_
+      {{- if eq .Arch "386" }}i386
+      {{- else if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
 
     # Build IDs for the builds you want to create NFPM packages for.
     # Defaults to all builds.
 
-    replacements:
-      amd64: x86_64
-      386: i386
-      darwin: macOS
-      linux: Linux
     vendor: GitLab
     homepage: https://gitlab.com/gitlab-org/cli
     # using service-desk email https://docs.gitlab.com/ee/user/project/service_desk.html
