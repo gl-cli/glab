@@ -2,7 +2,6 @@ package trace
 
 import (
 	"bytes"
-	"os/exec"
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/test"
@@ -46,21 +45,6 @@ hosts:
 	stubFactory.IO = io
 	stubFactory.IO.IsaTTY = true
 	stubFactory.IO.IsErrTTY = true
-
-	repo := cmdtest.CopyTestRepo(t, "ci_trace_test")
-	gitCmd := exec.Command("git", "fetch", "origin")
-	gitCmd.Dir = repo
-	if out, err := gitCmd.CombinedOutput(); err != nil {
-		t.Error(string(out))
-		t.Fatal(err)
-	}
-
-	gitCmd = exec.Command("git", "checkout", "master")
-	gitCmd.Dir = repo
-	if out, err := gitCmd.CombinedOutput(); err != nil {
-		t.Error(string(out))
-		t.Fatal(err)
-	}
 
 	tests := []struct {
 		name     string
