@@ -387,7 +387,11 @@ func createRun(opts *CreateOpts) error {
 						return fmt.Errorf("error getting templates: %w", err)
 					}
 
-					templateNames = append(templateNames, "Open a blank merge request")
+					const mrWithCommitsTemplate = "Open a merge request with commit messages"
+					const mrEmptyTemplate = "Open a blank merge request"
+
+					templateNames = append(templateNames, mrWithCommitsTemplate)
+					templateNames = append(templateNames, mrEmptyTemplate)
 
 					selectQs := []*survey.Question{
 						{
@@ -402,8 +406,21 @@ func createRun(opts *CreateOpts) error {
 					if err := prompt.Ask(selectQs, &templateResponse); err != nil {
 						return fmt.Errorf("could not prompt: %w", err)
 					}
-					if templateResponse.Index != len(templateNames) {
-						templateName = templateNames[templateResponse.Index]
+
+					templateName = templateNames[templateResponse.Index]
+					if templateName == mrWithCommitsTemplate {
+						// templateContents should be filled from commit messages
+						commits, err := git.Commits(opts.TargetTrackingBranch, opts.SourceBranch)
+						if err != nil {
+							return fmt.Errorf("failed to get commits: %w", err)
+						}
+						templateContents, err = mrBody(commits, true)
+						if err != nil {
+							return err
+						}
+					} else if templateName == mrEmptyTemplate {
+						// blank merge request was choosen, leave templateContents empty
+					} else {
 						templateContents, err = cmdutils.LoadGitLabTemplate(cmdutils.MergeRequestTemplate, templateName)
 						if err != nil {
 							return fmt.Errorf("failed to get template contents: %w", err)
@@ -617,6 +634,27 @@ func createRun(opts *CreateOpts) error {
 	return errors.New("expected to cancel, preview in browser, or submit")
 }
 
+func mrBody(commits []*git.Commit, fillCommitBody bool) (string, error) {
+	var body strings.Builder
+	re := regexp.MustCompile(`\r?\n\n`)
+
+	for i := len(commits) - 1; i >= 0; i-- {
+		// adds 2 spaces for markdown line wrapping
+		fmt.Fprintf(&body, "- %s  \n", commits[i].Title)
+
+		if fillCommitBody {
+			commitBody, err := git.CommitBody(commits[i].Sha)
+			if err != nil {
+				return "", fmt.Errorf("failed to get commit message for %s: %w", commits[i].Sha, err)
+			}
+			commitBody = re.ReplaceAllString(commitBody, "  \n")
+			fmt.Fprintf(&body, "%s\n", commitBody)
+		}
+	}
+
+	return body.String(), nil
+}
+
 func mrBodyAndTitle(opts *CreateOpts) error {
 	// TODO: detect forks
 	commits, err := git.Commits(opts.TargetTrackingBranch, opts.SourceBranch)
@@ -640,22 +678,11 @@ func mrBodyAndTitle(opts *CreateOpts) error {
 		}
 
 		if opts.Description == "" {
-			var body strings.Builder
-			for i := len(commits) - 1; i >= 0; i-- {
-				// adds 2 spaces for markdown line wrapping
-				fmt.Fprintf(&body, "- %s  \n", commits[i].Title)
-
-				if opts.FillCommitBody {
-					commitBody, err := git.CommitBody(commits[i].Sha)
-					if err != nil {
-						return err
-					}
-					re := regexp.MustCompile(`\r?\n\n`)
-					commitBody = re.ReplaceAllString(commitBody, "  \n")
-					fmt.Fprintf(&body, "%s\n", commitBody)
-				}
+			description, err := mrBody(commits, opts.FillCommitBody)
+			if err != nil {
+				return err
 			}
-			opts.Description = body.String()
+			opts.Description = description
 		}
 	}
 	return nil
