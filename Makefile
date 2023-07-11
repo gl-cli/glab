@@ -118,7 +118,7 @@ TEST_PKGS ?= ./pkg/... ./internal/... ./commands/... ./cmd/...
 #
 # Finally, there are some integration tests perform actual API calls and require GITLAB_TOKEN (personal access token)
 # and GITLAB_TEST_HOST (GitLab instance to test) to be set. If either of these are not set the integration tests
-# will be skipped and only the unit tests will be run.
+# will fail in CI or will be skipped if not in CI.
 test: TEST_FORMAT ?= short
 test: SHELL = /bin/bash # set environment variables to ensure consistent test behavior
 test: VISUAL=
@@ -127,7 +127,7 @@ test: PAGER=
 test: export CI_PROJECT_PATH=$(shell git remote get-url origin)
 test: export CGO_ENABLED=1
 test: bin/gotestsum ## Run tests
-	$(GOTEST) --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
+	$(GOTEST) --jsonfile test-output.log --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
 
 .PHONY: test-race
 test-race: SHELL = /bin/bash # set environment variables to ensure consistent test behavior
