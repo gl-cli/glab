@@ -78,7 +78,7 @@ func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
 
 			bt, _, err := apiClient.Repositories.Archive(repo.FullName(), l)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to get archive: %v", err)
 			}
 
 			r := bytes.NewReader(bt)

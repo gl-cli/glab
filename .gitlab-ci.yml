@@ -128,6 +128,7 @@ run_tests:
     - echo -e "\e[0Ksection_end:`date +%s`:coverage\r\e[0K"
   coverage: /^total:\t+\(statements\)\t+\d+\.\d+%$/
   artifacts:
+    when: always
     paths:
       - test-output.log
     reports:
