@@ -28,11 +28,11 @@ glab ci list --status=failed
 ## Options
 
 ```plaintext
-  -o, --orderBy string   Order pipeline by <string>
+  -o, --orderBy string   Order pipeline by {id|status|ref|updated_at|user_id} (default "id")
   -p, --page int         Page number (default 1)
-  -P, --per-page int     Number of items to list per page. (default 30)
-      --sort string      Sort pipeline by {asc|desc}. (default "desc")
-  -s, --status string    Get pipeline with status: {running|pending|success|failed|canceled|skipped|created|manual}
+  -P, --per-page int     Number of items to list per page (default 30)
+      --sort string      Sort pipeline by {asc|desc} (default "desc")
+  -s, --status string    Get pipeline with status: {running|pending|success|failed|canceled|skipped|created|manual|waiting_for_resource|preparing|scheduled}
 ```
 
 ## Options inherited from parent commands
