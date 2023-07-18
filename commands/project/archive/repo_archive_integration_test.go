@@ -55,9 +55,11 @@ func Test_repoArchive_Integration(t *testing.T) {
 			cmd := exec.Command(cmdtest.GlabBinaryPath, "repo", "archive", tt.args.repo, tt.args.dest, "--format", tt.args.format, "--sha", tt.args.sha)
 			cmd.Dir = repo
 			b, err := cmd.CombinedOutput()
-			if err != nil && !tt.wantErr {
-				t.Log(string(b))
-				t.Fatal(err)
+			if err != nil {
+				t.Log(err)
+				if !tt.wantErr {
+					t.Fatal(err)
+				}
 			}
 			out := string(b)
 			t.Log(out)
