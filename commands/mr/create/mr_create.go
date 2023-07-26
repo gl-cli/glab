@@ -842,7 +842,7 @@ func repoRemote(opts *CreateOpts, repo glrepo.Interface, project *gitlab.Project
 }
 
 func getTargetBranch(baseRepoRemote *glrepo.Remote) string {
-	br, _ := git.GetDefaultBranch(baseRepoRemote.PushURL.String())
+	br, _ := git.GetDefaultBranch(baseRepoRemote.Name)
 	// we ignore the error since git.GetDefaultBranch returns master and an error
 	// if the default branch cannot be determined
 	return br
