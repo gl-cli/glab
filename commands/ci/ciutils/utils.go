@@ -64,7 +64,7 @@ func DisplayMultiplePipelines(s *iostreams.IOStreams, p []*gitlab.PipelineInfo, 
 				pipeState = c.Gray(fmt.Sprintf("(%s) • #%s", pipeline.Status, makeHyperlink(s, pipeline)))
 			}
 
-			table.AddRow(pipeState, pipeline.Ref, duration)
+			table.AddRow(pipeState, fmt.Sprintf("(#%d)", pipeline.IID), pipeline.Ref, duration)
 		}
 
 		return table.Render()
