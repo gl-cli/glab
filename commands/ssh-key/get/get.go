@@ -85,7 +85,9 @@ func getRun(opts *GetOpts) error {
 }
 
 func keySelectPrompt(client *gitlab.Client) (int, error) {
-	keys, _, err := client.Users.ListSSHKeys()
+	sshKeyListOptions := &gitlab.ListSSHKeysOptions{}
+
+	keys, _, err := client.Users.ListSSHKeys(sshKeyListOptions)
 	if err != nil {
 		return 0, err
 	}

@@ -16,6 +16,10 @@ type ListOpts struct {
 	IO         *iostreams.IOStreams
 	BaseRepo   func() (glrepo.Interface, error)
 
+	// Pagination
+	Page    int
+	PerPage int
+
 	ShowKeyIDs bool
 }
 
@@ -43,7 +47,9 @@ func NewCmdList(f *cmdutils.Factory, runE func(*ListOpts) error) *cobra.Command 
 		},
 	}
 
-	cmd.Flags().BoolVarP(&opts.ShowKeyIDs, "show-id", "", false, "Show IDs of SSH Keys")
+	cmd.Flags().BoolVarP(&opts.ShowKeyIDs, "show-id", "", false, "Shows IDs of SSH Keys")
+	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
+	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page")
 
 	return cmd
 }
@@ -54,7 +60,11 @@ func listRun(opts *ListOpts) error {
 		return err
 	}
 
-	keys, _, err := httpClient.Users.ListSSHKeys()
+	sshKeyListOptions := &gitlab.ListSSHKeysOptions{
+		Page:    opts.Page,
+		PerPage: opts.PerPage,
+	}
+	keys, _, err := httpClient.Users.ListSSHKeys(sshKeyListOptions)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to get ssh keys")
 	}
