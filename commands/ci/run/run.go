@@ -162,7 +162,11 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			}
 			if branch != "" {
 				c.Ref = gitlab.String(branch)
+			} else if currentBranch, err := f.Branch(); err == nil {
+				c.Ref = gitlab.String(currentBranch)
 			} else {
+				// `ci run` is running out of a git repo
+				fmt.Fprintln(f.IO.StdOut, "not in a git repository, using repository argument")
 				c.Ref = gitlab.String(getDefaultBranch(f))
 			}
 
