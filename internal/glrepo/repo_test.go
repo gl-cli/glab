@@ -365,6 +365,21 @@ func TestFullNameFromURL(t *testing.T) {
 			wantErr:   nil,
 		},
 		{
+			remoteURL: "https://gitlab.com/profclems/glab",
+			want:      "profclems/glab",
+			wantErr:   nil,
+		},
+		{
+			remoteURL: "https://gitlab.com/profclems/glab/",
+			want:      "profclems/glab",
+			wantErr:   nil,
+		},
+		{
+			remoteURL: "https://gitlab.com/profclems/glab.git/",
+			want:      "profclems/glab",
+			wantErr:   nil,
+		},
+		{
 			remoteURL: "https://gitlab.com/owner/namespace/repo.git",
 			want:      "owner/namespace/repo",
 			wantErr:   nil,
