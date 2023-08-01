@@ -45,6 +45,7 @@ func FullNameFromURL(remoteURL string) (string, error) {
 		return "", errors.New("cannot parse remote: " + remoteURL)
 	}
 	repo := parts[1]
+	repo = strings.TrimSuffix(repo, "/")
 	repo = strings.TrimSuffix(repo, ".git")
 	return repo, nil
 }
