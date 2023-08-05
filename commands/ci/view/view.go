@@ -120,7 +120,6 @@ func drawView(opts ViewOpts) error {
 	if err != nil {
 		return err
 	}
-	_ = screen.Init()
 	app := tview.NewApplication()
 	defer recoverPanic(app)
 
