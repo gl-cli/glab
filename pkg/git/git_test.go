@@ -371,6 +371,78 @@ func TestDescribeByTags(t *testing.T) {
 	}
 }
 
+func Test_assertValidConfig(t *testing.T) {
+	t.Run("config key is valid", func(t *testing.T) {
+		err := assertValidConfigKey("remote.this.testsuite")
+		require.NoError(t, err)
+	})
+	t.Run("config key is valid", func(t *testing.T) {
+		err := assertValidConfigKey("this.testsuite")
+		require.NoError(t, err)
+	})
+
+	t.Run("panic modes", func(t *testing.T) {
+		err := assertValidConfigKey("this")
+		require.Error(t, err)
+		require.Errorf(t, err, "incorrect git config key")
+	})
+}
+
+func Test_configValueExists(t *testing.T) {
+	// TODO(gitlab-org/cli#3778): To ensure that the commands
+	// work against a real repository, and drop all stubbing,
+	// we'll need to implement some test setup code that inits
+	// a git repository for a test.
+	//
+	// See https://gitlab.com/gitlab-org/cli/-/issues/3778
+	cs, teardown := test.InitCmdStubber()
+	defer teardown()
+
+	t.Run("config value does not exist", func(t *testing.T) {
+		cs.Stub("does not match")
+		v, err := configValueExists("remote.this.testsuite", "rocks")
+		require.NoError(t, err)
+		require.Equal(t, false, v)
+	})
+
+	t.Run("config value exists", func(t *testing.T) {
+		cs.Stub("rocks")
+		v, err := configValueExists("remote.this.testsuite", "rocks")
+		require.NoError(t, err)
+		require.Equal(t, true, v)
+	})
+}
+
+func TestSetConfig(t *testing.T) {
+	// TODO(gitlab-org/cli#3778): To ensure that the commands
+	// work against a real repository, and drop all stubbing,
+	// we'll need to implement some test setup code that inits
+	// a git repository for a test.
+	//
+	// See https://gitlab.com/gitlab-org/cli/-/issues/3778
+	cs, teardown := test.InitCmdStubber()
+	defer teardown()
+
+	t.Run("config value does not exist", func(t *testing.T) {
+		cs.Stub("")
+		cs.Stub("")
+		err := SetConfig("this.testsuite", "rocks")
+		require.NoError(t, err)
+	})
+
+	t.Run("config value exists", func(t *testing.T) {
+		cs.Stub("rocks")
+		err := SetConfig("this.testsuite", "rocks")
+		require.NoError(t, err)
+	})
+
+	t.Run("unknown error occurred", func(t *testing.T) {
+		cs.StubError("unknown error occurred")
+		err := SetConfig("this.testsuite", "rocks")
+		require.Error(t, err)
+	})
+}
+
 func TestListTags(t *testing.T) {
 	cases := map[string]struct {
 		expected []string
