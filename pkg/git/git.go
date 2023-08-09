@@ -475,12 +475,78 @@ func AddRemote(name, u string) (*Remote, error) {
 }
 
 var SetRemoteResolution = func(name, resolution string) error {
-	return SetConfig(name, "glab-resolved", resolution)
+	return SetRemoteConfig(name, "glab-resolved", resolution)
 }
 
-func SetConfig(remote, key, value string) error {
-	addCmd := exec.Command("git", "config", "--add", fmt.Sprintf("remote.%s.%s", remote, key), value)
-	return run.PrepareCmd(addCmd).Run()
+func SetRemoteConfig(remote, key, value string) error {
+	return SetConfig(fmt.Sprintf("remote.%s.%s", remote, key), value)
+}
+
+func SetConfig(key, value string) error {
+	found, err := configValueExists(key, value)
+	if err != nil {
+		return err
+	}
+	if found {
+		return nil
+	}
+	addCmd := GitCommand("config", "--add", key, value)
+	_, err = run.PrepareCmd(addCmd).Output()
+	if err != nil {
+		return fmt.Errorf("setting git config: %w", err)
+	}
+	return nil
+}
+
+func configValueExists(key, value string) (bool, error) {
+	output, err := GetAllConfig(key)
+	if err == nil {
+		return outputContainsLine(output, value), nil
+	}
+	return false, err
+}
+
+// GetConfig returns the local config value associated with the provided key.
+// If there are multiple values associated with the key, they are all returned.
+func GetAllConfig(key string) ([]byte, error) {
+	err := assertValidConfigKey(key)
+	if err != nil {
+		return nil, err
+	}
+
+	gitCmd := GitCommand("config", "--get-all", key)
+	output, err := run.PrepareCmd(gitCmd).Output()
+	if err == nil {
+		return output, nil
+	}
+
+	// git-config will exit with 1 in almost all cases, but only when it prints
+	// out things it is an actual error that is worth mentioning.
+	// Therefore ignore errors that don't output to stderr.
+	var cmdErr *run.CmdError
+	if errors.As(err, &cmdErr) && cmdErr.Stderr.Len() == 0 {
+		return nil, nil
+	}
+	return nil, fmt.Errorf("getting git config value cmd: %s: %w", gitCmd.String(), err)
+}
+
+func assertValidConfigKey(key string) error {
+	s := strings.Split(key, ".")
+	if len(s) < 2 {
+		return fmt.Errorf("incorrect git config key")
+	}
+	return nil
+}
+
+// outputContainsLine searches through each line in the command output
+// and returns true if one matches the needle a.k.a. the search string.
+func outputContainsLine(output []byte, needle string) bool {
+	for _, line := range outputLines(output) {
+		if line == needle {
+			return true
+		}
+	}
+	return false
 }
 
 func RunCmd(args []string) (err error) {
