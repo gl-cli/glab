@@ -68,10 +68,8 @@ func IssueState(c *iostreams.ColorPalette, i *gitlab.Issue) (issueID string) {
 }
 
 func IssuesFromArgs(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), args []string) ([]*gitlab.Issue, glrepo.Interface, error) {
-	baseRepo, err := baseRepoFn()
-	if err != nil {
-		return nil, nil, err
-	}
+	var baseRepo glrepo.Interface
+
 	if len(args) <= 1 {
 		if len(args) == 1 {
 			args = strings.Split(args[0], ",")
