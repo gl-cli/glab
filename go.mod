@@ -36,7 +36,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.3
 	github.com/tidwall/pretty v1.2.1
-	github.com/xanzy/go-gitlab v0.86.0
+	github.com/xanzy/go-gitlab v0.88.0
 	github.com/zalando/go-keyring v0.2.3
 	golang.org/x/sync v0.2.0
 	golang.org/x/term v0.8.0
