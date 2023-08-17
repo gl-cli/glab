@@ -8,7 +8,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/stretchr/testify/assert"
-	"github.com/xanzy/go-gitlab"
 )
 
 func assertScreen(t *testing.T, screen tcell.Screen, expected []string) {
@@ -245,42 +244,51 @@ func Test_LinkJobs(t *testing.T) {
 		" └─┘             ",
 		"                 ",
 	}
-	jobs := []*gitlab.Job{
+	jobs := []*ViewJob{
 		{
 			Name:  "stage1-job1",
 			Stage: "stage1",
+			Kind:  Job,
 		},
 		{
 			Name:  "stage1-job2",
 			Stage: "stage1",
+			Kind:  Job,
 		},
 		{
 			Name:  "stage1-job3",
 			Stage: "stage1",
+			Kind:  Job,
 		},
 		{
 			Name:  "stage1-job4",
 			Stage: "stage1",
+			Kind:  Job,
 		},
 		{
 			Name:  "stage2-job1",
 			Stage: "stage2",
+			Kind:  Bridge,
 		},
 		{
 			Name:  "stage2-job2",
 			Stage: "stage2",
+			Kind:  Job,
 		},
 		{
 			Name:  "stage2-job3",
 			Stage: "stage2",
+			Kind:  Job,
 		},
 		{
 			Name:  "stage3-job1",
 			Stage: "stage3",
+			Kind:  Job,
 		},
 		{
 			Name:  "stage3-job2",
 			Stage: "stage3",
+			Kind:  Job,
 		},
 	}
 	boxes := map[string]*tview.TextView{
@@ -321,15 +329,16 @@ func Test_LinkJobs(t *testing.T) {
 func Test_LinkJobsNegative(t *testing.T) {
 	tests := []struct {
 		desc  string
-		jobs  []*gitlab.Job
+		jobs  []*ViewJob
 		boxes map[string]*tview.TextView
 	}{
 		{
 			"determinePadding -- first job missing",
-			[]*gitlab.Job{
+			[]*ViewJob{
 				{
 					Name:  "stage1-job1",
 					Stage: "stage1",
+					Kind:  Job,
 				},
 			},
 			map[string]*tview.TextView{
@@ -339,18 +348,21 @@ func Test_LinkJobsNegative(t *testing.T) {
 		},
 		{
 			"determinePadding -- second job missing",
-			[]*gitlab.Job{
+			[]*ViewJob{
 				{
 					Name:  "stage1-job1",
 					Stage: "stage1",
+					Kind:  Job,
 				},
 				{
 					Name:  "stage2-job1",
 					Stage: "stage2",
+					Kind:  Job,
 				},
 				{
 					Name:  "stage2-job2",
 					Stage: "stage2",
+					Kind:  Job,
 				},
 			},
 			map[string]*tview.TextView{
@@ -360,18 +372,21 @@ func Test_LinkJobsNegative(t *testing.T) {
 		},
 		{
 			"Link -- third job missing",
-			[]*gitlab.Job{
+			[]*ViewJob{
 				{
 					Name:  "stage1-job1",
 					Stage: "stage1",
+					Kind:  Job,
 				},
 				{
 					Name:  "stage2-job1",
 					Stage: "stage2",
+					Kind:  Job,
 				},
 				{
 					Name:  "stage2-job2",
 					Stage: "stage2",
+					Kind:  Job,
 				},
 			},
 			map[string]*tview.TextView{
@@ -381,18 +396,21 @@ func Test_LinkJobsNegative(t *testing.T) {
 		},
 		{
 			"Link -- third job missing",
-			[]*gitlab.Job{
+			[]*ViewJob{
 				{
 					Name:  "stage1-job1",
 					Stage: "stage1",
+					Kind:  Job,
 				},
 				{
 					Name:  "stage2-job1",
 					Stage: "stage2",
+					Kind:  Job,
 				},
 				{
 					Name:  "stage2-job2",
 					Stage: "stage2",
+					Kind:  Job,
 				},
 			},
 			map[string]*tview.TextView{
@@ -427,7 +445,7 @@ func Test_jobsView(t *testing.T) {
 		"  ╚════════════════════╝ ║  ║ └────────────────────┘ ║  ║ └────────────────────┘        ",
 		"                         ║  ║                        ║  ║                               ",
 		"  ┌───✔ stage1-job2────┐ ║  ║ ┌───● stage2-job2────┐ ║  ║ ┌───■ stage3-job2────┐        ",
-		"  │                    │ ║  ║ │                    │ ║  ║ │                    │        ",
+		"  │                    │ ║  ║ │                    │ ║  ║ │                   »│        ",
 		"  │                    │═╝  ╠═│                    │═╝  ╚═│                    │        ",
 		"  └────────────────────┘ ║  ║ └────────────────────┘ ║    └────────────────────┘        ",
 		"                         ║  ║                        ║                                  ",
@@ -446,7 +464,7 @@ func Test_jobsView(t *testing.T) {
 	}
 	now := time.Now()
 	past := now.Add(time.Second * -61)
-	jobs := []*gitlab.Job{
+	jobs := []*ViewJob{
 		{
 			Name:       "stage1-job1-really-long",
 			Stage:      "stage1",
@@ -493,11 +511,12 @@ func Test_jobsView(t *testing.T) {
 			Name:   "stage3-job2",
 			Stage:  "stage3",
 			Status: "manual",
+			Kind:   Bridge,
 		},
 	}
 
 	boxes = make(map[string]*tview.TextView)
-	jobsCh := make(chan []*gitlab.Job)
+	jobsCh := make(chan []*ViewJob)
 	inputCh := make(chan struct{})
 	root := tview.NewPages()
 	root.SetBorderPadding(1, 1, 2, 2)
@@ -527,12 +546,12 @@ func Test_jobsView(t *testing.T) {
 func Test_latestJobs(t *testing.T) {
 	tests := []struct {
 		desc     string
-		jobs     []*gitlab.Job
-		expected []*gitlab.Job
+		jobs     []*ViewJob
+		expected []*ViewJob
 	}{
 		{
 			desc: "no newer jobs",
-			jobs: []*gitlab.Job{
+			jobs: []*ViewJob{
 				{
 					ID:    1,
 					Name:  "stage1-job1",
@@ -549,7 +568,7 @@ func Test_latestJobs(t *testing.T) {
 					Stage: "stage1",
 				},
 			},
-			expected: []*gitlab.Job{
+			expected: []*ViewJob{
 				{
 					ID:    1,
 					Name:  "stage1-job1",
@@ -569,7 +588,7 @@ func Test_latestJobs(t *testing.T) {
 		},
 		{
 			desc: "1 newer",
-			jobs: []*gitlab.Job{
+			jobs: []*ViewJob{
 				{
 					ID:    1,
 					Name:  "stage1-job1",
@@ -591,7 +610,7 @@ func Test_latestJobs(t *testing.T) {
 					Stage: "stage1",
 				},
 			},
-			expected: []*gitlab.Job{
+			expected: []*ViewJob{
 				{
 					ID:    4,
 					Name:  "stage1-job1",
@@ -611,7 +630,7 @@ func Test_latestJobs(t *testing.T) {
 		},
 		{
 			desc: "2 newer",
-			jobs: []*gitlab.Job{
+			jobs: []*ViewJob{
 				{
 					ID:    1,
 					Name:  "stage1-job1",
@@ -638,7 +657,7 @@ func Test_latestJobs(t *testing.T) {
 					Stage: "stage1",
 				},
 			},
-			expected: []*gitlab.Job{
+			expected: []*ViewJob{
 				{
 					ID:    5,
 					Name:  "stage1-job1",
@@ -672,19 +691,19 @@ func Test_adjacentStages(t *testing.T) {
 	tests := []struct {
 		desc                       string
 		stage                      string
-		jobs                       []*gitlab.Job
+		jobs                       []*ViewJob
 		expectedPrev, expectedNext string
 	}{
 		{
 			"no jobs",
 			"1",
-			[]*gitlab.Job{},
+			[]*ViewJob{},
 			"", "",
 		},
 		{
 			"first stage",
 			"1",
-			[]*gitlab.Job{
+			[]*ViewJob{
 				{
 					Stage: "1",
 				},
@@ -703,7 +722,7 @@ func Test_adjacentStages(t *testing.T) {
 		{
 			"mid stage",
 			"2",
-			[]*gitlab.Job{
+			[]*ViewJob{
 				{
 					Stage: "1",
 				},
@@ -728,7 +747,7 @@ func Test_adjacentStages(t *testing.T) {
 		{
 			"last stage",
 			"3",
-			[]*gitlab.Job{
+			[]*ViewJob{
 				{
 					Stage: "1",
 				},
@@ -767,19 +786,19 @@ func Test_stageBounds(t *testing.T) {
 	tests := []struct {
 		desc                         string
 		stage                        string
-		jobs                         []*gitlab.Job
+		jobs                         []*ViewJob
 		expectedLower, expectedUpper int
 	}{
 		{
 			"no jobs",
 			"1",
-			[]*gitlab.Job{},
+			[]*ViewJob{},
 			0, 0,
 		},
 		{
 			"first stage",
 			"1",
-			[]*gitlab.Job{
+			[]*ViewJob{
 				{
 					Stage: "1",
 				},
@@ -798,7 +817,7 @@ func Test_stageBounds(t *testing.T) {
 		{
 			"mid stage",
 			"2",
-			[]*gitlab.Job{
+			[]*ViewJob{
 				{
 					Stage: "1",
 				},
@@ -823,7 +842,7 @@ func Test_stageBounds(t *testing.T) {
 		{
 			"last stage",
 			"3",
-			[]*gitlab.Job{
+			[]*ViewJob{
 				{
 					Stage: "1",
 				},
@@ -859,7 +878,7 @@ func Test_stageBounds(t *testing.T) {
 }
 
 func Test_handleNavigation(t *testing.T) {
-	jobs := []*gitlab.Job{
+	jobs := []*ViewJob{
 		{
 			Name:   "stage1-job1-really-long",
 			Stage:  "stage1",
