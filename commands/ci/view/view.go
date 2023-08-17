@@ -39,6 +39,62 @@ type ViewOpts struct {
 	Output    io.Writer
 }
 
+type ViewJobKind int64
+
+const (
+	Job ViewJobKind = iota
+	Bridge
+)
+
+type ViewJob struct {
+	ID           int        `json:"id"`
+	Name         string     `json:"name"`
+	StartedAt    *time.Time `json:"started_at"`
+	FinishedAt   *time.Time `json:"finished_at"`
+	ErasedAt     *time.Time `json:"erased_at"`
+	Duration     float64    `json:"duration"`
+	Stage        string     `json:"stage"`
+	Status       string     `json:"status"`
+	AllowFailure bool       `json:"allow_failure"`
+
+	Kind ViewJobKind
+
+	OriginalJob    *gitlab.Job
+	OriginalBridge *gitlab.Bridge
+}
+
+func ViewJobFromBridge(bridge *gitlab.Bridge) *ViewJob {
+	vj := &ViewJob{}
+	vj.ID = bridge.ID
+	vj.Name = bridge.Name
+	vj.Status = bridge.Status
+	vj.Stage = bridge.Stage
+	vj.StartedAt = bridge.StartedAt
+	vj.FinishedAt = bridge.FinishedAt
+	vj.ErasedAt = bridge.ErasedAt
+	vj.Duration = bridge.Duration
+	vj.AllowFailure = bridge.AllowFailure
+	vj.OriginalBridge = bridge
+	vj.Kind = Bridge
+	return vj
+}
+
+func ViewJobFromJob(job *gitlab.Job) *ViewJob {
+	vj := &ViewJob{}
+	vj.ID = job.ID
+	vj.Name = job.Name
+	vj.Status = job.Status
+	vj.Stage = job.Stage
+	vj.StartedAt = job.StartedAt
+	vj.FinishedAt = job.FinishedAt
+	vj.ErasedAt = job.ErasedAt
+	vj.Duration = job.Duration
+	vj.AllowFailure = job.AllowFailure
+	vj.OriginalJob = job
+	vj.Kind = Job
+	return vj
+}
+
 func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	opts := ViewOpts{}
 	pipelineCIView := &cobra.Command{
@@ -48,7 +104,8 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 
 		Use arrow keys to navigate jobs and logs.
 
-		'Enter' to toggle a job's logs or trace.
+		'Enter' to toggle a job's logs or trace or display a child pipeline (trigger jobs are marked with a »).
+		'Esc' or 'q' to close logs,trace or go back to the parent pipeline.
 		'Ctrl+R', 'Ctrl+P' to run/retry/play a job -- Use Tab / Arrow keys to navigate modal and Enter to confirm.
 		'Ctrl+C' to cancel job -- (Quits CI/CD view if selected job isn't running or pending).
 		'Ctrl+Q' to Quit CI/CD View.
@@ -97,12 +154,14 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			if opts.Commit.LastPipeline == nil {
 				return fmt.Errorf("Can't find pipeline for commit : %s", opts.CommitSHA)
 			}
+			pipelines = make([]gitlab.PipelineInfo, 0, 10)
 
 			return drawView(opts)
 		},
 	}
 
-	pipelineCIView.Flags().StringVarP(&opts.RefName, "branch", "b", "", "Check pipeline status for a branch/tag. (Default is the current branch)")
+	pipelineCIView.Flags().
+		StringVarP(&opts.RefName, "branch", "b", "", "Check pipeline status for a branch/tag. (Default is the current branch)")
 	return pipelineCIView
 }
 
@@ -113,7 +172,8 @@ func drawView(opts ViewOpts) error {
 		SetTitle(fmt.Sprintf(" Pipeline #%d triggered %s by %s ", opts.Commit.LastPipeline.ID, utils.TimeToPrettyTimeAgo(*opts.Commit.LastPipeline.CreatedAt), opts.Commit.AuthorName))
 
 	boxes = make(map[string]*tview.TextView)
-	jobsCh := make(chan []*gitlab.Job)
+	jobsCh := make(chan []*ViewJob)
+	forceUpdateCh := make(chan bool)
 	inputCh := make(chan struct{})
 
 	screen, err := tcell.NewScreen()
@@ -124,8 +184,8 @@ func drawView(opts ViewOpts) error {
 	defer recoverPanic(app)
 
 	var navi navigator
-	app.SetInputCapture(inputCapture(app, root, navi, inputCh, opts))
-	go updateJobs(app, jobsCh, opts)
+	app.SetInputCapture(inputCapture(app, root, navi, inputCh, forceUpdateCh, opts))
+	go updateJobs(app, jobsCh, forceUpdateCh, opts)
 	go func() {
 		defer recoverPanic(app)
 		for {
@@ -140,7 +200,14 @@ func drawView(opts ViewOpts) error {
 	return nil
 }
 
-func inputCapture(app *tview.Application, root *tview.Pages, navi navigator, inputCh chan struct{}, opts ViewOpts) func(event *tcell.EventKey) *tcell.EventKey {
+func inputCapture(
+	app *tview.Application,
+	root *tview.Pages,
+	navi navigator,
+	inputCh chan struct{},
+	forceUpdateCh chan bool,
+	opts ViewOpts,
+) func(event *tcell.EventKey) *tcell.EventKey {
 	return func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Rune() == 'q' || event.Key() == tcell.KeyEscape {
 			switch {
@@ -156,6 +223,11 @@ func inputCapture(app *tview.Application, root *tview.Pages, navi navigator, inp
 				if inputCh == nil {
 					inputCh <- struct{}{}
 				}
+				app.ForceDraw()
+			case len(pipelines) > 0:
+				pipelines = pipelines[:len(pipelines)-1]
+				curJob = nil
+				forceUpdateCh <- true
 				app.ForceDraw()
 			default:
 				app.Stop()
@@ -174,7 +246,7 @@ func inputCapture(app *tview.Application, root *tview.Pages, navi navigator, inp
 			app.Stop()
 			return nil
 		case tcell.KeyCtrlC:
-			if curJob.Status == "pending" || curJob.Status == "running" {
+			if curJob.Kind == Job && (curJob.Status == "pending" || curJob.Status == "running") {
 				modalVisible = true
 				modal := tview.NewModal().
 					SetText(fmt.Sprintf("Are you sure you want to Cancel %s", curJob.Name)).
@@ -194,7 +266,7 @@ func inputCapture(app *tview.Application, root *tview.Pages, navi navigator, inp
 							log.Fatal(err)
 						}
 						if job != nil {
-							curJob = job
+							curJob = ViewJobFromJob(job)
 							app.ForceDraw()
 						}
 					})
@@ -204,7 +276,7 @@ func inputCapture(app *tview.Application, root *tview.Pages, navi navigator, inp
 				return nil
 			}
 		case tcell.KeyCtrlP, tcell.KeyCtrlR:
-			if modalVisible {
+			if modalVisible || curJob.Kind != Job {
 				break
 			}
 			modalVisible = true
@@ -221,13 +293,18 @@ func inputCapture(app *tview.Application, root *tview.Pages, navi navigator, inp
 					root.RemovePage("logs-" + curJob.Name)
 					app.ForceDraw()
 
-					job, err := api.PlayOrRetryJobs(opts.ApiClient, opts.ProjectID, curJob.ID, curJob.Status)
+					job, err := api.PlayOrRetryJobs(
+						opts.ApiClient,
+						opts.ProjectID,
+						curJob.ID,
+						curJob.Status,
+					)
 					if err != nil {
 						app.Stop()
 						log.Fatal(err)
 					}
 					if job != nil {
-						curJob = job
+						curJob = ViewJobFromJob(job)
 						app.ForceDraw()
 					}
 				})
@@ -237,19 +314,33 @@ func inputCapture(app *tview.Application, root *tview.Pages, navi navigator, inp
 			return nil
 		case tcell.KeyEnter:
 			if !modalVisible {
-				logsVisible = !logsVisible
-				if !logsVisible {
-					root.HidePage("logs-" + curJob.Name)
+				if curJob.Kind == Job {
+					logsVisible = !logsVisible
+					if !logsVisible {
+						root.HidePage("logs-" + curJob.Name)
+					}
+					inputCh <- struct{}{}
+					app.ForceDraw()
+				} else {
+					pipelines = append(pipelines, *curJob.OriginalBridge.DownstreamPipeline)
+					curJob = nil
+					forceUpdateCh <- true
+					app.ForceDraw()
 				}
-				inputCh <- struct{}{}
-				app.ForceDraw()
 				return nil
 			}
 		case tcell.KeyCtrlSpace:
 			app.Suspend(func() {
 				ctx, cancel := context.WithCancel(context.Background())
 				go func() {
-					err := ciutils.RunTraceSha(ctx, opts.ApiClient, opts.Output, opts.ProjectID, opts.CommitSHA, curJob.Name)
+					err := ciutils.RunTraceSha(
+						ctx,
+						opts.ApiClient,
+						opts.Output,
+						opts.ProjectID,
+						opts.CommitSHA,
+						curJob.Name,
+					)
 					if err != nil {
 						app.Stop()
 						log.Fatal(err)
@@ -285,10 +376,18 @@ func inputCapture(app *tview.Application, root *tview.Pages, navi navigator, inp
 
 var (
 	logsVisible, modalVisible bool
-	curJob                    *gitlab.Job
-	jobs                      []*gitlab.Job
+	curJob                    *ViewJob
+	jobs                      []*ViewJob
+	pipelines                 []gitlab.PipelineInfo
 	boxes                     map[string]*tview.TextView
 )
+
+func curPipeline(opts ViewOpts) gitlab.PipelineInfo {
+	if len(pipelines) == 0 {
+		return *opts.Commit.LastPipeline
+	}
+	return pipelines[len(pipelines)-1]
+}
 
 // navigator manages the internal state for processing tcell.EventKeys
 type navigator struct {
@@ -297,7 +396,7 @@ type navigator struct {
 
 // Navigate uses the ci stages as boundaries and returns the currently focused
 // job index after processing a *tcell.EventKey
-func (n *navigator) Navigate(jobs []*gitlab.Job, event *tcell.EventKey) *gitlab.Job {
+func (n *navigator) Navigate(jobs []*ViewJob, event *tcell.EventKey) *ViewJob {
 	stage := jobs[n.idx].Stage
 	prev, next := adjacentStages(jobs, stage)
 	switch event.Key() {
@@ -347,7 +446,7 @@ func (n *navigator) Navigate(jobs []*gitlab.Job, event *tcell.EventKey) *gitlab.
 	return jobs[n.idx]
 }
 
-func stageBounds(jobs []*gitlab.Job, s string) (l, u int) {
+func stageBounds(jobs []*ViewJob, s string) (l, u int) {
 	if len(jobs) <= 1 {
 		return 0, 0
 	}
@@ -367,7 +466,7 @@ func stageBounds(jobs []*gitlab.Job, s string) (l, u int) {
 	return
 }
 
-func adjacentStages(jobs []*gitlab.Job, s string) (p, n string) {
+func adjacentStages(jobs []*ViewJob, s string) (p, n string) {
 	if len(jobs) == 0 {
 		return "", ""
 	}
@@ -389,7 +488,13 @@ func adjacentStages(jobs []*gitlab.Job, s string) (p, n string) {
 	return
 }
 
-func jobsView(app *tview.Application, jobsCh chan []*gitlab.Job, inputCh chan struct{}, root *tview.Pages, opts ViewOpts) {
+func jobsView(
+	app *tview.Application,
+	jobsCh chan []*ViewJob,
+	inputCh chan struct{},
+	root *tview.Pages,
+	opts ViewOpts,
+) {
 	select {
 	case jobs = <-jobsCh:
 	case <-inputCh:
@@ -412,7 +517,14 @@ func jobsView(app *tview.Application, jobsCh chan []*gitlab.Job, inputCh chan st
 			tv.SetBorderPadding(0, 0, 1, 1).SetBorder(true)
 
 			go func() {
-				err := ciutils.RunTraceSha(context.Background(), opts.ApiClient, vtclean.NewWriter(tview.ANSIWriter(tv), true), opts.ProjectID, opts.CommitSHA, curJob.Name)
+				err := ciutils.RunTraceSha(
+					context.Background(),
+					opts.ApiClient,
+					vtclean.NewWriter(tview.ANSIWriter(tv), true),
+					opts.ProjectID,
+					opts.CommitSHA,
+					curJob.Name,
+				)
 				if err != nil {
 					app.Stop()
 					log.Fatal(err)
@@ -440,12 +552,14 @@ func jobsView(app *tview.Application, jobsCh chan []*gitlab.Job, inputCh chan st
 		stageIdx int
 		maxTitle = 20
 	)
+	boxKeys := make(map[string]bool)
 	for _, j := range jobs {
 		boxX := px + (maxX / stages * stageIdx)
 		if j.Stage != lastStage {
 			stageIdx++
 			lastStage = j.Stage
 			key := "stage-" + j.Stage
+			boxKeys[key] = true
 
 			x, y, w, h := boxX, maxY/6-4, maxTitle+2, 3
 			b := box(root, key, x, y, w, h)
@@ -453,7 +567,6 @@ func jobsView(app *tview.Application, jobsCh chan []*gitlab.Job, inputCh chan st
 			caser := cases.Title(language.English)
 			b.SetText(caser.String(j.Stage))
 			b.SetTextAlign(tview.AlignCenter)
-
 		}
 	}
 	lastStage = jobs[0].Stage
@@ -468,6 +581,7 @@ func jobsView(app *tview.Application, jobsCh chan []*gitlab.Job, inputCh chan st
 		boxX := px + (maxX / stages * stageIdx)
 
 		key := "jobs-" + j.Name
+		boxKeys[key] = true
 		x, y, w, h := boxX, maxY/6+(rowIdx*5), maxTitle+2, 4
 		b := box(root, key, x, y, w, h)
 		b.SetTitle(j.Name)
@@ -514,18 +628,28 @@ func jobsView(app *tview.Application, jobsCh chan []*gitlab.Job, inputCh chan st
 		if tview.TaggedStringWidth(title) > maxTitle {
 			b.SetTitleAlign(tview.AlignLeft)
 		}
+		triggerText := ""
+		if j.Kind == Bridge {
+			triggerText = "»"
+		}
 		if j.StartedAt != nil {
 			end := time.Now()
 			if j.FinishedAt != nil {
 				end = *j.FinishedAt
 			}
-			b.SetText("\n" + utils.FmtDuration(end.Sub(*j.StartedAt)))
+			b.SetText(triggerText + "\n" + utils.FmtDuration(end.Sub(*j.StartedAt)))
 			b.SetTextAlign(tview.AlignRight)
 		} else {
-			b.SetText("")
+			b.SetText(triggerText)
 		}
+		b.SetTextAlign(tview.AlignRight)
 		rowIdx++
 
+	}
+	for k := range boxes {
+		if !boxKeys[k] {
+			root.RemovePage(k)
+		}
 	}
 	root.SendToFront("jobs-" + curJob.Name)
 }
@@ -550,20 +674,44 @@ func recoverPanic(app *tview.Application) {
 	}
 }
 
-func updateJobs(app *tview.Application, jobsCh chan []*gitlab.Job, opts ViewOpts) {
+func updateJobs(
+	app *tview.Application,
+	jobsCh chan []*ViewJob,
+	forceUpdateCh chan bool,
+	opts ViewOpts,
+) {
 	defer recoverPanic(app)
 	for {
 		if modalVisible {
 			time.Sleep(time.Second * 1)
 			continue
 		}
-		jobs, err := api.PipelineJobsWithSha(opts.ApiClient, opts.ProjectID, opts.CommitSHA)
-		if len(jobs) == 0 || err != nil {
+		var jobs []*gitlab.Job
+		var bridges []*gitlab.Bridge
+		var err error
+		pipeline := curPipeline(opts)
+		jobs, bridges, err = api.PipelineJobsWithID(
+			opts.ApiClient,
+			pipeline.ProjectID,
+			pipeline.ID,
+		)
+		if (len(jobs) == 0 && len(bridges) == 0) || err != nil {
 			app.Stop()
 			log.Fatal(errors.Wrap(err, "failed to find ci jobs"))
 		}
-		jobsCh <- latestJobs(jobs)
-		time.Sleep(time.Second * 5)
+		viewJobs := make([]*ViewJob, 0, len(jobs)+len(bridges))
+		for _, j := range jobs {
+			viewJobs = append(viewJobs, ViewJobFromJob(j))
+		}
+		for _, b := range bridges {
+			viewJobs = append(viewJobs, ViewJobFromBridge(b))
+		}
+		jobsCh <- latestJobs(viewJobs)
+		select {
+		case <-forceUpdateCh:
+		case <-time.After(time.Second * 5):
+		}
+
 	}
 }
 
@@ -578,7 +726,7 @@ func linkJobsView(app *tview.Application) func(screen tcell.Screen) {
 	}
 }
 
-func linkJobs(screen tcell.Screen, jobs []*gitlab.Job, boxes map[string]*tview.TextView) error {
+func linkJobs(screen tcell.Screen, jobs []*ViewJob, boxes map[string]*tview.TextView) error {
 	if logsVisible || modalVisible {
 		return nil
 	}
@@ -615,7 +763,13 @@ func linkJobs(screen tcell.Screen, jobs []*gitlab.Job, boxes map[string]*tview.T
 	return nil
 }
 
-func link(screen tcell.Screen, v1 *tview.Box, v2 *tview.Box, padding int, firstStage, lastStage bool) {
+func link(
+	screen tcell.Screen,
+	v1 *tview.Box,
+	v2 *tview.Box,
+	padding int,
+	firstStage, lastStage bool,
+) {
 	x1, y1, w, h := v1.GetRect()
 	x2, y2, _, _ := v2.GetRect()
 
@@ -677,9 +831,9 @@ func vline(screen tcell.Screen, x, y, l int) {
 
 // latestJobs returns a list of unique jobs favoring the last stage+name
 // version of a job in the provided list
-func latestJobs(jobs []*gitlab.Job) []*gitlab.Job {
+func latestJobs(jobs []*ViewJob) []*ViewJob {
 	var (
-		lastJob = make(map[string]*gitlab.Job, len(jobs))
+		lastJob = make(map[string]*ViewJob, len(jobs))
 		dupIdx  = -1
 	)
 	for i, j := range jobs {
@@ -694,7 +848,7 @@ func latestJobs(jobs []*gitlab.Job) []*gitlab.Job {
 		dupIdx = len(jobs)
 	}
 	// first duplicate marks where retries begin
-	outJobs := make([]*gitlab.Job, dupIdx)
+	outJobs := make([]*ViewJob, dupIdx)
 	for i := range outJobs {
 		j := jobs[i]
 		outJobs[i] = lastJob[j.Stage+j.Name]
