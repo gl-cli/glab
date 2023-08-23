@@ -39,9 +39,10 @@ We want to create a welcoming environment for everyone who is interested in cont
 
 If you are a GitLab team member that is interested in becoming a maintainer of the CLI, we follow these basic steps [described in the handbook](https://about.gitlab.com/handbook/engineering/workflow/code-review/#accelerated-maintainer-onboarding-for-smaller-projects):
 
-* Familiarize yourself with the codebase and past reviews
-* When you're ready, add yourself as a reviewer in your [team page](https://gitlab.com/gitlab-com/www-gitlab-com/-/blob/master/data/team_members/person/)
-* Once the current maintainers feel confident you're ready to be a maintainer, you're added to the project and can update your team page again.
+- Familiarize yourself with the codebase and past reviews.
+- When you're ready, add yourself as a reviewer in your [team page](https://gitlab.com/gitlab-com/www-gitlab-com/-/blob/master/data/team_members/person/).
+- After the current maintainers feel confident you're ready to be a maintainer, you're added
+  to the project, and can update your team page again.
 
 ## Getting Started
 
