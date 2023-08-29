@@ -110,8 +110,8 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 				}
 				fmt.Fprintf(writer.Newline(), "Pipeline State: %s\n\n", runningPipeline.Status)
 
-				// break loop if output is a TTY to avoid prompting
-				if !f.IO.IsOutputTTY() || !f.IO.PromptEnabled() {
+				// break loop if input or output is a TTY to avoid prompting
+				if !(f.IO.IsInputTTY() && f.IO.PromptEnabled()) {
 					break
 				}
 				if (runningPipeline.Status == "pending" || runningPipeline.Status == "running") && live {
