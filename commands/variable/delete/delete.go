@@ -47,22 +47,23 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra.Co
 
 			if !variableutils.IsValidKey(opts.Key) {
 				err = cmdutils.FlagError{Err: fmt.Errorf("invalid key provided.\n%s", variableutils.ValidKeyMsg)}
-				return
+				return err
 			} else if len(args) != 1 {
 				err = cmdutils.FlagError{Err: errors.New("no key provided")}
+				return err
 			}
 
 			if cmd.Flags().Changed("scope") && opts.Group != "" {
 				err = cmdutils.FlagError{Err: errors.New("scope is not required for group variables")}
-				return
+				return err
 			}
 
 			if runE != nil {
 				err = runE(opts)
-				return
+				return err
 			}
 			err = deleteRun(opts)
-			return
+			return err
 		},
 	}
 
