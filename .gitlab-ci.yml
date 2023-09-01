@@ -85,7 +85,7 @@ lint_commit:
 
 lint:
   extends: .go-cache
-  image: registry.gitlab.com/gitlab-org/gitlab-build-images:golangci-lint-1.50-alpine
+  image: registry.gitlab.com/gitlab-org/gitlab-build-images:golangci-lint-1.52-alpine
   stage: test
   script:
     - golangci-lint --version
