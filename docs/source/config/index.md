@@ -22,10 +22,12 @@ Current respected settings:
 - token: Your GitLab access token, defaults to environment variables
 - host: if unset, defaults to `https://gitlab.com`
 - browser: if unset, defaults to environment variables
-- editor: if unset, defaults to environment variables.
-- visual: alternative for editor. if unset, defaults to environment variables.
+- editor: if unset, defaults to environment variables
+- visual: alternative for editor. If unset, defaults to environment variables
 - glamour_style: Your desired Markdown renderer style. Options are dark, light, notty. Custom styles are allowed using [glamour](https://github.com/charmbracelet/glamour#styles)
 - glab_pager: Your desired pager command to use (e.g. less -R)
+- check_update: if true, notifies of any available updates to glab. Defaults to true
+- display_hyperlinks: if true, and using a TTY, outputs hyperlinks for issues and MR lists. Defaults to false
 
 ## Aliases
 
