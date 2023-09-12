@@ -17,7 +17,7 @@ import (
 
 const (
 	redirectURI = "http://localhost:7171/auth/redirect"
-	scopes      = "openid profile read_user write_repository api"
+	scopes      = "openid+profile+read_user+write_repository+api"
 )
 
 const clientID = "41d48f9422ebd655dd9cf2947d6979681dfaddc6d0c56f7628f6ada59559af1e"
