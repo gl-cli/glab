@@ -40,6 +40,7 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previo
 		return nil
 	}
 
+	// We set the project to the `glab` project to check for `glab` updates
 	err := f.RepoOverride(defaultProjectURL)
 	if err != nil {
 		return err
@@ -52,8 +53,11 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previo
 	if err != nil {
 		return err
 	}
+
+	// Since the `gitlab.com/gitlab-org/cli` is public, we remove the token for this single request, so when users have
+	// a `GITLAB_TOKEN` set with a token for their self-managed instance, we don't use it to authenticate to gitlab.com
 	releases, _, err := apiClient.Releases.ListReleases(
-		repo.FullName(), &gitlab.ListReleasesOptions{ListOptions: gitlab.ListOptions{Page: 1, PerPage: 1}})
+		repo.FullName(), &gitlab.ListReleasesOptions{ListOptions: gitlab.ListOptions{Page: 1, PerPage: 1}}, gitlab.WithToken(gitlab.PrivateToken, ""))
 	if err != nil {
 		return fmt.Errorf("failed checking for glab updates: %s", err.Error())
 	}
