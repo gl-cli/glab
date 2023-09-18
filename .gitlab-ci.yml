@@ -67,9 +67,9 @@ check_docs_markdown:
   extends: .documentation
   script:
     # Lint prose
-    - vale --minAlertLevel error docs README.md
+    - vale --minAlertLevel error docs *.md
     # Lint Markdown
-    - markdownlint --config .markdownlint.yml 'docs/**/*.md' README.md
+    - markdownlint --config .markdownlint.yml 'docs/**/*.md' *.md
 
 lint_commit:
   stage: test
