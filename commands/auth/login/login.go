@@ -210,15 +210,27 @@ func loginRun() error {
 	loginType := 0
 
 	if opts.Interactive {
-		err := survey.AskOne(&survey.Select{
-			Message: "How would you like to login?",
-			Options: []string{
-				"Token",
-				"Web",
-			},
-		}, &loginType)
-		if err != nil {
-			return fmt.Errorf("could not get login type: %w", err)
+		if isSelfHosted {
+			err := survey.AskOne(&survey.Select{
+				Message: "How would you like to login?",
+				Options: []string{
+					"Token",
+				},
+			}, &loginType)
+			if err != nil {
+				return fmt.Errorf("could not get login type: %w", err)
+			}
+		} else {
+			err := survey.AskOne(&survey.Select{
+				Message: "How would you like to login?",
+				Options: []string{
+					"Token",
+					"Web",
+				},
+			}, &loginType)
+			if err != nil {
+				return fmt.Errorf("could not get login type: %w", err)
+			}
 		}
 	}
 
