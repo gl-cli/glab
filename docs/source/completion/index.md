@@ -65,9 +65,13 @@ glab completion -s zsh > "${fpath[1]}/_glab"
 
 #### macOS
 
+For older versions of macOS, this may be required:
+
 ```plaintext
 glab completion -s zsh > /usr/local/share/zsh/site-functions/_glab
 ```
+
+The Homebrew version of glab should automatically install completions.
 
 ### fish
 
