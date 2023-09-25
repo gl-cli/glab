@@ -12,6 +12,7 @@ import (
 	authCmd "gitlab.com/gitlab-org/cli/commands/auth"
 	changelogCmd "gitlab.com/gitlab-org/cli/commands/changelog"
 	pipelineCmd "gitlab.com/gitlab-org/cli/commands/ci"
+	clusterCmd "gitlab.com/gitlab-org/cli/commands/cluster"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	completionCmd "gitlab.com/gitlab-org/cli/commands/completion"
 	configCmd "gitlab.com/gitlab-org/cli/commands/config"
@@ -110,6 +111,7 @@ func NewCmdRoot(f *cmdutils.Factory, version, buildDate string) *cobra.Command {
 	cmdutils.HTTPClientFactory(f) // Initialize HTTP Client
 
 	rootCmd.AddCommand(changelogCmd.NewCmdChangelog(f))
+	rootCmd.AddCommand(clusterCmd.NewCmdCluster(f))
 	rootCmd.AddCommand(issueCmd.NewCmdIssue(f))
 	rootCmd.AddCommand(incidentCmd.NewCmdIncident(f))
 	rootCmd.AddCommand(labelCmd.NewCmdLabel(f))
