@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
@@ -226,6 +227,27 @@ hosts:
 				u:       "https://gitlab.com/api/v4/projects",
 				body:    `CUSTOM`,
 				headers: fmt.Sprintf("Accept: application/json\r\nContent-Type: text/plain\r\nPrivate-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
+			},
+		},
+		{
+			name: "POST with string array field and type",
+			args: args{
+				host:   "gitlab.com",
+				method: http.MethodPost,
+				p:      "projects",
+				params: map[string]interface{}{"scopes": "[api, read_api]"},
+				headers: []string{
+					"content-type: application/json",
+					"accept: application/json",
+				},
+			},
+			wantErr:   false,
+			isGraphQL: false,
+			want: expects{
+				method:  http.MethodPost,
+				u:       "https://gitlab.com/api/v4/projects",
+				body:    `{"scopes":["api","read_api"]}`,
+				headers: fmt.Sprintf("Accept: application/json\r\nContent-Type: application/json\r\nPrivate-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
 			},
 		},
 	}
