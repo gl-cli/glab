@@ -2,7 +2,6 @@ package diff
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -10,17 +9,14 @@ import (
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/xanzy/go-gitlab"
-	"gitlab.com/gitlab-org/cli/api"
-
 	"github.com/google/shlex"
-	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
@@ -110,17 +106,12 @@ func Test_NewCmdDiff(t *testing.T) {
 	}
 }
 
-func runCommand(remotes glrepo.Remotes, isTTY bool, cli string) (*test.CmdOut, error) {
+func runCommand(rt http.RoundTripper, remotes glrepo.Remotes, isTTY bool, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 
-	factory := cmdtest.InitFactory(ios, nil)
-	factory.HttpClient = func() (*gitlab.Client, error) {
-		a, err := api.TestClient(&http.Client{}, "xxxx", "gitlab.com", false)
-		if err != nil {
-			return nil, err
-		}
-		return a.Lab(), err
-	}
+	factory := cmdtest.InitFactory(ios, rt)
+	_, _ = factory.HttpClient()
+
 	factory.Remotes = func() (glrepo.Remotes, error) {
 		if remotes == nil {
 			return glrepo.Remotes{
@@ -142,15 +133,15 @@ func runCommand(remotes glrepo.Remotes, isTTY bool, cli string) (*test.CmdOut, e
 }
 
 func TestPRDiff_no_current_mr(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
+	fakeHTTP := &httpmock.Mocker{
+		MatchURL: httpmock.PathAndQuerystring,
+	}
+	defer fakeHTTP.Verify(t)
 
-	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests`,
-		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(http.StatusOK, `[]`), nil
-		},
-	)
-	_, err := runCommand(nil, false, "")
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER/REPO/merge_requests?per_page=30&source_branch=feature`,
+		httpmock.NewStringResponse(http.StatusOK, `[]`))
+
+	_, err := runCommand(fakeHTTP, nil, false, "")
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -158,63 +149,61 @@ func TestPRDiff_no_current_mr(t *testing.T) {
 }
 
 func TestMRDiff_argument_not_found(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
+	fakeHTTP := &httpmock.Mocker{
+		MatchURL: httpmock.PathOnly,
+	}
+	defer fakeHTTP.Verify(t)
 
-	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
-		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(http.StatusOK, `{
-    "id": 123,
-    "iid": 123,
-    "project_id": 3,
-    "title": "test1",
-    "description": "fixed login page css paddings",
-    "state": "merged"}`), nil
-		},
-	)
+	fakeHTTP.RegisterResponder(http.MethodGet, `/projects/OWNER/REPO/merge_requests/123`,
+		httpmock.NewStringResponse(http.StatusOK, `{
+			"id": 123,
+			"iid": 123,
+			"project_id": 3,
+			"title": "test1",
+			"description": "fixed login page css paddings",
+			"state": "merged"
+		}`))
 
-	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions`,
-		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(http.StatusNotFound, ""), errors.New("404 not found")
-		},
-	)
+	fakeHTTP.RegisterResponder(http.MethodGet, `/projects/OWNER/REPO/merge_requests/123/versions`,
+		httpmock.NewStringResponse(http.StatusNotFound, `{"message":"404 Not Found"}`))
 
-	_, err := runCommand(nil, false, "123")
+	output, err := runCommand(fakeHTTP, nil, false, "123")
 	if err == nil {
 		t.Fatal("expected error", err)
 	}
-	assert.Equal(t, `could not find merge request diffs: Get "https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions": 404 not found`, err.Error())
+
+	assert.Empty(t, output.String())
+	assert.Empty(t, output.Stderr())
+	assert.Equal(t, `could not find merge request diffs: GET https://gitlab.com/api/v4/projects/OWNER/REPO/merge_requests/123/versions: 404 {message: 404 Not Found}`, err.Error())
 }
 
 func TestMRDiff_notty(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
+	fakeHTTP := &httpmock.Mocker{
+		MatchURL: httpmock.PathAndQuerystring,
+	}
 
-	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests`,
-		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(http.StatusOK, `[{
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests?per_page=30&source_branch=feature`,
+		httpmock.NewStringResponse(http.StatusOK, `[{
     "id": 123,
     "iid": 123,
     "project_id": 3,
     "title": "test1",
     "description": "fixed login page css paddings",
-    "state": "merged"}]`), nil
-		},
-	)
-	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
-		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(http.StatusOK, `{
+    "state": "merged"}]`))
+
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
+		httpmock.NewStringResponse(http.StatusOK, `{
     "id": 123,
     "iid": 123,
     "project_id": 3,
     "title": "test1",
     "description": "fixed login page css paddings",
-    "state": "merged"}`), nil
-		},
-	)
+    "state": "merged"}`))
 
-	testDiff := DiffTest()
-	output, err := runCommand(nil, false, "")
+	testDiff := DiffTest(fakeHTTP)
+	output, err := runCommand(fakeHTTP, nil, false, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -224,45 +213,41 @@ func TestMRDiff_notty(t *testing.T) {
 }
 
 func TestMRDiff_tty(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
+	fakeHTTP := &httpmock.Mocker{
+		MatchURL: httpmock.PathAndQuerystring,
+	}
 
-	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests`,
-		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(http.StatusOK, `[{
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests?per_page=30&source_branch=feature`,
+		httpmock.NewStringResponse(http.StatusOK, `[{
     "id": 123,
     "iid": 123,
     "project_id": 3,
     "title": "test1",
     "description": "fixed login page css paddings",
-    "state": "merged"}]`), nil
-		},
-	)
+    "state": "merged"}]`))
 
-	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
-		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(http.StatusOK, `{
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
+		httpmock.NewStringResponse(http.StatusOK, `{
     "id": 123,
     "iid": 123,
     "project_id": 3,
     "title": "test1",
     "description": "fixed login page css paddings",
-    "state": "merged"}`), nil
-		},
-	)
+    "state": "merged"}`))
 
-	DiffTest()
-	output, err := runCommand(nil, true, "")
+	DiffTest(fakeHTTP)
+	output, err := runCommand(fakeHTTP, nil, true, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	assert.Contains(t, output.String(), "\x1b[m\n\x1b[32m+FITNESS")
 }
 
-func DiffTest() string {
-	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions`,
-		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(http.StatusOK, `[{
+func DiffTest(fakeHTTP *httpmock.Mocker) string {
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions`,
+		httpmock.NewStringResponse(http.StatusOK, `[{
   "id": 110,
   "head_commit_sha": "33e2ee8579fda5bc36accc9c6fbd0b4fefda9e30",
   "base_commit_sha": "eeb57dffe83deb686a60a71c16c32f71046868fd",
@@ -271,12 +256,10 @@ func DiffTest() string {
   "merge_request_id": 105,
   "state": "collected",
   "real_size": "1"
-}]`), nil
-		},
-	)
-	httpmock.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions/110`,
-		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewStringResponse(http.StatusOK, `{
+}]`))
+
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions/110`,
+		httpmock.NewStringResponse(http.StatusOK, `{
   "id": 110,
   "head_commit_sha": "33e2ee8579fda5bc36accc9c6fbd0b4fefda9e30",
   "base_commit_sha": "eeb57dffe83deb686a60a71c16c32f71046868fd",
@@ -320,8 +303,6 @@ func DiffTest() string {
     "renamed_file": true,
     "deleted_file": false
   }]
-}`), nil
-		},
-	)
+}`))
 	return "--- /dev/null\n+++ b/LICENSE\n@@ -0,0 +1,21 @@\n+The MIT License (MIT)\n+\n+Copyright (c) 2018 Administrator\n+\n+Permission is hereby granted, free of charge, to any person obtaining a copy\n+of this software and associated documentation files (the \"Software\"), to deal\n+in the Software without restriction, including without limitation the rights\n+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n+copies of the Software, and to permit persons to whom the Software is\n+furnished to do so, subject to the following conditions:\n+\n+The above copyright notice and this permission notice shall be included in all\n+copies or substantial portions of the Software.\n+\n+THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n+SOFTWARE.\n"
 }
