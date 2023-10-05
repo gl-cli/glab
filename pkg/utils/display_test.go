@@ -3,7 +3,7 @@ package utils
 import (
 	"testing"
 
-	"github.com/alecthomas/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_Indent(t *testing.T) {

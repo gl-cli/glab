@@ -7,8 +7,8 @@ import (
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/alecthomas/assert"
 	"github.com/google/shlex"
+	"github.com/stretchr/testify/assert"
 	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"

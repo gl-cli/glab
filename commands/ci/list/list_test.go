@@ -9,7 +9,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 
-	"github.com/alecthomas/assert"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/test"

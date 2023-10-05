@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/alecthomas/assert"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
