@@ -3,8 +3,8 @@ package flag
 import (
 	"testing"
 
-	"github.com/alecthomas/assert"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"

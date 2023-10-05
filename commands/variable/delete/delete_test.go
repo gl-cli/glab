@@ -10,8 +10,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"github.com/alecthomas/assert"
 	"github.com/google/shlex"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 )

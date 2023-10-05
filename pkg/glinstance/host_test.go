@@ -3,7 +3,7 @@ package glinstance
 import (
 	"testing"
 
-	"github.com/alecthomas/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIsSelfHosted(t *testing.T) {
