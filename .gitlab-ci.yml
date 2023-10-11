@@ -28,6 +28,7 @@ include:
   - project: 'gitlab-org/quality/pipeline-common'
     file: '/ci/danger-review.yml'  # danger-review job below
 
+
 # From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
 .go-cache:
   variables:
@@ -44,10 +45,6 @@ include:
   stage: documentation
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-
-danger-review:
-  variables:
-    GITLAB_DANGERFILES_VERSION: "4.1.0"
 
 check_docs_update:
   extends: .documentation
