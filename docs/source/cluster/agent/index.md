@@ -27,4 +27,5 @@ Manage GitLab Agents for Kubernetes
 
 ## Subcommands
 
+- [get-token](get-token.md)
 - [list](list.md)

@@ -19,7 +19,7 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string, doHyperlinks strin
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, doHyperlinks)
 	f := cmdtest.InitFactory(ios, rt)
 
-	// TODO: shouldn't be there but the stub doesn't work without it
+	// Note: This sets the RoundTripper, which is necessary for stubs to work.
 	_, _ = f.HttpClient()
 
 	cmd := NewCmdAgentList(f)
