@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"github.com/spf13/cobra"
+	agentGetTokenCmd "gitlab.com/gitlab-org/cli/commands/cluster/agent/get_token"
 	agentListCmd "gitlab.com/gitlab-org/cli/commands/cluster/agent/list"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
@@ -16,6 +17,7 @@ func NewCmdAgent(f *cmdutils.Factory) *cobra.Command {
 	cmdutils.EnableRepoOverride(agentCmd, f)
 
 	agentCmd.AddCommand(agentListCmd.NewCmdAgentList(f))
+	agentCmd.AddCommand(agentGetTokenCmd.NewCmdAgentGetToken(f))
 
 	return agentCmd
 }
