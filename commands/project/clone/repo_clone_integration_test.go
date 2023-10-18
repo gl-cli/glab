@@ -109,4 +109,3 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 		assert.Equal(t, fmt.Sprintf("git clone %s", expectedRepoUrls[i]), strings.Join(cs.Calls[i].Args, " "))
 	}
 }
-
