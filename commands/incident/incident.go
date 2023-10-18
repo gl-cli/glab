@@ -6,6 +6,7 @@ import (
 
 	incidentCloseCmd "gitlab.com/gitlab-org/cli/commands/incident/close"
 	incidentListCmd "gitlab.com/gitlab-org/cli/commands/incident/list"
+	incidentNoteCmd "gitlab.com/gitlab-org/cli/commands/incident/note"
 	incidentReopenCmd "gitlab.com/gitlab-org/cli/commands/incident/reopen"
 	incidentSubscribeCmd "gitlab.com/gitlab-org/cli/commands/incident/subscribe"
 	incidentUnsubscribeCmd "gitlab.com/gitlab-org/cli/commands/incident/unsubscribe"
@@ -34,6 +35,7 @@ func NewCmdIncident(f *cmdutils.Factory) *cobra.Command {
 	cmdutils.EnableRepoOverride(incidentCmd, f)
 
 	incidentCmd.AddCommand(incidentListCmd.NewCmdList(f, nil))
+	incidentCmd.AddCommand(incidentNoteCmd.NewCmdNote(f))
 	incidentCmd.AddCommand(incidentViewCmd.NewCmdView(f))
 	incidentCmd.AddCommand(incidentCloseCmd.NewCmdClose(f))
 	incidentCmd.AddCommand(incidentReopenCmd.NewCmdReopen(f))

@@ -7,11 +7,19 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
+
+const (
+	// stringArrayRegexPattern represents a pattern to find strings like: [item, item_two]
+	stringArrayRegexPattern = `^\[\s*([[:lower:]_]+(\s*,\s*[[:lower:]_]+)*)?\s*\]$`
+)
+
+var strArrayRegex = regexp.MustCompile(stringArrayRegexPattern)
 
 func httpRequest(client *api.Client, config config.Config, hostname string, method string, p string, params interface{}, headers []string) (*http.Response, error) {
 	var err error
@@ -33,6 +41,7 @@ func httpRequest(client *api.Client, config config.Config, hostname string, meth
 	} else {
 		baseURLStr = baseURLStr + strings.TrimPrefix(p, "/")
 	}
+
 	var body io.Reader
 	var bodyIsJSON bool
 	switch pp := params.(type) {
@@ -47,10 +56,15 @@ func httpRequest(client *api.Client, config config.Config, hostname string, meth
 				if vv, ok := value.([]byte); ok {
 					pp[key] = string(vv)
 				}
+
+				if strValue, ok := value.(string); ok && strArrayRegex.MatchString(strValue) {
+					pp[key] = parseStringArrayField(strValue)
+				}
 			}
 			if isGraphQL {
 				pp = groupGraphQLVariables(pp)
 			}
+
 			b, err := json.Marshal(pp)
 			if err != nil {
 				return nil, fmt.Errorf("error serializing parameters: %w", err)
@@ -120,4 +134,19 @@ func parseQuery(path string, params map[string]interface{}) (string, error) {
 		sep = "&"
 	}
 	return path + sep + q.Encode(), nil
+}
+
+func parseStringArrayField(strValue string) []string {
+	strValue = strings.TrimPrefix(strValue, "[")
+	strValue = strings.TrimSuffix(strValue, "]")
+	strArrayElements := strings.Split(strValue, ",")
+
+	var strSlice []string
+	for _, element := range strArrayElements {
+		element = strings.TrimSpace(element)
+		element = strings.Trim(element, `"`)
+		strSlice = append(strSlice, element)
+	}
+
+	return strSlice
 }

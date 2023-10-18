@@ -57,3 +57,6 @@ log.txt.glab-cli
 *.tar
 *.tar.gz
 *.tar.bz2
+
+# gotestsum test log
+test-output.log

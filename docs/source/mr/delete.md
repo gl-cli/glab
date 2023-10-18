@@ -27,8 +27,8 @@ del
 
 ```plaintext
 glab mr delete 123
-glab mr delete 123 branch-name 789  # close multiple branches
-glab mr delete 1,2,branch-related-to-mr-3,4,5  # close MRs !1,!2,!3,!4,!5
+glab mr delete 123 branch-name 789  # delete multiple MRs by id and branch name
+glab mr delete 1,2,branch-related-to-mr-3,4,5  # delete MRs !1,!2,!3,!4,!5
 glab mr del 123
 glab mr delete branch
 

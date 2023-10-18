@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/xanzy/go-gitlab"
 )
@@ -56,4 +57,22 @@ var UsersByNames = func(client *gitlab.Client, names []string) ([]*gitlab.User, 
 		users = append(users, user)
 	}
 	return users, nil
+}
+
+var CreatePersonalAccessTokenForCurrentUser = func(client *gitlab.Client, name string, scopes []string, expiresAt time.Time) (*gitlab.PersonalAccessToken, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	expiresAtISO := gitlab.ISOTime(expiresAt)
+	options := &gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
+		Name:      gitlab.String(name),
+		Scopes:    &scopes,
+		ExpiresAt: &expiresAtISO,
+	}
+
+	pat, _, err := client.Users.CreatePersonalAccessTokenForCurrentUser(options)
+	if err != nil {
+		return nil, err
+	}
+	return pat, nil
 }

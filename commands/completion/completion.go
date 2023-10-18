@@ -71,9 +71,13 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 
 		#### macOS
 
+		For older versions of macOS, this may be required:
+
 		%[2]splaintext
 		glab completion -s zsh > /usr/local/share/zsh/site-functions/_glab
 		%[2]s
+
+		The Homebrew version of glab should automatically install completions.
 
 		### fish
 

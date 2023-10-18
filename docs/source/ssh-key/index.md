@@ -28,5 +28,6 @@ Manage SSH keys registered with your GitLab account.
 ## Subcommands
 
 - [add](add.md)
+- [delete](delete.md)
 - [get](get.md)
 - [list](list.md)

@@ -1,7 +1,6 @@
 package git
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os/exec"
@@ -21,14 +20,15 @@ import (
 
 type request struct {
 	Prompt string `json:"prompt"`
+	Model  string `json:"model"`
 }
 
 type response struct {
-	Choices []struct {
-		Message struct {
+	Predictions []struct {
+		Candidates []struct {
 			Content string `json:"content"`
-		} `json:"message"`
-	} `json:"choices"`
+		} `json:"candidates"`
+	} `json:"predictions"`
 }
 
 type result struct {
@@ -42,7 +42,11 @@ type opts struct {
 	HttpClient func() (*gitlab.Client, error)
 }
 
-var cmdRegexp = regexp.MustCompile("`([^`]*)`")
+var (
+	cmdHighlightRegexp = regexp.MustCompile("`+\n?([^`]*)\n?`+\n?")
+	cmdExecRegexp      = regexp.MustCompile("```([^`]*)```")
+	vertexAI           = "vertexai"
+)
 
 const (
 	runCmdsQuestion   = "Would you like to run these Git commands"
@@ -110,7 +114,7 @@ func (opts *opts) Result() (*result, error) {
 		return nil, cmdutils.WrapError(err, "failed to get http client")
 	}
 
-	body := request{Prompt: opts.Prompt}
+	body := request{Prompt: opts.Prompt, Model: vertexAI}
 	request, err := client.NewRequest(http.MethodPost, gitCmdAPIPath, body, nil)
 	if err != nil {
 		return nil, cmdutils.WrapError(err, "failed to create a request")
@@ -122,16 +126,21 @@ func (opts *opts) Result() (*result, error) {
 		return nil, cmdutils.WrapError(err, apiUnreachableErr)
 	}
 
-	if len(r.Choices) == 0 {
+	if len(r.Predictions) == 0 || len(r.Predictions[0].Candidates) == 0 {
 		return nil, fmt.Errorf(aiResponseErr)
 	}
 
-	var result result
-	if err := json.Unmarshal([]byte(r.Choices[0].Message.Content), &result); err != nil {
-		return nil, fmt.Errorf(aiResponseErr)
+	content := r.Predictions[0].Candidates[0].Content
+
+	var cmds []string
+	for _, cmd := range cmdExecRegexp.FindAllString(content, -1) {
+		cmds = append(cmds, strings.Trim(cmd, "\n`"))
 	}
 
-	return &result, nil
+	return &result{
+		Commands:    cmds,
+		Explanation: content,
+	}, nil
 }
 
 func (opts *opts) displayResult(result *result) {
@@ -147,7 +156,7 @@ func (opts *opts) displayResult(result *result) {
 	}
 
 	opts.IO.LogInfo(color.Bold("\nExplanation:\n"))
-	explanation := cmdRegexp.ReplaceAllString(result.Explanation, color.Green("$1"))
+	explanation := cmdHighlightRegexp.ReplaceAllString(result.Explanation, color.Green("$1"))
 	opts.IO.LogInfo(explanation + "\n")
 }
 

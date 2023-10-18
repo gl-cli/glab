@@ -16,13 +16,15 @@ Consider adding the `/confidential` quick action to a project issue template.
 - Add any additional labels you know apply. Additional labels will be applied
 by the security team and other engineering personnel, but it will help with
 the triage process:
-    - [`~"type::bug"`, `~"type::maintenance"`, or `~"type::feature"` if appropriate](https://about.gitlab.com/handbook/engineering/security/security-engineering-and-research/application-security/vulnerability-management.html#vulnerability-vs-feature-vs-bug)
-    - Team or devops lifecycle labels
-    - `~customer` if issue is a result of a customer report
-    - `~internal customer` should be added by team members when the issue
+
+  - [`~"type::bug"`, `~"type::maintenance"`, or `~"type::feature"` if appropriate](https://about.gitlab.com/handbook/engineering/security/security-engineering-and-research/application-security/vulnerability-management.html#vulnerability-vs-feature-vs-bug)
+  - Team or DevOps lifecycle labels
+  - `~customer` if issue is a result of a customer report
+  - `~internal customer` should be added by team members when the issue
     impacts GitLab operations.
-    - `~dependency update` if issue is related to updating to newer versions of the dependencies GitLab requires.
-    - `~featureflag::` scoped labels if issue is for a functionality behind a feature flag
+  - `~dependency update` if issue is related to updating to newer versions of the dependencies GitLab requires.
+  - `~featureflag::` scoped labels if issue is for a functionality behind a feature flag
+
 - Issues that contain customer specific data, such as private repository contents,
 should be assigned `~keep confidential`. If possible avoid this by linking
 resources only available to GitLab team member, for example, the originating
@@ -35,4 +37,3 @@ general discussion and examples appropriate for public disclosure prior to
 release.
 
 For review by the Application Security team, @ mention `@gitlab-com/gl-security/appsec`.
-

@@ -171,7 +171,6 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_ = screen.Init()
 			if err := a.SetScreen(screen).SetRoot(root, true).Run(); err != nil {
 				return err
 			}

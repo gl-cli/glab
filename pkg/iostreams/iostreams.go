@@ -215,6 +215,10 @@ func (s *IOStreams) IsOutputTTY() bool {
 	return s.IsErrTTY && s.IsaTTY
 }
 
+func (s *IOStreams) IsInputTTY() bool {
+	return s.IsInTTY && s.IsaTTY && s.IsErrTTY
+}
+
 func (s *IOStreams) ResolveBackgroundColor(style string) string {
 	if style == "" {
 		style = os.Getenv("GLAMOUR_STYLE")

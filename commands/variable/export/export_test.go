@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alecthomas/assert"
 	"github.com/google/shlex"
+	"github.com/stretchr/testify/assert"
 	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"

@@ -35,6 +35,15 @@ Please avoid:
 
 We want to create a welcoming environment for everyone who is interested in contributing. Visit our [Code of Conduct page](https://about.gitlab.com/community/contribute/code-of-conduct/) to learn more about our commitment to an open and welcoming environment.
 
+## Maintainership
+
+If you are a GitLab team member that is interested in becoming a maintainer of the CLI, we follow these basic steps [described in the handbook](https://about.gitlab.com/handbook/engineering/workflow/code-review/#accelerated-maintainer-onboarding-for-smaller-projects):
+
+- Familiarize yourself with the codebase and past reviews.
+- When you're ready, add yourself as a reviewer in your [team page](https://gitlab.com/gitlab-com/www-gitlab-com/-/blob/master/data/team_members/person/).
+- After the current maintainers feel confident you're ready to be a maintainer, you're added
+  to the project, and can update your team page again.
+
 ## Getting Started
 
 ### Building the project
@@ -57,6 +66,57 @@ Integration tests use the `_Integration` test suffix and use the `_integration_t
 
 `GITLAB_TOKEN` must be a
 [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).
+
+### Designing a new feature
+
+The
+[Design Command-Line Tools People Love presentation](https://www.youtube.com/watch?v=eMz0vni6PAw)
+by Carolyn Van Slyck provides some great guidance on things to consider when implementing
+a CLI tool. We recommend the entire presentation, but the following points are especially
+important in the context of the GitLab CLI.
+
+#### Grammar
+
+GitLab CLI commands use a noun-first, verb-second grammatical structure, like
+`glab ci list`. Also, these verbs are shared by various commands, and have
+expected behavior as a result:
+
+- `create` - Used when creating a singular object. For example, `glab mr create`
+  creates a new merge request.
+- `list` - Used by commands that output more than one object at a time. For example, 
+  `glab ci list` returns a list of all running pipelines.
+- `get` - Used by commands that output a singular object at a time. For example,
+  `glab ci get --pipeline-id 1` returns the pipeline with the specified ID.
+- `update` - Used by commands that update one object at a time. For example,
+  `glab mr update 1 --title "new title"` updates the title of the merge request with ID `1`.
+- `delete` - Used when deleting one or more objects at time. For example, `glab ci delete 1,2,3`
+  deletes the pipelines with IDs `1`, `2`, and `3`.
+
+Features generally have some or all of these commands. However, some features do not
+map well to the listed commands. In situations like these, it's okay to create or
+use separate verbs that make the most sense for the feature.
+
+#### Precedent
+
+When designing a feature, consider the existing ecosystem. It may be helpful to ask,
+_"What's the most popular CLI tool in this domain?"_. The answer can help you decide
+the terminology used, a preference for a flag instead of a positional argument, and
+many more things. For example:
+
+- When working on a Kubernetes-related feature, `kubectl` design patterns
+  might play a big role designing feature's command set.
+- When working on GitLab-specific features, use the current documentation and
+  command list for design patterns.
+
+Considering the context of use helps create a unifying experience that feels natural
+to users who work with other tooling in the same domain space.
+
+#### Human-readable output
+
+Design with human readable output as the default. The
+[`go-humanize`](https://github.com/dustin/go-humanize) module helps transform
+various types into a human-friendly version. See the module's documentation for
+a complete listing of the transformations supported.
 
 ### Submitting a merge request
 

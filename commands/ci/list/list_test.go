@@ -9,7 +9,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 
-	"github.com/alecthomas/assert"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
@@ -75,10 +75,10 @@ func TestCiList(t *testing.T) {
 
 	assert.Equal(t, heredoc.Doc(`
 		Showing 2 pipelines on OWNER/REPO (Page 1)
-		
-		(success) • #1	refs/merge-requests/1107/merge	(about X years ago)
-		(success) • #2	main	(about X years ago)
-		
+
+		(success) • #1	(#3)	refs/merge-requests/1107/merge	(about X years ago)
+		(success) • #2	(#4)	main	(about X years ago)
+
 		`), out)
 	assert.Empty(t, output.Stderr())
 }

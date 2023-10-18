@@ -210,15 +210,27 @@ func loginRun() error {
 	loginType := 0
 
 	if opts.Interactive {
-		err := survey.AskOne(&survey.Select{
-			Message: "How would you like to login?",
-			Options: []string{
-				"Token",
-				"Web",
-			},
-		}, &loginType)
-		if err != nil {
-			return fmt.Errorf("could not get login type: %w", err)
+		if isSelfHosted {
+			err := survey.AskOne(&survey.Select{
+				Message: "How would you like to login?",
+				Options: []string{
+					"Token",
+				},
+			}, &loginType)
+			if err != nil {
+				return fmt.Errorf("could not get login type: %w", err)
+			}
+		} else {
+			err := survey.AskOne(&survey.Select{
+				Message: "How would you like to login?",
+				Options: []string{
+					"Token",
+					"Web",
+				},
+			}, &loginType)
+			if err != nil {
+				return fmt.Errorf("could not get login type: %w", err)
+			}
 		}
 	}
 
@@ -369,7 +381,7 @@ func getAccessTokenTip(hostname string) string {
 		glHostname = glinstance.OverridableDefault()
 	}
 	return fmt.Sprintf(`
-	Tip: you can generate a Personal Access Token here https://%s/-/profile/personal_access_tokens
+	Tip: you can generate a Personal Access Token here https://%s/-/profile/personal_access_tokens?scopes=api,write_repository
 	The minimum required scopes are 'api' and 'write_repository'.`, glHostname)
 }
 

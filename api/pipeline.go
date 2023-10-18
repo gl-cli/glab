@@ -277,7 +277,7 @@ var PipelineJobWithSha = func(client *gitlab.Client, pid interface{}, sha, name 
 	if client == nil {
 		client = apiClient.Lab()
 	}
-	jobs, err := PipelineJobsWithSha(client, pid, sha)
+	jobs, _, err := PipelineJobsWithSha(client, pid, sha)
 	if len(jobs) == 0 || err != nil {
 		return nil, err
 	}
@@ -321,19 +321,22 @@ func (s JobSort) Less(i, j int) bool {
 	return (*s.Jobs[i].CreatedAt).Before(*s.Jobs[j].CreatedAt)
 }
 
-// PipelineJobsWithSha returns a list of jobs in a pipeline for a given commit sha.
+type BridgeSort struct {
+	Bridges []*gitlab.Bridge
+}
+
+func (s BridgeSort) Len() int      { return len(s.Bridges) }
+func (s BridgeSort) Swap(i, j int) { s.Bridges[i], s.Bridges[j] = s.Bridges[j], s.Bridges[i] }
+func (s BridgeSort) Less(i, j int) bool {
+	return (*s.Bridges[i].CreatedAt).Before(*s.Bridges[j].CreatedAt)
+}
+
+// PipelineJobsWithID returns a list of jobs in a pipeline for a id.
 // The jobs are returned in the order in which they were created
-var PipelineJobsWithSha = func(client *gitlab.Client, pid interface{}, sha string) ([]*gitlab.Job, error) {
+var PipelineJobsWithID = func(client *gitlab.Client, pid interface{}, ppid int) ([]*gitlab.Job, []*gitlab.Bridge, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
-	pipelines, err := GetPipelines(client, &gitlab.ListProjectPipelinesOptions{
-		SHA: gitlab.String(sha),
-	}, pid)
-	if len(pipelines) == 0 || err != nil {
-		return nil, err
-	}
-	target := pipelines[0].ID
 	opts := &gitlab.ListJobsOptions{
 		ListOptions: gitlab.ListOptions{
 			PerPage: 500,
@@ -341,9 +344,9 @@ var PipelineJobsWithSha = func(client *gitlab.Client, pid interface{}, sha strin
 	}
 	jobsList := make([]*gitlab.Job, 0)
 	for {
-		jobs, resp, err := client.Jobs.ListPipelineJobs(pid, target, opts)
+		jobs, resp, err := client.Jobs.ListPipelineJobs(pid, ppid, opts)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		opts.Page = resp.NextPage
 		jobsList = append(jobsList, jobs...)
@@ -351,19 +354,51 @@ var PipelineJobsWithSha = func(client *gitlab.Client, pid interface{}, sha strin
 			break
 		}
 	}
+	opts.Page = 0
+	bridgesList := make([]*gitlab.Bridge, 0)
+	for {
+		bridges, resp, err := client.Jobs.ListPipelineBridges(pid, ppid, opts)
+		if err != nil {
+			return nil, nil, err
+		}
+		opts.Page = resp.NextPage
+		bridgesList = append(bridgesList, bridges...)
+		if resp.CurrentPage == resp.TotalPages {
+			break
+		}
+	}
 	// ListPipelineJobs returns jobs sorted by ID in descending order instead of returning
 	// them in the order they were created, so we restore the order using the createdAt
 	sort.Sort(JobSort{Jobs: jobsList})
-	return jobsList, nil
+	sort.Sort(BridgeSort{Bridges: bridgesList})
+	return jobsList, bridgesList, nil
+}
+
+// PipelineJobsWithSha returns a list of jobs in a pipeline for a given commit sha.
+// The jobs are returned in the order in which they were created
+var PipelineJobsWithSha = func(client *gitlab.Client, pid interface{}, sha string) ([]*gitlab.Job, []*gitlab.Bridge, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	pipelines, err := GetPipelines(client, &gitlab.ListProjectPipelinesOptions{
+		SHA: gitlab.String(sha),
+	}, pid)
+	if len(pipelines) == 0 || err != nil {
+		return nil, nil, err
+	}
+	return PipelineJobsWithID(client, pid, pipelines[0].ID)
 }
 
 var ProjectNamespaceLint = func(client *gitlab.Client, projectID int, content string) (*gitlab.ProjectLintResult, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
-	c, _, err := client.Validate.ProjectNamespaceLint(projectID, &gitlab.ProjectNamespaceLintOptions{
-		Content: &content,
-	})
+	c, _, err := client.Validate.ProjectNamespaceLint(
+		projectID,
+		&gitlab.ProjectNamespaceLintOptions{
+			Content: &content,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}

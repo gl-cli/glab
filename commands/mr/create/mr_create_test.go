@@ -235,6 +235,99 @@ func TestNewCmdCreate_RelatedIssue(t *testing.T) {
 	assert.Contains(t, output.String(), "https://gitlab.com/OWNER/REPO/-/merge_requests/12")
 }
 
+func TestNewCmdCreate_TemplateFromCommitMessages(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/merge_requests",
+		func(req *http.Request) (*http.Response, error) {
+			rb, _ := io.ReadAll(req.Body)
+			assert.Contains(t, string(rb), "- commit msg 1  \\n\\n")
+			assert.Contains(t, string(rb), "- commit msg 2  \\ncommit body")
+			resp, _ := httpmock.NewStringResponse(http.StatusCreated, `
+				{
+	 				"id": 1,
+	 				"iid": 12,
+	 				"project_id": 3,
+	 				"title": "...",
+	 				"description": "...",
+	 				"state": "opened",
+	 				"target_branch": "master",
+	 				"source_branch": "feat-new-mr",
+					"web_url": "https://gitlab.com/OWNER/REPO/-/merge_requests/12"
+				}
+			`)(req)
+			return resp, nil
+		},
+	)
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO",
+		httpmock.NewStringResponse(http.StatusOK, `
+			{
+				"id": 1,
+				"description": null,
+				"default_branch": "master",
+				"web_url": "http://gitlab.com/OWNER/REPO",
+				"name": "OWNER",
+				"path": "REPO",
+				"merge_requests_enabled": true,
+				"path_with_namespace": "OWNER/REPO"
+			}
+		`),
+	)
+
+	ask, teardown := prompt.InitAskStubber()
+	defer teardown()
+
+	ask.Stub([]*prompt.QuestionStub{
+		{
+			Name:  "index",
+			Value: 0,
+		},
+	})
+	ask.Stub([]*prompt.QuestionStub{
+		{
+			Name:    "Description",
+			Default: true,
+		},
+	})
+
+	cs, csTeardown := test.InitCmdStubber()
+	defer csTeardown()
+
+	cs.Stub("HEAD branch: main\n") // git remote show <name>
+	cs.Stub("/")                   // git rev-parse --show-toplevel
+
+	// git -c log.ShowSignature=false log --pretty=format:%H,%s --cherry upstream/main...feat-new-mr
+	cs.Stub(heredoc.Doc(`
+			deadb00f,commit msg 2
+			deadbeef,commit msg 1
+		`))
+
+	// git -c log.ShowSignature=false show -s --pretty=format:%b deadbeef
+	cs.Stub("")
+	// git -c log.ShowSignature=false show -s --pretty=format:%b deadb00f
+	cs.Stub("commit body")
+
+	cliStr := []string{
+		"--source-branch", "feat-new-mr",
+		"--title", "mr-title",
+		"--yes",
+	}
+
+	cli := strings.Join(cliStr, " ")
+
+	t.Log(cli)
+
+	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli)
+	if err != nil {
+		if errors.Is(err, cmdutils.SilentError) {
+			t.Errorf("Unexpected error: %q", output.Stderr())
+		}
+		t.Error(err)
+		return
+	}
+}
+
 func TestNewCmdCreate_RelatedIssueWithTitleAndDescription(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)

@@ -26,6 +26,7 @@ func runCommand(rt http.RoundTripper, isTTY bool, args string) (*test.CmdOut, er
 }
 
 func TestGitCmd(t *testing.T) {
+	initialAiResponse := "The appropriate ```git log --pretty=format:'%h'``` Git command ```non-git cmd``` for listing ```git show``` commit SHAs."
 	outputWithoutExecution := "Experiment:\n" + experimentMsg + `
 Commands:
 
@@ -35,9 +36,10 @@ git show
 
 Explanation:
 
-The appropriate Git command for listing commit SHAs.
+The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing git show commit SHAs.
 
 `
+
 	tests := []struct {
 		desc           string
 		content        string
@@ -47,21 +49,21 @@ The appropriate Git command for listing commit SHAs.
 	}{
 		{
 			desc:           "agree to run commands",
-			content:        `{\"commands\": [\"git log --pretty=format:'%h'\", \"non-git cmd\", \"git show\"], \"explanation\":\"The appropriate Git command for listing commit SHAs.\"}`,
+			content:        initialAiResponse,
 			withPrompt:     true,
 			withExecution:  true,
 			expectedResult: outputWithoutExecution + "git log executed\ngit show executed\n",
 		},
 		{
 			desc:           "disagree to run commands",
-			content:        `{\"commands\": [\"git log --pretty=format:'%h'\", \"non-git cmd\", \"git show\"], \"explanation\":\"The appropriate Git command for listing commit SHAs.\"}`,
+			content:        initialAiResponse,
 			withPrompt:     true,
 			withExecution:  false,
 			expectedResult: outputWithoutExecution,
 		},
 		{
 			desc:           "no commands",
-			content:        `{\"commands\": [], \"explanation\":\"There are no Git commands related to the text.\"}`,
+			content:        "There are no Git commands related to the text.",
 			withPrompt:     false,
 			expectedResult: "Experiment:\n" + experimentMsg + "\nCommands:\n\n\nExplanation:\n\nThere are no Git commands related to the text.\n\n",
 		},
@@ -76,7 +78,7 @@ The appropriate Git command for listing commit SHAs.
 			}
 			defer fakeHTTP.Verify(t)
 
-			body := `{"choices": [{"message": {"content": "` + tc.content + `"}}]}`
+			body := `{"predictions": [{ "candidates": [ {"content": "` + tc.content + `"} ]}]}`
 
 			response := httpmock.NewStringResponse(http.StatusOK, body)
 			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/ai/llm/git_command", response)
@@ -94,7 +96,7 @@ The appropriate Git command for listing commit SHAs.
 			output, err := runCommand(fakeHTTP, false, "git list 10 commits")
 			require.Nil(t, err)
 
-			require.Equal(t, tc.expectedResult, output.String())
+			require.Equal(t, output.String(), tc.expectedResult)
 			require.Empty(t, output.Stderr())
 		})
 	}

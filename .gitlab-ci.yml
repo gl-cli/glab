@@ -67,9 +67,9 @@ check_docs_markdown:
   extends: .documentation
   script:
     # Lint prose
-    - vale --minAlertLevel error docs README.md
+    - vale --minAlertLevel error docs *.md
     # Lint Markdown
-    - markdownlint --config .markdownlint.yml 'docs/**/*.md' README.md
+    - markdownlint --config .markdownlint.yml 'docs/**/*.md' *.md
 
 lint_commit:
   stage: test
@@ -85,7 +85,7 @@ lint_commit:
 
 lint:
   extends: .go-cache
-  image: registry.gitlab.com/gitlab-org/gitlab-build-images:golangci-lint-1.50-alpine
+  image: registry.gitlab.com/gitlab-org/gitlab-build-images:golangci-lint-1.52-alpine
   stage: test
   script:
     - golangci-lint --version
@@ -117,14 +117,6 @@ run_tests:
   parallel:
     matrix:
       - GO_VERSION: ["1.19", "1.20"]
-  before_script:
-    ## Adding private SSH key to the executor, more information: https://docs.gitlab.com/ee/ci/ssh_keys/#ssh-keys-when-using-the-docker-executor
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
-    - chmod 600 ~/.ssh/known_hosts
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
   script:
     # `goreleaser` also uses GITLAB_TOKEN and so we need to distinguish between
     # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token
@@ -136,6 +128,9 @@ run_tests:
     - echo -e "\e[0Ksection_end:`date +%s`:coverage\r\e[0K"
   coverage: /^total:\t+\(statements\)\t+\d+\.\d+%$/
   artifacts:
+    when: always
+    paths:
+      - test-output.log
     reports:
       junit: coverage.xml
 
