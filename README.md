@@ -229,6 +229,13 @@ glab config set ca_cert /path/to/server.pem --host gitlab.example.com
 - `NO_COLOR`: set to any value to avoid printing ANSI escape sequences for color output.
 - `FORCE_HYPERLINKS`: set to `1` to force hyperlinks to be output, even when not outputting to a TTY
 
+### Token and environment variable precedence
+
+GLab uses tokens in this order:
+
+1. Environment variable (`GITLAB_TOKEN`).
+1. Configuration file (`$HOME/.config/glab-cli/config.yml`).
+
 ## Issues
 
 If you have an issue: report it on the [issue tracker](https://gitlab.com/gitlab-org/cli/-/issues)
