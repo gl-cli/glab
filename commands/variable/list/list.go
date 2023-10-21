@@ -61,7 +61,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 }
 
 func listRun(opts *ListOpts) error {
-	// c := opts.IO.Color()
+	color := opts.IO.Color()
 	httpClient, err := opts.HTTPClient()
 	if err != nil {
 		return err
@@ -76,6 +76,7 @@ func listRun(opts *ListOpts) error {
 	table.AddRow("KEY", "PROTECTED", "MASKED", "SCOPE")
 
 	if opts.Group != "" {
+		opts.IO.Logf("Listing variables for the %s group:\n\n", color.Bold(opts.Group))
 		createVarOpts := &gitlab.ListGroupVariablesOptions{}
 		variables, err := api.ListGroupVariables(httpClient, opts.Group, createVarOpts)
 		if err != nil {
@@ -85,6 +86,7 @@ func listRun(opts *ListOpts) error {
 			table.AddRow(variable.Key, variable.Protected, variable.Masked, variable.EnvironmentScope)
 		}
 	} else {
+		opts.IO.Logf("Listing variables for the %s project:\n\n", color.Bold(repo.FullName()))
 		createVarOpts := &gitlab.ListProjectVariablesOptions{}
 		variables, err := api.ListProjectVariables(httpClient, repo.FullName(), createVarOpts)
 		if err != nil {

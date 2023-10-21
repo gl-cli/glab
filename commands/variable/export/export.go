@@ -97,6 +97,8 @@ func exportRun(opts *ExportOpts) error {
 			return err
 		}
 
+		opts.IO.Logf("Exporting variables from the %s group:\n", opts.Group)
+
 		if len(groupVariables) == 0 {
 			return nil
 		}
@@ -115,6 +117,8 @@ func exportRun(opts *ExportOpts) error {
 		if err != nil {
 			return err
 		}
+
+		opts.IO.Logf("Exporting variables from the %s project:\n", repo.FullName())
 
 		if len(projectVariables) == 0 {
 			return nil
