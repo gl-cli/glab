@@ -273,7 +273,10 @@ func createRun(opts *CreateOpts) error {
 	}
 
 	if !opts.TargetProject.MergeRequestsEnabled {
-		fmt.Fprintf(opts.IO.StdErr, "Merge requests are disabled for %q\n", opts.TargetProject.PathWithNamespace)
+		fmt.Fprintf(opts.IO.StdErr, "Failed to create a merge request for project %q. Please ensure:\n", opts.TargetProject.PathWithNamespace)
+		fmt.Fprintf(opts.IO.StdErr, " - You are authenticated with the GitLab CLI.\n")
+		fmt.Fprintf(opts.IO.StdErr, " - Merge requests are enabled for this project.\n")
+		fmt.Fprintf(opts.IO.StdErr, " - You have a project role that allows you create merge requests.\n")
 		return cmdutils.SilentError
 	}
 
