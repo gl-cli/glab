@@ -26,6 +26,16 @@ $ glab ssh-key get 7750633
 # Interactive
 $ glab ssh-key get
 
+# Interactive, with pagination
+$ glab ssh-key get -P 50 -p 2
+
+```
+
+## Options
+
+```plaintext
+  -p, --page int       Page number (default 1)
+  -P, --per-page int   Number of items to list per page (default 20)
 ```
 
 ## Options inherited from parent commands

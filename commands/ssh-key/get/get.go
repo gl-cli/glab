@@ -2,6 +2,7 @@ package get
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
@@ -19,7 +20,9 @@ type GetOpts struct {
 	IO         *iostreams.IOStreams
 	BaseRepo   func() (glrepo.Interface, error)
 
-	KeyID int
+	KeyID   int
+	PerPage int
+	Page    int
 }
 
 func NewCmdGet(f *cmdutils.Factory, runE func(*GetOpts) error) *cobra.Command {
@@ -36,6 +39,9 @@ func NewCmdGet(f *cmdutils.Factory, runE func(*GetOpts) error) *cobra.Command {
 
 		# Interactive
 		$ glab ssh-key get
+		
+		# Interactive, with pagination
+		$ glab ssh-key get -P 50 -p 2
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -58,6 +64,9 @@ func NewCmdGet(f *cmdutils.Factory, runE func(*GetOpts) error) *cobra.Command {
 		},
 	}
 
+	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
+	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 20, "Number of items to list per page")
+
 	return cmd
 }
 
@@ -68,7 +77,7 @@ func getRun(opts *GetOpts) error {
 	}
 
 	if opts.KeyID == 0 {
-		opts.KeyID, err = keySelectPrompt(httpClient)
+		opts.KeyID, err = keySelectPrompt(httpClient, opts)
 		if err != nil {
 			return cmdutils.WrapError(err, "failed to prompt")
 		}
@@ -84,10 +93,13 @@ func getRun(opts *GetOpts) error {
 	return nil
 }
 
-func keySelectPrompt(client *gitlab.Client) (int, error) {
-	sshKeyListOptions := &gitlab.ListSSHKeysOptions{}
+func keySelectPrompt(client *gitlab.Client, opts *GetOpts) (int, error) {
+	sshKeyListOptions := &gitlab.ListSSHKeysOptions{
+		PerPage: opts.PerPage,
+		Page:    opts.Page,
+	}
 
-	keys, _, err := client.Users.ListSSHKeys(sshKeyListOptions)
+	keys, response, err := client.Users.ListSSHKeys(sshKeyListOptions)
 	if err != nil {
 		return 0, err
 	}
@@ -100,7 +112,13 @@ func keySelectPrompt(client *gitlab.Client) (int, error) {
 	}
 
 	keySelectQuestion := &survey.Select{
-		Message: "Select Key",
+		Message: fmt.Sprintf(
+			"Select key - Showing %d/%d keys - page %d/%d",
+			len(keys),
+			response.TotalItems,
+			opts.Page,
+			response.TotalPages,
+		),
 		Options: surveyOpts,
 	}
 
