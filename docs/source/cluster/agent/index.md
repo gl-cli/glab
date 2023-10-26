@@ -29,3 +29,4 @@ Manage GitLab Agents for Kubernetes
 
 - [get-token](get-token.md)
 - [list](list.md)
+- [update-kubeconfig](update-kubeconfig.md)
