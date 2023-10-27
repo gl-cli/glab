@@ -53,6 +53,7 @@ func NewCmdSearch(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			table := tableprinter.NewTablePrinter()
+			table.Wrap = true
 			for _, p := range projects {
 				table.AddCell(c.Green(string(rune(p.ID))))
 
