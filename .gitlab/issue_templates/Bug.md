@@ -25,6 +25,37 @@ and verify the issue you're about to submit isn't a duplicate.
 
 <!-- Summarize the bug encountered concisely -->
 
+### Environment
+
+<!--
+
+on POSIX system (Linux, MacOS), run
+
+bash -c 'printf -- "- OS: %s\n- SHELL: %s\n- TERM: %s\n- GLAB: %s" "$(uname -srm)" "$SHELL" "$TERM" "$(glab --version)"'
+
+and replace the following section with the result.
+
+If you use non-POSIX system, fill in the section manually:
+
+- OS: Your operating system including version and architecture (Windows 11 - AMD64, MacOS Sonoma - ARM64)
+- SHELL: Your shell (bash, fish, zsh, ...)
+- TERM: Your terminal emulator (Kitty, Xterm2..)
+- GLAB: result of running `glab --version` (glab version 1.32.0 (2023-08-18))
+
+-->
+
+- OS:
+- SHELL:
+- TERM:
+- GLAB:
+
+<!--
+Please include any other information that you believe might be relevant
+in debugging. For example, you may include a shell framework like oh-my-zsh
+or other customizations like editing the prompt (PS1, PS2, and others).
+-->
+Other:
+
 ### Steps to reproduce
 
 <!-- How one can reproduce the issue - this is very important -->
