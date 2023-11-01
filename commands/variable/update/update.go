@@ -26,6 +26,7 @@ type UpdateOpts struct {
 	Scope     string
 	Protected bool
 	Masked    bool
+	Raw       bool
 	Group     string
 }
 
@@ -95,6 +96,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *UpdateOpts) error) *cobra.Co
 	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. All (*), or specific environments")
 	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Set variable for a group")
 	cmd.Flags().BoolVarP(&opts.Masked, "masked", "m", false, "Whether the variable is masked")
+	cmd.Flags().BoolVarP(&opts.Raw, "raw", "r", false, "Whether the variable is treated as a raw string")
 	cmd.Flags().BoolVarP(&opts.Protected, "protected", "p", false, "Whether the variable is protected")
 	return cmd
 }
@@ -118,6 +120,7 @@ func updateRun(opts *UpdateOpts) error {
 			VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
 			Masked:           gitlab.Bool(opts.Masked),
 			Protected:        gitlab.Bool(opts.Protected),
+			Raw:              gitlab.Bool(opts.Raw),
 			EnvironmentScope: gitlab.String(opts.Scope),
 		}
 
@@ -140,6 +143,7 @@ func updateRun(opts *UpdateOpts) error {
 			VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
 			Masked:           gitlab.Bool(opts.Masked),
 			Protected:        gitlab.Bool(opts.Protected),
+			Raw:              gitlab.Bool(opts.Raw),
 			EnvironmentScope: gitlab.String(opts.Scope),
 		}
 

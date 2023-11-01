@@ -4,6 +4,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/flag"
@@ -31,9 +32,11 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 		Short:   "List project or group variables",
 		Aliases: []string{"ls"},
 		Args:    cobra.ExactArgs(0),
-		Example: heredoc.Doc(`
+		Example: heredoc.Doc(
+			`
 			glab variable list
-		`),
+		`,
+		),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// Supports repo override
 			opts.HTTPClient = f.HttpClient
@@ -55,7 +58,12 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)
-	cmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
+	cmd.PersistentFlags().StringP(
+		"group",
+		"g",
+		"",
+		"Select a group/subgroup. This option is ignored if a repo argument is set.",
+	)
 
 	return cmd
 }
@@ -73,7 +81,7 @@ func listRun(opts *ListOpts) error {
 	}
 
 	table := tableprinter.NewTablePrinter()
-	table.AddRow("KEY", "PROTECTED", "MASKED", "SCOPE")
+	table.AddRow("KEY", "PROTECTED", "MASKED", "EXPANDED", "SCOPE")
 
 	if opts.Group != "" {
 		opts.IO.Logf("Listing variables for the %s group:\n\n", color.Bold(opts.Group))
@@ -83,7 +91,7 @@ func listRun(opts *ListOpts) error {
 			return err
 		}
 		for _, variable := range variables {
-			table.AddRow(variable.Key, variable.Protected, variable.Masked, variable.EnvironmentScope)
+			table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, variable.EnvironmentScope)
 		}
 	} else {
 		opts.IO.Logf("Listing variables for the %s project:\n\n", color.Bold(repo.FullName()))
@@ -93,7 +101,7 @@ func listRun(opts *ListOpts) error {
 			return err
 		}
 		for _, variable := range variables {
-			table.AddRow(variable.Key, variable.Protected, variable.Masked, variable.EnvironmentScope)
+			table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, variable.EnvironmentScope)
 		}
 	}
 

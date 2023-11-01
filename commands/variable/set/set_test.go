@@ -90,6 +90,36 @@ func Test_NewCmdSet(t *testing.T) {
 				Group: "coolGroup",
 			},
 		},
+		{
+			name: "raw variable with flag",
+			cli:  `cool_secret -r -v"$variable_name"`,
+			wants: SetOpts{
+				Key:   "cool_secret",
+				Value: "$variable_name",
+				Raw:   true,
+				Group: "",
+			},
+		},
+		{
+			name: "raw variable with flag in group",
+			cli:  `cool_secret -r --group coolGroup -v"$variable_name"`,
+			wants: SetOpts{
+				Key:   "cool_secret",
+				Value: "$variable_name",
+				Raw:   true,
+				Group: "coolGroup",
+			},
+		},
+		{
+			name: "raw is false by default",
+			cli:  `cool_secret -v"$variable_name"`,
+			wants: SetOpts{
+				Key:   "cool_secret",
+				Value: "$variable_name",
+				Raw:   false,
+				Group: "",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -140,6 +170,7 @@ func Test_setRun_project(t *testing.T) {
     			"variable_type": "env_var",
     			"protected": false,
     			"masked": false,
+				"raw": false,
 				"scope": "production"
 			}
 		`),
@@ -179,6 +210,7 @@ func Test_setRun_group(t *testing.T) {
     			"variable_type": "env_var",
     			"protected": false,
     			"masked": false,
+				"raw": false,
 				"scope": "production"
 			}
 		`),
