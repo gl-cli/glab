@@ -66,6 +66,37 @@ func Test_NewCmdSet(t *testing.T) {
 			},
 		},
 		{
+			name: "raw variable with flag",
+			cli:  `cool_secret -r -v"$variable_name"`,
+			wants: UpdateOpts{
+				Key:   "cool_secret",
+				Value: "$variable_name",
+				Raw:   true,
+				Group: "",
+			},
+		},
+		{
+			name: "raw variable with flag in group",
+			cli:  `cool_secret -r --group coolGroup -v"$variable_name"`,
+			wants: UpdateOpts{
+				Key:   "cool_secret",
+				Value: "$variable_name",
+				Raw:   true,
+				Group: "coolGroup",
+			},
+		},
+		{
+			name: "raw is false by default",
+			cli:  `cool_secret -v"$variable_name"`,
+			wants: UpdateOpts{
+				Key:   "cool_secret",
+				Value: "$variable_name",
+				Raw:   false,
+				Group: "",
+			},
+		},
+
+		{
 			name: "leading numbers in name",
 			cli:  `123_TOKEN -v"cool"`,
 			wants: UpdateOpts{

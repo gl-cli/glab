@@ -26,6 +26,7 @@ type SetOpts struct {
 	Scope     string
 	Protected bool
 	Masked    bool
+	Raw       bool
 	Group     string
 }
 
@@ -91,6 +92,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Comma
 	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. All (*), or specific environments")
 	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Set variable for a group")
 	cmd.Flags().BoolVarP(&opts.Masked, "masked", "m", false, "Whether the variable is masked")
+	cmd.Flags().BoolVarP(&opts.Raw, "raw", "r", false, "Whether the variable is treated as a raw string")
 	cmd.Flags().BoolVarP(&opts.Protected, "protected", "p", false, "Whether the variable is protected")
 	return cmd
 }
@@ -111,6 +113,7 @@ func setRun(opts *SetOpts) error {
 			Masked:           gitlab.Bool(opts.Masked),
 			Protected:        gitlab.Bool(opts.Protected),
 			VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
+			Raw:              gitlab.Bool(opts.Raw),
 		}
 		_, err = api.CreateGroupVariable(httpClient, opts.Group, createVarOpts)
 		if err != nil {
@@ -133,6 +136,7 @@ func setRun(opts *SetOpts) error {
 		Masked:           gitlab.Bool(opts.Masked),
 		Protected:        gitlab.Bool(opts.Protected),
 		VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
+		Raw:              gitlab.Bool(opts.Raw),
 	}
 	_, err = api.CreateProjectVariable(httpClient, baseRepo.FullName(), createVarOpts)
 	if err != nil {
