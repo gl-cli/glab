@@ -22,6 +22,11 @@ func GetRemoteURL(remoteAlias string) (string, error) {
 // GetDefaultBranch finds and returns the remote's default branch
 func GetDefaultBranch(remote string) (string, error) {
 	getDefBranch := exec.Command("git", "remote", "show", remote)
+
+	// Ensure output from git is in English
+	getDefBranch.Env = os.Environ()
+	getDefBranch.Env = append(getDefBranch.Env, "LC_ALL=C")
+
 	output, err := run.PrepareCmd(getDefBranch).Output()
 	if err != nil {
 		return "master", err
