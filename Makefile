@@ -125,7 +125,6 @@ test: VISUAL=
 test: EDITOR=
 test: PAGER=
 test: export CI_PROJECT_PATH=$(shell git remote get-url origin)
-test: export CGO_ENABLED=1
 test: bin/gotestsum ## Run tests
 	$(GOTEST) --jsonfile test-output.log --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
 
@@ -135,7 +134,6 @@ test-race: VISUAL=
 test-race: EDITOR=
 test-race: PAGER=
 test-race: export CI_PROJECT_PATH=$(shell git remote get-url origin)
-test-race: export CGO_ENABLED=1
 test-race: bin/gotestsum ## Run tests with race detection
 	$(GOTEST) -- -race ./...
 
