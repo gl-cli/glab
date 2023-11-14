@@ -45,6 +45,7 @@ glab pipeline ci view -b master -R profclems/glab  # Get latest pipeline on mast
 
 ```plaintext
   -b, --branch string   Check pipeline status for a branch/tag. (Default is the current branch)
+  -w, --web             Open pipeline in a browser. Uses default browser or browser specified in BROWSER variable
 ```
 
 ## Options inherited from parent commands

@@ -37,6 +37,8 @@ type ViewOpts struct {
 	CommitSHA string
 	ApiClient *gitlab.Client
 	Output    io.Writer
+
+	OpenInBrowser bool
 }
 
 type ViewJobKind int64
@@ -150,10 +152,25 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			opts.CommitSHA = opts.Commit.ID
 			if opts.Commit.LastPipeline == nil {
 				return fmt.Errorf("Can't find pipeline for commit : %s", opts.CommitSHA)
 			}
+
+			cfg, _ := f.Config()
+
+			if opts.OpenInBrowser { // open in browser if --web flag is specified
+				webURL := opts.Commit.LastPipeline.WebURL
+
+				if f.IO.IsOutputTTY() {
+					fmt.Fprintf(f.IO.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
+				}
+
+				browser, _ := cfg.Get(repo.RepoHost(), "browser")
+				return utils.OpenInBrowser(webURL, browser)
+			}
+
 			pipelines = make([]gitlab.PipelineInfo, 0, 10)
 
 			return drawView(opts)
@@ -162,6 +179,8 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 
 	pipelineCIView.Flags().
 		StringVarP(&opts.RefName, "branch", "b", "", "Check pipeline status for a branch/tag. (Default is the current branch)")
+	pipelineCIView.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open pipeline in a browser. Uses default browser or browser specified in BROWSER variable")
+
 	return pipelineCIView
 }
 
