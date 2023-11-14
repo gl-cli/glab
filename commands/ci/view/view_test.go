@@ -1,13 +1,20 @@
 package view
 
 import (
+	"net/http"
+	"os/exec"
 	"strings"
 	"testing"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/pkg/httpmock"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/run"
+	"gitlab.com/gitlab-org/cli/test"
 )
 
 func assertScreen(t *testing.T, screen tcell.Screen, expected []string) {
@@ -1139,6 +1146,87 @@ func Test_handleNavigation(t *testing.T) {
 				navi.Navigate(jobs, e)
 			}
 			assert.Equal(t, test.expected, navi.idx)
+		})
+	}
+}
+
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error, func()) {
+	ios, _, stdout, stderr := cmdtest.InitIOStreams(true, "")
+
+	factory := cmdtest.InitFactory(ios, rt)
+
+	_, _ = factory.HttpClient()
+
+	cmd := NewCmdView(factory)
+
+	restoreCmd := run.SetPrepareCmd(func(cmd *exec.Cmd) run.Runnable {
+		return &test.OutputStub{}
+	})
+
+	cmdOut, err := cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
+
+	return cmdOut, err, restoreCmd
+}
+
+func TestCIView(t *testing.T) {
+	type httpMock struct {
+		method string
+		path   string
+		status int
+		body   string
+	}
+
+	tests := []struct {
+		name      string
+		cli       string
+		httpMocks []httpMock
+
+		expectedOutput string
+	}{
+		{
+			name: "view ci pipeline on web for a given branch",
+			cli:  "--web --branch foo",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO/repository/commits/foo",
+					http.StatusOK,
+					`{
+						"id": "6104942438c14ec7bd21c6cd5bd995272b3faff6",
+						"last_pipeline" : {
+							"id": 8,
+							"ref": "main",
+							"sha": "2dc6aa325a317eda67812f05600bdf0fcdc70ab0",
+							"status": "created",
+							"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/225"
+						},
+						"status": "running"
+					}`,
+				},
+			},
+			expectedOutput: "Opening gitlab.com/OWNER/REPO/-/pipelines/225 in your browser.\n",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fakeHTTP := &httpmock.Mocker{
+				MatchURL: httpmock.FullURL,
+			}
+			defer fakeHTTP.Verify(t)
+
+			for _, mock := range tc.httpMocks {
+				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
+			}
+
+			output, err, restoreCmd := runCommand(fakeHTTP, tc.cli)
+			defer restoreCmd()
+
+			if assert.NoErrorf(t, err, "error running command `ci view %s`: %v", tc.cli, err) {
+				assert.Empty(t, output.String())
+				assert.Equal(t, tc.expectedOutput, output.Stderr())
+
+			}
 		})
 	}
 }
