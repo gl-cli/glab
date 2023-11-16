@@ -34,6 +34,7 @@ glab repo list
 
 ```plaintext
   -a, --all            List all projects on the instance
+  -g, --group string   Return only repositories in the given group and its subgroups
       --member         Only list projects which you are a member
   -m, --mine           Only list projects you own (default if no filters are passed)
   -o, --order string   Return repositories ordered by id, created_at, or other fields (default "last_activity_at")
