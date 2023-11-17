@@ -2,6 +2,7 @@ package delete
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
@@ -20,7 +21,9 @@ type DeleteOpts struct {
 	IO         *iostreams.IOStreams
 	BaseRepo   func() (glrepo.Interface, error)
 
-	KeyID int
+	KeyID   int
+	PerPage int
+	Page    int
 }
 
 func NewCmdDelete(f *cmdutils.Factory, runE func(*DeleteOpts) error) *cobra.Command {
@@ -31,13 +34,17 @@ func NewCmdDelete(f *cmdutils.Factory, runE func(*DeleteOpts) error) *cobra.Comm
 		Use:   "delete <key-id>",
 		Short: "Deletes a single SSH key specified by the ID.",
 		Long:  ``,
-		Example: heredoc.Doc(`
+		Example: heredoc.Doc(
+			`
 		# Delete SSH key with ID as argument
 		$ glab ssh-key delete 7750633
 
 		# Interactive
 		$ glab ssh-key delete
-		`),
+
+		# Interactive, with pagination
+		$ glab ssh-key delete -P 50 -p 2`,
+		),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient
@@ -62,6 +69,9 @@ func NewCmdDelete(f *cmdutils.Factory, runE func(*DeleteOpts) error) *cobra.Comm
 			return deleteRun(opts)
 		},
 	}
+
+	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
+	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page")
 
 	return cmd
 }
@@ -92,16 +102,22 @@ func keySelectPrompt(opts *DeleteOpts) (int, error) {
 		return 0, cmdutils.FlagError{Err: errors.New("<key-id> argument is required when prompts are disabled")}
 	}
 
-	sshKeyListOptions := &gitlab.ListSSHKeysOptions{}
+	sshKeyListOptions := &gitlab.ListSSHKeysOptions{
+		PerPage: opts.PerPage,
+		Page:    opts.Page,
+	}
 
 	httpClient, err := opts.HTTPClient()
 	if err != nil {
 		return 0, err
 	}
 
-	keys, _, err := httpClient.Users.ListSSHKeys(sshKeyListOptions)
+	keys, resp, err := httpClient.Users.ListSSHKeys(sshKeyListOptions)
 	if err != nil {
-		return 0, cmdutils.WrapError(err, "getting list of SSH keys to prompt with")
+		return 0, cmdutils.WrapError(err, "Retrieving list of SSH keys")
+	}
+	if len(keys) == 0 {
+		return 0, cmdutils.WrapError(errors.New("no keys found"), "Retrieving list of SSH keys")
 	}
 
 	keyOpts := map[string]int{}
@@ -112,7 +128,13 @@ func keySelectPrompt(opts *DeleteOpts) (int, error) {
 	}
 
 	keySelectQuestion := &survey.Select{
-		Message: "Select Key",
+		Message: fmt.Sprintf(
+			"Select key to delete - Showing %d/%d keys - page %d/%d",
+			len(keys),
+			resp.TotalItems,
+			opts.Page,
+			resp.TotalPages,
+		),
 		Options: surveyOpts,
 	}
 

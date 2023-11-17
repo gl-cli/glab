@@ -8,6 +8,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -33,7 +34,8 @@ func NewCmdGet(f *cmdutils.Factory, runE func(*GetOpts) error) *cobra.Command {
 		Use:   "get <key-id>",
 		Short: "Returns a single SSH key specified by the ID.",
 		Long:  ``,
-		Example: heredoc.Doc(`
+		Example: heredoc.Doc(
+			`
 		# Get ssh key with ID as argument
 		$ glab ssh-key get 7750633
 
@@ -42,14 +44,19 @@ func NewCmdGet(f *cmdutils.Factory, runE func(*GetOpts) error) *cobra.Command {
 		
 		# Interactive, with pagination
 		$ glab ssh-key get -P 50 -p 2
-		`),
+		`,
+		),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient
 			opts.BaseRepo = f.BaseRepo
 
-			if len(args) == 0 && !opts.IO.PromptEnabled() {
-				return cmdutils.FlagError{Err: errors.New("<key-id> argument is required when running in non-ttys")}
+			if len(args) == 0 {
+				keyID, err := keySelectPrompt(opts)
+				if err != nil {
+					return err
+				}
+				opts.KeyID = keyID
 			}
 
 			if len(args) == 1 {
@@ -76,16 +83,9 @@ func getRun(opts *GetOpts) error {
 		return err
 	}
 
-	if opts.KeyID == 0 {
-		opts.KeyID, err = keySelectPrompt(httpClient, opts)
-		if err != nil {
-			return cmdutils.WrapError(err, "failed to prompt")
-		}
-	}
-
 	key, _, err := httpClient.Users.GetSSHKey(opts.KeyID)
 	if err != nil {
-		return cmdutils.WrapError(err, "failed to get ssh key")
+		return cmdutils.WrapError(err, "getting SSH key")
 	}
 
 	opts.IO.LogInfo(key.Key)
@@ -93,15 +93,27 @@ func getRun(opts *GetOpts) error {
 	return nil
 }
 
-func keySelectPrompt(client *gitlab.Client, opts *GetOpts) (int, error) {
+func keySelectPrompt(opts *GetOpts) (int, error) {
+	if !opts.IO.PromptEnabled() {
+		return 0, cmdutils.FlagError{Err: errors.New("<key-id> argument is required when prompts are disabled")}
+	}
+
 	sshKeyListOptions := &gitlab.ListSSHKeysOptions{
 		PerPage: opts.PerPage,
 		Page:    opts.Page,
 	}
 
-	keys, response, err := client.Users.ListSSHKeys(sshKeyListOptions)
+	httpClient, err := opts.HTTPClient()
 	if err != nil {
 		return 0, err
+	}
+
+	keys, response, err := httpClient.Users.ListSSHKeys(sshKeyListOptions)
+	if err != nil {
+		return 0, cmdutils.WrapError(err, "Retrieving list of SSH keys to prompt with")
+	}
+	if len(keys) == 0 {
+		return 0, cmdutils.WrapError(errors.New("no keys were found"), "Retrieving list of SSH keys")
 	}
 
 	keyOpts := map[string]int{}
@@ -124,5 +136,9 @@ func keySelectPrompt(client *gitlab.Client, opts *GetOpts) (int, error) {
 
 	var result string
 	err = prompt.AskOne(keySelectQuestion, &result)
-	return keyOpts[result], err
+	if err != nil {
+		return 0, cmdutils.WrapError(err, "prompting for SSH key to delete")
+	}
+
+	return keyOpts[result], nil
 }
