@@ -26,6 +26,15 @@ $ glab ssh-key delete 7750633
 # Interactive
 $ glab ssh-key delete
 
+# Interactive, with pagination
+$ glab ssh-key delete -P 50 -p 2
+```
+
+## Options
+
+```plaintext
+  -p, --page int       Page number (default 1)
+  -P, --per-page int   Number of items to list per page (default 30)
 ```
 
 ## Options inherited from parent commands
