@@ -15,7 +15,7 @@ import (
 const tokenUser = "oauth2"
 
 type configExt interface {
-	GetWithSource(string, string, bool) (string, string, error)
+	Get(string, string) (string, error)
 }
 
 type CredentialOptions struct {
@@ -101,25 +101,15 @@ func helperRun(opts *CredentialOptions) error {
 		return err
 	}
 
-	var gotUser string
-	gotToken, source, _ := cfg.GetWithSource(expectedParams["host"], "token", true)
-	if strings.HasSuffix(source, "_TOKEN") {
-		gotUser = tokenUser
-	} else {
-		gotUser, _, _ = cfg.GetWithSource(expectedParams["host"], "user", true)
-	}
+	gotToken, _ := cfg.Get(expectedParams["host"], "token")
 
-	if gotUser == "" || gotToken == "" {
-		return cmdutils.SilentError
-	}
-
-	if expectedParams["username"] != "" && gotUser != tokenUser && !strings.EqualFold(expectedParams["username"], gotUser) {
+	if gotToken == "" {
 		return cmdutils.SilentError
 	}
 
 	fmt.Fprintf(opts.IO.StdOut, "protocol=%s\n", expectedParams["protocol"])
 	fmt.Fprintf(opts.IO.StdOut, "host=%s\n", expectedParams["host"])
-	fmt.Fprintf(opts.IO.StdOut, "username=%s\n", gotUser)
+	fmt.Fprintf(opts.IO.StdOut, "username=%s\n", tokenUser)
 	fmt.Fprintf(opts.IO.StdOut, "password=%s\n", gotToken)
 
 	return nil
