@@ -11,8 +11,8 @@ import (
 
 type tinyConfig map[string]string
 
-func (c tinyConfig) GetWithSource(host, key string, searchENVVars bool) (string, string, error) {
-	return c[fmt.Sprintf("%s:%s", host, key)], c["_source"], nil
+func (c tinyConfig) Get(host, key string) (string, error) {
+	return c[fmt.Sprintf("%s:%s", host, key)], nil
 }
 
 func Test_helperRun(t *testing.T) {
@@ -44,7 +44,7 @@ func Test_helperRun(t *testing.T) {
 			wantStdout: heredoc.Doc(`
 				protocol=https
 				host=example.com
-				username=monalisa
+				username=oauth2
 				password=OTOKEN
 			`),
 			wantStderr: "",
@@ -70,7 +70,7 @@ func Test_helperRun(t *testing.T) {
 			wantStdout: heredoc.Doc(`
 				protocol=https
 				host=example.com
-				username=monalisa
+				username=oauth2
 				password=OTOKEN
 			`),
 			wantStderr: "",
@@ -94,7 +94,7 @@ func Test_helperRun(t *testing.T) {
 			wantStdout: heredoc.Doc(`
 				protocol=https
 				host=example.com
-				username=monalisa
+				username=oauth2
 				password=OTOKEN
 			`),
 			wantStderr: "",
@@ -113,27 +113,6 @@ func Test_helperRun(t *testing.T) {
 			input: heredoc.Doc(`
 				protocol=https
 				host=example.com
-			`),
-			wantErr:    true,
-			wantStdout: "",
-			wantStderr: "",
-		},
-		{
-			name: "user mismatch",
-			opts: CredentialOptions{
-				Operation: "get",
-				Config: func() (configExt, error) {
-					return tinyConfig{
-						"_source":           "/Users/monalisa/.config/glab/config.yml",
-						"example.com:user":  "monalisa",
-						"example.com:token": "OTOKEN",
-					}, nil
-				},
-			},
-			input: heredoc.Doc(`
-				protocol=https
-				host=example.com
-				username=clemsbot
 			`),
 			wantErr:    true,
 			wantStdout: "",
