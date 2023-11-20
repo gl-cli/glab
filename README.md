@@ -80,7 +80,7 @@ Many core commands also have sub-commands. Some examples:
 
 ## Documentation
 
-Read the [documentation](https://gitlab.com/gitlab-org/cli/-/tree/main/docs/source) for usage instructions or check out `glab help`.
+Read the [documentation](docs/source/index.md) for usage instructions or check out `glab help`.
 
 ## Installation
 
@@ -189,8 +189,8 @@ the `GITLAB_HOST` environment variable, like this:
 - `GITLAB_HOST=gitlab.example.com glab repo clone group/project`
 - `GITLAB_HOST=gitlab.example.com glab issue list -R group/project`
 
-When inside a git repository `glab` will use that repository's GitLab host by default. For example `glab issue list`
-will list all issues of the current directory's git repository.
+When inside a Git repository `glab` will use that repository's GitLab host by default. For example `glab issue list`
+will list all issues of the current directory's Git repository.
 
 ### Configure `glab` to use self-signed certificates for self-managed instances
 

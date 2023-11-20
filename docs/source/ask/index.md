@@ -21,4 +21,4 @@ Generate terminal commands from natural language. (Experimental.)
 
 ## Subcommands
 
-- [git](git.md)
+- [`git`](git.md)

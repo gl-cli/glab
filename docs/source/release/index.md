@@ -27,9 +27,9 @@ Manage GitLab releases
 
 ## Subcommands
 
-- [create](create.md)
-- [delete](delete.md)
-- [download](download.md)
-- [list](list.md)
-- [upload](upload.md)
-- [view](view.md)
+- [`create`](create.md)
+- [`delete`](delete.md)
+- [`download`](download.md)
+- [`list`](list.md)
+- [`upload`](upload.md)
+- [`view`](view.md)

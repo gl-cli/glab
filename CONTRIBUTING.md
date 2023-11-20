@@ -199,7 +199,7 @@ This is a very short description of the change
 
 Just as in the description, use imperative, present tense: “change” not “changed” nor “changes.” Include motivation for the change and contrast it with previous behavior.
 
-#### More info on writing good git commit messages
+#### More info on writing good Git commit messages
 
 - [Writing Git commit messages](http://365git.tumblr.com/post/3308646748/writing-git-commit-messages)
 - [A Note About Git Commit Messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)

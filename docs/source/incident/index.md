@@ -34,10 +34,10 @@ glab incident list
 
 ## Subcommands
 
-- [close](close.md)
-- [list](list.md)
-- [note](note.md)
-- [reopen](reopen.md)
-- [subscribe](subscribe.md)
-- [unsubscribe](unsubscribe.md)
-- [view](view.md)
+- [`close`](close.md)
+- [`list`](list.md)
+- [`note`](note.md)
+- [`reopen`](reopen.md)
+- [`subscribe`](subscribe.md)
+- [`unsubscribe`](unsubscribe.md)
+- [`view`](view.md)

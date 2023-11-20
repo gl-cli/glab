@@ -21,6 +21,6 @@ Manage glab's authentication state
 
 ## Subcommands
 
-- [git-credential](git-credential.md)
-- [login](login.md)
-- [status](status.md)
+- [`git-credential`](git-credential.md)
+- [`login`](login.md)
+- [`status`](status.md)

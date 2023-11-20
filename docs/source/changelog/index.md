@@ -21,4 +21,4 @@ Interact with the changelog API
 
 ## Subcommands
 
-- [generate](generate.md)
+- [`generate`](generate.md)

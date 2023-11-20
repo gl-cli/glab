@@ -34,7 +34,7 @@ To manually update the version available through Homebrew:
 
    ```shell
    brew bump-formula-pr --strict glab \
-   --url=https://gitlab.com/gitlab-org/cli/-/archive/v1.23.0/cli-v1.23.0.tar.gz \
+   --url="https://gitlab.com/gitlab-org/cli/-/archive/v1.23.0/cli-v1.23.0.tar.gz" \
    --sha256=4fe9dcecc5e601a849454a3608b47d709b11e2df81527f666b169e0dd362d7df
    ```
 

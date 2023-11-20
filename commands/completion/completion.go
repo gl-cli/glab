@@ -21,7 +21,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		Use:   "completion",
 		Short: "Generate shell completion scripts",
 		Long: heredoc.Docf(`
-		The output of this command will be computer code and is meant to be saved 
+		The output of this command will be computer code and is meant to be saved
 		to a file or immediately evaluated by an interactive shell. To load completions:
 
 		### Bash
@@ -102,10 +102,10 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		%[2]s
 
 		To load completions for every new session, add the output of the above command
-		to your powershell profile.
+		to your PowerShell profile.
 
 		When installing glab through a package manager, however, it's possible that
-		no additional shell configuration is necessary to gain completion support. 
+		no additional shell configuration is necessary to gain completion support.
 		For Homebrew, see <https://docs.brew.sh/Shell-Completion>
 		`, "`", "```"),
 		RunE: func(cmd *cobra.Command, args []string) error {

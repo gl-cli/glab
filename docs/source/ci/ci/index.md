@@ -29,6 +29,6 @@ glab pipeline ci trace
 
 ## Subcommands
 
-- [lint](lint.md)
-- [trace](trace.md)
-- [view](view.md)
+- [`lint`](lint.md)
+- [`trace`](trace.md)
+- [`view`](view.md)

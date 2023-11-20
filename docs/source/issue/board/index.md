@@ -27,5 +27,5 @@ Work with GitLab Issue Boards in the given project.
 
 ## Subcommands
 
-- [create](create.md)
-- [view](view.md)
+- [`create`](create.md)
+- [`view`](view.md)

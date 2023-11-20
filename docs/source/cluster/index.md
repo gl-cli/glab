@@ -27,4 +27,4 @@ Manage GitLab Agents for Kubernetes and their clusters
 
 ## Subcommands
 
-- [agent](agent/index.md)
+- [`agent`](agent/index.md)

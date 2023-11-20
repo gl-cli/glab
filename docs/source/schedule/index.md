@@ -34,7 +34,7 @@ skd
 
 ## Subcommands
 
-- [create](create.md)
-- [delete](delete.md)
-- [list](list.md)
-- [run](run.md)
+- [`create`](create.md)
+- [`delete`](delete.md)
+- [`list`](list.md)
+- [`run`](run.md)
