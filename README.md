@@ -11,6 +11,7 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 ## Table of contents
 
 - [Table of contents](#table-of-contents)
+- [Requirements](#requirements)
 - [Usage](#usage)
 - [Demo](#demo)
 - [Documentation](#documentation)
@@ -25,6 +26,12 @@ GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to 
 - [Issues](#issues)
 - [Contributing](#contributing)
 - [Inspiration](#inspiration)
+
+## Requirements
+
+`glab` officially supports GitLab versions 16.0 and later. Certain commands might require
+more recent versions. While many commands might work properly in GitLab versions
+15.x and earlier, no support is provided for these versions.
 
 ## Usage
 
@@ -146,8 +153,8 @@ To authenticate your installation of `glab` with a personal access token:
      from a file: `glab auth login --stdin < myaccesstoken.txt`
    - For self-managed instances, authenticate by reading from a file:
      `glab auth login --hostname gitlab.example.com --stdin < myaccesstoken.txt`. This will allow you to perform
-     authenticated `glab` commands against a self-managed instance when you are in a Git repository with a remote 
-     matching your self-managed instance's host. Alternatively set `GITLAB_HOST` to direct your command to your self-managed instance.  
+     authenticated `glab` commands against a self-managed instance when you are in a Git repository with a remote
+     matching your self-managed instance's host. Alternatively set `GITLAB_HOST` to direct your command to your self-managed instance.
    - Authenticate with token and hostname: `glab auth login --hostname gitlab.example.org --token xxxxx`
      Not recommended for shared environments.
 
