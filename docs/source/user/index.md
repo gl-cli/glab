@@ -21,4 +21,4 @@ Interact with user
 
 ## Subcommands
 
-- [events](events.md)
+- [`events`](events.md)

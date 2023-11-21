@@ -21,6 +21,6 @@ Create, list and delete aliases
 
 ## Subcommands
 
-- [delete](delete.md)
-- [list](list.md)
-- [set](set.md)
+- [`delete`](delete.md)
+- [`list`](list.md)
+- [`set`](set.md)

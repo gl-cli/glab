@@ -27,5 +27,5 @@ Manage labels on remote
 
 ## Subcommands
 
-- [create](create.md)
-- [list](list.md)
+- [`create`](create.md)
+- [`list`](list.md)

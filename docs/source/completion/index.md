@@ -15,7 +15,7 @@ Generate shell completion scripts
 
 ## Synopsis
 
-The output of this command will be computer code and is meant to be saved 
+The output of this command will be computer code and is meant to be saved
 to a file or immediately evaluated by an interactive shell. To load completions:
 
 ### Bash
@@ -96,10 +96,10 @@ glab completion -s powershell | Out-String | Invoke-Expression
 ```
 
 To load completions for every new session, add the output of the above command
-to your powershell profile.
+to your PowerShell profile.
 
 When installing glab through a package manager, however, it's possible that
-no additional shell configuration is necessary to gain completion support. 
+no additional shell configuration is necessary to gain completion support.
 For Homebrew, see <https://docs.brew.sh/Shell-Completion>
 
 ```plaintext

@@ -33,9 +33,9 @@ var
 
 ## Subcommands
 
-- [delete](delete.md)
-- [export](export.md)
-- [get](get.md)
-- [list](list.md)
-- [set](set.md)
-- [update](update.md)
+- [`delete`](delete.md)
+- [`export`](export.md)
+- [`get`](get.md)
+- [`list`](list.md)
+- [`set`](set.md)
+- [`update`](update.md)
