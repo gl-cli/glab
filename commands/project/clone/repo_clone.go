@@ -77,6 +77,9 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 	# Clone all repos in a group
 	$ glab repo clone -g everyonecancontribute --paginate
 
+	# Clone all non-archived repos in a group
+	$ glab repo clone -g everyonecancontribute --archived=false --paginate
+
 	# Clone from a self-hosted instance
 	$ GITLAB_HOST=salsa.debian.org glab repo clone myrepo  
 	`),
@@ -134,7 +137,7 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 
 	repoCloneCmd.Flags().StringVarP(&opts.GroupName, "group", "g", "", "Specify group to clone repositories from")
 	repoCloneCmd.Flags().BoolVarP(&opts.PreserveNamespace, "preserve-namespace", "p", false, "Clone the repo in a subdirectory based on namespace")
-	repoCloneCmd.Flags().BoolVarP(&opts.Archived, "archived", "a", false, "Limit by archived status. Used with --group flag")
+	repoCloneCmd.Flags().BoolVarP(&opts.Archived, "archived", "a", false, "Limit by archived status. Use with -a=false to exclude archived repositories. Used with --group flag")
 	repoCloneCmd.Flags().BoolVarP(&opts.IncludeSubgroups, "include-subgroups", "G", true, "Include projects in subgroups of this group. Default is true. Used with --group flag")
 	repoCloneCmd.Flags().BoolVarP(&opts.Owned, "mine", "m", false, "Limit by projects in the group owned by the current authenticated user. Used with --group flag")
 	repoCloneCmd.Flags().StringVarP(&opts.Visibility, "visibility", "v", "", "Limit by visibility {public, internal, or private}. Used with --group flag")
