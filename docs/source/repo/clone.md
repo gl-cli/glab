@@ -42,6 +42,9 @@ $ glab repo clone 4356677   # finds the project by the ID provided and clones it
 # Clone all repos in a group
 $ glab repo clone -g everyonecancontribute --paginate
 
+# Clone all non-archived repos in a group
+$ glab repo clone -g everyonecancontribute --archived=false --paginate
+
 # Clone from a self-hosted instance
 $ GITLAB_HOST=salsa.debian.org glab repo clone myrepo  
 
@@ -52,7 +55,7 @@ $ GITLAB_HOST=salsa.debian.org glab repo clone myrepo
 ```plaintext
   -g, --group string          Specify group to clone repositories from
   -p, --preserve-namespace    Clone the repo in a subdirectory based on namespace
-  -a, --archived              Limit by archived status. Used with --group flag
+  -a, --archived              Limit by archived status. Use with -a=false to exclude archived repositories. Used with --group flag
   -G, --include-subgroups     Include projects in subgroups of this group. Default is true. Used with --group flag (default true)
   -m, --mine                  Limit by projects in the group owned by the current authenticated user. Used with --group flag
   -v, --visibility string     Limit by visibility {public, internal, or private}. Used with --group flag
