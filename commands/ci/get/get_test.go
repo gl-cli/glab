@@ -47,16 +47,19 @@ func TestCIGet(t *testing.T) {
 					"/api/v4/projects/OWNER%2FREPO/pipelines/123",
 					http.StatusOK,
 					`{
-								"id": 123,
-								"iid": 123,
-								"status": "pending",
-								"source": "push",
-						        "user": {
-									"username": "test"
-						        },
-						        "created_at": "2023-10-10T00:00:00Z",
-						        "started_at": "2023-10-10T00:00:00Z",
-						        "updated_at": "2023-10-10T00:00:00Z"
+						"id": 123,
+						"iid": 123,
+						"status": "pending",
+						"source": "push",
+						"ref": "main",
+						"sha": "0ff3ae198f8601a285adcf5c0fff204ee6fba5fd",
+						"user": {
+							"username": "test"
+						},
+						"yaml_errors": "-",
+						"created_at": "2023-10-10T00:00:00Z",
+						"started_at": "2023-10-10T00:00:00Z",
+						"updated_at": "2023-10-10T00:00:00Z"
 					}`,
 				},
 				{
@@ -66,85 +69,307 @@ func TestCIGet(t *testing.T) {
 					`[]`,
 				},
 			},
-			expectedOut: "# Pipeline:\nid:\t123\nstatus:\tpending\nsource:\tpush\nref:\t\nsha:\t\ntag:\tfalse\nyaml Errors:\t\nuser:\ttest\ncreated:\t2023-10-10 00:00:00 +0000 UTC\nstarted:\t2023-10-10 00:00:00 +0000 UTC\nupdated:\t2023-10-10 00:00:00 +0000 UTC\n\n# Jobs:\n\n",
+			expectedOut: `# Pipeline:
+id:	123
+status:	pending
+source:	push
+ref:	main
+sha:	0ff3ae198f8601a285adcf5c0fff204ee6fba5fd
+tag:	false
+yaml Errors:	-
+user:	test
+created:	2023-10-10 00:00:00 +0000 UTC
+started:	2023-10-10 00:00:00 +0000 UTC
+updated:	2023-10-10 00:00:00 +0000 UTC
+
+# Jobs:
+
+`,
+		},
+		{
+			name: "when get is called on missing pipeline",
+			args: "-b=main",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123",
+					http.StatusOK,
+					`{
+						"id": 123,
+						"iid": 123,
+						"status": "pending",
+						"source": "push",
+						"ref": "main",
+						"sha": "0ff3ae198f8601a285adcf5c0fff204ee6fba5fd",
+						"user": {
+							"username": "test"
+						},
+						"yaml_errors": "-",
+						"created_at": "2023-10-10T00:00:00Z",
+						"started_at": "2023-10-10T00:00:00Z",
+						"updated_at": "2023-10-10T00:00:00Z"
+					}`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
+					http.StatusOK,
+					`[]`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/repository/commits/main",
+					http.StatusOK,
+					`{
+						"last_pipeline" : {
+							"id": 123
+						}
+					}`,
+				},
+			},
+			expectedOut: `# Pipeline:
+id:	123
+status:	pending
+source:	push
+ref:	main
+sha:	0ff3ae198f8601a285adcf5c0fff204ee6fba5fd
+tag:	false
+yaml Errors:	-
+user:	test
+created:	2023-10-10 00:00:00 +0000 UTC
+started:	2023-10-10 00:00:00 +0000 UTC
+updated:	2023-10-10 00:00:00 +0000 UTC
+
+# Jobs:
+
+`,
+		},
+		{
+			name: "when get is called on an existing pipeline with job text",
+			args: "-p=123 -b=main",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123",
+					http.StatusOK,
+					`{
+						"id": 123,
+						"iid": 123,
+						"status": "pending",
+						"source": "push",
+						"ref": "main",
+						"sha": "0ff3ae198f8601a285adcf5c0fff204ee6fba5fd",
+						"user": {
+							"username": "test"
+						},
+						"yaml_errors": "-",
+						"created_at": "2023-10-10T00:00:00Z",
+						"started_at": "2023-10-10T00:00:00Z",
+						"updated_at": "2023-10-10T00:00:00Z"
+					}`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
+					http.StatusOK,
+					`[{
+							"id": 123,
+							"name": "publish",
+							"status": "failed"
+						}]`,
+				},
+			},
+			expectedOut: `# Pipeline:
+id:	123
+status:	pending
+source:	push
+ref:	main
+sha:	0ff3ae198f8601a285adcf5c0fff204ee6fba5fd
+tag:	false
+yaml Errors:	-
+user:	test
+created:	2023-10-10 00:00:00 +0000 UTC
+started:	2023-10-10 00:00:00 +0000 UTC
+updated:	2023-10-10 00:00:00 +0000 UTC
+
+# Jobs:
+publish:	failed
+
+`,
+		},
+		{
+			name: "when get is called on an existing pipeline with job details",
+			args: "-p=123 -b=main --with-job-details",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123",
+					http.StatusOK,
+					`{
+						"id": 123,
+						"iid": 123,
+						"status": "pending",
+						"source": "push",
+						"ref": "main",
+						"sha": "0ff3ae198f8601a285adcf5c0fff204ee6fba5fd",
+						"user": {
+							"username": "test"
+						},
+						"yaml_errors": "-",
+						"created_at": "2023-10-10T00:00:00Z",
+						"started_at": "2023-10-10T00:00:00Z",
+						"updated_at": "2023-10-10T00:00:00Z"
+					}`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
+					http.StatusOK,
+					`[{
+							"id": 123,
+							"name": "publish",
+							"status": "failed",
+							"failure_reason": "bad timing"
+						}]`,
+				},
+			},
+			expectedOut: `# Pipeline:
+id:	123
+status:	pending
+source:	push
+ref:	main
+sha:	0ff3ae198f8601a285adcf5c0fff204ee6fba5fd
+tag:	false
+yaml Errors:	-
+user:	test
+created:	2023-10-10 00:00:00 +0000 UTC
+started:	2023-10-10 00:00:00 +0000 UTC
+updated:	2023-10-10 00:00:00 +0000 UTC
+
+# Jobs:
+ID	Name	Status	Duration	Failure reason
+123	publish	failed	0	bad timing
+
+`,
 		},
 		{
 			name: "when get is called on an existing pipeline with variables",
-			args: "-p=456 -b=main --with-variables",
+			args: "-p=123 -b=main --with-variables",
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/456",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123",
 					http.StatusOK,
 					`{
-								"id": 456,
-								"iid": 456,
-						        "project_id": 5,
-								"status": "pending",
-								"source": "push",
-						        "user": {
-									"username": "test"
-						        },
-						        "created_at": "2023-10-10T00:00:00Z",
-						        "started_at": "2023-10-10T00:00:00Z",
-						        "updated_at": "2023-10-10T00:00:00Z"
+						"id": 123,
+						"iid": 123,
+						"project_id": 5,
+						"status": "pending",
+						"source": "push",
+						"ref": "main",
+						"sha": "0ff3ae198f8601a285adcf5c0fff204ee6fba5fd",
+						"user": {
+							"username": "test"
+						},
+						"yaml_errors": "-",
+						"created_at": "2023-10-10T00:00:00Z",
+						"started_at": "2023-10-10T00:00:00Z",
+						"updated_at": "2023-10-10T00:00:00Z"
 					}`,
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/456/jobs?per_page=100",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
 					http.StatusOK,
 					`[]`,
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/5/pipelines/456/variables",
+					"/api/v4/projects/5/pipelines/123/variables",
 					http.StatusOK,
 					`[{
 						"key": "RUN_NIGHTLY_BUILD",
-				                	"variable_type": "env_var",
-									"value": "true"
+				    "variable_type": "env_var",
+						"value": "true"
 					}]`,
 				},
 			},
-			expectedOut: "# Pipeline:\nid:\t456\nstatus:\tpending\nsource:\tpush\nref:\t\nsha:\t\ntag:\tfalse\nyaml Errors:\t\nuser:\ttest\ncreated:\t2023-10-10 00:00:00 +0000 UTC\nstarted:\t2023-10-10 00:00:00 +0000 UTC\nupdated:\t2023-10-10 00:00:00 +0000 UTC\n\n# Jobs:\n\n# Variables:\nRUN_NIGHTLY_BUILD:\ttrue\n\n",
+			expectedOut: `# Pipeline:
+id:	123
+status:	pending
+source:	push
+ref:	main
+sha:	0ff3ae198f8601a285adcf5c0fff204ee6fba5fd
+tag:	false
+yaml Errors:	-
+user:	test
+created:	2023-10-10 00:00:00 +0000 UTC
+started:	2023-10-10 00:00:00 +0000 UTC
+updated:	2023-10-10 00:00:00 +0000 UTC
+
+# Jobs:
+
+# Variables:
+RUN_NIGHTLY_BUILD:	true
+
+`,
 		},
 		{
 			name: "when get is called on an existing pipeline with variables however no variables are found",
-			args: "-p=456 -b=main --with-variables",
+			args: "-p=123 -b=main --with-variables",
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/456",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123",
 					http.StatusOK,
 					`{
-								"id": 456,
-								"iid": 456,
-						        "project_id": 5,
-								"status": "pending",
-								"source": "push",
-						        "user": {
-									"username": "test"
-						        },
-						        "created_at": "2023-10-10T00:00:00Z",
-						        "started_at": "2023-10-10T00:00:00Z",
-						        "updated_at": "2023-10-10T00:00:00Z"
+						"id": 123,
+						"iid": 123,
+						"project_id": 5,
+						"status": "pending",
+						"source": "push",
+						"ref": "main",
+						"sha": "0ff3ae198f8601a285adcf5c0fff204ee6fba5fd",
+						"user": {
+							"username": "test"
+						},
+						"yaml_errors": "-",
+						"created_at": "2023-10-10T00:00:00Z",
+						"started_at": "2023-10-10T00:00:00Z",
+						"updated_at": "2023-10-10T00:00:00Z"
 					}`,
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/456/jobs?per_page=100",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
 					http.StatusOK,
 					`[]`,
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/5/pipelines/456/variables",
+					"/api/v4/projects/5/pipelines/123/variables",
 					http.StatusOK,
 					"[]",
 				},
 			},
-			expectedOut: "# Pipeline:\nid:\t456\nstatus:\tpending\nsource:\tpush\nref:\t\nsha:\t\ntag:\tfalse\nyaml Errors:\t\nuser:\ttest\ncreated:\t2023-10-10 00:00:00 +0000 UTC\nstarted:\t2023-10-10 00:00:00 +0000 UTC\nupdated:\t2023-10-10 00:00:00 +0000 UTC\n\n# Jobs:\n\n# Variables:\nNo variables found in pipeline.\n",
+			expectedOut: `# Pipeline:
+id:	123
+status:	pending
+source:	push
+ref:	main
+sha:	0ff3ae198f8601a285adcf5c0fff204ee6fba5fd
+tag:	false
+yaml Errors:	-
+user:	test
+created:	2023-10-10 00:00:00 +0000 UTC
+started:	2023-10-10 00:00:00 +0000 UTC
+updated:	2023-10-10 00:00:00 +0000 UTC
+
+# Jobs:
+
+# Variables:
+No variables found in pipeline.
+`,
 		},
 	}
 
