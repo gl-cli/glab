@@ -37,6 +37,7 @@ glab ci -R some/project -p 12345
   -b, --branch string          Check pipeline status for a branch. (Default is current branch)
   -o, --output-format string   Format output as: text, json (default "text")
   -p, --pipeline-id int        Provide pipeline ID
+  -d, --with-job-details       Show extended job information
       --with-variables         Show variables in pipeline (maintainer role required)
 ```
 

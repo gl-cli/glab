@@ -51,14 +51,21 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 
 			// Parse arguments into local vars
 			branch, _ := cmd.Flags().GetString("branch")
-			pipelineId, _ := cmd.Flags().GetInt("pipeline-id")
-
 			if branch == "" {
 				branch, err = git.CurrentBranch()
 				if err != nil {
 					return err
 				}
 			}
+			pipelineId, err := cmd.Flags().GetInt("pipeline-id")
+			if err != nil || pipelineId == 0 {
+				commit, err := api.GetCommit(apiClient, repo.FullName(), branch)
+				if err != nil {
+					return err
+				}
+				pipelineId = commit.LastPipeline.ID
+			}
+
 			pipeline, err := api.GetPipeline(apiClient, pipelineId, nil, repo.FullName())
 			if err != nil {
 				redCheck := c.Red("✘")
@@ -91,7 +98,8 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 			if outputFormat == "json" {
 				printJSON(*mergedPipelineObject)
 			} else {
-				printTable(*mergedPipelineObject, f.IO.StdOut)
+				showJobDetails, _ := cmd.Flags().GetBool("with-job-details")
+				printTable(*mergedPipelineObject, f.IO.StdOut, showJobDetails)
 			}
 
 			return nil
@@ -101,6 +109,7 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 	pipelineGetCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. (Default is current branch)")
 	pipelineGetCmd.Flags().IntP("pipeline-id", "p", 0, "Provide pipeline ID")
 	pipelineGetCmd.Flags().StringP("output-format", "o", "text", "Format output as: text, json")
+	pipelineGetCmd.Flags().BoolP("with-job-details", "d", false, "Show extended job information")
 	pipelineGetCmd.Flags().Bool("with-variables", false, "Show variables in pipeline (maintainer role required)")
 
 	return pipelineGetCmd
@@ -111,7 +120,19 @@ func printJSON(p PipelineMergedResponse) {
 	fmt.Println(string(JSONStr))
 }
 
-func printTable(p PipelineMergedResponse, dest io.Writer) {
+func printTable(p PipelineMergedResponse, dest io.Writer, showJobDetails bool) {
+	printPipelineTable(p, dest)
+
+	if showJobDetails {
+		printJobTable(p, dest)
+	} else {
+		printJobText(p, dest)
+	}
+
+	printVariables(p, dest)
+}
+
+func printPipelineTable(p PipelineMergedResponse, dest io.Writer) {
 	fmt.Fprint(dest, "# Pipeline:\n")
 	pipelineTable := tableprinter.NewTablePrinter()
 	pipelineTable.AddRow("id:", strconv.Itoa(p.ID))
@@ -126,7 +147,20 @@ func printTable(p PipelineMergedResponse, dest io.Writer) {
 	pipelineTable.AddRow("started:", p.StartedAt)
 	pipelineTable.AddRow("updated:", p.UpdatedAt)
 	fmt.Fprintln(dest, pipelineTable.String())
+}
 
+func printJobTable(p PipelineMergedResponse, dest io.Writer) {
+	fmt.Fprint(dest, "# Jobs:\n")
+	jobTable := tableprinter.NewTablePrinter()
+	jobTable.AddRow("ID", "Name", "Status", "Duration", "Failure reason")
+	for _, j := range p.Jobs {
+		j := j
+		jobTable.AddRow(j.ID, j.Name, j.Status, j.Duration, j.FailureReason)
+	}
+	fmt.Fprintln(dest, jobTable.String())
+}
+
+func printJobText(p PipelineMergedResponse, dest io.Writer) {
 	fmt.Fprint(dest, "# Jobs:\n")
 	jobTable := tableprinter.NewTablePrinter()
 	for _, j := range p.Jobs {
@@ -134,7 +168,9 @@ func printTable(p PipelineMergedResponse, dest io.Writer) {
 		jobTable.AddRow(j.Name+":", j.Status)
 	}
 	fmt.Fprintln(dest, jobTable.String())
+}
 
+func printVariables(p PipelineMergedResponse, dest io.Writer) {
 	if p.Variables != nil {
 		fmt.Fprint(dest, "# Variables:\n")
 		if len(p.Variables) == 0 {
