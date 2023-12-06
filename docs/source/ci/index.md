@@ -44,4 +44,5 @@ pipeline
 - [`run`](run.md)
 - [`status`](status.md)
 - [`trace`](trace.md)
+- [`trigger`](trigger.md)
 - [`view`](view.md)
