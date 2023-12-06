@@ -20,8 +20,22 @@ glab ci retry <job-id> [flags]
 ## Examples
 
 ```plaintext
-glab ci retry 871528
+$ glab ci retry
+# Interactively select a job to retry
 
+$ glab ci retry 224356863
+# Retry job with ID 224356863
+
+$ glab ci retry lint
+# Retry job with the name 'lint'
+
+```
+
+## Options
+
+```plaintext
+  -b, --branch string     The branch to search for the job. (Default: current branch)
+  -p, --pipeline-id int   The pipeline ID to search for the job.
 ```
 
 ## Options inherited from parent commands

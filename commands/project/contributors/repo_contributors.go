@@ -36,7 +36,7 @@ func NewCmdContributors(f *cmdutils.Factory) *cobra.Command {
 	$ glab repo contributors
 
 	$ glab repo contributors -R gitlab-com/www-gitlab-com
-	#=> Supports repo override
+	# Supports repo override
 	`),
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"users"},
