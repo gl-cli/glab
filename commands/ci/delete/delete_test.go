@@ -3,6 +3,10 @@ package delete
 import (
 	"net/http"
 	"testing"
+	"time"
+
+	"github.com/spf13/pflag"
+	"github.com/xanzy/go-gitlab"
 
 	"github.com/stretchr/testify/require"
 
@@ -27,7 +31,7 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
-func TestCiDelete(t *testing.T) {
+func TestCIDelete(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -49,7 +53,39 @@ func TestCiDelete(t *testing.T) {
 	assert.Empty(t, output.Stderr())
 }
 
-func TestCiDeleteByStatus(t *testing.T) {
+func TestCIDeleteNonExistingPipeline(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/11111111",
+		httpmock.NewJSONResponse(http.StatusNotFound, "{message: 404 Not found}"),
+	)
+
+	pipelineId := "11111111"
+	output, err := runCommand(fakeHTTP, pipelineId)
+
+	require.Error(t, err)
+
+	out := output.String()
+
+	assert.Empty(t, out)
+}
+
+func TestCIDeleteWithWrongArgument(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	defer fakeHTTP.Verify(t)
+
+	pipelineId := "test"
+	output, err := runCommand(fakeHTTP, pipelineId)
+
+	require.Error(t, err)
+
+	out := output.String()
+
+	assert.Empty(t, out)
+}
+
+func TestCIDeleteByStatus(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
 	defer fakeHTTP.Verify(t)
@@ -103,20 +139,20 @@ func TestCiDeleteByStatus(t *testing.T) {
 	assert.Empty(t, output.Stderr())
 }
 
-func TestCiDeleteByStatusFailsWithArgument(t *testing.T) {
+func TestCIDeleteByStatusFailsWithArgument(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
 	defer fakeHTTP.Verify(t)
 
 	args := "--status=success 11111111"
 	output, err := runCommand(fakeHTTP, args)
-	assert.EqualError(t, err, "either a status filter or a pipeline id must be passed, but not both")
+	assert.EqualError(t, err, "either a status filter or a pipeline ID must be passed, but not both")
 
 	assert.Empty(t, output.String())
 	assert.Empty(t, output.Stderr())
 }
 
-func TestCiDeleteWithoutFilterFailsWithoutArgument(t *testing.T) {
+func TestCIDeleteWithoutFilterFailsWithoutArgument(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
 	defer fakeHTTP.Verify(t)
@@ -129,7 +165,7 @@ func TestCiDeleteWithoutFilterFailsWithoutArgument(t *testing.T) {
 	assert.Empty(t, output.Stderr())
 }
 
-func TestCiDeleteMultiple(t *testing.T) {
+func TestCIDeleteMultiple(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -155,7 +191,7 @@ func TestCiDeleteMultiple(t *testing.T) {
 	assert.Empty(t, output.Stderr())
 }
 
-func TestCiDryRunDeleteNothing(t *testing.T) {
+func TestCIDryRunDeleteNothing(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -174,7 +210,7 @@ func TestCiDryRunDeleteNothing(t *testing.T) {
 	assert.Empty(t, output.Stderr())
 }
 
-func TestCiDeletedDryRunWithFilterDoesNotDelete(t *testing.T) {
+func TestCIDeletedDryRunWithFilterDoesNotDelete(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
 	defer fakeHTTP.Verify(t)
@@ -220,4 +256,103 @@ func TestCiDeletedDryRunWithFilterDoesNotDelete(t *testing.T) {
 		• Pipeline #22222222 will be deleted
 		`), out)
 	assert.Empty(t, output.Stderr())
+}
+
+func TestCIDeleteBySource(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/pipelines?source=push",
+		httpmock.NewStringResponse(http.StatusOK, `
+		[
+			{
+				"id": 22222222,
+				"iid": 4,
+				"project_id": 5,
+				"sha": "c9a7c0d9351cd1e71d1c2ad8277f3bc7e3c47d1f",
+				"ref": "main",
+				"status": "success",
+				"source": "push",
+				"created_at": "2020-11-30T18:20:47.571Z",
+				"updated_at": "2020-11-30T18:39:40.092Z",
+				"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/709793838"
+			}
+		]
+	`))
+
+	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/22222222",
+		httpmock.NewStringResponse(http.StatusNoContent, ""),
+	)
+
+	args := "--source=push"
+	output, err := runCommand(fakeHTTP, args)
+	require.NoError(t, err)
+
+	out := output.String()
+
+	assert.Equal(t, heredoc.Doc(`
+		✓ Pipeline #22222222 deleted successfully
+		`), out)
+	assert.Empty(t, output.Stderr())
+}
+
+func TestParseRawPipelineIDsCorrectly(t *testing.T) {
+	pipelineIDs, err := parseRawPipelineIDs("1,2,3")
+
+	require.NoError(t, err)
+	assert.Equal(t, []int{1, 2, 3}, pipelineIDs)
+}
+
+func TestParseRawPipelineIDsWithError(t *testing.T) {
+	pipelineIDs, err := parseRawPipelineIDs("test")
+
+	require.Error(t, err)
+	assert.Len(t, pipelineIDs, 0)
+}
+
+func TestExtractPipelineIDsFromFlagsWithError(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/pipelines?status=success",
+		httpmock.NewStringResponse(http.StatusForbidden, `{message: 403 Forbidden}`))
+
+	args := "--status=success"
+	output, err := runCommand(fakeHTTP, args)
+	require.Error(t, err)
+
+	out := output.String()
+
+	assert.Empty(t, out)
+	assert.Empty(t, output.Stderr())
+}
+
+func TestOptsFromFlags(t *testing.T) {
+	flags := pflag.NewFlagSet("test-flagset", pflag.ContinueOnError)
+	SetupCommandFlags(flags)
+
+	require.NoError(t, flags.Parse([]string{"--status", "success", "--older-than", "24h"}))
+
+	opts := optsFromFlags(flags)
+
+	assert.Nil(t, opts.Source)
+	assert.Equal(t, opts.Status, gitlab.BuildState("success"))
+
+	lowerTimeBoundary := time.Now().Add(-1 * 24 * time.Hour).Add(-5 * time.Second)
+	upperTimeBoundary := time.Now().Add(-1 * 24 * time.Hour).Add(5 * time.Second)
+	assert.WithinRange(t, *opts.UpdatedBefore, lowerTimeBoundary, upperTimeBoundary)
+}
+
+func TestOptsFromFlagsWithPagination(t *testing.T) {
+	flags := pflag.NewFlagSet("test-flagset", pflag.ContinueOnError)
+	SetupCommandFlags(flags)
+
+	require.NoError(t, flags.Parse([]string{"--page", "5", "--per-page", "10"}))
+
+	opts := optsFromFlags(flags)
+
+	assert.Equal(t, opts.Page, 5)
+	assert.Equal(t, opts.PerPage, 10)
 }
