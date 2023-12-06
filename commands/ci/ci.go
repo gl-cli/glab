@@ -28,7 +28,7 @@ func NewCmdCI(f *cmdutils.Factory) *cobra.Command {
 	cmdutils.EnableRepoOverride(ciCmd, f)
 
 	ciCmd.AddCommand(legacyCICmd.NewCmdCI(f))
-	ciCmd.AddCommand(ciTraceCmd.NewCmdTrace(f, nil))
+	ciCmd.AddCommand(ciTraceCmd.NewCmdTrace(f))
 	ciCmd.AddCommand(ciViewCmd.NewCmdView(f))
 	ciCmd.AddCommand(ciLintCmd.NewCmdLint(f))
 	ciCmd.AddCommand(pipeDeleteCmd.NewCmdDelete(f))

@@ -4,15 +4,22 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"regexp"
+	"strconv"
 	"sync"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/pkg/errors"
 	"github.com/xanzy/go-gitlab"
 )
@@ -78,17 +85,17 @@ func RunTraceSha(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid
 	if err != nil || job == nil {
 		return errors.Wrap(err, "failed to find job")
 	}
-	return RunTrace(ctx, apiClient, w, pid, job, name)
+	return runTrace(ctx, apiClient, w, pid, job.ID)
 }
 
-func RunTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid interface{}, job *gitlab.Job, name string) error {
+func runTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid interface{}, jobId int) error {
 	fmt.Fprintln(w, "Getting job trace...")
 	for range time.NewTicker(time.Second * 3).C {
 		if ctx.Err() == context.Canceled {
 			break
 		}
-		trace, _, err := apiClient.Jobs.GetTraceFile(pid, job.ID)
-		if err != nil || trace == nil {
+		job, _, err := apiClient.Jobs.GetJob(pid, jobId)
+		if err != nil {
 			return errors.Wrap(err, "failed to find job")
 		}
 		switch job.Status {
@@ -102,11 +109,12 @@ func RunTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid in
 			fmt.Fprintf(w, "%s has been skipped\n", job.Name)
 		}
 		once.Do(func() {
-			if name == "" {
-				name = job.Name
-			}
 			fmt.Fprintf(w, "Showing logs for %s job #%d\n", job.Name, job.ID)
 		})
+		trace, _, err := apiClient.Jobs.GetTraceFile(pid, jobId)
+		if err != nil || trace == nil {
+			return errors.Wrap(err, "failed to find job")
+		}
 		_, _ = io.CopyN(io.Discard, trace, offset)
 		lenT, err := io.Copy(w, trace)
 		if err != nil {
@@ -121,4 +129,159 @@ func RunTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid in
 		}
 	}
 	return nil
+}
+
+func GetJobId(inputs *JobInputs, opts *JobOptions) (int, error) {
+	// If the user hasn't supplied an argument, we display the jobs list interactively.
+	if inputs.JobName == "" {
+		return getJobIdInteractive(inputs, opts)
+	}
+
+	// If the user supplied a job ID, we can use it directly.
+	if jobID, err := strconv.Atoi(inputs.JobName); err == nil {
+		return jobID, nil
+	}
+
+	// Otherwise, we try to find the latest job ID based on the job name.
+	pipelineId, err := getPipelineId(inputs, opts)
+	if err != nil {
+		return 0, fmt.Errorf("get pipeline: %w", err)
+	}
+
+	jobs, _, err := opts.ApiClient.Jobs.ListPipelineJobs(opts.Repo.FullName(), pipelineId, nil)
+	if err != nil {
+		return 0, fmt.Errorf("list pipeline jobs: %w", err)
+	}
+
+	for _, job := range jobs {
+		if job.Name == inputs.JobName {
+			return job.ID, nil
+		}
+	}
+
+	return 0, fmt.Errorf("pipeline %d contains no jobs", pipelineId)
+}
+
+func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
+	if inputs.PipelineId != 0 {
+		return inputs.PipelineId, nil
+	}
+
+	branch, err := getBranch(inputs.Branch, opts)
+	if err != nil {
+		return 0, fmt.Errorf("get branch: %w", err)
+	}
+
+	pipeline, err := api.GetLastPipeline(opts.ApiClient, opts.Repo.FullName(), branch)
+	if err != nil {
+		return 0, fmt.Errorf("get last pipeline: %w", err)
+	}
+	return pipeline.ID, err
+}
+
+func getBranch(branch string, opts *JobOptions) (string, error) {
+	if branch != "" {
+		return branch, nil
+	}
+
+	branch, err := git.CurrentBranch()
+	if err != nil {
+		return "", err
+	}
+
+	return branch, nil
+}
+
+func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
+	pipelineId, err := getPipelineId(inputs, opts)
+	if err != nil {
+		return 0, err
+	}
+
+	fmt.Fprintf(opts.IO.StdOut, "Getting jobs for pipeline %d...\n\n", pipelineId)
+
+	jobs, err := api.GetPipelineJobs(opts.ApiClient, pipelineId, opts.Repo.FullName())
+	if err != nil {
+		return 0, err
+	}
+
+	var jobOptions []string
+	var selectedJob string
+
+	for _, job := range jobs {
+		jobOptions = append(jobOptions, fmt.Sprintf("%s (%d) - %s", job.Name, job.ID, job.Status))
+	}
+
+	promptOpts := &survey.Select{
+		Message: "Select pipeline job to trace:",
+		Options: jobOptions,
+	}
+
+	err = prompt.AskOne(promptOpts, &selectedJob)
+	if err != nil {
+		if errors.Is(err, terminal.InterruptErr) {
+			return 0, nil
+		}
+
+		return 0, err
+	}
+
+	if selectedJob != "" {
+		re := regexp.MustCompile(`(?s)\((.*)\)`)
+		m := re.FindAllStringSubmatch(selectedJob, -1)
+		return utils.StringToInt(m[0][1]), nil
+	} else if len(jobs) > 0 {
+		return jobs[0].ID, nil
+	} else {
+		pipeline, err := api.GetPipeline(opts.ApiClient, pipelineId, nil, opts.Repo.FullName())
+		if err != nil {
+			return 0, err
+		}
+		// use commit statuses to show external jobs
+		cs, err := api.GetCommitStatuses(opts.ApiClient, opts.Repo.FullName(), pipeline.SHA)
+		if err != nil {
+			return 0, nil
+		}
+
+		c := opts.IO.Color()
+
+		fmt.Fprint(opts.IO.StdOut, "Getting external jobs...")
+		for _, status := range cs {
+			var s string
+
+			switch status.Status {
+			case "success":
+				s = c.Green(status.Status)
+			case "error":
+				s = c.Red(status.Status)
+			default:
+				s = c.Gray(status.Status)
+			}
+			fmt.Fprintf(opts.IO.StdOut, "(%s) %s\nURL: %s\n\n", s, c.Bold(status.Name), c.Gray(status.TargetURL))
+		}
+
+		return 0, nil
+	}
+}
+
+type JobInputs struct {
+	JobName    string
+	Branch     string
+	PipelineId int
+}
+
+type JobOptions struct {
+	ApiClient *gitlab.Client
+	Repo      glrepo.Interface
+	IO        *iostreams.IOStreams
+}
+
+func TraceJob(inputs *JobInputs, opts *JobOptions) error {
+	jobID, err := GetJobId(inputs, opts)
+	if err != nil {
+		fmt.Fprintln(opts.IO.StdErr, "invalid job ID:", inputs.JobName)
+		return err
+	}
+	fmt.Fprintln(opts.IO.StdOut)
+	return runTrace(context.Background(), opts.ApiClient, opts.IO.StdOut, opts.Repo.FullName(), jobID)
 }

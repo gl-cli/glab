@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"gitlab.com/gitlab-org/cli/api"
-	ciTraceCmd "gitlab.com/gitlab-org/cli/commands/ci/trace"
+	"gitlab.com/gitlab-org/cli/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
@@ -144,16 +144,13 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 						isRunning = false
 					}
 				}
-
 				if retry == "View Logs" {
-					// ToDo: bad idea to call another sub-command. should be fixed to avoid cyclo imports
-					//    and the a shared function placed in the ciutils sub-module
-					return ciTraceCmd.TraceRun(&ciTraceCmd.TraceOpts{
-						Branch:     branch,
-						JobID:      0,
-						BaseRepo:   f.BaseRepo,
-						HTTPClient: f.HttpClient,
-						IO:         f.IO,
+					return ciutils.TraceJob(&ciutils.JobInputs{
+						Branch: branch,
+					}, &ciutils.JobOptions{
+						Repo:      repo,
+						ApiClient: apiClient,
+						IO:        f.IO,
 					})
 				}
 			}

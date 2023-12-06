@@ -21,7 +21,7 @@ glab ci ci lint [flags]
 
 ```plaintext
 $ glab ci lint
-#=> Uses .gitlab-ci.yml in the current directory
+# Uses .gitlab-ci.yml in the current directory
 
 $ glab ci lint .gitlab-ci.yml
 

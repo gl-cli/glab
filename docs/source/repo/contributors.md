@@ -29,7 +29,7 @@ users
 $ glab repo contributors
 
 $ glab repo contributors -R gitlab-com/www-gitlab-com
-#=> Supports repo override
+# Supports repo override
 
 ```
 
