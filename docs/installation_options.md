@@ -26,6 +26,8 @@ are maintained by the community.
   - [MPR (Debian/Ubuntu)](#mpr-debianubuntu)
     - [Prebuilt-MPR](#prebuilt-mpr)
   - [Spack](#spack)
+- [Docker](#docker)
+  - [GitLab CICD](#gitlab-cicd)
 
 ## macOS
 
@@ -186,3 +188,30 @@ The above method downloads glab from source and builds it before packaging it in
 
 - To install: `spack install glab`.
 - To update: `spack uninstall glab && spack install glab`
+
+## Docker
+
+A Docker image for `glab` is available at
+[`gitlab/glab`](https://hub.docker.com/r/gitlab/glab/):
+
+```shell
+docker pull gitlab/glab
+```
+
+### GitLab CI/CD
+
+To use `glab` in a CI/CD pipeline, you must set the `entrypoint` of the image to
+the `glab` executable itself. For more information, see the GitLab documentation
+for [Override the entrypoint of an image](https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#override-the-entrypoint-of-an-image). An example `.gitlab-ci.yml`:
+
+Example `.gitlab-ci.yml`:
+
+```yaml
+example:
+  stage: test
+  image:
+    name: "gitlab/glab"
+    entrypoint: [""]
+  script:
+    - glab --version
+```
