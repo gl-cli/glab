@@ -20,11 +20,14 @@ glab ci trigger <job-id> [flags]
 ## Examples
 
 ```plaintext
+$ glab ci trigger
+# Tnteractively select a job to Trigger
+
 $ glab ci trigger 224356863
-#=> trigger manual job with id 224356863
+# Trigger manual job with id 224356863
 
 $ glab ci trigger lint
-#=> trigger manual job with name lint
+# Trigger manual job with name lint
 
 ```
 

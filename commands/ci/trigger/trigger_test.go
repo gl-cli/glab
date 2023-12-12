@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, args string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
-
+func runCommand(rt http.RoundTripper, args string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := iostreams.Test()
 	factory := cmdtest.InitFactory(ios, rt)
 
 	_, _ = factory.HttpClient()
@@ -33,14 +33,17 @@ func TestCiTrigger(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		args        string
-		httpMocks   []httpMock
-		expectedOut string
+		name           string
+		args           string
+		httpMocks      []httpMock
+		expectedError  string
+		expectedStderr string
+		expectedOut    string
 	}{
 		{
-			name: "when trigger with job-id is created",
-			args: "1122",
+			name:        "when trigger with job-id",
+			args:        "1122",
+			expectedOut: "Triggered job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
 			httpMocks: []httpMock{
 				{
 					http.MethodPost,
@@ -60,11 +63,25 @@ func TestCiTrigger(t *testing.T) {
 					}`,
 				},
 			},
-			expectedOut: "Triggered job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
 		},
 		{
-			name: "when trigger with job-name is created",
-			args: "lint -b main -p 123",
+			name:          "when trigger with job-id throws error",
+			args:          "1122",
+			expectedError: "POST https://gitlab.com/api/v4/projects/OWNER/REPO/jobs/1122/play: 403 ",
+			expectedOut:   "",
+			httpMocks: []httpMock{
+				{
+					http.MethodPost,
+					"/api/v4/projects/OWNER/REPO/jobs/1122/play",
+					http.StatusForbidden,
+					`{}`,
+				},
+			},
+		},
+		{
+			name:        "when trigger with job-name",
+			args:        "lint -b main -p 123",
+			expectedOut: "Triggered job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
 			httpMocks: []httpMock{
 				{
 					http.MethodPost,
@@ -98,11 +115,25 @@ func TestCiTrigger(t *testing.T) {
 						}]`,
 				},
 			},
-			expectedOut: "Triggered job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
 		},
 		{
-			name: "when trigger with job-name and last pipeline is created",
-			args: "lint -b main",
+			name:           "when trigger with job-name throws error",
+			args:           "lint -b main -p 123",
+			expectedError:  "list pipeline jobs: GET https://gitlab.com/api/v4/projects/OWNER/REPO/pipelines/123/jobs: 403 ",
+			expectedStderr: "invalid job ID: lint\n",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs",
+					http.StatusForbidden,
+					`{}`,
+				},
+			},
+		},
+		{
+			name:        "when trigger with job-name and last pipeline",
+			args:        "lint -b main",
+			expectedOut: "Triggered job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
 			httpMocks: []httpMock{
 				{
 					http.MethodPost,
@@ -146,7 +177,6 @@ func TestCiTrigger(t *testing.T) {
 						}]`,
 				},
 			},
-			expectedOut: "Triggered job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
 		},
 	}
 
@@ -161,11 +191,21 @@ func TestCiTrigger(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err := runCommand(fakeHTTP, false, tc.args)
-			require.Nil(t, err)
+			output, err := runCommand(fakeHTTP, tc.args)
+
+			if tc.expectedError == "" {
+				require.Nil(t, err)
+			} else {
+				require.NotNil(t, err)
+				require.Equal(t, tc.expectedError, err.Error())
+			}
 
 			assert.Equal(t, tc.expectedOut, output.String())
-			assert.Empty(t, output.Stderr())
+			if tc.expectedStderr != "" {
+				assert.Equal(t, tc.expectedStderr, output.Stderr())
+			} else {
+				assert.Empty(t, output.Stderr())
+			}
 		})
 	}
 }
