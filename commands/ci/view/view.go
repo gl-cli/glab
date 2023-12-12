@@ -109,7 +109,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		'Enter' to toggle a job's logs or trace or display a child pipeline (trigger jobs are marked with a »).
 		'Esc' or 'q' to close logs,trace or go back to the parent pipeline.
 		'Ctrl+R', 'Ctrl+P' to run/retry/play a job -- Use Tab / Arrow keys to navigate modal and Enter to confirm.
-		'Ctrl+C' to cancel job -- (Quits CI/CD view if selected job isn't running or pending).
+		'Ctrl+D' to cancel job -- (Quits CI/CD view if selected job isn't running or pending).
 		'Ctrl+Q' to Quit CI/CD View.
 		'Ctrl+Space' suspend application and view logs (similar to glab pipeline ci trace)
 		Supports vi style bindings and arrow keys for navigating jobs and logs.
@@ -264,7 +264,7 @@ func inputCapture(
 		case tcell.KeyCtrlQ:
 			app.Stop()
 			return nil
-		case tcell.KeyCtrlC:
+		case tcell.KeyCtrlD:
 			if curJob.Kind == Job && (curJob.Status == "pending" || curJob.Status == "running") {
 				modalVisible = true
 				modal := tview.NewModal().
