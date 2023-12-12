@@ -4,13 +4,11 @@ import (
 	"fmt"
 
 	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/xanzy/go-gitlab"
 )
 
 func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
@@ -19,62 +17,48 @@ func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
 		Short:   `Trigger a manual CI/CD job.`,
 		Aliases: []string{},
 		Example: heredoc.Doc(`
+		$ glab ci trigger
+		# Tnteractively select a job to Trigger
+
 		$ glab ci trigger 224356863
-		#=> trigger manual job with id 224356863
+		# Trigger manual job with id 224356863
 
 		$ glab ci trigger lint
-		#=> trigger manual job with name lint
+		# Trigger manual job with name lint
 `),
 		Long: ``,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 
+			repo, err := f.BaseRepo()
+			if err != nil {
+				return err
+			}
 			apiClient, err := f.HttpClient()
 			if err != nil {
 				return err
 			}
 
-			repo, err := f.BaseRepo()
-			if err != nil {
-				return err
+			jobName := ""
+			if len(args) != 0 {
+				jobName = args[0]
 			}
+			branch, _ := cmd.Flags().GetString("branch")
+			pipelineId, _ := cmd.Flags().GetInt("pipeline-id")
 
-			jobID := utils.StringToInt(args[0])
-
-			if jobID < 1 {
-				jobName := args[0]
-
-				pipelineId, err := cmd.Flags().GetInt("pipeline-id")
-				if err != nil || pipelineId == 0 {
-					branch, _ := cmd.Flags().GetString("branch")
-					if branch == "" {
-						branch, err = git.CurrentBranch()
-						if err != nil {
-							return err
-						}
-					}
-					commit, err := api.GetCommit(apiClient, repo.FullName(), branch)
-					if err != nil {
-						return err
-					}
-					pipelineId = commit.LastPipeline.ID
-				}
-
-				jobs, _, err := apiClient.Jobs.ListPipelineJobs(repo.FullName(), pipelineId, nil)
-				if err != nil {
-					return err
-				}
-				for _, job := range jobs {
-					if job.Name == jobName {
-						jobID = job.ID
-						break
-					}
-				}
-				if jobID < 1 {
-					fmt.Fprintln(f.IO.StdErr, "invalid job id:", args[0])
-					return cmdutils.SilentError
-				}
+			jobID, err := ciutils.GetJobId(&ciutils.JobInputs{
+				JobName:    jobName,
+				Branch:     branch,
+				PipelineId: pipelineId,
+			}, &ciutils.JobOptions{
+				ApiClient: apiClient,
+				IO:        f.IO,
+				Repo:      repo,
+			})
+			if err != nil {
+				fmt.Fprintln(f.IO.StdErr, "invalid job ID:", args[0])
+				return err
 			}
 
 			job, err := api.PlayPipelineJob(apiClient, jobID, repo.FullName())
@@ -90,16 +74,4 @@ func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
 	pipelineTriggerCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. (Default: current branch)")
 	pipelineTriggerCmd.Flags().IntP("pipeline-id", "p", 0, "The pipeline ID to search for the job.")
 	return pipelineTriggerCmd
-}
-
-type Jobs []*gitlab.Job
-
-// FindByName returns the first Remote whose name matches the list
-func (jobs Jobs) FindByName(name string) (*gitlab.Job, error) {
-	for _, job := range jobs {
-		if job.Name == name {
-			return job, nil
-		}
-	}
-	return nil, cmdutils.SilentError
 }
