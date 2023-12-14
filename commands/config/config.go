@@ -7,8 +7,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
 var isGlobal bool
@@ -38,10 +36,6 @@ Current respected settings:
 
 	configCmd.AddCommand(NewCmdConfigGet(f))
 	configCmd.AddCommand(NewCmdConfigSet(f))
-	configCmd.AddCommand(NewCmdConfigInit(f))
-
-	// TODO: deprecate `config init` command since it's been replaced by `auth login`
-	// targetedVersion: 1.12.0
 
 	return configCmd
 }
@@ -135,65 +129,4 @@ Specifying the --hostname flag also saves in the global config file
 	cmd.Flags().StringVarP(&hostname, "host", "h", "", "Set per-host setting")
 	cmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "Write to global ~/.config/glab-cli/config.yml file rather than the repository .git/glab-cli/config.yml file")
 	return cmd
-}
-
-func NewCmdConfigInit(f *cmdutils.Factory) *cobra.Command {
-	configInitCmd := &cobra.Command{
-		Use:   "init",
-		Short: "Shows a prompt to set basic glab configuration",
-		Long: heredoc.Docf(`
-		Update the configuration by setting a key to a value.
-		
-		Examples:
-
-		%[1]splaintext
-		$ glab config init
-		? Enter default GitLab Host (Current Value: https://gitlab.com):
-		%[1]s
-`, "```"),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return configInit(f)
-		},
-	}
-	configInitCmd.Deprecated = "use `glab auth login` which is secure and has additional options."
-	return configInitCmd
-}
-
-func configInit(f *cmdutils.Factory) error {
-	var host string
-	cfg, err := f.Config()
-	if err != nil {
-		return err
-	}
-	baseRepo, err := f.BaseRepo()
-	if err != nil {
-		host = glinstance.Default()
-	} else {
-		host = baseRepo.RepoHost()
-	}
-	host, err = config.Prompt(fmt.Sprintf("Enter Gitlab Host (Current Value: %s): ", host), host) //nolint:staticcheck
-	if err != nil {
-		return err
-	}
-	host, protocol := glinstance.StripHostProtocol(host)
-	err = cfg.Set(host, "api_protocol", protocol)
-	if err != nil {
-		return err
-	}
-
-	token, _ := cfg.Get(host, "token")
-	token, err = config.Prompt("Enter Gitlab Token: ", token) //nolint:staticcheck
-	if err != nil {
-		return err
-	}
-	err = cfg.Set(host, "token", token)
-	if err != nil {
-		return nil
-	}
-
-	if cfg.Write() != nil {
-		return err
-	}
-	fmt.Fprintf(f.IO.StdOut, "%s Configuration updated", f.IO.Color().GreenCheck())
-	return nil
 }

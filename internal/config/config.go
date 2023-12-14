@@ -9,7 +9,6 @@ import (
 
 	"github.com/zalando/go-keyring"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
 	"gopkg.in/yaml.v3"
 )
 
@@ -515,17 +514,6 @@ func GetFromEnvWithSource(key string) (value, source string) {
 			source = e
 			break
 		}
-	}
-	return
-}
-
-// Prompt prompts user for value and returns default value if empty
-//
-// Deprecated: only used by the `config init` command which is deprecated
-func Prompt(question, defaultVal string) (envVal string, err error) {
-	err = prompt.AskQuestionWithInput(&envVal, "config", question, defaultVal, false)
-	if err != nil {
-		return
 	}
 	return
 }
