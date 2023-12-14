@@ -50,5 +50,4 @@ conf
 ## Subcommands
 
 - [`get`](get.md)
-- [`init`](init.md)
 - [`set`](set.md)
