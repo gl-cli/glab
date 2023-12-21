@@ -389,14 +389,17 @@ var PipelineJobsWithSha = func(client *gitlab.Client, pid interface{}, sha strin
 	return PipelineJobsWithID(client, pid, pipelines[0].ID)
 }
 
-var ProjectNamespaceLint = func(client *gitlab.Client, projectID int, content string) (*gitlab.ProjectLintResult, error) {
+var ProjectNamespaceLint = func(client *gitlab.Client, projectID int, content string, ref string, dryRun bool, includeJobs bool) (*gitlab.ProjectLintResult, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
 	c, _, err := client.Validate.ProjectNamespaceLint(
 		projectID,
 		&gitlab.ProjectNamespaceLintOptions{
-			Content: &content,
+			Content:     &content,
+			DryRun:      &dryRun,
+			Ref:         &ref,
+			IncludeJobs: &includeJobs,
 		},
 	)
 	if err != nil {
