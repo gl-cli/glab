@@ -20,7 +20,7 @@ glab schedule create [flags]
 ## Examples
 
 ```plaintext
-glab schedule create --cron "0 * * * *" --description "Describe your pipeline here" --ref "main"
+glab schedule create --cron "0 * * * *" --description "Describe your pipeline here" --ref "main" --variable "foo:bar" --variable "baz:baz"
 
 ```
 
@@ -32,6 +32,7 @@ glab schedule create --cron "0 * * * *" --description "Describe your pipeline he
       --cronTimeZone string   Cron timezone (default "UTC")
       --description string    Description of the schedule
       --ref string            Target branch or tag
+      --variable strings      Pass variables to schedule in format <key>:<value>
 ```
 
 ## Options inherited from parent commands

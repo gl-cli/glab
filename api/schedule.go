@@ -34,12 +34,25 @@ var RunSchedule = func(client *gitlab.Client, repo string, schedule int, opts ..
 	return nil
 }
 
-var CreateSchedule = func(client *gitlab.Client, repo string, scheduleOpts *gitlab.CreatePipelineScheduleOptions, opts ...gitlab.RequestOptionFunc) error {
+var CreateSchedule = func(client *gitlab.Client, repo string, scheduleOpts *gitlab.CreatePipelineScheduleOptions, opts ...gitlab.RequestOptionFunc) (error, *gitlab.PipelineSchedule) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
 
-	_, _, err := client.PipelineSchedules.CreatePipelineSchedule(repo, scheduleOpts, opts...)
+	schedule, _, err := client.PipelineSchedules.CreatePipelineSchedule(repo, scheduleOpts, opts...)
+	if err != nil {
+		return fmt.Errorf("creating scheduled pipeline status: %w", err), nil
+	}
+
+	return nil, schedule
+}
+
+var CreateScheduleVariable = func(client *gitlab.Client, repo string, schedule *gitlab.PipelineSchedule, scheduleVarOpts *gitlab.CreatePipelineScheduleVariableOptions, opts ...gitlab.RequestOptionFunc) error {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+
+	_, _, err := client.PipelineSchedules.CreatePipelineScheduleVariable(repo, schedule.ID, scheduleVarOpts, opts...)
 	if err != nil {
 		return fmt.Errorf("creating scheduled pipeline status: %w", err)
 	}
