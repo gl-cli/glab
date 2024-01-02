@@ -22,12 +22,16 @@ func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
 		Short:   `List releases in a repository`,
 		Long:    ``,
 		Aliases: []string{"ls"},
-		Args:    cobra.MaximumNArgs(3),
+		Args:    cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			factory = f
 			return listReleases(cmd, args)
 		},
 	}
+
+	releaseListCmd.Flags().IntP("page", "p", 1, "Page number.")
+	releaseListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page.")
+
 	releaseListCmd.Flags().StringP("tag", "t", "", "Filter releases by tag <name>")
 	// deprecate in favour of the `release view` command
 	_ = releaseListCmd.Flags().MarkDeprecated("tag", "use `glab release view <tag>` instead")
@@ -41,6 +45,11 @@ func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
 
 func listReleases(cmd *cobra.Command, args []string) error {
 	l := &gitlab.ListReleasesOptions{}
+
+	page, _ := cmd.Flags().GetInt("page")
+	l.Page = page
+	perPage, _ := cmd.Flags().GetInt("per-page")
+	l.PerPage = perPage
 
 	tag, err := cmd.Flags().GetString("tag")
 	if err != nil {
@@ -75,7 +84,6 @@ func listReleases(cmd *cobra.Command, args []string) error {
 
 		fmt.Fprintln(factory.IO.StdOut, releaseutils.DisplayRelease(factory.IO, release, repo))
 	} else {
-		l.PerPage = 30
 
 		releases, err := api.ListReleases(apiClient, repo.FullName(), l)
 		if err != nil {

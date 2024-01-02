@@ -23,6 +23,13 @@ glab release list [flags]
 ls
 ```
 
+## Options
+
+```plaintext
+  -p, --page int       Page number. (default 1)
+  -P, --per-page int   Number of items to list per page. (default 30)
+```
+
 ## Options inherited from parent commands
 
 ```plaintext
