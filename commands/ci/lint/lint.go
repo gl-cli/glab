@@ -15,6 +15,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	ref         string
+	dryRun      bool
+	includeJobs bool
+)
+
 func NewCmdLint(f *cmdutils.Factory) *cobra.Command {
 	pipelineCILintCmd := &cobra.Command{
 		Use:   "lint",
@@ -36,6 +42,10 @@ func NewCmdLint(f *cmdutils.Factory) *cobra.Command {
 			return lintRun(f, path)
 		},
 	}
+
+	pipelineCILintCmd.Flags().BoolVarP(&dryRun, "dry-run", "", false, "Run pipeline creation simulation.")
+	pipelineCILintCmd.Flags().BoolVarP(&includeJobs, "include-jobs", "", false, "The response should include the list of jobs that would exist in a static check or pipeline simulation.")
+	pipelineCILintCmd.Flags().StringVar(&ref, "ref", "", "When dry-run is true, sets the branch or tag context for validating the CI/CD YAML configuration.")
 
 	return pipelineCILintCmd
 }
@@ -87,7 +97,7 @@ func lintRun(f *cmdutils.Factory, path string) error {
 
 	fmt.Fprintln(f.IO.StdOut, "Validating...")
 
-	lint, err := api.ProjectNamespaceLint(apiClient, projectID, string(content))
+	lint, err := api.ProjectNamespaceLint(apiClient, projectID, string(content), ref, dryRun, includeJobs)
 	if err != nil {
 		return err
 	}

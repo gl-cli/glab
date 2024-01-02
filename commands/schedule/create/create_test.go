@@ -47,6 +47,39 @@ func Test_ScheduleCreate(t *testing.T) {
 			ExpectedMsg: []string{""},
 			cli:         "--cron '*0 * * * *' --description 'example pipeline'",
 		},
+		{
+			Name:       "Schedule created but with skipped variable",
+			wantStderr: "Invalid format for --variable: foo",
+			wantErr:    true,
+			cli:        "--cron '*0 * * * *' --description 'example pipeline' --ref 'main'  --variable 'foo'",
+			httpMocks: []httpMock{
+				{
+					http.MethodPost,
+					"/api/v4/projects/OWNER/REPO/pipeline_schedules",
+					http.StatusCreated,
+					`{}`,
+				},
+			},
+		},
+		{
+			Name:        "Schedule created with variable",
+			ExpectedMsg: []string{"Created schedule"},
+			cli:         "--cron '*0 * * * *' --description 'example pipeline' --ref 'main' --variable 'foo:bar'",
+			httpMocks: []httpMock{
+				{
+					http.MethodPost,
+					"/api/v4/projects/OWNER/REPO/pipeline_schedules",
+					http.StatusCreated,
+					`{}`,
+				},
+				{
+					http.MethodPost,
+					"/api/v4/projects/OWNER/REPO/pipeline_schedules/0/variables",
+					http.StatusCreated,
+					`{}`,
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
