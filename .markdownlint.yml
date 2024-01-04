@@ -23,7 +23,7 @@ first-line-h1: false
 code-block-style:
   style: "fenced"
 emphasis-style: false
-link-fragments: false
+link-fragments: true
 reference-links-images: false
 proper-names:
   names: [
