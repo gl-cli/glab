@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/pkg/git"
@@ -55,7 +54,6 @@ func init() {
 }
 
 func InitTest(m *testing.M, suffix string) {
-	rand.Seed(time.Now().UnixNano())
 	// Build a glab binary with test symbols. If the parent test binary was run
 	// with coverage enabled, enable coverage on the child binary, too.
 	var err error
@@ -187,7 +185,6 @@ func ExecuteCommand(cmd *cobra.Command, cli string, stdout *bytes.Buffer, stderr
 
 func CopyTestRepo(log fatalLogger, name string) string {
 	if name == "" {
-		rand.Seed(time.Now().UnixNano())
 		name = strconv.Itoa(int(rand.Uint64()))
 	}
 	dest, err := filepath.Abs(os.ExpandEnv(projectPath + "test/testdata-" + name))
