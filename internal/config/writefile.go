@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/google/renameio"
+	"github.com/google/renameio/v2"
 )
 
 // WriteFile to the path
