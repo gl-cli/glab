@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -18,38 +17,64 @@ func Test_WriteFile(t *testing.T) {
 	t.Cleanup(func() {
 		os.RemoveAll(dir)
 	})
-	fpath := filepath.Join(dir, "test-file")
 
-	t.Run("regular", func(t *testing.T) {
-		require.Nilf(t,
-			WriteFile(fpath, []byte("profclems/glab"), 0o644),
-			"unexpected error = %s", err,
-		)
+	testCases := []struct {
+		name        string
+		filePath    string
+		content     string
+		permissions os.FileMode
+		isSymlink   bool
+	}{
+		{
+			name:        "regular",
+			filePath:    "test-file",
+			content:     "profclems/glab",
+			permissions: 0o644,
+			isSymlink:   false,
+		},
+		{
+			name:        "config",
+			filePath:    "config-file",
+			content:     "profclems/glab/config",
+			permissions: 0o600,
+			isSymlink:   false,
+		},
+		{
+			name:        "symlink",
+			filePath:    "test-file",
+			content:     "profclems/glab/symlink",
+			permissions: 0o644,
+			isSymlink:   true,
+		},
+	}
 
-		result, err := os.ReadFile(fpath)
-		require.Nilf(t, err, "failed to read file %q due to %q", fpath, err)
-		assert.Equal(t, "profclems/glab", string(result))
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fullPath := filepath.Join(dir, tc.filePath)
 
-		permissions, err := os.Stat(fpath)
-		require.Nilf(t, err, "failed to get stats for file %q due to %q", fpath, err)
-		// TODO:
-		assert.Equal(t, "0644", fmt.Sprintf("%04o", permissions.Mode()))
-	})
+			if tc.isSymlink {
+				symPath := filepath.Join(dir, "test-symlink")
+				require.Nil(t, os.Symlink(tc.filePath, symPath), "failed to create a symlink")
+				fullPath = symPath
+			}
 
-	t.Run("symlink", func(t *testing.T) {
-		symPath := filepath.Join(dir, "test-symlink")
-		require.Nil(t, os.Symlink(fpath, symPath), "failed to create a symlink")
-		require.Nilf(t,
-			WriteFile(symPath, []byte("profclems/glab/symlink"), 0o644),
-			"unexpected error = %s", err,
-		)
+			require.Nilf(t,
+				WriteFile(fullPath, []byte(tc.content), tc.permissions),
+				"unexpected error for testCase %q", tc.name,
+			)
 
-		result, err := os.ReadFile(symPath)
-		require.Nilf(t, err, "failed to read file %q due to %q", symPath, err)
-		assert.Equal(t, "profclems/glab/symlink", string(result))
+			result, err := os.ReadFile(fullPath)
+			require.Nilf(t, err, "failed to read file %q due to %q", fullPath, err)
+			assert.Equal(t, tc.content, string(result))
 
-		permissions, err := os.Lstat(symPath)
-		require.Nil(t, err, "failed to get info about the smylink", err)
-		assert.Equal(t, os.ModeSymlink, permissions.Mode()&os.ModeSymlink, "this file should be a symlink")
-	})
+			fileInfo, err := os.Lstat(fullPath)
+			require.Nil(t, err, "failed to get info about the file", err)
+
+			if tc.isSymlink {
+				assert.Equal(t, os.ModeSymlink, fileInfo.Mode()&os.ModeSymlink, "this file should be a symlink")
+			} else {
+				assert.Equal(t, tc.permissions, fileInfo.Mode())
+			}
+		})
+	}
 }
