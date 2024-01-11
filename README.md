@@ -251,6 +251,36 @@ If you have an issue: report it on the [issue tracker](https://gitlab.com/gitlab
 
 Feel like contributing? That's awesome! We have a [contributing guide](https://gitlab.com/gitlab-org/cli/-/blob/main/CONTRIBUTING.md) and [Code of conduct](https://gitlab.com/gitlab-org/cli/-/blob/main/CODE_OF_CONDUCT.md) to help guide you.
 
+### Versioning
+
+This project follows the [SemVer](https://github.com/semver/semver) specification.
+
+### Classify version changes
+
+- If deleting a command, changing how it behaves, or adding a new **required** flag, the release must use a new `MAJOR` revision.
+- If adding a new command or **optional** flag, the release must use a new `MINOR` revision.
+- If fixing a bug, the release must use a new `PATCH` revision.
+
+### Compatibility
+
+We do our best to introduce breaking changes only when releasing a new `MAJOR` version.
+Unfortunately, there are situations where this is not possible, and we may introduce
+a breaking change in a `MINOR` or `PATCH` version. Some of situations where we may do so:
+
+- If a security issue is discovered, and the solution requires a breaking change,
+  we may introduce such a change to resolve the issue and protect our users.
+- If a feature was not working as intended, and the bug fix requires a breaking change,
+  the bug fix may be introduced to ensure the functionality works as intended.
+- When feature behavior is overwhelmingly confusing due to a vague specification
+  on how it should work. In such cases, we may refine the specification
+  to remove the ambiguity, and introduce a breaking change that aligns with the
+  refined specification. For an example of this, see
+  [merge request 1382](https://gitlab.com/gitlab-org/cli/-/merge_requests/1382#note_1686888887).
+- Experimental features are not guaranteed to be stable, and can be modified or
+  removed without a breaking change.
+
+Breaking changes are a last resort, and we try our best to only introduce them when absolutely necessary.
+
 ## Inspiration
 
 The GitLab CLI was adopted from [Clement Sam](https://gitlab.com/profclems) in 2022 to serve as the official CLI of GitLab. Over the years the project has been inspired by both the [GitHub CLI](https://github.com/cli/cli) and [Zaq? Wiedmann's](https://gitlab.com/zaquestion) [lab](https://github.com/zaquestion/lab).
