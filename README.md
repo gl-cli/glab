@@ -81,6 +81,15 @@ Many core commands also have sub-commands. Some examples:
 - Approve a merge request: `glab mr approve 235`
 - Create an issue, and add milestone, title, and label: `glab issue create -m release-2.0.0 -t "My title here" --label important`
 
+### GitLab Duo commands
+
+The GitLab CLI also provides support for GitLab Duo AI/ML powered features. These include:
+
+- [`glab ask`](docs/source/ask)
+
+Use `glab ask` to ask questions about `git` commands. It can help you remember a
+command you forgot, or provide suggestions on how to run commands to perform other tasks.
+
 ## Demo
 
 [![asciicast](https://asciinema.org/a/368622.svg)](https://asciinema.org/a/368622)
