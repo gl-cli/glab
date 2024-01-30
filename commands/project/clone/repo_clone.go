@@ -262,8 +262,7 @@ func cloneRun(opts *CloneOptions, ctxOpts *ContextOpts) (err error) {
 	} else if !strings.HasSuffix(ctxOpts.Repo, ".git") {
 		ctxOpts.Repo += ".git"
 	}
-	// We deep copy gitFlags for group clones that preserve namespaces
-	// To preserve namespaces, we
+	// To preserve namespaces, we deep copy gitFlags for group clones
 	var gitFlags []string
 	if opts.PreserveNamespace {
 		namespacedDir := ctxOpts.Project.PathWithNamespace
