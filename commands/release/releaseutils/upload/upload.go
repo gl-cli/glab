@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/xanzy/go-gitlab"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
@@ -69,9 +68,11 @@ func (c *Context) UploadFiles(projectID, tagName string) error {
 			return err
 		}
 
-		gitlabBaseURL := fmt.Sprintf("%s://%s/", glinstance.OverridableDefaultProtocol(), glinstance.OverridableDefault())
+		baseURL := c.Client.BaseURL()
+		baseURL.Path = "/"
+
 		// projectFile.URL from upload: /uploads/<hash>/filename.txt
-		linkURL := gitlabBaseURL + projectID + projectFile.URL
+		linkURL := baseURL.String() + projectID + projectFile.URL
 		filename := "/" + file.Name
 
 		_, err = CreateLink(c.Client, projectID, tagName, &ReleaseAsset{
