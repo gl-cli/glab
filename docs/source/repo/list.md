@@ -20,7 +20,7 @@ glab repo list [flags]
 ## Aliases
 
 ```plaintext
-users
+ls
 ```
 
 ## Examples

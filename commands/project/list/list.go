@@ -38,7 +38,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	glab repo list
 	`),
 		Args:    cobra.ExactArgs(0),
-		Aliases: []string{"users"},
+		Aliases: []string{"ls"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient
 
