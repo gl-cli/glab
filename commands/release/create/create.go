@@ -23,7 +23,6 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/spf13/cobra"
@@ -344,9 +343,7 @@ func createRun(opts *CreateOpts) error {
 			return releaseFailedErr(err, start)
 		}
 		opts.IO.Logf("%s Release created\t%s=%s\n", color.GreenCheck(),
-			color.Blue("url"), fmt.Sprintf("%s://%s/%s/-/releases/%s",
-				glinstance.OverridableDefaultProtocol(), glinstance.OverridableDefault(),
-				repo.FullName(), release.TagName))
+			color.Blue("url"), release.Links.Self)
 	} else {
 		updateOpts := &gitlab.UpdateReleaseOptions{
 			Name: &opts.Name,
@@ -369,9 +366,7 @@ func createRun(opts *CreateOpts) error {
 		}
 
 		opts.IO.Logf("%s Release updated\t%s=%s\n", color.GreenCheck(),
-			color.Blue("url"), fmt.Sprintf("%s://%s/%s/-/releases/%s",
-				glinstance.OverridableDefaultProtocol(), glinstance.OverridableDefault(),
-				repo.FullName(), release.TagName))
+			color.Blue("url"), release.Links.Self)
 	}
 
 	// upload files and create asset links

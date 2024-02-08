@@ -70,7 +70,10 @@ func TestReleaseCreate(t *testing.T) {
 							"created_at": "2023-01-19T02:58:32.622Z",
 							"released_at": "2023-01-19T02:58:32.622Z",
 							"upcoming_release": false,
-							"tag_path": "/OWNER/REPO/-/tags/0.0.1"
+							"tag_path": "/OWNER/REPO/-/tags/0.0.1",
+							"_links": {
+								"self": "https://gitlab.com/OWNER/REPO/-/releases/0.0.1"
+							}
 						}`)(req)
 					return resp, nil
 				},
@@ -145,7 +148,10 @@ func TestReleaseCreateWithFiles(t *testing.T) {
 							"created_at": "2023-01-19T02:58:32.622Z",
 							"released_at": "2023-01-19T02:58:32.622Z",
 							"upcoming_release": false,
-							"tag_path": "/OWNER/REPO/-/tags/0.0.1"
+							"tag_path": "/OWNER/REPO/-/tags/0.0.1",
+							"_links": {
+								"self": "https://gitlab.com/OWNER/REPO/-/releases/0.0.1"
+							}
 						}`)(req)
 					return resp, nil
 				},
