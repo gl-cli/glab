@@ -102,7 +102,7 @@ lint:
 
 code_navigation:
   stage: test
-  image: golang:latest
+  image: golang:${GO_VERSION}
   allow_failure: true
   script:
     - go install github.com/sourcegraph/lsif-go/cmd/lsif-go@latest
