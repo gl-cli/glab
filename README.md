@@ -40,6 +40,7 @@ To get started with `glab`:
 1. Follow the [installation instructions](#installation) appropriate for your operating system.
 1. [Authenticate](#authentication) into your instance of GitLab.
 1. Optional. Configure `glab` further to meet your needs:
+   - 1Password users can configure it to [authenticate to `glab`](https://developer.1password.com/docs/cli/shell-plugins/gitlab/).
    - Set any needed global, per-project, or per-host [configuration](#configuration).
    - Set any needed [environment variables](#environment-variables).
 
@@ -51,9 +52,12 @@ Run `glab --help` to view a list of core commands in your terminal.
 
 - [`glab alias`](docs/source/alias)
 - [`glab api`](docs/source/api)
+- [`glab ask`](docs/source/ask)
 - [`glab auth`](docs/source/auth)
+- [`glab changelog`](docs/source/changelog)
 - [`glab check-update`](docs/source/check-update)
 - [`glab ci`](docs/source/ci)
+- [`glab cluster`](docs/source/cluster)
 - [`glab completion`](docs/source/completion)
 - [`glab config`](docs/source/config)
 - [`glab incident`](docs/source/incident)
