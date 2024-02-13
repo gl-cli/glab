@@ -209,21 +209,30 @@ func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
 	var selectedJob string
 
 	for _, job := range jobs {
-		jobOptions = append(jobOptions, fmt.Sprintf("%s (%d) - %s", job.Name, job.ID, job.Status))
+		if inputs.SelectionPredicate == nil || inputs.SelectionPredicate(job) {
+			jobOptions = append(jobOptions, fmt.Sprintf("%s (%d) - %s", job.Name, job.ID, job.Status))
+		}
+	}
+
+	messagePrompt := inputs.SelectionPrompt
+	if messagePrompt == "" {
+		messagePrompt = "Select pipeline job to trace:"
 	}
 
 	promptOpts := &survey.Select{
-		Message: "Select pipeline job to trace:",
+		Message: messagePrompt,
 		Options: jobOptions,
 	}
+	if len(jobOptions) > 0 {
 
-	err = prompt.AskOne(promptOpts, &selectedJob)
-	if err != nil {
-		if errors.Is(err, terminal.InterruptErr) {
-			return 0, nil
+		err = prompt.AskOne(promptOpts, &selectedJob)
+		if err != nil {
+			if errors.Is(err, terminal.InterruptErr) {
+				return 0, nil
+			}
+
+			return 0, err
 		}
-
-		return 0, err
 	}
 
 	if selectedJob != "" {
@@ -231,43 +240,45 @@ func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
 		m := re.FindAllStringSubmatch(selectedJob, -1)
 		return utils.StringToInt(m[0][1]), nil
 	} else if len(jobs) > 0 {
-		return jobs[0].ID, nil
-	} else {
-		pipeline, err := api.GetPipeline(opts.ApiClient, pipelineId, nil, opts.Repo.FullName())
-		if err != nil {
-			return 0, err
-		}
-		// use commit statuses to show external jobs
-		cs, err := api.GetCommitStatuses(opts.ApiClient, opts.Repo.FullName(), pipeline.SHA)
-		if err != nil {
-			return 0, nil
-		}
-
-		c := opts.IO.Color()
-
-		fmt.Fprint(opts.IO.StdOut, "Getting external jobs...")
-		for _, status := range cs {
-			var s string
-
-			switch status.Status {
-			case "success":
-				s = c.Green(status.Status)
-			case "error":
-				s = c.Red(status.Status)
-			default:
-				s = c.Gray(status.Status)
-			}
-			fmt.Fprintf(opts.IO.StdOut, "(%s) %s\nURL: %s\n\n", s, c.Bold(status.Name), c.Gray(status.TargetURL))
-		}
-
 		return 0, nil
 	}
+
+	pipeline, err := api.GetPipeline(opts.ApiClient, pipelineId, nil, opts.Repo.FullName())
+	if err != nil {
+		return 0, err
+	}
+	// use commit statuses to show external jobs
+	cs, err := api.GetCommitStatuses(opts.ApiClient, opts.Repo.FullName(), pipeline.SHA)
+	if err != nil {
+		return 0, nil
+	}
+
+	c := opts.IO.Color()
+
+	fmt.Fprint(opts.IO.StdOut, "Getting external jobs...\n")
+	for _, status := range cs {
+		var s string
+
+		switch status.Status {
+		case "success":
+			s = c.Green(status.Status)
+		case "error":
+			s = c.Red(status.Status)
+		default:
+			s = c.Gray(status.Status)
+		}
+		fmt.Fprintf(opts.IO.StdOut, "(%s) %s\nURL: %s\n\n", s, c.Bold(status.Name), c.Gray(status.TargetURL))
+	}
+
+	return 0, nil
 }
 
 type JobInputs struct {
-	JobName    string
-	Branch     string
-	PipelineId int
+	JobName            string
+	Branch             string
+	PipelineId         int
+	SelectionPrompt    string
+	SelectionPredicate func(s *gitlab.Job) bool
 }
 
 type JobOptions struct {
@@ -281,6 +292,9 @@ func TraceJob(inputs *JobInputs, opts *JobOptions) error {
 	if err != nil {
 		fmt.Fprintln(opts.IO.StdErr, "invalid job ID:", inputs.JobName)
 		return err
+	}
+	if jobID == 0 {
+		return nil
 	}
 	fmt.Fprintln(opts.IO.StdOut)
 	return runTrace(context.Background(), opts.ApiClient, opts.IO.StdOut, opts.Repo.FullName(), jobID)
