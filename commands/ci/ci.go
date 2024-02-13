@@ -2,6 +2,7 @@ package ci
 
 import (
 	jobArtifactCmd "gitlab.com/gitlab-org/cli/commands/ci/artifact"
+	ciConfigCmd "gitlab.com/gitlab-org/cli/commands/ci/config"
 	pipeDeleteCmd "gitlab.com/gitlab-org/cli/commands/ci/delete"
 	pipeGetCmd "gitlab.com/gitlab-org/cli/commands/ci/get"
 	legacyCICmd "gitlab.com/gitlab-org/cli/commands/ci/legacyci"
@@ -40,5 +41,6 @@ func NewCmdCI(f *cmdutils.Factory) *cobra.Command {
 	ciCmd.AddCommand(pipeTriggerCmd.NewCmdTrigger(f))
 	ciCmd.AddCommand(jobArtifactCmd.NewCmdRun(f))
 	ciCmd.AddCommand(pipeGetCmd.NewCmdGet(f))
+	ciCmd.AddCommand(ciConfigCmd.NewCmdConfig(f))
 	return ciCmd
 }

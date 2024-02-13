@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	projectPath       string
+	ProjectPath       string
 	GlabBinaryPath    string
 	CachedTestFactory *cmdutils.Factory
 )
@@ -47,9 +47,9 @@ func init() {
 	if err != nil {
 		log.Fatalln("Failed to get root directory: ", err)
 	}
-	projectPath = strings.TrimSuffix(path.String(), "\n")
-	if !strings.HasSuffix(projectPath, "/") {
-		projectPath += "/"
+	ProjectPath = strings.TrimSuffix(path.String(), "\n")
+	if !strings.HasSuffix(ProjectPath, "/") {
+		ProjectPath += "/"
 	}
 }
 
@@ -57,11 +57,11 @@ func InitTest(m *testing.M, suffix string) {
 	// Build a glab binary with test symbols. If the parent test binary was run
 	// with coverage enabled, enable coverage on the child binary, too.
 	var err error
-	GlabBinaryPath, err = filepath.Abs(os.ExpandEnv(projectPath + "testdata/glab.test"))
+	GlabBinaryPath, err = filepath.Abs(os.ExpandEnv(ProjectPath + "testdata/glab.test"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	testCmd := []string{"test", "-c", "-o", GlabBinaryPath, projectPath + "cmd/glab"}
+	testCmd := []string{"test", "-c", "-o", GlabBinaryPath, ProjectPath + "cmd/glab"}
 	if coverMode := testing.CoverMode(); coverMode != "" {
 		testCmd = append(testCmd, "-covermode", coverMode, "-coverpkg", "./...")
 	}
@@ -187,11 +187,11 @@ func CopyTestRepo(log fatalLogger, name string) string {
 	if name == "" {
 		name = strconv.Itoa(int(rand.Uint64()))
 	}
-	dest, err := filepath.Abs(os.ExpandEnv(projectPath + "test/testdata-" + name))
+	dest, err := filepath.Abs(os.ExpandEnv(ProjectPath + "test/testdata-" + name))
 	if err != nil {
 		log.Fatal(err)
 	}
-	src, err := filepath.Abs(os.ExpandEnv(projectPath + "test/testdata"))
+	src, err := filepath.Abs(os.ExpandEnv(ProjectPath + "test/testdata"))
 	if err != nil {
 		log.Fatal(err)
 	}
