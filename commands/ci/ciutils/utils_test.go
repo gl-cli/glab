@@ -164,7 +164,7 @@ func TestGetJobId(t *testing.T) {
 			name:        "when getJobId with pipelineId is requested, ask for job and give no answer",
 			jobName:     "",
 			pipelineId:  123,
-			expectedOut: 1122,
+			expectedOut: 0,
 			askOneStubs: []string{""},
 			httpMocks: []httpMock{
 				{
