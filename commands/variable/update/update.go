@@ -108,35 +108,7 @@ func updateRun(opts *UpdateOpts) error {
 		return err
 	}
 
-	baseRepo, err := opts.BaseRepo()
-	if err != nil {
-		return err
-	}
-
-	if opts.Group == "" {
-		// update project-level variable
-		updateProjectVarOpts := &gitlab.UpdateProjectVariableOptions{
-			Value:            gitlab.String(opts.Value),
-			VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
-			Masked:           gitlab.Bool(opts.Masked),
-			Protected:        gitlab.Bool(opts.Protected),
-			Raw:              gitlab.Bool(opts.Raw),
-			EnvironmentScope: gitlab.String(opts.Scope),
-		}
-
-		_, err = api.UpdateProjectVariable(httpClient, baseRepo.FullName(), opts.Key, updateProjectVarOpts)
-		if err != nil {
-			return err
-		}
-
-		fmt.Fprintf(opts.IO.StdOut,
-			"%s Updated variable %s for project %s with scope %s\n",
-			c.GreenCheck(),
-			opts.Key,
-			baseRepo.FullName(),
-			opts.Scope)
-
-	} else {
+	if opts.Group != "" {
 		// update group-level variable
 		updateGroupVarOpts := &gitlab.UpdateGroupVariableOptions{
 			Value:            gitlab.String(opts.Value),
@@ -153,7 +125,29 @@ func updateRun(opts *UpdateOpts) error {
 		}
 
 		fmt.Fprintf(opts.IO.StdOut, "%s Updated variable %s for group %s\n", c.GreenCheck(), opts.Key, opts.Group)
+		return nil
 	}
 
+	// update project-level variable
+	baseRepo, err := opts.BaseRepo()
+	if err != nil {
+		return err
+	}
+
+	updateProjectVarOpts := &gitlab.UpdateProjectVariableOptions{
+		Value:            gitlab.String(opts.Value),
+		VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
+		Masked:           gitlab.Bool(opts.Masked),
+		Protected:        gitlab.Bool(opts.Protected),
+		Raw:              gitlab.Bool(opts.Raw),
+		EnvironmentScope: gitlab.String(opts.Scope),
+	}
+
+	_, err = api.UpdateProjectVariable(httpClient, baseRepo.FullName(), opts.Key, updateProjectVarOpts)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(opts.IO.StdOut, "%s Updated variable %s for project %s with scope %s\n", c.GreenCheck(), opts.Key, baseRepo.FullName(), opts.Scope)
 	return nil
 }
