@@ -144,8 +144,10 @@ func Test_line(t *testing.T) {
 
 func testbox(x, y, w, h int) *tview.TextView {
 	b := tview.NewTextView()
-	b.SetBorder(true)
-	b.SetRect(x, y, w, h)
+	b.
+		SetBackgroundColor(tcell.ColorDefault).
+		SetBorder(true).
+		SetRect(x, y, w, h)
 	return b
 }
 
@@ -526,7 +528,9 @@ func Test_jobsView(t *testing.T) {
 	jobsCh := make(chan []*ViewJob)
 	inputCh := make(chan struct{})
 	root := tview.NewPages()
-	root.SetBorderPadding(1, 1, 2, 2)
+	root.
+		SetBackgroundColor(tcell.ColorDefault).
+		SetBorderPadding(1, 1, 2, 2)
 
 	screen := tcell.NewSimulationScreen("UTF-8")
 	err := screen.Init()
