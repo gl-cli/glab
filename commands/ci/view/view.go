@@ -186,7 +186,9 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 
 func drawView(opts ViewOpts) error {
 	root := tview.NewPages()
-	root.SetBorderPadding(1, 1, 2, 2).
+	root.
+		SetBackgroundColor(tcell.ColorDefault).
+		SetBorderPadding(1, 1, 2, 2).
 		SetBorder(true).
 		SetTitle(fmt.Sprintf(" Pipeline #%d triggered %s by %s ", opts.Commit.LastPipeline.ID, utils.TimeToPrettyTimeAgo(*opts.Commit.LastPipeline.CreatedAt), opts.Commit.AuthorName))
 
@@ -268,6 +270,7 @@ func inputCapture(
 			if curJob.Kind == Job && (curJob.Status == "pending" || curJob.Status == "running") {
 				modalVisible = true
 				modal := tview.NewModal().
+					SetBackgroundColor(tcell.ColorDefault).
 					SetText(fmt.Sprintf("Are you sure you want to Cancel %s", curJob.Name)).
 					AddButtons([]string{"✘ No", "✔ Yes"}).
 					SetDoneFunc(func(buttonIndex int, buttonLabel string) {
@@ -300,6 +303,7 @@ func inputCapture(
 			}
 			modalVisible = true
 			modal := tview.NewModal().
+				SetBackgroundColor(tcell.ColorDefault).
 				SetText(fmt.Sprintf("Are you sure you want to run %s", curJob.Name)).
 				AddButtons([]string{"✘ No", "✔ Yes"}).
 				SetDoneFunc(func(buttonIndex int, buttonLabel string) {
@@ -532,8 +536,11 @@ func jobsView(
 		logsKey := "logs-" + curJob.Name
 		if !root.SwitchToPage(logsKey).HasPage(logsKey) {
 			tv := tview.NewTextView()
-			tv.SetDynamicColors(true)
-			tv.SetBorderPadding(0, 0, 1, 1).SetBorder(true)
+			tv.
+				SetDynamicColors(true).
+				SetBackgroundColor(tcell.ColorDefault).
+				SetBorderPadding(0, 0, 1, 1).
+				SetBorder(true)
 
 			go func() {
 				err := ciutils.RunTraceSha(
@@ -677,7 +684,9 @@ func box(root *tview.Pages, key string, x, y, w, h int) *tview.TextView {
 	b, ok := boxes[key]
 	if !ok {
 		b = tview.NewTextView()
-		b.SetBorder(true)
+		b.
+			SetBackgroundColor(tcell.ColorDefault).
+			SetBorder(true)
 		boxes[key] = b
 	}
 	b.SetRect(x, y, w, h)
