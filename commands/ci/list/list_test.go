@@ -1,11 +1,11 @@
 package list
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 	"testing"
-
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
 
@@ -15,19 +15,16 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
+func runCommand(rt http.RoundTripper, args string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.InitIOStreams(false, "")
+
 	factory := cmdtest.InitFactory(ios, rt)
 
 	_, _ = factory.HttpClient()
 
 	cmd := NewCmdList(factory)
 
-	_, err := cmd.ExecuteC()
-	return &test.CmdOut{
-		OutBuf: stdout,
-		ErrBuf: stderr,
-	}, err
+	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
 }
 
 func TestCiList(t *testing.T) {
@@ -64,7 +61,7 @@ func TestCiList(t *testing.T) {
 	]
 	`))
 
-	output, err := runCommand(fakeHTTP)
+	output, err := runCommand(fakeHTTP, "")
 	if err != nil {
 		t.Errorf("error running command `ci list`: %v", err)
 	}
@@ -80,5 +77,28 @@ func TestCiList(t *testing.T) {
 		(success) • #2	(#4)	main	(about X years ago)
 
 		`), out)
+	assert.Empty(t, output.Stderr())
+}
+
+func TestCiListJSON(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/pipelines",
+		httpmock.NewFileResponse(http.StatusOK, "testdata/ciList.json"))
+
+	output, err := runCommand(fakeHTTP, "-F json")
+	if err != nil {
+		t.Errorf("error running command `ci list -F json`: %v", err)
+	}
+
+	b, err := os.ReadFile("testdata/ciList.json")
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	expectedOut := string(b)
+
+	assert.JSONEq(t, expectedOut, output.String())
 	assert.Empty(t, output.Stderr())
 }

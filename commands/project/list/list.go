@@ -1,6 +1,7 @@
 package list
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -18,6 +19,7 @@ type Options struct {
 	Group         string
 	PerPage       int
 	Page          int
+	OutputFormat  string
 	FilterAll     bool
 	FilterOwned   bool
 	FilterMember  bool
@@ -51,6 +53,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	repoListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Return only repositories in the given group and its subgroups")
 	repoListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
 	repoListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page")
+	repoListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
 	repoListCmd.Flags().BoolVarP(&opts.FilterAll, "all", "a", false, "List all projects on the instance")
 	repoListCmd.Flags().BoolVarP(&opts.FilterOwned, "mine", "m", false, "Only list projects you own (default if no filters are passed)")
 	repoListCmd.Flags().BoolVar(&opts.FilterMember, "member", false, "Only list projects which you are a member")
@@ -79,17 +82,25 @@ func runE(opts *Options) error {
 		return err
 	}
 
-	title := fmt.Sprintf("Showing %d of %d projects (Page %d of %d)\n", len(projects), resp.TotalItems, resp.CurrentPage, resp.TotalPages)
+	if opts.OutputFormat == "json" {
+		projectListJSON, _ := json.Marshal(projects)
+		fmt.Fprintln(opts.IO.StdOut, string(projectListJSON))
+	} else {
+		// Title
+		title := fmt.Sprintf("Showing %d of %d projects (Page %d of %d)\n", len(projects), resp.TotalItems, resp.CurrentPage, resp.TotalPages)
 
-	table := tableprinter.NewTablePrinter()
-	for _, prj := range projects {
-		table.AddCell(c.Blue(prj.PathWithNamespace))
-		table.AddCell(prj.SSHURLToRepo)
-		table.AddCell(prj.Description)
-		table.EndRow()
+		// List
+		table := tableprinter.NewTablePrinter()
+		for _, prj := range projects {
+			table.AddCell(c.Blue(prj.PathWithNamespace))
+			table.AddCell(prj.SSHURLToRepo)
+			table.AddCell(prj.Description)
+			table.EndRow()
+		}
+
+		fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title, table.String())
 	}
 
-	fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title, table.String())
 	return err
 }
 

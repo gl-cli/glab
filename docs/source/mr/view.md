@@ -26,11 +26,12 @@ show
 ## Options
 
 ```plaintext
-  -c, --comments       Show mr comments and activities
-  -p, --page int       Page number
-  -P, --per-page int   Number of items to list per page (default 20)
-  -s, --system-logs    Show system activities / logs
-  -w, --web            Open mr in a browser. Uses default browser or browser specified in BROWSER variable
+  -c, --comments        Show mr comments and activities
+  -F, --output string   Format output as: text, json (default "text")
+  -p, --page int        Page number
+  -P, --per-page int    Number of items to list per page (default 20)
+  -s, --system-logs     Show system activities / logs
+  -w, --web             Open mr in a browser. Uses default browser or browser specified in BROWSER variable
 ```
 
 ## Options inherited from parent commands

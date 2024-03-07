@@ -3,6 +3,7 @@ package list
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 
@@ -354,4 +355,32 @@ func TestMergeRequestList_labels(t *testing.T) {
 			assert.Empty(t, output.Stderr())
 		})
 	}
+}
+
+func TestMrListJSON(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/merge_requests?page=1&per_page=30&state=opened",
+		httpmock.NewFileResponse(http.StatusOK, "./testdata/mrList.json"))
+
+	output, err := runCommand(fakeHTTP, true, "-F json", nil, "")
+	if err != nil {
+		t.Errorf("error running command `mr list -F json`: %v", err)
+	}
+
+	if err != nil {
+		panic(err)
+	}
+
+	b, err := os.ReadFile("./testdata/mrList.json")
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	expectedOut := string(b)
+
+	assert.JSONEq(t, expectedOut, output.String())
+	assert.Empty(t, output.Stderr())
 }

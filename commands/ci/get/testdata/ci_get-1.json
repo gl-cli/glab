@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1999017704,
+    "status": "success",
+    "stage": "test",
+    "name": "test_vars",
+    "ref": "1-fake-issue-3",
+    "tag": false,
+    "coverage": null,
+    "allow_failure": false,
+    "created_at": "2022-01-20T21:47:16.291Z",
+    "started_at": "2022-01-20T21:47:16.693Z",
+    "finished_at": "2022-01-20T21:47:31.274Z",
+    "erased_at": null,
+    "duration": 14.580467,
+    "queued_duration": 0.211715,
+    "user": {
+      "id": 8814129,
+      "username": "OWNER",
+      "name": "Some User",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/8814129/avatar.png",
+      "web_url": "https://gitlab.com/OWNER",
+      "created_at": "2021-05-03T14:58:50.059Z",
+      "bio": "",
+      "location": "Canada",
+      "public_email": "",
+      "skype": "",
+      "linkedin": "",
+      "twitter": "",
+      "discord": "",
+      "website_url": "",
+      "organization": "GitLab",
+      "job_title": "Sr Backend Engineer",
+      "pronouns": "",
+      "bot": false,
+      "work_information": "Sr Backend Engineer at GitLab",
+      "followers": 2,
+      "following": 0,
+      "local_time": "10:48 AM"
+    },
+    "commit": {
+      "id": "44eb489568f7cb1a5a730fce6b247cd3797172ca",
+      "short_id": "44eb4895",
+      "created_at": "2022-01-20T21:47:15.000+00:00",
+      "parent_ids": [
+        "001eb421e586a3f07f90aea102c8b2d4068ab5b6"
+      ],
+      "title": "Add new file",
+      "message": "Add new file",
+      "author_name": "Some User",
+      "author_email": "OWNER@gitlab.com",
+      "authored_date": "2022-01-20T21:47:15.000+00:00",
+      "committer_name": "Some User",
+      "committer_email": "OWNER@gitlab.com",
+      "committed_date": "2022-01-20T21:47:15.000+00:00",
+      "trailers": {},
+      "extended_trailers": {},
+      "web_url": "https://gitlab.com/OWNER/REPO/-/commit/44eb489568f7cb1a5a730fce6b247cd3797172ca"
+    },
+    "pipeline": {
+      "id": 452959326,
+      "iid": 14,
+      "project_id": 29316529,
+      "sha": "44eb489568f7cb1a5a730fce6b247cd3797172ca",
+      "ref": "1-fake-issue-3",
+      "status": "success",
+      "source": "push",
+      "created_at": "2022-01-20T21:47:16.276Z",
+      "updated_at": "2022-01-20T21:47:31.358Z",
+      "web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/452959326"
+    },
+    "web_url": "https://gitlab.com/OWNER/REPO/-/jobs/1999017704",
+    "project": {
+      "ci_job_token_scope_enabled": false
+    },
+    "artifacts": [
+      {
+        "file_type": "trace",
+        "size": 2770,
+        "filename": "job.log",
+        "file_format": null
+      }
+    ],
+    "runner": {
+      "id": 12270859,
+      "description": "5-green.saas-linux-small-amd64.runners-manager.gitlab.com/default",
+      "ip_address": "10.1.5.249",
+      "active": true,
+      "paused": false,
+      "is_shared": true,
+      "runner_type": "instance_type",
+      "name": "gitlab-runner",
+      "online": false,
+      "status": "offline"
+    },
+    "artifacts_expire_at": null,
+    "archived": false,
+    "tag_list": []
+  }
+]

@@ -2,6 +2,7 @@ package view
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os/exec"
 	"regexp"
@@ -464,4 +465,18 @@ func Test_reviewersList(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMrViewJSON(t *testing.T) {
+	cmd := NewCmdView(stubFactory)
+	stdout.Reset()
+	stderr.Reset()
+
+	output, err := cmdtest.ExecuteCommand(cmd, "1 -F json", stdout, stderr)
+	if err != nil {
+		t.Errorf("error running command `mr view 1 -F json`: %v", err)
+	}
+
+	assert.True(t, json.Valid([]byte(output.String())))
+	assert.Empty(t, output.Stderr())
 }

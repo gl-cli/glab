@@ -1,6 +1,7 @@
 package list
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"gitlab.com/gitlab-org/cli/api"
@@ -38,6 +39,10 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			l := &gitlab.ListProjectPipelinesOptions{}
+
+			format, _ := cmd.Flags().GetString("output")
+			jsonOut := format == "json"
+
 			l.Page = 1
 			l.PerPage = 30
 
@@ -68,7 +73,12 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			title.Page = l.Page
 			title.CurrentPageTotal = len(pipes)
 
-			fmt.Fprintf(f.IO.StdOut, "%s\n%s\n", title.Describe(), ciutils.DisplayMultiplePipelines(f.IO, pipes, repo.FullName()))
+			if jsonOut {
+				pipeListJSON, _ := json.Marshal(pipes)
+				fmt.Fprintln(f.IO.StdOut, string(pipeListJSON))
+			} else {
+				fmt.Fprintf(f.IO.StdOut, "%s\n%s\n", title.Describe(), ciutils.DisplayMultiplePipelines(f.IO, pipes, repo.FullName()))
+			}
 			return nil
 		},
 	}
@@ -77,6 +87,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	pipelineListCmd.Flags().StringP("sort", "", "desc", "Sort pipeline by {asc|desc}")
 	pipelineListCmd.Flags().IntP("page", "p", 1, "Page number")
 	pipelineListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page")
+	pipelineListCmd.Flags().StringP("output", "F", "text", "Format output as: text, json")
 
 	return pipelineListCmd
 }

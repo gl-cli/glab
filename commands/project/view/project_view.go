@@ -2,6 +2,7 @@ package view
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
@@ -20,6 +21,7 @@ type ViewOptions struct {
 	ProjectID    string
 	APIClient    *gitlab.Client
 	Web          bool
+	OutputFormat string
 	Branch       string
 	Browser      string
 	GlamourStyle string
@@ -120,6 +122,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	}
 
 	projectViewCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, "Open a project in the browser")
+	projectViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
 	projectViewCmd.Flags().StringVarP(&opts.Branch, "branch", "b", "", "View a specific branch of the repository")
 
 	return projectViewCmd
@@ -146,22 +149,24 @@ func runViewProject(opts *ViewOptions) error {
 			generateProjectOpenURL(projectURL, project.DefaultBranch, opts.Branch),
 			opts.Browser,
 		)
-	}
-
-	readmeFile, err := getReadmeFile(opts, project)
-	if err != nil {
-		return err
-	}
-
-	if opts.IO.IsaTTY {
-		if err := opts.IO.StartPager(); err != nil {
+	} else if opts.OutputFormat == "json" {
+		printProjectContentJSON(opts, project)
+	} else {
+		readmeFile, err := getReadmeFile(opts, project)
+		if err != nil {
 			return err
 		}
-		defer opts.IO.StopPager()
 
-		printProjectContentTTY(opts, project, readmeFile)
-	} else {
-		printProjectContentRaw(opts, project, readmeFile)
+		if opts.IO.IsaTTY {
+			if err := opts.IO.StartPager(); err != nil {
+				return err
+			}
+			defer opts.IO.StopPager()
+
+			printProjectContentTTY(opts, project, readmeFile)
+		} else {
+			printProjectContentRaw(opts, project, readmeFile)
+		}
 	}
 
 	return nil
@@ -256,4 +261,9 @@ func printProjectContentRaw(opts *ViewOptions, project *gitlab.Project, readme *
 		fmt.Fprintf(opts.IO.StdOut, readme.Content)
 		fmt.Fprintln(opts.IO.StdOut)
 	}
+}
+
+func printProjectContentJSON(opts *ViewOptions, project *gitlab.Project) {
+	projectJSON, _ := json.Marshal(project)
+	fmt.Fprintln(opts.IO.StdOut, string(projectJSON))
 }

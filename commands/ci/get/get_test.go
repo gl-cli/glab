@@ -2,6 +2,7 @@ package status
 
 import (
 	"net/http"
+	"os"
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
@@ -24,19 +25,26 @@ func runCommand(rt http.RoundTripper, isTTY bool, args string) (*test.CmdOut, er
 	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
 }
 
+const (
+	FileBody   = 1
+	InlineBody = 2
+)
+
 func TestCIGet(t *testing.T) {
 	type httpMock struct {
-		method string
-		path   string
-		status int
-		body   string
+		method   string
+		path     string
+		status   int
+		body     string
+		bodyType int
 	}
 
 	tests := []struct {
-		name        string
-		args        string
-		httpMocks   []httpMock
-		expectedOut string
+		name            string
+		args            string
+		httpMocks       []httpMock
+		expectedOut     string
+		expectedOutType int
 	}{
 		{
 			name: "when get is called on an existing pipeline",
@@ -61,12 +69,14 @@ func TestCIGet(t *testing.T) {
 						"started_at": "2023-10-10T00:00:00Z",
 						"updated_at": "2023-10-10T00:00:00Z"
 					}`,
+					InlineBody,
 				},
 				{
 					http.MethodGet,
 					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
 					http.StatusOK,
 					`[]`,
+					InlineBody,
 				},
 			},
 			expectedOut: `# Pipeline:
@@ -109,12 +119,14 @@ updated:	2023-10-10 00:00:00 +0000 UTC
 						"started_at": "2023-10-10T00:00:00Z",
 						"updated_at": "2023-10-10T00:00:00Z"
 					}`,
+					InlineBody,
 				},
 				{
 					http.MethodGet,
 					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
 					http.StatusOK,
 					`[]`,
+					InlineBody,
 				},
 				{
 					http.MethodGet,
@@ -125,6 +137,7 @@ updated:	2023-10-10 00:00:00 +0000 UTC
 							"id": 123
 						}
 					}`,
+					InlineBody,
 				},
 			},
 			expectedOut: `# Pipeline:
@@ -167,6 +180,7 @@ updated:	2023-10-10 00:00:00 +0000 UTC
 						"started_at": "2023-10-10T00:00:00Z",
 						"updated_at": "2023-10-10T00:00:00Z"
 					}`,
+					InlineBody,
 				},
 				{
 					http.MethodGet,
@@ -177,6 +191,7 @@ updated:	2023-10-10 00:00:00 +0000 UTC
 							"name": "publish",
 							"status": "failed"
 						}]`,
+					InlineBody,
 				},
 			},
 			expectedOut: `# Pipeline:
@@ -220,6 +235,7 @@ publish:	failed
 						"started_at": "2023-10-10T00:00:00Z",
 						"updated_at": "2023-10-10T00:00:00Z"
 					}`,
+					InlineBody,
 				},
 				{
 					http.MethodGet,
@@ -231,6 +247,7 @@ publish:	failed
 							"status": "failed",
 							"failure_reason": "bad timing"
 						}]`,
+					InlineBody,
 				},
 			},
 			expectedOut: `# Pipeline:
@@ -276,12 +293,14 @@ ID	Name	Status	Duration	Failure reason
 						"started_at": "2023-10-10T00:00:00Z",
 						"updated_at": "2023-10-10T00:00:00Z"
 					}`,
+					InlineBody,
 				},
 				{
 					http.MethodGet,
 					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
 					http.StatusOK,
 					`[]`,
+					InlineBody,
 				},
 				{
 					http.MethodGet,
@@ -292,6 +311,7 @@ ID	Name	Status	Duration	Failure reason
 				    "variable_type": "env_var",
 						"value": "true"
 					}]`,
+					InlineBody,
 				},
 			},
 			expectedOut: `# Pipeline:
@@ -338,18 +358,21 @@ RUN_NIGHTLY_BUILD:	true
 						"started_at": "2023-10-10T00:00:00Z",
 						"updated_at": "2023-10-10T00:00:00Z"
 					}`,
+					InlineBody,
 				},
 				{
 					http.MethodGet,
 					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
 					http.StatusOK,
 					`[]`,
+					InlineBody,
 				},
 				{
 					http.MethodGet,
 					"/api/v4/projects/5/pipelines/123/variables",
 					http.StatusOK,
 					"[]",
+					InlineBody,
 				},
 			},
 			expectedOut: `# Pipeline:
@@ -371,6 +394,28 @@ updated:	2023-10-10 00:00:00 +0000 UTC
 No variables found in pipeline.
 `,
 		},
+		{
+			name: "when getting JSON for pipeline",
+			args: "-p 452959326 -F json -b main",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/452959326",
+					http.StatusOK,
+					"testdata/ci_get-0.json",
+					FileBody,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/452959326/jobs?per_page=100",
+					http.StatusOK,
+					"testdata/ci_get-1.json",
+					FileBody,
+				},
+			},
+			expectedOut:     "testdata/ci_get.result",
+			expectedOutType: FileBody,
+		},
 	}
 
 	for _, tc := range tests {
@@ -381,13 +426,30 @@ No variables found in pipeline.
 			defer fakeHTTP.Verify(t)
 
 			for _, mock := range tc.httpMocks {
-				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
+				var body string
+				if mock.bodyType == FileBody {
+					bodyBytes, _ := os.ReadFile(mock.body)
+					body = string(bodyBytes)
+				} else {
+					body = mock.body
+				}
+				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, body))
 			}
 
 			output, err := runCommand(fakeHTTP, false, tc.args)
 			require.Nil(t, err)
+			var expectedOut string
+			var expectedOutBytes []byte
 
-			assert.Equal(t, tc.expectedOut, output.String())
+			if tc.expectedOutType == FileBody {
+				expectedOutBytes, err = os.ReadFile(tc.expectedOut)
+				expectedOut = string(expectedOutBytes)
+				require.Nil(t, err)
+			} else {
+				expectedOut = tc.expectedOut
+			}
+
+			assert.Equal(t, expectedOut, output.String())
 			assert.Empty(t, output.Stderr())
 		})
 	}
