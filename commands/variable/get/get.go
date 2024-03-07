@@ -1,6 +1,7 @@
 package get
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -19,9 +20,11 @@ type GetOps struct {
 	IO         *iostreams.IOStreams
 	BaseRepo   func() (glrepo.Interface, error)
 
-	Key   string
-	Group string
-	Scope string
+	Scope        string
+	Key          string
+	Group        string
+	OutputFormat string
+	JSONOutput   bool
 }
 
 func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Command {
@@ -65,6 +68,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Comman
 
 	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. All (*), or specific environments.")
 	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Get variable for a group")
+	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
 	return cmd
 }
 
@@ -81,6 +85,10 @@ func getRun(opts *GetOps) error {
 		if err != nil {
 			return err
 		}
+		if opts.OutputFormat == "json" {
+			varJSON, _ := json.Marshal(variable)
+			fmt.Println(string(varJSON))
+		}
 		variableValue = variable.Value
 	} else {
 		baseRepo, err := opts.BaseRepo()
@@ -92,9 +100,15 @@ func getRun(opts *GetOps) error {
 		if err != nil {
 			return err
 		}
+		if opts.OutputFormat == "json" {
+			varJSON, _ := json.Marshal(variable)
+			fmt.Fprintln(opts.IO.StdOut, string(varJSON))
+		}
 		variableValue = variable.Value
 	}
 
-	fmt.Fprint(opts.IO.StdOut, variableValue)
+	if opts.OutputFormat != "json" {
+		fmt.Fprint(opts.IO.StdOut, variableValue)
+	}
 	return nil
 }

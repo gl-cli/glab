@@ -1,6 +1,7 @@
 package list
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -41,8 +42,9 @@ type ListOptions struct {
 	Draft  bool
 
 	// Pagination
-	Page    int
-	PerPage int
+	Page         int
+	PerPage      int
+	OutputFormat string
 
 	// display opts
 	ListType       string
@@ -132,12 +134,13 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 	mrListCmd.Flags().BoolVarP(&opts.Closed, "closed", "c", false, "Get only closed merge requests")
 	mrListCmd.Flags().BoolVarP(&opts.Merged, "merged", "M", false, "Get only merged merge requests")
 	mrListCmd.Flags().BoolVarP(&opts.Draft, "draft", "d", false, "Filter by draft merge requests")
+	mrListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
 	mrListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
 	mrListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page")
 	mrListCmd.Flags().StringSliceVarP(&opts.Assignee, "assignee", "a", []string{}, "Get only merge requests assigned to users")
 	mrListCmd.Flags().StringSliceVarP(&opts.Reviewer, "reviewer", "r", []string{}, "Get only merge requests with users as reviewer")
 
-	mrListCmd.Flags().BoolP("opened", "o", false, "Get only open merge requests")
+	mrListCmd.Flags().BoolP("opened", "O", false, "Get only open merge requests")
 	_ = mrListCmd.Flags().MarkHidden("opened")
 	_ = mrListCmd.Flags().MarkDeprecated("opened", "default value if neither --closed, --locked or --merged is used")
 
@@ -165,8 +168,14 @@ func listRun(opts *ListOptions) error {
 	l := &gitlab.ListProjectMergeRequestsOptions{
 		State: gitlab.String(opts.State),
 	}
-	l.Page = 1
-	l.PerPage = 30
+	jsonOutput := opts.OutputFormat == "json"
+	if jsonOutput {
+		l.Page = 0
+		l.PerPage = 0
+	} else {
+		l.Page = 1
+		l.PerPage = 30
+	}
 
 	if opts.Author != "" {
 		u, err := api.UserByName(apiClient, opts.Author)
@@ -256,11 +265,15 @@ func listRun(opts *ListOptions) error {
 	title.ListActionType = opts.ListType
 	title.CurrentPageTotal = len(mergeRequests)
 
-	if err = opts.IO.StartPager(); err != nil {
-		return err
+	if jsonOutput {
+		mrListJSON, _ := json.Marshal(mergeRequests)
+		fmt.Fprintln(opts.IO.StdOut, string(mrListJSON))
+	} else {
+		if err = opts.IO.StartPager(); err != nil {
+			return err
+		}
+		defer opts.IO.StopPager()
+		fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title.Describe(), mrutils.DisplayAllMRs(opts.IO, mergeRequests))
 	}
-	defer opts.IO.StopPager()
-	fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title.Describe(), mrutils.DisplayAllMRs(opts.IO, mergeRequests))
-
 	return nil
 }

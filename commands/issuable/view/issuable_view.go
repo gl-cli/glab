@@ -1,6 +1,7 @@
 package view
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -18,11 +19,17 @@ import (
 	"github.com/xanzy/go-gitlab"
 )
 
+type IssueWithNotes struct {
+	*gitlab.Issue
+	Notes []*gitlab.Note
+}
+
 type ViewOpts struct {
 	ShowComments   bool
 	ShowSystemLogs bool
 	OpenInBrowser  bool
 	Web            bool
+	OutputFormat   string
 
 	CommentPageNumber int
 	CommentLimit      int
@@ -109,6 +116,9 @@ func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 				return err
 			}
 			defer f.IO.StopPager()
+			if opts.OutputFormat == "json" {
+				return printJSONIssue(opts)
+			}
 			if f.IO.IsErrTTY && f.IO.IsaTTY {
 				return printTTYIssuePreview(opts)
 			}
@@ -121,6 +131,7 @@ func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 	issueViewCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, fmt.Sprintf("Open %s in a browser. Uses default browser or browser specified in BROWSER variable", issueType))
 	issueViewCmd.Flags().IntVarP(&opts.CommentPageNumber, "page", "p", 1, "Page number")
 	issueViewCmd.Flags().IntVarP(&opts.CommentLimit, "per-page", "P", 20, "Number of items to list per page")
+	issueViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
 
 	return issueViewCmd
 }
@@ -274,4 +285,18 @@ func RawIssuableNotes(notes []*gitlab.Note, showComments bool, showSystemLogs bo
 	}
 
 	return out
+}
+
+func printJSONIssue(opts *ViewOpts) error {
+	// var notes []gitlab.Note
+	if opts.ShowComments {
+
+		extendedIssue := IssueWithNotes{opts.Issue, opts.Notes}
+		issueJSON, _ := json.Marshal(extendedIssue)
+		fmt.Fprintln(opts.IO.StdOut, string(issueJSON))
+	} else {
+		issueJSON, _ := json.Marshal(opts.Issue)
+		fmt.Fprintln(opts.IO.StdOut, string(issueJSON))
+	}
+	return nil
 }

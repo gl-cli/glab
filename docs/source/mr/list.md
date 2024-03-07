@@ -52,6 +52,7 @@ glab mr list -M --per-page 10
   -M, --merged                 Get only merged merge requests
   -m, --milestone string       Filter merge request by milestone <id>
       --not-label strings      Filter merge requests by not having label <name>
+  -F, --output string          Format output as: text, json (default "text")
   -p, --page int               Page number (default 1)
   -P, --per-page int           Number of items to list per page (default 30)
   -R, --repo OWNER/REPO        Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL

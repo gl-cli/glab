@@ -1,6 +1,9 @@
 package list
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
@@ -18,8 +21,9 @@ type ListOpts struct {
 	IO         *iostreams.IOStreams
 	BaseRepo   func() (glrepo.Interface, error)
 
-	ValueSet bool
-	Group    string
+	ValueSet     bool
+	Group        string
+	OutputFormat string
 }
 
 func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Command {
@@ -64,6 +68,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 		"",
 		"Select a group/subgroup. This option is ignored if a repo argument is set.",
 	)
+	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
 
 	return cmd
 }
@@ -90,8 +95,14 @@ func listRun(opts *ListOpts) error {
 		if err != nil {
 			return err
 		}
-		for _, variable := range variables {
-			table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, variable.EnvironmentScope)
+		if opts.OutputFormat == "json" {
+			varListJSON, _ := json.Marshal(variables)
+			fmt.Fprintln(opts.IO.StdOut, string(varListJSON))
+
+		} else {
+			for _, variable := range variables {
+				table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, variable.EnvironmentScope)
+			}
 		}
 	} else {
 		opts.IO.Logf("Listing variables for the %s project:\n\n", color.Bold(repo.FullName()))
@@ -100,11 +111,18 @@ func listRun(opts *ListOpts) error {
 		if err != nil {
 			return err
 		}
-		for _, variable := range variables {
-			table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, variable.EnvironmentScope)
+		if opts.OutputFormat == "json" {
+			varListJSON, _ := json.Marshal(variables)
+			fmt.Fprintln(opts.IO.StdOut, string(varListJSON))
+		} else {
+			for _, variable := range variables {
+				table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, variable.EnvironmentScope)
+			}
 		}
 	}
 
-	opts.IO.Log(table.String())
+	if opts.OutputFormat != "json" {
+		opts.IO.Log(table.String())
+	}
 	return nil
 }

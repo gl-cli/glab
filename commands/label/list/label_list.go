@@ -1,6 +1,7 @@
 package list
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
@@ -12,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
 )
+
+var OutputFormat string
 
 func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	labelListCmd := &cobra.Command{
@@ -54,16 +57,22 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d on %s\n\n", len(labels), len(labels), repo.FullName())
-			var labelPrintInfo string
-			for _, label := range labels {
-				var description string
-				if label.Description != "" {
-					description = fmt.Sprintf(" -> %s", label.Description)
+			if OutputFormat == "json" {
+				labelListJSON, _ := json.Marshal(labels)
+				fmt.Fprintln(f.IO.StdOut, string(labelListJSON))
+
+			} else {
+				fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d on %s\n\n", len(labels), len(labels), repo.FullName())
+				var labelPrintInfo string
+				for _, label := range labels {
+					var description string
+					if label.Description != "" {
+						description = fmt.Sprintf(" -> %s", label.Description)
+					}
+					labelPrintInfo += fmt.Sprintf("%s%s (%s)\n", label.Name, description, label.Color)
 				}
-				labelPrintInfo += fmt.Sprintf("%s%s (%s)\n", label.Name, description, label.Color)
+				fmt.Fprintln(f.IO.StdOut, utils.Indent(labelPrintInfo, " "))
 			}
-			fmt.Fprintln(f.IO.StdOut, utils.Indent(labelPrintInfo, " "))
 
 			// Cache labels for host
 			//labelNames := make([]string, 0, len(labels))
@@ -81,6 +90,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 
 	labelListCmd.Flags().IntP("page", "p", 1, "Page number")
 	labelListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page")
+	labelListCmd.Flags().StringVarP(&OutputFormat, "output", "F", "text", "Format output as: text, json")
 
 	return labelListCmd
 }

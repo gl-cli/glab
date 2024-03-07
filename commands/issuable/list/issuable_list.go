@@ -1,6 +1,7 @@
 package list
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -56,6 +57,8 @@ type ListOptions struct {
 	IO         *iostreams.IOStreams
 	BaseRepo   func() (glrepo.Interface, error)
 	HTTPClient func() (*gitlab.Client, error)
+
+	JSONOutput bool
 }
 
 func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueType issuable.IssueType) *cobra.Command {
@@ -135,7 +138,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueTy
 	issueListCmd.Flags().BoolVarP(&opts.All, "all", "A", false, fmt.Sprintf("Get all %ss", issueType))
 	issueListCmd.Flags().BoolVarP(&opts.Closed, "closed", "c", false, fmt.Sprintf("Get only closed %ss", issueType))
 	issueListCmd.Flags().BoolVarP(&opts.Confidential, "confidential", "C", false, fmt.Sprintf("Filter by confidential %ss", issueType))
-	issueListCmd.Flags().StringVarP(&opts.OutputFormat, "output-format", "F", "details", "One of 'details', 'ids', or 'urls'")
+	issueListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "details", "One of 'details', 'ids', 'urls' or 'json'")
 	issueListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
 	issueListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
 	issueListCmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
@@ -259,6 +262,12 @@ func listRun(opts *ListOptions) error {
 	title.Page = listOpts.Page
 	title.ListActionType = opts.ListType
 	title.CurrentPageTotal = len(issues)
+
+	if opts.OutputFormat == "json" {
+		issueListJSON, _ := json.Marshal(issues)
+		fmt.Fprintln(opts.IO.StdOut, string(issueListJSON))
+		return nil
+	}
 
 	if opts.OutputFormat == "ids" {
 		for _, i := range issues {

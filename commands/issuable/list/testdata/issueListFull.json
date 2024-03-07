@@ -1,0 +1,72 @@
+[
+  {
+    "id": 141525495,
+    "iid": 15,
+    "external_id": "",
+    "project_id": 37777023,
+    "title": "tem",
+    "description": "",
+    "state": "opened",
+    "created_at": "2024-01-31T05:37:57.883Z",
+    "updated_at": "2024-02-02T00:54:02.842Z",
+    "closed_at": null,
+    "epic": null,
+    "epic_issue_id": 0,
+    "iteration": null,
+    "label_details": null,
+    "subscribed": false,
+    "closed_by": null,
+    "labels":"",
+    "milestone": null,
+    "assignees":
+    [],
+    "author":
+    {
+      "id": 11809982,
+      "username": "jay_mccure",
+      "name": "Jay McCure",
+      "state": "active",
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/11809982/avatar.png",
+      "web_url": "https://gitlab.com/jay_mccure"
+    },
+    "assignee": null,
+    "user_notes_count": 0,
+    "issue_link_id": 0,
+    "merge_requests_count": 0,
+    "upvotes": 0,
+    "downvotes": 0,
+    "due_date": null,
+    "confidential": false,
+    "discussion_locked": false,
+    "issue_type": "issue",
+    "web_url": "https://gitlab.com/jay_mccure/test2target/-/issues/15",
+    "time_stats":
+    {
+      "time_estimate": 0,
+      "total_time_spent": 0,
+      "human_time_estimate": "",
+      "human_total_time_spent": ""
+    },
+    "task_completion_status":
+    {
+      "count": 0,
+      "completed_count": 0
+    },
+    "weight": 0,
+    "_links":
+    {
+      "self": "https://gitlab.com/api/v4/projects/37777023/issues/15",
+      "notes": "https://gitlab.com/api/v4/projects/37777023/issues/15/notes",
+      "award_emoji": "https://gitlab.com/api/v4/projects/37777023/issues/15/award_emoji",
+      "project": "https://gitlab.com/api/v4/projects/37777023"
+    },
+    "references":
+    {
+      "short": "#15",
+      "relative": "#15",
+      "full": "jay_mccure/test2target#15"
+    },
+    "moved_to_id": 0,
+    "health_status": ""
+  }
+]

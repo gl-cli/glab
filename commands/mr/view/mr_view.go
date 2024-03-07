@@ -1,6 +1,7 @@
 package view
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -21,11 +22,17 @@ type ViewOpts struct {
 	ShowComments   bool
 	ShowSystemLogs bool
 	OpenInBrowser  bool
+	OutputFormat   string
 
 	CommentPageNumber int
 	CommentLimit      int
 
 	IO *iostreams.IOStreams
+}
+
+type MRWithNotes struct {
+	*gitlab.MergeRequest
+	Notes []*gitlab.Note
 }
 
 func NewCmdView(f *cmdutils.Factory) *cobra.Command {
@@ -96,6 +103,9 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			}
 			defer f.IO.StopPager()
 
+			if opts.OutputFormat == "json" {
+				return printJSONMR(opts, mr, notes)
+			}
 			if f.IO.IsOutputTTY() {
 				return printTTYMRPreview(opts, mr, mrApprovals, notes)
 			}
@@ -105,6 +115,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 
 	mrViewCmd.Flags().BoolVarP(&opts.ShowComments, "comments", "c", false, "Show mr comments and activities")
 	mrViewCmd.Flags().BoolVarP(&opts.ShowSystemLogs, "system-logs", "s", false, "Show system activities / logs")
+	mrViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
 	mrViewCmd.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open mr in a browser. Uses default browser or browser specified in BROWSER variable")
 	mrViewCmd.Flags().IntVarP(&opts.CommentPageNumber, "page", "p", 0, "Page number")
 	mrViewCmd.Flags().IntVarP(&opts.CommentLimit, "per-page", "P", 20, "Number of items to list per page")
@@ -280,4 +291,16 @@ func rawMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.Note)
 	out += issuableView.RawIssuableNotes(notes, opts.ShowComments, opts.ShowSystemLogs, "merge request")
 
 	return out
+}
+
+func printJSONMR(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.Note) error {
+	if opts.ShowComments {
+		extendedMR := MRWithNotes{mr, notes}
+		mrJSON, _ := json.Marshal(extendedMR)
+		fmt.Fprintln(opts.IO.StdOut, string(mrJSON))
+	} else {
+		mrJSON, _ := json.Marshal(mr)
+		fmt.Fprintln(opts.IO.StdOut, string(mrJSON))
+	}
+	return nil
 }

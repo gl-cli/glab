@@ -29,8 +29,9 @@ glab variable get -s SCOPE VAR_KEY
 ## Options
 
 ```plaintext
-  -g, --group string   Get variable for a group
-  -s, --scope string   The environment_scope of the variable. All (*), or specific environments. (default "*")
+  -g, --group string    Get variable for a group
+  -F, --output string   Format output as: text, json (default "text")
+  -s, --scope string    The environment_scope of the variable. All (*), or specific environments. (default "*")
 ```
 
 ## Options inherited from parent commands
