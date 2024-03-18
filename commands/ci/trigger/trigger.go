@@ -19,7 +19,7 @@ func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
 		Aliases: []string{},
 		Example: heredoc.Doc(`
 		$ glab ci trigger
-		# Tnteractively select a job to Trigger
+		# Interactively select a job to Trigger
 
 		$ glab ci trigger 224356863
 		# Trigger manual job with id 224356863
