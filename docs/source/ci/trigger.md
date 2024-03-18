@@ -21,7 +21,7 @@ glab ci trigger <job-id> [flags]
 
 ```plaintext
 $ glab ci trigger
-# Tnteractively select a job to Trigger
+# Interactively select a job to Trigger
 
 $ glab ci trigger 224356863
 # Trigger manual job with id 224356863
