@@ -1,8 +1,6 @@
 package run
 
 import (
-	"bytes"
-	"io"
 	"os"
 	"testing"
 
@@ -16,6 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/test"
 )
 
 func Test_ScheduleRun(t *testing.T) {
@@ -90,19 +89,7 @@ func Test_ScheduleRunNoID(t *testing.T) {
 
 	assert.Error(t, NewCmdRun(&cmdutils.Factory{}).Execute())
 
-	outC := make(chan string)
-	// copy the output in a separate goroutine so printing can't block indefinitely
-	go func() {
-		var buf bytes.Buffer
-		_, err := io.Copy(&buf, r)
-		require.NoError(t, err)
-		outC <- buf.String()
-	}()
-
-	// back to normal state
-	w.Close()
-	os.Stderr = old // restoring the real Stderr
-	out := <-outC
+	out := test.ReturnBuffer(old, r, w)
 
 	assert.Contains(t, out, "Error: accepts 1 arg(s), received 0\nUsage:\n  run <id> [flags]\n\nExamples:\nglab schedule run 1\n\n\nFlags:\n  -h, --help   help for run\n\n")
 }

@@ -1,8 +1,6 @@
 package help
 
 import (
-	"bytes"
-	"io"
 	"os"
 	"testing"
 
@@ -13,6 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/alias"
 	"gitlab.com/gitlab-org/cli/commands/alias/set"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/test"
 )
 
 func TestDedent(t *testing.T) {
@@ -98,18 +97,9 @@ USAGE
 				alias.NewCmdAlias(&cmdutils.Factory{}).AddCommand(cmd)
 			}
 			RootHelpFunc(streams.Color(), cmd, tt.args.args)
-			outC := make(chan string)
-			// copy the output in a separate goroutine so printing can't block indefinitely
-			go func() {
-				var buf bytes.Buffer
-				_, _ = io.Copy(&buf, r)
-				outC <- buf.String()
-			}()
 
-			// back to normal state
-			w.Close()
-			os.Stdout = old // restoring the real stdout
-			out := <-outC
+			out := test.ReturnBuffer(old, r, w)
+
 			assert.Contains(t, out, tt.wantOut)
 		})
 	}
