@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"regexp"
@@ -116,4 +117,21 @@ func GetHostOrSkip(t testing.TB) string {
 		t.Skip("Set GITLAB_TEST_HOST and GITLAB_TOKEN to run this integration test")
 	}
 	return glTestHost
+}
+
+func ReturnBuffer(old *os.File, r *os.File, w *os.File) string {
+	outC := make(chan string)
+	// copy the output in a separate goroutine so printing can't block indefinitely
+	go func() {
+		var buf bytes.Buffer
+		_, _ = io.Copy(&buf, r)
+		outC <- buf.String()
+	}()
+
+	// back to normal state
+	w.Close()
+	os.Stdout = old // restoring the real stdout
+	out := <-outC
+
+	return out
 }
