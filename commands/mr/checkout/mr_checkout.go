@@ -6,6 +6,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
+	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
@@ -67,12 +68,24 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 				mrCheckoutCfg.branch = mr.SourceBranch
 			}
 
-			mrProject, err := api.GetProject(apiClient, mr.SourceProjectID)
+			var mrRef string
+			var mrProject *gitlab.Project
+
+			mrProject, err = api.GetProject(apiClient, mr.SourceProjectID)
 			if err != nil {
-				return err
+				// If we don't have access to the source project, let's try the target project
+				mrProject, err = api.GetProject(apiClient, mr.TargetProjectID)
+				if err != nil {
+					return err
+				} else {
+					// We found the target project, let's find the ref another way
+					mrRef = fmt.Sprintf("refs/merge-requests/%d/head", mr.IID)
+				}
+
+			} else {
+				mrRef = fmt.Sprintf("refs/heads/%s", mr.SourceBranch)
 			}
 
-			mrRef := fmt.Sprintf("refs/heads/%s", mr.SourceBranch)
 			fetchRefSpec := fmt.Sprintf("%s:%s", mrRef, mrCheckoutCfg.branch)
 			if err := git.RunCmd([]string{"fetch", mrProject.SSHURLToRepo, fetchRefSpec}); err != nil {
 				return err

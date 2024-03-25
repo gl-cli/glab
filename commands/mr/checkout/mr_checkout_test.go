@@ -123,6 +123,64 @@ func TestMrCheckout(t *testing.T) {
 			},
 		},
 		{
+			name:        "when a valid MR comes from a forked private project",
+			commandArgs: "123",
+			branch:      "main",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER/REPO/merge_requests/123",
+					http.StatusOK,
+					`{
+							"id": 123,
+							"iid": 123,
+							"project_id": 3,
+							"source_project_id": 3,
+							"target_project_id": 4,
+							"title": "test mr title",
+							"description": "test mr description",
+							"allow_collaboration": false,
+							"state": "opened",
+							"source_branch":"feat-new-mr"
+							}`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/4",
+					http.StatusOK,
+					`{
+							"id": 4,
+							"ssh_url_to_repo": "git@gitlab.com:OWNER/REPO.git"
+						}`,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/3",
+					http.StatusNotFound,
+					`{
+						"message":"404 Project Not Found"
+					}`,
+				},
+			},
+			shelloutStubs: []string{
+				"HEAD branch: master\n",
+				"\n",
+				"\n",
+				heredoc.Doc(`
+				deadbeef HEAD
+				deadb00f refs/remotes/upstream/feat-new-mr
+				deadbeef refs/remotes/origin/feat-new-mr
+				`),
+			},
+
+			expectedShellouts: []string{
+				"git fetch git@gitlab.com:OWNER/REPO.git refs/merge-requests/123/head:feat-new-mr",
+				"git config branch.feat-new-mr.remote git@gitlab.com:OWNER/REPO.git",
+				"git config branch.feat-new-mr.merge refs/merge-requests/123/head",
+				"git checkout feat-new-mr",
+			},
+		},
+		{
 			name:        "when a valid MR is checked out using MR id and specifying branch",
 			commandArgs: "123 --branch foo",
 			branch:      "main",
