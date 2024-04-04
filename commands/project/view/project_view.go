@@ -217,7 +217,6 @@ func printProjectContentTTY(opts *ViewOptions, project *gitlab.Project, readme *
 	fullName := project.NameWithNamespace
 	if project.Description != "" {
 		description, err = utils.RenderMarkdownWithoutIndentations(project.Description, opts.GlamourStyle)
-
 		if err != nil {
 			description = project.Description
 		}
@@ -227,7 +226,6 @@ func printProjectContentTTY(opts *ViewOptions, project *gitlab.Project, readme *
 
 	if readme != nil {
 		readmeContent, err = utils.RenderMarkdown(readme.Content, opts.GlamourStyle)
-
 		if err != nil {
 			readmeContent = readme.Content
 		}

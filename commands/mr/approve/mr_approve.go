@@ -48,7 +48,7 @@ func NewCmdApprove(f *cmdutils.Factory) *cobra.Command {
 
 				opts := &gitlab.ApproveMergeRequestOptions{}
 				if s, _ := cmd.Flags().GetString("sha"); s != "" {
-					opts.SHA = gitlab.String(s)
+					opts.SHA = gitlab.Ptr(s)
 				}
 
 				fmt.Fprintf(f.IO.StdOut, "- Approving Merge Request !%d\n", mr.IID)

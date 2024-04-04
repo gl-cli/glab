@@ -43,7 +43,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 
 			l := &gitlab.ListLabelsOptions{}
 
-			l.WithCounts = gitlab.Bool(true)
+			l.WithCounts = gitlab.Ptr(true)
 
 			if p, _ := cmd.Flags().GetInt("page"); p != 0 {
 				l.Page = p

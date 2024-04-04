@@ -67,8 +67,8 @@ func NewCmdFor(f *cmdutils.Factory) *cobra.Command {
 			sourceBranch := fmt.Sprintf("%d-%s", issue.IID, utils.ReplaceNonAlphaNumericChars(strings.ToLower(issue.Title), "-"))
 
 			lb := &gitlab.CreateBranchOptions{
-				Branch: gitlab.String(sourceBranch),
-				Ref:    gitlab.String(targetBranch),
+				Branch: gitlab.Ptr(sourceBranch),
+				Ref:    gitlab.Ptr(targetBranch),
 			}
 
 			_, err = api.CreateBranch(apiClient, repo.FullName(), lb)
@@ -77,8 +77,8 @@ func NewCmdFor(f *cmdutils.Factory) *cobra.Command {
 
 					numberedBranch := fmt.Sprintf("%d-%s-%d", issue.IID, strings.ReplaceAll(strings.ToLower(issue.Title), " ", "-"), branchCount)
 					lb = &gitlab.CreateBranchOptions{
-						Branch: gitlab.String(numberedBranch),
-						Ref:    gitlab.String(targetBranch),
+						Branch: gitlab.Ptr(numberedBranch),
+						Ref:    gitlab.Ptr(targetBranch),
 					}
 					sourceBranch = numberedBranch
 					_, branchErr = api.CreateBranch(apiClient, repo.FullName(), lb)
@@ -102,22 +102,22 @@ func NewCmdFor(f *cmdutils.Factory) *cobra.Command {
 			mergeLabel, _ := cmd.Flags().GetString("label")
 
 			l := &gitlab.CreateMergeRequestOptions{}
-			l.Title = gitlab.String(mergeTitle)
-			l.Description = gitlab.String(fmt.Sprintf("Closes #%d", issue.IID))
-			l.Labels = &gitlab.Labels{mergeLabel}
-			l.SourceBranch = gitlab.String(sourceBranch)
-			l.TargetBranch = gitlab.String(targetBranch)
+			l.Title = gitlab.Ptr(mergeTitle)
+			l.Description = gitlab.Ptr(fmt.Sprintf("Closes #%d", issue.IID))
+			l.Labels = &gitlab.LabelOptions{mergeLabel}
+			l.SourceBranch = gitlab.Ptr(sourceBranch)
+			l.TargetBranch = gitlab.Ptr(targetBranch)
 			if milestone, _ := cmd.Flags().GetInt("milestone"); milestone != -1 {
-				l.MilestoneID = gitlab.Int(milestone)
+				l.MilestoneID = gitlab.Ptr(milestone)
 			}
 			if allowCol, _ := cmd.Flags().GetBool("allow-collaboration"); allowCol {
-				l.AllowCollaboration = gitlab.Bool(true)
+				l.AllowCollaboration = gitlab.Ptr(true)
 			}
 			if removeSource, _ := cmd.Flags().GetBool("remove-source-branch"); removeSource {
-				l.RemoveSourceBranch = gitlab.Bool(true)
+				l.RemoveSourceBranch = gitlab.Ptr(true)
 			}
 			if withLables, _ := cmd.Flags().GetBool("with-labels"); withLables {
-				l.Labels = &issue.Labels
+				l.Labels = (*gitlab.LabelOptions)(&issue.Labels)
 			}
 
 			if a, _ := cmd.Flags().GetString("assignee"); a != "" {

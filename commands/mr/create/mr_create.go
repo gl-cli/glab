@@ -324,7 +324,7 @@ func createRun(opts *CreateOpts) error {
 		}
 
 		if opts.CopyIssueLabels {
-			mrCreateOpts.Labels = &issue.Labels
+			mrCreateOpts.Labels = (*gitlab.LabelOptions)(&issue.Labels)
 		}
 
 		opts.Description += fmt.Sprintf("\n\nCloses #%d", issue.IID)
@@ -475,15 +475,15 @@ func createRun(opts *CreateOpts) error {
 	mrCreateOpts.TargetBranch = &opts.TargetBranch
 
 	if opts.AllowCollaboration {
-		mrCreateOpts.AllowCollaboration = gitlab.Bool(true)
+		mrCreateOpts.AllowCollaboration = gitlab.Ptr(true)
 	}
 
 	if opts.RemoveSourceBranch {
-		mrCreateOpts.RemoveSourceBranch = gitlab.Bool(true)
+		mrCreateOpts.RemoveSourceBranch = gitlab.Ptr(true)
 	}
 
 	if opts.SquashBeforeMerge {
-		mrCreateOpts.Squash = gitlab.Bool(true)
+		mrCreateOpts.Squash = gitlab.Ptr(true)
 	}
 
 	if opts.TargetProject != nil {
@@ -576,7 +576,7 @@ func createRun(opts *CreateOpts) error {
 
 	// This check protects against possibly dereferencing a nil pointer.
 	if mrCreateOpts.Labels == nil {
-		mrCreateOpts.Labels = &gitlab.Labels{}
+		mrCreateOpts.Labels = &gitlab.LabelOptions{}
 	}
 	// These actions need to be done here, after the `Add metadata` prompt because
 	// they are metadata that can be modified by the prompt
@@ -599,7 +599,7 @@ func createRun(opts *CreateOpts) error {
 	}
 
 	if opts.Milestone != 0 {
-		mrCreateOpts.MilestoneID = gitlab.Int(opts.Milestone)
+		mrCreateOpts.MilestoneID = gitlab.Ptr(opts.Milestone)
 	}
 
 	if action == cmdutils.CancelAction {

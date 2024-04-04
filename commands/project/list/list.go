@@ -106,31 +106,31 @@ func runE(opts *Options) error {
 
 func listAllProjects(apiClient *gitlab.Client, opts Options) ([]*gitlab.Project, *gitlab.Response, error) {
 	l := &gitlab.ListProjectsOptions{
-		OrderBy: gitlab.String(opts.OrderBy),
+		OrderBy: gitlab.Ptr(opts.OrderBy),
 	}
 
 	// Other filters only valid if FilterAll not true
 	if !opts.FilterAll {
 		if !opts.FilterStarred && !opts.FilterMember {
 			// if no other filters are passed, default to Owned filter
-			l.Owned = gitlab.Bool(true)
+			l.Owned = gitlab.Ptr(true)
 		}
 
 		if opts.FilterOwned {
-			l.Owned = gitlab.Bool(opts.FilterOwned)
+			l.Owned = gitlab.Ptr(opts.FilterOwned)
 		}
 
 		if opts.FilterStarred {
-			l.Starred = gitlab.Bool(opts.FilterStarred)
+			l.Starred = gitlab.Ptr(opts.FilterStarred)
 		}
 
 		if opts.FilterMember {
-			l.Membership = gitlab.Bool(opts.FilterMember)
+			l.Membership = gitlab.Ptr(opts.FilterMember)
 		}
 	}
 
 	if opts.Sort != "" {
-		l.Sort = gitlab.String(opts.Sort)
+		l.Sort = gitlab.Ptr(opts.Sort)
 	}
 
 	l.PerPage = opts.PerPage
@@ -157,27 +157,27 @@ func listAllProjectsForGroup(apiClient *gitlab.Client, opts Options) ([]*gitlab.
 	}
 
 	l := &gitlab.ListGroupProjectsOptions{
-		OrderBy: gitlab.String(opts.OrderBy),
+		OrderBy: gitlab.Ptr(opts.OrderBy),
 	}
 
 	// Other filters only valid if FilterAll not true
 	if !opts.FilterAll {
 		if !opts.FilterStarred && !opts.FilterMember {
 			// if no other filters are passed, default to Owned filter
-			l.Owned = gitlab.Bool(true)
+			l.Owned = gitlab.Ptr(true)
 		}
 
 		if opts.FilterOwned {
-			l.Owned = gitlab.Bool(opts.FilterOwned)
+			l.Owned = gitlab.Ptr(opts.FilterOwned)
 		}
 
 		if opts.FilterStarred {
-			l.Starred = gitlab.Bool(opts.FilterStarred)
+			l.Starred = gitlab.Ptr(opts.FilterStarred)
 		}
 	}
 
 	if opts.Sort != "" {
-		l.Sort = gitlab.String(opts.Sort)
+		l.Sort = gitlab.Ptr(opts.Sort)
 	}
 
 	l.PerPage = opts.PerPage

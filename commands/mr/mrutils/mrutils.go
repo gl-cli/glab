@@ -234,14 +234,14 @@ var getMRForBranch = func(apiClient *gitlab.Client, baseRepo glrepo.Interface, a
 	}
 
 	opts := gitlab.ListProjectMergeRequestsOptions{
-		SourceBranch: gitlab.String(currentBranch),
+		SourceBranch: gitlab.Ptr(currentBranch),
 	}
 
 	// Set the state value if it is not empty, if it is empty then it will look at all possible
 	// values, 'any' is also a descriptive keyword used in the source code that is equivalent to
 	// passing nothing on
 	if state != "" && state != "any" {
-		opts.State = gitlab.String(state)
+		opts.State = gitlab.Ptr(state)
 	}
 
 	mrs, err := api.ListMRs(apiClient, baseRepo.FullName(), &opts)
@@ -291,7 +291,7 @@ var getMRForBranch = func(apiClient *gitlab.Client, baseRepo glrepo.Interface, a
 	return mrMap[pickedMR], nil
 }
 
-func RebaseMR(ios *iostreams.IOStreams, apiClient *gitlab.Client, repo glrepo.Interface, mr *gitlab.MergeRequest, rebaseOpts gitlab.RequestOptionFunc) error {
+func RebaseMR(ios *iostreams.IOStreams, apiClient *gitlab.Client, repo glrepo.Interface, mr *gitlab.MergeRequest, rebaseOpts *gitlab.RebaseMergeRequestOptions) error {
 	ios.StartSpinner("Sending rebase request...")
 	err := api.RebaseMR(apiClient, repo.FullName(), mr.IID, rebaseOpts)
 	if err != nil {
@@ -300,7 +300,7 @@ func RebaseMR(ios *iostreams.IOStreams, apiClient *gitlab.Client, repo glrepo.In
 	ios.StopSpinner("")
 
 	opts := &gitlab.GetMergeRequestsOptions{}
-	opts.IncludeRebaseInProgress = gitlab.Bool(true)
+	opts.IncludeRebaseInProgress = gitlab.Ptr(true)
 	ios.StartSpinner("Checking rebase status...")
 	errorMSG := ""
 	i := 0

@@ -107,13 +107,13 @@ func setRun(opts *SetOpts) error {
 	if opts.Group != "" {
 		// creating group-level variable
 		createVarOpts := &gitlab.CreateGroupVariableOptions{
-			Key:              gitlab.String(opts.Key),
-			Value:            gitlab.String(opts.Value),
-			EnvironmentScope: gitlab.String(opts.Scope),
-			Masked:           gitlab.Bool(opts.Masked),
-			Protected:        gitlab.Bool(opts.Protected),
-			VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
-			Raw:              gitlab.Bool(opts.Raw),
+			Key:              gitlab.Ptr(opts.Key),
+			Value:            gitlab.Ptr(opts.Value),
+			EnvironmentScope: gitlab.Ptr(opts.Scope),
+			Masked:           gitlab.Ptr(opts.Masked),
+			Protected:        gitlab.Ptr(opts.Protected),
+			VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(opts.Type)),
+			Raw:              gitlab.Ptr(opts.Raw),
 		}
 		_, err = api.CreateGroupVariable(httpClient, opts.Group, createVarOpts)
 		if err != nil {
@@ -130,13 +130,13 @@ func setRun(opts *SetOpts) error {
 		return err
 	}
 	createVarOpts := &gitlab.CreateProjectVariableOptions{
-		Key:              gitlab.String(opts.Key),
-		Value:            gitlab.String(opts.Value),
-		EnvironmentScope: gitlab.String(opts.Scope),
-		Masked:           gitlab.Bool(opts.Masked),
-		Protected:        gitlab.Bool(opts.Protected),
-		VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
-		Raw:              gitlab.Bool(opts.Raw),
+		Key:              gitlab.Ptr(opts.Key),
+		Value:            gitlab.Ptr(opts.Value),
+		EnvironmentScope: gitlab.Ptr(opts.Scope),
+		Masked:           gitlab.Ptr(opts.Masked),
+		Protected:        gitlab.Ptr(opts.Protected),
+		VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(opts.Type)),
+		Raw:              gitlab.Ptr(opts.Raw),
 	}
 	_, err = api.CreateProjectVariable(httpClient, baseRepo.FullName(), createVarOpts)
 	if err != nil {

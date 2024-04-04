@@ -338,7 +338,6 @@ func createRun(opts *CreateOpts) error {
 		}
 
 		release, _, err = client.Releases.CreateRelease(repo.FullName(), createOpts)
-
 		if err != nil {
 			return releaseFailedErr(err, start)
 		}

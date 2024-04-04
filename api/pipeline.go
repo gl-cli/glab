@@ -127,8 +127,8 @@ var GetLastPipeline = func(client *gitlab.Client, repo string, ref string) (*git
 	}
 
 	l := &gitlab.ListProjectPipelinesOptions{
-		Ref:  gitlab.String(ref),
-		Sort: gitlab.String("desc"),
+		Ref:  gitlab.Ptr(ref),
+		Sort: gitlab.Ptr("desc"),
 	}
 
 	l.Page = 1
@@ -257,8 +257,8 @@ var GetPipelineFromBranch = func(client *gitlab.Client, ref, repo string) ([]*gi
 		}
 	}
 	l := &gitlab.ListProjectPipelinesOptions{
-		Ref:  gitlab.String(ref),
-		Sort: gitlab.String("desc"),
+		Ref:  gitlab.Ptr(ref),
+		Sort: gitlab.Ptr("desc"),
 	}
 	l.Page = 1
 	l.PerPage = 1
@@ -381,7 +381,7 @@ var PipelineJobsWithSha = func(client *gitlab.Client, pid interface{}, sha strin
 		client = apiClient.Lab()
 	}
 	pipelines, err := GetPipelines(client, &gitlab.ListProjectPipelinesOptions{
-		SHA: gitlab.String(sha),
+		SHA: gitlab.Ptr(sha),
 	}, pid)
 	if len(pipelines) == 0 || err != nil {
 		return nil, nil, err

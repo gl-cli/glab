@@ -47,14 +47,14 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			l.PerPage = 30
 
 			if m, _ := cmd.Flags().GetString("status"); m != "" {
-				l.Status = gitlab.BuildState(gitlab.BuildStateValue(m))
+				l.Status = gitlab.Ptr(gitlab.BuildStateValue(m))
 				titleQualifier = m
 			}
 			if m, _ := cmd.Flags().GetString("orderBy"); m != "" {
-				l.OrderBy = gitlab.String(m)
+				l.OrderBy = gitlab.Ptr(m)
 			}
 			if m, _ := cmd.Flags().GetString("sort"); m != "" {
-				l.Sort = gitlab.String(m)
+				l.Sort = gitlab.Ptr(m)
 			}
 			if p, _ := cmd.Flags().GetInt("page"); p != 0 {
 				l.Page = p

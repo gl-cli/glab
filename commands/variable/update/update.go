@@ -111,12 +111,12 @@ func updateRun(opts *UpdateOpts) error {
 	if opts.Group != "" {
 		// update group-level variable
 		updateGroupVarOpts := &gitlab.UpdateGroupVariableOptions{
-			Value:            gitlab.String(opts.Value),
-			VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
-			Masked:           gitlab.Bool(opts.Masked),
-			Protected:        gitlab.Bool(opts.Protected),
-			Raw:              gitlab.Bool(opts.Raw),
-			EnvironmentScope: gitlab.String(opts.Scope),
+			Value:            gitlab.Ptr(opts.Value),
+			VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(opts.Type)),
+			Masked:           gitlab.Ptr(opts.Masked),
+			Protected:        gitlab.Ptr(opts.Protected),
+			Raw:              gitlab.Ptr(opts.Raw),
+			EnvironmentScope: gitlab.Ptr(opts.Scope),
 		}
 
 		_, err = api.UpdateGroupVariable(httpClient, opts.Group, opts.Key, updateGroupVarOpts)
@@ -135,12 +135,12 @@ func updateRun(opts *UpdateOpts) error {
 	}
 
 	updateProjectVarOpts := &gitlab.UpdateProjectVariableOptions{
-		Value:            gitlab.String(opts.Value),
-		VariableType:     gitlab.VariableType(gitlab.VariableTypeValue(opts.Type)),
-		Masked:           gitlab.Bool(opts.Masked),
-		Protected:        gitlab.Bool(opts.Protected),
-		Raw:              gitlab.Bool(opts.Raw),
-		EnvironmentScope: gitlab.String(opts.Scope),
+		Value:            gitlab.Ptr(opts.Value),
+		VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(opts.Type)),
+		Masked:           gitlab.Ptr(opts.Masked),
+		Protected:        gitlab.Ptr(opts.Protected),
+		Raw:              gitlab.Ptr(opts.Raw),
+		EnvironmentScope: gitlab.Ptr(opts.Scope),
 	}
 
 	_, err = api.UpdateProjectVariable(httpClient, baseRepo.FullName(), opts.Key, updateProjectVarOpts)

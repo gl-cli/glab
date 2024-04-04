@@ -51,7 +51,6 @@ func (a *AliasConfig) Write() error {
 		return err
 	}
 	err = WriteConfigFile(aliasesConfigFile(), yamlNormalize(aliasesBytes))
-
 	if err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}

@@ -137,10 +137,10 @@ func forkRun(opts *ForkOptions) error {
 
 	forkOpts := &gitlab.ForkProjectOptions{}
 	if opts.Name != "" {
-		forkOpts.Name = gitlab.String(opts.Name)
+		forkOpts.Name = gitlab.Ptr(opts.Name)
 	}
 	if opts.Path != "" {
-		forkOpts.Path = gitlab.String(opts.Path)
+		forkOpts.Path = gitlab.Ptr(opts.Path)
 	}
 
 	forkedProject, err := api.ForkProject(opts.LabClient, opts.RepoToFork.FullName(), forkOpts)

@@ -81,7 +81,6 @@ func (c *Context) UploadFiles(projectID, tagName string) error {
 			FilePath: &filename,
 			LinkType: file.Type,
 		})
-
 		if err != nil {
 			return err
 		}

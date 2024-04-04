@@ -38,7 +38,7 @@ func NewCmdGenerate(f *cmdutils.Factory) *cobra.Command {
 
 			// Set the version
 			if s, _ := cmd.Flags().GetString("version"); s != "" {
-				opts.Version = gitlab.String(s)
+				opts.Version = gitlab.Ptr(s)
 			} else {
 				tags, err := git.ListTags()
 				if err != nil {
@@ -53,12 +53,12 @@ func NewCmdGenerate(f *cmdutils.Factory) *cobra.Command {
 				if err != nil {
 					return fmt.Errorf("failed to determine version from git describe: %w..", err)
 				}
-				opts.Version = gitlab.String(version)
+				opts.Version = gitlab.Ptr(version)
 			}
 
 			// Set the config file
 			if s, _ := cmd.Flags().GetString("config-file"); s != "" {
-				opts.ConfigFile = gitlab.String(s)
+				opts.ConfigFile = gitlab.Ptr(s)
 			}
 
 			// Set the date
@@ -74,17 +74,17 @@ func NewCmdGenerate(f *cmdutils.Factory) *cobra.Command {
 
 			// Set the "from" attribute
 			if s, _ := cmd.Flags().GetString("from"); s != "" {
-				opts.From = gitlab.String(s)
+				opts.From = gitlab.Ptr(s)
 			}
 
 			// Set the "to" attribute
 			if s, _ := cmd.Flags().GetString("to"); s != "" {
-				opts.To = gitlab.String(s)
+				opts.To = gitlab.Ptr(s)
 			}
 
 			// Set the trailer
 			if s, _ := cmd.Flags().GetString("trailer"); s != "" {
-				opts.Trailer = gitlab.String(s)
+				opts.Trailer = gitlab.Ptr(s)
 			}
 
 			project, err := repo.Project(apiClient)

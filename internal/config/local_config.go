@@ -67,7 +67,6 @@ func (a *LocalConfig) Write() error {
 		return err
 	}
 	err = WriteConfigFile(LocalConfigFile(), yamlNormalize(localConfigBytes))
-
 	if err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}
