@@ -97,7 +97,7 @@ func TestMrRebase(t *testing.T) {
 				},
 				{
 					http.MethodPut,
-					"/api/v4/projects/OWNER/REPO/merge_requests/123/rebase?skip_ci=true",
+					"/api/v4/projects/OWNER/REPO/merge_requests/123/rebase",
 					http.StatusAccepted,
 					`{ "rebase_in_progress": true }`,
 				},
