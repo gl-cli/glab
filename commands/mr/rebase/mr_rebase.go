@@ -1,13 +1,11 @@
 package rebase
 
 import (
-	"strconv"
-
 	"github.com/MakeNowJust/heredoc"
+	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/spf13/cobra"
 )
 
@@ -44,18 +42,10 @@ func NewCmdRebase(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			requestOptionFunc := func(req *retryablehttp.Request) error {
-				if opts.SkipCI {
-					q := req.URL.Query()
-					q.Add("skip_ci", strconv.FormatBool(opts.SkipCI))
-
-					req.URL.RawQuery = q.Encode()
-				}
-
-				return nil
-			}
-
-			if err = mrutils.RebaseMR(f.IO, apiClient, repo, mr, requestOptionFunc); err != nil {
+			if err = mrutils.RebaseMR(f.IO, apiClient, repo, mr,
+				&gitlab.RebaseMergeRequestOptions{
+					SkipCI: gitlab.Ptr(opts.SkipCI),
+				}); err != nil {
 				return err
 			}
 

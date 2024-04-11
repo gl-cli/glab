@@ -101,7 +101,7 @@ var ListProjectMilestones = func(client *gitlab.Client, projectID interface{}, o
 }
 
 var ProjectMilestoneByTitle = func(client *gitlab.Client, projectID interface{}, name string) (*gitlab.Milestone, error) {
-	opts := &gitlab.ListMilestonesOptions{Title: gitlab.String(name)}
+	opts := &gitlab.ListMilestonesOptions{Title: gitlab.Ptr(name)}
 
 	if client == nil {
 		client = apiClient.Lab()

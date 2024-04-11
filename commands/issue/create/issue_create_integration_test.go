@@ -45,7 +45,7 @@ func Test_IssueCreate_Integration(t *testing.T) {
 			ID:          1,
 			IID:         1,
 			Title:       *opts.Title,
-			Labels:      *opts.Labels,
+			Labels:      gitlab.Labels(*opts.Labels),
 			State:       "opened",
 			Description: *opts.Description,
 			Weight:      *opts.Weight,

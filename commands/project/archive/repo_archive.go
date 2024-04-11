@@ -66,9 +66,9 @@ func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			l := &gitlab.ArchiveOptions{}
-			l.Format = gitlab.String(format)
+			l.Format = gitlab.Ptr(format)
 			if sha, _ := cmd.Flags().GetString("sha"); sha != "" {
-				l.SHA = gitlab.String(sha)
+				l.SHA = gitlab.Ptr(sha)
 			}
 			ext := *l.Format
 			archiveName := strings.ReplaceAll(repo.FullName(), "/", "-") + "." + ext

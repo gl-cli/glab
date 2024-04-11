@@ -98,9 +98,9 @@ func runCreate(client *gitlab.Client, repo glrepo.Interface, opts *CreateOpts) e
 	snippet, err := api.CreateProjectSnippet(client, repo.FullName(), &gitlab.CreateProjectSnippetOptions{
 		Title:       &opts.Title,
 		Description: &opts.Description,
-		Content:     gitlab.String(string(content)),
+		Content:     gitlab.Ptr(string(content)),
 		FileName:    &opts.DisplayFilename,
-		Visibility:  gitlab.Visibility(gitlab.VisibilityValue(opts.Visibility)),
+		Visibility:  gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility)),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create snippet. %w", err)

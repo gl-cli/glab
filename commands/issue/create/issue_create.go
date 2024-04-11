@@ -342,20 +342,20 @@ func createRun(opts *CreateOpts) error {
 	}
 
 	if action == cmdutils.SubmitAction {
-		issueCreateOpts.Title = gitlab.String(opts.Title)
-		issueCreateOpts.Labels = (*gitlab.Labels)(&opts.Labels)
+		issueCreateOpts.Title = gitlab.Ptr(opts.Title)
+		issueCreateOpts.Labels = (*gitlab.LabelOptions)(&opts.Labels)
 		issueCreateOpts.Description = &opts.Description
 		if opts.IsConfidential {
-			issueCreateOpts.Confidential = gitlab.Bool(opts.IsConfidential)
+			issueCreateOpts.Confidential = gitlab.Ptr(opts.IsConfidential)
 		}
 		if opts.Weight != 0 {
-			issueCreateOpts.Weight = gitlab.Int(opts.Weight)
+			issueCreateOpts.Weight = gitlab.Ptr(opts.Weight)
 		}
 		if opts.LinkedMR != 0 {
-			issueCreateOpts.MergeRequestToResolveDiscussionsOf = gitlab.Int(opts.LinkedMR)
+			issueCreateOpts.MergeRequestToResolveDiscussionsOf = gitlab.Ptr(opts.LinkedMR)
 		}
 		if opts.Milestone != 0 {
-			issueCreateOpts.MilestoneID = gitlab.Int(opts.Milestone)
+			issueCreateOpts.MilestoneID = gitlab.Ptr(opts.Milestone)
 		}
 		if len(opts.Assignees) > 0 {
 			users, err := api.UsersByNames(apiClient, opts.Assignees)
@@ -386,8 +386,8 @@ func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *Crea
 		for _, targetIssueIID := range opts.LinkedIssues {
 			fmt.Fprintln(opts.IO.StdErr, "- Linking to issue ", targetIssueIID)
 			issue, _, err = api.LinkIssues(apiClient, repo.FullName(), issue.IID, &gitlab.CreateIssueLinkOptions{
-				TargetIssueIID: gitlab.String(strconv.Itoa(targetIssueIID)),
-				LinkType:       gitlab.String(opts.IssueLinkType),
+				TargetIssueIID: gitlab.Ptr(strconv.Itoa(targetIssueIID)),
+				LinkType:       gitlab.Ptr(opts.IssueLinkType),
 			})
 			if err != nil {
 				return err
@@ -397,7 +397,7 @@ func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *Crea
 	if opts.TimeEstimate != "" {
 		fmt.Fprintln(opts.IO.StdErr, "- Adding time estimate ", opts.TimeEstimate)
 		_, err := api.SetIssueTimeEstimate(apiClient, repo.FullName(), issue.IID, &gitlab.SetTimeEstimateOptions{
-			Duration: gitlab.String(opts.TimeEstimate),
+			Duration: gitlab.Ptr(opts.TimeEstimate),
 		})
 		if err != nil {
 			return err
@@ -406,7 +406,7 @@ func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *Crea
 	if opts.TimeSpent != "" {
 		fmt.Fprintln(opts.IO.StdErr, "- Adding time spent ", opts.TimeSpent)
 		_, err := api.AddIssueTimeSpent(apiClient, repo.FullName(), issue.IID, &gitlab.AddSpentTimeOptions{
-			Duration: gitlab.String(opts.TimeSpent),
+			Duration: gitlab.Ptr(opts.TimeSpent),
 		})
 		if err != nil {
 			return err

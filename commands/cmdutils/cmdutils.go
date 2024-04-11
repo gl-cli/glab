@@ -183,8 +183,8 @@ func MilestonesPrompt(response *int, apiClient *gitlab.Client, repoRemote *glrep
 	milestoneMap := map[string]int{}
 
 	lOpts := &api.ListMilestonesOptions{
-		IncludeParentMilestones: gitlab.Bool(true),
-		State:                   gitlab.String("active"),
+		IncludeParentMilestones: gitlab.Ptr(true),
+		State:                   gitlab.Ptr("active"),
 		PerPage:                 100,
 	}
 	milestones, err := api.ListAllMilestones(apiClient, repoRemote.FullName(), lOpts)

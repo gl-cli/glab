@@ -39,14 +39,14 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			l := &gitlab.CreateLabelOptions{}
 
 			if s, _ := cmd.Flags().GetString("name"); s != "" {
-				l.Name = gitlab.String(s)
+				l.Name = gitlab.Ptr(s)
 			}
 
 			if s, _ := cmd.Flags().GetString("color"); s != "" {
-				l.Color = gitlab.String(s)
+				l.Color = gitlab.Ptr(s)
 			}
 			if s, _ := cmd.Flags().GetString("description"); s != "" {
-				l.Description = gitlab.String(s)
+				l.Description = gitlab.Ptr(s)
 			}
 			label, err := api.CreateLabel(apiClient, repo.FullName(), l)
 			if err != nil {

@@ -16,7 +16,7 @@
     "label_details": null,
     "subscribed": false,
     "closed_by": null,
-    "labels":"",
+    "labels":[],
     "milestone": null,
     "assignees":
     [],

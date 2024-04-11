@@ -8,7 +8,7 @@ var GetCommitStatuses = func(client *gitlab.Client, pid interface{}, sha string)
 	}
 
 	opt := &gitlab.GetCommitStatusesOptions{
-		All: gitlab.Bool(true),
+		All: gitlab.Ptr(true),
 	}
 
 	statuses, _, err := client.Commits.GetCommitStatuses(pid, sha, opt, nil)

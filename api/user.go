@@ -19,7 +19,7 @@ var CurrentUser = func(client *gitlab.Client) (*gitlab.User, error) {
 }
 
 var UserByName = func(client *gitlab.Client, name string) (*gitlab.User, error) {
-	opts := &gitlab.ListUsersOptions{Username: gitlab.String(name)}
+	opts := &gitlab.ListUsersOptions{Username: gitlab.Ptr(name)}
 
 	if client == nil {
 		client = apiClient.Lab()
@@ -65,7 +65,7 @@ var CreatePersonalAccessTokenForCurrentUser = func(client *gitlab.Client, name s
 	}
 	expiresAtISO := gitlab.ISOTime(expiresAt)
 	options := &gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
-		Name:      gitlab.String(name),
+		Name:      gitlab.Ptr(name),
 		Scopes:    &scopes,
 		ExpiresAt: &expiresAtISO,
 	}

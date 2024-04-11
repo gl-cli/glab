@@ -95,7 +95,7 @@ func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 
 			if opts.ShowComments {
 				l := &gitlab.ListIssueNotesOptions{
-					Sort: gitlab.String("asc"),
+					Sort: gitlab.Ptr("asc"),
 				}
 				if opts.CommentPageNumber != 0 {
 					l.Page = opts.CommentPageNumber

@@ -166,7 +166,7 @@ func listRun(opts *ListOptions) error {
 	}
 
 	l := &gitlab.ListProjectMergeRequestsOptions{
-		State: gitlab.String(opts.State),
+		State: gitlab.Ptr(opts.State),
 	}
 	jsonOutput := opts.OutputFormat == "json"
 	if jsonOutput {
@@ -182,31 +182,31 @@ func listRun(opts *ListOptions) error {
 		if err != nil {
 			return err
 		}
-		l.AuthorID = gitlab.Int(u.ID)
+		l.AuthorID = gitlab.Ptr(u.ID)
 		opts.ListType = "search"
 	}
 	if opts.SourceBranch != "" {
-		l.SourceBranch = gitlab.String(opts.SourceBranch)
+		l.SourceBranch = gitlab.Ptr(opts.SourceBranch)
 		opts.ListType = "search"
 	}
 	if opts.TargetBranch != "" {
-		l.TargetBranch = gitlab.String(opts.TargetBranch)
+		l.TargetBranch = gitlab.Ptr(opts.TargetBranch)
 		opts.ListType = "search"
 	}
 	if opts.Search != "" {
-		l.Search = gitlab.String(opts.Search)
+		l.Search = gitlab.Ptr(opts.Search)
 		opts.ListType = "search"
 	}
 	if len(opts.Labels) > 0 {
-		l.Labels = (*gitlab.Labels)(&opts.Labels)
+		l.Labels = (*gitlab.LabelOptions)(&opts.Labels)
 		opts.ListType = "search"
 	}
 	if len(opts.NotLabels) > 0 {
-		l.NotLabels = (*gitlab.Labels)(&opts.NotLabels)
+		l.NotLabels = (*gitlab.LabelOptions)(&opts.NotLabels)
 		opts.ListType = "search"
 	}
 	if opts.Milestone != "" {
-		l.Milestone = gitlab.String(opts.Milestone)
+		l.Milestone = gitlab.Ptr(opts.Milestone)
 		opts.ListType = "search"
 	}
 	if opts.Page != 0 {
@@ -216,12 +216,12 @@ func listRun(opts *ListOptions) error {
 		l.PerPage = opts.PerPage
 	}
 	if opts.Draft {
-		l.WIP = gitlab.String("yes")
+		l.WIP = gitlab.Ptr("yes")
 		opts.ListType = "search"
 	}
 
 	if opts.Mine {
-		l.Scope = gitlab.String("assigned_to_me")
+		l.Scope = gitlab.Ptr("assigned_to_me")
 		opts.ListType = "search"
 	}
 

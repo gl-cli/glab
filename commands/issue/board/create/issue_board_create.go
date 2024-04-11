@@ -46,7 +46,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			opts := &gitlab.CreateIssueBoardOptions{
-				Name: gitlab.String(boardName),
+				Name: gitlab.Ptr(boardName),
 			}
 
 			fmt.Fprintln(out, "- Creating board")

@@ -338,7 +338,7 @@ func TestOptsFromFlags(t *testing.T) {
 	opts := optsFromFlags(flags)
 
 	assert.Nil(t, opts.Source)
-	assert.Equal(t, opts.Status, gitlab.BuildState("success"))
+	assert.Equal(t, opts.Status, gitlab.Ptr(gitlab.BuildStateValue("success")))
 
 	lowerTimeBoundary := time.Now().Add(-1 * 24 * time.Hour).Add(-5 * time.Second)
 	upperTimeBoundary := time.Now().Add(-1 * 24 * time.Hour).Add(5 * time.Second)

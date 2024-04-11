@@ -52,7 +52,7 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 			testIssue.Description = *opts.Description
 		}
 		if opts.AddLabels != nil {
-			testIssue.Labels = *opts.AddLabels
+			testIssue.Labels = gitlab.Labels(*opts.AddLabels)
 		}
 		return testIssue, nil
 	}

@@ -92,7 +92,7 @@ func diffRun(opts *DiffOptions) error {
 	diffOut := &bytes.Buffer{}
 	for _, diff := range diffs {
 		// the diffs are not included in the GetMergeRequestDiffVersions so we query for each diff version
-		diffVersion, _, err := apiClient.MergeRequests.GetSingleMergeRequestDiffVersion(baseRepo.FullName(), mr.IID, diff.ID)
+		diffVersion, _, err := apiClient.MergeRequests.GetSingleMergeRequestDiffVersion(baseRepo.FullName(), mr.IID, diff.ID, &gitlab.GetSingleMergeRequestDiffVersionOptions{})
 		if err != nil {
 			return fmt.Errorf("could not find merge request diff: %w", err)
 		}

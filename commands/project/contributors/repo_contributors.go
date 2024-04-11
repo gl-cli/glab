@@ -77,10 +77,10 @@ func runE(opts *Options) error {
 	}
 
 	l := &gitlab.ListContributorsOptions{
-		OrderBy: gitlab.String(opts.OrderBy),
+		OrderBy: gitlab.Ptr(opts.OrderBy),
 	}
 	if opts.Sort != "" {
-		l.Sort = gitlab.String(opts.Sort)
+		l.Sort = gitlab.Ptr(opts.Sort)
 	}
 	l.PerPage = opts.PerPage
 	l.Page = opts.Page

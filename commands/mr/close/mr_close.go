@@ -39,7 +39,7 @@ func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			l := &gitlab.UpdateMergeRequestOptions{}
-			l.StateEvent = gitlab.String("close")
+			l.StateEvent = gitlab.Ptr("close")
 			for _, mr := range mrs {
 				if err = mrutils.MRCheckErrors(mr, mrutils.MRCheckErrOptions{
 					Closed: true,

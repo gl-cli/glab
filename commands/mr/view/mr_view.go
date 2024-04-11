@@ -52,9 +52,9 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			mr, baseRepo, err := mrutils.MRFromArgsWithOpts(f, args, &gitlab.GetMergeRequestsOptions{
-				IncludeDivergedCommitsCount: gitlab.Bool(true),
-				RenderHTML:                  gitlab.Bool(true),
-				IncludeRebaseInProgress:     gitlab.Bool(true),
+				IncludeDivergedCommitsCount: gitlab.Ptr(true),
+				RenderHTML:                  gitlab.Ptr(true),
+				IncludeRebaseInProgress:     gitlab.Ptr(true),
 			}, "any")
 			if err != nil {
 				return err
@@ -85,7 +85,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 
 			if opts.ShowComments {
 				l := &gitlab.ListMergeRequestNotesOptions{
-					Sort: gitlab.String("asc"),
+					Sort: gitlab.Ptr("asc"),
 				}
 				l.Page = opts.CommentPageNumber
 				l.PerPage = opts.CommentLimit

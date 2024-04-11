@@ -205,7 +205,7 @@ func (opts *issueBoardViewOptions) getListProjectIssueOptions() *gitlab.ListProj
 	}
 
 	if len(opts.labels) != 0 {
-		labels := gitlab.Labels(opts.labels)
+		labels := gitlab.LabelOptions(opts.labels)
 		reqOpts.Labels = &labels
 	}
 
@@ -230,7 +230,7 @@ func (opts *issueBoardViewOptions) getListGroupIssueOptions() *gitlab.ListGroupI
 	}
 
 	if len(opts.labels) != 0 {
-		labels := gitlab.Labels(opts.labels)
+		labels := gitlab.LabelOptions(opts.labels)
 		reqOpts.Labels = &labels
 	}
 
