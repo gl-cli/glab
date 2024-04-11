@@ -9,6 +9,7 @@ import (
 	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 
@@ -63,7 +64,24 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				pipelineId = commit.LastPipeline.ID
+
+				// The latest commit on the branch won't work with a merged
+				// result pipeline
+				if commit.LastPipeline == nil {
+					mr, _, err := mrutils.MRFromArgs(f, args, "any")
+					if err != nil {
+						return err
+					}
+
+					if mr.HeadPipeline == nil {
+						return fmt.Errorf("no pipeline found. It might not exist yet. If this problem continues, check your pipeline configuration.")
+					} else {
+						pipelineId = mr.HeadPipeline.ID
+					}
+
+				} else {
+					pipelineId = commit.LastPipeline.ID
+				}
 			}
 
 			pipeline, err := api.GetPipeline(apiClient, pipelineId, nil, repo.FullName())

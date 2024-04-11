@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -177,6 +178,27 @@ func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
 		return 0, fmt.Errorf("get last pipeline: %w", err)
 	}
 	return pipeline.ID, err
+}
+
+func GetDefaultBranch(f *cmdutils.Factory) string {
+	repo, err := f.BaseRepo()
+	if err != nil {
+		return "master"
+	}
+
+	remotes, err := f.Remotes()
+	if err != nil {
+		return "master"
+	}
+
+	repoRemote, err := remotes.FindByRepo(repo.RepoOwner(), repo.RepoName())
+	if err != nil {
+		return "master"
+	}
+
+	branch, _ := git.GetDefaultBranch(repoRemote.Name)
+
+	return branch
 }
 
 func getBranch(branch string, opts *JobOptions) (string, error) {

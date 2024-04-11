@@ -162,6 +162,9 @@ func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *cmdutils.Facto
 		BaseRepo: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
 		},
+		Branch: func() (string, error) {
+			return "main", nil
+		},
 	}
 }
 

@@ -395,6 +395,88 @@ No variables found in pipeline.
 `,
 		},
 		{
+			name: "when there is a merged result pipeline and no commit pipeline",
+			args: "-b=main",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123",
+					http.StatusOK,
+					`{
+						"id": 123,
+						"iid": 123,
+						"project_id": 5,
+						"status": "pending",
+						"source": "push",
+						"ref": "main",
+						"sha": "0ff3ae198f8601a285adcf5c0fff204ee6fba5fd",
+						"user": {
+							"username": "test"
+						},
+						"yaml_errors": "-",
+						"created_at": "2023-10-10T00:00:00Z",
+						"started_at": "2023-10-10T00:00:00Z",
+						"updated_at": "2023-10-10T00:00:00Z"
+					}`,
+					InlineBody,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
+					http.StatusOK,
+					`[]`,
+					InlineBody,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/merge_requests/1",
+					http.StatusOK,
+					`{
+						"head_pipeline": {
+							"id": 123
+						}
+					}`,
+					InlineBody,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/merge_requests?per_page=30&source_branch=main",
+					http.StatusOK,
+					`[
+						{
+							"iid": 1
+						}
+					]`,
+					InlineBody,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/repository/commits/main",
+					http.StatusOK,
+					`{
+						"last_pipeline": null
+					}`,
+					InlineBody,
+				},
+			},
+			expectedOut: `# Pipeline:
+id:	123
+status:	pending
+source:	push
+ref:	main
+sha:	0ff3ae198f8601a285adcf5c0fff204ee6fba5fd
+tag:	false
+yaml Errors:	-
+user:	test
+created:	2023-10-10 00:00:00 +0000 UTC
+started:	2023-10-10 00:00:00 +0000 UTC
+updated:	2023-10-10 00:00:00 +0000 UTC
+
+# Jobs:
+
+`,
+		},
+		{
 			name: "when getting JSON for pipeline",
 			args: "-p 452959326 -F json -b main",
 			httpMocks: []httpMock{

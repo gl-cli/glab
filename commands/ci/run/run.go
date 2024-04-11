@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/pkg/git"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -21,27 +21,6 @@ var (
 )
 
 var envVariables = []string{}
-
-func getDefaultBranch(f *cmdutils.Factory) string {
-	repo, err := f.BaseRepo()
-	if err != nil {
-		return "master"
-	}
-
-	remotes, err := f.Remotes()
-	if err != nil {
-		return "master"
-	}
-
-	repoRemote, err := remotes.FindByRepo(repo.RepoOwner(), repo.RepoName())
-	if err != nil {
-		return "master"
-	}
-
-	branch, _ := git.GetDefaultBranch(repoRemote.Name)
-
-	return branch
-}
 
 func parseVarArg(s string) (*gitlab.PipelineVariableOptions, error) {
 	// From https://pkg.go.dev/strings#Split:
@@ -167,7 +146,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			} else {
 				// `ci run` is running out of a git repo
 				fmt.Fprintln(f.IO.StdOut, "not in a git repository, using repository argument")
-				c.Ref = gitlab.Ptr(getDefaultBranch(f))
+				c.Ref = gitlab.Ptr(ciutils.GetDefaultBranch(f))
 			}
 
 			pipe, err := api.CreatePipeline(apiClient, repo.FullName(), c)
