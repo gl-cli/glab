@@ -43,6 +43,7 @@ pipeline
 - [`list`](list.md)
 - [`retry`](retry.md)
 - [`run`](run.md)
+- [`run-trig`](run-trig.md)
 - [`status`](status.md)
 - [`trace`](trace.md)
 - [`trigger`](trigger.md)

@@ -438,6 +438,14 @@ var CreatePipeline = func(client *gitlab.Client, projectID interface{}, opts *gi
 	return pipe, err
 }
 
+var RunPipelineTrigger = func(client *gitlab.Client, projectID interface{}, opts *gitlab.RunPipelineTriggerOptions) (*gitlab.Pipeline, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	pipe, _, err := client.PipelineTriggers.RunPipelineTrigger(projectID, opts)
+	return pipe, err
+}
+
 var DownloadArtifactJob = func(client *gitlab.Client, repo string, ref string, opts *gitlab.DownloadArtifactsFileOptions) (*bytes.Reader, error) {
 	if client == nil {
 		client = apiClient.Lab()
