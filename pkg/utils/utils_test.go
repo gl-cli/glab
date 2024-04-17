@@ -110,6 +110,44 @@ func Test_PresentInIntSlice(t *testing.T) {
 	}
 }
 
+func Test_SanitizePathName(t *testing.T) {
+	tests := []struct {
+		name     string
+		filename string
+		want     string
+	}{
+		{
+			name:     "A regular filename",
+			filename: "cli-v1.22.0.json",
+			want:     "/cli-v1.22.0.json",
+		},
+		{
+			name:     "A regular filename in a directory",
+			filename: "cli/cli-v1.22.0.json",
+			want:     "/cli/cli-v1.22.0.json",
+		},
+		{
+			name:     "A filename with directory traversal",
+			filename: "cli-v1.../../22.0.zip",
+			want:     "/22.0.zip",
+		},
+		{
+			name:     "A particularly nasty filename",
+			filename: "..././..././..././etc/password_file",
+			want:     "/.../.../.../etc/password_file",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filePathWanted := SanitizePathName(tt.filename)
+
+			if filePathWanted != tt.want {
+				t.Errorf("SanitizePathName() got = %s, want = %s", filePathWanted, tt.want)
+			}
+		})
+	}
+}
+
 func Test_CommonElementsInStringSlice(t *testing.T) {
 	testCases := []struct {
 		name   string

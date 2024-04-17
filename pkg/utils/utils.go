@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"net/url"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -20,6 +21,15 @@ func OpenInBrowser(url, browserType string) error {
 		return err
 	}
 	return run.PrepareCmd(browseCmd).Run()
+}
+
+func SanitizePathName(path string) string {
+	if !strings.HasPrefix(path, "/") {
+		// Prefix the path with "/" ensures that filepath.Clean removes all `/..`
+		// See rule 4 of filepath.Clean for more information: https://pkg.go.dev/path/filepath#Clean
+		path = "/" + path
+	}
+	return filepath.Clean(path)
 }
 
 func RenderMarkdown(text, glamourStyle string) (string, error) {
