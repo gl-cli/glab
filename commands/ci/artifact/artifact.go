@@ -14,6 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
 func ensurePathIsCreated(filename string) error {
@@ -26,15 +27,6 @@ func ensurePathIsCreated(filename string) error {
 		}
 	}
 	return nil
-}
-
-func sanitizeAssetName(asset string) string {
-	if !strings.HasPrefix(asset, "/") {
-		// Prefix the asset with "/" ensures that filepath.Clean removes all `/..`
-		// See rule 4 of filepath.Clean for more information: https://pkg.go.dev/path/filepath#Clean
-		asset = "/" + asset
-	}
-	return filepath.Clean(asset)
 }
 
 func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
@@ -83,7 +75,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			for _, v := range zipReader.File {
-				sanitizedAssetName := sanitizeAssetName(v.Name)
+				sanitizedAssetName := utils.SanitizePathName(v.Name)
 
 				destDir, err := filepath.Abs(path)
 				if err != nil {
