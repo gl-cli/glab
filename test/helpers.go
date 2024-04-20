@@ -106,6 +106,15 @@ func ExpectLines(t T, output string, lines ...string) {
 	}
 }
 
+func ClearEnvironmentVariables(t *testing.T) {
+	// prevent using environment variables for test
+	t.Setenv("GITLAB_TOKEN", "")
+	t.Setenv("VISUAL", "")
+	t.Setenv("EDITOR", "")
+	t.Setenv("GITLAB_ACCESS_TOKEN", "")
+	t.Setenv("OAUTH_TOKEN", "")
+}
+
 func GetHostOrSkip(t testing.TB) string {
 	t.Helper()
 	glTestHost := os.Getenv("GITLAB_TEST_HOST")

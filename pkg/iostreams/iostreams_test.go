@@ -10,7 +10,7 @@ import (
 )
 
 func Test_HelperFunctions(t *testing.T) {
-	// Base ios object that is modifiede as required
+	// Base ios object that is modified as required
 	ios := &IOStreams{
 		In:     os.Stdin,
 		StdOut: NewColorable(os.Stdout),

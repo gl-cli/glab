@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/test"
 )
 
 func Test_groupGraphQLVariables(t *testing.T) {
@@ -96,7 +97,7 @@ hosts:
     username: monalisa
     token: OTOKEN
 `, "")()
-	t.Setenv("GITLAB_TOKEN", "")
+	test.ClearEnvironmentVariables(t)
 
 	api.SetUserAgent("v1.2.3", "darwin", "arm64")
 	versionString := "glab/v1.2.3 (darwin, arm64)"
