@@ -1,20 +1,19 @@
-package ci
+package artifact
 
 import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	jobArtifact "gitlab.com/gitlab-org/cli/commands/job/artifact"
 )
 
-func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
+func NewCmdArtifact(f *cmdutils.Factory) *cobra.Command {
 	jobArtifactCmd := &cobra.Command{
 		Use:     "artifact <refName> <jobName> [flags]",
 		Short:   `Download all artifacts from the last pipeline`,
 		Aliases: []string{"push"},
 		Example: heredoc.Doc(`
-	glab ci artifact main build
-	glab ci artifact main deploy --path="artifacts/"
+	glab job artifact main build
+	glab job artifact main deploy --path="artifacts/"
 	`),
 		Long: ``,
 		Args: cobra.ExactArgs(2),
@@ -31,12 +30,9 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
-			return jobArtifact.DownloadArtifacts(apiClient, repo, path, args[0], args[1])
+			return DownloadArtifacts(apiClient, repo, path, args[0], args[1])
 		},
-		Deprecated: "please use 'glab job artifact' instead",
 	}
 	jobArtifactCmd.Flags().StringP("path", "p", "./", "Path to download the artifact files")
-
 	return jobArtifactCmd
 }
