@@ -1,4 +1,4 @@
-package ci
+package job
 
 import (
 	"bytes"
@@ -19,12 +19,12 @@ var tests = []struct {
 	{
 		name:        "when no args should display the help message",
 		args:        "",
-		expectedOut: "Use \"ci [command] --help\" for more information about a command.\n",
-		expectedErr: "Aliases 'pipe' and 'pipeline' are deprecated. Please use 'ci' instead.",
+		expectedOut: "Use \"job [command] --help\" for more information about a command.\n",
+		expectedErr: "",
 	},
 }
 
-func TestPipelineCmd(t *testing.T) {
+func TestJobCmd(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			wantedErr := ""
@@ -53,7 +53,7 @@ func TestPipelineCmd(t *testing.T) {
 				errC <- buf.String()
 			}()
 
-			err := NewCmdCI(&cmdutils.Factory{}).Execute()
+			err := NewCmdJob(&cmdutils.Factory{}).Execute()
 
 			// Rollbacking Stdout & Stderr
 			wOut.Close()
@@ -63,7 +63,7 @@ func TestPipelineCmd(t *testing.T) {
 			os.Stderr = oldErr
 			stderr := <-errC
 
-			if assert.NoErrorf(t, err, "error running `ci %s` : %v", test.args, err) {
+			if assert.NoErrorf(t, err, "error running `job %s` : %v", test.args, err) {
 				assert.Contains(t, stderr, wantedErr)
 				assert.Contains(t, stdout, test.expectedOut)
 			}
