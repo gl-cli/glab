@@ -60,3 +60,6 @@ log.txt.glab-cli
 
 # gotestsum test log
 test-output.log
+
+# commitlint node_modules
+scripts/commit-lint/node_modules/ 

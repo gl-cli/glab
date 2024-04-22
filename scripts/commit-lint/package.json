@@ -4,11 +4,12 @@
   "main": "lint.js",
   "author": "",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
-    "@commitlint/config-conventional": "^9.1.1",
-    "@commitlint/format": "^9.1.1",
-    "@commitlint/lint": "^9.1.1",
-    "@commitlint/read": "^9.1.1",
-    "axios": "^0.19.2"
+    "@commitlint/config-conventional": "^19.2.2",
+    "@commitlint/format": "^19.0.3",
+    "@commitlint/lint": "^19.2.2",
+    "@commitlint/read": "^19.2.1",
+    "axios": "^1.6.8"
   }
 }

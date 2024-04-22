@@ -1,8 +1,8 @@
-const axios = require('axios').default;
-const read = require('@commitlint/read').default;
-const lint = require('@commitlint/lint').default;
-const format = require('@commitlint/format').default;
-const config = require('@commitlint/config-conventional');
+import axios from "axios";
+import read from "@commitlint/read";
+import lint from "@commitlint/lint";
+import format from "@commitlint/format";
+import config from "@commitlint/config-conventional";
 
 const maximumLineLength = 72;
 
