@@ -73,7 +73,7 @@ check_docs_markdown:
 
 lint_commit:
   stage: test
-  image: node:16-slim
+  image: node:18-slim
   script:
     - apt-get update && apt-get install -y git
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_COMMIT_SHA
