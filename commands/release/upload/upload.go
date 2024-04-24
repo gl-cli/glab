@@ -76,7 +76,7 @@ func NewCmdUpload(f *cmdutils.Factory) *cobra.Command {
 			      "name": "Asset1", 
 			      "url":"https://<domain>/some/location/1", 
 			      "link_type": "other", 
-			      "filepath": "path/to/file"
+			      "direct_asset_path": "path/to/file"
 			    }
 			  ]'
 `),
@@ -107,7 +107,7 @@ func NewCmdUpload(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "`JSON` string representation of assets links (e.g. `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"filepath\": \"path/to/file\"}]')`")
+	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "`JSON` string representation of assets links (e.g. `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]')`")
 
 	return cmd
 }
