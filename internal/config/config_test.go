@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -93,7 +94,7 @@ func Test_defaultConfig(t *testing.T) {
 
 	editor, err := cfg.Get("", "editor")
 	assert.Nil(t, err)
-	assert.Equal(t, "", editor)
+	assert.Equal(t, os.Getenv("EDITOR"), editor)
 
 	aliases, err := cfg.Aliases()
 	assert.Nil(t, err)

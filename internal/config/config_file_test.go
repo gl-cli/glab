@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/test"
 	"gopkg.in/yaml.v3"
 )
 
@@ -16,13 +17,6 @@ func eq(t *testing.T, got interface{}, expected interface{}) {
 	}
 }
 
-func clearEnvironmentVariables(t *testing.T) {
-	// prevent using environment variables for test
-	t.Setenv("GITLAB_TOKEN", "")
-	t.Setenv("VISUAL", "")
-	t.Setenv("EDITOR", "")
-}
-
 func Test_parseConfig(t *testing.T) {
 	defer StubConfig(`---
 hosts:
@@ -31,7 +25,7 @@ hosts:
     token: OTOKEN
 aliases:
 `, "")()
-	clearEnvironmentVariables(t)
+	test.ClearEnvironmentVariables(t)
 
 	config, err := ParseConfig("config.yml")
 	eq(t, err, nil)
@@ -53,7 +47,7 @@ hosts:
     username: monalisa
     token: OTOKEN
 `, "")()
-	clearEnvironmentVariables(t)
+	test.ClearEnvironmentVariables(t)
 
 	config, err := ParseConfig("config.yml")
 	eq(t, err, nil)
@@ -73,7 +67,7 @@ hosts:
     token: OTOKEN
 `, `
 `)()
-	clearEnvironmentVariables(t)
+	test.ClearEnvironmentVariables(t)
 
 	config, err := ParseConfig("config.yml")
 	eq(t, err, nil)
@@ -86,6 +80,8 @@ hosts:
 }
 
 func Test_parseConfig_Local(t *testing.T) {
+	test.ClearEnvironmentVariables(t)
+
 	defer StubConfig(`---
 git_protocol: ssh
 editor: vim
@@ -105,6 +101,8 @@ local:
 }
 
 func Test_Get_configReadSequence(t *testing.T) {
+	test.ClearEnvironmentVariables(t)
+
 	defer StubConfig(`---
 git_protocol: ssh
 editor: vim
