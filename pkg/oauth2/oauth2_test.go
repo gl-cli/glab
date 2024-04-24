@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
@@ -32,11 +33,12 @@ func TestHandleAuthRedirect(t *testing.T) {
 		"token":                "access_token",
 		"oauth2_code_verifier": "123",
 		"oauth2_expiry_date":   "13 Mar 23 15:47 GMT",
+		"client_id":            "321",
 	}
 
 	ios, _, _, _ := iostreams.Test()
 
-	tokenCh := handleAuthRedirect(ios, "123", hostname, "http")
+	tokenCh := handleAuthRedirect(ios, "123", hostname, "http", "abc")
 	defer close(tokenCh)
 	time.Sleep(1 * time.Second)
 
@@ -69,6 +71,7 @@ func TestRefreshToken(t *testing.T) {
 		"token":                "access_token",
 		"oauth2_code_verifier": "123",
 		"oauth2_expiry_date":   "13 Mar 23 15:47 GMT",
+		"client_id":            "321",
 	}
 
 	err := RefreshToken(hostname, cfg, "http")
@@ -86,4 +89,52 @@ func TestRefreshToken(t *testing.T) {
 	require.Nil(t, err)
 	_, err = time.Parse(time.RFC822, expiryDateString)
 	require.Nil(t, err)
+}
+
+func TestClientID(t *testing.T) {
+	testCasesTable := []struct {
+		name             string
+		hostname         string
+		configClientID   string
+		expectedClientID string
+	}{
+		{
+			name:             "managed",
+			hostname:         glinstance.Default(),
+			configClientID:   "",
+			expectedClientID: glinstance.DefaultClientID(),
+		},
+		{
+			name:             "self-managed-complete",
+			hostname:         "salsa.debian.org",
+			configClientID:   "321",
+			expectedClientID: "321",
+		},
+	}
+
+	for _, testCase := range testCasesTable {
+		t.Run(testCase.name, func(t *testing.T) {
+			cfg := stubConfig{
+				hosts: map[string]map[string]string{
+					testCase.hostname: {
+						"client_id": testCase.configClientID,
+					},
+				},
+			}
+			clientID, err := oAuthClientID(cfg, testCase.hostname)
+			assert.NoError(t, err)
+			assert.Equal(t, testCase.expectedClientID, clientID)
+		})
+	}
+
+	t.Run("invalid self-managed config", func(t *testing.T) {
+		cfg := stubConfig{
+			hosts: map[string]map[string]string{
+				"salsa.debian.org": {},
+			},
+		}
+		clientID, err := oAuthClientID(cfg, "salsa.debian.org")
+		assert.Error(t, err)
+		assert.Empty(t, clientID)
+	})
 }

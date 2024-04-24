@@ -16,6 +16,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/zalando/go-keyring"
+
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -90,13 +91,15 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			if !opts.Interactive {
-				if opts.Hostname == "" {
-					opts.Hostname = glinstance.Default()
-				}
+			if !opts.Interactive && opts.Hostname == "" {
+				opts.Hostname = glinstance.Default()
 			}
 
-			return loginRun()
+			if err := loginRun(opts); err != nil {
+				return cmdutils.WrapError(err, "Could not sign in!")
+			}
+
+			return nil
 		},
 	}
 
@@ -108,7 +111,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 	return cmd
 }
 
-func loginRun() error {
+func loginRun(opts *LoginOptions) error {
 	c := opts.IO.Color()
 	cfg, err := opts.Config()
 	if err != nil {
@@ -175,6 +178,8 @@ func loginRun() error {
 				return fmt.Errorf("could not prompt: %w", err)
 			}
 		}
+	} else {
+		isSelfHosted = glinstance.IsSelfHosted(hostname)
 	}
 
 	fmt.Fprintf(opts.IO.StdErr, "- Logging into %s\n", hostname)
@@ -211,36 +216,24 @@ func loginRun() error {
 		}
 	}
 
-	loginType := 0
+	var loginType string
 
 	if opts.Interactive {
-		if isSelfHosted {
-			err := survey.AskOne(&survey.Select{
-				Message: "How would you like to login?",
-				Options: []string{
-					"Token",
-				},
-			}, &loginType)
-			if err != nil {
-				return fmt.Errorf("could not get login type: %w", err)
-			}
-		} else {
-			err := survey.AskOne(&survey.Select{
-				Message: "How would you like to login?",
-				Options: []string{
-					"Token",
-					"Web",
-				},
-			}, &loginType)
-			if err != nil {
-				return fmt.Errorf("could not get login type: %w", err)
-			}
+		err := survey.AskOne(&survey.Select{
+			Message: "How would you like to sign in?",
+			Options: []string{
+				"Token",
+				"Web",
+			},
+		}, &loginType)
+		if err != nil {
+			return fmt.Errorf("could not get login type: %w", err)
 		}
 	}
 
 	var token string
-	if loginType == 0 {
-		token, err = showTokenPrompt(hostname)
+	if strings.EqualFold(loginType, "token") {
+		token, err = showTokenPrompt(opts.IO, hostname)
 		if err != nil {
 			return err
 		}
@@ -389,9 +382,9 @@ func getAccessTokenTip(hostname string) string {
 	The minimum required scopes are 'api' and 'write_repository'.`, glHostname)
 }
 
-func showTokenPrompt(hostname string) (string, error) {
-	fmt.Fprintln(opts.IO.StdErr)
-	fmt.Fprintln(opts.IO.StdErr, heredoc.Doc(getAccessTokenTip(hostname)))
+func showTokenPrompt(io *iostreams.IOStreams, hostname string) (string, error) {
+	fmt.Fprintln(io.StdErr)
+	fmt.Fprintln(io.StdErr, heredoc.Doc(getAccessTokenTip(hostname)))
 
 	var token string
 	err := survey.AskOne(&survey.Password{

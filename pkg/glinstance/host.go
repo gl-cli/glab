@@ -9,6 +9,7 @@ import (
 const (
 	defaultHostname = "gitlab.com"
 	defaultProtocol = "https"
+	defaultClientId = "41d48f9422ebd655dd9cf2947d6979681dfaddc6d0c56f7628f6ada59559af1e"
 )
 
 var (
@@ -24,6 +25,10 @@ func Default() string {
 // DefaultProtocol returns the protocol of the default GitLab instance
 func DefaultProtocol() string {
 	return defaultProtocol
+}
+
+func DefaultClientID() string {
+	return defaultClientId
 }
 
 // OverridableDefault is like Default, except it is overridable by the GITLAB_HOST environment variable

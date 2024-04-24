@@ -1,6 +1,8 @@
 package config
 
-import "strings"
+import (
+	"strings"
+)
 
 // ConfigKeyEquivalence returns the equivalent key that's actually used in the config file
 func ConfigKeyEquivalence(key string) string {
@@ -19,6 +21,8 @@ func ConfigKeyEquivalence(key string) string {
 		return "remote_alias"
 	case "editor", "visual", "glab_editor":
 		return "editor"
+	case "client_id":
+		return "client_id"
 	default:
 		return key
 	}
@@ -41,6 +45,8 @@ func EnvKeyEquivalence(key string) []string {
 		return []string{"GLAB_EDITOR", "VISUAL", "EDITOR"}
 	case "remote_alias":
 		return []string{"GIT_REMOTE_URL_VAR", "GIT_REMOTE_ALIAS", "REMOTE_ALIAS", "REMOTE_NICKNAME", "GIT_REMOTE_NICKNAME"}
+	case "client_id":
+		return []string{"GITLAB_CLIENT_ID"}
 	default:
 		return []string{strings.ToUpper(key)}
 	}
