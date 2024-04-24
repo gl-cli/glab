@@ -10,7 +10,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/avast/retry-go"
+	"github.com/avast/retry-go/v4"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
