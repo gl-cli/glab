@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
@@ -20,10 +21,28 @@ const (
 	scopes      = "openid+profile+read_user+write_repository+api"
 )
 
-const clientID = "41d48f9422ebd655dd9cf2947d6979681dfaddc6d0c56f7628f6ada59559af1e"
+func oAuthClientID(cfg config.Config, hostname string) (string, error) {
+	if glinstance.IsSelfHosted(hostname) {
+		clientID, err := cfg.Get(hostname, "client_id")
+		if err != nil {
+			return "", err
+		}
+
+		if clientID == "" {
+			return "", fmt.Errorf("set 'client_id' first with `glab config set client_id <client_id> -g -h %s`", hostname)
+		}
+		return clientID, nil
+	}
+	return glinstance.DefaultClientID(), nil
+}
 
 func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (string, error) {
 	authURL := fmt.Sprintf("https://%s/oauth/authorize", hostname)
+
+	clientID, err := oAuthClientID(cfg, hostname)
+	if err != nil {
+		return "", err
+	}
 
 	state := randomString()
 	codeVerifier := randomString()
@@ -32,7 +51,7 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 		"%s?client_id=%s&redirect_uri=%s&response_type=code&state=%s&scope=%s&code_challenge=%s&code_challenge_method=S256",
 		authURL, clientID, redirectURI, state, scopes, codeChallenge)
 
-	tokenCh := handleAuthRedirect(io, codeVerifier, hostname, "https")
+	tokenCh := handleAuthRedirect(io, codeVerifier, hostname, "https", clientID)
 	defer close(tokenCh)
 
 	browser, _ := cfg.Get(hostname, "browser")
@@ -43,7 +62,7 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 	}
 	token := <-tokenCh
 
-	err := token.SetConfig(hostname, cfg)
+	err = token.SetConfig(hostname, cfg)
 	if err != nil {
 		return "", err
 	}
@@ -51,14 +70,14 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 	return token.AccessToken, nil
 }
 
-func handleAuthRedirect(io *iostreams.IOStreams, codeVerifier, hostname, protocol string) chan *AuthToken {
+func handleAuthRedirect(io *iostreams.IOStreams, codeVerifier, hostname, protocol, clientID string) chan *AuthToken {
 	tokenCh := make(chan *AuthToken)
 
 	server := &http.Server{Addr: ":7171"}
 
 	http.HandleFunc("/auth/redirect", func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
-		token, err := requestToken(hostname, protocol, code, codeVerifier)
+		token, err := requestToken(hostname, protocol, clientID, code, codeVerifier)
 		if err != nil {
 			fmt.Fprintf(io.StdErr, "Error occured requesting access token %s", err)
 			tokenCh <- nil
@@ -81,7 +100,7 @@ func handleAuthRedirect(io *iostreams.IOStreams, codeVerifier, hostname, protoco
 	return tokenCh
 }
 
-func requestToken(hostname, protocol, code, codeVerifier string) (*AuthToken, error) {
+func requestToken(hostname, protocol, clientID, code, codeVerifier string) (*AuthToken, error) {
 	tokenURL := fmt.Sprintf("%s://%s/oauth/token", protocol, hostname)
 
 	form := url.Values{
@@ -124,6 +143,11 @@ func RefreshToken(hostname string, cfg config.Config, protocol string) error {
 	// Check if token has expired
 	if token.ExpiryDate.After(time.Now()) {
 		return nil
+	}
+
+	clientID, err := oAuthClientID(cfg, hostname)
+	if err != nil {
+		return err
 	}
 
 	form := url.Values{
