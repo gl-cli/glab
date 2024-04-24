@@ -46,7 +46,7 @@ $ glab release upload v1.0.1 --assets-links='
       "name": "Asset1", 
       "url":"https://<domain>/some/location/1", 
       "link_type": "other", 
-      "filepath": "path/to/file"
+      "direct_asset_path": "path/to/file"
     }
   ]'
 
@@ -55,7 +55,7 @@ $ glab release upload v1.0.1 --assets-links='
 ## Options
 
 ```plaintext
-  -a, --assets-links JSON   JSON string representation of assets links (e.g. `--assets-links='[{"name": "Asset1", "url":"https://<domain>/some/location/1", "link_type": "other", "filepath": "path/to/file"}]')`
+  -a, --assets-links JSON   JSON string representation of assets links (e.g. `--assets-links='[{"name": "Asset1", "url":"https://<domain>/some/location/1", "link_type": "other", "direct_asset_path": "path/to/file"}]')`
 ```
 
 ## Options inherited from parent commands
