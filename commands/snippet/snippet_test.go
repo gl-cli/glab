@@ -9,7 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func TestCmdSnippet_noARgs(t *testing.T) {
+func TestCmdSnippet_noArgs(t *testing.T) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w

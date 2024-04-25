@@ -20,8 +20,8 @@ type CreateOpts struct {
 	Description     string
 	DisplayFilename string
 	Visibility      string
+	Personal        bool
 
-	ForUser  bool
 	FilePath string
 
 	IO       *iostreams.IOStreams
@@ -44,6 +44,8 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			glab snippet create script.py --title "Title of the snippet"
 			echo "package main" | glab snippet new --title "Title of the snippet" --filename "main.go"
 			glab snippet create main.go -t Title -f "different.go" -d Description
+			glab snippet create main.go -t Title -f "different.go" -d Description --filepath different.go
+			glab snippet create script.py --personal --title "Personal snippet"
 		`),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			opts.IO = f.IO
@@ -72,12 +74,16 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			repo, err := opts.BaseRepo()
-			if err != nil {
-				return err
-			}
+			if opts.Personal {
+				return runCreate(client, nil, opts)
+			} else {
+				repo, err := opts.BaseRepo()
+				if err != nil {
+					return err
+				}
+				return runCreate(client, repo, opts)
 
-			return runCreate(client, repo, opts)
+			}
 		},
 	}
 
@@ -85,6 +91,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	snippetCreateCmd.Flags().StringVarP(&opts.DisplayFilename, "filename", "f", "", "Filename of the snippet in GitLab.")
 	snippetCreateCmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Description of the snippet.")
 	snippetCreateCmd.Flags().StringVarP(&opts.Visibility, "visibility", "v", "private", "Limit by visibility: 'public', 'internal', or 'private'")
+	snippetCreateCmd.Flags().BoolVarP(&opts.Personal, "personal", "p", false, "Create a personal snippet.")
 
 	return snippetCreateCmd
 }
@@ -94,14 +101,26 @@ func runCreate(client *gitlab.Client, repo glrepo.Interface, opts *CreateOpts) e
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(opts.IO.StdErr, "- Creating snippet in", repo.FullName())
-	snippet, err := api.CreateProjectSnippet(client, repo.FullName(), &gitlab.CreateProjectSnippetOptions{
-		Title:       &opts.Title,
-		Description: &opts.Description,
-		Content:     gitlab.Ptr(string(content)),
-		FileName:    &opts.DisplayFilename,
-		Visibility:  gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility)),
-	})
+	var snippet *gitlab.Snippet
+	if opts.Personal {
+		fmt.Fprintln(opts.IO.StdErr, "- Creating snippet in personal space")
+		snippet, err = api.CreateSnippet(client, &gitlab.CreateSnippetOptions{
+			Title:       &opts.Title,
+			Description: &opts.Description,
+			Content:     gitlab.Ptr(string(content)),
+			FileName:    &opts.DisplayFilename,
+			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility)),
+		})
+	} else {
+		fmt.Fprintln(opts.IO.StdErr, "- Creating snippet in", repo.FullName())
+		snippet, err = api.CreateProjectSnippet(client, repo.FullName(), &gitlab.CreateProjectSnippetOptions{
+			Title:       &opts.Title,
+			Description: &opts.Description,
+			Content:     gitlab.Ptr(string(content)),
+			FileName:    &opts.DisplayFilename,
+			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility)),
+		})
+	}
 	if err != nil {
 		return fmt.Errorf("failed to create snippet: %w", err)
 	}
