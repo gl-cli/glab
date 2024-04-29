@@ -15,6 +15,47 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func initGitRepo(t *testing.T) string {
+	tempDir := t.TempDir()
+
+	err := os.Chdir(tempDir)
+	require.NoError(t, err)
+
+	gitInit := GitCommand("init")
+	_, err = run.PrepareCmd(gitInit).Output()
+	require.NoError(t, err)
+
+	return tempDir
+}
+
+func initGitRepoWithCommit(t *testing.T) {
+	initGitRepo(t)
+
+	configureGitConfig(t)
+
+	err := exec.Command("touch", "randomfile").Run()
+	require.NoError(t, err)
+
+	gitAdd := GitCommand("add", "randomfile")
+	_, err = run.PrepareCmd(gitAdd).Output()
+	require.NoError(t, err)
+
+	gitCommit := GitCommand("commit", "-m", "\"commit\"")
+	_, err = run.PrepareCmd(gitCommit).Output()
+	require.NoError(t, err)
+}
+
+func configureGitConfig(t *testing.T) {
+	// CI will throw errors using a git command without a configuration
+	nameConfig := GitCommand("config", "user.name", "glab test bot")
+	_, err := run.PrepareCmd(nameConfig).Output()
+	require.NoError(t, err)
+
+	emailConfig := GitCommand("config", "user.email", "no-reply+cli-tests@gitlab.com")
+	_, err = run.PrepareCmd(emailConfig).Output()
+	require.NoError(t, err)
+}
+
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
@@ -299,33 +340,28 @@ HEAD branch: main`)
 }
 
 func TestGetRemoteURL(t *testing.T) {
-	tests := []struct {
-		name        string
-		remoteAlias string
-		want        string
-		wantErr     bool
-	}{
-		{
-			name:        "isInvalid",
-			remoteAlias: "someorigin",
-			wantErr:     true,
-		},
-		{
-			name:        "isInvalid",
-			remoteAlias: "origin",
-			want:        getEnv("CI_PROJECT_PATH", "gitlab-org/cli"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetRemoteURL(tt.remoteAlias)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetRemoteURL() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			require.Contains(t, got, tt.want)
-		})
-	}
+	t.Run("is valid", func(t *testing.T) {
+		initGitRepo(t)
+
+		_, err := GitCommand("config", "remote.origin.url", getEnv("CI_PROJECT_PATH", "gitlab-org/cli")).Output()
+		require.NoError(t, err)
+
+		got, err := GetRemoteURL("origin")
+
+		require.Contains(t, got, getEnv("CI_PROJECT_PATH", "gitlab-org/cli"))
+		require.NoError(t, err)
+	})
+
+	t.Run("is not valid", func(t *testing.T) {
+		initGitRepo(t)
+
+		got, err := GetRemoteURL("lkajwflkwejlakjdsal")
+
+		require.Contains(t, got, "")
+		if err == nil {
+			t.Errorf("GetRemoteURL() error = %v, wantErr %v", err, true)
+		}
+	})
 }
 
 func TestDescribeByTags(t *testing.T) {
@@ -334,35 +370,24 @@ func TestDescribeByTags(t *testing.T) {
 		output     string
 		errorValue error
 	}{
-		"invalid repository": {
-			expected:   "",
-			output:     "",
-			errorValue: errors.New("fatal: not a git repository (or any of the parent directories): .git"),
-		},
 		"commit is tag": {
-			expected:   "1.0.0",
+			expected:   "1.0.0\n",
 			output:     "1.0.0",
 			errorValue: nil,
 		},
 		"commit is not tag": {
-			expected:   "1.0.0-1-g4aa1b8",
+			expected:   "1.0.0-1-g4aa1b8\n",
 			output:     "1.0.0-1-g4aa1b8",
 			errorValue: nil,
 		},
 	}
 
-	t.Cleanup(func() {
-		teardown := run.SetPrepareCmd(func(*exec.Cmd) run.Runnable {
-			return &test.OutputStub{}
-		})
-		teardown()
-	})
-
 	for name, v := range cases {
 		t.Run(name, func(t *testing.T) {
-			_ = run.SetPrepareCmd(func(*exec.Cmd) run.Runnable {
-				return &test.OutputStub{Out: []byte(v.output), Error: v.errorValue}
-			})
+			initGitRepoWithCommit(t)
+
+			_, err := exec.Command("git", "tag", v.output).Output()
+			require.NoError(t, err)
 
 			version, err := DescribeByTags()
 			require.Equal(t, v.errorValue, errors.Unwrap(err))
@@ -389,125 +414,156 @@ func Test_assertValidConfig(t *testing.T) {
 }
 
 func Test_configValueExists(t *testing.T) {
-	// TODO(gitlab-org/cli#3778): To ensure that the commands
-	// work against a real repository, and drop all stubbing,
-	// we'll need to implement some test setup code that inits
-	// a git repository for a test.
-	//
-	// See https://gitlab.com/gitlab-org/cli/-/issues/3778
-	cs, teardown := test.InitCmdStubber()
-	defer teardown()
+	tests := []struct {
+		name   string
+		value  string
+		key    string
+		check  string
+		exists bool
+	}{
+		{
+			name:   "config value exists",
+			value:  "rocks",
+			check:  "rocks",
+			exists: true,
+		},
+		{
+			name:   "config value doesn't exist",
+			value:  "stinks",
+			check:  "rocks",
+			exists: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			initGitRepo(t)
+			err := SetRemoteConfig("this", "testsuite", tt.value)
+			require.NoError(t, err)
 
-	t.Run("config value does not exist", func(t *testing.T) {
-		cs.Stub("does not match")
-		v, err := configValueExists("remote.this.testsuite", "rocks")
-		require.NoError(t, err)
-		require.Equal(t, false, v)
-	})
+			result, err := configValueExists("remote.this.testsuite", tt.check)
 
-	t.Run("config value exists", func(t *testing.T) {
-		cs.Stub("rocks")
-		v, err := configValueExists("remote.this.testsuite", "rocks")
-		require.NoError(t, err)
-		require.Equal(t, true, v)
-	})
+			require.NoError(t, err)
+			require.Equal(t, tt.exists, result)
+		})
+	}
 }
 
 func TestSetConfig(t *testing.T) {
-	// TODO(gitlab-org/cli#3778): To ensure that the commands
-	// work against a real repository, and drop all stubbing,
-	// we'll need to implement some test setup code that inits
-	// a git repository for a test.
-	//
-	// See https://gitlab.com/gitlab-org/cli/-/issues/3778
-	cs, teardown := test.InitCmdStubber()
-	defer teardown()
+	tests := []struct {
+		name        string
+		value       string
+		valueExists bool
+		oldValue    string
+		expected    string
+	}{
+		{
+			name:        "config value already exists",
+			value:       "hello",
+			valueExists: true,
+			oldValue:    "goodbye",
+			expected:    "goodbye\nhello\n",
+		},
+		{
+			name:        "config value doesn't exist",
+			value:       "hey",
+			valueExists: false,
+			expected:    "hey\n",
+		},
+	}
 
-	t.Run("config value does not exist", func(t *testing.T) {
-		cs.Stub("")
-		cs.Stub("")
-		err := SetConfig("this.testsuite", "rocks")
-		require.NoError(t, err)
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			initGitRepo(t)
 
-	t.Run("config value exists", func(t *testing.T) {
-		cs.Stub("rocks")
-		err := SetConfig("this.testsuite", "rocks")
-		require.NoError(t, err)
-	})
+			if tt.valueExists {
+				_, err := exec.Command("git", "config", "cool.testcase", tt.oldValue).Output()
+				require.NoError(t, err)
+			}
 
-	t.Run("unknown error occurred", func(t *testing.T) {
-		cs.StubError("unknown error occurred")
-		err := SetConfig("this.testsuite", "rocks")
-		require.Error(t, err)
-	})
+			err := SetConfig("cool.testcase", tt.value)
+			require.NoError(t, err)
+
+			output, err := exec.Command("git", "config", "--get-all", "cool.testcase").Output()
+
+			require.Equal(t, string(output), tt.expected)
+			require.NoError(t, err)
+		})
+	}
 }
 
 func TestListTags(t *testing.T) {
 	cases := map[string]struct {
-		expected []string
-		output   string
-		errorVal error
+		expected  []string
+		output    string
+		wantErr   bool
+		errString string
 	}{
-		"invalid repository": {
-			expected: nil,
-			output:   "",
-			errorVal: errors.New("fatal: not a git repository (or any of the parent directories): .git"),
-		},
 		"no tags": {
 			expected: nil,
 			output:   "",
-			errorVal: nil,
+			wantErr:  false,
+		},
+		"invalid repository": {
+			expected:  nil,
+			output:    "",
+			wantErr:   true,
+			errString: "fatal: not a git repository (or any of the parent directories): .git\ngit: exit status 128",
 		},
 		"no tags w/ extra newline": {
-			expected: []string{},
+			expected: []string(nil),
 			output:   "\n",
-			errorVal: nil,
+			wantErr:  false,
 		},
 		"single semver tag": {
 			expected: []string{"1.0.0"},
 			output:   "1.0.0",
-			errorVal: nil,
+			wantErr:  false,
 		},
 		"multiple semver tags": {
 			expected: []string{"1.0.0", "2.0.0", "3.0.0"},
 			output:   "1.0.0\n2.0.0\n3.0.0",
-			errorVal: nil,
+			wantErr:  false,
 		},
 		"multiple semver tags with extra newlines": {
 			expected: []string{"1.0.0", "2.0.0", "3.0.0"},
 			output:   "1.0.0\n2.0.0\n3.0.0\n\n",
-			errorVal: nil,
+			wantErr:  false,
 		},
 		"single non-semver tag": {
 			expected: []string{"a"},
 			output:   "a",
-			errorVal: nil,
+			wantErr:  false,
 		},
 		"multiple non-semver tag": {
 			expected: []string{"a", "b"},
 			output:   "a\nb",
-			errorVal: nil,
+			wantErr:  false,
 		},
 	}
 
-	t.Cleanup(func() {
-		teardown := run.SetPrepareCmd(func(*exec.Cmd) run.Runnable {
-			return &test.OutputStub{}
-		})
-		teardown()
-	})
-
-	for name, v := range cases {
+	for name, tt := range cases {
 		t.Run(name, func(t *testing.T) {
-			_ = run.SetPrepareCmd(func(*exec.Cmd) run.Runnable {
-				return &test.OutputStub{Out: []byte(v.output), Error: v.errorVal}
-			})
+			if tt.wantErr {
+				tempDir := t.TempDir()
+				// move to a directory without a .git subdirectory
+				err := os.Chdir(tempDir)
+				require.NoError(t, err)
 
-			tags, err := ListTags()
+				tags, err := ListTags()
+				require.Equal(t, tt.errString, errors.Unwrap(err).Error())
+				require.Equal(t, tt.expected, tags)
+			} else {
+				initGitRepoWithCommit(t)
 
-			require.Equal(t, v.errorVal, errors.Unwrap(err))
-			require.Equal(t, v.expected, tags)
+				for tag := range tt.expected {
+					_, err := exec.Command("git", "tag", tt.expected[tag]).Output()
+					require.NoError(t, err)
+				}
+
+				tags, err := ListTags()
+				require.Equal(t, tt.expected, tags)
+				require.NoError(t, err)
+			}
 		})
 	}
 }
