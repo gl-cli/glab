@@ -1,4 +1,4 @@
-# frozen_string_literal: trueo
+# frozen_string_literal: true
 
 require 'gitlab-dangerfiles'
 
