@@ -15,47 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func initGitRepo(t *testing.T) string {
-	tempDir := t.TempDir()
-
-	err := os.Chdir(tempDir)
-	require.NoError(t, err)
-
-	gitInit := GitCommand("init")
-	_, err = run.PrepareCmd(gitInit).Output()
-	require.NoError(t, err)
-
-	return tempDir
-}
-
-func initGitRepoWithCommit(t *testing.T) {
-	initGitRepo(t)
-
-	configureGitConfig(t)
-
-	err := exec.Command("touch", "randomfile").Run()
-	require.NoError(t, err)
-
-	gitAdd := GitCommand("add", "randomfile")
-	_, err = run.PrepareCmd(gitAdd).Output()
-	require.NoError(t, err)
-
-	gitCommit := GitCommand("commit", "-m", "\"commit\"")
-	_, err = run.PrepareCmd(gitCommit).Output()
-	require.NoError(t, err)
-}
-
-func configureGitConfig(t *testing.T) {
-	// CI will throw errors using a git command without a configuration
-	nameConfig := GitCommand("config", "user.name", "glab test bot")
-	_, err := run.PrepareCmd(nameConfig).Output()
-	require.NoError(t, err)
-
-	emailConfig := GitCommand("config", "user.email", "no-reply+cli-tests@gitlab.com")
-	_, err = run.PrepareCmd(emailConfig).Output()
-	require.NoError(t, err)
-}
-
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
@@ -341,7 +300,7 @@ HEAD branch: main`)
 
 func TestGetRemoteURL(t *testing.T) {
 	t.Run("is valid", func(t *testing.T) {
-		initGitRepo(t)
+		InitGitRepo(t)
 
 		_, err := GitCommand("config", "remote.origin.url", getEnv("CI_PROJECT_PATH", "gitlab-org/cli")).Output()
 		require.NoError(t, err)
@@ -353,7 +312,7 @@ func TestGetRemoteURL(t *testing.T) {
 	})
 
 	t.Run("is not valid", func(t *testing.T) {
-		initGitRepo(t)
+		InitGitRepo(t)
 
 		got, err := GetRemoteURL("lkajwflkwejlakjdsal")
 
@@ -384,7 +343,7 @@ func TestDescribeByTags(t *testing.T) {
 
 	for name, v := range cases {
 		t.Run(name, func(t *testing.T) {
-			initGitRepoWithCommit(t)
+			InitGitRepoWithCommit(t)
 
 			_, err := exec.Command("git", "tag", v.output).Output()
 			require.NoError(t, err)
@@ -436,7 +395,7 @@ func Test_configValueExists(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			initGitRepo(t)
+			InitGitRepo(t)
 			err := SetRemoteConfig("this", "testsuite", tt.value)
 			require.NoError(t, err)
 
@@ -473,7 +432,7 @@ func TestSetConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			initGitRepo(t)
+			InitGitRepo(t)
 
 			if tt.valueExists {
 				_, err := exec.Command("git", "config", "cool.testcase", tt.oldValue).Output()
@@ -553,7 +512,7 @@ func TestListTags(t *testing.T) {
 				require.Equal(t, tt.errString, errors.Unwrap(err).Error())
 				require.Equal(t, tt.expected, tags)
 			} else {
-				initGitRepoWithCommit(t)
+				InitGitRepoWithCommit(t)
 
 				for tag := range tt.expected {
 					_, err := exec.Command("git", "tag", tt.expected[tag]).Output()
