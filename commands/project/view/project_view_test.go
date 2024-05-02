@@ -75,7 +75,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -123,7 +123,7 @@ func TestProjectView(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"https://gitlab.com/api/v4/projects/test_user%2Ffoo?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/test_user%2Ffoo?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -165,7 +165,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.com/api/v4/projects/foo%2Fbar?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/foo%2Fbar?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -208,7 +208,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.com/api/v4/projects/group%2Ffoo%2Fbar?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/group%2Ffoo%2Fbar?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -251,7 +251,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -295,7 +295,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -338,7 +338,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -365,7 +365,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -392,7 +392,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -419,7 +419,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -446,7 +446,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -473,7 +473,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -500,7 +500,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.company.org/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,
@@ -528,7 +528,7 @@ func TestProjectView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&statistics=true&with_custom_attributes=true",
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO?license=true&with_custom_attributes=true",
 					http.StatusOK,
 					`{
 							  "id": 37777023,

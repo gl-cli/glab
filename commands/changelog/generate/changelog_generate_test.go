@@ -27,7 +27,7 @@ func TestChangelogGenerate(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	// Mock the project ID
-	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO?license=true&statistics=true&with_custom_attributes=true",
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO?license=true&with_custom_attributes=true",
 		httpmock.NewStringResponse(http.StatusOK, `{ "id": 37777023 }`))
 
 	// Mock the acutal changelog API call
@@ -70,7 +70,7 @@ func TestChangelogGenerateWithError(t *testing.T) {
 			defer fakeHTTP.Verify(t)
 
 			// Mock the project ID
-			fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO?license=true&statistics=true&with_custom_attributes=true",
+			fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO?license=true&with_custom_attributes=true",
 				httpmock.NewStringResponse(http.StatusOK, `{ "id": 37777023 }`))
 
 			fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/37777023/repository/changelog?version=1.0.0",
