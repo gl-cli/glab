@@ -7,7 +7,6 @@ var GetProject = func(client *gitlab.Client, projectID interface{}) (*gitlab.Pro
 		client = apiClient.Lab()
 	}
 	opts := &gitlab.GetProjectOptions{
-		Statistics:           gitlab.Ptr(true),
 		License:              gitlab.Ptr(true),
 		WithCustomAttributes: gitlab.Ptr(true),
 	}

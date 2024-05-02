@@ -53,7 +53,7 @@ func TestIssueCreateWhenIssuesDisabled(t *testing.T) {
 	}
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO?license=true&statistics=true&with_custom_attributes=true",
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO?license=true&with_custom_attributes=true",
 		httpmock.NewStringResponse(http.StatusOK, `{
 							  "id": 37777023,
 							  "description": "this is a test description",
