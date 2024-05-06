@@ -137,7 +137,7 @@ hosts:
 				Hostname: "invalid.instance",
 			},
 			wantErr: true,
-			stderr:  "x invalid.instance not authenticated with glab. Run `glab auth login --hostname invalid.instance` to authenticate\n",
+			stderr:  "x invalid.instance has not been authenticated with glab. Run `glab auth login --hostname invalid.instance` to authenticate",
 		},
 	}
 
@@ -171,11 +171,20 @@ hosts:
 		tt.opts.IO = io
 		tt.opts.HttpClientOverride = client
 		t.Run(tt.name, func(t *testing.T) {
-			if err := statusRun(tt.opts); (err != nil) != tt.wantErr {
+			err := statusRun(tt.opts)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("statusRun() error = %v, wantErr %v", err, tt.wantErr)
 			}
+
 			assert.Equal(t, stdout.String(), "")
-			assert.Equal(t, tt.stderr, stderr.String())
+
+			if tt.wantErr {
+				assert.NotNil(t, err)
+				assert.Equal(t, tt.stderr, err.Error())
+			} else {
+				assert.Nil(t, err)
+				assert.Equal(t, tt.stderr, stderr.String())
+			}
 		})
 	}
 }
@@ -261,8 +270,8 @@ gl.io
 	}
 
 	err = statusRun(opts)
-	assert.Equal(t, err, nil)
-	assert.Equal(t, stdout.String(), "")
+	assert.Equal(t, "\nx could not authenticate to one or more of the configured GitLab instances", err.Error())
+	assert.Empty(t, stdout.String())
 	assert.Equal(t, expectedOutput, stderr.String())
 }
 
@@ -273,7 +282,7 @@ git_protocol: ssh
 
 	configs, err := config.ParseConfig("config.yml")
 	assert.Nil(t, err)
-	io, _, stdout, stderr := iostreams.Test()
+	io, _, stdout, _ := iostreams.Test()
 
 	opts := &StatusOpts{
 		Config: func() (config.Config, error) {
@@ -283,8 +292,7 @@ git_protocol: ssh
 	}
 	t.Run("no instance authenticated", func(t *testing.T) {
 		err := statusRun(opts)
-		assert.Equal(t, err, cmdutils.SilentError)
-		assert.Equal(t, stdout.String(), "")
-		assert.Equal(t, "No GitLab instance has been authenticated with glab. Run `glab auth login` to authenticate.\n", stderr.String())
+		assert.Equal(t, "No GitLab instances have been authenticated with glab. Run `glab auth login` to authenticate.\n", err.Error())
+		assert.Empty(t, stdout.String())
 	})
 }

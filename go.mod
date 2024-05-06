@@ -36,7 +36,8 @@ require (
 	github.com/tidwall/pretty v1.2.1
 	github.com/xanzy/go-gitlab v0.103.0
 	github.com/zalando/go-keyring v0.2.3
-	golang.org/x/sync v0.2.0
+	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
+	golang.org/x/sync v0.7.0
 	golang.org/x/term v0.18.0
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1

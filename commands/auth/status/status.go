@@ -3,6 +3,8 @@ package status
 import (
 	"fmt"
 
+	"golang.org/x/exp/slices"
+
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
@@ -64,21 +66,18 @@ func statusRun(opts *StatusOpts) error {
 
 	instances, err := cfg.Hosts()
 	if len(instances) == 0 || err != nil {
-		fmt.Fprintf(stderr,
-			"No GitLab instance has been authenticated with glab. Run `%s` to authenticate.\n", c.Bold("glab auth login"))
-		return cmdutils.SilentError
+		return fmt.Errorf("No GitLab instances have been authenticated with glab. Run `%s` to authenticate.\n", c.Bold("glab auth login"))
 	}
 
-	var hostNotAuthenticated bool
-	if opts.Hostname != "" {
-		hostNotAuthenticated = true
+	if opts.Hostname != "" && !slices.Contains(instances, opts.Hostname) {
+		return fmt.Errorf("%s %s has not been authenticated with glab. Run `%s %s` to authenticate", c.FailedIcon(), opts.Hostname, c.Bold("glab auth login --hostname"), c.Bold(opts.Hostname))
 	}
 
+	failedAuth := false
 	for _, instance := range instances {
 		if opts.Hostname != "" && opts.Hostname != instance {
 			continue
 		}
-		hostNotAuthenticated = false
 		statusInfo[instance] = []string{}
 		addMsg := func(x string, ys ...interface{}) {
 			statusInfo[instance] = append(statusInfo[instance], fmt.Sprintf(x, ys...))
@@ -92,11 +91,13 @@ func statusRun(opts *StatusOpts) error {
 		if err == nil {
 			user, err := api.CurrentUser(apiClient.Lab())
 			if err != nil {
+				failedAuth = true
 				addMsg("%s %s: api call failed: %s", c.FailedIcon(), instance, err)
 			} else {
 				addMsg("%s Logged in to %s as %s (%s)", c.GreenCheck(), instance, c.Bold(user.Username), tokenSource)
 			}
 		} else {
+			failedAuth = true
 			addMsg("%s %s: failed to initialize api client: %s", c.FailedIcon(), instance, err)
 		}
 		proto, _ := cfg.Get(instance, "git_protocol")
@@ -129,12 +130,11 @@ func statusRun(opts *StatusOpts) error {
 		}
 	}
 
-	if opts.Hostname != "" && hostNotAuthenticated {
-		fmt.Fprintf(stderr, "%s %s not authenticated with glab. Run `%s %s` to authenticate\n", c.FailedIcon(), opts.Hostname, c.Bold("glab auth login --hostname"), c.Bold(opts.Hostname))
-		return cmdutils.SilentError
-	}
-
 	for _, instance := range instances {
+		if opts.Hostname != "" && opts.Hostname != instance {
+			continue
+		}
+
 		lines, ok := statusInfo[instance]
 		if !ok {
 			continue
@@ -144,5 +144,10 @@ func statusRun(opts *StatusOpts) error {
 			fmt.Fprintf(stderr, "  %s\n", line)
 		}
 	}
-	return nil
+
+	if failedAuth {
+		return fmt.Errorf("\n%s could not authenticate to one or more of the configured GitLab instances", c.FailedIcon())
+	} else {
+		return nil
+	}
 }
