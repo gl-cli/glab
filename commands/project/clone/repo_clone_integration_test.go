@@ -34,7 +34,7 @@ func Test_repoClone_Integration(t *testing.T) {
 	defer restore()
 
 	cmd := NewCmdClone(fac, nil)
-	out, err := runCommand(cmd, "test", stdin, stdout, stderr)
+	out, err := runCommand(cmd, "gitlab-org/cli", stdin, stdout, stderr)
 	if err != nil {
 		t.Errorf("unexpected error: %q", err)
 		return
@@ -43,7 +43,7 @@ func Test_repoClone_Integration(t *testing.T) {
 	assert.Equal(t, "", out.String())
 	assert.Equal(t, "", out.Stderr())
 	assert.Equal(t, 1, cs.Count)
-	assert.Regexp(t, "git clone git@gitlab.com:.*/test.git", strings.Join(cs.Calls[0].Args, " "))
+	assert.Regexp(t, "git clone git@gitlab.com:.*/cli.git", strings.Join(cs.Calls[0].Args, " "))
 }
 
 func Test_repoClone_group_Integration(t *testing.T) {
