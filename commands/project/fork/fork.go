@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"net/url"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
-	"github.com/MakeNowJust/heredoc"
-	"github.com/spf13/cobra"
-	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
+
+	"github.com/MakeNowJust/heredoc"
+	"github.com/spf13/cobra"
+	"github.com/xanzy/go-gitlab"
 )
 
 type ForkOptions struct {
@@ -277,7 +277,12 @@ loop:
 		}
 	} else {
 		cloneDesired := opts.Clone
-		if !opts.AddRemoteSet {
+		if !cloneDesired {
+			// If clone is explicitly set to false exit
+			if opts.CloneSet {
+				return nil
+			}
+
 			err = prompt.Confirm(&cloneDesired, "Would you like to clone the fork?", true)
 			if err != nil {
 				return fmt.Errorf("failed to prompt: %w", err)
