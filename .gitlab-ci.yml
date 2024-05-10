@@ -1,5 +1,6 @@
 variables:
   GO_VERSION: "1.21"
+  GOLANGCI_LINT_VERSION: 'v1.56.2'
 
 # run the pipeline only on MRs, tags, and default branch
 workflow:
@@ -83,16 +84,13 @@ lint_commit:
       when: always
 
 lint:
-  extends: .go-cache
-  image: registry.gitlab.com/gitlab-org/gitlab-build-images:golangci-lint-1.52-alpine
+  image: golangci/golangci-lint:$GOLANGCI_LINT_VERSION
   stage: test
   script:
-    - golangci-lint --version
-    # Use default .golangci.yml file from the image if one is not present in the project root.
-    - '[ -e .golangci.yml ] || cp /golangci/.golangci.yml .'
     # Write the code coverage report to gl-code-quality-report.json
+    # and print linting issues to stdout in the format: path/to/file:line description
     # remove `--issues-exit-code 0` or set to non-zero to fail the job if linting issues are detected
-    - golangci-lint run --out-format colored-line-number:stdout,code-climate:gl-code-quality-report.json
+    - golangci-lint run --issues-exit-code 0 --print-issued-lines=false --out-format code-climate:gl-code-quality-report.json,line-number
   artifacts:
     reports:
       codequality: gl-code-quality-report.json
