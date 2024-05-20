@@ -39,7 +39,7 @@ require (
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	golang.org/x/sync v0.7.0
 	golang.org/x/term v0.18.0
-	golang.org/x/text v0.14.0
+	golang.org/x/text v0.15.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.27.2
