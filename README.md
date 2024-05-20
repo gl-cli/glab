@@ -159,7 +159,7 @@ Prerequisites:
   have its application ID. For instructions, see how to configure GitLab
   [as an OAuth 2.0 authentication identity provider](https://docs.gitlab.com/ee/integration/oauth_provider.html)
   in the GitLab documentation.
-- Your OAuth application is configured with these parameters: 
+- Your OAuth application is configured with these parameters:
   - **Redirect URI** is `http://localhost:7171/auth/redirect`.
   - **Confidential** is not selected.
   - **Scopes** are `openid`, `profile`, `read_user`, `write_repository`, and `api`.
@@ -181,7 +181,7 @@ To authenticate your installation of `glab` with a personal access token:
 
 1. Get a GitLab personal access token with at least the `api`
    and `write_repository` scopes. Use the method appropriate for your instance:
-   - For GitLab.com, create one at the [Personal access tokens](https://gitlab.com/-/profile/personal_access_tokens?scopes=api,write_repository) page.
+   - For GitLab.com, create one at the [Personal access tokens](https://gitlab.com/-/user_settings/personal_access_tokens?scopes=api%2Cwrite_repository) page.
    - For self-managed instances, visit `https://gitlab.example.com/-/profile/personal_access_tokens?scopes=api,write_repository`,
      modifying `gitlab.example.com` to match the domain name of your instance.
 1. Start interactive setup: `glab auth login`
