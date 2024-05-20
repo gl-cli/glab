@@ -97,13 +97,27 @@ lint:
     paths:
       - gl-code-quality-report.json
 
-code_navigation:
+code_navigation_generate:
+  stage: test
+  image: sourcegraph/scip-go
+  allow_failure: true
+  script:
+    - scip-go
+  artifacts:
+    paths:
+      - index.scip
+
+code_navigation_convert:
   stage: test
   image: golang:${GO_VERSION}
   allow_failure: true
+  needs: ["code_navigation_generate"]
   script:
-    - go install github.com/sourcegraph/lsif-go/cmd/lsif-go@latest
-    - lsif-go
+    - git clone https://github.com/sourcegraph/scip.git --depth=1
+    - cd scip
+    - go build ./cmd/scip
+    - chmod +x scip
+    - ./scip convert --from ../index.scip --to ../dump.lsif
   artifacts:
     reports:
       lsif: dump.lsif
