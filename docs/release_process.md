@@ -55,7 +55,7 @@ Prerequisites:
 
 - You must have a GitHub account.
 - You must have signed Microsoft's Contributor License Agreement (CLA).
-- You have read the GitLab policy for [Contributing to a third-party project on behalf of GitLab](https://about.gitlab.com/handbook/engineering/open-source/). (The confidential, internal [legal issue](https://gitlab.com/gitlab-com/legal-and-compliance/-/issues/1286) is also available.)
+- You have read the GitLab policy for [Contributing to a third-party project on behalf of GitLab](https://handbook.gitlab.com/handbook/engineering/open-source/). (The confidential, internal [legal issue](https://gitlab.com/gitlab-com/legal-and-compliance/-/issues/1286) is also available.)
 
 To update the WinGet package:
 

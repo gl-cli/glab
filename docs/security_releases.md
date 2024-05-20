@@ -1,6 +1,6 @@
 # Security Releases
 
-This guide is based on the main [`gitlab-org/gitlab` security release process](https://gitlab.com/gitlab-org/release/docs/-/blob/master/general/security/developer.md)
+This guide is based on the main [`gitlab-org/gitlab` security release process](https://gitlab.com/gitlab-org/release/docs/-/tree/master/general/security)
 
 ## DO NOT PUSH TO `gitlab-org/cli`
 
@@ -98,5 +98,5 @@ Validate that the security issue is fixed in the released binary.
 
 ## Push changes back to the [CLI Repo](https://gitlab.com/gitlab-org/cli)
 
-1. Push the patch tag to the [Cli Repo](https://gitlab.com/gitlab-org/cli)
-1. Merge the [Security Repo](https://gitlab.com/gitlab-org/security/cli) `main` branch with the [Cli Repo](https://gitlab.com/gitlab-org/main) `main` and push to Cli Repo
+1. Push the patch tag to the [CLI Repo](https://gitlab.com/gitlab-org/cli)
+1. Merge the [Security Repo](https://gitlab.com/gitlab-org/security/cli) `main` branch with the [CLI Repo](https://gitlab.com/gitlab-org/cli/) `main` and push to CLI Repo

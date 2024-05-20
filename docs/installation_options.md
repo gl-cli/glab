@@ -34,7 +34,7 @@ are maintained by the community.
 - Homebrew (officially supported)
   - Install with: `brew install glab`
   - Update with: `brew upgrade glab`
-- [MacPorts](https://ports.macports.org/port/glab/summary):
+- [MacPorts](https://ports.macports.org/port/glab/details/):
   - Install with: `sudo port install glab`
   - Update with: `sudo port selfupdate && sudo port upgrade glab`
 - [ASDF tool version manager](https://asdf-vm.com/guide/introduction.html):
@@ -98,7 +98,7 @@ To install `glab` from the [Snap Store](https://snapcraft.io/glab):
 
 For Arch Linux, `glab` is available:
 
-- From the [`community/glab`](https://archlinux.org/packages/community/x86_64/glab/) package.
+- From the [`extra/glab`](https://archlinux.org/packages/extra/x86_64/glab/) package.
 - By downloading and installing an archive from the
   [releases page](https://gitlab.com/gitlab-org/cli/-/releases).
 - From the [Snap Store](https://snapcraft.io/glab), if

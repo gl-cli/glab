@@ -44,5 +44,5 @@ to help you assess the problem:
   - A documentation improvement.
 
 For full details, see
-[Severity](https://about.gitlab.com/handbook/engineering/quality/issue-triage/#severity)
+[Severity](https://handbook.gitlab.com/handbook/engineering/infrastructure/engineering-productivity/issue-triage/#severity)
 in the GitLab engineering handbook.
