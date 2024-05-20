@@ -1,5 +1,5 @@
 variables:
-  GO_VERSION: "1.21"
+  GO_VERSION: "1.22"
   GOLANGCI_LINT_VERSION: 'v1.56.2'
 
 # run the pipeline only on MRs, tags, and default branch
@@ -113,7 +113,7 @@ run_tests:
   extends: .go-cache
   parallel:
     matrix:
-      - GO_VERSION: ["1.21", "1.22"]
+      - GO_VERSION: ["1.22"]
   script:
     # `goreleaser` also uses GITLAB_TOKEN and so we need to distinguish between
     # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token

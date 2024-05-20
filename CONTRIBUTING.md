@@ -50,7 +50,7 @@ If you are a GitLab team member that is interested in becoming a maintainer of t
 
 Prerequisites:
 
-- Go 1.21+
+- Go 1.22+
 
 Build with: `make` or `go build -o bin/glab ./cmd/glab/main.go`
 
