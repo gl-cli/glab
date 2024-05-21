@@ -85,6 +85,10 @@ hosts:
     token: glpat-xxxxxxxxxxxxxxxxxxxx
     git_protocol: ssh
     api_protocol: https
+  gitlab.env.bar:
+    token: glpat-xxxxxxxxxxxxxxxxxxxx
+    git_protocol: ssh
+    api_protocol: https
   another.host:
     token: isinvalid
   gl.io:
@@ -98,6 +102,7 @@ hosts:
 	tests := []struct {
 		name    string
 		opts    *StatusOpts
+		envVar  bool
 		wantErr bool
 		stderr  string
 	}{
@@ -139,6 +144,24 @@ hosts:
 			wantErr: true,
 			stderr:  "x invalid.instance has not been authenticated with glab. Run `glab auth login --hostname invalid.instance` to authenticate",
 		},
+		{
+			name: "with token set in env variable",
+			opts: &StatusOpts{
+				Hostname: "gitlab.env.bar",
+			},
+			envVar:  true,
+			wantErr: false,
+			stderr: fmt.Sprintf(`! a GITLAB_TOKEN or OAUTH_TOKEN environment variable is set. It will be used for all authentication.
+
+gitlab.env.bar
+  ✓ Logged in to gitlab.env.bar as john_doe (%s)
+  ✓ Git operations for gitlab.env.bar configured to use ssh protocol.
+  ✓ API calls for gitlab.env.bar are made over https protocol
+  ✓ REST API Endpoint: https://gitlab.env.bar/api/v4/
+  ✓ GraphQL Endpoint: https://gitlab.env.bar/api/graphql/
+  ✓ Token: **************************
+`, cfgFile),
+		},
 	}
 
 	fakeHTTP := &httpmock.Mocker{
@@ -152,6 +175,11 @@ hosts:
 		}
 	`))
 	fakeHTTP.RegisterResponder(http.MethodGet, "https://gitlab.foo.bar/api/v4/user", httpmock.NewStringResponse(http.StatusOK, `
+		{
+  			"username": "john_doe"
+		}
+	`))
+	fakeHTTP.RegisterResponder(http.MethodGet, "https://gitlab.env.bar/api/v4/user", httpmock.NewStringResponse(http.StatusOK, `
 		{
   			"username": "john_doe"
 		}
@@ -171,6 +199,12 @@ hosts:
 		tt.opts.IO = io
 		tt.opts.HttpClientOverride = client
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.envVar {
+				t.Setenv("GITLAB_TOKEN", "foo")
+			} else {
+				t.Setenv("GITLAB_TOKEN", "")
+			}
+
 			err := statusRun(tt.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("statusRun() error = %v, wantErr %v", err, tt.wantErr)
@@ -241,16 +275,17 @@ another.host
   ✓ REST API Endpoint: https://another.host/api/v4/
   ✓ GraphQL Endpoint: https://another.host/api/graphql/
   ✓ Token: **************************
-  ! Invalid token provided
+  ! Invalid token provided in configuration file
 gl.io
   x gl.io: api call failed: GET https://gl.io/api/v4/user: 401 {message: no token provided}
   ✓ Git operations for gl.io configured to use ssh protocol.
   ✓ API calls for gl.io are made over https protocol
   ✓ REST API Endpoint: https://gl.io/api/v4/
   ✓ GraphQL Endpoint: https://gl.io/api/graphql/
-  x No token provided
+  ! No token provided in configuration file
 `, cfgFile)
 
+	t.Setenv("GITLAB_TOKEN", "")
 	configs, err := config.ParseConfig("config.yml")
 	assert.Nil(t, err)
 	io, _, stdout, stderr := iostreams.Test()

@@ -73,6 +73,11 @@ func statusRun(opts *StatusOpts) error {
 		return fmt.Errorf("%s %s has not been authenticated with glab. Run `%s %s` to authenticate", c.FailedIcon(), opts.Hostname, c.Bold("glab auth login --hostname"), c.Bold(opts.Hostname))
 	}
 
+	envToken := config.GetFromEnv("token")
+	if envToken != "" {
+		fmt.Fprintf(stderr, "%s a GITLAB_TOKEN or OAUTH_TOKEN environment variable is set. It will be used for all authentication.\n\n", c.WarnIcon())
+	}
+
 	failedAuth := false
 	for _, instance := range instances {
 		if opts.Hostname != "" && opts.Hostname != instance {
@@ -123,10 +128,10 @@ func statusRun(opts *StatusOpts) error {
 			}
 			addMsg("%s Token: %s", c.GreenCheck(), tokenDisplay)
 			if !api.IsValidToken(token) {
-				addMsg("%s Invalid token provided", c.WarnIcon())
+				addMsg("%s Invalid token provided in configuration file", c.WarnIcon())
 			}
 		} else {
-			addMsg("%s No token provided", c.FailedIcon())
+			addMsg("%s No token provided in configuration file", c.WarnIcon())
 		}
 	}
 
