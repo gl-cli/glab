@@ -17,6 +17,11 @@ func TestIsValidToken(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "Oauth token is valid",
+			args: args{token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"},
+			want: true,
+		},
+		{
 			name: "Token Is inValid",
 			args: args{token: "123"},
 			want: false,
