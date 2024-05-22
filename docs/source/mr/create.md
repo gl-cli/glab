@@ -43,7 +43,7 @@ glab mr create --fill --fill-commit-body --yes
       --create-source-branch   Create source branch if it does not exist
   -d, --description string     Supply a description for merge request
       --draft                  Mark merge request as a draft
-  -f, --fill                   Do not prompt for title/description and just use commit info
+  -f, --fill push              Do not prompt for title/description and just use commit info. Sets push to `true`, and pushes the branch.
       --fill-commit-body       Fill description with each commit body when multiple commits. Can only be used with --fill
   -H, --head OWNER/REPO        Select another head repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or the project ID or full URL
   -l, --label strings          Add label by name. Multiple labels should be comma separated
