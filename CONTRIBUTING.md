@@ -60,12 +60,14 @@ Run the new binary as: `./bin/glab`
 
 Run tests with: `go test ./...` or `make test`.
 
-There are some integration tests that perform API requests to a real GitLab instance.
-If environment variables `GITLAB_TEST_HOST` and `GITLAB_TOKEN` are not set, the integration tests will fail in CI or will be skipped locally.
+There are some integration tests that perform read-only API requests to `https://gitlab.com`.
+If the environment variables `GITLAB_TEST_HOST` and `GITLAB_TOKEN` are not set, the integration tests will fail in CI or will be skipped locally.
 Integration tests use the `_Integration` test suffix and use the `_integration_test.go` file suffix.
 
+`GITLAB_TEST_HOST` is set to `https://gitlab.com` in CI.
+
 `GITLAB_TOKEN` must be a
-[personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).
+[personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) and only requires the `read_api` scope.
 
 ### Designing a new feature
 
