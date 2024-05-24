@@ -1,8 +1,9 @@
-package git
+package ask
 
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -40,6 +41,7 @@ type opts struct {
 	Prompt     string
 	IO         *iostreams.IOStreams
 	HttpClient func() (*gitlab.Client, error)
+	Git        bool
 }
 
 var (
@@ -58,14 +60,14 @@ const (
 	experimentMsg     = "AI generated these responses. Leave feedback: https://gitlab.com/gitlab-org/gitlab/-/issues/409636\n"
 )
 
-func NewCmd(f *cmdutils.Factory) *cobra.Command {
+func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
 	opts := &opts{
 		IO:         f.IO,
 		HttpClient: f.HttpClient,
 	}
 
-	cmd := &cobra.Command{
-		Use:   "git <prompt>",
+	duoAskCmd := &cobra.Command{
+		Use:   "ask <prompt>",
 		Short: "Generate Git commands from natural language (Experimental).",
 		Long: heredoc.Doc(`
 			Generate Git commands from natural language.
@@ -76,10 +78,19 @@ func NewCmd(f *cmdutils.Factory) *cobra.Command {
 			We'd love your feedback in [issue 409636](https://gitlab.com/gitlab-org/gitlab/-/issues/409636).
 		`),
 		Example: heredoc.Doc(`
-			$ glab ask git list last 10 commit titles
+			$ glab duo ask list last 10 commit titles
 			# => A list of Git commands to show the titles of the latest 10 commits with an explanation and an option to execute the commands.
 		`),
+		Aliases: []string{"git"},
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Fprintf(os.Stderr, "Aliases 'git' is deprecated. Please use 'ask' with the appropriate flag instead.\n\n")
+			_ = cmd.Help()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if !opts.Git {
+				return nil
+			}
+
 			if len(args) == 0 {
 				return nil
 			}
@@ -102,7 +113,9 @@ func NewCmd(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	return cmd
+	duoAskCmd.Flags().BoolVarP(&opts.Git, "git", "", true, "Ask a question about git")
+
+	return duoAskCmd
 }
 
 func (opts *opts) Result() (*result, error) {
