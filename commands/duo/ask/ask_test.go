@@ -1,4 +1,4 @@
-package git
+package ask
 
 import (
 	"net/http"
@@ -20,12 +20,12 @@ func runCommand(rt http.RoundTripper, isTTY bool, args string) (*test.CmdOut, er
 
 	_, _ = factory.HttpClient()
 
-	cmd := NewCmd(factory)
+	cmd := NewCmdAsk(factory)
 
 	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
 }
 
-func TestGitCmd(t *testing.T) {
+func TestAskCmd(t *testing.T) {
 	initialAiResponse := "The appropriate ```git log --pretty=format:'%h'``` Git command ```non-git cmd``` for listing ```git show``` commit SHAs."
 	outputWithoutExecution := "Experiment:\n" + experimentMsg + `
 Commands:
