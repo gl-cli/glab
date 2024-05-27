@@ -30,20 +30,20 @@ func TestAgent_UpdateKubeConfig_GlabExec(t *testing.T) {
 	assert.Equal(t, "https://kas.gitlab.example.com/k8s-proxy", modifiedConfig.Clusters["gitlab_example_com"].Server)
 
 	// verify auth info entry
-	assert.Contains(t, modifiedConfig.AuthInfos, "gitlab_example_com-gitlab-user")
-	actualExec := modifiedConfig.AuthInfos["gitlab_example_com-gitlab-user"].Exec
+	assert.Contains(t, modifiedConfig.AuthInfos, "gitlab_example_com-42")
+	actualExec := modifiedConfig.AuthInfos["gitlab_example_com-42"].Exec
 	assert.Equal(t, k8sAuthInfoExecApiVersion, actualExec.APIVersion)
 	assert.Equal(t, "glab", actualExec.Command)
 	assert.Equal(t, []string{"cluster", "agent", "get-token", "--agent", "42"}, actualExec.Args)
 	assert.Equal(t, clientcmdapi.NeverExecInteractiveMode, actualExec.InteractiveMode)
-	assert.Empty(t, modifiedConfig.AuthInfos["gitlab_example_com-gitlab-user"].Token)
-	assert.Empty(t, modifiedConfig.AuthInfos["gitlab_example_com-gitlab-user"].TokenFile)
+	assert.Empty(t, modifiedConfig.AuthInfos["gitlab_example_com-42"].Token)
+	assert.Empty(t, modifiedConfig.AuthInfos["gitlab_example_com-42"].TokenFile)
 
 	// verify context entry
 	assert.Contains(t, modifiedConfig.Contexts, "gitlab_example_com-foo_bar-test-agent")
 	actualContext := modifiedConfig.Contexts["gitlab_example_com-foo_bar-test-agent"]
 	assert.Equal(t, "gitlab_example_com", actualContext.Cluster)
-	assert.Equal(t, "gitlab_example_com-gitlab-user", actualContext.AuthInfo)
+	assert.Equal(t, "gitlab_example_com-42", actualContext.AuthInfo)
 
 	// verify returned context name
 	assert.Equal(t, "gitlab_example_com-foo_bar-test-agent", contextName)

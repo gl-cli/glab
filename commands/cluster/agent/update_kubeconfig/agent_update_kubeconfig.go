@@ -157,7 +157,7 @@ func updateKubeconfig(params updateKubeconfigParams) (clientcmdapi.Config, strin
 	config.Clusters[clusterName] = modifyCluster(*startingCluster, constructKasProxyURL(params.glKasHost.Host))
 
 	// Updating `users` entry: `kubectl config set-credentials ...`
-	authInfoName := fmt.Sprintf("%s-%s", clusterName, sanitizeForKubeconfig(params.glUser))
+	authInfoName := fmt.Sprintf("%s-%d", clusterName, params.agent.ID)
 	startingAuthInfo, exists := config.AuthInfos[authInfoName]
 	if !exists {
 		startingAuthInfo = clientcmdapi.NewAuthInfo()
