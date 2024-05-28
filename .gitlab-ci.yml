@@ -1,6 +1,6 @@
 variables:
-  GO_VERSION: "1.22"
-  GOLANGCI_LINT_VERSION: 'v1.56.2'
+  GO_VERSION: "1.22.3"
+  GOLANGCI_LINT_VERSION: 'v1.59.0'
 
 # run the pipeline only on MRs, tags, and default branch
 workflow:
@@ -26,7 +26,7 @@ include:
   - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
   - project: 'gitlab-org/quality/pipeline-common'
-    file: '/ci/danger-review.yml'  # danger-review job below
+    file: '/ci/danger-review.yml' # danger-review job below
 
 
 # From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
@@ -52,15 +52,15 @@ check_docs_update:
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_COMMIT_SHA
     - make gen-docs
     - |-
-        git status
-        if [[ $(git add -A --dry-run) ]]; then
-          echo '✖ ERROR: Documentation changes detected!';
-          echo '✖ These changes require a documentation update. To regenerate the docs, read https://gitlab.com/gitlab-org/cli/-/tree/main/docs#generating-the-docs.';
-          exit 1;
-        else
-          echo '✔ No documentation updates detected.';
-          exit 0;
-        fi
+      git status
+      if [[ $(git add -A --dry-run) ]]; then
+        echo '✖ ERROR: Documentation changes detected!';
+        echo '✖ These changes require a documentation update. To regenerate the docs, read https://gitlab.com/gitlab-org/cli/-/tree/main/docs#generating-the-docs.';
+        exit 1;
+      else
+        echo '✔ No documentation updates detected.';
+        exit 0;
+      fi
 
 check_docs_markdown:
   image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.19-vale-3.0.7-markdownlint-0.39.0-markdownlint2-0.12.1
