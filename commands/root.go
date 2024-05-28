@@ -3,7 +3,7 @@ package commands
 import (
 	"errors"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	aliasCmd "gitlab.com/gitlab-org/cli/commands/alias"

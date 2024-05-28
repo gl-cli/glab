@@ -9,7 +9,7 @@ import (
 	ciViewCmd "gitlab.com/gitlab-org/cli/commands/ci/view"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 )
 

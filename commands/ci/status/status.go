@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/gosuri/uilive"
 	"github.com/spf13/cobra"
 )

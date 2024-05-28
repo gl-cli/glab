@@ -7,7 +7,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"

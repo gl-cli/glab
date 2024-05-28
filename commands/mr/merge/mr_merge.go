@@ -9,7 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/surveyext"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/avast/retry-go/v4"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
