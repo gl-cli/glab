@@ -40,6 +40,8 @@ glab issue create -m release-1.0.1 -t "security fix" --label security --web --re
   -a, --assignee usernames     Assign issue to people by their usernames
   -c, --confidential           Set an issue to be confidential. (default false)
   -d, --description string     Supply a description for issue
+      --due-date string        A date in 'YYYY-MM-DD' format
+      --epic int               ID of the epic to add the issue to
   -l, --label strings          Add label by name. Multiple labels should be comma separated
       --link-type string       Type for the issue link (default "relates_to")
       --linked-issues ints     The IIDs of issues that this issue links to

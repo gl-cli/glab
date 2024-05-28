@@ -38,6 +38,8 @@ type CreateOpts struct {
 	IssueLinkType string `json:"issue_link_type,omitempty"`
 	TimeEstimate  string `json:"time_estimate,omitempty"`
 	TimeSpent     string `json:"time_spent,omitempty"`
+	EpicID        int    `json:"epic_id,omitempty"`
+	DueDate       string `json:"due_date,omitempty"`
 
 	MilestoneFlag string `json:"milestone_flag"`
 
@@ -154,6 +156,8 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	issueCreateCmd.Flags().StringVarP(&opts.TimeEstimate, "time-estimate", "e", "", "Set time estimate for the issue")
 	issueCreateCmd.Flags().StringVarP(&opts.TimeSpent, "time-spent", "s", "", "Set time spent for the issue")
 	issueCreateCmd.Flags().BoolVar(&opts.Recover, "recover", false, "Save the options to a file if the issue fails to be created. If the file exists, the options will be loaded from the recovery file (EXPERIMENTAL)")
+	issueCreateCmd.Flags().IntVarP(&opts.EpicID, "epic", "", 0, "ID of the epic to add the issue to")
+	issueCreateCmd.Flags().StringVarP(&opts.DueDate, "due-date", "", "", "A date in 'YYYY-MM-DD' format")
 
 	return issueCreateCmd
 }
@@ -356,6 +360,16 @@ func createRun(opts *CreateOpts) error {
 		}
 		if opts.Milestone != 0 {
 			issueCreateOpts.MilestoneID = gitlab.Ptr(opts.Milestone)
+		}
+		if opts.EpicID != 0 {
+			issueCreateOpts.EpicID = gitlab.Ptr(opts.EpicID)
+		}
+		if opts.DueDate != "" {
+			dueDate, err := gitlab.ParseISOTime(opts.DueDate)
+			if err != nil {
+				return err
+			}
+			issueCreateOpts.DueDate = gitlab.Ptr(dueDate)
 		}
 		if len(opts.Assignees) > 0 {
 			users, err := api.UsersByNames(apiClient, opts.Assignees)
