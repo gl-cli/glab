@@ -8,7 +8,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/config"

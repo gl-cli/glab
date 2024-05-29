@@ -3,7 +3,7 @@ package close
 import (
 	"fmt"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/api"
 
 	"github.com/spf13/cobra"

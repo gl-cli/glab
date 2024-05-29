@@ -18,7 +18,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	jsonPretty "github.com/tidwall/pretty"
 	"github.com/xanzy/go-gitlab"

@@ -14,7 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/pkg/git"

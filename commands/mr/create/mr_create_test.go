@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 

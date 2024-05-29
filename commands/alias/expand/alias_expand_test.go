@@ -7,7 +7,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/config"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 )
 
 func TestExpandAlias(t *testing.T) {

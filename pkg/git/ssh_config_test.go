@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 )
 
 func Test_sshParser_read(t *testing.T) {

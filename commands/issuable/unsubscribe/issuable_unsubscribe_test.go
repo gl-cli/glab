@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/require"
 	"github.com/xanzy/go-gitlab"
