@@ -52,7 +52,6 @@ Run `glab --help` to view a list of core commands in your terminal.
 
 - [`glab alias`](docs/source/alias)
 - [`glab api`](docs/source/api)
-- [`glab ask`](docs/source/ask)
 - [`glab auth`](docs/source/auth)
 - [`glab changelog`](docs/source/changelog)
 - [`glab check-update`](docs/source/check-update)
@@ -60,6 +59,7 @@ Run `glab --help` to view a list of core commands in your terminal.
 - [`glab cluster`](docs/source/cluster)
 - [`glab completion`](docs/source/completion)
 - [`glab config`](docs/source/config)
+- [`glab duo`](docs/source/duo)
 - [`glab incident`](docs/source/incident)
 - [`glab issue`](docs/source/issue)
 - [`glab label`](docs/source/label)
@@ -85,7 +85,7 @@ Many core commands also have sub-commands. Some examples:
 - Approve a merge request: `glab mr approve 235`
 - Create an issue, and add milestone, title, and label: `glab issue create -m release-2.0.0 -t "My title here" --label important`
 
-### GitLab Duo commands
+### GitLab Duo for the CLI
 
 The GitLab CLI also provides support for GitLab Duo AI/ML powered features. These include:
 
