@@ -97,21 +97,12 @@ lint:
     paths:
       - gl-code-quality-report.json
 
-code_navigation_generate:
+code_navigation:
   stage: test
-  image: sourcegraph/scip-go
   allow_failure: true
-  script:
+  before_script:
+    - go install github.com/sourcegraph/scip-go/cmd/scip-go@latest
     - scip-go
-  artifacts:
-    paths:
-      - index.scip
-
-code_navigation_convert:
-  stage: test
-  image: golang:${GO_VERSION}
-  allow_failure: true
-  needs: ["code_navigation_generate"]
   script:
     - git clone https://github.com/sourcegraph/scip.git --depth=1
     - cd scip
@@ -127,7 +118,7 @@ run_tests:
   extends: .go-cache
   parallel:
     matrix:
-      - GO_VERSION: ["1.22"]
+      - GO_VERSION: ["1.22.3"]
   script:
     # `goreleaser` also uses GITLAB_TOKEN and so we need to distinguish between
     # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token
