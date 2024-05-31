@@ -82,7 +82,7 @@ func runUpdateKubeconfig(agentID int, configAccess clientcmd.ConfigAccess, useCo
 	if !metadata.KAS.Enabled {
 		return fmt.Errorf("the GitLab agent server for Kubernetes is disabled on %s. Ask your administrator to set it up and enable it", repo.RepoHost())
 	}
-	kasHost, err := url.Parse(metadata.KAS.ExternalURL)
+	kasUrl, err := url.Parse(metadata.KAS.ExternalURL)
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func runUpdateKubeconfig(agentID int, configAccess clientcmd.ConfigAccess, useCo
 		startingConfig: *startingConfig,
 		glabExecutable: glabExecutable,
 		glHost:         repo.RepoHost(),
-		glKasHost:      *kasHost,
+		glKasUrl:       kasUrl,
 		glUser:         user.Username,
 		agent:          agent,
 	}
@@ -140,7 +140,7 @@ type updateKubeconfigParams struct {
 	startingConfig clientcmdapi.Config
 	glabExecutable string
 	glHost         string
-	glKasHost      url.URL
+	glKasUrl       *url.URL
 	glUser         string
 	agent          *gitlab.Agent
 }
@@ -154,7 +154,7 @@ func updateKubeconfig(params updateKubeconfigParams) (clientcmdapi.Config, strin
 	if !exists {
 		startingCluster = clientcmdapi.NewCluster()
 	}
-	config.Clusters[clusterName] = modifyCluster(*startingCluster, constructKasProxyURL(params.glKasHost.Host))
+	config.Clusters[clusterName] = modifyCluster(*startingCluster, constructKasProxyURL(params.glKasUrl))
 
 	// Updating `users` entry: `kubectl config set-credentials ...`
 	authInfoName := fmt.Sprintf("%s-%d", clusterName, params.agent.ID)
@@ -210,10 +210,8 @@ func sanitizeForKubeconfig(name string) string {
 	return sanitizeReplacer.Replace(name)
 }
 
-func constructKasProxyURL(kasHost string) string {
-	var u url.URL
-	u.Scheme = kasProxyProtocol
-	u.Host = kasHost
-	u.Path = kasProxyEndpoint
-	return u.String()
+func constructKasProxyURL(u *url.URL) string {
+	ku := *u.JoinPath(kasProxyEndpoint)
+	ku.Scheme = kasProxyProtocol
+	return ku.String()
 }
