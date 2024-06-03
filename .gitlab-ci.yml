@@ -63,13 +63,15 @@ check_docs_update:
       fi
 
 check_docs_markdown:
-  image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.19-vale-3.0.7-markdownlint-0.39.0-markdownlint2-0.12.1
+  image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.20-vale-3.4.2-markdownlint2-0.13.0-lychee-0.15.1
   extends: .documentation
   script:
     # Lint prose
     - vale --minAlertLevel error docs *.md
     # Lint Markdown
     - markdownlint-cli2 'docs/**/*.md' *.md
+    # Check links
+    - lychee --offline --include-fragments docs/**/*.md *.md
 
 lint_commit:
   stage: test
