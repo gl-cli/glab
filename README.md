@@ -89,7 +89,7 @@ Many core commands also have sub-commands. Some examples:
 
 The GitLab CLI also provides support for GitLab Duo AI/ML powered features. These include:
 
-- [`glab duo ask`](docs/source/duo/ask)
+- [`glab duo ask`](docs/source/duo/ask.md)
 
 Use `glab duo ask` to ask questions about `git` commands. It can help you remember a
 command you forgot, or provide suggestions on how to run commands to perform other tasks.
