@@ -52,29 +52,29 @@ func TestAgent_UpdateKubeConfig_GlabExec(t *testing.T) {
 
 func TestAgent_constructKasProxyUrl(t *testing.T) {
 	// GIVEN
-	testcases := []struct{
-		name string
-		externalUrl string
+	testcases := []struct {
+		name                string
+		externalUrl         string
 		expectedKasProxyUrl string
 	}{
 		{
-			name: "GitLab.com",
-			externalUrl: "wss://kas.gitlab.com",
+			name:                "GitLab.com",
+			externalUrl:         "wss://kas.gitlab.com",
 			expectedKasProxyUrl: "https://kas.gitlab.com/k8s-proxy",
 		},
 		{
-			name: "Without Subdomain",
-			externalUrl: "wss://example.com",
+			name:                "Without Subdomain",
+			externalUrl:         "wss://example.com",
 			expectedKasProxyUrl: "https://example.com/k8s-proxy",
 		},
 		{
-			name: "On subpath",
-			externalUrl: "wss://example.com/-/kubernetes-agent/",
+			name:                "On subpath",
+			externalUrl:         "wss://example.com/-/kubernetes-agent/",
 			expectedKasProxyUrl: "https://example.com/-/kubernetes-agent/k8s-proxy",
 		},
 		{
-			name: "On port",
-			externalUrl: "wss://example.com:4242",
+			name:                "On port",
+			externalUrl:         "wss://example.com:4242",
 			expectedKasProxyUrl: "https://example.com:4242/k8s-proxy",
 		},
 	}
