@@ -10,7 +10,7 @@ require (
 	github.com/briandowns/spinner v1.23.0
 	github.com/charmbracelet/glamour v0.7.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/gdamore/tcell/v2 v2.6.0
+	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/google/renameio/v2 v2.0.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gosuri/uilive v0.0.4
