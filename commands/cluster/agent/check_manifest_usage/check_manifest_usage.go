@@ -97,7 +97,6 @@ func checkGroup(apiClient *gitlab.Client, group string, opts *Options) error {
 	var projects []*gitlab.Project
 	var resp *gitlab.Response
 	projects, resp, err := listAllProjectsForGroup(apiClient, group, *opts)
-
 	if err != nil {
 		return err
 	}
