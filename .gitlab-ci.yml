@@ -118,9 +118,12 @@ code_navigation:
 run_tests:
   stage: test
   extends: .go-cache
-  parallel:
-    matrix:
-      - GO_VERSION: ["1.22.3"]
+  # We currently only test on the lastest versino of Go which we also build against.
+  # If we need to introduce testing for future versions of compatibility reasons
+  # uncomment the below lines and adjust the `GO_VERSION` to included versions to test.
+  # parallel:
+    # matrix:
+      # - GO_VERSION: ["1.22.3"]
   script:
     # `goreleaser` also uses GITLAB_TOKEN and so we need to distinguish between
     # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token
