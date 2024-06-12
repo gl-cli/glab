@@ -132,7 +132,7 @@ func loginRun(opts *LoginOptions) error {
 			}
 
 			if token := config.GetFromEnv("token"); token != "" {
-				fmt.Fprintf(opts.IO.StdErr, "%s a GITLAB_TOKEN or OAUTH_TOKEN environment variable is set. If you don't want to use it for glab, unset it.\n", c.Yellow("WARNING:"))
+				fmt.Fprintf(opts.IO.StdErr, "%s One of %s environment variables is set. If you don't want to use it for glab, unset it.\n", c.Yellow("WARNING:"), strings.Join(config.EnvKeyEquivalence("token"), ", "))
 			}
 
 			return cfg.Write()
@@ -185,7 +185,7 @@ func loginRun(opts *LoginOptions) error {
 	fmt.Fprintf(opts.IO.StdErr, "- Logging into %s\n", hostname)
 
 	if token := config.GetFromEnv("token"); token != "" {
-		fmt.Fprintf(opts.IO.StdErr, "%s a GITLAB_TOKEN or OAUTH_TOKEN environment variable is set. If you don't want to use it for glab, unset it.\n", c.Yellow("WARNING:"))
+		fmt.Fprintf(opts.IO.StdErr, "%s One of %s environment variables is set. If you don't want to use it for glab, unset it.\n", c.Yellow("WARNING:"), strings.Join(config.EnvKeyEquivalence("token"), ", "))
 	}
 	existingToken, _, _ := cfg.GetWithSource(hostname, "token", false)
 
