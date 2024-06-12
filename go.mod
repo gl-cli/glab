@@ -1,6 +1,6 @@
 module gitlab.com/gitlab-org/cli
 
-go 1.22.3
+go 1.22.4
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
