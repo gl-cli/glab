@@ -4,13 +4,71 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/url"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/mitchellh/go-homedir"
+	"github.com/stretchr/testify/require"
 )
+
+func Test_ParseSSHConfig(t *testing.T) {
+	// necessary because the tests happen so fast that a previous home dir
+	// could be left behind
+	homedir.DisableCache = true
+
+	type filemap struct {
+		path        string
+		permissions int
+	}
+
+	tests := map[string]struct {
+		file    filemap
+		wantErr bool
+	}{
+		"bad permissions": {
+			file:    filemap{path: "config", permissions: 0o755},
+			wantErr: true,
+		},
+		"normal permissions": {
+			file: filemap{path: "config", permissions: 0o600},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			t.Setenv("HOME", tempDir)
+
+			sshFolder := filepath.Join(tempDir, ".ssh")
+			err := os.MkdirAll(sshFolder, fs.FileMode(0o777))
+			require.NoError(t, err)
+
+			filePath := filepath.Join(sshFolder, tt.file.path)
+
+			err = os.WriteFile(
+				filePath,
+				[]byte("Host s2\nHostname = site2.net"),
+				os.FileMode(tt.file.permissions),
+			)
+			require.NoError(t, err)
+
+			sshMap, err := ParseSSHConfig()
+
+			if tt.wantErr {
+				require.Error(t, err)
+				require.Equal(t, sshMap["s2"], "")
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, sshMap["s2"], "s2")
+			}
+		})
+	}
+}
 
 func Test_sshParser_read(t *testing.T) {
 	testFiles := map[string]string{
