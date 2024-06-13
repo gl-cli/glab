@@ -2,6 +2,7 @@ package git
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/mitchellh/go-homedir"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 var (
@@ -138,7 +140,7 @@ func (p *sshParser) absolutePath(parentFile, path string) string {
 
 // ParseSSHConfig constructs a map of SSH hostname aliases based on user and
 // system configuration files
-func ParseSSHConfig() SSHAliasMap {
+func ParseSSHConfig() (SSHAliasMap, error) {
 	configFiles := []string{
 		"/etc/ssh_config",
 		"/etc/ssh/ssh_config",
@@ -153,9 +155,30 @@ func ParseSSHConfig() SSHAliasMap {
 	}
 
 	for _, file := range configFiles {
-		_ = p.read(file)
+		stat, err := os.Stat(file)
+		if err != nil {
+			break
+		}
+		if stat.Mode().Perm() == 0o600 {
+			err = p.read(file)
+			if err != nil {
+				return SSHAliasMap{}, err
+			}
+		} else {
+			color := *iostreams.Init().Color()
+			fmt.Printf(
+				"%s %s has the permissions %o, it must be 600 to be used by glab"+
+					"\n  you may want to `chmod 600 %s`\n",
+				color.FailedIcon(),
+				file,
+				stat.Mode(),
+				file,
+			)
+
+			return SSHAliasMap{}, fmt.Errorf("%s has invalid permissions", file)
+		}
 	}
-	return p.aliasMap
+	return p.aliasMap, nil
 }
 
 func sshExpandTokens(text, host string) string {

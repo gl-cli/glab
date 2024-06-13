@@ -39,7 +39,11 @@ func (rr *remoteResolver) Resolver(hostOverride string) func() (glrepo.Remotes, 
 
 		sshTranslate := rr.urlTranslator
 		if sshTranslate == nil {
-			sshTranslate = git.ParseSSHConfig().Translator()
+			sshConfig, err := git.ParseSSHConfig()
+			if err != nil {
+				return nil, err
+			}
+			sshTranslate = sshConfig.Translator()
 		}
 		resolvedRemotes := glrepo.TranslateRemotes(gitRemotes, sshTranslate)
 
