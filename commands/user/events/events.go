@@ -1,11 +1,13 @@
 package events
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
 	"github.com/spf13/cobra"
 	"github.com/xanzy/go-gitlab"
+
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
@@ -46,6 +48,19 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 			}
 			defer f.IO.StopPager()
 
+			outputFormat, err := cmd.Flags().GetString("output")
+			if err != nil {
+				return nil
+			}
+
+			if outputFormat != "json" && outputFormat != "text" {
+				return fmt.Errorf("--output must be either 'json' or 'text' got: %s", outputFormat)
+			}
+
+			if outputFormat == "json" {
+				return writeJSON(f.IO.StdOut, events)
+			}
+
 			if lb, _ := cmd.Flags().GetBool("all"); lb {
 				projects := make(map[int]*gitlab.Project)
 				for _, e := range events {
@@ -76,8 +91,14 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().BoolP("all", "a", false, "Get events from all projects")
 	cmd.Flags().IntP("page", "p", 1, "Page number")
 	cmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page")
-
+	cmd.Flags().StringP("output", "F", "text", "Format output as: text, json")
 	return cmd
+}
+
+func writeJSON(w io.Writer, events []*gitlab.ContributionEvent) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(&events)
 }
 
 func DisplayProjectEvents(w io.Writer, events []*gitlab.ContributionEvent, project *gitlab.Project) {
