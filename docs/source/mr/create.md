@@ -54,6 +54,7 @@ glab mr create --fill --fill-commit-body --yes
   -i, --related-issue string   Create merge request for an issue. The merge request title will be created from the issue if --title is not provided.
       --remove-source-branch   Remove Source Branch on merge
       --reviewer usernames     Request review from users by their usernames
+      --signoff                Append a DCO signoff to the merge request description.
   -s, --source-branch string   The Branch you are creating the merge request. Default is the current branch.
       --squash-before-merge    Squash commits into a single commit when merging
   -b, --target-branch string   The target or base branch into which you want your code merged

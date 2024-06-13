@@ -61,6 +61,7 @@ type CreateOpts struct {
 	Yes           bool `json:"-"`
 	Web           bool `json:"-"`
 	Recover       bool `json:"-"`
+	Signoff       bool `json:"-"`
 
 	IO       *iostreams.IOStreams             `json:"-"`
 	Branch   func() (string, error)           `json:"-"`
@@ -189,6 +190,7 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 	mrCreateCmd.Flags().BoolVarP(&opts.CopyIssueLabels, "copy-issue-labels", "", false, "Copy labels from issue to the merge request. Used with --related-issue")
 	mrCreateCmd.Flags().StringVarP(&opts.RelatedIssue, "related-issue", "i", "", "Create merge request for an issue. The merge request title will be created from the issue if --title is not provided.")
 	mrCreateCmd.Flags().BoolVar(&opts.Recover, "recover", false, "Save the options to a file if the merge request fails to be created. If the file exists, the options will be loaded from the recovery file (EXPERIMENTAL)")
+	mrCreateCmd.Flags().BoolVar(&opts.Signoff, "signoff", false, "Append a DCO signoff to the merge request description.")
 
 	mrCreateCmd.Flags().StringVarP(&opts.MRCreateTargetProject, "target-project", "", "", "Add target project by id or OWNER/REPO or GROUP/NAMESPACE/REPO")
 	_ = mrCreateCmd.Flags().MarkHidden("target-project")
@@ -421,8 +423,16 @@ func createRun(opts *CreateOpts) error {
 						if err != nil {
 							return err
 						}
+						if opts.Signoff {
+							u, _ := api.CurrentUser(labClient)
+							templateContents += "Signed-off-by: " + u.Name + "<" + u.Email + ">"
+						}
 					} else if templateName == mrEmptyTemplate {
 						// blank merge request was choosen, leave templateContents empty
+						if opts.Signoff {
+							u, _ := api.CurrentUser(labClient)
+							templateContents += "Signed-off-by: " + u.Name + "<" + u.Email + ">"
+						}
 					} else {
 						templateContents, err = cmdutils.LoadGitLabTemplate(cmdutils.MergeRequestTemplate, templateName)
 						if err != nil {
