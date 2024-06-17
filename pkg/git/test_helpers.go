@@ -23,8 +23,8 @@ func InitGitRepo(t *testing.T) string {
 	return tempDir
 }
 
-func InitGitRepoWithCommit(t *testing.T) {
-	InitGitRepo(t)
+func InitGitRepoWithCommit(t *testing.T) string {
+	tempDir := InitGitRepo(t)
 
 	configureGitConfig(t)
 
@@ -38,6 +38,8 @@ func InitGitRepoWithCommit(t *testing.T) {
 	gitCommit := GitCommand("commit", "-m", "\"commit\"")
 	_, err = run.PrepareCmd(gitCommit).Output()
 	require.NoError(t, err)
+
+	return tempDir
 }
 
 func configureGitConfig(t *testing.T) {

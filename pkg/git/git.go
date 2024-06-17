@@ -15,6 +15,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/run"
 )
 
+const DefaultRemote = "origin"
+
 func GetRemoteURL(remoteAlias string) (string, error) {
 	return Config("remote." + remoteAlias + ".url")
 }
@@ -149,6 +151,16 @@ func UncommittedChangeCount() (int, error) {
 	return count, nil
 }
 
+func GitUserName() ([]byte, error) {
+	nameGrab := GitCommand("config", "user.name")
+	output, err := run.PrepareCmd(nameGrab).Output()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return output, nil
+}
+
 type Commit struct {
 	Sha   string
 	Title string
@@ -280,6 +292,12 @@ func HasLocalBranch(branch string) bool {
 
 func CheckoutBranch(branch string) error {
 	configCmd := GitCommand("checkout", branch)
+	err := run.PrepareCmd(configCmd).Run()
+	return err
+}
+
+func CheckoutNewBranch(branch string) error {
+	configCmd := GitCommand("checkout", "-b", branch)
 	err := run.PrepareCmd(configCmd).Run()
 	return err
 }

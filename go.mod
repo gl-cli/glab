@@ -4,6 +4,7 @@ go 1.22.4
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
+	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/avast/retry-go/v4 v4.6.0
@@ -85,6 +86,7 @@ require (
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/yuin/goldmark v1.5.4 // indirect
 	github.com/yuin/goldmark-emoji v1.0.2 // indirect
