@@ -8,6 +8,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/text"
 	"gopkg.in/yaml.v3"
 )
 
@@ -38,12 +39,7 @@ func NewCmdCheckManifestUsage(f *cmdutils.Factory) *cobra.Command {
 		Short: `Check agent configuration files for built-in GitOps manifests usage`,
 		Long: `Checks a the descendants of a group for registered agents with configuration files that rely on the deprecated GitOps manifests settings.
 The output can be piped to a tab separated value file.
-
-This is an experimental feature that might be broken or removed without any prior notice. 
-Read more about what experimental features mean at <https://docs.gitlab.com/ee/policy/experiment-beta-support.html#experiment>
-
-This is an experimental feature. Use at your own risk.
-`,
+` + text.ExperimentalString,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient
 

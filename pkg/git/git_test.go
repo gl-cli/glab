@@ -526,3 +526,31 @@ func TestListTags(t *testing.T) {
 		})
 	}
 }
+
+func TestGitUserName(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		setName  string
+		expected string
+	}{
+		{
+			desc:     "with a set name",
+			setName:  "Bob",
+			expected: "Bob\n",
+		},
+		// NOTE: it's not possible to do any kind of committing without setting
+		// a username for git, so it's unlikely this would not set
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			InitGitRepo(t)
+
+			_ = SetLocalConfig("user.name", tC.setName)
+
+			output, err := GitUserName()
+			require.NoError(t, err)
+
+			require.Equal(t, string(output), tC.expected)
+		})
+	}
+}
