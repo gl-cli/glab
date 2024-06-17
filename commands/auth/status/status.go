@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+	"strings"
 
 	"golang.org/x/exp/slices"
 
@@ -75,7 +76,7 @@ func statusRun(opts *StatusOpts) error {
 
 	envToken := config.GetFromEnv("token")
 	if envToken != "" {
-		fmt.Fprintf(stderr, "%s a GITLAB_TOKEN or OAUTH_TOKEN environment variable is set. It will be used for all authentication.\n\n", c.WarnIcon())
+		fmt.Fprintf(stderr, "%s One of %s environment variables is set. It will be used for all authentication.\n\n", c.WarnIcon(), strings.Join(config.EnvKeyEquivalence("token"), ", "))
 	}
 
 	failedAuth := false

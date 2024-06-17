@@ -151,7 +151,7 @@ hosts:
 			},
 			envVar:  true,
 			wantErr: false,
-			stderr: fmt.Sprintf(`! a GITLAB_TOKEN or OAUTH_TOKEN environment variable is set. It will be used for all authentication.
+			stderr: fmt.Sprintf(`! One of GITLAB_TOKEN, GITLAB_ACCESS_TOKEN, OAUTH_TOKEN environment variables is set. It will be used for all authentication.
 
 gitlab.env.bar
   ✓ Logged in to gitlab.env.bar as john_doe (%s)
