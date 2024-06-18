@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/text"
 )
 
 func baseCommand() (git.Stack, error) {
@@ -28,7 +29,7 @@ func NewCmdStackFirst(f *cmdutils.Factory) *cobra.Command {
 	return &cobra.Command{
 		Use:     "first",
 		Short:   "Moves to the first diff in the stack.",
-		Long:    "Moves to the first diff in the stack, and checks out that branch.\n",
+		Long:    "Moves to the first diff in the stack, and checks out that branch.\n" + text.ExperimentalString,
 		Example: "glab stack first",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()
