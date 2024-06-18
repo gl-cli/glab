@@ -74,11 +74,6 @@ func statusRun(opts *StatusOpts) error {
 		return fmt.Errorf("%s %s has not been authenticated with glab. Run `%s %s` to authenticate", c.FailedIcon(), opts.Hostname, c.Bold("glab auth login --hostname"), c.Bold(opts.Hostname))
 	}
 
-	envToken := config.GetFromEnv("token")
-	if envToken != "" {
-		fmt.Fprintf(stderr, "%s One of %s environment variables is set. It will be used for all authentication.\n\n", c.WarnIcon(), strings.Join(config.EnvKeyEquivalence("token"), ", "))
-	}
-
 	failedAuth := false
 	for _, instance := range instances {
 		if opts.Hostname != "" && opts.Hostname != instance {
@@ -149,6 +144,11 @@ func statusRun(opts *StatusOpts) error {
 		for _, line := range lines {
 			fmt.Fprintf(stderr, "  %s\n", line)
 		}
+	}
+
+	envToken := config.GetFromEnv("token")
+	if envToken != "" {
+		fmt.Fprintf(stderr, "\n%s One of %s environment variables is set. It will be used for all authentication.\n", c.WarnIcon(), strings.Join(config.EnvKeyEquivalence("token"), ", "))
 	}
 
 	if failedAuth {

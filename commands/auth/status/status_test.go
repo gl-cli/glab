@@ -151,15 +151,15 @@ hosts:
 			},
 			envVar:  true,
 			wantErr: false,
-			stderr: fmt.Sprintf(`! One of GITLAB_TOKEN, GITLAB_ACCESS_TOKEN, OAUTH_TOKEN environment variables is set. It will be used for all authentication.
-
-gitlab.env.bar
+			stderr: fmt.Sprintf(`gitlab.env.bar
   ✓ Logged in to gitlab.env.bar as john_doe (%s)
   ✓ Git operations for gitlab.env.bar configured to use ssh protocol.
   ✓ API calls for gitlab.env.bar are made over https protocol
   ✓ REST API Endpoint: https://gitlab.env.bar/api/v4/
   ✓ GraphQL Endpoint: https://gitlab.env.bar/api/graphql/
   ✓ Token: **************************
+
+! One of GITLAB_TOKEN, GITLAB_ACCESS_TOKEN, OAUTH_TOKEN environment variables is set. It will be used for all authentication.
 `, cfgFile),
 		},
 	}
