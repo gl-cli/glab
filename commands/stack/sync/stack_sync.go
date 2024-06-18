@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/xanzy/go-gitlab"
 
 	"github.com/spf13/cobra"

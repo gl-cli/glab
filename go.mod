@@ -4,7 +4,6 @@ go 1.22.4
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/avast/retry-go/v4 v4.6.0
