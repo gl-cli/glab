@@ -175,6 +175,10 @@ func TestCheckUpdate_NoRun(t *testing.T) {
 			name:            "when previous command is an alias for check-update",
 			previousCommand: "update",
 		},
+		{
+			name:            "when previous command is completion",
+			previousCommand: "completion",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -35,8 +35,7 @@ func NewCheckUpdateCmd(f *cmdutils.Factory, version string) *cobra.Command {
 }
 
 func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previousCommand string) error {
-	// Don't CheckUpdate if previous command is CheckUpdate
-	if previousCommand == commandUse || utils.PresentInStringSlice(commandAliases, previousCommand) {
+	if shouldSkipUpdate(previousCommand) {
 		return nil
 	}
 
@@ -81,6 +80,17 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previo
 			c.Green("You are already using the latest version of glab\n"))
 	}
 	return nil
+}
+
+// Don't CheckUpdate if previous command is CheckUpdate
+// or it’s Completion, so it doesn’t take a noticably long time
+// to start new shells and we don’t encourage users setting
+// `check_update` to false in the config.
+func shouldSkipUpdate(previousCommand string) bool {
+	isCheckUpdate := previousCommand == commandUse || utils.PresentInStringSlice(commandAliases, previousCommand)
+	isCompletion := previousCommand == "completion"
+
+	return isCheckUpdate || isCompletion
 }
 
 func isOlderVersion(latestVersion, appVersion string) bool {
