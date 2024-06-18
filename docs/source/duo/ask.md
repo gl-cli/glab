@@ -26,12 +26,6 @@ We'd love your feedback in [issue 409636](https://gitlab.com/gitlab-org/gitlab/-
 glab duo ask <prompt> [flags]
 ```
 
-## Aliases
-
-```plaintext
-git
-```
-
 ## Examples
 
 ```plaintext
