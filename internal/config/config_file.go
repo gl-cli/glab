@@ -83,6 +83,20 @@ var WriteConfigFile = func(filename string, data []byte) error {
 }
 
 func ParseConfigFile(filename string) ([]byte, *yaml.Node, error) {
+	stat, err := os.Stat(filename)
+	// we want to check if there actually is a file, sometimes
+	// configs are just passed via stubs
+	if err == nil {
+		if stat.Mode().Perm() != 0o600 {
+			return nil, nil,
+				fmt.Errorf("%s has the permissions %o, it must be 600 to be used by glab.\nyou may want to `chmod 600 %s`",
+					filename,
+					stat.Mode(),
+					filename,
+				)
+		}
+	}
+
 	data, err := ReadConfigFile(filename)
 	if err != nil {
 		return nil, nil, err
