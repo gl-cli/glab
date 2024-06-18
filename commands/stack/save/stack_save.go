@@ -203,13 +203,14 @@ func commitFiles(message string) (string, error) {
 func generateStackSha(message string, title string, author string) (string, error) {
 	toSha := message + title + author
 
-	cmd := "echo \"" + toSha + "\" | git hash-object --stdin"
-	sha, err := exec.Command("bash", "-c", cmd).Output()
+	shaCmd := exec.Command("git", "hash-object", "--stdin")
+	shaCmd.Stdin = strings.NewReader(toSha)
+	shaStdOut, err := shaCmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("error running git hash-object: %v", err)
 	}
 
-	return strings.TrimSuffix(string(sha), "\n"), nil
+	return strings.TrimSuffix(string(shaStdOut), "\n"), nil
 }
 
 func createShaBranch(f *cmdutils.Factory, sha string, title string) (string, error) {

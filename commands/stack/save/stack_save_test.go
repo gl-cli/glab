@@ -248,7 +248,7 @@ func Test_generateStackSha(t *testing.T) {
 		{
 			name: "basic test",
 			args: args{message: "hello", title: "supercool stack title", author: "norm maclean"},
-			want: "f541d1d62a519a43e6242bcf3f2f6e7f4310c01e",
+			want: "55a1ac7cf7d0fa417aaeb71cf204334a23c17a59",
 		},
 	}
 	for _, tt := range tests {
