@@ -248,22 +248,16 @@ func Test_generateStackSha(t *testing.T) {
 		{
 			name: "basic test",
 			args: args{message: "hello", title: "supercool stack title", author: "norm maclean"},
-			want: "55a1ac7cf7d0fa417aaeb71cf204334a23c17a59",
+			want: "c648eaca",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			git.InitGitRepo(t)
 
-			got, err := generateStackSha(tt.args.message, tt.args.title, tt.args.author)
+			got := generateStackSha(tt.args.message, tt.args.title, tt.args.author)
 
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.Nil(t, err)
-
-				require.Equal(t, got, tt.want)
-			}
+			require.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -283,13 +277,13 @@ func Test_createShaBranch(t *testing.T) {
 	}{
 		{
 			name:   "standard test case",
-			args:   args{sha: "237ec83c03d3", title: "cool-change"},
+			args:   args{sha: "237ec83c", title: "cool-change"},
 			prefix: "asdf",
 			want:   "asdf-cool-change-237ec83c",
 		},
 		{
 			name:     "with no config file",
-			args:     args{sha: "237ec83c03d3", title: "cool-change"},
+			args:     args{sha: "237ec83c", title: "cool-change"},
 			prefix:   "",
 			want:     "jawn-cool-change-237ec83c",
 			noConfig: true,

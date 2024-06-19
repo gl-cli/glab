@@ -1,10 +1,10 @@
 package save
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -14,6 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 	"gitlab.com/gitlab-org/cli/pkg/text"
+	"golang.org/x/crypto/sha3"
 
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
@@ -70,10 +71,7 @@ func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			// generate a SHA based on: commit message, stack title, Git author name
-			sha, err := generateStackSha(description, title, string(author))
-			if err != nil {
-				return fmt.Errorf("error generating SHA command: %v", err)
-			}
+			sha := generateStackSha(description, title, string(author))
 
 			// create branch name from SHA
 			branch, err := createShaBranch(f, sha, title)
@@ -200,21 +198,18 @@ func commitFiles(message string) (string, error) {
 	return string(output), nil
 }
 
-func generateStackSha(message string, title string, author string) (string, error) {
-	toSha := message + title + author
+func generateStackSha(message string, title string, author string) string {
+	toSha := []byte(message + title + author)
+	hashData := make([]byte, 4)
 
-	shaCmd := exec.Command("git", "hash-object", "--stdin")
-	shaCmd.Stdin = strings.NewReader(toSha)
-	shaStdOut, err := shaCmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("error running git hash-object: %v", err)
-	}
+	shakeHash := sha3.NewShake256()
+	shakeHash.Write(toSha)
+	shakeHash.Read(hashData)
 
-	return strings.TrimSuffix(string(shaStdOut), "\n"), nil
+	return hex.EncodeToString(hashData)
 }
 
 func createShaBranch(f *cmdutils.Factory, sha string, title string) (string, error) {
-	shortSha := string(sha)[0:8]
 
 	cfg, err := f.Config()
 	if err != nil {
@@ -233,7 +228,7 @@ func createShaBranch(f *cmdutils.Factory, sha string, title string) (string, err
 		}
 	}
 
-	branchTitle := []string{prefix, title, shortSha}
+	branchTitle := []string{prefix, title, sha}
 
 	branch := strings.Join(branchTitle, "-")
 	return string(branch), nil
