@@ -3,7 +3,6 @@ package ask
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -81,11 +80,6 @@ func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
 			$ glab duo ask list last 10 commit titles
 			# => A list of Git commands to show the titles of the latest 10 commits with an explanation and an option to execute the commands.
 		`),
-		Aliases: []string{"git"},
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintf(os.Stderr, "Aliases 'git' is deprecated. Please use 'ask' with the appropriate flag instead.\n\n")
-			_ = cmd.Help()
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !opts.Git {
 				return nil
