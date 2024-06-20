@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/stretchr/testify/require"
@@ -235,9 +236,10 @@ func Test_commitFiles(t *testing.T) {
 
 func Test_generateStackSha(t *testing.T) {
 	type args struct {
-		message string
-		title   string
-		author  string
+		message   string
+		title     string
+		author    string
+		timestamp time.Time
 	}
 	tests := []struct {
 		name    string
@@ -247,17 +249,17 @@ func Test_generateStackSha(t *testing.T) {
 	}{
 		{
 			name: "basic test",
-			args: args{message: "hello", title: "supercool stack title", author: "norm maclean"},
-			want: "c648eaca",
+			args: args{message: "hello", title: "supercool stack title", author: "norm maclean", timestamp: time.Date(1998, time.July, 6, 1, 3, 3, 7, time.UTC)},
+			want: "e062296a",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			git.InitGitRepo(t)
 
-			got := generateStackSha(tt.args.message, tt.args.title, tt.args.author)
+			got := generateStackSha(tt.args.message, tt.args.title, tt.args.author, tt.args.timestamp)
 
-			require.Equal(t, got, tt.want)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }

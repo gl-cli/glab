@@ -71,7 +71,7 @@ func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			// generate a SHA based on: commit message, stack title, Git author name
-			sha := generateStackSha(description, title, string(author))
+			sha := generateStackSha(description, title, string(author), time.Now())
 
 			// create branch name from SHA
 			branch, err := createShaBranch(f, sha, title)
@@ -198,8 +198,8 @@ func commitFiles(message string) (string, error) {
 	return string(output), nil
 }
 
-func generateStackSha(message string, title string, author string) string {
-	toSha := []byte(message + title + author)
+func generateStackSha(message string, title string, author string, timestamp time.Time) string {
+	toSha := []byte(message + title + author + timestamp.String())
 	hashData := make([]byte, 4)
 
 	shakeHash := sha3.NewShake256()
