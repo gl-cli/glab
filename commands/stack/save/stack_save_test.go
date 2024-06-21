@@ -257,9 +257,14 @@ func Test_generateStackSha(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			git.InitGitRepo(t)
 
-			got := generateStackSha(tt.args.message, tt.args.title, tt.args.author, tt.args.timestamp)
+			got, err := generateStackSha(tt.args.message, tt.args.title, tt.args.author, tt.args.timestamp)
 
-			require.Equal(t, tt.want, got)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.Nil(t, err)
+				require.Equal(t, got, tt.want)
+			}
 		})
 	}
 }

@@ -71,7 +71,10 @@ func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			// generate a SHA based on: commit message, stack title, Git author name
-			sha := generateStackSha(description, title, string(author), time.Now())
+			sha, err := generateStackSha(description, title, string(author), time.Now())
+			if err != nil {
+				return fmt.Errorf("error generating hash for stack branch name: %v", err)
+			}
 
 			// create branch name from SHA
 			branch, err := createShaBranch(f, sha, title)
@@ -198,19 +201,21 @@ func commitFiles(message string) (string, error) {
 	return string(output), nil
 }
 
-func generateStackSha(message string, title string, author string, timestamp time.Time) string {
+func generateStackSha(message string, title string, author string, timestamp time.Time) (string, error) {
 	toSha := []byte(message + title + author + timestamp.String())
 	hashData := make([]byte, 4)
 
 	shakeHash := sha3.NewShake256()
 	shakeHash.Write(toSha)
-	shakeHash.Read(hashData)
+	_, err := shakeHash.Read(hashData)
+	if err != nil {
+		return "", fmt.Errorf("error generating hash for stack branch: %v", err)
+	}
 
-	return hex.EncodeToString(hashData)
+	return hex.EncodeToString(hashData), nil
 }
 
 func createShaBranch(f *cmdutils.Factory, sha string, title string) (string, error) {
-
 	cfg, err := f.Config()
 	if err != nil {
 		return "", fmt.Errorf("could not retrieve config file: %v", err)
