@@ -1,10 +1,10 @@
 package save
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -14,6 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 	"gitlab.com/gitlab-org/cli/pkg/text"
+	"golang.org/x/crypto/sha3"
 
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
@@ -70,9 +71,9 @@ func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			// generate a SHA based on: commit message, stack title, Git author name
-			sha, err := generateStackSha(description, title, string(author))
+			sha, err := generateStackSha(description, title, string(author), time.Now())
 			if err != nil {
-				return fmt.Errorf("error generating SHA command: %v", err)
+				return fmt.Errorf("error generating hash for stack branch name: %v", err)
 			}
 
 			// create branch name from SHA
@@ -200,21 +201,21 @@ func commitFiles(message string) (string, error) {
 	return string(output), nil
 }
 
-func generateStackSha(message string, title string, author string) (string, error) {
-	toSha := message + title + author
+func generateStackSha(message string, title string, author string, timestamp time.Time) (string, error) {
+	toSha := []byte(message + title + author + timestamp.String())
+	hashData := make([]byte, 4)
 
-	cmd := "echo \"" + toSha + "\" | git hash-object --stdin"
-	sha, err := exec.Command("bash", "-c", cmd).Output()
+	shakeHash := sha3.NewShake256()
+	shakeHash.Write(toSha)
+	_, err := shakeHash.Read(hashData)
 	if err != nil {
-		return "", fmt.Errorf("error running git hash-object: %v", err)
+		return "", fmt.Errorf("error generating hash for stack branch: %v", err)
 	}
 
-	return strings.TrimSuffix(string(sha), "\n"), nil
+	return hex.EncodeToString(hashData), nil
 }
 
 func createShaBranch(f *cmdutils.Factory, sha string, title string) (string, error) {
-	shortSha := string(sha)[0:8]
-
 	cfg, err := f.Config()
 	if err != nil {
 		return "", fmt.Errorf("could not retrieve config file: %v", err)
@@ -232,7 +233,7 @@ func createShaBranch(f *cmdutils.Factory, sha string, title string) (string, err
 		}
 	}
 
-	branchTitle := []string{prefix, title, shortSha}
+	branchTitle := []string{prefix, title, sha}
 
 	branch := strings.Join(branchTitle, "-")
 	return string(branch), nil
