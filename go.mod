@@ -36,6 +36,8 @@ require (
 	github.com/tidwall/pretty v1.2.1
 	github.com/xanzy/go-gitlab v0.105.0
 	github.com/zalando/go-keyring v0.2.5
+	go.uber.org/goleak v1.3.0
+	golang.org/x/crypto v0.24.0
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	golang.org/x/sync v0.7.0
 	golang.org/x/term v0.21.0
@@ -90,7 +92,6 @@ require (
 	github.com/yuin/goldmark-emoji v1.0.2 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/oauth2 v0.19.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
