@@ -157,7 +157,8 @@ func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 
 	if apiClient.httpClientOverride == nil {
 		apiClient.httpClient = &http.Client{
 			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
+				DisableKeepAlives: DisableHTTPKeepAlives,
+				Proxy:             http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
 					Timeout:   5 * time.Second,
 					KeepAlive: 5 * time.Second,
@@ -198,7 +199,8 @@ func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 
 
 		apiClient.httpClient = &http.Client{
 			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
+				DisableKeepAlives: DisableHTTPKeepAlives,
+				Proxy:             http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
 					Timeout:   30 * time.Second,
 					KeepAlive: 30 * time.Second,
@@ -248,7 +250,8 @@ func NewClientWithCustomCAClientCert(host, token, caFile string, certFile string
 
 		apiClient.httpClient = &http.Client{
 			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
+				DisableKeepAlives: DisableHTTPKeepAlives,
+				Proxy:             http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
 					Timeout:   30 * time.Second,
 					KeepAlive: 30 * time.Second,

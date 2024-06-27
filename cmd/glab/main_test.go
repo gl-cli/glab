@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"go.uber.org/goleak"
 )
 
 func Test_printError(t *testing.T) {
@@ -100,4 +101,8 @@ x lookup https://gitlab.com/api/v4:
 // and calls the main function
 func TestGlab(t *testing.T) {
 	main()
+}
+
+func TestMain(m *testing.M) {
+	goleak.VerifyTestMain(m)
 }
