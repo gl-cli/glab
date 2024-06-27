@@ -11,6 +11,7 @@ import (
 	"github.com/xanzy/go-gitlab"
 
 	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
@@ -65,7 +66,9 @@ func NewCmdSyncStack(f *cmdutils.Factory) *cobra.Command {
 			glab sync
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			iostream.StartSpinner("Syncing")
 			err := stackSync(f, opts)
+			iostream.StopSpinner("")
 			if err != nil {
 				return fmt.Errorf("could not run sync: %v", err)
 			}
@@ -78,8 +81,6 @@ func NewCmdSyncStack(f *cmdutils.Factory) *cobra.Command {
 }
 
 func stackSync(f *cmdutils.Factory, opts *Options) error {
-	iostream.StartSpinner("Syncing")
-
 	repo, err := f.BaseRepo()
 	if err != nil {
 		return fmt.Errorf("error determining base repo: %v. are you in a git repository?", err)
@@ -161,10 +162,7 @@ func stackSync(f *cmdutils.Factory, opts *Options) error {
 		}
 	}
 
-	iostream.StopSpinner("")
-
 	fmt.Print(progressString("Sync finished!"))
-
 	return nil
 }
 
