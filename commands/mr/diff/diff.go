@@ -47,7 +47,7 @@ func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comma
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if repoOverride, _ := cmd.Flags().GetString("repo"); repoOverride != "" && len(args) == 0 {
-				return &cmdutils.FlagError{Err: errors.New("argument required when using the --repo flag")}
+				return &cmdutils.FlagError{Err: errors.New("argument required when using the --repo flag.")}
 			}
 
 			if len(args) > 0 {
@@ -55,7 +55,7 @@ func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comma
 			}
 
 			if !validColorFlag(opts.UseColor) {
-				return &cmdutils.FlagError{Err: fmt.Errorf("did not understand color: %q. Expected one of always, never, or auto", opts.UseColor)}
+				return &cmdutils.FlagError{Err: fmt.Errorf("did not understand color: %q. Expected one of 'always', 'never', or 'auto'.", opts.UseColor)}
 			}
 
 			if opts.UseColor == "auto" && !opts.IO.IsaTTY {

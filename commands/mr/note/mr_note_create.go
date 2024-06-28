@@ -17,7 +17,7 @@ func NewCmdNote(f *cmdutils.Factory) *cobra.Command {
 	mrCreateNoteCmd := &cobra.Command{
 		Use:     "note [<id> | <branch>]",
 		Aliases: []string{"comment"},
-		Short:   "Add a comment or note to merge request",
+		Short:   "Add a comment or note to a merge request.",
 		Long:    ``,
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -35,13 +35,13 @@ func NewCmdNote(f *cmdutils.Factory) *cobra.Command {
 
 			if body == "" {
 				body = utils.Editor(utils.EditorOptions{
-					Label:    "Note Message:",
+					Label:    "Note message:",
 					Help:     "Enter the note message for the merge request. ",
 					FileName: "*_MR_NOTE_EDITMSG.md",
 				})
 			}
 			if body == "" {
-				return fmt.Errorf("aborted... Note has an empty message")
+				return fmt.Errorf("aborted... Note has an empty message.")
 			}
 
 			uniqueNoteEnabled, _ := cmd.Flags().GetBool("unique")
@@ -50,7 +50,7 @@ func NewCmdNote(f *cmdutils.Factory) *cobra.Command {
 				opts := &gitlab.ListMergeRequestNotesOptions{}
 				notes, err := api.ListMRNotes(apiClient, repo.FullName(), mr.IID, opts)
 				if err != nil {
-					return fmt.Errorf("running mr note deduplication: %v", err)
+					return fmt.Errorf("running merge request note deduplication: %v", err)
 				}
 				for _, noteInfo := range notes {
 					if noteInfo.Body == body {
@@ -72,7 +72,7 @@ func NewCmdNote(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	mrCreateNoteCmd.Flags().StringP("message", "m", "", "Comment/Note message")
-	mrCreateNoteCmd.Flags().Bool("unique", false, "Don't create a comment/note if it already exists")
+	mrCreateNoteCmd.Flags().StringP("message", "m", "", "Comment or note message.")
+	mrCreateNoteCmd.Flags().Bool("unique", false, "Don't create a comment or note if it already exists.")
 	return mrCreateNoteCmd
 }

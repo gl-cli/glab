@@ -76,8 +76,8 @@ func TestMrApprove(t *testing.T) {
 
 		assert.Equal(t, heredoc.Doc(`
 
-		Listing Merge Request !123 eligible approvers
-		Approval rules overwritten
+		Listing merge request !123 eligible approvers:
+		Approval rules overwritten.
 		Rule "All Members" sufficient approvals (1/1 required):
 		Abc Approver	approver_1	-	
 		Bar Approver	approver_2	-	

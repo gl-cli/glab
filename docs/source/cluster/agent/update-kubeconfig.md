@@ -15,7 +15,7 @@ Update selected kubeconfig
 
 ## Synopsis
 
-Update selected kubeconfig for use with a GitLab agent for Kubernetes
+Update selected kubeconfig for use with a GitLab agent for Kubernetes.
 
 ```plaintext
 glab cluster agent update-kubeconfig [flags]
@@ -24,9 +24,9 @@ glab cluster agent update-kubeconfig [flags]
 ## Options
 
 ```plaintext
-  -a, --agent int           The numeric agent ID to create the kubeconfig entry for
-      --kubeconfig string   Use a particular kubeconfig file
-  -u, --use-context         Use as default context
+  -a, --agent int           The numeric agent ID to create the kubeconfig entry for.
+      --kubeconfig string   Use a particular kubeconfig file.
+  -u, --use-context         Use as default context.
 ```
 
 ## Options inherited from parent commands

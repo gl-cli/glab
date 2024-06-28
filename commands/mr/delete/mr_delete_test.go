@@ -85,7 +85,7 @@ hosts:
 			wantErr: true,
 
 			assertFunc: func(t *testing.T, out, outErr string, err error) {
-				assert.Equal(t, "invalid merge request ID provided", err.Error())
+				assert.Equal(t, "invalid merge request ID provided.", err.Error())
 			},
 		},
 		{
@@ -93,7 +93,7 @@ hosts:
 			args:    []string{"1"},
 			wantErr: false,
 			assertFunc: func(t *testing.T, out, outErr string, err error) {
-				assert.Contains(t, out, "- Deleting Merge Request !1\n")
+				assert.Contains(t, out, "- Deleting merge request !1\n")
 				assert.Contains(t, out, "✓ Merge request !1 deleted\n")
 			},
 		},
@@ -102,7 +102,7 @@ hosts:
 			args:    []string{"1", "-R", "profclems/glab"},
 			wantErr: false,
 			assertFunc: func(t *testing.T, out, outErr string, err error) {
-				assert.Contains(t, out, "- Deleting Merge Request !1\n")
+				assert.Contains(t, out, "- Deleting merge request !1\n")
 				assert.Contains(t, out, "✓ Merge request !1 deleted\n")
 			},
 		},

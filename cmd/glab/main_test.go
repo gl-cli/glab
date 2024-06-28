@@ -39,20 +39,20 @@ func Test_printError(t *testing.T) {
 		{
 			name: "DNS error",
 			args: args{
-				err: fmt.Errorf("DNS oopsie: %w", &net.DNSError{
+				err: fmt.Errorf("DNS error: %w", &net.DNSError{
 					Name: "https://gitlab.com/api/v4",
 				}),
 				cmd:   cmd,
 				debug: false,
 			},
 			wantOut: `x error connecting to https://gitlab.com/api/v4
-• check your internet connection or status.gitlab.com or 'Run sudo gitlab-ctl status' on your server if self-hosted
+• Check your internet connection and status.gitlab.com. If on a self-managed instance, run 'sudo gitlab-ctl status' on your server.
 `,
 		},
 		{
 			name: "DNS error with debug",
 			args: args{
-				err: fmt.Errorf("DNS oopsie: %w", &net.DNSError{
+				err: fmt.Errorf("DNS error: %w", &net.DNSError{
 					Name: "https://gitlab.com/api/v4",
 				}),
 				cmd:   cmd,
@@ -61,7 +61,7 @@ func Test_printError(t *testing.T) {
 
 			wantOut: `x error connecting to https://gitlab.com/api/v4
 x lookup https://gitlab.com/api/v4: 
-• check your internet connection or status.gitlab.com or 'Run sudo gitlab-ctl status' on your server if self-hosted
+• Check your internet connection and status.gitlab.com. If on a self-managed instance, run 'sudo gitlab-ctl status' on your server.
 `,
 		},
 		{

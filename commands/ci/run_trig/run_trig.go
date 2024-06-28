@@ -82,7 +82,7 @@ func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
 				c.Ref = gitlab.Ptr(currentBranch)
 			} else {
 				// `ci run-trig` is running out of a git repo
-				fmt.Fprintln(f.IO.StdOut, "not in a git repository, using repository argument")
+				fmt.Fprintln(f.IO.StdOut, "not in a Git repository. Using repository argument.")
 				c.Ref = gitlab.Ptr(ciutils.GetDefaultBranch(f))
 			}
 
@@ -94,7 +94,7 @@ func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
 				token = os.Getenv("CI_JOB_TOKEN")
 			}
 			if token == "" {
-				return errors.New("--token parameter can be omitted only if CI_JOB_TOKEN environment variable is set")
+				return errors.New("`--token` parameter can be omitted only if `CI_JOB_TOKEN` environment variable is set.")
 			}
 			c.Token = &token
 
@@ -103,13 +103,13 @@ func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintln(f.IO.StdOut, "Created pipeline (id:", pipe.ID, "), status:", pipe.Status, ", ref:", pipe.Ref, ", weburl: ", pipe.WebURL, ")")
+			fmt.Fprintln(f.IO.StdOut, "Created pipeline (ID:", pipe.ID, "), status:", pipe.Status, ", ref:", pipe.Ref, ", weburl: ", pipe.WebURL, ")")
 			return nil
 		},
 	}
-	pipelineRunCmd.Flags().StringP("token", "t", "", "Pipeline trigger token (can be omitted only if CI_JOB_TOKEN environment variable is set)")
-	pipelineRunCmd.Flags().StringP("branch", "b", "", "Create pipeline on branch/ref <string>")
-	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables", "", []string{}, "Pass variables to pipeline in format <key>:<value>")
+	pipelineRunCmd.Flags().StringP("token", "t", "", "Pipeline trigger token. Can be omitted only if the `CI_JOB_TOKEN` environment variable is set.")
+	pipelineRunCmd.Flags().StringP("branch", "b", "", "Create pipeline on branch or reference <string>.")
+	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables", "", []string{}, "Pass variables to pipeline in the format <key>:<value>.")
 
 	return pipelineRunCmd
 }

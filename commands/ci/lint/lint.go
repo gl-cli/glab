@@ -45,7 +45,7 @@ func NewCmdLint(f *cmdutils.Factory) *cobra.Command {
 
 	pipelineCILintCmd.Flags().BoolVarP(&dryRun, "dry-run", "", false, "Run pipeline creation simulation.")
 	pipelineCILintCmd.Flags().BoolVarP(&includeJobs, "include-jobs", "", false, "The response should include the list of jobs that would exist in a static check or pipeline simulation.")
-	pipelineCILintCmd.Flags().StringVar(&ref, "ref", "", "When dry-run is true, sets the branch or tag context for validating the CI/CD YAML configuration.")
+	pipelineCILintCmd.Flags().StringVar(&ref, "ref", "", "When `dry-run` is true, sets the branch or tag context for validating the CI/CD YAML configuration.")
 
 	return pipelineCILintCmd
 }
@@ -62,12 +62,12 @@ func lintRun(f *cmdutils.Factory, path string) error {
 
 	repo, err := f.BaseRepo()
 	if err != nil {
-		return fmt.Errorf("You need to be in a GitLab project repository for this action.\nError: %s", err)
+		return fmt.Errorf("You must be in a GitLab project repository for this action.\nError: %s", err)
 	}
 
 	project, err := repo.Project(apiClient)
 	if err != nil {
-		return fmt.Errorf("You need to be in a GitLab project repository for this action.\nError: %s", err)
+		return fmt.Errorf("You must be in a GitLab project repository for this action.\nError: %s", err)
 	}
 
 	projectID := project.ID
@@ -89,7 +89,7 @@ func lintRun(f *cmdutils.Factory, path string) error {
 		content, err = os.ReadFile(path)
 		if err != nil {
 			if os.IsNotExist(err) {
-				return fmt.Errorf("%s: no such file or directory", path)
+				return fmt.Errorf("%s: no such file or directory.", path)
 			}
 			return err
 		}
@@ -103,7 +103,7 @@ func lintRun(f *cmdutils.Factory, path string) error {
 	}
 
 	if !lint.Valid {
-		fmt.Fprintln(out, c.Red(path+" is invalid"))
+		fmt.Fprintln(out, c.Red(path+" is invalid."))
 		for i, err := range lint.Errors {
 			i++
 			fmt.Fprintln(out, i, err)

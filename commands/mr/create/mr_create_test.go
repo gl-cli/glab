@@ -421,7 +421,7 @@ func TestMRCreate_nontty_insufficient_flags(t *testing.T) {
 		t.Fatal("expected error")
 	}
 
-	assert.Equal(t, "--title or --fill required for non-interactive mode", err.Error())
+	assert.Equal(t, "--title or --fill required for non-interactive mode.", err.Error())
 }
 
 func TestMrBodyAndTitle(t *testing.T) {

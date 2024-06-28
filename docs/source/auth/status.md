@@ -17,7 +17,7 @@ View authentication status
 
 Verifies and displays information about your authentication state.
 
-This command tests the authentication states of all known GitLab instances in the config file and reports issues if any
+This command tests the authentication states of all known GitLab instances in the config file and reports issues, if any.
 
 ```plaintext
 glab auth status [flags]
@@ -26,8 +26,8 @@ glab auth status [flags]
 ## Options
 
 ```plaintext
-  -h, --hostname string   Check a specific instance's authentication status
-  -t, --show-token        Display the auth token
+  -h, --hostname string   Check a specific instance's authentication status.
+  -t, --show-token        Display the authentication token.
 ```
 
 ## Options inherited from parent commands

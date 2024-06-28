@@ -49,21 +49,21 @@ func TestCIRun(t *testing.T) {
 			cli:              "-t foobar",
 			ciJobToken:       "",
 			expectedPOSTBody: fmt.Sprintf(`"ref":"%s"`, "custom-branch-123"),
-			expectedOut:      fmt.Sprintf("Created pipeline (id: 123 ), status: created , ref: %s , weburl:  https://gitlab.com/OWNER/REPO/-/pipelines/123 )\n", "custom-branch-123"),
+			expectedOut:      fmt.Sprintf("Created pipeline (ID: 123 ), status: created , ref: %s , weburl:  https://gitlab.com/OWNER/REPO/-/pipelines/123 )\n", "custom-branch-123"),
 		},
 		{
 			name:             "when running `ci run-trig` with branch parameter, run CI at branch",
 			cli:              "-t foobar -b ci-cd-improvement-399",
 			ciJobToken:       "",
 			expectedPOSTBody: `"ref":"ci-cd-improvement-399"`,
-			expectedOut:      "Created pipeline (id: 123 ), status: created , ref: ci-cd-improvement-399 , weburl:  https://gitlab.com/OWNER/REPO/-/pipelines/123 )\n",
+			expectedOut:      "Created pipeline (ID: 123 ), status: created , ref: ci-cd-improvement-399 , weburl:  https://gitlab.com/OWNER/REPO/-/pipelines/123 )\n",
 		},
 		{
 			name:             "when running `ci run-trig` without any parameter, takes trigger token from env variable",
 			cli:              "",
 			ciJobToken:       "foobar",
 			expectedPOSTBody: fmt.Sprintf(`"ref":"%s"`, "custom-branch-123"),
-			expectedOut:      fmt.Sprintf("Created pipeline (id: 123 ), status: created , ref: %s , weburl:  https://gitlab.com/OWNER/REPO/-/pipelines/123 )\n", "custom-branch-123"),
+			expectedOut:      fmt.Sprintf("Created pipeline (ID: 123 ), status: created , ref: %s , weburl:  https://gitlab.com/OWNER/REPO/-/pipelines/123 )\n", "custom-branch-123"),
 		},
 	}
 

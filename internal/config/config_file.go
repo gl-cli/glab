@@ -89,7 +89,7 @@ func ParseConfigFile(filename string) ([]byte, *yaml.Node, error) {
 	if err == nil {
 		if stat.Mode().Perm() != 0o600 {
 			return nil, nil,
-				fmt.Errorf("%s has the permissions %o, it must be 600 to be used by glab.\nyou may want to `chmod 600 %s`",
+				fmt.Errorf("%s has the permissions %o, but glab requires 600.\nConsider running `chmod 600 %s`",
 					filename,
 					stat.Mode(),
 					filename,

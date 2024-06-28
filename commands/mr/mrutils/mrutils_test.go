@@ -96,7 +96,7 @@ func Test_MRCheckErrors(t *testing.T) {
 			errOpts: MRCheckErrOptions{
 				WorkInProgress: true,
 			},
-			output: "this merge request is still a work in progress. Run `glab mr update 1 --ready` to mark it as ready for review",
+			output: "this merge request is still a draft. Run `glab mr update 1 --ready` to mark it as ready for review.",
 		},
 		{
 			name: "pipeline",
@@ -110,7 +110,7 @@ func Test_MRCheckErrors(t *testing.T) {
 			errOpts: MRCheckErrOptions{
 				PipelineStatus: true,
 			},
-			output: "pipeline for this merge request has failed. Pipeline is required to succeed before merging",
+			output: "the pipeline for this merge request has failed. The pipeline must succeed before merging.",
 		},
 		{
 			name: "merged",
@@ -121,7 +121,7 @@ func Test_MRCheckErrors(t *testing.T) {
 			errOpts: MRCheckErrOptions{
 				Merged: true,
 			},
-			output: "this merge request has already been merged",
+			output: "this merge request has already been merged.",
 		},
 		{
 			name: "closed",
@@ -132,7 +132,7 @@ func Test_MRCheckErrors(t *testing.T) {
 			errOpts: MRCheckErrOptions{
 				Closed: true,
 			},
-			output: "this merge request has been closed",
+			output: "this merge request has been closed.",
 		},
 		{
 			name: "opened",
@@ -143,7 +143,7 @@ func Test_MRCheckErrors(t *testing.T) {
 			errOpts: MRCheckErrOptions{
 				Opened: true,
 			},
-			output: "this merge request is already open",
+			output: "this merge request is already open.",
 		},
 		{
 			name: "subscribed",
@@ -154,7 +154,7 @@ func Test_MRCheckErrors(t *testing.T) {
 			errOpts: MRCheckErrOptions{
 				Subscribed: true,
 			},
-			output: "you are already subscribed to this merge request",
+			output: "you are already subscribed to this merge request.",
 		},
 		{
 			name: "unsubscribed",
@@ -165,7 +165,7 @@ func Test_MRCheckErrors(t *testing.T) {
 			errOpts: MRCheckErrOptions{
 				Unsubscribed: true,
 			},
-			output: "you are not subscribed to this merge request",
+			output: "you are not subscribed to this merge request.",
 		},
 		{
 			name: "merge-privilege",
@@ -178,7 +178,7 @@ func Test_MRCheckErrors(t *testing.T) {
 			errOpts: MRCheckErrOptions{
 				MergePrivilege: true,
 			},
-			output: "you do not have enough privileges to merge this merge request",
+			output: "you do not have permission to merge this merge request.",
 		},
 		{
 			name: "conflicts",
@@ -189,7 +189,7 @@ func Test_MRCheckErrors(t *testing.T) {
 			errOpts: MRCheckErrOptions{
 				Conflict: true,
 			},
-			output: "there are merge conflicts. Resolve conflicts and try again or merge locally",
+			output: "merge conflicts exist. Resolve the conflicts and try again, or merge locally.",
 		},
 	}
 	for _, tC := range testCases {
@@ -369,7 +369,7 @@ func Test_getMRForBranchPrompt(t *testing.T) {
 
 		got, err := getMRForBranch(&gitlab.Client{}, baseRepo, "foo", "opened")
 		assert.Nil(t, got)
-		assert.EqualError(t, err, "a merge request must be picked: prompt failed")
+		assert.EqualError(t, err, "you must select a merge request: prompt failed")
 	})
 }
 
@@ -466,12 +466,12 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 		t.Run("Branch", func(t *testing.T) {
 			f := *f
 
-			f.Branch = func() (string, error) { return "", errors.New("failed to get Branch") }
+			f.Branch = func() (string, error) { return "", errors.New("failed to get branch") }
 
 			gotMR, gotRepo, err := MRFromArgs(&f, []string{}, "")
 			assert.Nil(t, gotMR)
 			assert.Nil(t, gotRepo)
-			assert.EqualError(t, err, "failed to get Branch")
+			assert.EqualError(t, err, "failed to get branch")
 		})
 		t.Run("Invalid-MR-ID", func(t *testing.T) {
 			f := *f
@@ -479,7 +479,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			gotMR, gotRepo, err := MRFromArgs(&f, []string{"0"}, "")
 			assert.Nil(t, gotMR)
 			assert.Nil(t, gotRepo)
-			assert.EqualError(t, err, "invalid merge request ID provided")
+			assert.EqualError(t, err, "invalid merge request ID provided.")
 		})
 		t.Run("invalid-name", func(t *testing.T) {
 			f := *f

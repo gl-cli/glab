@@ -36,8 +36,8 @@ func NewCmdStatus(f *cmdutils.Factory, runE func(*StatusOpts) error) *cobra.Comm
 		Args:  cobra.ExactArgs(0),
 		Short: "View authentication status",
 		Long: heredoc.Doc(`Verifies and displays information about your authentication state.
-			
-			This command tests the authentication states of all known GitLab instances in the config file and reports issues if any
+
+			This command tests the authentication states of all known GitLab instances in the config file and reports issues, if any.
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runE != nil {
@@ -48,8 +48,8 @@ func NewCmdStatus(f *cmdutils.Factory, runE func(*StatusOpts) error) *cobra.Comm
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Hostname, "hostname", "h", "", "Check a specific instance's authentication status")
-	cmd.Flags().BoolVarP(&opts.ShowToken, "show-token", "t", false, "Display the auth token")
+	cmd.Flags().StringVarP(&opts.Hostname, "hostname", "h", "", "Check a specific instance's authentication status.")
+	cmd.Flags().BoolVarP(&opts.ShowToken, "show-token", "t", false, "Display the authentication token.")
 
 	return cmd
 }
@@ -71,7 +71,7 @@ func statusRun(opts *StatusOpts) error {
 	}
 
 	if opts.Hostname != "" && !slices.Contains(instances, opts.Hostname) {
-		return fmt.Errorf("%s %s has not been authenticated with glab. Run `%s %s` to authenticate", c.FailedIcon(), opts.Hostname, c.Bold("glab auth login --hostname"), c.Bold(opts.Hostname))
+		return fmt.Errorf("%s %s has not been authenticated with glab. Run `%s %s` to authenticate.", c.FailedIcon(), opts.Hostname, c.Bold("glab auth login --hostname"), c.Bold(opts.Hostname))
 	}
 
 	failedAuth := false
@@ -93,7 +93,7 @@ func statusRun(opts *StatusOpts) error {
 			user, err := api.CurrentUser(apiClient.Lab())
 			if err != nil {
 				failedAuth = true
-				addMsg("%s %s: api call failed: %s", c.FailedIcon(), instance, err)
+				addMsg("%s %s: API call failed: %s", c.FailedIcon(), instance, err)
 			} else {
 				addMsg("%s Logged in to %s as %s (%s)", c.GreenCheck(), instance, c.Bold(user.Username), tokenSource)
 			}
@@ -110,7 +110,7 @@ func statusRun(opts *StatusOpts) error {
 		apiEndpoint := glinstance.APIEndpoint(instance, apiProto)
 		graphQLEndpoint := glinstance.GraphQLEndpoint(instance, apiProto)
 		if apiProto != "" {
-			addMsg("%s API calls for %s are made over %s protocol",
+			addMsg("%s API calls for %s are made over %s protocol.",
 				c.GreenCheck(), instance, c.Bold(apiProto))
 			addMsg("%s REST API Endpoint: %s",
 				c.GreenCheck(), c.Bold(apiEndpoint))
@@ -124,10 +124,10 @@ func statusRun(opts *StatusOpts) error {
 			}
 			addMsg("%s Token: %s", c.GreenCheck(), tokenDisplay)
 			if !api.IsValidToken(token) {
-				addMsg("%s Invalid token provided in configuration file", c.WarnIcon())
+				addMsg("%s Invalid token provided in configuration file.", c.WarnIcon())
 			}
 		} else {
-			addMsg("%s No token provided in configuration file", c.WarnIcon())
+			addMsg("%s No token provided in configuration file.", c.WarnIcon())
 		}
 	}
 
@@ -152,7 +152,7 @@ func statusRun(opts *StatusOpts) error {
 	}
 
 	if failedAuth {
-		return fmt.Errorf("\n%s could not authenticate to one or more of the configured GitLab instances", c.FailedIcon())
+		return fmt.Errorf("\n%s could not authenticate to one or more of the configured GitLab instances.", c.FailedIcon())
 	} else {
 		return nil
 	}

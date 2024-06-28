@@ -76,7 +76,7 @@ func TestMrRebase(t *testing.T) {
 				},
 			},
 
-			expectedOut: "✓ Rebase successful\n",
+			expectedOut: "✓ Rebase successful!\n",
 		},
 		{
 			name: "when an MR is rebased with skip-ci flag",
@@ -112,7 +112,7 @@ func TestMrRebase(t *testing.T) {
 				},
 			},
 
-			expectedOut: "✓ Rebase successful\n",
+			expectedOut: "✓ Rebase successful!\n",
 		},
 		{
 			name: "when an MR is rebased using current branch",
@@ -161,7 +161,7 @@ func TestMrRebase(t *testing.T) {
 				},
 			},
 
-			expectedOut: "✓ Rebase successful\n",
+			expectedOut: "✓ Rebase successful!\n",
 		},
 	}
 

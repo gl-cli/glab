@@ -212,7 +212,7 @@ func Test_hostnameValidator(t *testing.T) {
 		{
 			name:     "empty",
 			hostname: "",
-			expected: "a value is required",
+			expected: "a value is required.",
 		},
 		{
 			name:     "valid-hostname-slash",

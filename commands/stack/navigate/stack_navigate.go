@@ -72,7 +72,7 @@ func NewCmdStackNext(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if ref.Next == "" {
-				return fmt.Errorf("you are already at the last diff. Use `glab stack list` to see the complete list")
+				return fmt.Errorf("you are already at the last diff. Use `glab stack list` to see the complete list.")
 			}
 
 			err = git.CheckoutBranch(stack.Refs[ref.Next].Branch)
@@ -106,7 +106,7 @@ func NewCmdStackPrev(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if ref.Prev == "" {
-				return fmt.Errorf("you are already at the first diff. Use `glab stack list` to see the complete list")
+				return fmt.Errorf("you are already at the first diff. Use `glab stack list` to see the complete list.")
 			}
 
 			err = git.CheckoutBranch(stack.Refs[ref.Prev].Branch)
