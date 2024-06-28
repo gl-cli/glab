@@ -37,7 +37,7 @@ func NewCmdAgentUpdateKubeconfig(f *cmdutils.Factory) *cobra.Command {
 
 	agentUpdateKubeconfigCmd := &cobra.Command{
 		Use:   "update-kubeconfig [flags]",
-		Short: `Update selected kubeconfig`,
+		Short: `Update selected kubeconfig.`,
 		Long: heredoc.Doc(`Update selected kubeconfig for use with a GitLab agent for Kubernetes.
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -128,10 +128,10 @@ func runUpdateKubeconfig(agentID int, configAccess clientcmd.ConfigAccess, useCo
 		return err
 	}
 
-	fmt.Fprintf(factory.IO.StdOut, "Updated context %s\n", contextName)
+	fmt.Fprintf(factory.IO.StdOut, "Updated context %s.\n", contextName)
 
 	if useContext {
-		fmt.Fprintf(factory.IO.StdOut, "Using context %s\n", contextName)
+		fmt.Fprintf(factory.IO.StdOut, "Using context %s.\n", contextName)
 	}
 	return nil
 }

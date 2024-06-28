@@ -50,5 +50,5 @@ $ glab repo view https://gitlab.company.org/user/repo.git
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for command
+      --help   Show help for this command.
 ```

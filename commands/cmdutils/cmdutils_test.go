@@ -146,7 +146,7 @@ func Test_VerifyAssignees(t *testing.T) {
 				ToRemove:  []string{},
 				ToReplace: []string{"foo"},
 			},
-			want: "mixing relative (+,!,-) and absolute assignments is forbidden",
+			want: "mixing relative (+,!,-) and absolute assignments is forbidden.",
 		},
 		{
 			name: "replace with remove, error",
@@ -155,7 +155,7 @@ func Test_VerifyAssignees(t *testing.T) {
 				ToRemove:  []string{"baz"},
 				ToReplace: []string{"foo"},
 			},
-			want: "mixing relative (+,!,-) and absolute assignments is forbidden",
+			want: "mixing relative (+,!,-) and absolute assignments is forbidden.",
 		},
 		{
 			name: "overlapping add and removal element, error",
@@ -164,7 +164,7 @@ func Test_VerifyAssignees(t *testing.T) {
 				ToRemove:  []string{"foo"},
 				ToReplace: []string{},
 			},
-			want: `1 element "foo" present in both add and remove which is forbidden`,
+			want: `1 element "foo" present in both add and remove, which is forbidden.`,
 		},
 		{
 			name: "overlapping add and removal elements, error",
@@ -173,7 +173,7 @@ func Test_VerifyAssignees(t *testing.T) {
 				ToRemove:  []string{"foo", "baz"},
 				ToReplace: []string{},
 			},
-			want: `2 elements "foo baz" present in both add and remove which is forbidden`,
+			want: `2 elements "foo baz" present in both add and remove, which is forbidden.`,
 		},
 	}
 	for _, tC := range testCases {
@@ -451,7 +451,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 					Username: "bar",
 				},
 			},
-			wantErr: "issueAssignes and mergeRequestAssignes can't both not be nil",
+			wantErr: "issueAssignees and mergeRequestAssignees can't both be set.",
 		},
 	}
 	for _, tC := range testCases {
@@ -495,11 +495,11 @@ func Test_ParseMilestoneTitleIsID(t *testing.T) {
 
 func Test_ParseMilestoneAPIFail(t *testing.T) {
 	title := "AsLongAsItDoesn'tConvertToInt"
-	want := "api call failed in api.MilestoneByTitle()"
+	want := "API call failed in api.MilestoneByTitle()."
 
 	// Override function to return an error simulating an API call failure
 	api.ProjectMilestoneByTitle = func(client *gitlab.Client, projectID interface{}, name string) (*gitlab.Milestone, error) {
-		return nil, fmt.Errorf("api call failed in api.MilestoneByTitle()")
+		return nil, fmt.Errorf("API call failed in api.MilestoneByTitle().")
 	}
 
 	_, err := ParseMilestone(&gitlab.Client{}, glrepo.New("foo", "bar"), title)
@@ -697,7 +697,7 @@ func Test_UsersPrompt(t *testing.T) {
 			name:               "no-members",
 			minimumAccessLevel: 10,
 			mock:               []*gitlab.ProjectMember{},
-			expectedStdErr:     "Couldn't fetch any members with minimum permission level 10\n",
+			expectedStdErr:     "Couldn't fetch any members with minimum permission level 10.\n",
 		},
 		{
 			name:               "no-valid-members",
@@ -708,7 +708,7 @@ func Test_UsersPrompt(t *testing.T) {
 					AccessLevel: gitlab.AccessLevelValue(40),
 				},
 			},
-			expectedStdErr: "Couldn't fetch any members with minimum permission level 50\n",
+			expectedStdErr: "Couldn't fetch any members with minimum permission level 50.\n",
 		},
 	}
 	for _, tC := range testCases {
@@ -930,7 +930,7 @@ func Test_MilestonesPromptNoPrompts(t *testing.T) {
 	if err != nil {
 		t.Errorf("MilestonesPrompt() unexpected error = %s", err)
 	}
-	assert.Equal(t, "There are no active milestones in this project\n", stderr.String())
+	assert.Equal(t, "No active milestones exist for this project.\n", stderr.String())
 }
 
 func TestMilestonesPromptFailures(t *testing.T) {

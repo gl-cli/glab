@@ -12,7 +12,7 @@ import (
 func NewCmdAlias(f *cmdutils.Factory) *cobra.Command {
 	aliasCmd := &cobra.Command{
 		Use:   "alias [command] [flags]",
-		Short: `Create, list and delete aliases`,
+		Short: `Create, list, and delete aliases.`,
 		Long:  ``,
 	}
 	aliasCmd.AddCommand(deleteCmd.NewCmdDelete(f, nil))

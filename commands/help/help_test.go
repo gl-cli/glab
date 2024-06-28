@@ -22,12 +22,12 @@ func TestDedent(t *testing.T) {
 
 	cases := []c{
 		{
-			input:    "      --help      Show help for command\n      --version   Show glab version\n",
-			expected: "--help      Show help for command\n--version   Show glab version\n",
+			input:    "      --help      Show help for command.\n      --version   Show glab version\n",
+			expected: "--help      Show help for command.\n--version   Show glab version\n",
 		},
 		{
-			input:    "      --help              Show help for command\n  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO format\n",
-			expected: "    --help              Show help for command\n-R, --repo OWNER/REPO   Select another repository using the OWNER/REPO format\n",
+			input:    "      --help              Show help for command.\n  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO format\n",
+			expected: "    --help              Show help for command.\n-R, --repo OWNER/REPO   Select another repository using the OWNER/REPO format\n",
 		},
 		{
 			input:    "  line 1\n\n  line 2\n line 3",
@@ -70,7 +70,7 @@ func TestRootHelpFunc(t *testing.T) {
 			args: args{
 				command: alias.NewCmdAlias(&cmdutils.Factory{}),
 			},
-			wantOut: `Create, list and delete aliases
+			wantOut: `Create, list, and delete aliases.
 
 USAGE
   alias [command] [flags]`,

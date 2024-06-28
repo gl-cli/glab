@@ -57,9 +57,9 @@ func (a *LocalConfig) Delete(key string) error {
 }
 
 func (a *LocalConfig) Write() error {
-	// Check if it's a git repository
+	// Check if it's a Git repository
 	if !CheckPathExists(".git") {
-		return errors.New("not a git repository")
+		return errors.New("not a Git repository")
 	}
 
 	localConfigBytes, err := yaml.Marshal(a.ConfigMap.Root)

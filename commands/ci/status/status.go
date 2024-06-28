@@ -19,7 +19,7 @@ import (
 func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 	pipelineStatusCmd := &cobra.Command{
 		Use:     "status [flags]",
-		Short:   `View a running CI/CD pipeline on current or other branch specified`,
+		Short:   `View a running CI/CD pipeline on current or other branch specified.`,
 		Aliases: []string{"stats"},
 		Example: heredoc.Doc(`
 	glab ci status --live
@@ -108,7 +108,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 					fmt.Fprintf(writer.Newline(), "\n%s\n", runningPipeline.WebURL)
 					fmt.Fprintf(writer.Newline(), "SHA: %s\n", runningPipeline.SHA)
 				}
-				fmt.Fprintf(writer.Newline(), "Pipeline State: %s\n\n", runningPipeline.Status)
+				fmt.Fprintf(writer.Newline(), "Pipeline state: %s\n\n", runningPipeline.Status)
 
 				// break loop if input or output is a TTY to avoid prompting
 				if !(f.IO.IsInputTTY() && f.IO.PromptEnabled()) {
@@ -122,12 +122,12 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 				} else {
 					prompt := &survey.Select{
 						Message: "Choose an action:",
-						Options: []string{"View Logs", "Retry", "Exit"},
+						Options: []string{"View logs", "Retry", "Exit"},
 						Default: "Exit",
 					}
 					_ = survey.AskOne(prompt, &retry)
 					if retry != "" && retry != "Exit" {
-						if retry == "View Logs" {
+						if retry == "View logs" {
 							isRunning = false
 						} else {
 							_, err = api.RetryPipeline(apiClient, runningPipeline.ID, repo.FullName())
@@ -144,7 +144,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 						isRunning = false
 					}
 				}
-				if retry == "View Logs" {
+				if retry == "View logs" {
 					return ciutils.TraceJob(&ciutils.JobInputs{
 						Branch: branch,
 					}, &ciutils.JobOptions{
@@ -158,9 +158,9 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	pipelineStatusCmd.Flags().BoolP("live", "l", false, "Show status in real-time till pipeline ends")
-	pipelineStatusCmd.Flags().BoolP("compact", "c", false, "Show status in compact format")
-	pipelineStatusCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. (Default is current branch)")
+	pipelineStatusCmd.Flags().BoolP("live", "l", false, "Show status in real time until the pipeline ends.")
+	pipelineStatusCmd.Flags().BoolP("compact", "c", false, "Show status in compact format.")
+	pipelineStatusCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. Default: current branch.")
 
 	return pipelineStatusCmd
 }

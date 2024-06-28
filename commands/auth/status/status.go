@@ -34,7 +34,7 @@ func NewCmdStatus(f *cmdutils.Factory, runE func(*StatusOpts) error) *cobra.Comm
 	cmd := &cobra.Command{
 		Use:   "status",
 		Args:  cobra.ExactArgs(0),
-		Short: "View authentication status",
+		Short: "View authentication status.",
 		Long: heredoc.Doc(`Verifies and displays information about your authentication state.
 
 			This command tests the authentication states of all known GitLab instances in the config file and reports issues, if any.

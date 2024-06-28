@@ -66,7 +66,7 @@ func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
 				for _, v := range customPipelineVars {
 					key, val, err := parseVarArg(v)
 					if err != nil {
-						return fmt.Errorf("parsing pipeline variable expected format KEY:VALUE: %w", err)
+						return fmt.Errorf("parsing pipeline variable. Expected format KEY:VALUE: %w", err)
 					}
 					c.Variables[key] = val
 				}

@@ -82,7 +82,7 @@ func stackSync(f *cmdutils.Factory, opts *Options) error {
 
 	repo, err := f.BaseRepo()
 	if err != nil {
-		return fmt.Errorf("error determining base repo: %v. Are you in a git repository?", err)
+		return fmt.Errorf("error determining base repository: %v. Are you in a Git repository?", err)
 	}
 
 	client, err := authWithGitlab(f, opts)
@@ -129,7 +129,7 @@ func stackSync(f *cmdutils.Factory, opts *Options) error {
 			case strings.Contains(status, nothingToCommit):
 				// this is fine. we can just move on.
 			default:
-				return fmt.Errorf("your Git branch is ahead when it shouldn't be. You might need to squash your commits.")
+				return fmt.Errorf("your Git branch is ahead, but it shouldn't be. You might need to squash your commits.")
 			}
 
 			if ref.MR == "" {
@@ -321,7 +321,7 @@ func createMR(client *gitlab.Client, repo glrepo.Interface, stack *git.Stack, re
 
 func removeOldMrs(ref *git.StackRef, mr *gitlab.MergeRequest, stack *git.Stack) error {
 	if mr.State == mergedStatus {
-		progress := fmt.Sprintf("MR !%v has merged, removing reference...", mr.IID)
+		progress := fmt.Sprintf("Merge request !%v has merged. Removing reference...", mr.IID)
 		fmt.Println(progressString(progress))
 
 		err := stack.RemoveRef(*ref)

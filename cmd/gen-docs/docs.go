@@ -22,9 +22,9 @@ import (
 func main() {
 	var flagErr pflag.ErrorHandling
 	docsCmd := pflag.NewFlagSet("", flagErr)
-	manpage := docsCmd.BoolP("manpage", "m", false, "Generate manual pages instead of web docs")
-	path := docsCmd.StringP("path", "p", "./docs/source/", "Path where you want the generated docs saved")
-	help := docsCmd.BoolP("help", "h", false, "Help about any command")
+	manpage := docsCmd.BoolP("manpage", "m", false, "Generate manual pages instead of web docs.")
+	path := docsCmd.StringP("path", "p", "./docs/source/", "Path where you want the generated docs saved.")
+	help := docsCmd.BoolP("help", "h", false, "Help about any command.")
 
 	if err := docsCmd.Parse(os.Args); err != nil {
 		fatal(err)

@@ -43,5 +43,5 @@ glab config set <key> <value> [flags]
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for command
+      --help   Show help for this command.
 ```

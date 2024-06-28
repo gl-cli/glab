@@ -48,7 +48,7 @@ func TestCIDelete(t *testing.T) {
 	out := output.String()
 
 	assert.Equal(t, heredoc.Doc(`
-		✓ Pipeline #11111111 deleted successfully
+		✓ Pipeline #11111111 deleted successfully.
 		`), out)
 	assert.Empty(t, output.Stderr())
 }
@@ -133,8 +133,8 @@ func TestCIDeleteByStatus(t *testing.T) {
 	out := output.String()
 
 	assert.Equal(t, heredoc.Doc(`
-		✓ Pipeline #11111111 deleted successfully
-		✓ Pipeline #22222222 deleted successfully
+		✓ Pipeline #11111111 deleted successfully.
+		✓ Pipeline #22222222 deleted successfully.
 		`), out)
 	assert.Empty(t, output.Stderr())
 }
@@ -146,7 +146,7 @@ func TestCIDeleteByStatusFailsWithArgument(t *testing.T) {
 
 	args := "--status=success 11111111"
 	output, err := runCommand(fakeHTTP, args)
-	assert.EqualError(t, err, "either a status filter or a pipeline ID must be passed, but not both")
+	assert.EqualError(t, err, "either a status filter or a pipeline ID must be passed, but not both.")
 
 	assert.Empty(t, output.String())
 	assert.Empty(t, output.Stderr())
@@ -185,8 +185,8 @@ func TestCIDeleteMultiple(t *testing.T) {
 	out := output.String()
 
 	assert.Equal(t, heredoc.Doc(`
-		✓ Pipeline #11111111 deleted successfully
-		✓ Pipeline #22222222 deleted successfully
+		✓ Pipeline #11111111 deleted successfully.
+		✓ Pipeline #22222222 deleted successfully.
 		`), out)
 	assert.Empty(t, output.Stderr())
 }
@@ -204,8 +204,8 @@ func TestCIDryRunDeleteNothing(t *testing.T) {
 	out := output.String()
 
 	assert.Equal(t, heredoc.Doc(`
-		• Pipeline #11111111 will be deleted
-		• Pipeline #22222222 will be deleted
+		• Pipeline #11111111 will be deleted.
+		• Pipeline #22222222 will be deleted.
 		`), out)
 	assert.Empty(t, output.Stderr())
 }
@@ -252,8 +252,8 @@ func TestCIDeletedDryRunWithFilterDoesNotDelete(t *testing.T) {
 	out := output.String()
 
 	assert.Equal(t, heredoc.Doc(`
-		• Pipeline #11111111 will be deleted
-		• Pipeline #22222222 will be deleted
+		• Pipeline #11111111 will be deleted.
+		• Pipeline #22222222 will be deleted.
 		`), out)
 	assert.Empty(t, output.Stderr())
 }
@@ -292,7 +292,7 @@ func TestCIDeleteBySource(t *testing.T) {
 	out := output.String()
 
 	assert.Equal(t, heredoc.Doc(`
-		✓ Pipeline #22222222 deleted successfully
+		✓ Pipeline #22222222 deleted successfully.
 		`), out)
 	assert.Empty(t, output.Stderr())
 }

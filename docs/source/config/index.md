@@ -44,7 +44,7 @@ conf
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for command
+      --help   Show help for this command.
 ```
 
 ## Subcommands

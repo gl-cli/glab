@@ -66,7 +66,7 @@ func extractFileVar(s string) (*gitlab.PipelineVariableOptions, error) {
 func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 	pipelineRunCmd := &cobra.Command{
 		Use:     "run [flags]",
-		Short:   `Create or run a new CI/CD pipeline`,
+		Short:   `Create or run a new CI/CD pipeline.`,
 		Aliases: []string{"create"},
 		Example: heredoc.Doc(`
 	glab ci run
@@ -107,7 +107,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 				for _, v := range customPipelineFileVars {
 					pvar, err := extractFileVar(v)
 					if err != nil {
-						return fmt.Errorf("parsing pipeline variable expected format KEY:FILENAME: %w", err)
+						return fmt.Errorf("parsing pipeline variable. Expected format KEY:FILENAME: %w", err)
 					}
 					pipelineVars = append(pipelineVars, pvar)
 				}
@@ -145,7 +145,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 				c.Ref = gitlab.Ptr(currentBranch)
 			} else {
 				// `ci run` is running out of a git repo
-				fmt.Fprintln(f.IO.StdOut, "not in a git repository, using repository argument")
+				fmt.Fprintln(f.IO.StdOut, "not in a Git repository. Using repository argument.")
 				c.Ref = gitlab.Ptr(ciutils.GetDefaultBranch(f))
 			}
 
@@ -158,11 +158,11 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	pipelineRunCmd.Flags().StringP("branch", "b", "", "Create pipeline on branch/ref <string>")
-	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables", "", []string{}, "Pass variables to pipeline in format <key>:<value>")
-	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables-env", "", []string{}, "Pass variables to pipeline in format <key>:<value>")
-	pipelineRunCmd.Flags().StringSliceP("variables-file", "", []string{}, "Pass file contents as a file variable to pipeline in format <key>:<filename>")
-	pipelineRunCmd.Flags().StringP("variables-from", "f", "", "JSON file containing variables for pipeline execution")
+	pipelineRunCmd.Flags().StringP("branch", "b", "", "Create pipeline on branch/ref <string>.")
+	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables", "", []string{}, "Pass variables to pipeline in format <key>:<value>.")
+	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables-env", "", []string{}, "Pass variables to pipeline in format <key>:<value>.")
+	pipelineRunCmd.Flags().StringSliceP("variables-file", "", []string{}, "Pass file contents as a file variable to pipeline in format <key>:<filename>.")
+	pipelineRunCmd.Flags().StringP("variables-from", "f", "", "JSON file containing variables for pipeline execution.")
 
 	return pipelineRunCmd
 }

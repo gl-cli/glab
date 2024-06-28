@@ -25,14 +25,14 @@ var patScopes = []string{"k8s_proxy"}
 
 func NewCmdAgentGetToken(f *cmdutils.Factory) *cobra.Command {
 	factory = f
-	desc := "Create and return a k8s_proxy-scoped Personal Access Token to authenticate with a GitLab Agents for Kubernetes"
+	desc := "Create and return a k8s_proxy-scoped Personal Access Token to authenticate with a GitLab Agents for Kubernetes."
 	agentGetTokenCmd := &cobra.Command{
 		Use:   "get-token [flags]",
 		Short: desc,
 		Long: fmt.Sprintf(`%s
 
-This command will always create a Personal Access Token that is valid until the end of the current day.
-You may receive an email from your GitLab instance that a new Personal Access Token has been created.
+This command creates a Personal Access Token that is valid until the end of the current day.
+You might receive an email from your GitLab instance that a new Personal Access Token has been created.
 `, desc),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			factory = f
@@ -44,7 +44,7 @@ You may receive an email from your GitLab instance that a new Personal Access To
 			return runGetToken(agentID)
 		},
 	}
-	agentGetTokenCmd.Flags().IntP("agent", "a", 0, "The numerical Agent ID to connect to")
+	agentGetTokenCmd.Flags().IntP("agent", "a", 0, "The numerical Agent ID to connect to.")
 	cobra.CheckErr(agentGetTokenCmd.MarkFlagRequired("agent"))
 
 	return agentGetTokenCmd

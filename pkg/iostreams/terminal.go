@@ -40,7 +40,7 @@ var TerminalSize = func(w interface{}) (int, int, error) {
 		return term.GetSize(int(f.Fd()))
 	}
 
-	return 0, 0, fmt.Errorf("%v is not a file", w)
+	return 0, 0, fmt.Errorf("%v is not a file.", w)
 }
 
 func isCygwinTerminal(w io.Writer) bool {

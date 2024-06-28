@@ -34,7 +34,7 @@ func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
 			glab stack save -m "added a function"`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("message") && cmd.Flags().Changed("description") {
-				return &cmdutils.FlagError{Err: errors.New("specify either of --message or --description")}
+				return &cmdutils.FlagError{Err: errors.New("specify either of --message or --description.")}
 			}
 
 			// check if there are even any changes before we start
@@ -146,8 +146,8 @@ func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	stackSaveCmd.Flags().StringVarP(&description, "description", "d", "", "a description of the change")
-	stackSaveCmd.Flags().StringVarP(&description, "message", "m", "", "alias for the description flag")
+	stackSaveCmd.Flags().StringVarP(&description, "description", "d", "", "Description of the change.")
+	stackSaveCmd.Flags().StringVarP(&description, "message", "m", "", "Alias for the description flag.")
 
 	return stackSaveCmd
 }
@@ -160,7 +160,7 @@ func checkForChanges() error {
 	}
 
 	if string(output) == "" {
-		return fmt.Errorf("no changes to save")
+		return fmt.Errorf("no changes to save.")
 	}
 
 	return nil
