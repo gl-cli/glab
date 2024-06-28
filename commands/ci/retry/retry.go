@@ -14,11 +14,11 @@ import (
 func NewCmdRetry(f *cmdutils.Factory) *cobra.Command {
 	pipelineRetryCmd := &cobra.Command{
 		Use:     "retry <job-id>",
-		Short:   `Retry a CI/CD job`,
+		Short:   `Retry a CI/CD job.`,
 		Aliases: []string{},
 		Example: heredoc.Doc(`
 		$ glab ci retry
-		# Interactively select a job to retry
+		# Interactively select a job to retry.
 
 		$ glab ci retry 224356863
 		# Retry job with ID 224356863
@@ -75,7 +75,7 @@ func NewCmdRetry(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	pipelineRetryCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. (Default: current branch)")
+	pipelineRetryCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. Default: current branch.")
 	pipelineRetryCmd.Flags().IntP("pipeline-id", "p", 0, "The pipeline ID to search for the job.")
 	return pipelineRetryCmd
 }

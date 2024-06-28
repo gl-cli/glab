@@ -18,5 +18,5 @@ func TestIssueCmd(t *testing.T) {
 
 	out := test.ReturnBuffer(old, r, w)
 
-	assert.Contains(t, out, "Manage glab's authentication state\n")
+	assert.Contains(t, out, "Manage glab's authentication state.\n")
 }

@@ -17,7 +17,7 @@ import (
 func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	pipelineListCmd := &cobra.Command{
 		Use:   "list [flags]",
-		Short: `Get the list of CI/CD pipelines`,
+		Short: `Get the list of CI/CD pipelines.`,
 		Example: heredoc.Doc(`
 	glab ci list
 	glab ci list --status=failed
@@ -82,12 +82,12 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	pipelineListCmd.Flags().StringP("status", "s", "", "Get pipeline with status: {running|pending|success|failed|canceled|skipped|created|manual|waiting_for_resource|preparing|scheduled}")
-	pipelineListCmd.Flags().StringP("orderBy", "o", "id", "Order pipeline by {id|status|ref|updated_at|user_id}")
-	pipelineListCmd.Flags().StringP("sort", "", "desc", "Sort pipeline by {asc|desc}")
-	pipelineListCmd.Flags().IntP("page", "p", 1, "Page number")
-	pipelineListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page")
-	pipelineListCmd.Flags().StringP("output", "F", "text", "Format output as: text, json")
+	pipelineListCmd.Flags().StringP("status", "s", "", "Get pipeline with this status. Options: running, pending, success, failed, canceled, skipped, created, manual, waiting_for_resource, preparing, scheduled}")
+	pipelineListCmd.Flags().StringP("orderBy", "o", "id", "Order pipelines by this field. Options: id, status, ref, updated_at, user_id.")
+	pipelineListCmd.Flags().StringP("sort", "", "desc", "Sort pipelines. Options: asc, desc.")
+	pipelineListCmd.Flags().IntP("page", "p", 1, "Page number.")
+	pipelineListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page.")
+	pipelineListCmd.Flags().StringP("output", "F", "text", "Format output. Options: text, json.")
 
 	return pipelineListCmd
 }

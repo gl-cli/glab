@@ -58,7 +58,7 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 	if err := utils.OpenInBrowser(completeAuthURL, browser); err != nil {
 		fmt.Fprintf(io.StdErr, "Failed opening a browser at %s\n", completeAuthURL)
 		fmt.Fprintf(io.StdErr, "Encountered error: %s\n", err)
-		fmt.Fprint(io.StdErr, "Please try entering the URL in your browser manually\n")
+		fmt.Fprint(io.StdErr, "Try entering the URL in your browser manually.\n")
 	}
 	token := <-tokenCh
 
@@ -79,7 +79,7 @@ func handleAuthRedirect(io *iostreams.IOStreams, codeVerifier, hostname, protoco
 		code := r.URL.Query().Get("code")
 		token, err := requestToken(hostname, protocol, clientID, code, codeVerifier)
 		if err != nil {
-			fmt.Fprintf(io.StdErr, "Error occured requesting access token %s", err)
+			fmt.Fprintf(io.StdErr, "Error occured requesting access token %s.", err)
 			tokenCh <- nil
 			return
 		}
@@ -92,7 +92,7 @@ func handleAuthRedirect(io *iostreams.IOStreams, codeVerifier, hostname, protoco
 	go func() {
 		err := http.ListenAndServe(":7171", nil)
 		if err != nil {
-			fmt.Fprintf(io.StdErr, "Error occured while setting up server %s", err)
+			fmt.Fprintf(io.StdErr, "Error occured while setting up server %s.", err)
 			tokenCh <- nil
 		}
 	}()

@@ -55,7 +55,7 @@ glab mr list -M --per-page 10
   -F, --output string          Format output as: text, json (default "text")
   -p, --page int               Page number (default 1)
   -P, --per-page int           Number of items to list per page (default 30)
-  -R, --repo OWNER/REPO        Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
+  -R, --repo OWNER/REPO        Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
   -r, --reviewer strings       Get only merge requests with users as reviewer
       --search string          Filter by <string> in title and description
   -s, --source-branch string   Filter by source branch <name>
@@ -65,5 +65,5 @@ glab mr list -M --per-page 10
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for command
+      --help   Show help for this command.
 ```

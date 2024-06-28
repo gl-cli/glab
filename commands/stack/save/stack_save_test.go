@@ -69,7 +69,7 @@ func TestSaveNewStack(t *testing.T) {
 			desc:     "with no changed files",
 			args:     []string{"."},
 			files:    []string{},
-			expected: "could not save: \"no changes to save\"",
+			expected: "could not save: \"no changes to save.\"",
 			wantErr:  true,
 		},
 	}

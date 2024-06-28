@@ -39,5 +39,5 @@ $ glab repo delete myorg/mynamespace/dotfiles
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for command
+      --help   Show help for this command.
 ```

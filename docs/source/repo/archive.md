@@ -45,5 +45,5 @@ glab repo archive profclems/glab --format=zip   # Finds repo for current user an
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for command
+      --help   Show help for this command.
 ```

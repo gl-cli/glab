@@ -9,7 +9,7 @@ import (
 func NewCmdCluster(f *cmdutils.Factory) *cobra.Command {
 	clusterCmd := &cobra.Command{
 		Use:   "cluster <command> [flags]",
-		Short: `Manage GitLab Agents for Kubernetes and their clusters`,
+		Short: `Manage GitLab Agents for Kubernetes and their clusters.`,
 		Long:  ``,
 	}
 

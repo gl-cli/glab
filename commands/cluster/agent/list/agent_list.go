@@ -18,7 +18,7 @@ func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
 	factory = f
 	agentListCmd := &cobra.Command{
 		Use:     "list [flags]",
-		Short:   `List GitLab Agents for Kubernetes in a project`,
+		Short:   `List GitLab Agents for Kubernetes in a project.`,
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Args:    cobra.MaximumNArgs(3),

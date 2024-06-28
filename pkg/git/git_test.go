@@ -93,7 +93,7 @@ func Test_CurrentBranch(t *testing.T) {
 		t.Errorf("got unexpected error: %v", err)
 	}
 	if len(cs.Calls) != 1 {
-		t.Errorf("expected 1 git call, saw %d", len(cs.Calls))
+		t.Errorf("expected 1 Git call, saw %d", len(cs.Calls))
 	}
 	if result != expected {
 		t.Errorf("unexpected branch name: %s instead of %s", result, expected)
@@ -111,10 +111,10 @@ func Test_CurrentBranch_detached_head(t *testing.T) {
 		t.Errorf("expected an error")
 	}
 	if err != ErrNotOnAnyBranch {
-		t.Errorf("got unexpected error: %s instead of %s", err, ErrNotOnAnyBranch)
+		t.Errorf("got unexpected error: %s instead of %s.", err, ErrNotOnAnyBranch)
 	}
 	if len(cs.Calls) != 1 {
-		t.Errorf("expected 1 git call, saw %d", len(cs.Calls))
+		t.Errorf("expected 1 Git call, saw %d.", len(cs.Calls))
 	}
 }
 
@@ -131,10 +131,10 @@ func Test_CurrentBranch_unexpected_error(t *testing.T) {
 		t.Errorf("expected an error")
 	}
 	if err.Error() != expectedError {
-		t.Errorf("got unexpected error: %s instead of %s", err.Error(), expectedError)
+		t.Errorf("got unexpected error: %s instead of %s.", err.Error(), expectedError)
 	}
 	if len(cs.Calls) != 1 {
-		t.Errorf("expected 1 git call, saw %d", len(cs.Calls))
+		t.Errorf("expected 1 Git call, saw %d.", len(cs.Calls))
 	}
 }
 
@@ -368,7 +368,7 @@ func Test_assertValidConfig(t *testing.T) {
 	t.Run("panic modes", func(t *testing.T) {
 		err := assertValidConfigKey("this")
 		require.Error(t, err)
-		require.Errorf(t, err, "incorrect git config key")
+		require.Errorf(t, err, "incorrect Git configuration key.")
 	})
 }
 

@@ -101,7 +101,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	opts := ViewOpts{}
 	pipelineCIView := &cobra.Command{
 		Use:   "view [branch/tag]",
-		Short: "View, run, trace, log, and cancel CI/CD job's current pipeline",
+		Short: "View, run, trace, log, and cancel CI/CD job's current pipeline.",
 		Long: heredoc.Doc(`Supports viewing, running, tracing, and canceling jobs.
 
 		Use arrow keys to navigate jobs and logs.

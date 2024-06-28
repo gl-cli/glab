@@ -186,11 +186,11 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	}
 
 	viewCmd.Flags().
-		StringVarP(&opts.assignee, "assignee", "a", "", "Filter board issues by assignee username")
+		StringVarP(&opts.assignee, "assignee", "a", "", "Filter board issues by assignee username.")
 	viewCmd.Flags().
-		StringSliceVarP(&opts.labels, "labels", "l", []string{}, "Filter board issues by labels (comma separated)")
+		StringSliceVarP(&opts.labels, "labels", "l", []string{}, "Filter board issues by labels, comma separated.")
 	viewCmd.Flags().
-		StringVarP(&opts.milestone, "milestone", "m", "", "Filter board issues by milestone")
+		StringVarP(&opts.milestone, "milestone", "m", "", "Filter board issues by milestone.")
 	return viewCmd
 }
 

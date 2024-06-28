@@ -20,7 +20,7 @@ var tests = []struct {
 		name:        "when no args should display the help message",
 		args:        "",
 		expectedOut: "Use \"ci [command] --help\" for more information about a command.\n",
-		expectedErr: "Aliases 'pipe' and 'pipeline' are deprecated. Please use 'ci' instead.",
+		expectedErr: "Aliases 'pipe' and 'pipeline' are deprecated. Use 'ci' instead.",
 	},
 }
 

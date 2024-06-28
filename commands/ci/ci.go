@@ -26,11 +26,11 @@ import (
 func NewCmdCI(f *cmdutils.Factory) *cobra.Command {
 	ciCmd := &cobra.Command{
 		Use:     "ci <command> [flags]",
-		Short:   `Work with GitLab CI/CD pipelines and jobs`,
+		Short:   `Work with GitLab CI/CD pipelines and jobs.`,
 		Long:    ``,
 		Aliases: []string{"pipe", "pipeline"},
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintf(os.Stderr, "Aliases 'pipe' and 'pipeline' are deprecated. Please use 'ci' instead.\n\n")
+			fmt.Fprintf(os.Stderr, "Aliases 'pipe' and 'pipeline' are deprecated. Use 'ci' instead.\n\n")
 			_ = cmd.Help()
 		},
 	}

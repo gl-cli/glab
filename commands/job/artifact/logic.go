@@ -79,7 +79,7 @@ func DownloadArtifacts(apiClient *gitlab.Client, repo glrepo.Interface, path str
 			symlinkCheck, _ := os.Lstat(destPath)
 
 			if symlinkCheck != nil && symlinkCheck.Mode()&os.ModeSymlink != 0 {
-				return fmt.Errorf("file in artifact would overwrite a symbolic link- cannot extract")
+				return fmt.Errorf("can't extract. A file in the artifact would overwrite a symbolic link.")
 			}
 
 			dstFile, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, v.Mode())

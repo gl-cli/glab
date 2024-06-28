@@ -77,7 +77,7 @@ func httpRequest(client *api.Client, config config.Config, hostname string, meth
 	case nil:
 		body = nil
 	default:
-		return nil, fmt.Errorf("unrecognized parameters type: %v", params)
+		return nil, fmt.Errorf("unrecognized parameter type: %v", params)
 	}
 
 	baseURL, _ = url.Parse(baseURLStr)

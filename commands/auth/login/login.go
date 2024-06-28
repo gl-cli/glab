@@ -49,7 +49,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
 		Args:  cobra.ExactArgs(0),
-		Short: "Authenticate with a GitLab instance",
+		Short: "Authenticate with a GitLab instance.",
 		Long: heredoc.Docf(`
 			Authenticate with a GitLab instance.
 			You can pass in a token on standard input by using %[1]s--stdin%[1]s.

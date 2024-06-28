@@ -65,7 +65,7 @@ func amendFunc(f *cmdutils.Factory, args []string, description string) (string, 
 	}
 
 	if stack.Branch == "" {
-		return "", fmt.Errorf("not currently in a stack - change to the branch you want to amend")
+		return "", fmt.Errorf("not currently in a stack. Change to the branch you want to amend.")
 	}
 
 	// a description is required, so ask if one is not provided

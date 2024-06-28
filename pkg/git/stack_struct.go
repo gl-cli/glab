@@ -204,7 +204,7 @@ func validateStackRefs(s Stack) error {
 		}
 
 		if endRefs > 1 || startRefs > 1 {
-			return errors.New("More than one end or start ref detected. Data might be corrupted")
+			return errors.New("More than one end or start ref detected. Data might be corrupted.")
 		}
 	}
 	return nil
