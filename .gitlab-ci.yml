@@ -25,7 +25,7 @@ include:
   - template: Jobs/SAST.latest.gitlab-ci.yml
   - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
-  - component: ${CI_SERVER_FQDN}/gitlab-org/components/danger-review/danger-review@1.4.0
+  - component: ${CI_SERVER_FQDN}/gitlab-org/components/danger-review/danger-review@1.4.1
 
 
 # From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
