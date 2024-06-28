@@ -82,7 +82,7 @@ func stackSync(f *cmdutils.Factory, opts *Options) error {
 
 	repo, err := f.BaseRepo()
 	if err != nil {
-		return fmt.Errorf("error determining base repo: %v. are you in a git repository?", err)
+		return fmt.Errorf("error determining base repo: %v. Are you in a git repository?", err)
 	}
 
 	client, err := authWithGitlab(f, opts)
@@ -129,7 +129,7 @@ func stackSync(f *cmdutils.Factory, opts *Options) error {
 			case strings.Contains(status, nothingToCommit):
 				// this is fine. we can just move on.
 			default:
-				return fmt.Errorf("your Git branch is ahead when it shouldn't be. You might need to squash your commits")
+				return fmt.Errorf("your Git branch is ahead when it shouldn't be. You might need to squash your commits.")
 			}
 
 			if ref.MR == "" {
@@ -343,12 +343,12 @@ func authWithGitlab(f *cmdutils.Factory, opts *Options) (*gitlab.Client, error) 
 
 	instances, err := glConfig.Hosts()
 	if len(instances) == 0 || err != nil {
-		return nil, fmt.Errorf("no GitLab instances have been authenticated with glab. run `%s` to authenticate", f.IO.Color().Bold("glab auth login"))
+		return nil, fmt.Errorf("no GitLab instances have been authenticated with glab. Run `%s` to authenticate.", f.IO.Color().Bold("glab auth login"))
 	}
 
 	opts.LabClient, err = f.HttpClient()
 	if err != nil {
-		return nil, fmt.Errorf("error utilizing API client: %v", err)
+		return nil, fmt.Errorf("error using API client: %v", err)
 	}
 
 	return opts.LabClient, nil
@@ -403,11 +403,11 @@ func branchDiverged(ref *git.StackRef, stack *git.Stack, gr git.StandardGitComma
 func branchBehind(ref *git.StackRef, gr git.StandardGitCommand) error {
 	// possibly someone applied suggestions or someone else added a
 	// different commit
-	fmt.Println(progressString(ref.Branch + " is behind- pulling."))
+	fmt.Println(progressString(ref.Branch + " is behind - pulling updates."))
 
 	_, err := gitPull(ref, gr)
 	if err != nil {
-		return fmt.Errorf("error checking for running Git pull: %v", err)
+		return fmt.Errorf("error checking for a running Git pull: %v", err)
 	}
 
 	return nil

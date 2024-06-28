@@ -64,7 +64,7 @@ func compileRun(f *cmdutils.Factory, path string) error {
 
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("reading ci config at %s: %w", path, err)
+		return fmt.Errorf("reading CI/CD configuration at %s: %w", path, err)
 	}
 
 	compiledResult, err := api.ProjectNamespaceLint(apiClient, project.ID, string(content), "", false, false)

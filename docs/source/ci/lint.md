@@ -34,7 +34,7 @@ $ glab ci lint path/to/.gitlab-ci.yml
 ```plaintext
       --dry-run        Run pipeline creation simulation.
       --include-jobs   The response should include the list of jobs that would exist in a static check or pipeline simulation.
-      --ref string     When dry-run is true, sets the branch or tag context for validating the CI/CD YAML configuration.
+      --ref dry-run    When dry-run is true, sets the branch or tag context for validating the CI/CD YAML configuration.
 ```
 
 ## Options inherited from parent commands

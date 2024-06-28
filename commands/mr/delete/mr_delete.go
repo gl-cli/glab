@@ -37,7 +37,7 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			for _, mr := range mrs {
-				fmt.Fprintf(f.IO.StdOut, "- Deleting Merge Request !%d\n", mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "- Deleting merge request !%d\n", mr.IID)
 				if err = api.DeleteMR(apiClient, repo.FullName(), mr.IID); err != nil {
 					return err
 				}

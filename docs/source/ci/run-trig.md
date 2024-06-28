@@ -37,9 +37,9 @@ glab ci run-trig -t xxxx -b main --variables key1:val1 --variables key2:val2
 ## Options
 
 ```plaintext
-  -b, --branch string       Create pipeline on branch/ref <string>
-  -t, --token string        Pipeline trigger token (can be omitted only if CI_JOB_TOKEN environment variable is set)
-      --variables strings   Pass variables to pipeline in format <key>:<value>
+  -b, --branch string        Create pipeline on branch or reference <string>.
+  -t, --token CI_JOB_TOKEN   Pipeline trigger token. Can be omitted only if the CI_JOB_TOKEN environment variable is set.
+      --variables strings    Pass variables to pipeline in the format <key>:<value>.
 ```
 
 ## Options inherited from parent commands

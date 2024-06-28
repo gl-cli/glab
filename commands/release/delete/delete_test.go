@@ -54,7 +54,7 @@ func TestReleaseDelete(t *testing.T) {
 							  "description": null,
 							  "created_at": "2020-01-23T07:13:17.721Z",
 							  "released_at": "2020-01-23T07:13:17.721Z",
-							  "upcoming_release": false 
+							  "upcoming_release": false
 							}`,
 				},
 				{
@@ -67,14 +67,14 @@ func TestReleaseDelete(t *testing.T) {
 							  "description": null,
 							  "created_at": "2020-01-23T07:13:17.721Z",
 							  "released_at": "2020-01-23T07:13:17.721Z",
-							  "upcoming_release": false 
+							  "upcoming_release": false
 							}`,
 				},
 			},
 
 			expectedOut: heredoc.Doc(`• Validating tag repo=OWNER/REPO tag=0.0.1
 												• Deleting release repo=OWNER/REPO tag=0.0.1
-												✓ Release "test_release" deleted
+												✓ Release "test_release" deleted.
 											`),
 		},
 		{
@@ -91,7 +91,7 @@ func TestReleaseDelete(t *testing.T) {
 							  "description": null,
 							  "created_at": "2020-01-23T07:13:17.721Z",
 							  "released_at": "2020-01-23T07:13:17.721Z",
-							  "upcoming_release": false 
+							  "upcoming_release": false
 							}`,
 				},
 				{
@@ -104,7 +104,7 @@ func TestReleaseDelete(t *testing.T) {
 							  "description": null,
 							  "created_at": "2020-01-23T07:13:17.721Z",
 							  "released_at": "2020-01-23T07:13:17.721Z",
-							  "upcoming_release": false 
+							  "upcoming_release": false
 							}`,
 				},
 				{
@@ -117,16 +117,16 @@ func TestReleaseDelete(t *testing.T) {
 							  "description": null,
 							  "created_at": "2020-01-23T07:13:17.721Z",
 							  "released_at": "2020-01-23T07:13:17.721Z",
-							  "upcoming_release": false 
+							  "upcoming_release": false
 							}`,
 				},
 			},
 
 			expectedOut: heredoc.Doc(`• Validating tag repo=OWNER/REPO tag=0.0.1
 												• Deleting release repo=OWNER/REPO tag=0.0.1
-												✓ Release "test_release" deleted
-												• Deleting associated tag "0.0.1"
-												✓ Tag "test_release" deleted
+												✓ Release "test_release" deleted.
+												• Deleting associated tag "0.0.1".
+												✓ Tag "test_release" deleted.
 											`),
 		},
 	}

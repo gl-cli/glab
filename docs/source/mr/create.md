@@ -37,31 +37,31 @@ glab mr create --fill --fill-commit-body --yes
 ## Options
 
 ```plaintext
-      --allow-collaboration    Allow commits from other members
-  -a, --assignee usernames     Assign merge request to people by their usernames
-      --copy-issue-labels      Copy labels from issue to the merge request. Used with --related-issue
-      --create-source-branch   Create source branch if it does not exist
-  -d, --description string     Supply a description for merge request
-      --draft                  Mark merge request as a draft
-  -f, --fill push              Do not prompt for title/description and just use commit info. Sets push to `true`, and pushes the branch.
-      --fill-commit-body       Fill description with each commit body when multiple commits. Can only be used with --fill
-  -H, --head OWNER/REPO        Select another head repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or the project ID or full URL
-  -l, --label strings          Add label by name. Multiple labels should be comma separated
-  -m, --milestone string       The global ID or title of a milestone to assign
-      --no-editor              Don't open editor to enter description. If set to true, uses prompt. (default false)
-      --push                   Push committed changes after creating merge request. Make sure you have committed changes
-      --recover                Save the options to a file if the merge request fails to be created. If the file exists, the options will be loaded from the recovery file (EXPERIMENTAL)
-  -i, --related-issue string   Create merge request for an issue. The merge request title will be created from the issue if --title is not provided.
-      --remove-source-branch   Remove Source Branch on merge
-      --reviewer usernames     Request review from users by their usernames
+      --allow-collaboration    Allow commits from other members.
+  -a, --assignee usernames     Assign merge request to people by their usernames.
+      --copy-issue-labels      Copy labels from issue to the merge request. Used with --related-issue.
+      --create-source-branch   Create a source branch if it does not exist.
+  -d, --description string     Supply a description for the merge request.
+      --draft                  Mark merge request as a draft.
+  -f, --fill push              Do not prompt for title or description, and just use commit info. Sets push to `true`, and pushes the branch.
+      --fill-commit-body       Fill description with each commit body when multiple commits. Can only be used with --fill.
+  -H, --head OWNER/REPO        Select another head repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format, the project ID, or the full URL.
+  -l, --label strings          Add label by name. Multiple labels should be comma-separated.
+  -m, --milestone string       The global ID or title of a milestone to assign.
+      --no-editor              Don't open editor to enter a description. If true, uses prompt. Defaults to false.
+      --push                   Push committed changes after creating merge request. Make sure you have committed changes.
+      --recover                Save the options to a file if the merge request creation fails. If the file exists, the options are loaded from the recovery file. (EXPERIMENTAL)
+  -i, --related-issue string   Create a merge request for an issue. If --title is not provided, uses the issue title.
+      --remove-source-branch   Remove source branch on merge.
+      --reviewer usernames     Request review from users by their usernames.
       --signoff                Append a DCO signoff to the merge request description.
-  -s, --source-branch string   The Branch you are creating the merge request. Default is the current branch.
-      --squash-before-merge    Squash commits into a single commit when merging
-  -b, --target-branch string   The target or base branch into which you want your code merged
-  -t, --title string           Supply a title for merge request
-  -w, --web                    continue merge request creation on web browser
-      --wip                    Mark merge request as a work in progress. Alternative to --draft
-  -y, --yes                    Skip submission confirmation prompt, with --fill it skips all optional prompts
+  -s, --source-branch string   Create a merge request from this branch. Default is the current branch.
+      --squash-before-merge    Squash commits into a single commit when merging.
+  -b, --target-branch string   The target or base branch into which you want your code merged into.
+  -t, --title string           Supply a title for the merge request.
+  -w, --web                    Continue merge request creation in a browser.
+      --wip                    Mark merge request as a draft. Alternative to --draft.
+  -y, --yes                    Skip submission confirmation prompt. Use --fill to skip all optional prompts.
 ```
 
 ## Options inherited from parent commands

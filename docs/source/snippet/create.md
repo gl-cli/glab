@@ -26,7 +26,7 @@ new
 ## Examples
 
 ```plaintext
-glab snippet create script.py --title "Title of the snippet" 
+glab snippet create script.py --title "Title of the snippet"
 echo "package main" | glab snippet new --title "Title of the snippet" --filename "main.go"
 glab snippet create main.go -t Title -f "different.go" -d Description
 
@@ -35,10 +35,10 @@ glab snippet create main.go -t Title -f "different.go" -d Description
 ## Options
 
 ```plaintext
-  -d, --description string   Description of the snippet
-  -f, --filename string      Filename of the snippet in GitLab
-  -t, --title string         Title of the snippet
-  -v, --visibility string    Limit by visibility {public, internal, or private} (default "private")
+  -d, --description string   Description of the snippet.
+  -f, --filename string      Filename of the snippet in GitLab.
+  -t, --title string         Title of the snippet.
+  -v, --visibility string    Limit by visibility: 'public', 'internal', or 'private' (default "private")
 ```
 
 ## Options inherited from parent commands

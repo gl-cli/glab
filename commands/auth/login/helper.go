@@ -58,7 +58,7 @@ func helperRun(opts *CredentialOptions) error {
 	}
 
 	if opts.Operation != "get" {
-		return fmt.Errorf("glab auth git-credential: %q is an invalid operation", opts.Operation)
+		return fmt.Errorf("glab auth git-credential: %q is an invalid operation.", opts.Operation)
 	}
 
 	expectedParams := map[string]string{}
