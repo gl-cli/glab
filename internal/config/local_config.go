@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
-	"path"
+	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
@@ -22,7 +22,7 @@ var LocalConfigDir = func() []string {
 // LocalConfigFile returns the config file name with full path
 var LocalConfigFile = func() string {
 	configFile := append(LocalConfigDir(), "config.yml")
-	return path.Join(configFile...)
+	return filepath.Join(configFile...)
 }
 
 func (a *LocalConfig) Get(key string) (string, bool) {
