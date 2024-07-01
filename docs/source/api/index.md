@@ -56,7 +56,7 @@ on the format of the value:
 For GraphQL requests, all fields other than "query" and "operationName" are
 interpreted as GraphQL variables.
 
-Raw request body may be passed from the outside via a file specified by '--input'.
+Raw request body can be passed from the outside via a file specified by '--input'.
 Pass "-" to read from standard input. In this mode, parameters specified with
 '--field' flags are serialized into URL query parameters.
 

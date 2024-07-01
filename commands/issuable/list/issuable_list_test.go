@@ -100,7 +100,7 @@ func TestIssueList_tty(t *testing.T) {
 	out = timeRE.ReplaceAllString(out, "X years")
 
 	assert.Equal(t, heredoc.Doc(`
-		Showing 3 open issues in OWNER/REPO that match your search (Page 1)
+		Showing 3 open issues in OWNER/REPO that match your search. (Page 1)
 
 		#6	OWNER/REPO/issues/6	Issue one	(foo, bar) 	about X years ago
 		#7	OWNER/REPO/issues/7	Issue two	(fooz, baz)	about X years ago
@@ -164,7 +164,7 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 		}
 
 		cmdtest.Eq(t, output.Stderr(), "")
-		cmdtest.Eq(t, output.String(), `No open issues match your search in OWNER/REPO
+		cmdtest.Eq(t, output.String(), `No open issues match your search in OWNER/REPO.
 
 
 `)
@@ -182,7 +182,7 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 		}
 
 		cmdtest.Eq(t, output.Stderr(), "")
-		cmdtest.Eq(t, output.String(), `No open issues match your search in GROUP
+		cmdtest.Eq(t, output.String(), `No open issues match your search in GROUP.
 
 
 `)
@@ -206,7 +206,7 @@ func TestIssueList_tty_withIssueType(t *testing.T) {
 	out = timeRE.ReplaceAllString(out, "X years")
 
 	assert.Equal(t, heredoc.Doc(`
-		Showing 1 open incident in OWNER/REPO that match your search (Page 1)
+		Showing 1 open incident in OWNER/REPO that match your search. (Page 1)
 
 		#8	OWNER/REPO/issues/8	Incident	(foo, baz)	about X years ago
 
@@ -246,7 +246,7 @@ func TestIssueList_tty_mine(t *testing.T) {
 		}
 
 		cmdtest.Eq(t, output.Stderr(), "")
-		cmdtest.Eq(t, output.String(), `No issues match your search in OWNER/REPO
+		cmdtest.Eq(t, output.String(), `No issues match your search in OWNER/REPO.
 
 
 `)

@@ -13,8 +13,8 @@ import (
 )
 
 var subscribingMessage = map[issuable.IssueType]string{
-	issuable.TypeIssue:    "Subscribing to Issue",
-	issuable.TypeIncident: "Subscribing to Incident",
+	issuable.TypeIssue:    "Subscribing to issue",
+	issuable.TypeIncident: "Subscribing to incident",
 }
 
 func NewCmdSubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
@@ -26,7 +26,7 @@ func NewCmdSubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.C
 
 	issueSubscribeCmd := &cobra.Command{
 		Use:     "subscribe <id>",
-		Short:   fmt.Sprintf(`Subscribe to an %s`, issueType),
+		Short:   fmt.Sprintf(`Subscribe to an %s.`, issueType),
 		Long:    ``,
 		Aliases: []string{"sub"},
 		Example: heredoc.Doc(fmt.Sprintf(`
@@ -69,7 +69,7 @@ func NewCmdSubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.C
 					if errors.Is(err, api.ErrIssuableUserAlreadySubscribed) {
 						fmt.Fprintf(
 							f.IO.StdOut,
-							"%s You are already subscribed to this %s\n\n",
+							"%s You are already subscribed to this %s.\n\n",
 							c.FailedIcon(),
 							issueType,
 						)

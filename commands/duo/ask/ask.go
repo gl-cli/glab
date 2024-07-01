@@ -67,7 +67,7 @@ func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
 
 	duoAskCmd := &cobra.Command{
 		Use:   "ask <prompt>",
-		Short: "Generate Git commands from natural language (Experimental).",
+		Short: "Generate Git commands from natural language. (Experimental.)",
 		Long: heredoc.Doc(`
 			Generate Git commands from natural language.
 
@@ -118,13 +118,13 @@ func (opts *opts) Result() (*result, error) {
 
 	client, err := opts.HttpClient()
 	if err != nil {
-		return nil, cmdutils.WrapError(err, "failed to get http client")
+		return nil, cmdutils.WrapError(err, "failed to get HTTP client.")
 	}
 
 	body := request{Prompt: opts.Prompt, Model: vertexAI}
 	request, err := client.NewRequest(http.MethodPost, gitCmdAPIPath, body, nil)
 	if err != nil {
-		return nil, cmdutils.WrapError(err, "failed to create a request")
+		return nil, cmdutils.WrapError(err, "failed to create a request.")
 	}
 
 	var r response

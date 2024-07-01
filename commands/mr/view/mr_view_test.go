@@ -318,7 +318,7 @@ func Test_rawMRPreview(t *testing.T) {
 				"--",
 				"MR description",
 				"\n--\ncomments/notes:\n",
-				"There are no comments on this merge request",
+				"There are no comments on this merge request.",
 			},
 		},
 		{

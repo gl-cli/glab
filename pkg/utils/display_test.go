@@ -162,7 +162,7 @@ func Test_Describe(t *testing.T) {
 		opts.EmptyMessage = ""
 
 		got := opts.Describe()
-		assert.Equal(t, "No tests available on glab", got)
+		assert.Equal(t, "No tests available on glab.", got)
 	})
 
 	t.Run("currentPageTotal/single-total", func(t *testing.T) {
@@ -173,7 +173,7 @@ func Test_Describe(t *testing.T) {
 		opts.Page = 1
 
 		got := opts.Describe()
-		assert.Equal(t, "Showing 1 test on glab (Page 1)\n", got)
+		assert.Equal(t, "Showing 1 test on glab. (Page 1)\n", got)
 	})
 
 	t.Run("currentPageTotal/single-page", func(t *testing.T) {
@@ -184,7 +184,7 @@ func Test_Describe(t *testing.T) {
 		opts.Page = 1
 
 		got := opts.Describe()
-		assert.Equal(t, "Showing 1 of 200 tests on glab (Page 1)\n", got)
+		assert.Equal(t, "Showing 1 of 200 tests on glab. (Page 1)\n", got)
 	})
 	t.Run("currentPageTotal/multi-page", func(t *testing.T) {
 		opts := *opts
@@ -194,7 +194,7 @@ func Test_Describe(t *testing.T) {
 		opts.Page = 5
 
 		got := opts.Describe()
-		assert.Equal(t, "Showing 1 of 200 tests on glab (Page 5)\n", got)
+		assert.Equal(t, "Showing 1 of 200 tests on glab. (Page 5)\n", got)
 	})
 
 	t.Run("search/match", func(t *testing.T) {
@@ -205,7 +205,7 @@ func Test_Describe(t *testing.T) {
 		opts.Page = 1
 
 		got := opts.Describe()
-		assert.Equal(t, "Showing 3 tests in glab that match your search (Page 1)\n", got)
+		assert.Equal(t, "Showing 3 tests in glab that match your search. (Page 1)\n", got)
 	})
 	t.Run("search/no-match", func(t *testing.T) {
 		opts := *opts
@@ -214,6 +214,6 @@ func Test_Describe(t *testing.T) {
 		opts.CurrentPageTotal = 0
 
 		got := opts.Describe()
-		assert.Equal(t, "No tests match your search in glab\n", got)
+		assert.Equal(t, "No tests match your search in glab.\n", got)
 	})
 }

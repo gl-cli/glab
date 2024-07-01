@@ -20,7 +20,7 @@ func NewCmdNote(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 	issueNoteCreateCmd := &cobra.Command{
 		Use:     fmt.Sprintf("note <%s-id>", issueType),
 		Aliases: []string{"comment"},
-		Short:   fmt.Sprintf("Comment on an %s in GitLab", issueType),
+		Short:   fmt.Sprintf("Comment on an %s in GitLab.", issueType),
 		Long:    ``,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -54,7 +54,7 @@ func NewCmdNote(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 			}
 
 			if strings.TrimSpace(body) == "" {
-				return errors.New("aborted... Note is empty")
+				return errors.New("aborted... Note is empty.")
 			}
 
 			noteInfo, err := api.CreateIssueNote(apiClient, repo.FullName(), issue.IID, &gitlab.CreateIssueNoteOptions{

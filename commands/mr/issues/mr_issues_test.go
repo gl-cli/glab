@@ -53,7 +53,7 @@ func TestMergeRequestClosesIssues_byID(t *testing.T) {
 	out = timeRE.ReplaceAllString(out, "X years")
 
 	assert.Equal(t, heredoc.Doc(`
-		Showing 2 issues in OWNER/REPO that match your search 
+		Showing 2 issues in OWNER/REPO that match your search. 
 
 		#11	new issue                		about X years ago
 		#15	this is another new issue		about X years ago
@@ -101,7 +101,7 @@ func TestMergeRequestClosesIssues_currentBranch(t *testing.T) {
 	out = timeRE.ReplaceAllString(out, "X years")
 
 	assert.Equal(t, heredoc.Doc(`
-		Showing 2 issues in OWNER/REPO that match your search 
+		Showing 2 issues in OWNER/REPO that match your search. 
 
 		#11	new issue                		about X years ago
 		#15	this is another new issue		about X years ago

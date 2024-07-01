@@ -102,7 +102,7 @@ func stackSync(f *cmdutils.Factory, opts *Options) error {
 
 		ref, err := stack.First()
 		if err != nil {
-			return fmt.Errorf("error getting first stack. Your data in %s may be corrupted: %v", git.StackLocation, err)
+			return fmt.Errorf("error getting first stack. Your data in %s might be corrupted: %v", git.StackLocation, err)
 		}
 
 		var gr git.StandardGitCommand

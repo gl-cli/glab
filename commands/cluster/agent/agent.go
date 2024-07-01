@@ -12,7 +12,7 @@ import (
 func NewCmdAgent(f *cmdutils.Factory) *cobra.Command {
 	agentCmd := &cobra.Command{
 		Use:   "agent <command> [flags]",
-		Short: `Manage GitLab Agents for Kubernetes`,
+		Short: `Manage GitLab Agents for Kubernetes.`,
 		Long:  ``,
 	}
 

@@ -20,13 +20,13 @@ var (
 	}
 
 	reopeningMessage = map[issuable.IssueType]string{
-		issuable.TypeIssue:    "Reopening Issue",
-		issuable.TypeIncident: "Reopening Incident",
+		issuable.TypeIssue:    "Reopening issue",
+		issuable.TypeIncident: "Reopening incident",
 	}
 
 	reopenedMessage = map[issuable.IssueType]string{
-		issuable.TypeIssue:    "Reopened Issue",
-		issuable.TypeIncident: "Reopened Incident",
+		issuable.TypeIssue:    "Reopened issue",
+		issuable.TypeIncident: "Reopened incident",
 	}
 )
 

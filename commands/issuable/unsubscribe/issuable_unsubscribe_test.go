@@ -94,7 +94,7 @@ func TestIssuableUnsubscribe(t *testing.T) {
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
 		wantOutput := heredoc.Doc(`
-				- Unsubscribing from Issue #1 in OWNER/REPO
+				- Unsubscribing from issue #1 in OWNER/REPO
 				✓ Unsubscribed
 				`)
 		require.NoErrorf(t, err, "error running command `issue unsubscribe %d`", iid)
@@ -112,7 +112,7 @@ func TestIssuableUnsubscribe(t *testing.T) {
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
 
 		wantOutput := heredoc.Doc(`
-				- Unsubscribing from Incident #2 in OWNER/REPO
+				- Unsubscribing from incident #2 in OWNER/REPO
 				✓ Unsubscribed
 				`)
 		require.NoErrorf(t, err, "error running command `incident unsubscribe %d`", iid)
@@ -130,7 +130,7 @@ func TestIssuableUnsubscribe(t *testing.T) {
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
 		wantOutput := heredoc.Doc(`
-				- Unsubscribing from Issue #2 in OWNER/REPO
+				- Unsubscribing from issue #2 in OWNER/REPO
 				✓ Unsubscribed
 				`)
 		require.NoErrorf(t, err, "error running command `issue unsubscribe %d`", iid)
@@ -165,8 +165,8 @@ func TestIssuableUnsubscribe(t *testing.T) {
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
 		wantOutput := heredoc.Doc(`
-				- Unsubscribing from Issue #3 in OWNER/REPO
-				x You are not subscribed to this issue
+				- Unsubscribing from issue #3 in OWNER/REPO
+				x You are not subscribed to this issue.
 				`)
 		require.NoErrorf(t, err, "error running command `issue unsubscribe %d`", iid)
 		require.Contains(t, output.String(), wantOutput)
@@ -185,8 +185,8 @@ func TestIssuableUnsubscribe(t *testing.T) {
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
 
 		wantOutput := heredoc.Doc(`
-				- Unsubscribing from Incident #3 in OWNER/REPO
-				x You are not subscribed to this incident
+				- Unsubscribing from incident #3 in OWNER/REPO
+				x You are not subscribed to this incident.
 				`)
 		require.NoErrorf(t, err, "error running command `incident unsubscribe %d`", iid)
 		require.Contains(t, output.String(), wantOutput)

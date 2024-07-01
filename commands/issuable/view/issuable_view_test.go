@@ -336,7 +336,7 @@ func Test_rawIssuePreview(t *testing.T) {
 				"--",
 				"Issue description",
 				"\n--\ncomments/notes:\n",
-				"There are no comments on this issue",
+				"There are no comments on this issue.",
 			},
 		},
 		{
@@ -363,7 +363,7 @@ func Test_rawIssuePreview(t *testing.T) {
 				"--",
 				"Incident description",
 				"\n--\ncomments/notes:\n",
-				"There are no comments on this incident",
+				"There are no comments on this incident.",
 			},
 		},
 		{
