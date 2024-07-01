@@ -94,7 +94,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
 		wantOutput := heredoc.Doc(`
-				- Subscribing to Issue #1 in OWNER/REPO
+				- Subscribing to issue #1 in OWNER/REPO
 				✓ Subscribed
 				`)
 		require.NoErrorf(t, err, "error running command `issue subscribe %d`", iid)
@@ -112,7 +112,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
 
 		wantOutput := heredoc.Doc(`
-				- Subscribing to Incident #2 in OWNER/REPO
+				- Subscribing to incident #2 in OWNER/REPO
 				✓ Subscribed
 				`)
 		require.NoErrorf(t, err, "error running command `incident subscribe %d`", iid)
@@ -130,7 +130,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
 		wantOutput := heredoc.Doc(`
-				- Subscribing to Issue #2 in OWNER/REPO
+				- Subscribing to issue #2 in OWNER/REPO
 				✓ Subscribed
 				`)
 		require.NoErrorf(t, err, "error running command `issue subscribe %d`", iid)
@@ -165,8 +165,8 @@ func TestIssuableSubscribe(t *testing.T) {
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
 		wantOutput := heredoc.Doc(`
-				- Subscribing to Issue #3 in OWNER/REPO
-				x You are already subscribed to this issue
+				- Subscribing to issue #3 in OWNER/REPO
+				x You are already subscribed to this issue.
 				`)
 		require.NoErrorf(t, err, "error running command `issue subscribe %d`", iid)
 		require.Contains(t, output.String(), wantOutput)
@@ -185,8 +185,8 @@ func TestIssuableSubscribe(t *testing.T) {
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
 
 		wantOutput := heredoc.Doc(`
-				- Subscribing to Incident #3 in OWNER/REPO
-				x You are already subscribed to this incident
+				- Subscribing to incident #3 in OWNER/REPO
+				x You are already subscribed to this incident.
 				`)
 		require.NoErrorf(t, err, "error running command `incident subscribe %d`", iid)
 		require.Contains(t, output.String(), wantOutput)

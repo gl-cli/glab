@@ -26,7 +26,7 @@ ls
 ## Options
 
 ```plaintext
-  -p, --page uint       Page number (default 1)
+  -p, --page uint       Page number. (default 1)
   -P, --per-page uint   Number of items to list per page. (default 30)
 ```
 

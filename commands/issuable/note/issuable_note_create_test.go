@@ -229,7 +229,7 @@ func Test_IssuableNoteCreate_prompt(t *testing.T) {
 					t.Error("expected error")
 					return
 				}
-				assert.Equal(t, "aborted... Note is empty", err.Error())
+				assert.Equal(t, "aborted... Note is empty.", err.Error())
 			})
 		}
 	}

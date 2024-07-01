@@ -126,12 +126,12 @@ func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 		},
 	}
 
-	issueViewCmd.Flags().BoolVarP(&opts.ShowComments, "comments", "c", false, fmt.Sprintf("Show %s comments and activities", issueType))
-	issueViewCmd.Flags().BoolVarP(&opts.ShowSystemLogs, "system-logs", "s", false, "Show system activities / logs")
-	issueViewCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, fmt.Sprintf("Open %s in a browser. Uses default browser or browser specified in BROWSER variable", issueType))
-	issueViewCmd.Flags().IntVarP(&opts.CommentPageNumber, "page", "p", 1, "Page number")
-	issueViewCmd.Flags().IntVarP(&opts.CommentLimit, "per-page", "P", 20, "Number of items to list per page")
-	issueViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
+	issueViewCmd.Flags().BoolVarP(&opts.ShowComments, "comments", "c", false, fmt.Sprintf("Show %s comments and activities.", issueType))
+	issueViewCmd.Flags().BoolVarP(&opts.ShowSystemLogs, "system-logs", "s", false, "Show system activities and logs.")
+	issueViewCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, fmt.Sprintf("Open %s in a browser. Uses the default browser, or the browser specified in the $BROWSER variable.", issueType))
+	issueViewCmd.Flags().IntVarP(&opts.CommentPageNumber, "page", "p", 1, "Page number.")
+	issueViewCmd.Flags().IntVarP(&opts.CommentLimit, "per-page", "P", 20, "Number of items to list per page.")
+	issueViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
 
 	return issueViewCmd
 }
@@ -192,12 +192,12 @@ func printTTYIssuePreview(opts *ViewOpts) error {
 		fmt.Fprintln(opts.IO.StdOut, opts.Issue.Milestone.Title)
 	}
 	if opts.Issue.State == "closed" {
-		fmt.Fprintf(opts.IO.StdOut, "Closed By: %s %s\n", opts.Issue.ClosedBy.Username, issueTimeAgo)
+		fmt.Fprintf(opts.IO.StdOut, "Closed by: %s %s\n", opts.Issue.ClosedBy.Username, issueTimeAgo)
 	}
 
 	// Comments
 	if opts.ShowComments {
-		fmt.Fprintln(opts.IO.StdOut, heredoc.Doc(` 
+		fmt.Fprintln(opts.IO.StdOut, heredoc.Doc(`
 			--------------------------------------------
 			Comments / Notes
 			--------------------------------------------
@@ -221,7 +221,7 @@ func printTTYIssuePreview(opts *ViewOpts) error {
 				fmt.Fprintln(opts.IO.StdOut)
 			}
 		} else {
-			fmt.Fprintf(opts.IO.StdOut, "There are no comments on this %s\n", *opts.Issue.IssueType)
+			fmt.Fprintf(opts.IO.StdOut, "There are no comments on this %s.\n", *opts.Issue.IssueType)
 		}
 	}
 
@@ -280,7 +280,7 @@ func RawIssuableNotes(notes []*gitlab.Note, showComments bool, showSystemLogs bo
 				}
 			}
 		} else {
-			out += fmt.Sprintf("There are no comments on this %s\n", issuableName)
+			out += fmt.Sprintf("There are no comments on this %s.\n", issuableName)
 		}
 	}
 

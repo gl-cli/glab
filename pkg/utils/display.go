@@ -59,20 +59,20 @@ func (opts *ListTitleOptions) Describe() string {
 
 	if opts.ListActionType == "search" {
 		if opts.CurrentPageTotal > 0 {
-			return fmt.Sprintf("Showing %s %s in %s that match your search %s\n", pageNumInfo, opts.Name,
+			return fmt.Sprintf("Showing %s %s in %s that match your search. %s\n", pageNumInfo, opts.Name,
 				opts.RepoName, pageInfo)
 		}
 
-		return fmt.Sprintf("No %s match your search in %s\n", opts.Name, opts.RepoName)
+		return fmt.Sprintf("No %s match your search in %s.\n", opts.Name, opts.RepoName)
 	}
 
 	if opts.CurrentPageTotal > 0 {
-		return fmt.Sprintf("Showing %s %s on %s %s\n", pageNumInfo, opts.Name, opts.RepoName, pageInfo)
+		return fmt.Sprintf("Showing %s %s on %s. %s\n", pageNumInfo, opts.Name, opts.RepoName, pageInfo)
 	}
 
 	emptyMessage := opts.EmptyMessage
 	if emptyMessage == "" {
-		return fmt.Sprintf("No %s available on %s", opts.Name, opts.RepoName)
+		return fmt.Sprintf("No %s available on %s.", opts.Name, opts.RepoName)
 	}
 
 	return emptyMessage

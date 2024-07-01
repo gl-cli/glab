@@ -14,8 +14,8 @@ import (
 )
 
 var unsubscribingMessage = map[issuable.IssueType]string{
-	issuable.TypeIssue:    "Unsubscribing from Issue",
-	issuable.TypeIncident: "Unsubscribing from Incident",
+	issuable.TypeIssue:    "Unsubscribing from issue",
+	issuable.TypeIncident: "Unsubscribing from incident",
 }
 
 func NewCmdUnsubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
@@ -27,7 +27,7 @@ func NewCmdUnsubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra
 
 	issueUnsubscribeCmd := &cobra.Command{
 		Use:     "unsubscribe <id>",
-		Short:   fmt.Sprintf(`Unsubscribe from an %s`, issueType),
+		Short:   fmt.Sprintf(`Unsubscribe from an %s.`, issueType),
 		Long:    ``,
 		Aliases: []string{"unsub"},
 		Example: heredoc.Doc(fmt.Sprintf(`
@@ -70,7 +70,7 @@ func NewCmdUnsubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra
 					if errors.Is(err, api.ErrIssuableUserNotSubscribed) {
 						fmt.Fprintf(
 							f.IO.StdOut,
-							"%s You are not subscribed to this %s\n\n",
+							"%s You are not subscribed to this %s.\n\n",
 							c.FailedIcon(),
 							issueType,
 						)

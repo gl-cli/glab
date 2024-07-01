@@ -14,25 +14,25 @@ var isGlobal bool
 func NewCmdConfig(f *cmdutils.Factory) *cobra.Command {
 	configCmd := &cobra.Command{
 		Use:   "config [flags]",
-		Short: `Set and get glab settings`,
+		Short: `Set and get glab settings.`,
 		Long: heredoc.Docf(`Get and set key/value strings.
 
 Current respected settings:
 
-- token: your GitLab access token, defaults to environment variables
-- host: if unset, defaults to %[1]shttps://gitlab.com%[1]s
-- browser: if unset, default browser is used. Override with environment variable $BROWSER
-- editor: if unset, default editor is used. Override with environment variable $EDITOR
-- visual: takes precedence over editor. If unset, default editor is used. Override with environment variable $VISUAL
-- glamour_style: your desired Markdown renderer style. Options are dark, light, notty. Custom styles are allowed using [glamour](https://github.com/charmbracelet/glamour#styles)
-- glab_pager: your desired pager command to use (e.g. less -R)
-- check_update: if true, notifies of any available updates to glab. Defaults to true
-- display_hyperlinks: if true, and using a TTY, outputs hyperlinks for issues and MR lists. Defaults to false
+- token: Your GitLab access token. Defaults to environment variables.
+- host: If unset, defaults to %[1]shttps://gitlab.com%[1]s.
+- browser: If unset, uses the default browser. Override with environment variable $BROWSER.
+- editor: If unset, uses the default editor. Override with environment variable $EDITOR.
+- visual: Takes precedence over 'editor'. If unset, uses the default editor. Override with environment variable $VISUAL.
+- glamour_style: Your desired Markdown renderer style. Options are dark, light, notty. Custom styles are available using [glamour](https://github.com/charmbracelet/glamour#styles).
+- glab_pager: Your desired pager command to use, such as 'less -R'.
+- check_update: If true, notifies of new versions of glab. Defaults to true.
+- display_hyperlinks: If true, and using a TTY, outputs hyperlinks for issues and merge request lists. Defaults to false.
 `, "`"),
 		Aliases: []string{"conf"},
 	}
 
-	configCmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "Use global config file")
+	configCmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "Use global config file.")
 
 	configCmd.AddCommand(NewCmdConfigGet(f))
 	configCmd.AddCommand(NewCmdConfigSet(f))
@@ -72,8 +72,8 @@ func NewCmdConfigGet(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostname, "host", "h", "", "Get per-host setting")
-	cmd.Flags().BoolP("global", "g", false, "Read from global config file (~/.config/glab-cli/config.yml). [Default: looks through Environment variables → Local → Global]")
+	cmd.Flags().StringVarP(&hostname, "host", "h", "", "Get per-host setting.")
+	cmd.Flags().BoolP("global", "g", false, "Read from global config file (~/.config/glab-cli/config.yml). Default: checks 'Environment variables → Local → Global'.")
 
 	return cmd
 }
@@ -83,10 +83,10 @@ func NewCmdConfigSet(f *cmdutils.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "set <key> <value>",
-		Short: "Updates configuration with the value of a given key",
+		Short: "Updates configuration with the value of a given key.",
 		Long: `Update the configuration by setting a key to a value.
-Use glab config set --global if you want to set a global config. 
-Specifying the --hostname flag also saves in the global config file
+Use 'glab config set --global' to set a global config.
+Specifying the '--hostname' flag also saves in the global config file.
 `,
 		Example: `
   glab config set editor vim
@@ -126,7 +126,7 @@ Specifying the --hostname flag also saves in the global config file
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostname, "host", "h", "", "Set per-host setting")
-	cmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "Write to global ~/.config/glab-cli/config.yml file rather than the repository .git/glab-cli/config.yml file")
+	cmd.Flags().StringVarP(&hostname, "host", "h", "", "Set per-host setting.")
+	cmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "Write to global '~/.config/glab-cli/config.yml' file rather than the repository's '.git/glab-cli/config.yml' file.")
 	return cmd
 }

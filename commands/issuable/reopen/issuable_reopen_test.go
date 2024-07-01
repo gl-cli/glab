@@ -128,8 +128,8 @@ func TestIssuableReopen(t *testing.T) {
 			name:      "issue_reopen",
 			issueType: issuable.TypeIssue,
 			wantOutput: heredoc.Doc(`
-				- Reopening Issue...
-				✓ Reopened Issue #1
+				- Reopening issue...
+				✓ Reopened issue #1
 
 				`),
 		},
@@ -138,8 +138,8 @@ func TestIssuableReopen(t *testing.T) {
 			name:      "incident_reopen",
 			issueType: issuable.TypeIncident,
 			wantOutput: heredoc.Doc(`
-				- Reopening Incident...
-				✓ Reopened Incident #2
+				- Reopening incident...
+				✓ Reopened incident #2
 
 				`),
 		},
@@ -148,8 +148,8 @@ func TestIssuableReopen(t *testing.T) {
 			name:      "incident_reopen_using_issue_command",
 			issueType: issuable.TypeIssue,
 			wantOutput: heredoc.Doc(`
-				- Reopening Issue...
-				✓ Reopened Issue #2
+				- Reopening issue...
+				✓ Reopened issue #2
 
 				`),
 		},

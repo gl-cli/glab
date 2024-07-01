@@ -18,5 +18,5 @@ func TestIncidentCmd(t *testing.T) {
 
 	out := test.ReturnBuffer(old, r, w)
 
-	assert.Contains(t, out, "Work with GitLab incidents\n")
+	assert.Contains(t, out, "Work with GitLab incidents.\n")
 }
