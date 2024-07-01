@@ -50,13 +50,12 @@ var (
 )
 
 const (
-	runCmdsQuestion   = "Would you like to run these Git commands"
+	runCmdsQuestion   = "Would you like to run these Git commands?"
 	gitCmd            = "git"
 	gitCmdAPIPath     = "ai/llm/git_command"
 	spinnerText       = "Generating Git commands..."
-	aiResponseErr     = "Error: AI response has not been generated correctly"
-	apiUnreachableErr = "Error: API is unreachable"
-	experimentMsg     = "AI generated these responses. Leave feedback: https://gitlab.com/gitlab-org/gitlab/-/issues/409636\n"
+	aiResponseErr     = "Error: AI response has not been generated correctly."
+	apiUnreachableErr = "Error: API is unreachable."
 )
 
 func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
@@ -67,14 +66,9 @@ func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
 
 	duoAskCmd := &cobra.Command{
 		Use:   "ask <prompt>",
-		Short: "Generate Git commands from natural language. (Experimental.)",
+		Short: "Generate Git commands from natural language.",
 		Long: heredoc.Doc(`
 			Generate Git commands from natural language.
-
-			This experimental feature converts natural language descriptions into
-			executable Git commands.
-
-			We'd love your feedback in [issue 409636](https://gitlab.com/gitlab-org/gitlab/-/issues/409636).
 		`),
 		Example: heredoc.Doc(`
 			$ glab duo ask list last 10 commit titles
@@ -152,9 +146,6 @@ func (opts *opts) Result() (*result, error) {
 
 func (opts *opts) displayResult(result *result) {
 	color := opts.IO.Color()
-
-	opts.IO.LogInfo(color.Bold("Experiment:"))
-	opts.IO.LogInfo(color.Gray(experimentMsg))
 
 	opts.IO.LogInfo(color.Bold("Commands:\n"))
 
