@@ -14,7 +14,7 @@ import (
 func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	labelCreateCmd := &cobra.Command{
 		Use:     "create [flags]",
-		Short:   `Create labels for repository/project`,
+		Short:   `Create labels for repository or project.`,
 		Long:    ``,
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
@@ -57,10 +57,10 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	labelCreateCmd.Flags().StringP("name", "n", "", "Name of label")
+	labelCreateCmd.Flags().StringP("name", "n", "", "Name of label.")
 	_ = labelCreateCmd.MarkFlagRequired("name")
 	labelCreateCmd.Flags().StringP("color", "c", "#428BCA", "Color of label in plain or HEX code.")
-	labelCreateCmd.Flags().StringP("description", "d", "", "Label description")
+	labelCreateCmd.Flags().StringP("description", "d", "", "Label description.")
 
 	return labelCreateCmd
 }

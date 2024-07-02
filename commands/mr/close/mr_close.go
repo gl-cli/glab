@@ -15,7 +15,7 @@ import (
 func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
 	mrCloseCmd := &cobra.Command{
 		Use:   "close [<id> | <branch>]",
-		Short: `Close merge requests`,
+		Short: `Close a merge request.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
 			glab mr close 1
@@ -47,7 +47,7 @@ func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
 				}); err != nil {
 					return err
 				}
-				fmt.Fprintf(f.IO.StdOut, "- Closing Merge request...\n")
+				fmt.Fprintf(f.IO.StdOut, "- Closing merge request...\n")
 				_, err := api.UpdateMR(apiClient, repo.FullName(), mr.IID, l)
 				if err != nil {
 					return err
@@ -56,7 +56,7 @@ func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
 				// prints it as red
 				mr.State = "closed"
 
-				fmt.Fprintf(f.IO.StdOut, "%s Closed Merge request !%d\n", c.RedCheck(), mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "%s Closed merge request !%d.\n", c.RedCheck(), mr.IID)
 				fmt.Fprintln(f.IO.StdOut, mrutils.DisplayMR(c, mr, f.IO.IsaTTY))
 			}
 

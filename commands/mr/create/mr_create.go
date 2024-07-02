@@ -90,7 +90,7 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 
 	mrCreateCmd := &cobra.Command{
 		Use:     "create",
-		Short:   `Create new merge request`,
+		Short:   `Create a new merge request.`,
 		Long:    ``,
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
@@ -127,14 +127,14 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 
 			if hasTitle && hasDescription && opts.Autofill {
 				return &cmdutils.FlagError{
-					Err: errors.New("usage of --title and --description override --fill."),
+					Err: errors.New("usage of --title and --description overrides --fill."),
 				}
 			}
 			if opts.IsInteractive && !opts.IO.PromptEnabled() && !opts.Autofill {
 				return &cmdutils.FlagError{Err: errors.New("--title or --fill required for non-interactive mode.")}
 			}
 			if cmd.Flags().Changed("wip") && cmd.Flags().Changed("draft") {
-				return &cmdutils.FlagError{Err: errors.New("specify either --draft or --wip.")}
+				return &cmdutils.FlagError{Err: errors.New("specify --draft.")}
 			}
 			if !opts.Autofill && opts.FillCommitBody {
 				return &cmdutils.FlagError{Err: errors.New("--fill-commit-body should be used with --fill.")}

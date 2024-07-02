@@ -30,7 +30,7 @@ import (
 func NewCmdMR(f *cmdutils.Factory) *cobra.Command {
 	mrCmd := &cobra.Command{
 		Use:   "mr <command> [flags]",
-		Short: `Create, view and manage merge requests`,
+		Short: `Create, view, and manage merge requests.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
 			glab mr create --fill --label bugfix

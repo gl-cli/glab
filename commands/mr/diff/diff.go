@@ -37,7 +37,7 @@ func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comma
 
 	cmd := &cobra.Command{
 		Use:   "diff [<id> | <branch>]",
-		Short: "View changes in a merge request",
+		Short: "View changes in a merge request.",
 		Example: heredoc.Doc(`
 			glab mr diff 123
 			glab mr diff branch
@@ -69,7 +69,7 @@ func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comma
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.UseColor, "color", "auto", "Use color in diff output: {always|never|auto}")
+	cmd.Flags().StringVar(&opts.UseColor, "color", "auto", "Use color in diff output: always, never, auto.")
 
 	return cmd
 }

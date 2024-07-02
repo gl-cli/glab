@@ -9,7 +9,7 @@ import (
 func NewCmdArtifact(f *cmdutils.Factory) *cobra.Command {
 	jobArtifactCmd := &cobra.Command{
 		Use:     "artifact <refName> <jobName> [flags]",
-		Short:   `Download all artifacts from the last pipeline`,
+		Short:   `Download all artifacts from the last pipeline.`,
 		Aliases: []string{"push"},
 		Example: heredoc.Doc(`
 	glab job artifact main build
@@ -33,6 +33,6 @@ func NewCmdArtifact(f *cmdutils.Factory) *cobra.Command {
 			return DownloadArtifacts(apiClient, repo, path, args[0], args[1])
 		},
 	}
-	jobArtifactCmd.Flags().StringP("path", "p", "./", "Path to download the artifact files")
+	jobArtifactCmd.Flags().StringP("path", "p", "./", "Path to download the artifact files.")
 	return jobArtifactCmd
 }

@@ -60,7 +60,7 @@ func TestMrReopen(t *testing.T) {
 			},
 
 			expectedPUTBody: `"state_event":"reopen"`,
-			expectedOut:     "- Reopening Merge request !123...\n✓ Reopened Merge request !123\n\n",
+			expectedOut:     "- Reopening merge request !123...\n✓ Reopened merge request !123.\n\n",
 		},
 		{
 			name: "when an MR is reopened using a branch name",
@@ -95,7 +95,7 @@ func TestMrReopen(t *testing.T) {
 			},
 
 			expectedPUTBody: `"state_event":"reopen"`,
-			expectedOut:     "- Reopening Merge request !123...\n✓ Reopened Merge request !123\n\n",
+			expectedOut:     "- Reopening merge request !123...\n✓ Reopened merge request !123.\n\n",
 		},
 	}
 

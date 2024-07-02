@@ -15,7 +15,7 @@ import (
 func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
 	mrReopenCmd := &cobra.Command{
 		Use:   "reopen [<id>... | <branch>...]",
-		Short: `Reopen merge requests`,
+		Short: `Reopen a merge request.`,
 		Example: heredoc.Doc(`
 			glab mr reopen 123
 			glab mr reopen 123 456 789
@@ -45,13 +45,13 @@ func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "- Reopening Merge request !%d...\n", mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "- Reopening merge request !%d...\n", mr.IID)
 				mr, err = api.UpdateMR(apiClient, repo.FullName(), mr.IID, l)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "%s Reopened Merge request !%d\n", c.GreenCheck(), mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "%s Reopened merge request !%d.\n", c.GreenCheck(), mr.IID)
 				fmt.Fprintln(f.IO.StdOut, mrutils.DisplayMR(f.IO.Color(), mr, f.IO.IsaTTY))
 			}
 

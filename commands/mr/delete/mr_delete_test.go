@@ -93,8 +93,8 @@ hosts:
 			args:    []string{"1"},
 			wantErr: false,
 			assertFunc: func(t *testing.T, out, outErr string, err error) {
-				assert.Contains(t, out, "- Deleting merge request !1\n")
-				assert.Contains(t, out, "✓ Merge request !1 deleted\n")
+				assert.Contains(t, out, "- Deleting merge request !1.\n")
+				assert.Contains(t, out, "✓ Merge request !1 deleted.\n")
 			},
 		},
 		{
@@ -102,8 +102,8 @@ hosts:
 			args:    []string{"1", "-R", "profclems/glab"},
 			wantErr: false,
 			assertFunc: func(t *testing.T, out, outErr string, err error) {
-				assert.Contains(t, out, "- Deleting merge request !1\n")
-				assert.Contains(t, out, "✓ Merge request !1 deleted\n")
+				assert.Contains(t, out, "- Deleting merge request !1.\n")
+				assert.Contains(t, out, "✓ Merge request !1 deleted.\n")
 			},
 		},
 		{

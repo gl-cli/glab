@@ -14,7 +14,7 @@ import (
 func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 	mrDeleteCmd := &cobra.Command{
 		Use:     "delete [<id> | <branch>]",
-		Short:   `Delete merge requests`,
+		Short:   `Delete merge a request.`,
 		Long:    ``,
 		Aliases: []string{"del"},
 		Example: heredoc.Doc(`
@@ -37,11 +37,11 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			for _, mr := range mrs {
-				fmt.Fprintf(f.IO.StdOut, "- Deleting merge request !%d\n", mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "- Deleting merge request !%d.\n", mr.IID)
 				if err = api.DeleteMR(apiClient, repo.FullName(), mr.IID); err != nil {
 					return err
 				}
-				fmt.Fprintf(f.IO.StdOut, "%s Merge request !%d deleted\n", c.RedCheck(), mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "%s Merge request !%d deleted.\n", c.RedCheck(), mr.IID)
 			}
 
 			return nil

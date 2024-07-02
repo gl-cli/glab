@@ -14,7 +14,7 @@ import (
 func NewCmdApprove(f *cmdutils.Factory) *cobra.Command {
 	mrApproveCmd := &cobra.Command{
 		Use:   "approve {<id> | <branch>}",
-		Short: `Approve merge requests`,
+		Short: `Approve merge requests.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
 			glab mr approve 235
@@ -51,7 +51,7 @@ func NewCmdApprove(f *cmdutils.Factory) *cobra.Command {
 					opts.SHA = gitlab.Ptr(s)
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "- Approving Merge Request !%d\n", mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "- Approving merge request !%d\n", mr.IID)
 				_, err = api.ApproveMR(apiClient, repo.FullName(), mr.IID, opts)
 				if err != nil {
 					return err
@@ -64,6 +64,6 @@ func NewCmdApprove(f *cmdutils.Factory) *cobra.Command {
 	}
 
 	// mrApproveCmd.Flags().StringP("password", "p", "", "Current user’s password. Required if 'Require user password to approve' is enabled in the project settings.")
-	mrApproveCmd.Flags().StringP("sha", "s", "", "SHA which must match the SHA of the HEAD commit of the merge request")
+	mrApproveCmd.Flags().StringP("sha", "s", "", "SHA, which must match the SHA of the HEAD commit of the merge request.")
 	return mrApproveCmd
 }

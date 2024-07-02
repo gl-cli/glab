@@ -14,7 +14,7 @@ import (
 func NewCmdUnsubscribe(f *cmdutils.Factory) *cobra.Command {
 	mrUnsubscribeCmd := &cobra.Command{
 		Use:     "unsubscribe [<id> | <branch>]",
-		Short:   `Unsubscribe from merge requests`,
+		Short:   `Unsubscribe from merge requests.`,
 		Long:    ``,
 		Aliases: []string{"unsub"},
 		Example: heredoc.Doc(`
@@ -44,14 +44,14 @@ func NewCmdUnsubscribe(f *cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "- Unsubscribing from Merge Request !%d\n", mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "- Unsubscribing from merge request !%d.\n", mr.IID)
 
 				mr, err = api.UnsubscribeFromMR(apiClient, repo.FullName(), mr.IID, nil)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "%s You have successfully unsubscribed from merge request !%d\n", c.RedCheck(), mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "%s You have successfully unsubscribed from merge request !%d.\n", c.RedCheck(), mr.IID)
 				fmt.Fprintln(f.IO.StdOut, mrutils.DisplayMR(c, mr, f.IO.IsaTTY))
 			}
 
