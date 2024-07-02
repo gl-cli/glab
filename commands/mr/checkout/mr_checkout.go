@@ -24,7 +24,7 @@ var mrCheckoutCfg mrCheckoutConfig
 func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 	mrCheckoutCmd := &cobra.Command{
 		Use:   "checkout [<id> | <branch>]",
-		Short: "Checkout to an open merge request",
+		Short: "Check out an open merge request.",
 		Long:  ``,
 		Example: heredoc.Doc(`
 			glab mr checkout 1
@@ -120,9 +120,9 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	mrCheckoutCmd.Flags().StringVarP(&mrCheckoutCfg.branch, "branch", "b", "", "checkout merge request with <branch> name")
-	mrCheckoutCmd.Flags().BoolVarP(&mrCheckoutCfg.track, "track", "t", true, "set checked out branch to track remote branch")
+	mrCheckoutCmd.Flags().StringVarP(&mrCheckoutCfg.branch, "branch", "b", "", "Check out merge request with name <branch>.")
+	mrCheckoutCmd.Flags().BoolVarP(&mrCheckoutCfg.track, "track", "t", true, "Set checked out branch to track the remote branch.")
 	_ = mrCheckoutCmd.Flags().MarkDeprecated("track", "Now enabled by default")
-	mrCheckoutCmd.Flags().StringVarP(&mrCheckoutCfg.upstream, "set-upstream-to", "u", "", "set tracking of checked out branch to [REMOTE/]BRANCH")
+	mrCheckoutCmd.Flags().StringVarP(&mrCheckoutCfg.upstream, "set-upstream-to", "u", "", "Set tracking of checked-out branch to [REMOTE/]BRANCH.")
 	return mrCheckoutCmd
 }

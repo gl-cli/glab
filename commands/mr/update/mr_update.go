@@ -17,7 +17,7 @@ import (
 func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 	mrUpdateCmd := &cobra.Command{
 		Use:   "update [<id> | <branch>]",
-		Short: `Update merge requests`,
+		Short: `Update merge requests.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
 	glab mr update 23 --ready
@@ -254,19 +254,19 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 	mrUpdateCmd.Flags().StringP("title", "t", "", "Title of merge request.")
 	mrUpdateCmd.Flags().BoolP("lock-discussion", "", false, "Lock discussion on merge request.")
 	mrUpdateCmd.Flags().BoolP("unlock-discussion", "", false, "Unlock discussion on merge request.")
-	mrUpdateCmd.Flags().StringP("description", "d", "", "merge request description; set to \"-\" to open an editor.")
-	mrUpdateCmd.Flags().StringSliceP("label", "l", []string{}, "add labels")
-	mrUpdateCmd.Flags().StringSliceP("unlabel", "u", []string{}, "remove labels")
+	mrUpdateCmd.Flags().StringP("description", "d", "", "Merge request description. Set to \"-\" to open an editor.")
+	mrUpdateCmd.Flags().StringSliceP("label", "l", []string{}, "Add labels.")
+	mrUpdateCmd.Flags().StringSliceP("unlabel", "u", []string{}, "Remove labels.")
 	mrUpdateCmd.Flags().
-		StringSliceP("assignee", "a", []string{}, "assign users via username, prefix with '!' or '-' to remove from existing assignees, '+' to add. Otherwise, replace existing assignees with given users.")
+		StringSliceP("assignee", "a", []string{}, "Assign users via username. Prefix with '!' or '-' to remove from existing assignees, '+' to add. Otherwise, replace existing assignees with given users.")
 	mrUpdateCmd.Flags().
-		StringSliceP("reviewer", "", []string{}, "request review from users by their usernames, prefix with '!' or '-' to remove from existing reviewers, '+' to add. Otherwise, replace existing reviewers with given users.")
-	mrUpdateCmd.Flags().Bool("unassign", false, "unassign all users.")
+		StringSliceP("reviewer", "", []string{}, "Request review from users by their usernames. Prefix with '!' or '-' to remove from existing reviewers, '+' to add. Otherwise, replace existing reviewers with given users.")
+	mrUpdateCmd.Flags().Bool("unassign", false, "Unassign all users.")
 	mrUpdateCmd.Flags().
 		BoolP("squash-before-merge", "", false, "Toggles the option to squash commits into a single commit when merging.")
-	mrUpdateCmd.Flags().BoolP("remove-source-branch", "", false, "Toggles the removal of the Source Branch on merge.")
-	mrUpdateCmd.Flags().StringP("milestone", "m", "", "title of the milestone to assign, pass \"\" or 0 to unassign.")
-	mrUpdateCmd.Flags().String("target-branch", "", "set target branch.")
+	mrUpdateCmd.Flags().BoolP("remove-source-branch", "", false, "Toggles the removal of the source branch on merge.")
+	mrUpdateCmd.Flags().StringP("milestone", "m", "", "Title of the milestone to assign. Set to \"\" or 0 to unassign.")
+	mrUpdateCmd.Flags().String("target-branch", "", "Set target branch.")
 
 	return mrUpdateCmd
 }

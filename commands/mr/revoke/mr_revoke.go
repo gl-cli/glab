@@ -14,7 +14,7 @@ import (
 func NewCmdRevoke(f *cmdutils.Factory) *cobra.Command {
 	mrRevokeCmd := &cobra.Command{
 		Use:     "revoke [<id> | <branch>]",
-		Short:   `Revoke approval on a merge request`,
+		Short:   `Revoke approval on a merge request.`,
 		Long:    ``,
 		Aliases: []string{"unapprove"},
 		Example: heredoc.Doc(`
@@ -47,14 +47,14 @@ func NewCmdRevoke(f *cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "- Revoking approval for Merge Request !%d...\n", mr.IID)
+				fmt.Fprintf(f.IO.StdOut, "- Revoking approval for merge request !%d...\n", mr.IID)
 
 				err = api.UnapproveMR(apiClient, repo.FullName(), mr.IID)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Merge Request approval revoked")
+				fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Merge request approval revoked.")
 			}
 
 			return nil

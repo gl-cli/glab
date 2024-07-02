@@ -99,17 +99,17 @@ hosts:
 		{
 			Name:        "Issue Exists",
 			Issue:       "1",
-			ExpectedMsg: []string{"- Unsubscribing from Merge Request !1", "✓ You have successfully unsubscribed from merge request !1"},
+			ExpectedMsg: []string{"- Unsubscribing from merge request !1.", "✓ You have successfully unsubscribed from merge request !1."},
 		},
 		{
 			Name:        "Issue on another repo",
 			Issue:       "1 -R profclems/glab",
-			ExpectedMsg: []string{"- Unsubscribing from Merge Request !1", "✓ You have successfully unsubscribed from merge request !1"},
+			ExpectedMsg: []string{"- Unsubscribing from merge request !1.", "✓ You have successfully unsubscribed from merge request !1."},
 		},
 		{
 			Name:        "Issue Does Not Exist",
 			Issue:       "0",
-			ExpectedMsg: []string{"- Unsubscribing from Merge Request !0", "error expected"},
+			ExpectedMsg: []string{"- Unsubscribing from merge request !0.", "error expected"},
 			wantErr:     true,
 		},
 	}

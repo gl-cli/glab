@@ -19,12 +19,12 @@ import (
 func NewCmdFor(f *cmdutils.Factory) *cobra.Command {
 	mrForCmd := &cobra.Command{
 		Use:     "for",
-		Short:   `Create new merge request for an issue`,
+		Short:   `Create a new merge request for an issue.`,
 		Long:    ``,
 		Aliases: []string{"new-for", "create-for", "for-issue"},
 		Example: heredoc.Doc(`
 	glab mr for 34   # Create mr for issue 34
-	glab mr for 34 --wip   # Create mr and mark as work in progress
+	glab mr for 34 --wip   # Create MR and mark as work in progress
 	glab mr new-for 34
 	glab mr create-for 34
 	`),
@@ -143,14 +143,14 @@ func NewCmdFor(f *cmdutils.Factory) *cobra.Command {
 	}
 
 	mrForCmd.Flags().BoolP("draft", "", true, "Mark merge request as a draft.")
-	mrForCmd.Flags().BoolP("wip", "", false, "Mark merge request as a work in progress. Overrides --draft")
-	mrForCmd.Flags().StringP("label", "l", "", "Add label by name. Multiple labels should be comma separated")
-	mrForCmd.Flags().StringP("assignee", "a", "", "Assign merge request to people by their IDs. Multiple values should be comma separated ")
-	mrForCmd.Flags().BoolP("allow-collaboration", "", false, "Allow commits from other members")
-	mrForCmd.Flags().BoolP("remove-source-branch", "", false, "Remove Source Branch on merge")
-	mrForCmd.Flags().IntP("milestone", "m", -1, "add milestone by <id> for merge request")
-	mrForCmd.Flags().StringP("target-branch", "b", "", "The target or base branch into which you want your code merged")
-	mrForCmd.Flags().BoolP("with-labels", "", false, "Copy labels from issue to the merge request")
+	mrForCmd.Flags().BoolP("wip", "", false, "Mark merge request as a work in progress. Overrides --draft.")
+	mrForCmd.Flags().StringP("label", "l", "", "Add label by name. Multiple labels should be comma-separated.")
+	mrForCmd.Flags().StringP("assignee", "a", "", "Assign merge request to people by their IDs. Multiple values should be comma-separated.")
+	mrForCmd.Flags().BoolP("allow-collaboration", "", false, "Allow commits from other members.")
+	mrForCmd.Flags().BoolP("remove-source-branch", "", false, "Remove source branch on merge.")
+	mrForCmd.Flags().IntP("milestone", "m", -1, "Add milestone by <id> for this merge request.")
+	mrForCmd.Flags().StringP("target-branch", "b", "", "The target or base branch into which you want your code merged.")
+	mrForCmd.Flags().BoolP("with-labels", "", false, "Copy labels from issue to the merge request.")
 
 	mrForCmd.Deprecated = "use `glab mr create --related-issue <issueID>`"
 

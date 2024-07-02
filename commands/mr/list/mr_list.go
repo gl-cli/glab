@@ -62,7 +62,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 
 	mrListCmd := &cobra.Command{
 		Use:     "list [flags]",
-		Short:   `List merge requests`,
+		Short:   `List merge requests.`,
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Example: heredoc.Doc(`
@@ -85,14 +85,14 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 
 			if len(opts.Labels) != 0 && len(opts.NotLabels) != 0 {
 				return cmdutils.FlagError{
-					Err: errors.New("flags --label and --not-label are mutually exclusive"),
+					Err: errors.New("flags --label and --not-label are mutually exclusive."),
 				}
 			}
 
 			// check if any of the two or all of states flag are specified
 			if opts.Closed && opts.Merged {
 				return cmdutils.FlagError{
-					Err: errors.New("specify either --closed or --merged. Use --all issues in all states"),
+					Err: errors.New("specify either --closed or --merged. Use --all issues in all states."),
 				}
 			}
 			if opts.All {
@@ -123,30 +123,30 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 	}
 
 	cmdutils.EnableRepoOverride(mrListCmd, f)
-	mrListCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, "Filter merge request by label <name>")
-	mrListCmd.Flags().StringSliceVar(&opts.NotLabels, "not-label", []string{}, "Filter merge requests by not having label <name>")
-	mrListCmd.Flags().StringVar(&opts.Author, "author", "", "Filter merge request by Author <username>")
-	mrListCmd.Flags().StringVarP(&opts.Milestone, "milestone", "m", "", "Filter merge request by milestone <id>")
-	mrListCmd.Flags().StringVarP(&opts.SourceBranch, "source-branch", "s", "", "Filter by source branch <name>")
-	mrListCmd.Flags().StringVarP(&opts.TargetBranch, "target-branch", "t", "", "Filter by target branch <name>")
-	mrListCmd.Flags().StringVar(&opts.Search, "search", "", "Filter by <string> in title and description")
-	mrListCmd.Flags().BoolVarP(&opts.All, "all", "A", false, "Get all merge requests")
-	mrListCmd.Flags().BoolVarP(&opts.Closed, "closed", "c", false, "Get only closed merge requests")
-	mrListCmd.Flags().BoolVarP(&opts.Merged, "merged", "M", false, "Get only merged merge requests")
-	mrListCmd.Flags().BoolVarP(&opts.Draft, "draft", "d", false, "Filter by draft merge requests")
-	mrListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
-	mrListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
-	mrListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page")
-	mrListCmd.Flags().StringSliceVarP(&opts.Assignee, "assignee", "a", []string{}, "Get only merge requests assigned to users")
-	mrListCmd.Flags().StringSliceVarP(&opts.Reviewer, "reviewer", "r", []string{}, "Get only merge requests with users as reviewer")
+	mrListCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, "Filter merge request by label <name>.")
+	mrListCmd.Flags().StringSliceVar(&opts.NotLabels, "not-label", []string{}, "Filter merge requests by not having label <name>.")
+	mrListCmd.Flags().StringVar(&opts.Author, "author", "", "Filter merge request by author <username>.")
+	mrListCmd.Flags().StringVarP(&opts.Milestone, "milestone", "m", "", "Filter merge request by milestone <id>.")
+	mrListCmd.Flags().StringVarP(&opts.SourceBranch, "source-branch", "s", "", "Filter by source branch <name>.")
+	mrListCmd.Flags().StringVarP(&opts.TargetBranch, "target-branch", "t", "", "Filter by target branch <name>.")
+	mrListCmd.Flags().StringVar(&opts.Search, "search", "", "Filter by <string> in title and description.")
+	mrListCmd.Flags().BoolVarP(&opts.All, "all", "A", false, "Get all merge requests.")
+	mrListCmd.Flags().BoolVarP(&opts.Closed, "closed", "c", false, "Get only closed merge requests.")
+	mrListCmd.Flags().BoolVarP(&opts.Merged, "merged", "M", false, "Get only merged merge requests.")
+	mrListCmd.Flags().BoolVarP(&opts.Draft, "draft", "d", false, "Filter by draft merge requests.")
+	mrListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
+	mrListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
+	mrListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
+	mrListCmd.Flags().StringSliceVarP(&opts.Assignee, "assignee", "a", []string{}, "Get only merge requests assigned to users.")
+	mrListCmd.Flags().StringSliceVarP(&opts.Reviewer, "reviewer", "r", []string{}, "Get only merge requests with users as reviewer.")
 
-	mrListCmd.Flags().BoolP("opened", "O", false, "Get only open merge requests")
+	mrListCmd.Flags().BoolP("opened", "O", false, "Get only open merge requests.")
 	_ = mrListCmd.Flags().MarkHidden("opened")
-	_ = mrListCmd.Flags().MarkDeprecated("opened", "default value if neither --closed, --locked or --merged is used")
+	_ = mrListCmd.Flags().MarkDeprecated("opened", "default value if neither --closed, --locked or --merged is used.")
 
-	mrListCmd.Flags().BoolVarP(&opts.Mine, "mine", "", false, "Get only merge requests assigned to me")
+	mrListCmd.Flags().BoolVarP(&opts.Mine, "mine", "", false, "Get only merge requests assigned to me.")
 	_ = mrListCmd.Flags().MarkHidden("mine")
-	_ = mrListCmd.Flags().MarkDeprecated("mine", "use --assignee=@me")
+	_ = mrListCmd.Flags().MarkDeprecated("mine", "use --assignee=@me.")
 	mrListCmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
 
 	return mrListCmd
