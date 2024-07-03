@@ -46,10 +46,16 @@ func NewCmdNote(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 			body, _ := cmd.Flags().GetString("message")
 
 			if strings.TrimSpace(body) == "" {
+				editor, err := cmdutils.GetEditor(f.Config)
+				if err != nil {
+					return err
+				}
+
 				body = utils.Editor(utils.EditorOptions{
-					Label:    "Note Message:",
-					Help:     "Enter the note message. ",
-					FileName: "ISSUE_NOTE_EDITMSG",
+					Label:         "Note Message:",
+					Help:          "Enter the note message. ",
+					FileName:      "ISSUE_NOTE_EDITMSG",
+					EditorCommand: editor,
 				})
 			}
 
