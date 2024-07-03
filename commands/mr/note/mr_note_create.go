@@ -34,10 +34,16 @@ func NewCmdNote(f *cmdutils.Factory) *cobra.Command {
 			body, _ := cmd.Flags().GetString("message")
 
 			if body == "" {
+				editor, err := cmdutils.GetEditor(f.Config)
+				if err != nil {
+					return err
+				}
+
 				body = utils.Editor(utils.EditorOptions{
-					Label:    "Note message:",
-					Help:     "Enter the note message for the merge request. ",
-					FileName: "*_MR_NOTE_EDITMSG.md",
+					Label:         "Note message:",
+					Help:          "Enter the note message for the merge request. ",
+					FileName:      "*_MR_NOTE_EDITMSG.md",
+					EditorCommand: editor,
 				})
 			}
 			if body == "" {
