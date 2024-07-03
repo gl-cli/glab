@@ -37,21 +37,20 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "delete <tag>",
-		Short: "Delete a GitLab release",
-		Long: heredoc.Docf(`Delete release assets to GitLab release.
+		Short: "Delete a GitLab release.",
+		Long: heredoc.Docf(`Delete release assets to GitLab release. Requires the Maintainer role or higher.
 
 			Deleting a release does not delete the associated tag, unless %[1]s--with-tag%[1]s is specified.
-			You must be a project maintainer to delete a release.
 		`, "`"),
 		Args: cmdutils.MinimumArgs(1, "no tag name provided"),
 		Example: heredoc.Doc(`
-			Delete a release (with a confirmation prompt)
+			# Delete a release (with a confirmation prompt)
 			$ glab release delete v1.1.0'
 
-			Skip the confirmation prompt and force delete
+			# Skip the confirmation prompt and force delete
 			$ glab release delete v1.0.1 -y
 
-			Delete release and associated tag
+			# Delete release and associated tag
 			$ glab release delete v1.0.1 --with-tag
 `),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -68,8 +67,8 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&opts.ForceDelete, "yes", "y", false, "Skip confirmation prompt")
-	cmd.Flags().BoolVarP(&opts.DeleteTag, "with-tag", "t", false, "Delete associated tag")
+	cmd.Flags().BoolVarP(&opts.ForceDelete, "yes", "y", false, "Skip the confirmation prompt.")
+	cmd.Flags().BoolVarP(&opts.DeleteTag, "with-tag", "t", false, "Delete the associated tag.")
 
 	return cmd
 }

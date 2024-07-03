@@ -39,43 +39,43 @@ func NewCmdUpload(f *cmdutils.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "upload <tag> [<files>...]",
-		Short: "Upload release asset files or links to GitLab Release",
-		Long: heredoc.Doc(`Upload release assets to GitLab Release
+		Short: "Upload release asset files or links to a GitLab release.",
+		Long: heredoc.Doc(`Upload release assets to a GitLab release.
 
-				You can define the display name by appending '#' after the file name. 
-				The link type comes after the display name (eg. 'myfile.tar.gz#My display name#package')
+				Define the display name by appending '#' after the file name.
+				The link type comes after the display name, like this: 'myfile.tar.gz#My display name#package'
 		`),
 		Args: func() cobra.PositionalArgs {
 			return func(cmd *cobra.Command, args []string) error {
 				if len(args) < 1 {
-					return &cmdutils.FlagError{Err: errors.New("no tag name provided")}
+					return &cmdutils.FlagError{Err: errors.New("no tag name provided.")}
 				}
 				if len(args) < 2 && opts.AssetLinksAsJson == "" {
-					return cmdutils.FlagError{Err: errors.New("no files specified")}
+					return cmdutils.FlagError{Err: errors.New("no files specified.")}
 				}
 				return nil
 			}
 		}(),
 		Example: heredoc.Doc(`
-			Upload a release asset with a display name (type will default to 'other')
+			# Upload a release asset with a display name. 'Type' defaults to 'other'.
 			$ glab release upload v1.0.1 '/path/to/asset.zip#My display label'
 
-			Upload a release asset with a display name and type
+			# Upload a release asset with a display name and type.
 			$ glab release upload v1.0.1 '/path/to/asset.png#My display label#image'
 
-			Upload all assets in a specified folder (types will default to 'other')
+			# Upload all assets in a specified folder. 'Type' defaults to 'other'.
 			$ glab release upload v1.0.1 ./dist/*
 
-			Upload all tarballs in a specified folder (types will default to 'other')
+			# Upload all tarballs in a specified folder. 'Type' defaults to 'other'.
 			$ glab release upload v1.0.1 ./dist/*.tar.gz
 
-			Upload release assets links specified as JSON string
+			# Upload release assets links specified as JSON string
 			$ glab release upload v1.0.1 --assets-links='
 			  [
 			    {
-			      "name": "Asset1", 
-			      "url":"https://<domain>/some/location/1", 
-			      "link_type": "other", 
+			      "name": "Asset1",
+			      "url":"https://<domain>/some/location/1",
+			      "link_type": "other",
 			      "direct_asset_path": "path/to/file"
 			    }
 			  ]'
@@ -93,7 +93,7 @@ func NewCmdUpload(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if opts.AssetFiles == nil && opts.AssetLinksAsJson == "" {
-				return cmdutils.FlagError{Err: errors.New("no files specified")}
+				return cmdutils.FlagError{Err: errors.New("no files specified.")}
 			}
 
 			if opts.AssetLinksAsJson != "" {
@@ -107,7 +107,7 @@ func NewCmdUpload(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "`JSON` string representation of assets links (e.g. `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]')`")
+	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "`JSON` string representation of assets links, like: `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
 
 	return cmd
 }
@@ -135,17 +135,17 @@ func uploadRun(opts *UploadOpts) error {
 	release, resp, err := client.Releases.GetRelease(repo.FullName(), opts.TagName)
 	if err != nil {
 		if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
-			return cmdutils.WrapError(err, "release does not exist. Create a new release with `glab release create "+opts.TagName+"`")
+			return cmdutils.WrapError(err, "release does not exist. Create a new release with `glab release create "+opts.TagName+"`.")
 		}
-		return cmdutils.WrapError(err, "failed to fetch release")
+		return cmdutils.WrapError(err, "failed to fetch release.")
 	}
 
 	// upload files and create asset links
 	err = releaseutils.CreateReleaseAssets(opts.IO, client, opts.AssetFiles, opts.AssetLinks, repo.FullName(), release.TagName)
 	if err != nil {
-		return cmdutils.WrapError(err, "creating release assets failed")
+		return cmdutils.WrapError(err, "creating release assets failed.")
 	}
 
-	opts.IO.Logf(color.Bold("%s Upload succeeded after %0.2fs\n"), color.GreenCheck(), time.Since(start).Seconds())
+	opts.IO.Logf(color.Bold("%s Upload succeeded after %0.2fs.\n"), color.GreenCheck(), time.Since(start).Seconds())
 	return nil
 }

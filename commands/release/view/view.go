@@ -35,17 +35,17 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "view <tag>",
-		Short: "View information about a GitLab Release",
-		Long: heredoc.Doc(`View information about a GitLab Release.
+		Short: "View information about a GitLab release.",
+		Long: heredoc.Doc(`View information about a GitLab release.
 
-			Without an explicit tag name argument, the latest release in the project is shown.
+			Without an explicit tag name argument, shows the latest release in the project.
 		`),
 		Example: heredoc.Doc(`
-			View the latest release of a GitLab repository
+			# View the latest release of a GitLab repository
 			$ glab release view
 
-			View a release with specified tag name
-			$ glab release view v1.0.1 
+			# View a release with specified tag name
+			$ glab release view v1.0.1
 `),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -60,7 +60,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open the release in the browser")
+	cmd.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open the release in the browser.")
 
 	return cmd
 }
@@ -84,7 +84,7 @@ func viewRun(opts *ViewOpts) error {
 	if opts.TagName == "" {
 		releases, _, err := client.Releases.ListReleases(repo.FullName(), &gitlab.ListReleasesOptions{})
 		if err != nil {
-			return cmdutils.WrapError(err, "could not fetch latest release")
+			return cmdutils.WrapError(err, "could not fetch latest release.")
 		}
 		if len(releases) < 1 {
 			return cmdutils.WrapError(errors.New("not found"), fmt.Sprintf("no release found for %q", repo.FullName()))
@@ -98,7 +98,7 @@ func viewRun(opts *ViewOpts) error {
 			if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
 				return cmdutils.WrapError(err, "release does not exist.")
 			}
-			return cmdutils.WrapError(err, "failed to fetch release")
+			return cmdutils.WrapError(err, "failed to fetch release.")
 		}
 	}
 

@@ -20,13 +20,19 @@ func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
 		Use:   "archive <command> [flags]",
 		Short: `Get an archive of the repository.`,
 		Example: heredoc.Doc(`
-	glab repo archive profclems/glab
-	glab repo archive  # Downloads zip file of current repository
-	glab repo archive profclems/glab mydirectory  # Downloads repo zip file into mydirectory
-	glab repo archive profclems/glab --format=zip   # Finds repo for current user and download in zip format
+	$ glab repo archive profclems/glab
+
+	# Downloads zip file of current repository
+	$ glab repo archive
+
+	# Downloads repo zip file into mydirectory
+	$ glab repo archive profclems/glab mydirectory
+
+	# Finds repo for current user and download in ZIP format
+	$ glab repo archive profclems/glab --format=zip
 	`),
 		Long: heredoc.Doc(`
-	Clone supports these shorthands
+	Clone supports these shorthand references:
 
 	- repo
 	- namespace/repo
@@ -84,13 +90,13 @@ func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
 			r := bytes.NewReader(bt)
 			out, err := os.Create(archiveName + ".tmp")
 			if err != nil {
-				return fmt.Errorf("failed to create repo archive: %v", err)
+				return fmt.Errorf("failed to create repository archive: %v", err)
 			}
 
 			counter := &CloneWriter{}
 			if _, err = io.Copy(out, io.TeeReader(r, counter)); err != nil {
 				_ = out.Close()
-				return fmt.Errorf("failed to write repos: %v", err)
+				return fmt.Errorf("failed to write repositories: %v", err)
 			}
 
 			fmt.Fprint(f.IO.StdOut, "\n")
@@ -103,8 +109,8 @@ func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	repoArchiveCmd.Flags().StringP("format", "f", "zip", "Optionally Specify format if you want a downloaded archive: {tar.gz|tar.bz2|tbz|tbz2|tb2|bz2|tar|zip}.")
-	repoArchiveCmd.Flags().StringP("sha", "s", "", "The commit SHA to download. A tag, branch reference, or SHA can be used. This defaults to the tip of the default branch if not specified")
+	repoArchiveCmd.Flags().StringP("format", "f", "zip", "Optional. Specify format if you want a downloaded archive: tar.gz, tar.bz2, tbz, tbz2, tb2, bz2, tar, zip.")
+	repoArchiveCmd.Flags().StringP("sha", "s", "", "The commit SHA to download. A tag, branch reference, or SHA can be used. Defaults to the tip of the default branch if not specified.")
 
 	return repoArchiveCmd
 }
