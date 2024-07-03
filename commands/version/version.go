@@ -12,7 +12,7 @@ import (
 func NewCmdVersion(s *iostreams.IOStreams, version, buildDate string) *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:     "version",
-		Short:   "Show glab version information",
+		Short:   "Show version information for glab.",
 		Long:    ``,
 		Aliases: []string{"v"},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -30,5 +30,5 @@ func Scheme(version, buildDate string) string {
 		version = fmt.Sprintf("%s (%s)", version, buildDate)
 	}
 
-	return fmt.Sprintf("glab version %s\n", version)
+	return fmt.Sprintf("Current glab version: %s\n", version)
 }

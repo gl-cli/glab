@@ -43,12 +43,12 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 			return deleteRun(opts)
 		},
 		Example: heredoc.Doc(`
-		# delete a personal repo
+		# Delete a personal repository.
 		$ glab repo delete dotfiles
 
-		# delete a repo in GitLab group or another repo you have write access
+		# Delete a repository in a GitLab group, or another repository
+		# you have write access to:
 		$ glab repo delete mygroup/dotfiles
-
 		$ glab repo delete myorg/mynamespace/dotfiles
 	  `),
 	}
@@ -89,12 +89,12 @@ func deleteRun(opts *DeleteOpts) error {
 	}
 
 	if !opts.ForceDelete && !opts.IO.PromptEnabled() {
-		return &cmdutils.FlagError{Err: fmt.Errorf("--yes or -y flag is required when not running interactively")}
+		return &cmdutils.FlagError{Err: fmt.Errorf("--yes or -y flag is required when not running interactively.")}
 	}
 
 	if !opts.ForceDelete && opts.IO.PromptEnabled() {
-		fmt.Fprintf(opts.IO.StdErr, "This action will permanently delete %s immediately, including its repositories and all content: issues, merge requests.\n\n", opts.RepoName)
-		err = prompt.Confirm(&opts.ForceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete %s", opts.RepoName), false)
+		fmt.Fprintf(opts.IO.StdErr, "This action will permanently delete %s immediately, including its repositories and all content: issues and merge requests.\n\n", opts.RepoName)
+		err = prompt.Confirm(&opts.ForceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete %s?", opts.RepoName), false)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ func deleteRun(opts *DeleteOpts) error {
 			return err
 		}
 		if resp.StatusCode == http.StatusUnauthorized {
-			return fmt.Errorf("you are not authorized to delete %s.\nPlease edit your token used for glab and make sure it has `api` and `write_repository` scopes enabled", opts.RepoName)
+			return fmt.Errorf("you are not authorized to delete %s.\nCheck your token used for glab. Make sure it has the `api` and `write_repository` scopes enabled.", opts.RepoName)
 		}
 		return err
 	}

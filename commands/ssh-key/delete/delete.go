@@ -70,8 +70,8 @@ func NewCmdDelete(f *cmdutils.Factory, runE func(*DeleteOpts) error) *cobra.Comm
 		},
 	}
 
-	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
-	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page")
+	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
+	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
 
 	return cmd
 }
@@ -84,14 +84,14 @@ func deleteRun(opts *DeleteOpts) error {
 
 	_, err = httpClient.Users.DeleteSSHKey(opts.KeyID)
 	if err != nil {
-		return cmdutils.WrapError(err, "deleting SSH key")
+		return cmdutils.WrapError(err, "deleting SSH key.")
 	}
 
 	if opts.IO.IsOutputTTY() {
 		cs := opts.IO.Color()
-		opts.IO.Logf("%s SSH key has been deleted\n", cs.GreenCheck())
+		opts.IO.Logf("%s SSH key deleted.\n", cs.GreenCheck())
 	} else {
-		opts.IO.Logf("SSH key has been deleted\n")
+		opts.IO.Logf("SSH key deleted.\n")
 	}
 
 	return nil
@@ -99,7 +99,7 @@ func deleteRun(opts *DeleteOpts) error {
 
 func keySelectPrompt(opts *DeleteOpts) (int, error) {
 	if !opts.IO.PromptEnabled() {
-		return 0, cmdutils.FlagError{Err: errors.New("<key-id> argument is required when prompts are disabled")}
+		return 0, cmdutils.FlagError{Err: errors.New("the <key-id> argument is required when prompts are disabled.")}
 	}
 
 	sshKeyListOptions := &gitlab.ListSSHKeysOptions{
@@ -114,10 +114,10 @@ func keySelectPrompt(opts *DeleteOpts) (int, error) {
 
 	keys, resp, err := httpClient.Users.ListSSHKeys(sshKeyListOptions)
 	if err != nil {
-		return 0, cmdutils.WrapError(err, "Retrieving list of SSH keys")
+		return 0, cmdutils.WrapError(err, "Retrieving list of SSH keys.")
 	}
 	if len(keys) == 0 {
-		return 0, cmdutils.WrapError(errors.New("no keys found"), "Retrieving list of SSH keys")
+		return 0, cmdutils.WrapError(errors.New("no keys found"), "Retrieving list of SSH keys.")
 	}
 
 	keyOpts := map[string]int{}
@@ -141,7 +141,7 @@ func keySelectPrompt(opts *DeleteOpts) (int, error) {
 	var result string
 	err = prompt.AskOne(keySelectQuestion, &result)
 	if err != nil {
-		return 0, cmdutils.WrapError(err, "prompting for SSH key to delete")
+		return 0, cmdutils.WrapError(err, "prompting for SSH key to delete.")
 	}
 
 	return keyOpts[result], nil

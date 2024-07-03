@@ -10,7 +10,7 @@ import (
 func NewCmdSnippet(f *cmdutils.Factory) *cobra.Command {
 	snippetCmd := &cobra.Command{
 		Use:   "snippet <command> [flags]",
-		Short: `Create, view and manage snippets`,
+		Short: `Create, view and manage snippets.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
 			glab snippet create --title "Title of the snippet" --filename "main.go"

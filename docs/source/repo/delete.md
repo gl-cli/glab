@@ -20,12 +20,12 @@ glab repo delete [<NAMESPACE>/]<NAME> [flags]
 ## Examples
 
 ```plaintext
-# delete a personal repo
+# Delete a personal repository.
 $ glab repo delete dotfiles
 
-# delete a repo in GitLab group or another repo you have write access
+# Delete a repository in a GitLab group, or another repository
+# you have write access to:
 $ glab repo delete mygroup/dotfiles
-
 $ glab repo delete myorg/mynamespace/dotfiles
  
 ```

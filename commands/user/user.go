@@ -9,7 +9,7 @@ import (
 func NewCmdUser(f *cmdutils.Factory) *cobra.Command {
 	userCmd := &cobra.Command{
 		Use:   "user <command> [flags]",
-		Short: "Interact with user",
+		Short: "Interact with a GitLab user account.",
 		Long:  "",
 	}
 

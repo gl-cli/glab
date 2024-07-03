@@ -20,7 +20,7 @@ import (
 func NewCmdRepo(f *cmdutils.Factory) *cobra.Command {
 	repoCmd := &cobra.Command{
 		Use:     "repo <command> [flags]",
-		Short:   `Work with GitLab repositories and projects`,
+		Short:   `Work with GitLab repositories and projects.`,
 		Long:    ``,
 		Aliases: []string{"project"},
 	}
