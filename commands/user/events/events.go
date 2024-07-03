@@ -16,7 +16,7 @@ import (
 func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "events",
-		Short: "View user events",
+		Short: "View user events.",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			apiClient, err := f.HttpClient()
@@ -91,7 +91,7 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().BoolP("all", "a", false, "Get events from all projects.")
 	cmd.Flags().IntP("page", "p", 1, "Page number.")
 	cmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page.")
-	cmd.Flags().StringP("output", "F", "text", "Format output as: 'text', 'json'")
+	cmd.Flags().StringP("output", "F", "text", "Format output as: 'text', 'json'.")
 	return cmd
 }
 
@@ -141,7 +141,7 @@ func printEvent(w io.Writer, e *gitlab.ContributionEvent, project *gitlab.Projec
 		if e.TargetType == "WikiPage::Meta" {
 			targetType = "Wiki page"
 		}
-		fmt.Fprintf(w, "Created %s %s at %s\n", targetType, e.TargetTitle, project.NameWithNamespace)
+		fmt.Fprintf(w, "Created %s %s at %s.\n", targetType, e.TargetTitle, project.NameWithNamespace)
 	default:
 		fmt.Fprintf(w, "%s %q", e.TargetType, e.Title)
 	}

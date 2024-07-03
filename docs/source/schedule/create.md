@@ -27,12 +27,12 @@ glab schedule create --cron "0 * * * *" --description "Describe your pipeline he
 ## Options
 
 ```plaintext
-      --active                Whether or not the schedule is active (default true)
-      --cron string           Cron interval pattern
-      --cronTimeZone string   Cron timezone (default "UTC")
-      --description string    Description of the schedule
-      --ref string            Target branch or tag
-      --variable strings      Pass variables to schedule in format <key>:<value>
+      --active                Whether or not the schedule is active. (default true)
+      --cron string           Cron interval pattern.
+      --cronTimeZone string   Cron timezone. (default "UTC")
+      --description string    Description of the schedule.
+      --ref string            Target branch or tag.
+      --variable strings      Pass variables to schedule in the format <key>:<value>.
 ```
 
 ## Options inherited from parent commands

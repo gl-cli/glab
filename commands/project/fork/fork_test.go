@@ -145,7 +145,7 @@ func TestProjectFork(t *testing.T) {
 
 			if assert.NoErrorf(t, err, "error running command `project fork %s`: %v", tc.commandArgs, err) {
 				assert.Empty(t, output.String())
-				assert.Equal(t, "- finished\n✓ Created fork OWNER/baz\n", output.Stderr())
+				assert.Equal(t, "- finished\n✓ Created fork OWNER/baz.\n", output.Stderr())
 			}
 
 			assert.Equal(t, len(tc.expectedShellouts), cs.Count)

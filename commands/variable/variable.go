@@ -14,7 +14,7 @@ import (
 func NewVariableCmd(f *cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "variable",
-		Short:   "Manage GitLab Project and Group Variables",
+		Short:   "Manage variables for a GitLab project or group.",
 		Aliases: []string{"var"},
 	}
 

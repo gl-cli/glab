@@ -31,17 +31,17 @@ func NewCmdAdd(f *cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "add [key-file]",
-		Short: "Add an SSH key to your GitLab account",
+		Short: "Add an SSH key to your GitLab account.",
 		Long: heredoc.Doc(`
 		Creates a new SSH key owned by the currently authenticated user.
 
-		The --title flag is always required
+		The --title flag is required.
 		`),
 		Example: heredoc.Doc(`
-		# Read ssh key from stdin and upload
+		# Read ssh key from stdin and upload.
 		$ glab ssh-key add -t "my title"
 
-		# Read ssh key from specified key file and upload
+		# Read ssh key from specified key file and upload.
 		$ glab ssh-key add ~/.ssh/id_ed25519.pub -t "my title"
 		`),
 		Args: cobra.MaximumNArgs(1),
@@ -66,8 +66,8 @@ func NewCmdAdd(f *cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Title, "title", "t", "", "New SSH key's title")
-	cmd.Flags().StringVarP(&opts.ExpiresAt, "expires-at", "e", "", "The expiration date of the SSH key in ISO 8601 format (YYYY-MM-DDTHH:MM:SSZ)")
+	cmd.Flags().StringVarP(&opts.Title, "title", "t", "", "New SSH key's title.")
+	cmd.Flags().StringVarP(&opts.ExpiresAt, "expires-at", "e", "", "The expiration date of the SSH key. Uses ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.")
 
 	_ = cmd.MarkFlagRequired("title")
 
@@ -96,19 +96,19 @@ func addRun(opts *AddOpts) error {
 
 	keyInBytes, err := io.ReadAll(keyFileReader)
 	if err != nil {
-		return cmdutils.WrapError(err, "failed to read ssh key file")
+		return cmdutils.WrapError(err, "failed to read SSH key file.")
 	}
 
 	opts.Key = string(keyInBytes)
 
 	err = UploadSSHKey(httpClient, opts.Title, opts.Key, opts.ExpiresAt)
 	if err != nil {
-		return cmdutils.WrapError(err, "failed to add new ssh public key")
+		return cmdutils.WrapError(err, "failed to add new SSH public key.")
 	}
 
 	if opts.IO.IsOutputTTY() {
 		cs := opts.IO.Color()
-		opts.IO.Logf("%s New SSH public key added to your account\n", cs.GreenCheck())
+		opts.IO.Logf("%s New SSH public key added to your account.\n", cs.GreenCheck())
 	}
 
 	return nil

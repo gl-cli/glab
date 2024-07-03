@@ -37,7 +37,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{}
 	snippetCreateCmd := &cobra.Command{
 		Use:     "create [path]",
-		Short:   `Create new snippet`,
+		Short:   `Create a new snippet.`,
 		Long:    ``,
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
@@ -56,7 +56,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			}
 			if len(args) == 0 {
 				if opts.DisplayFilename == "" {
-					return &cmdutils.FlagError{Err: errors.New("if path is not provided, filename is required.")}
+					return &cmdutils.FlagError{Err: errors.New("if 'path' is not provided, 'filename' is required.")}
 				}
 			} else {
 				if opts.DisplayFilename == "" {

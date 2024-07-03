@@ -128,7 +128,7 @@ func Test_deleteRun(t *testing.T) {
 				Scope:      "*",
 			},
 			wantsErr:    false,
-			wantsOutput: "✓ Deleted variable TEST_VAR with scope * for owner/repo\n",
+			wantsOutput: "✓ Deleted variable TEST_VAR with scope * for owner/repo.\n",
 		},
 		{
 			name: "delete project variable with stage scope",
@@ -139,7 +139,7 @@ func Test_deleteRun(t *testing.T) {
 				Scope:      "stage",
 			},
 			wantsErr:    false,
-			wantsOutput: "✓ Deleted variable TEST_VAR with scope stage for owner/repo\n",
+			wantsOutput: "✓ Deleted variable TEST_VAR with scope stage for owner/repo.\n",
 		},
 		{
 			name: "delete group variable",
@@ -151,7 +151,7 @@ func Test_deleteRun(t *testing.T) {
 				Group:      "testGroup",
 			},
 			wantsErr:    false,
-			wantsOutput: "✓ Deleted variable TEST_VAR for group testGroup\n",
+			wantsOutput: "✓ Deleted variable TEST_VAR for group testGroup.\n",
 		},
 	}
 

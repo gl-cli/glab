@@ -37,7 +37,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Comma
 
 	cmd := &cobra.Command{
 		Use:     "set <key> <value>",
-		Short:   "Create a new project or group variable",
+		Short:   "Create a new variable for a project or group.",
 		Aliases: []string{"new", "create"},
 		Args:    cobra.RangeArgs(1, 2),
 		Example: heredoc.Doc(`
@@ -62,7 +62,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Comma
 			}
 
 			if opts.Value != "" && len(args) == 2 {
-				err = cmdutils.FlagError{Err: errors.New("specify value either by second positional argument or --value flag")}
+				err = cmdutils.FlagError{Err: errors.New("specify value either by the second positional argument or the --value flag.")}
 				return
 			}
 
@@ -73,7 +73,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Comma
 
 			if cmd.Flags().Changed("type") {
 				if opts.Type != "env_var" && opts.Type != "file" {
-					err = cmdutils.FlagError{Err: fmt.Errorf("invalid type: %s. --type must be one of `env_var` or `file`", opts.Type)}
+					err = cmdutils.FlagError{Err: fmt.Errorf("invalid type: %s. --type must be one of `env_var` or `file`.", opts.Type)}
 					return
 				}
 			}
@@ -87,13 +87,13 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Comma
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Value, "value", "v", "", "The value of a variable")
-	cmd.Flags().StringVarP(&opts.Type, "type", "t", "env_var", "The type of a variable: {env_var|file}")
-	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. All (*), or specific environments")
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Set variable for a group")
-	cmd.Flags().BoolVarP(&opts.Masked, "masked", "m", false, "Whether the variable is masked")
-	cmd.Flags().BoolVarP(&opts.Raw, "raw", "r", false, "Whether the variable is treated as a raw string")
-	cmd.Flags().BoolVarP(&opts.Protected, "protected", "p", false, "Whether the variable is protected")
+	cmd.Flags().StringVarP(&opts.Value, "value", "v", "", "The value of a variable.")
+	cmd.Flags().StringVarP(&opts.Type, "type", "t", "env_var", "The type of a variable: env_var, file.")
+	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. Values: all (*), or specific environments.")
+	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Set variable for a group.")
+	cmd.Flags().BoolVarP(&opts.Masked, "masked", "m", false, "Whether the variable is masked.")
+	cmd.Flags().BoolVarP(&opts.Raw, "raw", "r", false, "Whether the variable is treated as a raw string.")
+	cmd.Flags().BoolVarP(&opts.Protected, "protected", "p", false, "Whether the variable is protected.")
 	return cmd
 }
 
@@ -120,7 +120,7 @@ func setRun(opts *SetOpts) error {
 			return err
 		}
 
-		fmt.Fprintf(opts.IO.StdOut, "%s Created variable %s for group %s\n", c.GreenCheck(), opts.Key, opts.Group)
+		fmt.Fprintf(opts.IO.StdOut, "%s Created variable %s for group %s.\n", c.GreenCheck(), opts.Key, opts.Group)
 		return nil
 	}
 
@@ -143,6 +143,6 @@ func setRun(opts *SetOpts) error {
 		return err
 	}
 
-	fmt.Fprintf(opts.IO.StdOut, "%s Created variable %s for %s with scope %s\n", c.GreenCheck(), opts.Key, baseRepo.FullName(), opts.Scope)
+	fmt.Fprintf(opts.IO.StdOut, "%s Created variable %s for %s with scope %s.\n", c.GreenCheck(), opts.Key, baseRepo.FullName(), opts.Scope)
 	return nil
 }

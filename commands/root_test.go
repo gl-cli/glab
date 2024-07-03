@@ -24,7 +24,7 @@ func TestRootVersion(t *testing.T) {
 
 	out := test.ReturnBuffer(old, r, w)
 
-	assert.Equal(t, "glab version 1.0.0 (2020-01-01)\n", out)
+	assert.Equal(t, "Current glab version: 1.0.0 (2020-01-01)\n", out)
 }
 
 func TestRootNoArg(t *testing.T) {
