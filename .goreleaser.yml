@@ -1,4 +1,5 @@
 project_name: glab
+version: 2
 
 release:
   prerelease: auto
