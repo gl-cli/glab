@@ -85,7 +85,7 @@ func TestReleaseCreate(t *testing.T) {
 				assert.Contains(t, output.Stderr(), `• Validating tag 0.0.1
 
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
-✓ Release created	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
+✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 ✓ Release succeeded after`)
 				assert.Empty(t, output.String())
 			}
@@ -193,7 +193,7 @@ func TestReleaseCreateWithFiles(t *testing.T) {
 				assert.Contains(t, output.Stderr(), `• Validating tag 0.0.1
 
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
-✓ Release created	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
+✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 • Uploading release assets repo=OWNER/REPO tag=0.0.1
 • Uploading to release	file=testdata/test_file.txt name=test_file.txt
 ✓ Release succeeded after`)
@@ -215,7 +215,7 @@ func TestReleaseCreate_WithAssetsLinksJSON(t *testing.T) {
 			expectedOutput: `• Validating tag 0.0.1
 
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
-✓ Release created	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
+✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 • Uploading release assets repo=OWNER/REPO tag=0.0.1
 ✓ Added release asset	name=any-name url=https://gitlab.example.com/OWNER/REPO/releases/0.0.1/downloads/any-path
 ✓ Release succeeded after`,
@@ -226,7 +226,7 @@ func TestReleaseCreate_WithAssetsLinksJSON(t *testing.T) {
 			expectedOutput: `• Validating tag 0.0.1
 
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
-✓ Release created	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
+✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 • Uploading release assets repo=OWNER/REPO tag=0.0.1
 ✓ Added release asset	name=any-name url=https://gitlab.example.com/OWNER/REPO/releases/0.0.1/downloads/any-path
 	! Aliased deprecated ` + "`filepath`" + ` field to ` + "`direct_asset_path`" + `. Replace ` + "`filepath`" + ` with ` + "`direct_asset_path`" + `	name=any-name

@@ -67,7 +67,7 @@ func TestNewCmdClone(t *testing.T) {
 		{
 			name:    "no arguments",
 			args:    "",
-			wantErr: "specify repo argument or use --group flag to specify a group to clone all repos from the group",
+			wantErr: "Specify repository argument, or use the --group flag to specify a group to clone all repos from the group.",
 		},
 		{
 			name: "repo argument",
@@ -102,7 +102,7 @@ func TestNewCmdClone(t *testing.T) {
 		{
 			name:    "unknown argument",
 			args:    "NAMESPACE/REPO --depth 1",
-			wantErr: "unknown flag: --depth\nSeparate git clone flags with '--'.",
+			wantErr: "unknown flag: --depth\nSeparate Git clone flags with '--'.",
 		},
 	}
 	for _, tt := range testCases {

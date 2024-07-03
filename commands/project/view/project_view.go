@@ -37,20 +37,21 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 
 	projectViewCmd := &cobra.Command{
 		Use:   "view [repository] [flags]",
-		Short: "View a project/repository",
-		Long: heredoc.Doc(`Display the description and README of a project or open it in the browser.
+		Short: "View a project or repository.",
+		Long: heredoc.Doc(`Display the description and README of a project, or open it in the browser.
 		`),
 		Args: cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
-			# view project information for the current directory (must be a git repository)
+			# View project information for the current directory.
+			# Must be a Git repository.
 			$ glab repo view
 
-			# view project information of specified name
+			# View project information of specified name.
 			$ glab repo view my-project
 			$ glab repo view user/repo
 			$ glab repo view group/namespace/repo
 
-			# specify repo by full [git] URL
+			# Specify repository by full [Git] URL.
 			$ glab repo view git@gitlab.com:user/repo.git
 			$ glab repo view https://gitlab.company.org/user/repo
 			$ glab repo view https://gitlab.company.org/user/repo.git
@@ -73,7 +74,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			if opts.ProjectID == "" {
 				opts.Repo, err = f.BaseRepo()
 				if err != nil {
-					return cmdutils.WrapError(err, "`repository` is required when not running in a git repository")
+					return cmdutils.WrapError(err, "`repository` is required when not running in a Git repository.")
 				}
 
 				// Configure client to have host of current repository
@@ -95,7 +96,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 					}
 					currentUser, err := api.CurrentUser(apiClient)
 					if err != nil {
-						return cmdutils.WrapError(err, "Failed to retrieve your current user")
+						return cmdutils.WrapError(err, "Failed to retrieve your current user.")
 					}
 
 					opts.ProjectID = currentUser.Username + "/" + opts.ProjectID
@@ -121,9 +122,9 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	projectViewCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, "Open a project in the browser")
-	projectViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
-	projectViewCmd.Flags().StringVarP(&opts.Branch, "branch", "b", "", "View a specific branch of the repository")
+	projectViewCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, "Open a project in the browser.")
+	projectViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
+	projectViewCmd.Flags().StringVarP(&opts.Branch, "branch", "b", "", "View a specific branch of the repository.")
 
 	return projectViewCmd
 }
@@ -131,7 +132,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 func runViewProject(opts *ViewOptions) error {
 	project, err := opts.Repo.Project(opts.APIClient)
 	if err != nil {
-		return cmdutils.WrapError(err, "Failed to retrieve project information")
+		return cmdutils.WrapError(err, "Failed to retrieve project information.")
 	}
 
 	if opts.Web {
@@ -188,12 +189,12 @@ func getReadmeFile(opts *ViewOptions, project *gitlab.Project) (*gitlab.File, er
 
 	readmeFile, err := api.GetFile(opts.APIClient, project.PathWithNamespace, readmeFileName, opts.Branch)
 	if err != nil {
-		return nil, cmdutils.WrapError(err, fmt.Sprintf("Failed to retrieve README file on the %s branch", opts.Branch))
+		return nil, cmdutils.WrapError(err, fmt.Sprintf("Failed to retrieve README file on the %s branch.", opts.Branch))
 	}
 
 	decoded, err := base64.StdEncoding.DecodeString(readmeFile.Content)
 	if err != nil {
-		return nil, cmdutils.WrapError(err, "Failed to decode README file")
+		return nil, cmdutils.WrapError(err, "Failed to decode README file.")
 	}
 
 	readmeFile.Content = string(decoded)
@@ -240,7 +241,7 @@ func printProjectContentTTY(opts *ViewOptions, project *gitlab.Project, readme *
 	if readme != nil {
 		fmt.Fprint(opts.IO.StdOut, readmeContent)
 	} else {
-		fmt.Fprintln(opts.IO.StdOut, c.Gray("(This repository does not have a README file)"))
+		fmt.Fprintln(opts.IO.StdOut, c.Gray("(This repository does not have a README file.)"))
 	}
 
 	fmt.Fprintln(opts.IO.StdOut)

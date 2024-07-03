@@ -61,52 +61,51 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create <tag> [<files>...]",
-		Short: "Create a new or update a GitLab Release for a repository",
-		Long: heredoc.Docf(`Create a new or update a GitLab Release for a repository.
+		Short: "Create a new GitLab release or update an existing one.",
+		Long: heredoc.Docf(`Create a new release, or update an existing GitLab release, for a repository. Requires the Developer role or higher.
 
-				If the release already exists, glab updates the release with the new info provided.
+		An existing release is updated with the new info you provide.
 
-				If a Git tag specified does not yet exist, the release will automatically get created
-				from the latest state of the default branch and tagged with the specified tag name.
-				Use %[1]s--ref%[1]s to override this.
-				The %[1]sref%[1]s can be a commit SHA, another tag name, or a branch name.
-				To fetch the new tag locally after the release, do %[1]sgit fetch --tags origin%[1]s.
+		To create a release from an annotated Git tag, first create one locally with
+		Git, push the tag to GitLab, then run this command.
 
-				To create a release from an annotated Git tag, first create one locally with
-				Git, push the tag to GitLab, then run this command.
+		If the Git tag you specify doesn't exist, the release is created
+		from the latest state of the default branch, and tagged with the tag name you specify.
 
-				Developer level access to the project is required to create a release.
+		To override this behavior, use %[1]s--ref%[1]s. The %[1]sref%[1]s can be a commit SHA, another tag name, or a branch name.
+
+		To fetch the new tag locally after the release, run %[1]sgit fetch --tags origin%[1]s.
 		`, "`"),
 		Args: cmdutils.MinimumArgs(1, "no tag name provided"),
 		Example: heredoc.Doc(`
-			Interactively create a release
+			# Interactively create a release
 			$ glab release create v1.0.1
 
-			Non-interactively create a release by specifying a note
+			# Non-interactively create a release by specifying a note
 			$ glab release create v1.0.1 --notes "bugfix release"
 
-			Use release notes from a file
+			# Use release notes from a file
 			$ glab release create v1.0.1 -F changelog.md
 
-			Upload a release asset with a display name (type will default to 'other')
+			# Upload a release asset with a display name (type will default to 'other')
 			$ glab release create v1.0.1 '/path/to/asset.zip#My display label'
 
-			Upload a release asset with a display name and type
+			# Upload a release asset with a display name and type
 			$ glab release create v1.0.1 '/path/to/asset.png#My display label#image'
 
-			Upload all assets in a specified folder (types will default to 'other')
+			# Upload all assets in a specified folder (types will default to 'other')
 			$ glab release create v1.0.1 ./dist/*
 
-			Upload all tarballs in a specified folder (types will default to 'other')
+			# Upload all tarballs in a specified folder (types will default to 'other')
 			$ glab release create v1.0.1 ./dist/*.tar.gz
 
-			Create a release with assets specified as JSON object
+			# Create a release with assets specified as JSON object
 			$ glab release create v1.0.1 --assets-links='
 			  [
 			    {
-			      "name": "Asset1", 
-			      "url":"https://<domain>/some/location/1", 
-			      "link_type": "other", 
+			      "name": "Asset1",
+			      "url":"https://<domain>/some/location/1",
+			      "link_type": "other",
 			      "direct_asset_path": "path/to/file"
 			    }
 			  ]'
@@ -154,13 +153,13 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "The release name or title")
-	cmd.Flags().StringVarP(&opts.Ref, "ref", "r", "", "If a tag specified doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.")
-	cmd.Flags().StringVarP(&opts.Notes, "notes", "N", "", "The release notes/description. You can use Markdown")
-	cmd.Flags().StringVarP(&opts.NotesFile, "notes-file", "F", "", "Read release notes `file`. Specify `-` as value to read from stdin")
-	cmd.Flags().StringVarP(&opts.ReleasedAt, "released-at", "D", "", "The `date` when the release is/was ready. Defaults to the current datetime. Expected in ISO 8601 format (2019-03-15T08:00:00Z)")
-	cmd.Flags().StringSliceVarP(&opts.Milestone, "milestone", "m", []string{}, "The title of each milestone the release is associated with")
-	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "`JSON` string representation of assets links (e.g. `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]')`")
+	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "The release name or title.")
+	cmd.Flags().StringVarP(&opts.Ref, "ref", "r", "", "If the specified tag doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.")
+	cmd.Flags().StringVarP(&opts.Notes, "notes", "N", "", "The release notes or description. You can use Markdown.")
+	cmd.Flags().StringVarP(&opts.NotesFile, "notes-file", "F", "", "Read release notes `file`. Specify `-` as the value to read from stdin.")
+	cmd.Flags().StringVarP(&opts.ReleasedAt, "released-at", "D", "", "The `date` when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).")
+	cmd.Flags().StringSliceVarP(&opts.Milestone, "milestone", "m", []string{}, "The title of each milestone the release is associated with.")
+	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "`JSON` string representation of assets links, like `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
 
 	return cmd
 }
@@ -187,7 +186,7 @@ func createRun(opts *CreateOpts) error {
 		}
 		if tag == nil && resp != nil && resp.StatusCode == http.StatusNotFound {
 			opts.IO.Log(color.DotWarnIcon(), "Tag does not exist.")
-			opts.IO.Log(color.DotWarnIcon(), "No ref was provided. Tag will be created from the latest state of the default branch")
+			opts.IO.Log(color.DotWarnIcon(), "No ref provided. Creating the tag from the latest state of the default branch.")
 			project, err := repo.Project(client)
 			if err == nil {
 				opts.IO.Logf("%s using default branch %q as ref\n", color.ProgressIcon(), project.DefaultBranch)
@@ -232,20 +231,20 @@ func createRun(opts *CreateOpts) error {
 			}
 		}
 
-		editorOptions := []string{"Write my own"}
+		editorOptions := []string{"Write my own."}
 		if generatedChangelog != "" {
-			editorOptions = append(editorOptions, "Write using commit log as template")
+			editorOptions = append(editorOptions, "Write using the commit log as a template.")
 		}
 		if tagDescription != "" {
-			editorOptions = append(editorOptions, "Write using git tag message as template")
+			editorOptions = append(editorOptions, "Write using the Git tag message as the template.")
 		}
-		editorOptions = append(editorOptions, "Leave blank")
+		editorOptions = append(editorOptions, "Leave blank.")
 
 		qs := []*survey.Question{
 			{
 				Name: "name",
 				Prompt: &survey.Input{
-					Message: "Release Title (optional)",
+					Message: "Release title (optional)",
 					Default: opts.Name,
 				},
 			},
@@ -266,15 +265,15 @@ func createRun(opts *CreateOpts) error {
 		var editorContents string
 
 		switch opts.ReleaseNotesAction {
-		case "Write my own":
+		case "Write my own.":
 			openEditor = true
-		case "Write using commit log as template":
+		case "Write using commit log as template.":
 			openEditor = true
 			editorContents = generatedChangelog
-		case "Write using git tag message as template":
+		case "Write using git tag message as template.":
 			openEditor = true
 			editorContents = tagDescription
-		case "Leave blank":
+		case "Leave blank.":
 			openEditor = false
 		default:
 			return fmt.Errorf("invalid action: %v", opts.ReleaseNotesAction)
@@ -341,7 +340,7 @@ func createRun(opts *CreateOpts) error {
 		if err != nil {
 			return releaseFailedErr(err, start)
 		}
-		opts.IO.Logf("%s Release created\t%s=%s\n", color.GreenCheck(),
+		opts.IO.Logf("%s Release created:\t%s=%s\n", color.GreenCheck(),
 			color.Blue("url"), release.Links.Self)
 	} else {
 		updateOpts := &gitlab.UpdateReleaseOptions{
@@ -390,12 +389,12 @@ func createRun(opts *CreateOpts) error {
 			}
 		}
 	}
-	opts.IO.Logf(color.Bold("%s Release succeeded after %0.2fs\n"), color.GreenCheck(), time.Since(start).Seconds())
+	opts.IO.Logf(color.Bold("%s Release succeeded after %0.2fs.\n"), color.GreenCheck(), time.Since(start).Seconds())
 	return nil
 }
 
 func releaseFailedErr(err error, start time.Time) error {
-	return cmdutils.WrapError(err, fmt.Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
+	return cmdutils.WrapError(err, fmt.Sprintf("release failed after %0.2fs.", time.Since(start).Seconds()))
 }
 
 func getMilestoneByTitle(c *CreateOpts, title string) (*gitlab.Milestone, error) {

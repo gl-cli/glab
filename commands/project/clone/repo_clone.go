@@ -62,30 +62,33 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 
 	repoCloneCmd := &cobra.Command{
 		Use:   "clone <repo> [flags] [<dir>] [-- [<gitflags>...]]",
-		Short: `Clone a GitLab repository/project`,
+		Short: `Clone a GitLab repository or project.`,
 		Example: heredoc.Doc(`
 	$ glab repo clone profclems/glab
 
 	$ glab repo clone https://gitlab.com/profclems/glab
 
-	$ glab repo clone profclems/glab mydirectory  # Clones repo into mydirectory
+	# Clones repository into 'mydirectory'
+	$ glab repo clone profclems/glab mydirectory
 
-	$ glab repo clone glab   # clones repo glab for current user 
+	# Clones repository 'glab' for current user
+	$ glab repo clone glab
 
-	$ glab repo clone 4356677   # finds the project by the ID provided and clones it
+	# Finds the project by the ID provided and clones it
+	$ glab repo clone 4356677
 
-	# Clone all repos in a group
+	# Clones all repos in a group
 	$ glab repo clone -g everyonecancontribute --paginate
 
-	# Clone all non-archived repos in a group
+	# Clones all non-archived repos in a group
 	$ glab repo clone -g everyonecancontribute --archived=false --paginate
 
-	# Clone from a self-hosted instance
-	$ GITLAB_HOST=salsa.debian.org glab repo clone myrepo  
+	# Clones from a self-hosted instance
+	$ GITLAB_HOST=salsa.debian.org glab repo clone myrepo
 	`),
 		Long: heredoc.Doc(`
-		Clone supports these shorthands
-		
+		Clone supports these shorthand references:
+
 		- repo
 		- namespace/repo
 		- org/group/repo
@@ -101,7 +104,7 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 			}
 
 			if ctxOpts.Repo == "" && opts.GroupName == "" {
-				return &cmdutils.FlagError{Err: fmt.Errorf("specify repo argument or use --group flag to specify a group to clone all repos from the group")}
+				return &cmdutils.FlagError{Err: fmt.Errorf("Specify repository argument, or use the --group flag to specify a group to clone all repos from the group.")}
 			}
 
 			if runE != nil {
@@ -135,25 +138,25 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 		},
 	}
 
-	repoCloneCmd.Flags().StringVarP(&opts.GroupName, "group", "g", "", "Specify group to clone repositories from")
-	repoCloneCmd.Flags().BoolVarP(&opts.PreserveNamespace, "preserve-namespace", "p", false, "Clone the repo in a subdirectory based on namespace")
-	repoCloneCmd.Flags().BoolVarP(&opts.Archived, "archived", "a", false, "Limit by archived status. Use with -a=false to exclude archived repositories. Used with --group flag")
-	repoCloneCmd.Flags().BoolVarP(&opts.IncludeSubgroups, "include-subgroups", "G", true, "Include projects in subgroups of this group. Default is true. Used with --group flag")
-	repoCloneCmd.Flags().BoolVarP(&opts.Owned, "mine", "m", false, "Limit by projects in the group owned by the current authenticated user. Used with --group flag")
-	repoCloneCmd.Flags().StringVarP(&opts.Visibility, "visibility", "v", "", "Limit by visibility {public, internal, or private}. Used with --group flag")
-	repoCloneCmd.Flags().BoolVarP(&opts.WithIssuesEnabled, "with-issues-enabled", "I", false, "Limit by projects with issues feature enabled. Default is false. Used with --group flag")
-	repoCloneCmd.Flags().BoolVarP(&opts.WithMREnabled, "with-mr-enabled", "M", false, "Limit by projects with merge requests feature enabled. Default is false. Used with --group flag")
-	repoCloneCmd.Flags().BoolVarP(&opts.WithShared, "with-shared", "S", false, "Include projects shared to this group. Default is false. Used with --group flag")
-	repoCloneCmd.Flags().BoolVarP(&opts.Paginate, "paginate", "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects --per-page")
-	repoCloneCmd.Flags().IntVarP(&opts.Page, "page", "", 1, "Page number")
-	repoCloneCmd.Flags().IntVarP(&opts.PerPage, "per-page", "", 30, "Number of items to list per page")
+	repoCloneCmd.Flags().StringVarP(&opts.GroupName, "group", "g", "", "Specify the group to clone repositories from.")
+	repoCloneCmd.Flags().BoolVarP(&opts.PreserveNamespace, "preserve-namespace", "p", false, "Clone the repository in a subdirectory based on namespace.")
+	repoCloneCmd.Flags().BoolVarP(&opts.Archived, "archived", "a", false, "Limit by archived status. Use with '-a=false' to exclude archived repositories. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.IncludeSubgroups, "include-subgroups", "G", true, "Include projects in subgroups of this group. Default is true. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.Owned, "mine", "m", false, "Limit by projects in the group owned by the current authenticated user. Used with the --group flag.")
+	repoCloneCmd.Flags().StringVarP(&opts.Visibility, "visibility", "v", "", "Limit by visibility: public, internal, private. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.WithIssuesEnabled, "with-issues-enabled", "I", false, "Limit by projects with the issues feature enabled. Default is false. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.WithMREnabled, "with-mr-enabled", "M", false, "Limit by projects with the merge request feature enabled. Default is false. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.WithShared, "with-shared", "S", false, "Include projects shared to this group. Default is false. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.Paginate, "paginate", "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects --per-page.")
+	repoCloneCmd.Flags().IntVarP(&opts.Page, "page", "", 1, "Page number.")
+	repoCloneCmd.Flags().IntVarP(&opts.PerPage, "per-page", "", 30, "Number of items to list per page.")
 
 	repoCloneCmd.Flags().SortFlags = false
 	repoCloneCmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
 		if errors.Is(err, pflag.ErrHelp) {
 			return err
 		}
-		return &cmdutils.FlagError{Err: fmt.Errorf("%w\nSeparate git clone flags with '--'.", err)}
+		return &cmdutils.FlagError{Err: fmt.Errorf("%w\nSeparate Git clone flags with '--'.", err)}
 	})
 
 	return repoCloneCmd
@@ -169,7 +172,7 @@ func listProjects(opts *CloneOptions, ListGroupProjectOpts *gitlab.ListGroupProj
 			return nil, err
 		}
 		if len(currentPage) == 0 {
-			fmt.Fprintf(opts.IO.StdErr, "Group %q does not have any projects\n", opts.GroupName)
+			fmt.Fprintf(opts.IO.StdErr, "Group %q does not have any projects.\n", opts.GroupName)
 			return nil, cmdutils.SilentError
 		}
 
