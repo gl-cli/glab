@@ -29,6 +29,8 @@ new
 glab snippet create script.py --title "Title of the snippet"
 echo "package main" | glab snippet new --title "Title of the snippet" --filename "main.go"
 glab snippet create main.go -t Title -f "different.go" -d Description
+glab snippet create main.go -t Title -f "different.go" -d Description --filepath different.go
+glab snippet create script.py --personal --title "Personal snippet"
 
 ```
 
@@ -37,6 +39,7 @@ glab snippet create main.go -t Title -f "different.go" -d Description
 ```plaintext
   -d, --description string   Description of the snippet.
   -f, --filename string      Filename of the snippet in GitLab.
+  -p, --personal             Create a personal snippet.
   -t, --title string         Title of the snippet.
   -v, --visibility string    Limit by visibility: 'public', 'internal', or 'private' (default "private")
 ```
