@@ -44,7 +44,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			glab snippet create script.py --title "Title of the snippet"
 			echo "package main" | glab snippet new --title "Title of the snippet" --filename "main.go"
 			glab snippet create main.go -t Title -f "different.go" -d Description
-			glab snippet create main.go -t Title -f "different.go" -d Description --filepath different.go
+			glab snippet create main.go -t Title -f "different.go" -d Description --filename different.go
 			glab snippet create script.py --personal --title "Personal snippet"
 		`),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -59,6 +59,8 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			if len(args) == 0 {
 				if opts.DisplayFilename == "" {
 					return &cmdutils.FlagError{Err: errors.New("if 'path' is not provided, 'filename' is required.")}
+				} else {
+					opts.FilePath = opts.DisplayFilename
 				}
 			} else {
 				if opts.DisplayFilename == "" {
