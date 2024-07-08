@@ -29,7 +29,7 @@ func TestSnippetCreate(t *testing.T) {
 	}{
 		{
 			name:       "Create personal snippet",
-			command:    "--personal -d 'Hello World snippet' -f 'test.txt' -t 'This is a snippet'",
+			command:    "--personal -d 'Hello World snippet' -f 'testdata/snippet.txt' -t 'This is a snippet'",
 			wantStderr: []string{"- Creating snippet in personal space"},
 			wantStdout: []string{"https://gitlab.example.com/snippets/1"},
 			mock: httpMock{
@@ -53,7 +53,32 @@ func TestSnippetCreate(t *testing.T) {
 		},
 		{
 			name:       "Create project snippet",
-			command:    "-d 'Hello World snippet' -f 'test.txt' -t 'This is a snippet'",
+			command:    "-d 'Hello World snippet' -f 'testdata/snippet.txt' -t 'This is a snippet'",
+			wantStderr: []string{"- Creating snippet in OWNER/REPO"},
+			wantStdout: []string{"https://gitlab.example.com/OWNER/REPO/-/snippets/1"},
+			mock: httpMock{
+				method: http.MethodPost,
+				path:   "/api/v4/projects/OWNER/REPO/snippets",
+				status: http.StatusCreated,
+				body: `{
+  "id": 1,
+  "title": "This is a snippet",
+  "description": "Hello World snippet",
+  "web_url": "https://gitlab.example.com/OWNER/REPO/-/snippets/1",
+  "file_name": "test.txt",
+  "files": [
+    {
+      "path": "text.txt",
+      "raw_url": "https://gitlab.example.com/-/OWNER/REPO/snippets/1/raw/main/text.txt"
+    }
+  ]
+}`,
+			},
+		},
+
+		{
+			name:       "Create project snippet using a path",
+			command:    "testdata/snippet.txt -d 'Hello World snippet' -t 'This is a snippet'",
 			wantStderr: []string{"- Creating snippet in OWNER/REPO"},
 			wantStdout: []string{"https://gitlab.example.com/OWNER/REPO/-/snippets/1"},
 			mock: httpMock{
@@ -77,7 +102,7 @@ func TestSnippetCreate(t *testing.T) {
 		},
 		{
 			name:    "Create snippet failure",
-			command: "-d 'Hello World snippet' -f 'test.txt' -t 'This is a snippet'",
+			command: "-d 'Hello World snippet' -f 'testdata/snippet.txt' -t 'This is a snippet'",
 			wantErr: errors.New("failed to create snippet: POST https://gitlab.com/api/v4/projects/OWNER/REPO/snippets: 403 failed to parse unknown error format: "),
 			mock: httpMock{
 				method: http.MethodPost,
@@ -88,7 +113,7 @@ func TestSnippetCreate(t *testing.T) {
 		},
 		{
 			name:    "Create personal snippet failure",
-			command: "--personal -d 'Hello World snippet' -f 'test.txt' -t 'This is a personal snippet'",
+			command: "--personal -d 'Hello World snippet' -f 'testdata/snippet.txt' -t 'This is a personal snippet'",
 			wantErr: errors.New("failed to create snippet: POST https://gitlab.com/api/v4/snippets: 403 failed to parse unknown error format: "),
 			mock: httpMock{
 				method: http.MethodPost,
