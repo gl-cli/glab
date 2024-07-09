@@ -22,9 +22,11 @@ func NewCmdIssues(f *cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"issue"},
 		Args:    cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
-			glab mr issues 46
-			glab mr issues branch
-			glab mr issues  # use checked out branch
+			$ glab mr issues 46
+			$ glab mr issues branch
+
+			# Use the checked-out branch
+			$ glab mr issues
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error

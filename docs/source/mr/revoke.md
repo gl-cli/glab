@@ -26,11 +26,14 @@ unapprove
 ## Examples
 
 ```plaintext
-glab mr revoke 123
-glab mr unapprove 123
-glab mr revoke branch
-glab mr revoke  # use checked out branch
-glab mr revoke 123 branch 456
+$ glab mr revoke 123
+$ glab mr unapprove 123
+$ glab mr revoke branch
+
+# Uses the checked-out branch
+$ glab mr revoke
+
+$ glab mr revoke 123 branch 456
 
 ```
 

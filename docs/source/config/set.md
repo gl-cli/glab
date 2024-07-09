@@ -17,7 +17,7 @@ Updates configuration with the value of a given key.
 
 Update the configuration by setting a key to a value.
 Use 'glab config set --global' to set a global config.
-Specifying the '--hostname' flag also saves in the global config file.
+Specifying the '--hostname' flag also saves in the global configuration file.
 
 ```plaintext
 glab config set <key> <value> [flags]

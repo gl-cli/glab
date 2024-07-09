@@ -52,7 +52,7 @@ func listRun(cmd *cobra.Command, opts *ListOptions) error {
 
 	if aliasCfg.Empty() {
 
-		fmt.Fprintf(opts.IO.StdErr, "no aliases configured\n")
+		fmt.Fprintf(opts.IO.StdErr, "no aliases configured.\n")
 		return nil
 	}
 

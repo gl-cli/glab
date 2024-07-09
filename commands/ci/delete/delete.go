@@ -42,7 +42,7 @@ var (
 func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 	pipelineDeleteCmd := &cobra.Command{
 		Use:   "delete <id> [flags]",
-		Short: `Delete CI/CD pipelines`,
+		Short: `Delete CI/CD pipelines.`,
 		Example: heredoc.Doc(`
 	glab ci delete 34
 	glab ci delete 12,34,2
@@ -110,10 +110,10 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 
 func SetupCommandFlags(flags *pflag.FlagSet) {
 	flags.BoolP(FlagDryRun, "", false, "Simulate process, but do not delete anything.")
-	flags.StringP(FlagStatus, "s", "", fmt.Sprintf("Delete pipelines by status: {%s}", strings.Join(pipelineStatuses, "|")))
-	flags.String(FlagSource, "", fmt.Sprintf("Filter pipelines by source: {%s}", strings.Join(pipelineSources, "|")))
-	flags.Duration(FlagOlderThan, 0, "Filter pipelines older than the given duration. Valid units: {h|m|s|ms|us|ns}")
-	flags.BoolP(FlagPaginate, "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects --per-page.")
+	flags.StringP(FlagStatus, "s", "", fmt.Sprintf("Delete pipelines by status: %s.", strings.Join(pipelineStatuses, ", ")))
+	flags.String(FlagSource, "", fmt.Sprintf("Filter pipelines by source: %s.", strings.Join(pipelineSources, ", ")))
+	flags.Duration(FlagOlderThan, 0, "Filter pipelines older than the given duration. Valid units: h, m, s, ms, us, ns.")
+	flags.BoolP(FlagPaginate, "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects '--per-page'.")
 	flags.IntP(FlagPage, "", 0, "Page number.")
 	flags.IntP(FlagPerPage, "", 0, "Number of items to list per page.")
 }

@@ -19,7 +19,7 @@ var OutputFormat string
 func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	labelListCmd := &cobra.Command{
 		Use:     "list [flags]",
-		Short:   `List labels in repository.`,
+		Short:   `List labels in the repository.`,
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Example: heredoc.Doc(`
@@ -62,7 +62,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 				fmt.Fprintln(f.IO.StdOut, string(labelListJSON))
 
 			} else {
-				fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d on %s\n\n", len(labels), len(labels), repo.FullName())
+				fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d on %s.\n\n", len(labels), len(labels), repo.FullName())
 				var labelPrintInfo string
 				for _, label := range labels {
 					var description string

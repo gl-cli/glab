@@ -14,7 +14,7 @@ import (
 func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 	issueDeleteCmd := &cobra.Command{
 		Use:     "delete <id>",
-		Short:   `Delete an issue`,
+		Short:   `Delete an issue.`,
 		Long:    ``,
 		Aliases: []string{"del"},
 		Example: heredoc.Doc(`
@@ -39,7 +39,7 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 
 			for _, issue := range issues {
 				if f.IO.IsErrTTY && f.IO.IsaTTY {
-					fmt.Fprintf(f.IO.StdErr, "- Deleting Issue #%d\n", issue.IID)
+					fmt.Fprintf(f.IO.StdErr, "- Deleting issue #%d.\n", issue.IID)
 				}
 
 				err := api.DeleteIssue(apiClient, repo.FullName(), issue.IID)
@@ -47,7 +47,7 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintln(f.IO.StdErr, c.GreenCheck(), "Issue Deleted")
+				fmt.Fprintln(f.IO.StdErr, c.GreenCheck(), "Issue deleted.")
 			}
 			return nil
 		},

@@ -65,7 +65,7 @@ glab completion -s zsh > "${fpath[1]}/_glab"
 
 #### macOS
 
-For older versions of macOS, this command might be required:
+For older versions of macOS, you might need this command:
 
 ```plaintext
 glab completion -s zsh > /usr/local/share/zsh/site-functions/_glab
@@ -100,7 +100,7 @@ to your PowerShell profile.
 
 When installing glab through a package manager, however, you might not need
 more shell configuration to support completions.
-For Homebrew, see <https://docs.brew.sh/Shell-Completion>
+For Homebrew, see [brew shell completion](https://docs.brew.sh/Shell-Completion)
 
 ```plaintext
 glab completion [flags]
@@ -110,7 +110,7 @@ glab completion [flags]
 
 ```plaintext
       --no-desc        Do not include shell completion description.
-  -s, --shell string   Shell type: bash, zsh, fish, powershell (default "bash")
+  -s, --shell string   Shell type: bash, zsh, fish, powershell. (default "bash")
 ```
 
 ## Options inherited from parent commands

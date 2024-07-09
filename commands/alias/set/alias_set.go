@@ -30,22 +30,30 @@ func NewCmdSet(f *cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command
 
 	aliasSetCmd := &cobra.Command{
 		Use:   "set <alias name> '<command>' [flags]",
-		Short: `Set an alias.`,
+		Short: `Set an alias for a longer command.`,
 		Long: heredoc.Doc(`
-			Declare a word as a command alias that will expand to the specified command(s).
+		Declare a word as an alias for a longer command.
 
-			The expansion might specify additional arguments and flags. If the expansion
-			includes positional placeholders such as '$1', '$2', etc., any extra arguments
-			that follow the invocation of an alias will be inserted appropriately.
+		Your expansion might include arguments and flags. If your expansion
+		includes positional placeholders such as '$1' or '$2', any extra
+		arguments that follow the invocation of an alias are inserted
+		appropriately.
 
-			If '--shell' is specified, the alias will be run through a shell interpreter (sh). This allows you
-			to compose commands with "|" or redirect with ">". Note that extra arguments following the alias
-			will not be automatically passed to the expanded expression. To have a shell alias receive
-			arguments, you must explicitly accept them using "$1", "$2", etc., or "$@" to accept all of them.
+		Specify '--shell' in your alias to run it through 'sh', a shell
+		converter. Shell conversion enables you to compose commands with "|"
+		or redirect with ">", with these caveats:
 
-			Platform note: on Windows, shell aliases are executed via "sh" as installed by Git For Windows. If
-			you have installed Git on Windows in some other way, shell aliases might not work for you.
-			Quotes must always be used when defining a command as in the examples.
+		- Any extra arguments following the alias are not passed to the
+		  expanded expression arguments by default.
+		- You must explicitly accept the arguments using '$1', '$2', and so on.
+		- Use '$@' to accept all arguments.
+
+		For Windows users only:
+
+		- On Windows, shell aliases are executed with 'sh' as installed by
+		  Git For Windows. If you installed Git in some other way in Windows,
+		  shell aliases might not work for you.
+		- Always use quotation marks when defining a command, as in the examples.
 		`),
 		Example: heredoc.Doc(`
 		$ glab alias set mrv 'mr view'
@@ -73,7 +81,7 @@ func NewCmdSet(f *cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command
 			return setRun(cmd, opts)
 		},
 	}
-	aliasSetCmd.Flags().BoolVarP(&opts.IsShell, "shell", "s", false, "Declare an alias to be passed through a shell interpreter")
+	aliasSetCmd.Flags().BoolVarP(&opts.IsShell, "shell", "s", false, "Declare an alias to be passed through a shell interpreter.")
 	return aliasSetCmd
 }
 
@@ -90,7 +98,7 @@ func setRun(cmd *cobra.Command, opts *SetOptions) error {
 	}
 
 	if opts.IO.IsaTTY && opts.IO.IsErrTTY {
-		fmt.Fprintf(opts.IO.StdErr, "- Adding alias for %s: %s\n", c.Bold(opts.Name), c.Bold(opts.Expansion))
+		fmt.Fprintf(opts.IO.StdErr, "- Adding alias for %s: %s.\n", c.Bold(opts.Name), c.Bold(opts.Expansion))
 	}
 
 	expansion := opts.Expansion
@@ -101,16 +109,16 @@ func setRun(cmd *cobra.Command, opts *SetOptions) error {
 	isShell = strings.HasPrefix(expansion, "!")
 
 	if validCommand(opts.RootCmd, opts.Name) {
-		return fmt.Errorf("could not create alias: %q is already a glab command", opts.Name)
+		return fmt.Errorf("could not create alias: %q is already a glab command.", opts.Name)
 	}
 
 	if !isShell && !validCommand(opts.RootCmd, expansion) {
-		return fmt.Errorf("could not create alias: %s does not correspond to a glab command", expansion)
+		return fmt.Errorf("could not create alias: %s does not correspond to a glab command.", expansion)
 	}
 
 	successMsg := fmt.Sprintf("%s Added alias.", c.Green("✓"))
 	if oldExpansion, ok := aliasCfg.Get(opts.Name); ok {
-		successMsg = fmt.Sprintf("%s Changed alias %s from %s to %s",
+		successMsg = fmt.Sprintf("%s Changed alias %s from %s to %s.",
 			c.Green("✓"),
 			c.Bold(opts.Name),
 			c.Bold(oldExpansion),

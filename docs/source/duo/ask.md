@@ -25,6 +25,7 @@ glab duo ask <prompt> [flags]
 
 ```plaintext
 $ glab duo ask list last 10 commit titles
+
 # => A list of Git commands to show the titles of the latest 10 commits with an explanation and an option to execute the commands.
 
 ```
@@ -32,7 +33,7 @@ $ glab duo ask list last 10 commit titles
 ## Options
 
 ```plaintext
-      --git   Ask a question about git (default true)
+      --git   Ask a question about Git. (default true)
 ```
 
 ## Options inherited from parent commands

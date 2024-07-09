@@ -17,12 +17,14 @@ import (
 func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 	mrUpdateCmd := &cobra.Command{
 		Use:   "update [<id> | <branch>]",
-		Short: `Update merge requests.`,
+		Short: `Update a merge request.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
-	glab mr update 23 --ready
-	glab mr update 23 --draft
-	glab mr update --draft  # Updates the merge request for the current branch
+	$ glab mr update 23 --ready
+	$ glab mr update 23 --draft
+
+	# Updates the merge request for the current branch
+	$ glab mr update --draft
 	`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

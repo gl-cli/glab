@@ -26,10 +26,12 @@ open
 ## Examples
 
 ```plaintext
-glab mr reopen 123
-glab mr reopen 123 456 789
-glab mr reopen branch-1 branch-2
-glab mr reopen  # use checked out branch
+$ glab mr reopen 123
+$ glab mr reopen 123 456 789
+$ glab mr reopen branch-1 branch-2
+
+# Uses the checked-out branch
+$ glab mr reopen
 
 ```
 

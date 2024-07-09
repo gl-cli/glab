@@ -54,7 +54,7 @@ func NewCmdSyncStack(f *cmdutils.Factory) *cobra.Command {
 
 	stackSaveCmd := &cobra.Command{
 		Use:   "sync",
-		Short: `Sync and submit progress on a stacked diff.`,
+		Short: `Sync and submit progress on a stacked diff. (EXPERIMENTAL.)`,
 		Long: heredoc.Doc(`Sync and submit progress on a stacked diff. This command runs these steps:
 
 1. Creates a merge request for any branches without one.

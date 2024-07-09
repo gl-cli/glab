@@ -34,7 +34,7 @@ func parseVarArg(s string) (key string, val string, err error) {
 func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
 	pipelineRunCmd := &cobra.Command{
 		Use:     "run-trig [flags]",
-		Short:   `Run a CI/CD pipeline trigger`,
+		Short:   `Run a CI/CD pipeline trigger.`,
 		Aliases: []string{"run-trig"},
 		Example: heredoc.Doc(`
 	glab ci run-trig -t xxxx

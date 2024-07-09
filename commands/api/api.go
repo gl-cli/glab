@@ -59,18 +59,18 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 
 	cmd := &cobra.Command{
 		Use:   "api <endpoint>",
-		Short: "Make an authenticated request to GitLab API.",
+		Short: "Make an authenticated request to the GitLab API.",
 		Long: heredoc.Docf(`
-		Makes an authenticated HTTP request to the GitLab API and prints the response.
+		Makes an authenticated HTTP request to the GitLab API, and prints the response.
 		The endpoint argument should either be a path of a GitLab API v4 endpoint, or
 		"graphql" to access the GitLab GraphQL API.
 
-		- [GitLab REST API Docs](https://docs.gitlab.com/ee/api/index.html)
-		- [GitLab GraphQL Docs](https://docs.gitlab.com/ee/api/graphql/)
+		- [GitLab REST API documentation](https://docs.gitlab.com/ee/api/index.html)
+		- [GitLab GraphQL documentation](https://docs.gitlab.com/ee/api/graphql/)
 
-		If the current directory is a Git directory, the GitLab authenticated host in the current
-		directory is used. Otherwise, %[1]sgitlab.com%[1]s will be used.
-		Override the GitLab hostname with '--hostname'.
+		If the current directory is a Git directory, uses the GitLab authenticated host in the current
+		directory. Otherwise, %[1]sgitlab.com%[1]s will be used.
+		To override the GitLab hostname, use '--hostname'.
 
 		These placeholder values, when used in the endpoint argument, are
 		replaced with values from the repository of the current directory:
@@ -170,7 +170,7 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 
 			if c.Flags().Changed("hostname") {
 				if err := glinstance.HostnameValidator(opts.Hostname); err != nil {
-					return &cmdutils.FlagError{Err: fmt.Errorf("error parsing --hostname: %w", err)}
+					return &cmdutils.FlagError{Err: fmt.Errorf("error parsing --hostname: %w.", err)}
 				}
 			}
 

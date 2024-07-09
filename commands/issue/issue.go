@@ -21,7 +21,7 @@ import (
 func NewCmdIssue(f *cmdutils.Factory) *cobra.Command {
 	issueCmd := &cobra.Command{
 		Use:   "issue [command] [flags]",
-		Short: `Work with GitLab issues`,
+		Short: `Work with GitLab issues.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
 			glab issue list
@@ -32,8 +32,8 @@ func NewCmdIssue(f *cmdutils.Factory) *cobra.Command {
 		Annotations: map[string]string{
 			"help:arguments": heredoc.Doc(`
 				An issue can be supplied as argument in any of the following formats:
-				- by number, e.g. "123"
-				- by URL, e.g. "https://gitlab.com/NAMESPACE/REPO/-/issues/123"
+				- by number, like "123"
+				- by URL, like "https://gitlab.com/NAMESPACE/REPO/-/issues/123"
 			`),
 		},
 	}

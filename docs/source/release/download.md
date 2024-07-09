@@ -17,7 +17,7 @@ Download asset files from a GitLab release.
 
 Download asset files from a GitLab release.
 
-If no tag is specified, assets are downloaded from the latest release.
+If no tag is specified, downloads assets from the latest release.
 To specify a file name to download from the release assets, use `--asset-name`.
 `--asset-name` flag accepts glob patterns.
 

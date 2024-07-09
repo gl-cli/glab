@@ -125,12 +125,12 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	pipelineGetCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. (Default is current branch)")
+	pipelineGetCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. (Default: current branch)")
 	pipelineGetCmd.Flags().IntP("pipeline-id", "p", 0, "Provide pipeline ID.")
 	pipelineGetCmd.Flags().StringP("output", "F", "text", "Format output. Options: text, json.")
 	pipelineGetCmd.Flags().StringP("output-format", "o", "text", "Use output.")
 	_ = pipelineGetCmd.Flags().MarkHidden("output-format")
-	_ = pipelineGetCmd.Flags().MarkDeprecated("output-format", "Deprecated. Use output instead.")
+	_ = pipelineGetCmd.Flags().MarkDeprecated("output-format", "Deprecated. Use 'output' instead.")
 	pipelineGetCmd.Flags().BoolP("with-job-details", "d", false, "Show extended job information.")
 	pipelineGetCmd.Flags().Bool("with-variables", false, "Show variables in pipeline. Requires the Maintainer role.")
 

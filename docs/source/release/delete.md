@@ -17,7 +17,7 @@ Delete a GitLab release.
 
 Delete release assets to GitLab release. Requires the Maintainer role or higher.
 
-Deleting a release does not delete the associated tag, unless `--with-tag` is specified.
+Deleting a release does not delete the associated tag, unless you specify `--with-tag`.
 
 ```plaintext
 glab release delete <tag> [flags]

@@ -33,7 +33,7 @@ glab variable list
 ## Options
 
 ```plaintext
-  -g, --group string      Select a group/subgroup. Ignored if a repository argument is set.
+  -g, --group string      Select a group or subgroup. Ignored if a repository argument is set.
   -F, --output string     Format output as: text, json. (default "text")
   -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
 ```

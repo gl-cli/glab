@@ -72,6 +72,7 @@ func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
 		`),
 		Example: heredoc.Doc(`
 			$ glab duo ask list last 10 commit titles
+
 			# => A list of Git commands to show the titles of the latest 10 commits with an explanation and an option to execute the commands.
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -101,7 +102,7 @@ func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	duoAskCmd.Flags().BoolVarP(&opts.Git, "git", "", true, "Ask a question about git")
+	duoAskCmd.Flags().BoolVarP(&opts.Git, "git", "", true, "Ask a question about Git.")
 
 	return duoAskCmd
 }
