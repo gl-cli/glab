@@ -26,7 +26,7 @@ comment
 ## Options
 
 ```plaintext
-  -m, --message string   Comment/Note message
+  -m, --message string   Message text.
 ```
 
 ## Options inherited from parent commands

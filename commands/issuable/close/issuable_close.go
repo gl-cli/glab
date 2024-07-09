@@ -34,7 +34,7 @@ func NewCmdClose(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 
 	issueCloseCmd := &cobra.Command{
 		Use:     "close [<id> | <url>] [flags]",
-		Short:   fmt.Sprintf(`Close an %s`, issueType),
+		Short:   fmt.Sprintf(`Close an %s.`, issueType),
 		Long:    ``,
 		Aliases: aliases,
 		Example: heredoc.Doc(fmt.Sprintf(`

@@ -32,7 +32,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra.Co
 
 	cmd := &cobra.Command{
 		Use:     "delete <key>",
-		Short:   "Delete a project or group variable.",
+		Short:   "Delete a variable for a project or group.",
 		Aliases: []string{"remove"},
 		Args:    cobra.ExactArgs(1),
 		Example: heredoc.Doc(`
@@ -67,7 +67,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra.Co
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. Options: all (*), or specific environments.")
+	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The 'environment_scope' of the variable. Options: all (*), or specific environments.")
 	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Delete variable from a group.")
 
 	return cmd

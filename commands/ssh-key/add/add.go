@@ -35,7 +35,7 @@ func NewCmdAdd(f *cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
 		Long: heredoc.Doc(`
 		Creates a new SSH key owned by the currently authenticated user.
 
-		The --title flag is required.
+		Requires the '--title' flag.
 		`),
 		Example: heredoc.Doc(`
 		# Read ssh key from stdin and upload.

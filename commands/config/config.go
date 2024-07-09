@@ -86,7 +86,7 @@ func NewCmdConfigSet(f *cmdutils.Factory) *cobra.Command {
 		Short: "Updates configuration with the value of a given key.",
 		Long: `Update the configuration by setting a key to a value.
 Use 'glab config set --global' to set a global config.
-Specifying the '--hostname' flag also saves in the global config file.
+Specifying the '--hostname' flag also saves in the global configuration file.
 `,
 		Example: `
   glab config set editor vim
@@ -120,7 +120,7 @@ Specifying the '--hostname' flag also saves in the global config file.
 			}
 
 			if err != nil {
-				return fmt.Errorf("failed to write config to disk: %w", err)
+				return fmt.Errorf("failed to write configuration to disk: %w", err)
 			}
 			return nil
 		},

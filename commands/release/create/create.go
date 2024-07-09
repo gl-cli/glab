@@ -61,10 +61,10 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create <tag> [<files>...]",
-		Short: "Create a new GitLab release or update an existing one.",
+		Short: "Create a new GitLab release, or update an existing one.",
 		Long: heredoc.Docf(`Create a new release, or update an existing GitLab release, for a repository. Requires the Developer role or higher.
 
-		An existing release is updated with the new info you provide.
+		An existing release is updated with the new information you provide.
 
 		To create a release from an annotated Git tag, first create one locally with
 		Git, push the tag to GitLab, then run this command.
@@ -156,10 +156,10 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "The release name or title.")
 	cmd.Flags().StringVarP(&opts.Ref, "ref", "r", "", "If the specified tag doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.")
 	cmd.Flags().StringVarP(&opts.Notes, "notes", "N", "", "The release notes or description. You can use Markdown.")
-	cmd.Flags().StringVarP(&opts.NotesFile, "notes-file", "F", "", "Read release notes `file`. Specify `-` as the value to read from stdin.")
-	cmd.Flags().StringVarP(&opts.ReleasedAt, "released-at", "D", "", "The `date` when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).")
+	cmd.Flags().StringVarP(&opts.NotesFile, "notes-file", "F", "", "Read release notes 'file'. Specify '-' as the value to read from stdin.")
+	cmd.Flags().StringVarP(&opts.ReleasedAt, "released-at", "D", "", "The 'date' when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).")
 	cmd.Flags().StringSliceVarP(&opts.Milestone, "milestone", "m", []string{}, "The title of each milestone the release is associated with.")
-	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "`JSON` string representation of assets links, like `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
+	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "'JSON' string representation of assets links, like `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
 
 	return cmd
 }

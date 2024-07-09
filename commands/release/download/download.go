@@ -45,7 +45,7 @@ func NewCmdDownload(f *cmdutils.Factory, runE func(opts *DownloadOpts) error) *c
 		Short: "Download asset files from a GitLab release.",
 		Long: heredoc.Docf(`Download asset files from a GitLab release.
 
-			If no tag is specified, assets are downloaded from the latest release.
+			If no tag is specified, downloads assets from the latest release.
 			To specify a file name to download from the release assets, use %[1]s--asset-name%[1]s.
 			%[1]s--asset-name%[1]s flag accepts glob patterns.
 		`, "`"),

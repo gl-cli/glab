@@ -17,7 +17,7 @@ Upload release asset files or links to a GitLab release.
 
 Upload release assets to a GitLab release.
 
-Define the display name by appending '#' after the file name.
+Define the display name by appending '#' after the filename.
 The link type comes after the display name, like this: 'myfile.tar.gz#My display name#package'
 
 ```plaintext

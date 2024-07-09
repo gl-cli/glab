@@ -51,7 +51,7 @@ func TestAliasSet_glab_command(t *testing.T) {
 	_, err := runCommand(cfg, true, "mr 'mr rebase'")
 
 	if assert.Error(t, err) {
-		assert.Equal(t, `could not create alias: "mr" is already a glab command`, err.Error())
+		assert.Equal(t, `could not create alias: "mr" is already a glab command.`, err.Error())
 	}
 }
 
@@ -89,7 +89,7 @@ func TestAliasSet_existing_alias(t *testing.T) {
 	output, err := runCommand(cfg, true, "co 'mr checkout -Rcool/repo'")
 	require.NoError(t, err)
 
-	test.ExpectLines(t, output.Stderr(), "Changed alias.*co.*from.*mr checkout.*to.*mr checkout -Rcool/repo")
+	test.ExpectLines(t, output.Stderr(), "Changed alias.*co.*from.*mr checkout.*to.*mr checkout -Rcool/repo.")
 }
 
 func TestAliasSet_space_args(t *testing.T) {
@@ -101,7 +101,7 @@ func TestAliasSet_space_args(t *testing.T) {
 	output, err := runCommand(cfg, true, `il 'issue list -l "cool story"'`)
 	require.NoError(t, err)
 
-	test.ExpectLines(t, output.Stderr(), `Adding alias for.*il.*issue list -l "cool story"`)
+	test.ExpectLines(t, output.Stderr(), `Adding alias for.*il.*issue list -l "cool story".`)
 
 	test.ExpectLines(t, mainBuf.String(), `il: issue list -l "cool story"`)
 }
@@ -192,7 +192,7 @@ func TestAliasSet_invalid_command(t *testing.T) {
 
 	_, err := runCommand(cfg, true, "co 'pe checkout'")
 	if assert.Error(t, err) {
-		assert.Equal(t, "could not create alias: pe checkout does not correspond to a glab command", err.Error())
+		assert.Equal(t, "could not create alias: pe checkout does not correspond to a glab command.", err.Error())
 	}
 }
 
@@ -207,7 +207,7 @@ func TestShellAlias_flag(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
-	test.ExpectLines(t, output.Stderr(), "Adding alias for.*igrep")
+	test.ExpectLines(t, output.Stderr(), "Adding alias for.*igrep.")
 
 	expected := `igrep: '!glab issue list | grep'
 `
@@ -223,7 +223,7 @@ func TestShellAlias_bang(t *testing.T) {
 	output, err := runCommand(cfg, true, "igrep '!glab issue list | grep'")
 	require.NoError(t, err)
 
-	test.ExpectLines(t, output.Stderr(), "Adding alias for.*igrep")
+	test.ExpectLines(t, output.Stderr(), "Adding alias for.*igrep.")
 
 	expected := `igrep: '!glab issue list | grep'
 `

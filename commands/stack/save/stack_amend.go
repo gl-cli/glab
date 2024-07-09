@@ -18,7 +18,7 @@ import (
 func NewCmdAmendStack(f *cmdutils.Factory) *cobra.Command {
 	stackSaveCmd := &cobra.Command{
 		Use:   "amend",
-		Short: `Save more changes to a stacked diff.`,
+		Short: `Save more changes to a stacked diff. (EXPERIMENTAL.)`,
 		Long: `Add more changes to an existing stacked diff.
 ` + text.ExperimentalString,
 		Example: heredoc.Doc(`glab stack amend modifiedfile

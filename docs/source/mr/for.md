@@ -28,10 +28,14 @@ for-issue
 ## Examples
 
 ```plaintext
-glab mr for 34   # Create mr for issue 34
-glab mr for 34 --wip   # Create MR and mark as work in progress
-glab mr new-for 34
-glab mr create-for 34
+# Create merge request for issue 34
+$ glab mr for 34
+
+# Create merge request for issue 34 and mark as work in progress
+$ glab mr for 34 --wip
+
+$ glab mr new-for 34
+$ glab mr create-for 34
 
 ```
 

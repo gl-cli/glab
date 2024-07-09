@@ -71,7 +71,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 
 		#### macOS
 
-		For older versions of macOS, this command might be required:
+		For older versions of macOS, you might need this command:
 
 		%[2]splaintext
 		glab completion -s zsh > /usr/local/share/zsh/site-functions/_glab
@@ -106,7 +106,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 
 		When installing glab through a package manager, however, you might not need
 		more shell configuration to support completions.
-		For Homebrew, see <https://docs.brew.sh/Shell-Completion>
+		For Homebrew, see [brew shell completion](https://docs.brew.sh/Shell-Completion)
 		`, "`", "```"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			out := io.StdOut
@@ -133,7 +133,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		},
 	}
 
-	completionCmd.Flags().StringVarP(&shellType, "shell", "s", "bash", "Shell type: bash, zsh, fish, powershell")
+	completionCmd.Flags().StringVarP(&shellType, "shell", "s", "bash", "Shell type: bash, zsh, fish, powershell.")
 	completionCmd.Flags().BoolVarP(&excludeDesc, "no-desc", "", false, "Do not include shell completion description.")
 	return completionCmd
 }

@@ -129,7 +129,7 @@ func TestIssuableReopen(t *testing.T) {
 			issueType: issuable.TypeIssue,
 			wantOutput: heredoc.Doc(`
 				- Reopening issue...
-				✓ Reopened issue #1
+				✓ Reopened issue #1.
 
 				`),
 		},
@@ -139,7 +139,7 @@ func TestIssuableReopen(t *testing.T) {
 			issueType: issuable.TypeIncident,
 			wantOutput: heredoc.Doc(`
 				- Reopening incident...
-				✓ Reopened incident #2
+				✓ Reopened incident #2.
 
 				`),
 		},
@@ -149,7 +149,7 @@ func TestIssuableReopen(t *testing.T) {
 			issueType: issuable.TypeIssue,
 			wantOutput: heredoc.Doc(`
 				- Reopening issue...
-				✓ Reopened issue #2
+				✓ Reopened issue #2.
 
 				`),
 		},
@@ -180,7 +180,7 @@ func TestIssuableReopen(t *testing.T) {
 				return
 			}
 
-			assert.NoErrorf(t, err, "error running command `%s reopen %d`", tt.issueType, tt.iid)
+			assert.NoErrorf(t, err, "error running command `%s reopen %d`.", tt.issueType, tt.iid)
 			assert.Equal(t, tt.wantOutput, output.String())
 			assert.Empty(t, output.Stderr())
 		})

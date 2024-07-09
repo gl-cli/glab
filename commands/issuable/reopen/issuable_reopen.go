@@ -15,8 +15,8 @@ import (
 
 var (
 	description = map[issuable.IssueType]string{
-		issuable.TypeIssue:    "Reopen a closed issue",
-		issuable.TypeIncident: "Reopen a resolved incident",
+		issuable.TypeIssue:    "Reopen a closed issue.",
+		issuable.TypeIncident: "Reopen a resolved incident.",
 	}
 
 	reopeningMessage = map[issuable.IssueType]string{
@@ -79,7 +79,7 @@ func NewCmdReopen(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comm
 					return err
 				}
 
-				fmt.Fprintf(out, "%s %s #%d\n", c.GreenCheck(), reopenedMessage[issueType], issue.IID)
+				fmt.Fprintf(out, "%s %s #%d.\n", c.GreenCheck(), reopenedMessage[issueType], issue.IID)
 				fmt.Fprintln(out, issueutils.DisplayIssue(c, issue, f.IO.IsaTTY))
 			}
 			return nil

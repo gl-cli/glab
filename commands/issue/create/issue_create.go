@@ -68,7 +68,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	}
 	issueCreateCmd := &cobra.Command{
 		Use:     "create [flags]",
-		Short:   `Create an issue`,
+		Short:   `Create an issue.`,
 		Long:    ``,
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
@@ -106,13 +106,13 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			opts.IsInteractive = !(hasTitle && hasDescription)
 
 			if opts.IsInteractive && !opts.IO.PromptEnabled() {
-				return &cmdutils.FlagError{Err: errors.New("--title and --description required for non-interactive mode")}
+				return &cmdutils.FlagError{Err: errors.New("'--title' and '--description' required for non-interactive mode.")}
 			}
 
 			// Remove this once --yes does more than just skip the prompts that --web happen to skip
 			// by design
 			if opts.Yes && opts.Web {
-				return &cmdutils.FlagError{Err: errors.New("--web already skips all prompts currently skipped by --yes")}
+				return &cmdutils.FlagError{Err: errors.New("'--web' already skips all prompts currently skipped by '--yes'.")}
 			}
 
 			opts.BaseProject, err = api.GetProject(apiClient, repo.FullName())
@@ -122,7 +122,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 
 			if !opts.BaseProject.IssuesEnabled {
 				fmt.Fprintf(opts.IO.StdErr, "Issues are disabled for project %q or require project membership. ", opts.BaseProject.PathWithNamespace)
-				fmt.Fprintf(opts.IO.StdErr, "Please ensure issues are enabled for the %q project, and if required, you are a member of the project.\n",
+				fmt.Fprintf(opts.IO.StdErr, "Make sure issues are enabled for the %q project, and if required, you are a member of the project.\n",
 					opts.BaseProject.PathWithNamespace)
 				return cmdutils.SilentError
 			}
@@ -140,24 +140,24 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	issueCreateCmd.Flags().StringVarP(&opts.Title, "title", "t", "", "Supply a title for issue")
-	issueCreateCmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Supply a description for issue")
-	issueCreateCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, "Add label by name. Multiple labels should be comma separated")
-	issueCreateCmd.Flags().StringSliceVarP(&opts.Assignees, "assignee", "a", []string{}, "Assign issue to people by their `usernames`")
-	issueCreateCmd.Flags().StringVarP(&opts.MilestoneFlag, "milestone", "m", "", "The global ID or title of a milestone to assign")
-	issueCreateCmd.Flags().BoolVarP(&opts.IsConfidential, "confidential", "c", false, "Set an issue to be confidential. (default false)")
-	issueCreateCmd.Flags().IntVarP(&opts.LinkedMR, "linked-mr", "", 0, "The IID of a merge request in which to resolve all issues")
-	issueCreateCmd.Flags().IntVarP(&opts.Weight, "weight", "w", 0, "The weight of the issue. Valid values are greater than or equal to 0.")
-	issueCreateCmd.Flags().BoolVarP(&opts.NoEditor, "no-editor", "", false, "Don't open editor to enter description. If set to true, uses prompt. (default false)")
-	issueCreateCmd.Flags().BoolVarP(&opts.Yes, "yes", "y", false, "Don't prompt for confirmation to submit the issue")
-	issueCreateCmd.Flags().BoolVar(&opts.Web, "web", false, "continue issue creation with web interface")
-	issueCreateCmd.Flags().IntSliceVarP(&opts.LinkedIssues, "linked-issues", "", []int{}, "The IIDs of issues that this issue links to")
+	issueCreateCmd.Flags().StringVarP(&opts.Title, "title", "t", "", "Issue title.")
+	issueCreateCmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Issue description.")
+	issueCreateCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, "Add label by name. Multiple labels should be comma-separated.")
+	issueCreateCmd.Flags().StringSliceVarP(&opts.Assignees, "assignee", "a", []string{}, "Assign issue to people by their `usernames`.")
+	issueCreateCmd.Flags().StringVarP(&opts.MilestoneFlag, "milestone", "m", "", "The global ID or title of a milestone to assign.")
+	issueCreateCmd.Flags().BoolVarP(&opts.IsConfidential, "confidential", "c", false, "Set an issue to be confidential. Default: false.")
+	issueCreateCmd.Flags().IntVarP(&opts.LinkedMR, "linked-mr", "", 0, "The IID of a merge request in which to resolve all issues.")
+	issueCreateCmd.Flags().IntVarP(&opts.Weight, "weight", "w", 0, "Issue weight. Valid values are greater than or equal to 0.")
+	issueCreateCmd.Flags().BoolVarP(&opts.NoEditor, "no-editor", "", false, "Don't open editor to enter a description. If set to true, uses prompt. Default: false.")
+	issueCreateCmd.Flags().BoolVarP(&opts.Yes, "yes", "y", false, "Don't prompt for confirmation to submit the issue.")
+	issueCreateCmd.Flags().BoolVar(&opts.Web, "web", false, "Continue issue creation with web interface.")
+	issueCreateCmd.Flags().IntSliceVarP(&opts.LinkedIssues, "linked-issues", "", []int{}, "The IIDs of issues that this issue links to.")
 	issueCreateCmd.Flags().StringVarP(&opts.IssueLinkType, "link-type", "", "relates_to", "Type for the issue link")
-	issueCreateCmd.Flags().StringVarP(&opts.TimeEstimate, "time-estimate", "e", "", "Set time estimate for the issue")
-	issueCreateCmd.Flags().StringVarP(&opts.TimeSpent, "time-spent", "s", "", "Set time spent for the issue")
-	issueCreateCmd.Flags().BoolVar(&opts.Recover, "recover", false, "Save the options to a file if the issue fails to be created. If the file exists, the options will be loaded from the recovery file (EXPERIMENTAL)")
-	issueCreateCmd.Flags().IntVarP(&opts.EpicID, "epic", "", 0, "ID of the epic to add the issue to")
-	issueCreateCmd.Flags().StringVarP(&opts.DueDate, "due-date", "", "", "A date in 'YYYY-MM-DD' format")
+	issueCreateCmd.Flags().StringVarP(&opts.TimeEstimate, "time-estimate", "e", "", "Set time estimate for the issue.")
+	issueCreateCmd.Flags().StringVarP(&opts.TimeSpent, "time-spent", "s", "", "Set time spent for the issue.")
+	issueCreateCmd.Flags().BoolVar(&opts.Recover, "recover", false, "Save the options to a file if the issue fails to be created. If the file exists, the options will be loaded from the recovery file. (EXPERIMENTAL.)")
+	issueCreateCmd.Flags().IntVarP(&opts.EpicID, "epic", "", 0, "ID of the epic to add the issue to.")
+	issueCreateCmd.Flags().StringVarP(&opts.DueDate, "due-date", "", "", "A date in 'YYYY-MM-DD' format.")
 
 	return issueCreateCmd
 }
@@ -192,7 +192,7 @@ func createRun(opts *CreateOpts) error {
 				fmt.Fprintf(opts.IO.StdErr, "Failed to recover from file: %v", err)
 			}
 		} else {
-			fmt.Fprintln(opts.IO.StdOut, "Recovered create options from file")
+			fmt.Fprintln(opts.IO.StdOut, "Recovered create options from file.")
 		}
 	}
 
@@ -213,7 +213,7 @@ func createRun(opts *CreateOpts) error {
 					return fmt.Errorf("error getting templates: %w", err)
 				}
 
-				templateNames = append(templateNames, "Open a blank Issue")
+				templateNames = append(templateNames, "Open a blank issue")
 
 				selectQs := []*survey.Question{
 					{

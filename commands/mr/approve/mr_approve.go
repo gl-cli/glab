@@ -17,11 +17,13 @@ func NewCmdApprove(f *cmdutils.Factory) *cobra.Command {
 		Short: `Approve merge requests.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
-			glab mr approve 235
-			glab mr approve 123 345
-			glab mr approve branch-1
-			glab mr approve branch-2 branch-3
-			glab mr approve    # Finds open merge request from current branch
+			$ glab mr approve 235
+			$ glab mr approve 123 345
+			$ glab mr approve branch-1
+			$ glab mr approve branch-2 branch-3
+
+			# Finds open merge request from current branch and approves it
+			$ glab mr approve
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error

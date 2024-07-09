@@ -54,7 +54,7 @@ glab issue list --milestone release-2.0.0 --opened
   -p, --page int               Page number. (default 1)
   -P, --per-page int           Number of items to list per page. (default 30)
   -R, --repo OWNER/REPO        Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
-      --search string          Search <string> in the fields defined by --in.
+      --search string          Search <string> in the fields defined by '--in'.
 ```
 
 ## Options inherited from parent commands

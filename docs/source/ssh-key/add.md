@@ -17,7 +17,7 @@ Add an SSH key to your GitLab account.
 
 Creates a new SSH key owned by the currently authenticated user.
 
-The --title flag is required.
+Requires the '--title' flag.
 
 ```plaintext
 glab ssh-key add [key-file] [flags]

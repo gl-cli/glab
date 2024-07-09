@@ -40,7 +40,7 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		Short: "Delete a GitLab release.",
 		Long: heredoc.Docf(`Delete release assets to GitLab release. Requires the Maintainer role or higher.
 
-			Deleting a release does not delete the associated tag, unless %[1]s--with-tag%[1]s is specified.
+			Deleting a release does not delete the associated tag, unless you specify %[1]s--with-tag%[1]s.
 		`, "`"),
 		Args: cmdutils.MinimumArgs(1, "no tag name provided"),
 		Example: heredoc.Doc(`

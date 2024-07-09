@@ -52,8 +52,8 @@ func NewCmdNote(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 				}
 
 				body = utils.Editor(utils.EditorOptions{
-					Label:         "Note Message:",
-					Help:          "Enter the note message. ",
+					Label:         "Message:",
+					Help:          "Enter the note's message. ",
 					FileName:      "ISSUE_NOTE_EDITMSG",
 					EditorCommand: editor,
 				})
@@ -74,7 +74,7 @@ func NewCmdNote(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 			return nil
 		},
 	}
-	issueNoteCreateCmd.Flags().StringP("message", "m", "", "Comment/Note message")
+	issueNoteCreateCmd.Flags().StringP("message", "m", "", "Message text.")
 
 	return issueNoteCreateCmd
 }

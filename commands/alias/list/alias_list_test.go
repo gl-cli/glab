@@ -28,7 +28,7 @@ func TestAliasList(t *testing.T) {
 			config:     "",
 			wantStdout: "",
 			isaTTy:     true,
-			wantStderr: "no aliases configured\n",
+			wantStderr: "no aliases configured.\n",
 		},
 		{
 			name: "some",

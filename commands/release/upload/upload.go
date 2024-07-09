@@ -42,8 +42,8 @@ func NewCmdUpload(f *cmdutils.Factory) *cobra.Command {
 		Short: "Upload release asset files or links to a GitLab release.",
 		Long: heredoc.Doc(`Upload release assets to a GitLab release.
 
-				Define the display name by appending '#' after the file name.
-				The link type comes after the display name, like this: 'myfile.tar.gz#My display name#package'
+		Define the display name by appending '#' after the filename.
+		The link type comes after the display name, like this: 'myfile.tar.gz#My display name#package'
 		`),
 		Args: func() cobra.PositionalArgs {
 			return func(cmd *cobra.Command, args []string) error {
