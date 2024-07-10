@@ -66,7 +66,7 @@ check_docs_markdown:
   extends: .documentation
   script:
     # Lint prose
-    - vale --minAlertLevel error docs *.md
+    - vale --minAlertLevel error docs
     # Lint Markdown
     - markdownlint-cli2 'docs/**/*.md' *.md
     # Check links
