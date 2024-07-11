@@ -1,5 +1,5 @@
 variables:
-  GO_VERSION: "1.22.4"
+  GO_VERSION: "1.22.5"
   GOLANGCI_LINT_VERSION: 'v1.59.0'
 
 # run the pipeline only on MRs, tags, and default branch
