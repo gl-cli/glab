@@ -12,7 +12,6 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
@@ -103,9 +102,7 @@ func viewRun(opts *ViewOpts) error {
 	}
 
 	if opts.OpenInBrowser { // open in browser if --web flag is specified
-		url := fmt.Sprintf("%s://%s/%s/-/releases/%s",
-			glinstance.OverridableDefaultProtocol(), glinstance.OverridableDefault(),
-			repo.FullName(), release.TagName)
+		url := release.Links.Self
 
 		if opts.IO.IsOutputTTY() {
 			opts.IO.Logf("Opening %s in your browser.\n", url)

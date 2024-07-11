@@ -1,62 +1,60 @@
-[{
-  "name": "test_release",
-  "tag_name": "0.0.1",
-  "description": null,
-  "created_at": "2020-01-23T07:13:17.721Z",
-  "released_at": "2020-01-23T07:13:17.721Z",
-  "upcoming_release": false,
-  "author":
+[
   {
-    "id": 11809982,
-    "username": "test_user",
-    "name": "Test User",
-    "state": "active",
-    "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/11809982/avatar.png",
-    "web_url": "https://gitlab.com/test_user"
-  },
-  "commit":
-  {
-    "id": "26e80b26fd9f8515401a4d10c331904f034e9f05",
-    "short_id": "26e80b26",
-    "created_at": "2023-01-05T08:52:55.000+00:00",
-    "parent_ids":
-    [
-      "3a9bc8484f715a678b9c0dbe36e81d7e6375c210",
-      "c27eedbab3cd7c0455de207d4f2b2155337ba3c9"
-    ],
-    "title": "Add new feature",
-    "message": "Added a great new feature",
-    "author_name": "Test User",
-    "author_email": "test_user@gitlab.com",
-    "authored_date": "2023-01-05T08:52:55.000+00:00",
-    "committer_name": "test_user",
-    "committer_email": "test_user@gitlab.com",
-    "committed_date": "2023-01-05T08:52:55.000+00:00",
-    "trailers":
-    {},
-    "web_url": "https://gitlab.com/OWNER/REPO/-/commit/26e80b26fd9f8515401a4d10c331904f034e9f05"
-  },
-  "commit_path": "/OWNER/REPO/-/commit/26e80b26fd9f8515401a4d10c331904f034e9f05",
-  "tag_path": "/OWNER/REPO/-/tags/0.0.1",
-  "assets":
-  {
-    "count": 2,
-    "sources":
-    [
-      {
-        "format": "zip",
-        "url": "https://gitlab.com/OWNER/REPO/-/archive/0.0.1/REPO-0.0.1.zip"
-      }
-    ],
-    "links":
-    [
-      {
-        "id": 1294469,
-        "name": "test asset",
-        "url": "https://gitlab.com/some/location/1133",
-        "direct_asset_url": "https://gitlab.com/OWNER/REPO/-/releases/0.0.1/downloads/test_asset",
-        "link_type": "other"
-      }
-    ]
+    "name": "test_release",
+    "tag_name": "0.0.1",
+    "description": null,
+    "created_at": "2020-01-23T07:13:17.721Z",
+    "released_at": "2020-01-23T07:13:17.721Z",
+    "upcoming_release": false,
+    "author": {
+      "id": 11809982,
+      "username": "test_user",
+      "name": "Test User",
+      "state": "active",
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/11809982/avatar.png",
+      "web_url": "https://gitlab.com/test_user"
+    },
+    "commit": {
+      "id": "26e80b26fd9f8515401a4d10c331904f034e9f05",
+      "short_id": "26e80b26",
+      "created_at": "2023-01-05T08:52:55.000+00:00",
+      "parent_ids": [
+        "3a9bc8484f715a678b9c0dbe36e81d7e6375c210",
+        "c27eedbab3cd7c0455de207d4f2b2155337ba3c9"
+      ],
+      "title": "Add new feature",
+      "message": "Added a great new feature",
+      "author_name": "Test User",
+      "author_email": "test_user@gitlab.com",
+      "authored_date": "2023-01-05T08:52:55.000+00:00",
+      "committer_name": "test_user",
+      "committer_email": "test_user@gitlab.com",
+      "committed_date": "2023-01-05T08:52:55.000+00:00",
+      "trailers": {},
+      "web_url": "https://gitlab.com/OWNER/REPO/-/commit/26e80b26fd9f8515401a4d10c331904f034e9f05"
+    },
+    "commit_path": "/OWNER/REPO/-/commit/26e80b26fd9f8515401a4d10c331904f034e9f05",
+    "tag_path": "/OWNER/REPO/-/tags/0.0.1",
+    "assets": {
+      "count": 2,
+      "sources": [
+        {
+          "format": "zip",
+          "url": "https://gitlab.com/OWNER/REPO/-/archive/0.0.1/REPO-0.0.1.zip"
+        }
+      ],
+      "links": [
+        {
+          "id": 1294469,
+          "name": "test asset",
+          "url": "https://gitlab.com/some/location/1133",
+          "direct_asset_url": "https://gitlab.com/OWNER/REPO/-/releases/0.0.1/downloads/test_asset",
+          "link_type": "other"
+        }
+      ]
+    },
+    "_links": {
+      "self": "https://gitlab.com/OWNER/REPO/-/releases/0.0.1"
+    }
   }
-}]
+]
