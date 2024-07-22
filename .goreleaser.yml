@@ -33,6 +33,10 @@ builds:
     goos: [windows]
     goarch: ["386", amd64]
 
+gitlab_urls:
+  use_job_token: true
+  use_package_registry: true
+
 dockers:
   - image_templates:
       - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-amd64"
