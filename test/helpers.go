@@ -119,7 +119,8 @@ func GetHostOrSkip(t testing.TB) string {
 	t.Helper()
 	glTestHost := os.Getenv("GITLAB_TEST_HOST")
 	if glTestHost == "" || os.Getenv("GITLAB_TOKEN") == "" {
-		if os.Getenv("CI") == "true" {
+		// since token requires `api` privileges we only run integration tests in the canonical project
+		if os.Getenv("CI") == "true" && os.Getenv("CI_PROJECT_NAMESPACE") == "gitlab-org/cli" {
 			t.Log("Expected GITLAB_TEST_HOST and GITLAB_TOKEN to be set in CI. Marking as failed.")
 			t.Fail()
 		}
