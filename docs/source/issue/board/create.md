@@ -32,6 +32,6 @@ new
 ## Options inherited from parent commands
 
 ```plaintext
-      --help          Show help for command
+      --help          Show help for this command.
   -R, --repo string   Select another repository using the OWNER/REPO format or the project ID. Supports group namespaces
 ```

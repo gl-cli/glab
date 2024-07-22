@@ -21,6 +21,9 @@ func Test_configLock(t *testing.T) {
 
 	configLockPath := filepath.Join("config.yaml.lock")
 
+	err = os.Chmod(configLockPath, 0o600)
+	require.NoError(t, err)
+
 	expected, yml, err := ParseConfigFile(configLockPath)
 	require.NoError(t, err)
 	assert.Equal(t, string(expected), string(out))

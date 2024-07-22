@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/briandowns/spinner"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/pkg/git"
@@ -25,7 +25,7 @@ var description string
 func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
 	stackSaveCmd := &cobra.Command{
 		Use:   "save",
-		Short: `Save your progress within a stacked diff.`,
+		Short: `Save your progress within a stacked diff. (EXPERIMENTAL.)`,
 		Long: `Save your current progress with a diff on the stack.
 ` + text.ExperimentalString,
 		Example: heredoc.Doc(`
@@ -34,7 +34,7 @@ func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
 			glab stack save -m "added a function"`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("message") && cmd.Flags().Changed("description") {
-				return &cmdutils.FlagError{Err: errors.New("specify either of --message or --description")}
+				return &cmdutils.FlagError{Err: errors.New("specify either of --message or --description.")}
 			}
 
 			// check if there are even any changes before we start
@@ -146,8 +146,8 @@ func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	stackSaveCmd.Flags().StringVarP(&description, "description", "d", "", "a description of the change")
-	stackSaveCmd.Flags().StringVarP(&description, "message", "m", "", "alias for the description flag")
+	stackSaveCmd.Flags().StringVarP(&description, "description", "d", "", "Description of the change.")
+	stackSaveCmd.Flags().StringVarP(&description, "message", "m", "", "Alias for the description flag.")
 
 	return stackSaveCmd
 }
@@ -160,7 +160,7 @@ func checkForChanges() error {
 	}
 
 	if string(output) == "" {
-		return fmt.Errorf("no changes to save")
+		return fmt.Errorf("no changes to save.")
 	}
 
 	return nil

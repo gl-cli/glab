@@ -3,11 +3,13 @@ package note
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/issuable"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
@@ -18,6 +20,9 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string, issueType issuable
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 	factory := cmdtest.InitFactory(ios, rt)
 	factory.Branch = git.CurrentBranch
+	factory.Config = func() (config.Config, error) {
+		return config.NewFromString("editor: vi"), nil
+	}
 
 	// TODO: shouldn't be there but the stub doesn't work without it
 	_, _ = factory.HttpClient()
@@ -191,12 +196,18 @@ func Test_IssuableNoteCreate_prompt(t *testing.T) {
 			// glab issue note 1
 			// glab incident note 1
 			output, err := runCommand(fakeHTTP, true, `1`, cc.issueType)
+
+			// get the editor used
+			notePrompt := *as.AskOnes[0]
+			actualEditor := reflect.ValueOf(notePrompt).Elem().FieldByName("EditorCommand").String()
+
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			assert.Equal(t, output.Stderr(), "")
-			assert.Equal(t, output.String(), "https://gitlab.com/OWNER/REPO/issues/1#note_301\n")
+			assert.Equal(t, "", output.Stderr())
+			assert.Equal(t, "https://gitlab.com/OWNER/REPO/issues/1#note_301\n", output.String())
+			assert.Equal(t, "vi", actualEditor)
 		})
 
 		tests := []struct {
@@ -229,7 +240,7 @@ func Test_IssuableNoteCreate_prompt(t *testing.T) {
 					t.Error("expected error")
 					return
 				}
-				assert.Equal(t, "aborted... Note is empty", err.Error())
+				assert.Equal(t, "aborted... Note is empty.", err.Error())
 			})
 		}
 	}

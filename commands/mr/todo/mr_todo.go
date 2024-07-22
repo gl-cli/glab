@@ -15,7 +15,7 @@ func NewCmdTodo(f *cmdutils.Factory) *cobra.Command {
 	mrToDoCmd := &cobra.Command{
 		Use:     "todo [<id> | <branch>]",
 		Aliases: []string{"add-todo"},
-		Short:   "Add a to-do item to merge request",
+		Short:   "Add a to-do item to merge request.",
 		Long:    ``,
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

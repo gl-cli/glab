@@ -33,7 +33,7 @@ func TestAliasDelete(t *testing.T) {
 			isTTY:      true,
 			wantStdout: "",
 			wantStderr: "",
-			wantErr:    "no such alias co",
+			wantErr:    "no such alias 'co'.",
 		},
 		{
 			name: "delete one",
@@ -45,7 +45,7 @@ func TestAliasDelete(t *testing.T) {
 			cli:        "co",
 			isTTY:      true,
 			wantStdout: "",
-			wantStderr: "✓ Deleted alias co; was mr checkout\n",
+			wantStderr: "✓ Deleted alias 'co'; was 'mr checkout'.\n",
 		},
 	}
 	for _, tt := range tests {

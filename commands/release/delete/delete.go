@@ -37,21 +37,20 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "delete <tag>",
-		Short: "Delete a GitLab Release",
-		Long: heredoc.Docf(`Delete release assets to GitLab Release
+		Short: "Delete a GitLab release.",
+		Long: heredoc.Docf(`Delete release assets to GitLab release. Requires the Maintainer role or higher.
 
-			Deleting a release does not delete the associated tag unless %[1]s--with-tag%[1]s is specified.
-			Maintainer level access to the project is required to delete a release.
+			Deleting a release does not delete the associated tag, unless you specify %[1]s--with-tag%[1]s.
 		`, "`"),
 		Args: cmdutils.MinimumArgs(1, "no tag name provided"),
 		Example: heredoc.Doc(`
-			Delete a release (with a confirmation prompt')
+			# Delete a release (with a confirmation prompt)
 			$ glab release delete v1.1.0'
 
-			Skip the confirmation prompt and force delete
+			# Skip the confirmation prompt and force delete
 			$ glab release delete v1.0.1 -y
 
-			Delete release and associated tag
+			# Delete release and associated tag
 			$ glab release delete v1.0.1 --with-tag
 `),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -61,15 +60,15 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 			opts.TagName = args[0]
 
 			if !opts.ForceDelete && !opts.IO.PromptEnabled() {
-				return &cmdutils.FlagError{Err: fmt.Errorf("--yes or -y flag is required when not running interactively")}
+				return &cmdutils.FlagError{Err: fmt.Errorf("--yes or -y flag is required when not running interactively.")}
 			}
 
 			return deleteRun(opts)
 		},
 	}
 
-	cmd.Flags().BoolVarP(&opts.ForceDelete, "yes", "y", false, "Skip confirmation prompt")
-	cmd.Flags().BoolVarP(&opts.DeleteTag, "with-tag", "t", false, "Delete associated tag")
+	cmd.Flags().BoolVarP(&opts.ForceDelete, "yes", "y", false, "Skip the confirmation prompt.")
+	cmd.Flags().BoolVarP(&opts.DeleteTag, "with-tag", "t", false, "Delete the associated tag.")
 
 	return cmd
 }
@@ -95,9 +94,9 @@ func deleteRun(opts *DeleteOpts) error {
 	release, resp, err := client.Releases.GetRelease(repo.FullName(), opts.TagName)
 	if err != nil {
 		if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
-			return cmdutils.WrapError(err, fmt.Sprintf("no release found for %q", repo.FullName()))
+			return cmdutils.WrapError(err, fmt.Sprintf("no release found for %q.", repo.FullName()))
 		}
-		return cmdutils.WrapError(err, "failed to fetch release")
+		return cmdutils.WrapError(err, "failed to fetch release.")
 	}
 
 	if !opts.ForceDelete && opts.IO.PromptEnabled() {
@@ -119,22 +118,22 @@ func deleteRun(opts *DeleteOpts) error {
 
 	release, _, err = client.Releases.DeleteRelease(repo.FullName(), release.TagName)
 	if err != nil {
-		return cmdutils.WrapError(err, "failed to delete release")
+		return cmdutils.WrapError(err, "failed to delete release.")
 	}
 
-	opts.IO.Logf(color.Bold("%s Release %q deleted\n"), color.RedCheck(), release.Name)
+	opts.IO.Logf(color.Bold("%s Release %q deleted.\n"), color.RedCheck(), release.Name)
 
 	if opts.DeleteTag {
 
-		opts.IO.Logf("%s Deleting associated tag %q\n",
+		opts.IO.Logf("%s Deleting associated tag %q.\n",
 			color.ProgressIcon(), opts.TagName)
 
 		_, err = client.Tags.DeleteTag(repo.FullName(), release.TagName)
 		if err != nil {
-			return cmdutils.WrapError(err, "failed to delete tag")
+			return cmdutils.WrapError(err, "failed to delete tag.")
 		}
 
-		opts.IO.Logf(color.Bold("%s Tag %q deleted\n"), color.RedCheck(), release.Name)
+		opts.IO.Logf(color.Bold("%s Tag %q deleted.\n"), color.RedCheck(), release.Name)
 	}
 	return nil
 }

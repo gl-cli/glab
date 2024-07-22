@@ -176,6 +176,8 @@ func main() {
 			printError(cmdFactory.IO, err, rootCmd, debug, false)
 		}
 	}
+
+	api.GetClient().HTTPClient().CloseIdleConnections()
 }
 
 func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, debug, shouldExit bool) {
@@ -192,7 +194,7 @@ func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, deb
 		if debug {
 			streams.Log(color.FailedIcon(), dnsError)
 		}
-		streams.Logf("%s check your internet connection or status.gitlab.com or 'Run sudo gitlab-ctl status' on your server if self-hosted\n", color.DotWarnIcon())
+		streams.Logf("%s Check your internet connection and status.gitlab.com. If on a self-managed instance, run 'sudo gitlab-ctl status' on your server.\n", color.DotWarnIcon())
 		printMore = false
 	}
 	if printMore {

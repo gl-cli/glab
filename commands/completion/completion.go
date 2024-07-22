@@ -19,20 +19,20 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 
 	completionCmd := &cobra.Command{
 		Use:   "completion",
-		Short: "Generate shell completion scripts",
+		Short: "Generate shell completion scripts.",
 		Long: heredoc.Docf(`
-		The output of this command will be computer code and is meant to be saved
-		to a file or immediately evaluated by an interactive shell. To load completions:
+		This command outputs code meant to be saved to a file, or immediately
+		evaluated by an interactive shell. To load completions:
 
 		### Bash
 
 		To load completions in your current shell session:
-		
+
 		%[2]splaintext
 		source <(glab completion -s bash)
 		%[2]s
 
-		To load completions for every new session, execute once:
+		To load completions for every new session, run this command one time:
 
 		#### Linux
 
@@ -45,39 +45,39 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		%[2]splaintext
 		glab completion -s bash > /usr/local/etc/bash_completion.d/glab
 		%[2]s
-		
+
 		### Zsh
-		
-		If shell completion is not already enabled in your environment you will need
-		to enable it. You can execute the following once:
+
+		If shell completion is not already enabled in your environment you must
+		enable it. Run this command one time:
 
 		%[2]splaintext
 		echo "autoload -U compinit; compinit" >> ~/.zshrc
 		%[2]s
 
 		To load completions in your current shell session:
-		
+
 		%[2]splaintext
 		source <(glab completion -s zsh); compdef _glab glab
 		%[2]s
-		
-		To load completions for every new session, execute once:
+
+		To load completions for every new session, run this command one time:
 
 		#### Linux
-		
+
 		%[2]splaintext
 		glab completion -s zsh > "${fpath[1]}/_glab"
 		%[2]s
 
 		#### macOS
 
-		For older versions of macOS, this may be required:
+		For older versions of macOS, you might need this command:
 
 		%[2]splaintext
 		glab completion -s zsh > /usr/local/share/zsh/site-functions/_glab
 		%[2]s
 
-		The Homebrew version of glab should automatically install completions.
+		The Homebrew version of glab should install completions automatically.
 
 		### fish
 
@@ -87,7 +87,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		glab completion -s fish | source
 		%[2]s
 
-		To load completions for every new session, execute once:
+		To load completions for every new session, run this command one time:
 
 		%[2]splaintext
 		glab completion -s fish > ~/.config/fish/completions/glab.fish
@@ -104,9 +104,9 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		To load completions for every new session, add the output of the above command
 		to your PowerShell profile.
 
-		When installing glab through a package manager, however, it's possible that
-		no additional shell configuration is necessary to gain completion support.
-		For Homebrew, see <https://docs.brew.sh/Shell-Completion>
+		When installing glab through a package manager, however, you might not need
+		more shell configuration to support completions.
+		For Homebrew, see [brew shell completion](https://docs.brew.sh/Shell-Completion)
 		`, "`", "```"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			out := io.StdOut
@@ -133,7 +133,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		},
 	}
 
-	completionCmd.Flags().StringVarP(&shellType, "shell", "s", "bash", "Shell type: {bash|zsh|fish|powershell}")
-	completionCmd.Flags().BoolVarP(&excludeDesc, "no-desc", "", false, "Do not include shell completion description")
+	completionCmd.Flags().StringVarP(&shellType, "shell", "s", "bash", "Shell type: bash, zsh, fish, powershell.")
+	completionCmd.Flags().BoolVarP(&excludeDesc, "no-desc", "", false, "Do not include shell completion description.")
 	return completionCmd
 }

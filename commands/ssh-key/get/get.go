@@ -41,7 +41,7 @@ func NewCmdGet(f *cmdutils.Factory, runE func(*GetOpts) error) *cobra.Command {
 
 		# Interactive
 		$ glab ssh-key get
-		
+
 		# Interactive, with pagination
 		$ glab ssh-key get -P 50 -p 2
 		`,
@@ -71,8 +71,8 @@ func NewCmdGet(f *cmdutils.Factory, runE func(*GetOpts) error) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
-	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 20, "Number of items to list per page")
+	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
+	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 20, "Number of items to list per page.")
 
 	return cmd
 }
@@ -85,7 +85,7 @@ func getRun(opts *GetOpts) error {
 
 	key, _, err := httpClient.Users.GetSSHKey(opts.KeyID)
 	if err != nil {
-		return cmdutils.WrapError(err, "getting SSH key")
+		return cmdutils.WrapError(err, "getting SSH key.")
 	}
 
 	opts.IO.LogInfo(key.Key)
@@ -95,7 +95,7 @@ func getRun(opts *GetOpts) error {
 
 func keySelectPrompt(opts *GetOpts) (int, error) {
 	if !opts.IO.PromptEnabled() {
-		return 0, cmdutils.FlagError{Err: errors.New("<key-id> argument is required when prompts are disabled")}
+		return 0, cmdutils.FlagError{Err: errors.New("the <key-id> argument is required when prompts are disabled.")}
 	}
 
 	sshKeyListOptions := &gitlab.ListSSHKeysOptions{
@@ -110,10 +110,10 @@ func keySelectPrompt(opts *GetOpts) (int, error) {
 
 	keys, response, err := httpClient.Users.ListSSHKeys(sshKeyListOptions)
 	if err != nil {
-		return 0, cmdutils.WrapError(err, "Retrieving list of SSH keys to prompt with")
+		return 0, cmdutils.WrapError(err, "Retrieving list of SSH keys to prompt with.")
 	}
 	if len(keys) == 0 {
-		return 0, cmdutils.WrapError(errors.New("no keys were found"), "Retrieving list of SSH keys")
+		return 0, cmdutils.WrapError(errors.New("no keys were found"), "Retrieving list of SSH keys.")
 	}
 
 	keyOpts := map[string]int{}
@@ -137,7 +137,7 @@ func keySelectPrompt(opts *GetOpts) (int, error) {
 	var result string
 	err = prompt.AskOne(keySelectQuestion, &result)
 	if err != nil {
-		return 0, cmdutils.WrapError(err, "prompting for SSH key to delete")
+		return 0, cmdutils.WrapError(err, "prompting for SSH key to delete.")
 	}
 
 	return keyOpts[result], nil

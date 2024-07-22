@@ -37,17 +37,20 @@ func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comma
 
 	cmd := &cobra.Command{
 		Use:   "diff [<id> | <branch>]",
-		Short: "View changes in a merge request",
+		Short: "View changes in a merge request.",
 		Example: heredoc.Doc(`
-			glab mr diff 123
-			glab mr diff branch
-			glab mr diff  # get from current branch
-			glab mr diff 123 --color=never
+			$ glab mr diff 123
+			$ glab mr diff branch
+
+			# Get merge request from current branch
+			$ glab mr diff
+
+			$ glab mr diff 123 --color=never
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if repoOverride, _ := cmd.Flags().GetString("repo"); repoOverride != "" && len(args) == 0 {
-				return &cmdutils.FlagError{Err: errors.New("argument required when using the --repo flag")}
+				return &cmdutils.FlagError{Err: errors.New("argument required when using the --repo flag.")}
 			}
 
 			if len(args) > 0 {
@@ -55,7 +58,7 @@ func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comma
 			}
 
 			if !validColorFlag(opts.UseColor) {
-				return &cmdutils.FlagError{Err: fmt.Errorf("did not understand color: %q. Expected one of always, never, or auto", opts.UseColor)}
+				return &cmdutils.FlagError{Err: fmt.Errorf("did not understand color: %q. Expected one of 'always', 'never', or 'auto'.", opts.UseColor)}
 			}
 
 			if opts.UseColor == "auto" && !opts.IO.IsaTTY {
@@ -69,7 +72,7 @@ func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comma
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.UseColor, "color", "auto", "Use color in diff output: {always|never|auto}")
+	cmd.Flags().StringVar(&opts.UseColor, "color", "auto", "Use color in diff output: always, never, auto.")
 
 	return cmd
 }

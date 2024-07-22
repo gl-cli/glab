@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
@@ -69,7 +69,7 @@ func TestSaveNewStack(t *testing.T) {
 			desc:     "with no changed files",
 			args:     []string{"."},
 			files:    []string{},
-			expected: "could not save: \"no changes to save\"",
+			expected: "could not save: \"no changes to save.\"",
 			wantErr:  true,
 		},
 	}

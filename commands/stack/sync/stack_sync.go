@@ -7,10 +7,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/xanzy/go-gitlab"
 
 	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
@@ -53,7 +54,7 @@ func NewCmdSyncStack(f *cmdutils.Factory) *cobra.Command {
 
 	stackSaveCmd := &cobra.Command{
 		Use:   "sync",
-		Short: `Sync and submit progress on a stacked diff.`,
+		Short: `Sync and submit progress on a stacked diff. (EXPERIMENTAL.)`,
 		Long: heredoc.Doc(`Sync and submit progress on a stacked diff. This command runs these steps:
 
 1. Creates a merge request for any branches without one.
@@ -65,7 +66,9 @@ func NewCmdSyncStack(f *cmdutils.Factory) *cobra.Command {
 			glab sync
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			iostream.StartSpinner("Syncing")
 			err := stackSync(f, opts)
+			iostream.StopSpinner("")
 			if err != nil {
 				return fmt.Errorf("could not run sync: %v", err)
 			}
@@ -78,11 +81,9 @@ func NewCmdSyncStack(f *cmdutils.Factory) *cobra.Command {
 }
 
 func stackSync(f *cmdutils.Factory, opts *Options) error {
-	iostream.StartSpinner("Syncing")
-
 	repo, err := f.BaseRepo()
 	if err != nil {
-		return fmt.Errorf("error determining base repo: %v. are you in a git repository?", err)
+		return fmt.Errorf("error determining base repository: %v. Are you in a Git repository?", err)
 	}
 
 	client, err := authWithGitlab(f, opts)
@@ -102,7 +103,7 @@ func stackSync(f *cmdutils.Factory, opts *Options) error {
 
 		ref, err := stack.First()
 		if err != nil {
-			return fmt.Errorf("error getting first stack. Your data in %s may be corrupted: %v", git.StackLocation, err)
+			return fmt.Errorf("error getting first stack. Your data in %s might be corrupted: %v", git.StackLocation, err)
 		}
 
 		var gr git.StandardGitCommand
@@ -129,7 +130,7 @@ func stackSync(f *cmdutils.Factory, opts *Options) error {
 			case strings.Contains(status, nothingToCommit):
 				// this is fine. we can just move on.
 			default:
-				return fmt.Errorf("your Git branch is ahead when it shouldn't be. You might need to squash your commits")
+				return fmt.Errorf("your Git branch is ahead, but it shouldn't be. You might need to squash your commits.")
 			}
 
 			if ref.MR == "" {
@@ -161,10 +162,7 @@ func stackSync(f *cmdutils.Factory, opts *Options) error {
 		}
 	}
 
-	iostream.StopSpinner("")
-
 	fmt.Print(progressString("Sync finished!"))
-
 	return nil
 }
 
@@ -321,7 +319,7 @@ func createMR(client *gitlab.Client, repo glrepo.Interface, stack *git.Stack, re
 
 func removeOldMrs(ref *git.StackRef, mr *gitlab.MergeRequest, stack *git.Stack) error {
 	if mr.State == mergedStatus {
-		progress := fmt.Sprintf("MR !%v has merged, removing reference...", mr.IID)
+		progress := fmt.Sprintf("Merge request !%v has merged. Removing reference...", mr.IID)
 		fmt.Println(progressString(progress))
 
 		err := stack.RemoveRef(*ref)
@@ -343,12 +341,12 @@ func authWithGitlab(f *cmdutils.Factory, opts *Options) (*gitlab.Client, error) 
 
 	instances, err := glConfig.Hosts()
 	if len(instances) == 0 || err != nil {
-		return nil, fmt.Errorf("no GitLab instances have been authenticated with glab. run `%s` to authenticate", f.IO.Color().Bold("glab auth login"))
+		return nil, fmt.Errorf("no GitLab instances have been authenticated with glab. Run `%s` to authenticate.", f.IO.Color().Bold("glab auth login"))
 	}
 
 	opts.LabClient, err = f.HttpClient()
 	if err != nil {
-		return nil, fmt.Errorf("error utilizing API client: %v", err)
+		return nil, fmt.Errorf("error using API client: %v", err)
 	}
 
 	return opts.LabClient, nil
@@ -403,11 +401,11 @@ func branchDiverged(ref *git.StackRef, stack *git.Stack, gr git.StandardGitComma
 func branchBehind(ref *git.StackRef, gr git.StandardGitCommand) error {
 	// possibly someone applied suggestions or someone else added a
 	// different commit
-	fmt.Println(progressString(ref.Branch + " is behind- pulling."))
+	fmt.Println(progressString(ref.Branch + " is behind - pulling updates."))
 
 	_, err := gitPull(ref, gr)
 	if err != nil {
-		return fmt.Errorf("error checking for running Git pull: %v", err)
+		return fmt.Errorf("error checking for a running Git pull: %v", err)
 	}
 
 	return nil

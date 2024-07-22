@@ -39,6 +39,7 @@ type ViewOpts struct {
 	Output    io.Writer
 
 	OpenInBrowser bool
+	PipelineUser  *gitlab.BasicUser
 }
 
 type ViewJobKind int64
@@ -101,17 +102,17 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	opts := ViewOpts{}
 	pipelineCIView := &cobra.Command{
 		Use:   "view [branch/tag]",
-		Short: "View, run, trace/logs, and cancel CI/CD jobs current pipeline",
+		Short: "View, run, trace, log, and cancel CI/CD job's current pipeline.",
 		Long: heredoc.Doc(`Supports viewing, running, tracing, and canceling jobs.
 
 		Use arrow keys to navigate jobs and logs.
 
-		'Enter' to toggle a job's logs or trace or display a child pipeline (trigger jobs are marked with a »).
-		'Esc' or 'q' to close logs,trace or go back to the parent pipeline.
-		'Ctrl+R', 'Ctrl+P' to run/retry/play a job -- Use Tab / Arrow keys to navigate modal and Enter to confirm.
-		'Ctrl+D' to cancel job -- (Quits CI/CD view if selected job isn't running or pending).
-		'Ctrl+Q' to Quit CI/CD View.
-		'Ctrl+Space' suspend application and view logs (similar to glab pipeline ci trace)
+		- 'Enter' to toggle through a job's logs / traces, or display a child pipeline. Trigger jobs are marked with a '»'.
+		- 'Esc' or 'q' to close the logs or trace, or return to the parent pipeline.
+		- 'Ctrl+R', 'Ctrl+P' to run, retry, or play a job. Use 'Tab' or arrow keys to navigate the modal, and 'Enter' to confirm.
+		- 'Ctrl+D' to cancel a job. If the selected job isn't running or pending, quits the CI/CD view.
+		- 'Ctrl+Q' to quit the CI/CD view.
+		- 'Ctrl+Space' to suspend application and view the logs. Similar to 'glab pipeline ci trace'.
 		Supports vi style bindings and arrow keys for navigating jobs and logs.
 	`),
 		Example: heredoc.Doc(`
@@ -171,6 +172,11 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 				return utils.OpenInBrowser(webURL, browser)
 			}
 
+			p, err := api.GetSinglePipeline(opts.ApiClient, opts.Commit.LastPipeline.ID, opts.ProjectID)
+			if err != nil {
+				return fmt.Errorf("Can't get pipeline #%d info: %s", opts.Commit.LastPipeline.ID, err)
+			}
+			opts.PipelineUser = p.User
 			pipelines = make([]gitlab.PipelineInfo, 0, 10)
 
 			return drawView(opts)
@@ -178,8 +184,8 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 	}
 
 	pipelineCIView.Flags().
-		StringVarP(&opts.RefName, "branch", "b", "", "Check pipeline status for a branch/tag. (Default is the current branch)")
-	pipelineCIView.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open pipeline in a browser. Uses default browser or browser specified in BROWSER variable")
+		StringVarP(&opts.RefName, "branch", "b", "", "Check pipeline status for a branch or tag. Defaults to the current branch.")
+	pipelineCIView.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open pipeline in a browser. Uses default browser, or browser specified in BROWSER variable.")
 
 	return pipelineCIView
 }
@@ -190,7 +196,7 @@ func drawView(opts ViewOpts) error {
 		SetBackgroundColor(tcell.ColorDefault).
 		SetBorderPadding(1, 1, 2, 2).
 		SetBorder(true).
-		SetTitle(fmt.Sprintf(" Pipeline #%d triggered %s by %s ", opts.Commit.LastPipeline.ID, utils.TimeToPrettyTimeAgo(*opts.Commit.LastPipeline.CreatedAt), opts.Commit.AuthorName))
+		SetTitle(fmt.Sprintf(" Pipeline #%d triggered %s by %s ", opts.Commit.LastPipeline.ID, utils.TimeToPrettyTimeAgo(*opts.Commit.LastPipeline.CreatedAt), opts.PipelineUser.Name))
 
 	boxes = make(map[string]*tview.TextView)
 	jobsCh := make(chan []*ViewJob)
@@ -271,7 +277,7 @@ func inputCapture(
 				modalVisible = true
 				modal := tview.NewModal().
 					SetBackgroundColor(tcell.ColorDefault).
-					SetText(fmt.Sprintf("Are you sure you want to Cancel %s", curJob.Name)).
+					SetText(fmt.Sprintf("Are you sure you want to cancel %s?", curJob.Name)).
 					AddButtons([]string{"✘ No", "✔ Yes"}).
 					SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 						modalVisible = false
@@ -304,7 +310,7 @@ func inputCapture(
 			modalVisible = true
 			modal := tview.NewModal().
 				SetBackgroundColor(tcell.ColorDefault).
-				SetText(fmt.Sprintf("Are you sure you want to run %s", curJob.Name)).
+				SetText(fmt.Sprintf("Are you sure you want to run %s?", curJob.Name)).
 				AddButtons([]string{"✘ No", "✔ Yes"}).
 				SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 					modalVisible = false
@@ -369,7 +375,7 @@ func inputCapture(
 						log.Fatal(err)
 					}
 					if ctx.Err() == nil {
-						fmt.Println("\nPress <Enter> to resume the ci GUI view")
+						fmt.Println("\nPress <Enter> to resume the ci GUI view.")
 					}
 				}()
 				reader := bufio.NewReader(os.Stdin)
@@ -725,7 +731,7 @@ func updateJobs(
 		)
 		if (len(jobs) == 0 && len(bridges) == 0) || err != nil {
 			app.Stop()
-			log.Fatal(errors.Wrap(err, "failed to find ci jobs"))
+			log.Fatal(errors.Wrap(err, "failed to find CI jobs."))
 		}
 		viewJobs := make([]*ViewJob, 0, len(jobs)+len(bridges))
 		for _, j := range jobs {

@@ -3,7 +3,6 @@ package ask
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -51,13 +50,12 @@ var (
 )
 
 const (
-	runCmdsQuestion   = "Would you like to run these Git commands"
+	runCmdsQuestion   = "Would you like to run these Git commands?"
 	gitCmd            = "git"
 	gitCmdAPIPath     = "ai/llm/git_command"
 	spinnerText       = "Generating Git commands..."
-	aiResponseErr     = "Error: AI response has not been generated correctly"
-	apiUnreachableErr = "Error: API is unreachable"
-	experimentMsg     = "AI generated these responses. Leave feedback: https://gitlab.com/gitlab-org/gitlab/-/issues/409636\n"
+	aiResponseErr     = "Error: AI response has not been generated correctly."
+	apiUnreachableErr = "Error: API is unreachable."
 )
 
 func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
@@ -68,24 +66,15 @@ func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
 
 	duoAskCmd := &cobra.Command{
 		Use:   "ask <prompt>",
-		Short: "Generate Git commands from natural language (Experimental).",
+		Short: "Generate Git commands from natural language.",
 		Long: heredoc.Doc(`
 			Generate Git commands from natural language.
-
-			This experimental feature converts natural language descriptions into
-			executable Git commands.
-
-			We'd love your feedback in [issue 409636](https://gitlab.com/gitlab-org/gitlab/-/issues/409636).
 		`),
 		Example: heredoc.Doc(`
 			$ glab duo ask list last 10 commit titles
+
 			# => A list of Git commands to show the titles of the latest 10 commits with an explanation and an option to execute the commands.
 		`),
-		Aliases: []string{"git"},
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintf(os.Stderr, "Aliases 'git' is deprecated. Please use 'ask' with the appropriate flag instead.\n\n")
-			_ = cmd.Help()
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !opts.Git {
 				return nil
@@ -113,7 +102,7 @@ func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	duoAskCmd.Flags().BoolVarP(&opts.Git, "git", "", true, "Ask a question about git")
+	duoAskCmd.Flags().BoolVarP(&opts.Git, "git", "", true, "Ask a question about Git.")
 
 	return duoAskCmd
 }
@@ -124,13 +113,13 @@ func (opts *opts) Result() (*result, error) {
 
 	client, err := opts.HttpClient()
 	if err != nil {
-		return nil, cmdutils.WrapError(err, "failed to get http client")
+		return nil, cmdutils.WrapError(err, "failed to get HTTP client.")
 	}
 
 	body := request{Prompt: opts.Prompt, Model: vertexAI}
 	request, err := client.NewRequest(http.MethodPost, gitCmdAPIPath, body, nil)
 	if err != nil {
-		return nil, cmdutils.WrapError(err, "failed to create a request")
+		return nil, cmdutils.WrapError(err, "failed to create a request.")
 	}
 
 	var r response
@@ -158,9 +147,6 @@ func (opts *opts) Result() (*result, error) {
 
 func (opts *opts) displayResult(result *result) {
 	color := opts.IO.Color()
-
-	opts.IO.LogInfo(color.Bold("Experiment:"))
-	opts.IO.LogInfo(color.Gray(experimentMsg))
 
 	opts.IO.LogInfo(color.Bold("Commands:\n"))
 

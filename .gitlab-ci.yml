@@ -1,5 +1,5 @@
 variables:
-  GO_VERSION: "1.22.4"
+  GO_VERSION: "1.22.5"
   GOLANGCI_LINT_VERSION: 'v1.59.0'
 
 # run the pipeline only on MRs, tags, and default branch
@@ -25,7 +25,7 @@ include:
   - template: Jobs/SAST.latest.gitlab-ci.yml
   - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
-  - component: ${CI_SERVER_FQDN}/gitlab-org/components/danger-review/danger-review@1.2.0
+  - component: ${CI_SERVER_FQDN}/gitlab-org/components/danger-review/danger-review@1.4.1
 
 
 # From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
@@ -62,11 +62,11 @@ check_docs_update:
       fi
 
 check_docs_markdown:
-  image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.20-vale-3.4.2-markdownlint2-0.13.0-lychee-0.15.1
+  image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.20-vale-3.6.1-markdownlint2-0.13.0-lychee-0.15.1
   extends: .documentation
   script:
     # Lint prose
-    - vale --minAlertLevel error docs *.md
+    - vale --minAlertLevel error docs
     # Lint Markdown
     - markdownlint-cli2 'docs/**/*.md' *.md
     # Check links
@@ -213,6 +213,7 @@ release:
 homebrew-release:
   image: homebrew/ubuntu22.04:latest
   stage: release
+  needs: [release]
   rules:
     - if: $CI_COMMIT_TAG
   script:

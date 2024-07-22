@@ -75,6 +75,6 @@ func TestIssueCreateWhenIssuesDisabled(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Empty(t, output.String())
 	assert.Equal(t, "Issues are disabled for project \"OWNER/REPO\" or require project membership. "+
-		"Please ensure issues are enabled for the \"OWNER/REPO\" project, and if required, you are a member of the project.\n",
+		"Make sure issues are enabled for the \"OWNER/REPO\" project, and if required, you are a member of the project.\n",
 		output.Stderr())
 }

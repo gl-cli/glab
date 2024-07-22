@@ -128,8 +128,8 @@ func TestIssuableClose(t *testing.T) {
 			name:      "issue_close",
 			issueType: issuable.TypeIssue,
 			wantOutput: heredoc.Doc(`
-				- Closing Issue...
-				✓ Closed Issue #1
+				- Closing issue...
+				✓ Closed issue #1
 
 				`),
 		},
@@ -138,8 +138,8 @@ func TestIssuableClose(t *testing.T) {
 			name:      "incident_close",
 			issueType: issuable.TypeIncident,
 			wantOutput: heredoc.Doc(`
-				- Resolving Incident...
-				✓ Resolved Incident #2
+				- Resolving incident...
+				✓ Resolved incident #2
 
 				`),
 		},
@@ -148,8 +148,8 @@ func TestIssuableClose(t *testing.T) {
 			name:      "incident_close_using_issue_command",
 			issueType: issuable.TypeIssue,
 			wantOutput: heredoc.Doc(`
-				- Closing Issue...
-				✓ Closed Issue #2
+				- Closing issue...
+				✓ Closed issue #2
 
 				`),
 		},

@@ -19,7 +19,7 @@ func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
 	factory = f
 	releaseListCmd := &cobra.Command{
 		Use:     "list [flags]",
-		Short:   `List releases in a repository`,
+		Short:   `List releases in a repository.`,
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Args:    cobra.ExactArgs(0),
@@ -32,9 +32,9 @@ func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
 	releaseListCmd.Flags().IntP("page", "p", 1, "Page number.")
 	releaseListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page.")
 
-	releaseListCmd.Flags().StringP("tag", "t", "", "Filter releases by tag <name>")
+	releaseListCmd.Flags().StringP("tag", "t", "", "Filter releases by tag <name>.")
 	// deprecate in favour of the `release view` command
-	_ = releaseListCmd.Flags().MarkDeprecated("tag", "use `glab release view <tag>` instead")
+	_ = releaseListCmd.Flags().MarkDeprecated("tag", "Use `glab release view <tag>` instead.")
 
 	// make it hidden but still accessible
 	// TODO: completely remove before a major release (v2.0.0+)

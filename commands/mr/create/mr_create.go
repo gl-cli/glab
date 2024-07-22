@@ -90,7 +90,7 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 
 	mrCreateCmd := &cobra.Command{
 		Use:     "create",
-		Short:   `Create new merge request`,
+		Short:   `Create a new merge request.`,
 		Long:    ``,
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
@@ -127,26 +127,26 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 
 			if hasTitle && hasDescription && opts.Autofill {
 				return &cmdutils.FlagError{
-					Err: errors.New("usage of --title and --description completely override --fill"),
+					Err: errors.New("usage of --title and --description overrides --fill."),
 				}
 			}
 			if opts.IsInteractive && !opts.IO.PromptEnabled() && !opts.Autofill {
-				return &cmdutils.FlagError{Err: errors.New("--title or --fill required for non-interactive mode")}
+				return &cmdutils.FlagError{Err: errors.New("--title or --fill required for non-interactive mode.")}
 			}
 			if cmd.Flags().Changed("wip") && cmd.Flags().Changed("draft") {
-				return &cmdutils.FlagError{Err: errors.New("specify either of --draft or --wip")}
+				return &cmdutils.FlagError{Err: errors.New("specify --draft.")}
 			}
 			if !opts.Autofill && opts.FillCommitBody {
-				return &cmdutils.FlagError{Err: errors.New("--fill-commit-body should be used with --fill")}
+				return &cmdutils.FlagError{Err: errors.New("--fill-commit-body should be used with --fill.")}
 			}
 			// Remove this once --yes does more than just skip the prompts that --web happen to skip
 			// by design
 			if opts.Yes && opts.Web {
-				return &cmdutils.FlagError{Err: errors.New("--web already skips all prompts currently skipped by --yes")}
+				return &cmdutils.FlagError{Err: errors.New("--web already skips all prompts currently skipped by --yes.")}
 			}
 
 			if opts.CopyIssueLabels && opts.RelatedIssue == "" {
-				return &cmdutils.FlagError{Err: errors.New("--copy-issue-labels can only be used with --related-issue")}
+				return &cmdutils.FlagError{Err: errors.New("--copy-issue-labels can only be used with --related-issue.")}
 			}
 
 			if runE != nil {
@@ -166,35 +166,35 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 			return nil
 		},
 	}
-	mrCreateCmd.Flags().BoolVarP(&opts.Autofill, "fill", "f", false, "Do not prompt for title/description and just use commit info. Sets `push` to `true`, and pushes the branch.")
-	mrCreateCmd.Flags().BoolVarP(&opts.FillCommitBody, "fill-commit-body", "", false, "Fill description with each commit body when multiple commits. Can only be used with --fill")
-	mrCreateCmd.Flags().BoolVarP(&opts.IsDraft, "draft", "", false, "Mark merge request as a draft")
-	mrCreateCmd.Flags().BoolVarP(&opts.IsWIP, "wip", "", false, "Mark merge request as a work in progress. Alternative to --draft")
-	mrCreateCmd.Flags().BoolVarP(&opts.ShouldPush, "push", "", false, "Push committed changes after creating merge request. Make sure you have committed changes")
-	mrCreateCmd.Flags().StringVarP(&opts.Title, "title", "t", "", "Supply a title for merge request")
-	mrCreateCmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Supply a description for merge request")
-	mrCreateCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, "Add label by name. Multiple labels should be comma separated")
-	mrCreateCmd.Flags().StringSliceVarP(&opts.Assignees, "assignee", "a", []string{}, "Assign merge request to people by their `usernames`")
-	mrCreateCmd.Flags().StringSliceVarP(&opts.Reviewers, "reviewer", "", []string{}, "Request review from users by their `usernames`")
-	mrCreateCmd.Flags().StringVarP(&opts.SourceBranch, "source-branch", "s", "", "The Branch you are creating the merge request. Default is the current branch.")
-	mrCreateCmd.Flags().StringVarP(&opts.TargetBranch, "target-branch", "b", "", "The target or base branch into which you want your code merged")
-	mrCreateCmd.Flags().BoolVarP(&opts.CreateSourceBranch, "create-source-branch", "", false, "Create source branch if it does not exist")
-	mrCreateCmd.Flags().StringVarP(&opts.MilestoneFlag, "milestone", "m", "", "The global ID or title of a milestone to assign")
-	mrCreateCmd.Flags().BoolVarP(&opts.AllowCollaboration, "allow-collaboration", "", false, "Allow commits from other members")
-	mrCreateCmd.Flags().BoolVarP(&opts.RemoveSourceBranch, "remove-source-branch", "", false, "Remove Source Branch on merge")
-	mrCreateCmd.Flags().BoolVarP(&opts.SquashBeforeMerge, "squash-before-merge", "", false, "Squash commits into a single commit when merging")
-	mrCreateCmd.Flags().BoolVarP(&opts.NoEditor, "no-editor", "", false, "Don't open editor to enter description. If set to true, uses prompt. (default false)")
-	mrCreateCmd.Flags().StringP("head", "H", "", "Select another head repository using the `OWNER/REPO` or `GROUP/NAMESPACE/REPO` format or the project ID or full URL")
-	mrCreateCmd.Flags().BoolVarP(&opts.Yes, "yes", "y", false, "Skip submission confirmation prompt, with --fill it skips all optional prompts")
-	mrCreateCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, "continue merge request creation on web browser")
-	mrCreateCmd.Flags().BoolVarP(&opts.CopyIssueLabels, "copy-issue-labels", "", false, "Copy labels from issue to the merge request. Used with --related-issue")
-	mrCreateCmd.Flags().StringVarP(&opts.RelatedIssue, "related-issue", "i", "", "Create merge request for an issue. The merge request title will be created from the issue if --title is not provided.")
-	mrCreateCmd.Flags().BoolVar(&opts.Recover, "recover", false, "Save the options to a file if the merge request fails to be created. If the file exists, the options will be loaded from the recovery file (EXPERIMENTAL)")
+	mrCreateCmd.Flags().BoolVarP(&opts.Autofill, "fill", "f", false, "Do not prompt for title or description, and just use commit info. Sets `push` to `true`, and pushes the branch.")
+	mrCreateCmd.Flags().BoolVarP(&opts.FillCommitBody, "fill-commit-body", "", false, "Fill description with each commit body when multiple commits. Can only be used with --fill.")
+	mrCreateCmd.Flags().BoolVarP(&opts.IsDraft, "draft", "", false, "Mark merge request as a draft.")
+	mrCreateCmd.Flags().BoolVarP(&opts.IsWIP, "wip", "", false, "Mark merge request as a draft. Alternative to --draft.")
+	mrCreateCmd.Flags().BoolVarP(&opts.ShouldPush, "push", "", false, "Push committed changes after creating merge request. Make sure you have committed changes.")
+	mrCreateCmd.Flags().StringVarP(&opts.Title, "title", "t", "", "Supply a title for the merge request.")
+	mrCreateCmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Supply a description for the merge request.")
+	mrCreateCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, "Add label by name. Multiple labels should be comma-separated.")
+	mrCreateCmd.Flags().StringSliceVarP(&opts.Assignees, "assignee", "a", []string{}, "Assign merge request to people by their `usernames`.")
+	mrCreateCmd.Flags().StringSliceVarP(&opts.Reviewers, "reviewer", "", []string{}, "Request review from users by their `usernames`.")
+	mrCreateCmd.Flags().StringVarP(&opts.SourceBranch, "source-branch", "s", "", "Create a merge request from this branch. Default is the current branch.")
+	mrCreateCmd.Flags().StringVarP(&opts.TargetBranch, "target-branch", "b", "", "The target or base branch into which you want your code merged into.")
+	mrCreateCmd.Flags().BoolVarP(&opts.CreateSourceBranch, "create-source-branch", "", false, "Create a source branch if it does not exist.")
+	mrCreateCmd.Flags().StringVarP(&opts.MilestoneFlag, "milestone", "m", "", "The global ID or title of a milestone to assign.")
+	mrCreateCmd.Flags().BoolVarP(&opts.AllowCollaboration, "allow-collaboration", "", false, "Allow commits from other members.")
+	mrCreateCmd.Flags().BoolVarP(&opts.RemoveSourceBranch, "remove-source-branch", "", false, "Remove source branch on merge.")
+	mrCreateCmd.Flags().BoolVarP(&opts.SquashBeforeMerge, "squash-before-merge", "", false, "Squash commits into a single commit when merging.")
+	mrCreateCmd.Flags().BoolVarP(&opts.NoEditor, "no-editor", "", false, "Don't open editor to enter a description. If true, uses prompt. Defaults to false.")
+	mrCreateCmd.Flags().StringP("head", "H", "", "Select another head repository using the `OWNER/REPO` or `GROUP/NAMESPACE/REPO` format, the project ID, or the full URL.")
+	mrCreateCmd.Flags().BoolVarP(&opts.Yes, "yes", "y", false, "Skip submission confirmation prompt. Use --fill to skip all optional prompts.")
+	mrCreateCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, "Continue merge request creation in a browser.")
+	mrCreateCmd.Flags().BoolVarP(&opts.CopyIssueLabels, "copy-issue-labels", "", false, "Copy labels from issue to the merge request. Used with --related-issue.")
+	mrCreateCmd.Flags().StringVarP(&opts.RelatedIssue, "related-issue", "i", "", "Create a merge request for an issue. If --title is not provided, uses the issue title.")
+	mrCreateCmd.Flags().BoolVar(&opts.Recover, "recover", false, "Save the options to a file if the merge request creation fails. If the file exists, the options are loaded from the recovery file. (EXPERIMENTAL.)")
 	mrCreateCmd.Flags().BoolVar(&opts.Signoff, "signoff", false, "Append a DCO signoff to the merge request description.")
 
-	mrCreateCmd.Flags().StringVarP(&opts.MRCreateTargetProject, "target-project", "", "", "Add target project by id or OWNER/REPO or GROUP/NAMESPACE/REPO")
+	mrCreateCmd.Flags().StringVarP(&opts.MRCreateTargetProject, "target-project", "", "", "Add target project by id, OWNER/REPO, or GROUP/NAMESPACE/REPO.")
 	_ = mrCreateCmd.Flags().MarkHidden("target-project")
-	_ = mrCreateCmd.Flags().MarkDeprecated("target-project", "Use --repo instead")
+	_ = mrCreateCmd.Flags().MarkDeprecated("target-project", "Use --repo instead.")
 
 	return mrCreateCmd
 }
@@ -278,7 +278,7 @@ func createRun(opts *CreateOpts) error {
 		fmt.Fprintf(opts.IO.StdErr, "Failed to create a merge request for project %q. Please ensure:\n", opts.TargetProject.PathWithNamespace)
 		fmt.Fprintf(opts.IO.StdErr, " - You are authenticated with the GitLab CLI.\n")
 		fmt.Fprintf(opts.IO.StdErr, " - Merge requests are enabled for this project.\n")
-		fmt.Fprintf(opts.IO.StdErr, " - You have a project role that allows you create merge requests.\n")
+		fmt.Fprintf(opts.IO.StdErr, " - Your role in this project allows you to create merge requests.\n")
 		return cmdutils.SilentError
 	}
 
@@ -369,7 +369,7 @@ func createRun(opts *CreateOpts) error {
 			}
 			_, err = api.GetCommit(labClient, baseRepo.FullName(), opts.TargetBranch)
 			if err != nil {
-				return fmt.Errorf("target branch %s does not exist on remote. Specify target branch with --target-branch flag",
+				return fmt.Errorf("target branch %s does not exist on remote. Specify target branch with the --target-branch flag",
 					opts.TargetBranch)
 			}
 
@@ -392,8 +392,8 @@ func createRun(opts *CreateOpts) error {
 						return fmt.Errorf("error getting templates: %w", err)
 					}
 
-					const mrWithCommitsTemplate = "Open a merge request with commit messages"
-					const mrEmptyTemplate = "Open a blank merge request"
+					const mrWithCommitsTemplate = "Open a merge request with commit messages."
+					const mrEmptyTemplate = "Open a blank merge request."
 
 					templateNames = append(templateNames, mrWithCommitsTemplate)
 					templateNames = append(templateNames, mrEmptyTemplate)
@@ -402,7 +402,7 @@ func createRun(opts *CreateOpts) error {
 						{
 							Name: "index",
 							Prompt: &survey.Select{
-								Message: "Choose a template",
+								Message: "Choose a template:",
 								Options: templateNames,
 							},
 						},
@@ -469,7 +469,7 @@ func createRun(opts *CreateOpts) error {
 	}
 
 	if opts.Title == "" {
-		return fmt.Errorf("title can't be blank")
+		return fmt.Errorf("title can't be blank.")
 	}
 
 	if opts.IsDraft || opts.IsWIP {
@@ -543,7 +543,7 @@ func createRun(opts *CreateOpts) error {
 
 		err := prompt.MultiSelect(&metadataActions, "metadata", "Which metadata types to add?", metadataOptions)
 		if err != nil {
-			return fmt.Errorf("failed to pick metadata to add: %w", err)
+			return fmt.Errorf("failed to pick the metadata to add: %w", err)
 		}
 
 		for _, x := range metadataActions {
@@ -644,7 +644,7 @@ func createRun(opts *CreateOpts) error {
 		return nil
 	}
 
-	return errors.New("expected to cancel, preview in browser, or submit")
+	return errors.New("expected to cancel, preview in browser, or submit.")
 }
 
 func mrBody(commits []*git.Commit, fillCommitBody bool) (string, error) {
@@ -873,6 +873,6 @@ func createRecoverSaveFile(opts *CreateOpts) error {
 		return err
 	}
 
-	fmt.Fprintf(opts.IO.StdErr, "Failed to create merge request. Created recovery file: %s\nRun the command again with the '--recover' option to retry\n", recoverFile)
+	fmt.Fprintf(opts.IO.StdErr, "Failed to create merge request. Created recovery file: %s\nRun the command again with the '--recover' option to retry.\n", recoverFile)
 	return nil
 }

@@ -70,7 +70,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueTy
 
 	issueListCmd := &cobra.Command{
 		Use:     "list [flags]",
-		Short:   fmt.Sprintf(`List project %ss`, issueType),
+		Short:   fmt.Sprintf(`List project %ss.`, issueType),
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Example: heredoc.Doc(fmt.Sprintf(`
@@ -87,19 +87,19 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueTy
 
 			if len(opts.Labels) != 0 && len(opts.NotLabels) != 0 {
 				return cmdutils.FlagError{
-					Err: errors.New("flags --label and --not-label are mutually exclusive"),
+					Err: errors.New("flags --label and --not-label are mutually exclusive."),
 				}
 			}
 
 			if opts.Author != "" && len(opts.NotAuthor) != 0 {
 				return cmdutils.FlagError{
-					Err: errors.New("flags --author and --not-author are mutually exclusive"),
+					Err: errors.New("flags --author and --not-author are mutually exclusive."),
 				}
 			}
 
 			if opts.Assignee != "" && len(opts.NotAssignee) != 0 {
 				return cmdutils.FlagError{
-					Err: errors.New("flags --assignee and --not-assignee are mutually exclusive"),
+					Err: errors.New("flags --assignee and --not-assignee are mutually exclusive."),
 				}
 			}
 
@@ -127,34 +127,34 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueTy
 		},
 	}
 	cmdutils.EnableRepoOverride(issueListCmd, f)
-	issueListCmd.Flags().StringVarP(&opts.Assignee, "assignee", "a", "", fmt.Sprintf("Filter %s by assignee <username>", issueType))
-	issueListCmd.Flags().StringSliceVar(&opts.NotAssignee, "not-assignee", []string{}, fmt.Sprintf("Filter %s by not being assigneed to <username>", issueType))
-	issueListCmd.Flags().StringVar(&opts.Author, "author", "", fmt.Sprintf("Filter %s by author <username>", issueType))
-	issueListCmd.Flags().StringSliceVar(&opts.NotAuthor, "not-author", []string{}, "Filter by not being by author(s) <username>")
-	issueListCmd.Flags().StringVar(&opts.Search, "search", "", "Search <string> in the fields defined by --in")
-	issueListCmd.Flags().StringVar(&opts.In, "in", "title,description", "search in {title|description}")
-	issueListCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, fmt.Sprintf("Filter %s by label <name>", issueType))
-	issueListCmd.Flags().StringSliceVar(&opts.NotLabels, "not-label", []string{}, fmt.Sprintf("Filter %s by lack of label <name>", issueType))
-	issueListCmd.Flags().StringVarP(&opts.Milestone, "milestone", "m", "", fmt.Sprintf("Filter %s by milestone <id>", issueType))
-	issueListCmd.Flags().BoolVarP(&opts.All, "all", "A", false, fmt.Sprintf("Get all %ss", issueType))
-	issueListCmd.Flags().BoolVarP(&opts.Closed, "closed", "c", false, fmt.Sprintf("Get only closed %ss", issueType))
-	issueListCmd.Flags().BoolVarP(&opts.Confidential, "confidential", "C", false, fmt.Sprintf("Filter by confidential %ss", issueType))
-	issueListCmd.Flags().StringVarP(&opts.OutputFormat, "output-format", "F", "details", "One of 'details', 'ids', 'urls'")
-	issueListCmd.Flags().StringVarP(&opts.Output, "output", "O", "text", "One of 'text' or 'json'")
-	issueListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
+	issueListCmd.Flags().StringVarP(&opts.Assignee, "assignee", "a", "", fmt.Sprintf("Filter %s by assignee <username>.", issueType))
+	issueListCmd.Flags().StringSliceVar(&opts.NotAssignee, "not-assignee", []string{}, fmt.Sprintf("Filter %s by not being assigneed to <username>.", issueType))
+	issueListCmd.Flags().StringVar(&opts.Author, "author", "", fmt.Sprintf("Filter %s by author <username>.", issueType))
+	issueListCmd.Flags().StringSliceVar(&opts.NotAuthor, "not-author", []string{}, "Filter by not being by author(s) <username>.")
+	issueListCmd.Flags().StringVar(&opts.Search, "search", "", "Search <string> in the fields defined by '--in'.")
+	issueListCmd.Flags().StringVar(&opts.In, "in", "title,description", "search in: title, description.")
+	issueListCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, fmt.Sprintf("Filter %s by label <name>.", issueType))
+	issueListCmd.Flags().StringSliceVar(&opts.NotLabels, "not-label", []string{}, fmt.Sprintf("Filter %s by lack of label <name>.", issueType))
+	issueListCmd.Flags().StringVarP(&opts.Milestone, "milestone", "m", "", fmt.Sprintf("Filter %s by milestone <id>.", issueType))
+	issueListCmd.Flags().BoolVarP(&opts.All, "all", "A", false, fmt.Sprintf("Get all %ss.", issueType))
+	issueListCmd.Flags().BoolVarP(&opts.Closed, "closed", "c", false, fmt.Sprintf("Get only closed %ss.", issueType))
+	issueListCmd.Flags().BoolVarP(&opts.Confidential, "confidential", "C", false, fmt.Sprintf("Filter by confidential %ss.", issueType))
+	issueListCmd.Flags().StringVarP(&opts.OutputFormat, "output-format", "F", "details", "Options: 'details', 'ids', 'urls'.")
+	issueListCmd.Flags().StringVarP(&opts.Output, "output", "O", "text", "Options: 'text' or 'json'.")
+	issueListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
 	issueListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
-	issueListCmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
+	issueListCmd.PersistentFlags().StringP("group", "g", "", "Select a group or subgroup. Ignored if a repo argument is set.")
 	issueListCmd.MarkFlagsMutuallyExclusive("output", "output-format")
 
 	if issueType == issuable.TypeIssue {
-		issueListCmd.Flags().StringVarP(&opts.IssueType, "issue-type", "t", "", "Filter issue by its type {issue|incident|test_case}")
+		issueListCmd.Flags().StringVarP(&opts.IssueType, "issue-type", "t", "", "Filter issue by its type. Options: issue, incident, test_case.")
 	}
 
-	issueListCmd.Flags().BoolP("opened", "o", false, fmt.Sprintf("Get only open %ss", issueType))
+	issueListCmd.Flags().BoolP("opened", "o", false, fmt.Sprintf("Get only open %ss.", issueType))
 	_ = issueListCmd.Flags().MarkHidden("opened")
-	_ = issueListCmd.Flags().MarkDeprecated("opened", "default if --closed is not used")
+	_ = issueListCmd.Flags().MarkDeprecated("opened", "default if --closed is not used.")
 
-	issueListCmd.Flags().BoolVarP(&opts.Mine, "mine", "M", false, fmt.Sprintf("Filter only %ss assigned to me", issueType))
+	issueListCmd.Flags().BoolVarP(&opts.Mine, "mine", "M", false, fmt.Sprintf("Filter only %ss assigned to me.", issueType))
 	_ = issueListCmd.Flags().MarkHidden("mine")
 	_ = issueListCmd.Flags().MarkDeprecated("mine", "use --assignee=@me")
 

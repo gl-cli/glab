@@ -37,8 +37,8 @@ func NewCmdAgentUpdateKubeconfig(f *cmdutils.Factory) *cobra.Command {
 
 	agentUpdateKubeconfigCmd := &cobra.Command{
 		Use:   "update-kubeconfig [flags]",
-		Short: `Update selected kubeconfig`,
-		Long: heredoc.Doc(`Update selected kubeconfig for use with a GitLab agent for Kubernetes
+		Short: `Update selected kubeconfig.`,
+		Long: heredoc.Doc(`Update selected kubeconfig for use with a GitLab agent for Kubernetes.
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			agentID, err := cmd.Flags().GetInt(flagAgent)
@@ -54,11 +54,11 @@ func NewCmdAgentUpdateKubeconfig(f *cmdutils.Factory) *cobra.Command {
 			return runUpdateKubeconfig(agentID, pathOptions, useContext, f)
 		},
 	}
-	agentUpdateKubeconfigCmd.Flags().IntP(flagAgent, "a", 0, "The numeric agent ID to create the kubeconfig entry for")
+	agentUpdateKubeconfigCmd.Flags().IntP(flagAgent, "a", 0, "The numeric agent ID to create the kubeconfig entry for.")
 	cobra.CheckErr(agentUpdateKubeconfigCmd.MarkFlagRequired(flagAgent))
 	persistentFlags := agentUpdateKubeconfigCmd.PersistentFlags()
-	persistentFlags.StringVar(&pathOptions.LoadingRules.ExplicitPath, pathOptions.ExplicitFileFlag, pathOptions.LoadingRules.ExplicitPath, "Use a particular kubeconfig file")
-	persistentFlags.BoolP(flagUseContext, "u", false, "Use as default context")
+	persistentFlags.StringVar(&pathOptions.LoadingRules.ExplicitPath, pathOptions.ExplicitFileFlag, pathOptions.LoadingRules.ExplicitPath, "Use a particular kubeconfig file.")
+	persistentFlags.BoolP(flagUseContext, "u", false, "Use as default context.")
 
 	return agentUpdateKubeconfigCmd
 }
@@ -80,7 +80,7 @@ func runUpdateKubeconfig(agentID int, configAccess clientcmd.ConfigAccess, useCo
 		return err
 	}
 	if !metadata.KAS.Enabled {
-		return fmt.Errorf("the GitLab agent server for Kubernetes is disabled on %s. Ask your administrator to set it up and enable it", repo.RepoHost())
+		return fmt.Errorf("the GitLab agent server for Kubernetes is disabled on %s. Ask your administrator to enable and configure it.", repo.RepoHost())
 	}
 	kasUrl, err := url.Parse(metadata.KAS.ExternalURL)
 	if err != nil {
@@ -128,10 +128,10 @@ func runUpdateKubeconfig(agentID int, configAccess clientcmd.ConfigAccess, useCo
 		return err
 	}
 
-	fmt.Fprintf(factory.IO.StdOut, "Updated context %s\n", contextName)
+	fmt.Fprintf(factory.IO.StdOut, "Updated context %s.\n", contextName)
 
 	if useContext {
-		fmt.Fprintf(factory.IO.StdOut, "Using context %s\n", contextName)
+		fmt.Fprintf(factory.IO.StdOut, "Using context %s.\n", contextName)
 	}
 	return nil
 }
@@ -191,7 +191,7 @@ func modifyAuthInfo(authInfo clientcmdapi.AuthInfo, glabExecutable string, agent
 		Args:            []string{"cluster", "agent", "get-token", "--agent", strconv.Itoa(agentID)},
 		InteractiveMode: clientcmdapi.NeverExecInteractiveMode,
 		InstallHint: heredoc.Doc(`
-			To authenticate to the current cluster, glab is required. 
+			To authenticate to the current cluster, glab is required.
 
 			Follow the installation instructions at https://gitlab.com/gitlab-org/cli#installation.
 		`),

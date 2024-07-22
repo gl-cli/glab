@@ -1,4 +1,5 @@
 project_name: glab
+version: 2
 
 release:
   prerelease: auto
@@ -31,6 +32,10 @@ builds:
     id: windows
     goos: [windows]
     goarch: ["386", amd64]
+
+gitlab_urls:
+  use_job_token: true
+  use_package_registry: true
 
 dockers:
   - image_templates:

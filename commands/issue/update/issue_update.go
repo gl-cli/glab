@@ -32,10 +32,10 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 			c := f.IO.Color()
 
 			if cmd.Flags().Changed("unassign") && cmd.Flags().Changed("assignee") {
-				return &cmdutils.FlagError{Err: fmt.Errorf("--assignee and --unassign are mutually exclusive")}
+				return &cmdutils.FlagError{Err: fmt.Errorf("--assignee and --unassign are mutually exclusive.")}
 			}
 
-			// Parse assignees Early so we can fail early in case of conflicts
+			// Parse assignees early so we can fail early in case of conflicts
 			if cmd.Flags().Changed("assignee") {
 				givenAssignees, err := cmd.Flags().GetStringSlice("assignee")
 				if err != nil {
@@ -51,11 +51,11 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 
 			if cmd.Flags().Changed("lock-discussion") && cmd.Flags().Changed("unlock-discussion") {
 				return &cmdutils.FlagError{
-					Err: errors.New("--lock-discussion and --unlock-discussion can't be used together"),
+					Err: errors.New("--lock-discussion and --unlock-discussion can't be used together."),
 				}
 			}
 			if cmd.Flags().Changed("confidential") && cmd.Flags().Changed("public") {
-				return &cmdutils.FlagError{Err: errors.New("--public and --confidential can't be used together")}
+				return &cmdutils.FlagError{Err: errors.New("--public and --confidential can't be used together.")}
 			}
 
 			apiClient, err := f.HttpClient()
@@ -179,18 +179,18 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	issueUpdateCmd.Flags().StringP("title", "t", "", "Title of issue")
-	issueUpdateCmd.Flags().BoolP("lock-discussion", "", false, "Lock discussion on issue")
-	issueUpdateCmd.Flags().BoolP("unlock-discussion", "", false, "Unlock discussion on issue")
-	issueUpdateCmd.Flags().StringP("description", "d", "", "Issue description; set to \"-\" to open an editor")
-	issueUpdateCmd.Flags().StringSliceP("label", "l", []string{}, "add labels")
-	issueUpdateCmd.Flags().StringSliceP("unlabel", "u", []string{}, "remove labels")
-	issueUpdateCmd.Flags().BoolP("public", "p", false, "Make issue public")
+	issueUpdateCmd.Flags().StringP("title", "t", "", "Title of issue.")
+	issueUpdateCmd.Flags().BoolP("lock-discussion", "", false, "Lock discussion on issue.")
+	issueUpdateCmd.Flags().BoolP("unlock-discussion", "", false, "Unlock discussion on issue.")
+	issueUpdateCmd.Flags().StringP("description", "d", "", "Issue description. Set to \"-\" to open an editor.")
+	issueUpdateCmd.Flags().StringSliceP("label", "l", []string{}, "Add labels.")
+	issueUpdateCmd.Flags().StringSliceP("unlabel", "u", []string{}, "Remove labels.")
+	issueUpdateCmd.Flags().BoolP("public", "p", false, "Make issue public.")
 	issueUpdateCmd.Flags().BoolP("confidential", "c", false, "Make issue confidential")
-	issueUpdateCmd.Flags().StringP("milestone", "m", "", "title of the milestone to assign, pass \"\" or 0 to unassign")
+	issueUpdateCmd.Flags().StringP("milestone", "m", "", "Title of the milestone to assign Set to \"\" or 0 to unassign.")
 	issueUpdateCmd.Flags().
-		StringSliceP("assignee", "a", []string{}, "assign users via username, prefix with '!' or '-' to remove from existing assignees, '+' to add, otherwise replace existing assignees with given users")
-	issueUpdateCmd.Flags().Bool("unassign", false, "unassign all users")
+		StringSliceP("assignee", "a", []string{}, "Assign users by username. Prefix with '!' or '-' to remove from existing assignees, or '+' to add new. Otherwise, replace existing assignees with these users.")
+	issueUpdateCmd.Flags().Bool("unassign", false, "Unassign all users.")
 
 	return issueUpdateCmd
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/briandowns/spinner"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/pkg/git"
@@ -18,7 +18,7 @@ import (
 func NewCmdAmendStack(f *cmdutils.Factory) *cobra.Command {
 	stackSaveCmd := &cobra.Command{
 		Use:   "amend",
-		Short: `Save more changes to a stacked diff.`,
+		Short: `Save more changes to a stacked diff. (EXPERIMENTAL.)`,
 		Long: `Add more changes to an existing stacked diff.
 ` + text.ExperimentalString,
 		Example: heredoc.Doc(`glab stack amend modifiedfile
@@ -65,7 +65,7 @@ func amendFunc(f *cmdutils.Factory, args []string, description string) (string, 
 	}
 
 	if stack.Branch == "" {
-		return "", fmt.Errorf("not currently in a stack - change to the branch you want to amend")
+		return "", fmt.Errorf("not currently in a stack. Change to the branch you want to amend.")
 	}
 
 	// a description is required, so ask if one is not provided

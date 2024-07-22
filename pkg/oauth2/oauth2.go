@@ -51,14 +51,14 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 		"%s?client_id=%s&redirect_uri=%s&response_type=code&state=%s&scope=%s&code_challenge=%s&code_challenge_method=S256",
 		authURL, clientID, redirectURI, state, scopes, codeChallenge)
 
-	tokenCh := handleAuthRedirect(io, codeVerifier, hostname, "https", clientID)
+	tokenCh := handleAuthRedirect(io, "0.0.0.0", codeVerifier, hostname, "https", clientID)
 	defer close(tokenCh)
 
 	browser, _ := cfg.Get(hostname, "browser")
 	if err := utils.OpenInBrowser(completeAuthURL, browser); err != nil {
 		fmt.Fprintf(io.StdErr, "Failed opening a browser at %s\n", completeAuthURL)
 		fmt.Fprintf(io.StdErr, "Encountered error: %s\n", err)
-		fmt.Fprint(io.StdErr, "Please try entering the URL in your browser manually\n")
+		fmt.Fprint(io.StdErr, "Try entering the URL in your browser manually.\n")
 	}
 	token := <-tokenCh
 
@@ -70,16 +70,16 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 	return token.AccessToken, nil
 }
 
-func handleAuthRedirect(io *iostreams.IOStreams, codeVerifier, hostname, protocol, clientID string) chan *AuthToken {
+func handleAuthRedirect(io *iostreams.IOStreams, listenHostname, codeVerifier, hostname, protocol, clientID string) chan *AuthToken {
 	tokenCh := make(chan *AuthToken)
 
-	server := &http.Server{Addr: ":7171"}
+	server := &http.Server{Addr: listenHostname + ":7171"}
 
 	http.HandleFunc("/auth/redirect", func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
 		token, err := requestToken(hostname, protocol, clientID, code, codeVerifier)
 		if err != nil {
-			fmt.Fprintf(io.StdErr, "Error occured requesting access token %s", err)
+			fmt.Fprintf(io.StdErr, "Error occured requesting access token %s.", err)
 			tokenCh <- nil
 			return
 		}
@@ -90,9 +90,9 @@ func handleAuthRedirect(io *iostreams.IOStreams, codeVerifier, hostname, protoco
 	})
 
 	go func() {
-		err := http.ListenAndServe(":7171", nil)
+		err := http.ListenAndServe(listenHostname+":7171", nil)
 		if err != nil {
-			fmt.Fprintf(io.StdErr, "Error occured while setting up server %s", err)
+			fmt.Fprintf(io.StdErr, "Error occured while setting up server %s.", err)
 			tokenCh <- nil
 		}
 	}()

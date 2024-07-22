@@ -54,8 +54,8 @@ func TestAgentList(t *testing.T) {
 	}
 
 	assert.Equal(t, heredoc.Doc(`
-		Showing 2 agents on OWNER/REPO (Page 1)
-		
+		Showing 2 agents on OWNER/REPO. (Page 1)
+
 		ID	Name	Created At
 		1	local	about 1 day ago
 		2	prd	about 1 day ago
@@ -92,8 +92,8 @@ func TestAgentList_Pagination(t *testing.T) {
 	}
 
 	assert.Equal(t, heredoc.Doc(`
-		Showing 2 agents on OWNER/REPO (Page 42)
-		
+		Showing 2 agents on OWNER/REPO. (Page 42)
+
 		ID	Name	Created At
 		1	local	about 1 day ago
 		2	prd	about 1 day ago

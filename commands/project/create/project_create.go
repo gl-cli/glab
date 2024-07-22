@@ -30,30 +30,30 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			return runCreateProject(cmd, args, f)
 		},
 		Example: heredoc.Doc(`
-			# create a repository under your account using the current directory name
+			# Create a repository under your account using the current directory name.
 			$ glab repo create
 
-			# create a repository under a group using the current directory name
+			# Create a repository under a group using the current directory name.
 			$ glab repo create --group glab-cli
 
-			# create a repository with a specific name
+			# Create a repository with a specific name.
 			$ glab repo create my-project
 
-			# create a repository for a group
+			# Create a repository for a group.
 			$ glab repo create glab-cli/my-project
 	  `),
 	}
 
-	projectCreateCmd.Flags().StringP("name", "n", "", "Name of the new project")
-	projectCreateCmd.Flags().StringP("group", "g", "", "Namespace/group for the new project (defaults to the current user’s namespace)")
-	projectCreateCmd.Flags().StringP("description", "d", "", "Description of the new project")
-	projectCreateCmd.Flags().String("defaultBranch", "", "Default branch of the project. If not provided, `master` by default.")
-	projectCreateCmd.Flags().String("remoteName", "origin", "Remote name for the Git repository you're in. If not provided, `origin` by default.")
+	projectCreateCmd.Flags().StringP("name", "n", "", "Name of the new project.")
+	projectCreateCmd.Flags().StringP("group", "g", "", "Namespace or group for the new project. Defaults to the current user's namespace.")
+	projectCreateCmd.Flags().StringP("description", "d", "", "Description of the new project.")
+	projectCreateCmd.Flags().String("defaultBranch", "", "Default branch of the project. Defaults to `master` if not provided.")
+	projectCreateCmd.Flags().String("remoteName", "origin", "Remote name for the Git repository you're in. Defaults to `origin` if not provided.")
 	projectCreateCmd.Flags().StringArrayP("tag", "t", []string{}, "The list of tags for the project.")
-	projectCreateCmd.Flags().Bool("internal", false, "Make project internal: visible to any authenticated user (default)")
-	projectCreateCmd.Flags().BoolP("private", "p", false, "Make project private: visible only to project members")
-	projectCreateCmd.Flags().BoolP("public", "P", false, "Make project public: visible without any authentication")
-	projectCreateCmd.Flags().Bool("readme", false, "Initialize project with README.md")
+	projectCreateCmd.Flags().Bool("internal", false, "Make project internal: visible to any authenticated user. Default.")
+	projectCreateCmd.Flags().BoolP("private", "p", false, "Make project private: visible only to project members.")
+	projectCreateCmd.Flags().BoolP("public", "P", false, "Make project public: visible without any authentication.")
+	projectCreateCmd.Flags().Bool("readme", false, "Initialize project with `README.md`.")
 
 	return projectCreateCmd
 }
@@ -132,7 +132,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) er
 	name, _ := cmd.Flags().GetString("name")
 
 	if projectPath == "" && name == "" {
-		fmt.Println("ERROR: Path or Name required to create project.")
+		fmt.Println("ERROR: path or name required to create a project.")
 		return cmd.Usage()
 	} else if name == "" {
 		name = projectPath
@@ -213,7 +213,7 @@ func initGit(defaultBranch string) error {
 		return nil
 	}
 	var doInit bool
-	err := prompt.Confirm(&doInit, "Directory not git initialized. Run `git init`?", true)
+	err := prompt.Confirm(&doInit, "Directory not Git initialized. Run `git init`?", true)
 	if err != nil || !doInit {
 		return err
 	}

@@ -10,7 +10,7 @@ import (
 func NewCmdAuth(f *cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth <command>",
-		Short: "Manage glab's authentication state",
+		Short: "Manage glab's authentication state.",
 	}
 
 	cmd.AddCommand(authLoginCmd.NewCmdLogin(f))

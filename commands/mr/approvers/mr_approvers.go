@@ -12,7 +12,7 @@ import (
 func NewCmdApprovers(f *cmdutils.Factory) *cobra.Command {
 	mrApproversCmd := &cobra.Command{
 		Use:     "approvers [<id> | <branch>] [flags]",
-		Short:   `List eligible approvers for merge requests in any state`,
+		Short:   `List eligible approvers for merge requests in any state.`,
 		Long:    ``,
 		Aliases: []string{},
 		Args:    cobra.MaximumNArgs(1),
@@ -29,7 +29,7 @@ func NewCmdApprovers(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(f.IO.StdOut, "\nListing Merge Request !%d eligible approvers\n", mr.IID)
+			fmt.Fprintf(f.IO.StdOut, "\nListing merge request !%d eligible approvers:\n", mr.IID)
 
 			mrApprovals, err := api.GetMRApprovalState(apiClient, repo.FullName(), mr.IID)
 			if err != nil {

@@ -76,7 +76,7 @@ func TestMrApprove(t *testing.T) {
 		out := output.String()
 
 		assert.Equal(t, heredoc.Doc(`
-		- Approving Merge Request !123
+		- Approving merge request !123
 		✓ Approved
 		`), out)
 		assert.Empty(t, output.Stderr())

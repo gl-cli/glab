@@ -42,7 +42,7 @@ func TestCiTrace(t *testing.T) {
 		{
 			name:        "when trace for job-id is requested",
 			args:        "1122",
-			expectedOut: "\nGetting job trace...\nShowing logs for lint job #1122\nLorem ipsum",
+			expectedOut: "\nGetting job trace...\nShowing logs for lint job #1122.\nLorem ipsum",
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 	"gitlab.com/gitlab-org/cli/pkg/text"
@@ -22,7 +22,7 @@ var longString = `Create a new stacked diff. Adds metadata to your "./.git/stack
 func NewCmdCreateStack(f *cmdutils.Factory) *cobra.Command {
 	stackCreateCmd := &cobra.Command{
 		Use:     "create",
-		Short:   `Create a new stacked diff.`,
+		Short:   `Create a new stacked diff. (EXPERIMENTAL.)`,
 		Long:    strings.Replace(longString, "\"./.git/stacked\"", "`./.git/stacked`", 1),
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`

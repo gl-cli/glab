@@ -10,7 +10,7 @@ import (
 func NewCmdLabel(f *cmdutils.Factory) *cobra.Command {
 	labelCmd := &cobra.Command{
 		Use:   "label <command> [flags]",
-		Short: `Manage labels on remote`,
+		Short: `Manage labels on remote.`,
 		Long:  ``,
 	}
 

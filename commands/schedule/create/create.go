@@ -73,12 +73,12 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	scheduleCreateCmd.Flags().String("description", "", "Description of the schedule")
-	scheduleCreateCmd.Flags().String("ref", "", "Target branch or tag")
-	scheduleCreateCmd.Flags().String("cron", "", "Cron interval pattern")
-	scheduleCreateCmd.Flags().String("cronTimeZone", "UTC", "Cron timezone")
-	scheduleCreateCmd.Flags().Bool("active", true, "Whether or not the schedule is active")
-	scheduleCreateCmd.Flags().StringSliceVar(&variableList, "variable", []string{}, "Pass variables to schedule in format <key>:<value>")
+	scheduleCreateCmd.Flags().String("description", "", "Description of the schedule.")
+	scheduleCreateCmd.Flags().String("ref", "", "Target branch or tag.")
+	scheduleCreateCmd.Flags().String("cron", "", "Cron interval pattern.")
+	scheduleCreateCmd.Flags().String("cronTimeZone", "UTC", "Cron timezone.")
+	scheduleCreateCmd.Flags().Bool("active", true, "Whether or not the schedule is active.")
+	scheduleCreateCmd.Flags().StringSliceVar(&variableList, "variable", []string{}, "Pass variables to schedule in the format <key>:<value>.")
 
 	_ = scheduleCreateCmd.MarkFlagRequired("ref")
 	_ = scheduleCreateCmd.MarkFlagRequired("cron")

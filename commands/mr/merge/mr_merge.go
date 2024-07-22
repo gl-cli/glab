@@ -49,13 +49,15 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 
 	mrMergeCmd := &cobra.Command{
 		Use:     "merge {<id> | <branch>}",
-		Short:   `Merge/Accept merge requests`,
+		Short:   `Merge or accept a merge request.`,
 		Long:    ``,
 		Aliases: []string{"accept"},
 		Example: heredoc.Doc(`
-			glab mr merge 235
-			glab mr accept 235
-			glab mr merge    # Finds open merge request from current branch
+			$ glab mr merge 235
+			$ glab mr accept 235
+
+			# Finds open merge request from current branch
+			$ glab mr merge
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -63,11 +65,11 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 			c := f.IO.Color()
 
 			if opts.SquashBeforeMerge && opts.RebaseBeforeMerge {
-				return &cmdutils.FlagError{Err: errors.New("only one of --rebase, or --squash can be enabled")}
+				return &cmdutils.FlagError{Err: errors.New("only one of --rebase or --squash can be enabled")}
 			}
 
 			if !opts.SquashBeforeMerge && opts.SquashMessage != "" {
-				return &cmdutils.FlagError{Err: errors.New("--squash-message can only be used with --squash")}
+				return &cmdutils.FlagError{Err: errors.New("--squash-message can only be used with --squash.")}
 			}
 
 			apiClient, err := f.HttpClient()
@@ -164,7 +166,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 			}
 			if opts.SetAutoMerge && mr.Pipeline != nil {
 				if mr.Pipeline.Status == "canceled" || mr.Pipeline.Status == "failed" {
-					fmt.Fprintln(f.IO.StdOut, c.FailedIcon(), "Pipeline Status:", mr.Pipeline.Status)
+					fmt.Fprintln(f.IO.StdOut, c.FailedIcon(), "Pipeline status:", mr.Pipeline.Status)
 					fmt.Fprintln(f.IO.StdOut, c.FailedIcon(), "Cannot perform merge action")
 					return cmdutils.SilentError
 				}
@@ -181,7 +183,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			f.IO.StartSpinner("Merging merge request !%d", mr.IID)
+			f.IO.StartSpinner("Merging merge request !%d.", mr.IID)
 
 			// Store the IID of the merge request here before overriding the `mr` variable
 			// inside the retry function, if the function fails at first the `mr` is replaced
@@ -222,9 +224,9 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 				} else {
 					switch mr.Pipeline.Status {
 					case "success":
-						fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Pipeline Succeeded")
+						fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Pipeline succeeded.")
 					default:
-						fmt.Fprintln(f.IO.StdOut, c.WarnIcon(), "Pipeline Status:", mr.Pipeline.Status)
+						fmt.Fprintln(f.IO.StdOut, c.WarnIcon(), "Pipeline status:", mr.Pipeline.Status)
 						if mr.State != "merged" {
 							fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Will auto-merge")
 							isMerged = false
@@ -233,12 +235,12 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 				}
 			}
 			if isMerged {
-				action := "Merged"
+				action := "Merged!"
 				switch opts.MergeMethod {
 				case MRMergeMethodRebase:
-					action = "Rebased and merged"
+					action = "Rebased and merged!"
 				case MRMergeMethodSquash:
-					action = "Squashed and merged"
+					action = "Squashed and merged!"
 				}
 				fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), action)
 			}
@@ -247,17 +249,17 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	mrMergeCmd.Flags().StringVarP(&opts.SHA, "sha", "", "", "Merge Commit sha")
-	mrMergeCmd.Flags().BoolVarP(&opts.RemoveSourceBranch, "remove-source-branch", "d", false, "Remove source branch on merge")
-	mrMergeCmd.Flags().BoolVarP(&opts.SetAutoMerge, "auto-merge", "", true, "Set auto-merge")
-	mrMergeCmd.Flags().StringVarP(&opts.MergeCommitMessage, "message", "m", "", "Custom merge commit message")
-	mrMergeCmd.Flags().StringVarP(&opts.SquashMessage, "squash-message", "", "", "Custom Squash commit message")
-	mrMergeCmd.Flags().BoolVarP(&opts.SquashBeforeMerge, "squash", "s", false, "Squash commits on merge")
-	mrMergeCmd.Flags().BoolVarP(&opts.RebaseBeforeMerge, "rebase", "r", false, "Rebase the commits onto the base branch")
-	mrMergeCmd.Flags().BoolVarP(&opts.SkipPrompts, "yes", "y", false, "Skip submission confirmation prompt")
+	mrMergeCmd.Flags().StringVarP(&opts.SHA, "sha", "", "", "Merge commit SHA.")
+	mrMergeCmd.Flags().BoolVarP(&opts.RemoveSourceBranch, "remove-source-branch", "d", false, "Remove source branch on merge.")
+	mrMergeCmd.Flags().BoolVarP(&opts.SetAutoMerge, "auto-merge", "", true, "Set auto-merge.")
+	mrMergeCmd.Flags().StringVarP(&opts.MergeCommitMessage, "message", "m", "", "Custom merge commit message.")
+	mrMergeCmd.Flags().StringVarP(&opts.SquashMessage, "squash-message", "", "", "Custom squash commit message.")
+	mrMergeCmd.Flags().BoolVarP(&opts.SquashBeforeMerge, "squash", "s", false, "Squash commits on merge.")
+	mrMergeCmd.Flags().BoolVarP(&opts.RebaseBeforeMerge, "rebase", "r", false, "Rebase the commits onto the base branch.")
+	mrMergeCmd.Flags().BoolVarP(&opts.SkipPrompts, "yes", "y", false, "Skip submission confirmation prompt.")
 
 	mrMergeCmd.Flags().BoolVarP(&opts.SetAutoMerge, "when-pipeline-succeeds", "", true, "Merge only when pipeline succeeds")
-	_ = mrMergeCmd.Flags().MarkDeprecated("when-pipeline-succeeds", "please use --auto-merge instead.")
+	_ = mrMergeCmd.Flags().MarkDeprecated("when-pipeline-succeeds", "use --auto-merge instead.")
 
 	return mrMergeCmd
 }
@@ -280,7 +282,7 @@ func mergeMethodSurvey() (MRMergeMethod, error) {
 	}
 
 	mergeQuestion := &survey.Select{
-		Message: "What merge method would you like to use?",
+		Message: "What merge method do you want to use?",
 		Options: surveyOpts,
 	}
 

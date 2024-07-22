@@ -36,7 +36,7 @@ func TestNewCheckUpdateCmd(t *testing.T) {
 			args: args{
 				version: "v1.11.1",
 			},
-			stdErr: "You are already using the latest version of glab\n",
+			stdErr: "You are already using the latest version of glab!\n",
 		},
 		{
 			name: "older version",
@@ -111,7 +111,7 @@ func TestNewCheckUpdateCmd_no_release(t *testing.T) {
 	output, err := runCommand(fakeHTTP, "1.11.0")
 
 	assert.NotNil(t, err)
-	assert.Equal(t, "no release found for glab", err.Error())
+	assert.Equal(t, "no release found for glab.", err.Error())
 	assert.Equal(t, "", output.String())
 	assert.Equal(t, "", output.Stderr())
 }
@@ -174,6 +174,10 @@ func TestCheckUpdate_NoRun(t *testing.T) {
 		{
 			name:            "when previous command is an alias for check-update",
 			previousCommand: "update",
+		},
+		{
+			name:            "when previous command is completion",
+			previousCommand: "completion",
 		},
 	}
 	for _, tt := range tests {

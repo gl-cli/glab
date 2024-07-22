@@ -57,7 +57,7 @@ func Test_lintRun(t *testing.T) {
 			testFile:         ".gitlab.ci.yaml",
 			StdOut:           "",
 			wantErr:          true,
-			errMsg:           "You need to be in a GitLab project repository for this action.\nError: no base repo present",
+			errMsg:           "You must be in a GitLab project repository for this action.\nError: no base repo present",
 			showHaveBaseRepo: false,
 			httpMocks:        []httpMock{},
 		},

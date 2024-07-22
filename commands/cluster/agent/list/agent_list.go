@@ -18,7 +18,7 @@ func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
 	factory = f
 	agentListCmd := &cobra.Command{
 		Use:     "list [flags]",
-		Short:   `List GitLab Agents for Kubernetes in a project`,
+		Short:   `List GitLab Agents for Kubernetes in a project.`,
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Args:    cobra.MaximumNArgs(3),
@@ -35,7 +35,7 @@ func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
 			return listAgents(int(page), int(perPage))
 		},
 	}
-	agentListCmd.Flags().UintP("page", "p", 1, "Page number")
+	agentListCmd.Flags().UintP("page", "p", 1, "Page number.")
 	agentListCmd.Flags().UintP("per-page", "P", uint(api.DefaultListLimit), "Number of items to list per page.")
 
 	return agentListCmd

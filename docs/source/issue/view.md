@@ -37,17 +37,17 @@ glab issue view https://gitlab.com/NAMESPACE/REPO/-/issues/123
 ## Options
 
 ```plaintext
-  -c, --comments        Show issue comments and activities
-  -F, --output string   Format output as: text, json (default "text")
-  -p, --page int        Page number (default 1)
-  -P, --per-page int    Number of items to list per page (default 20)
-  -s, --system-logs     Show system activities / logs
-  -w, --web             Open issue in a browser. Uses default browser or browser specified in BROWSER variable
+  -c, --comments        Show issue comments and activities.
+  -F, --output string   Format output as: text, json. (default "text")
+  -p, --page int        Page number. (default 1)
+  -P, --per-page int    Number of items to list per page. (default 20)
+  -s, --system-logs     Show system activities and logs.
+  -w, --web             Open issue in a browser. Uses the default browser, or the browser specified in the $BROWSER variable.
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --help              Show help for command
-  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
+      --help              Show help for this command.
+  -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
 ```

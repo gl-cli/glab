@@ -19,7 +19,7 @@ var OutputFormat string
 func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	labelListCmd := &cobra.Command{
 		Use:     "list [flags]",
-		Short:   `List labels in repository`,
+		Short:   `List labels in the repository.`,
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Example: heredoc.Doc(`
@@ -62,7 +62,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 				fmt.Fprintln(f.IO.StdOut, string(labelListJSON))
 
 			} else {
-				fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d on %s\n\n", len(labels), len(labels), repo.FullName())
+				fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d on %s.\n\n", len(labels), len(labels), repo.FullName())
 				var labelPrintInfo string
 				for _, label := range labels {
 					var description string
@@ -88,9 +88,9 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	labelListCmd.Flags().IntP("page", "p", 1, "Page number")
-	labelListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page")
-	labelListCmd.Flags().StringVarP(&OutputFormat, "output", "F", "text", "Format output as: text, json")
+	labelListCmd.Flags().IntP("page", "p", 1, "Page number.")
+	labelListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page.")
+	labelListCmd.Flags().StringVarP(&OutputFormat, "output", "F", "text", "Format output as: text, json.")
 
 	return labelListCmd
 }

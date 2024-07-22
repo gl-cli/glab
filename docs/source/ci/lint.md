@@ -20,8 +20,8 @@ glab ci lint [flags]
 ## Examples
 
 ```plaintext
-$ glab ci lint
 # Uses .gitlab-ci.yml in the current directory
+$ glab ci lint
 
 $ glab ci lint .gitlab-ci.yml
 
@@ -33,13 +33,13 @@ $ glab ci lint path/to/.gitlab-ci.yml
 
 ```plaintext
       --dry-run        Run pipeline creation simulation.
-      --include-jobs   The response should include the list of jobs that would exist in a static check or pipeline simulation.
-      --ref string     When dry-run is true, sets the branch or tag context for validating the CI/CD YAML configuration.
+      --include-jobs   Response includes the list of jobs that would exist in a static check or pipeline simulation.
+      --ref string     When 'dry-run' is true, sets the branch or tag context for validating the CI/CD YAML configuration.
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --help              Show help for command
-  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
+      --help              Show help for this command.
+  -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
 ```

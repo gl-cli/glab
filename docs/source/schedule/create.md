@@ -27,17 +27,17 @@ glab schedule create --cron "0 * * * *" --description "Describe your pipeline he
 ## Options
 
 ```plaintext
-      --active                Whether or not the schedule is active (default true)
-      --cron string           Cron interval pattern
-      --cronTimeZone string   Cron timezone (default "UTC")
-      --description string    Description of the schedule
-      --ref string            Target branch or tag
-      --variable strings      Pass variables to schedule in format <key>:<value>
+      --active                Whether or not the schedule is active. (default true)
+      --cron string           Cron interval pattern.
+      --cronTimeZone string   Cron timezone. (default "UTC")
+      --description string    Description of the schedule.
+      --ref string            Target branch or tag.
+      --variable strings      Pass variables to schedule in the format <key>:<value>.
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --help              Show help for command
-  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
+      --help              Show help for this command.
+  -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
 ```

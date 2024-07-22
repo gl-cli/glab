@@ -19,7 +19,7 @@ func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
 		Aliases: []string{},
 		Example: heredoc.Doc(`
 		$ glab ci trigger
-		# Interactively select a job to Trigger
+		# Interactively select a job to trigger
 
 		$ glab ci trigger 224356863
 		# Trigger manual job with id 224356863
@@ -78,7 +78,7 @@ func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	pipelineTriggerCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. (Default: current branch)")
+	pipelineTriggerCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. Default: current branch.")
 	pipelineTriggerCmd.Flags().IntP("pipeline-id", "p", 0, "The pipeline ID to search for the job.")
 	return pipelineTriggerCmd
 }

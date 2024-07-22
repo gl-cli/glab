@@ -50,8 +50,8 @@ func GetDefaultBranch(remote string) (string, error) {
 	return headBranch, err
 }
 
-// ErrNotOnAnyBranch indicates that the users is in detached HEAD state
-var ErrNotOnAnyBranch = errors.New("git: not on any branch")
+// ErrNotOnAnyBranch indicates that the user is in detached HEAD state
+var ErrNotOnAnyBranch = errors.New("you're not on any Git branch (a 'detached HEAD' state).")
 
 // Ref represents a git commit reference
 type Ref struct {
@@ -175,7 +175,7 @@ func LatestCommit(ref string) (*Commit, error) {
 	commit := &Commit{}
 	split := strings.SplitN(string(output), " ", 2)
 	if len(split) != 2 {
-		return commit, fmt.Errorf("could not find commit for %s", ref)
+		return commit, fmt.Errorf("could not find commit for %s.", ref)
 	}
 	commit = &Commit{
 		Sha:   split[0],
@@ -209,7 +209,7 @@ func Commits(baseRef, headRef string) ([]*Commit, error) {
 	}
 
 	if len(commits) == 0 {
-		return commits, fmt.Errorf("could not find any commits between %s and %s", baseRef, headRef)
+		return commits, fmt.Errorf("could not find any commits between %s and %s.", baseRef, headRef)
 	}
 
 	return commits, nil
@@ -550,13 +550,13 @@ func GetAllConfig(key string) ([]byte, error) {
 	if errors.As(err, &cmdErr) && cmdErr.Stderr.Len() == 0 {
 		return nil, nil
 	}
-	return nil, fmt.Errorf("getting git config value cmd: %s: %w", gitCmd.String(), err)
+	return nil, fmt.Errorf("getting Git configuration value cmd: %s: %w", gitCmd.String(), err)
 }
 
 func assertValidConfigKey(key string) error {
 	s := strings.Split(key, ".")
 	if len(s) < 2 {
-		return fmt.Errorf("incorrect git config key")
+		return fmt.Errorf("incorrect Git configuration key.")
 	}
 	return nil
 }

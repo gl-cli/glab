@@ -21,7 +21,7 @@ glab ci trigger <job-id> [flags]
 
 ```plaintext
 $ glab ci trigger
-# Interactively select a job to Trigger
+# Interactively select a job to trigger
 
 $ glab ci trigger 224356863
 # Trigger manual job with id 224356863
@@ -34,13 +34,13 @@ $ glab ci trigger lint
 ## Options
 
 ```plaintext
-  -b, --branch string     The branch to search for the job. (Default: current branch)
+  -b, --branch string     The branch to search for the job. Default: current branch.
   -p, --pipeline-id int   The pipeline ID to search for the job.
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --help              Show help for command
-  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
+      --help              Show help for this command.
+  -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
 ```

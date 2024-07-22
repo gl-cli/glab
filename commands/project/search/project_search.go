@@ -16,7 +16,7 @@ import (
 func NewCmdSearch(f *cmdutils.Factory) *cobra.Command {
 	projectSearchCmd := &cobra.Command{
 		Use:     "search [flags]",
-		Short:   `Search for GitLab repositories and projects by name`,
+		Short:   `Search for GitLab repositories and projects by name.`,
 		Long:    ``,
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"find", "lookup"},
@@ -73,10 +73,10 @@ func NewCmdSearch(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	projectSearchCmd.Flags().IntP("page", "p", 1, "Page number")
-	projectSearchCmd.Flags().IntP("per-page", "P", 20, "Number of items to list per page")
-	projectSearchCmd.Flags().StringP("search", "s", "", "A string contained in the project name")
-	_ = projectSearchCmd.MarkFlagRequired("search")
+	projectSearchCmd.Flags().IntP("page", "p", 1, "Page number.")
+	projectSearchCmd.Flags().IntP("per-page", "P", 20, "Number of items to list per page.")
+	projectSearchCmd.Flags().StringP("search", "s", "", "A string contained in the project name.")
+	_ = projectSearchCmd.MarkFlagRequired("Search.")
 
 	return projectSearchCmd
 }

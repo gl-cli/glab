@@ -69,6 +69,7 @@ Run `glab --help` to view a list of core commands in your terminal.
 - [`glab schedule`](docs/source/schedule)
 - [`glab snippet`](docs/source/snippet)
 - [`glab ssh-key`](docs/source/ssh-key)
+- [`glab stack`](docs/source/stack)
 - [`glab user`](docs/source/user)
 - [`glab variable`](docs/source/variable)
 

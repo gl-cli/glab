@@ -36,7 +36,7 @@ func NewCmdCredential(f *cmdutils.Factory, runF func(*CredentialOptions) error) 
 	cmd := &cobra.Command{
 		Use:    "git-credential",
 		Args:   cobra.ExactArgs(1),
-		Short:  "Implements Git credential helper manager",
+		Short:  "Implements Git credential helper manager.",
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Operation = args[0]
@@ -58,7 +58,7 @@ func helperRun(opts *CredentialOptions) error {
 	}
 
 	if opts.Operation != "get" {
-		return fmt.Errorf("glab auth git-credential: %q is an invalid operation", opts.Operation)
+		return fmt.Errorf("glab auth git-credential: %q is an invalid operation.", opts.Operation)
 	}
 
 	expectedParams := map[string]string{}

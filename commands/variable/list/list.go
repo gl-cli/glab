@@ -33,7 +33,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 
 	cmd := &cobra.Command{
 		Use:     "list",
-		Short:   "List project or group variables",
+		Short:   "List variables for a project or group.",
 		Aliases: []string{"ls"},
 		Args:    cobra.ExactArgs(0),
 		Example: heredoc.Doc(
@@ -66,9 +66,9 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 		"group",
 		"g",
 		"",
-		"Select a group/subgroup. This option is ignored if a repo argument is set.",
+		"Select a group or subgroup. Ignored if a repository argument is set.",
 	)
-	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
+	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
 
 	return cmd
 }

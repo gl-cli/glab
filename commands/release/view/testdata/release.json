@@ -58,5 +58,8 @@
         "link_type": "other"
       }
     ]
+  },
+  "_links": {
+    "self": "https://gitlab.com/OWNER/REPO/-/releases/0.0.1"
   }
 }

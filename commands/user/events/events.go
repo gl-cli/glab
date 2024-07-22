@@ -16,7 +16,7 @@ import (
 func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "events",
-		Short: "View user events",
+		Short: "View user events.",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			apiClient, err := f.HttpClient()
@@ -54,7 +54,7 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if outputFormat != "json" && outputFormat != "text" {
-				return fmt.Errorf("--output must be either 'json' or 'text' got: %s", outputFormat)
+				return fmt.Errorf("--output must be either 'json' or 'text'. Received: %s", outputFormat)
 			}
 
 			if outputFormat == "json" {
@@ -88,10 +88,10 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolP("all", "a", false, "Get events from all projects")
-	cmd.Flags().IntP("page", "p", 1, "Page number")
-	cmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page")
-	cmd.Flags().StringP("output", "F", "text", "Format output as: text, json")
+	cmd.Flags().BoolP("all", "a", false, "Get events from all projects.")
+	cmd.Flags().IntP("page", "p", 1, "Page number.")
+	cmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page.")
+	cmd.Flags().StringP("output", "F", "text", "Format output as: 'text', 'json'.")
 	return cmd
 }
 
@@ -119,29 +119,29 @@ func DisplayAllEvents(w io.Writer, events []*gitlab.ContributionEvent, projects 
 func printEvent(w io.Writer, e *gitlab.ContributionEvent, project *gitlab.Project) {
 	switch e.ActionName {
 	case "pushed to":
-		fmt.Fprintf(w, "Pushed to %s %s at %s\n%q\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace, e.PushData.CommitTitle)
+		fmt.Fprintf(w, "Pushed to %s %s at %s\n%q.\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace, e.PushData.CommitTitle)
 	case "deleted":
-		fmt.Fprintf(w, "Deleted %s %s at %s\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace)
+		fmt.Fprintf(w, "Deleted %s %s at %s.\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace)
 	case "pushed new":
-		fmt.Fprintf(w, "Pushed new %s %s at %s\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace)
+		fmt.Fprintf(w, "Pushed new %s %s at %s.\n", e.PushData.RefType, e.PushData.Ref, project.NameWithNamespace)
 	case "commented on":
-		fmt.Fprintf(w, "Commented on %s #%s at %s\n%q\n", e.Note.NoteableType, e.Note.Title, project.NameWithNamespace, e.Note.Body)
+		fmt.Fprintf(w, "Commented on %s #%s at %s.\n%q\n", e.Note.NoteableType, e.Note.Title, project.NameWithNamespace, e.Note.Body)
 	case "accepted":
-		fmt.Fprintf(w, "Accepted %s %s at %s\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
+		fmt.Fprintf(w, "Accepted %s %s at %s.\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
 	case "opened":
-		fmt.Fprintf(w, "Opened %s %s at %s\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
+		fmt.Fprintf(w, "Opened %s %s at %s.\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
 	case "closed":
-		fmt.Fprintf(w, "Closed %s %s at %s\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
+		fmt.Fprintf(w, "Closed %s %s at %s.\n", e.TargetType, e.TargetTitle, project.NameWithNamespace)
 	case "joined":
-		fmt.Fprintf(w, "Joined %s\n", project.NameWithNamespace)
+		fmt.Fprintf(w, "Joined %s.\n", project.NameWithNamespace)
 	case "left":
-		fmt.Fprintf(w, "Left %s\n", project.NameWithNamespace)
+		fmt.Fprintf(w, "Left %s.\n", project.NameWithNamespace)
 	case "created":
 		targetType := e.TargetType
 		if e.TargetType == "WikiPage::Meta" {
 			targetType = "Wiki page"
 		}
-		fmt.Fprintf(w, "Created %s %s at %s\n", targetType, e.TargetTitle, project.NameWithNamespace)
+		fmt.Fprintf(w, "Created %s %s at %s.\n", targetType, e.TargetTitle, project.NameWithNamespace)
 	default:
 		fmt.Fprintf(w, "%s %q", e.TargetType, e.Title)
 	}

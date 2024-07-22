@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/text"
 )
 
 func baseCommand() (git.Stack, error) {
@@ -27,8 +28,8 @@ func baseCommand() (git.Stack, error) {
 func NewCmdStackFirst(f *cmdutils.Factory) *cobra.Command {
 	return &cobra.Command{
 		Use:     "first",
-		Short:   "Moves to the first diff in the stack.",
-		Long:    "Moves to the first diff in the stack, and checks out that branch.\n",
+		Short:   "Moves to the first diff in the stack. (EXPERIMENTAL.)",
+		Long:    "Moves to the first diff in the stack, and checks out that branch.\n" + text.ExperimentalString,
 		Example: "glab stack first",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()
@@ -56,8 +57,8 @@ func NewCmdStackFirst(f *cmdutils.Factory) *cobra.Command {
 func NewCmdStackNext(f *cmdutils.Factory) *cobra.Command {
 	return &cobra.Command{
 		Use:     "next",
-		Short:   "Moves to the next diff in the stack.",
-		Long:    "Moves to the next diff in the stack, and checks out that branch.\n",
+		Short:   "Moves to the next diff in the stack. (EXPERIMENTAL.)",
+		Long:    "Moves to the next diff in the stack, and checks out that branch.\n" + text.ExperimentalString,
 		Example: "glab stack next",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()
@@ -71,7 +72,7 @@ func NewCmdStackNext(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if ref.Next == "" {
-				return fmt.Errorf("you are already at the last diff. Use `glab stack list` to see the complete list")
+				return fmt.Errorf("you are already at the last diff. Use `glab stack list` to see the complete list.")
 			}
 
 			err = git.CheckoutBranch(stack.Refs[ref.Next].Branch)
@@ -90,8 +91,8 @@ func NewCmdStackNext(f *cmdutils.Factory) *cobra.Command {
 func NewCmdStackPrev(f *cmdutils.Factory) *cobra.Command {
 	return &cobra.Command{
 		Use:     "prev",
-		Short:   "Moves to the previous diff in the stack.",
-		Long:    "Moves to the previous diff in the stack, and checks out that branch.\n",
+		Short:   "Moves to the previous diff in the stack. (EXPERIMENTAL.)",
+		Long:    "Moves to the previous diff in the stack, and checks out that branch.\n" + text.ExperimentalString,
 		Example: "glab stack prev",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()
@@ -105,7 +106,7 @@ func NewCmdStackPrev(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if ref.Prev == "" {
-				return fmt.Errorf("you are already at the first diff. Use `glab stack list` to see the complete list")
+				return fmt.Errorf("you are already at the first diff. Use `glab stack list` to see the complete list.")
 			}
 
 			err = git.CheckoutBranch(stack.Refs[ref.Prev].Branch)
@@ -124,8 +125,8 @@ func NewCmdStackPrev(f *cmdutils.Factory) *cobra.Command {
 func NewCmdStackLast(f *cmdutils.Factory) *cobra.Command {
 	return &cobra.Command{
 		Use:     "last",
-		Short:   "Moves to the last diff in the stack.",
-		Long:    "Moves to the last diff in the stack, and checks out that branch.\n",
+		Short:   "Moves to the last diff in the stack. (EXPERIMENTAL.)",
+		Long:    "Moves to the last diff in the stack, and checks out that branch.\n" + text.ExperimentalString,
 		Example: "glab stack last",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()
@@ -153,8 +154,8 @@ func NewCmdStackLast(f *cmdutils.Factory) *cobra.Command {
 func NewCmdStackMove(f *cmdutils.Factory) *cobra.Command {
 	return &cobra.Command{
 		Use:     "move",
-		Short:   "Moves to any selected entry in the stack.",
-		Long:    "Shows a menu with a fuzzy finder to select a stack.\n",
+		Short:   "Moves to any selected entry in the stack. (EXPERIMENTAL.)",
+		Long:    "Shows a menu with a fuzzy finder to select a stack.\n" + text.ExperimentalString,
 		Example: "glab stack move",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()

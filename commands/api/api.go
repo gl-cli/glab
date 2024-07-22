@@ -59,25 +59,32 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 
 	cmd := &cobra.Command{
 		Use:   "api <endpoint>",
-		Short: "Make an authenticated request to GitLab API",
+		Short: "Make an authenticated request to the GitLab API.",
 		Long: heredoc.Docf(`
-		Makes an authenticated HTTP request to the GitLab API and prints the response.
-		The endpoint argument should either be a path of a GitLab API v4 endpoint, or 
+		Makes an authenticated HTTP request to the GitLab API, and prints the response.
+		The endpoint argument should either be a path of a GitLab API v4 endpoint, or
 		"graphql" to access the GitLab GraphQL API.
 
-		- [GitLab REST API Docs](https://docs.gitlab.com/ee/api/index.html)
-		- [GitLab GraphQL Docs](https://docs.gitlab.com/ee/api/graphql/)
+		- [GitLab REST API documentation](https://docs.gitlab.com/ee/api/index.html)
+		- [GitLab GraphQL documentation](https://docs.gitlab.com/ee/api/graphql/)
 
-		If the current directory is a Git directory, the GitLab authenticated host in the current 
-		directory will be used otherwise %[1]sgitlab.com%[1]s will be used.
-		Override the GitLab hostname with '--hostname'.
+		If the current directory is a Git directory, uses the GitLab authenticated host in the current
+		directory. Otherwise, %[1]sgitlab.com%[1]s will be used.
+		To override the GitLab hostname, use '--hostname'.
 
-		Placeholder values %[1]s:fullpath%[1]s or %[1]s:id%[1]s, %[1]s:user%[1]s or %[1]s:username%[1]s, %[1]s:group%[1]s, %[1]s:namespace%[1]s, 
-		%[1]s:repo%[1]s, and %[1]s:branch%[1]s in the endpoint argument will get replaced with values from the 
-		repository of the current directory.
+		These placeholder values, when used in the endpoint argument, are
+		replaced with values from the repository of the current directory:
 
-		The default HTTP request method is "GET" normally and "POST" if any parameters
-		were added. Override the method with '--method'.
+		- %[1]s:branch%[1]s
+		- %[1]s:fullpath%[1]s
+		- %[1]s:group%[1]s
+		- %[1]s:id%[1]s
+		- %[1]s:namespace%[1]s
+		- %[1]s:repo%[1]s
+		- %[1]s:user%[1]s
+		- %[1]s:username%[1]s
+
+		Methods: the default HTTP request method is "GET", if no parameters are added, and "POST" otherwise. Override the method with '--method'.
 
 		Pass one or more '--raw-field' values in "key=value" format to add
 		JSON-encoded string parameters to the POST body.
@@ -85,24 +92,25 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 		The '--field' flag behaves like '--raw-field' with magic type conversion based
 		on the format of the value:
 
-		- literal values "true", "false", "null", and integer numbers get converted to
-		  appropriate JSON types;
-		- placeholder values ":namespace", ":repo", and ":branch" get populated with values
-		  from the repository of the current directory;
-		- if the value starts with "@", the rest of the value is interpreted as a
+		- Literal values "true", "false", "null", and integer numbers are converted to
+		  appropriate JSON types.
+		- Placeholder values ":namespace", ":repo", and ":branch" are populated with values
+		  from the repository of the current directory.
+		- If the value starts with "@", the rest of the value is interpreted as a
 		  filename to read the value from. Pass "-" to read from standard input.
 
 		For GraphQL requests, all fields other than "query" and "operationName" are
 		interpreted as GraphQL variables.
 
-		Raw request body may be passed from the outside via a file specified by '--input'.
-		Pass "-" to read from standard input. In this mode, parameters specified via
+		Raw request body can be passed from the outside via a file specified by '--input'.
+		Pass "-" to read from standard input. In this mode, parameters specified with
 		'--field' flags are serialized into URL query parameters.
 
-		In '--paginate' mode, all pages of results will sequentially be requested until
-		there are no more pages of results. For GraphQL requests, this requires that the
-		original query accepts an '$endCursor: String' variable and that it fetches the
-		'pageInfo{ hasNextPage, endCursor }' set of fields from a collection.
+		In '--paginate' mode, all pages of results are requested sequentially until
+		no more pages of results remain. For GraphQL requests:
+
+		- The original query must accept an '$endCursor: String' variable.
+		- The query must fetch the 'pageInfo{ hasNextPage, endCursor }' set of fields from a collection.
 		`, "`"),
 		Example: heredoc.Doc(`
 			$ glab api projects/:fullpath/releases
@@ -162,15 +170,15 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 
 			if c.Flags().Changed("hostname") {
 				if err := glinstance.HostnameValidator(opts.Hostname); err != nil {
-					return &cmdutils.FlagError{Err: fmt.Errorf("error parsing --hostname: %w", err)}
+					return &cmdutils.FlagError{Err: fmt.Errorf("error parsing --hostname: %w.", err)}
 				}
 			}
 
 			if opts.Paginate && !strings.EqualFold(opts.RequestMethod, http.MethodGet) && opts.RequestPath != "graphql" {
-				return &cmdutils.FlagError{Err: errors.New(`the '--paginate' option is not supported for non-GET requests`)}
+				return &cmdutils.FlagError{Err: errors.New(`the '--paginate' option is not supported for non-GET requests.`)}
 			}
 			if opts.Paginate && opts.RequestInputFile != "" {
-				return &cmdutils.FlagError{Err: errors.New(`the '--paginate' option is not supported with '--input'`)}
+				return &cmdutils.FlagError{Err: errors.New(`the '--paginate' option is not supported with '--input'.`)}
 			}
 
 			if runF != nil {
@@ -180,15 +188,15 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.Hostname, "hostname", "", "The GitLab hostname for the request (default is \"gitlab.com\" or authenticated host in current git directory)")
-	cmd.Flags().StringVarP(&opts.RequestMethod, "method", "X", "GET", "The HTTP method for the request")
-	cmd.Flags().StringArrayVarP(&opts.MagicFields, "field", "F", nil, "Add a parameter of inferred type (changes default HTTP method to \"POST\")")
-	cmd.Flags().StringArrayVarP(&opts.RawFields, "raw-field", "f", nil, "Add a string parameter")
-	cmd.Flags().StringArrayVarP(&opts.RequestHeaders, "header", "H", nil, "Add an additional HTTP request header")
-	cmd.Flags().BoolVarP(&opts.ShowResponseHeaders, "include", "i", false, "Include HTTP response headers in the output")
-	cmd.Flags().BoolVar(&opts.Paginate, "paginate", false, "Make additional HTTP requests to fetch all pages of results")
-	cmd.Flags().StringVar(&opts.RequestInputFile, "input", "", "The file to use as body for the HTTP request")
-	cmd.Flags().BoolVar(&opts.Silent, "silent", false, "Do not print the response body")
+	cmd.Flags().StringVar(&opts.Hostname, "hostname", "", "The GitLab hostname for the request. Defaults to \"gitlab.com\", or the authenticated host in the current Git directory.")
+	cmd.Flags().StringVarP(&opts.RequestMethod, "method", "X", "GET", "The HTTP method for the request.")
+	cmd.Flags().StringArrayVarP(&opts.MagicFields, "field", "F", nil, "Add a parameter of inferred type. Changes the default HTTP method to \"POST\".")
+	cmd.Flags().StringArrayVarP(&opts.RawFields, "raw-field", "f", nil, "Add a string parameter.")
+	cmd.Flags().StringArrayVarP(&opts.RequestHeaders, "header", "H", nil, "Add an additional HTTP request header.")
+	cmd.Flags().BoolVarP(&opts.ShowResponseHeaders, "include", "i", false, "Include HTTP response headers in the output.")
+	cmd.Flags().BoolVar(&opts.Paginate, "paginate", false, "Make additional HTTP requests to fetch all pages of results.")
+	cmd.Flags().StringVar(&opts.RequestInputFile, "input", "", "The file to use as the body for the HTTP request.")
+	cmd.Flags().BoolVar(&opts.Silent, "silent", false, "Do not print the response body.")
 	return cmd
 }
 
@@ -450,7 +458,7 @@ func parseFields(opts *ApiOptions) (map[string]interface{}, error) {
 func parseField(f string) (string, string, error) {
 	idx := strings.IndexRune(f, '=')
 	if idx == -1 {
-		return f, "", fmt.Errorf("field %q requires a value separated by an '=' sign", f)
+		return f, "", fmt.Errorf("field %q requires a value separated by an '=' sign.", f)
 	}
 	return f[0:idx], f[idx+1:], nil
 }

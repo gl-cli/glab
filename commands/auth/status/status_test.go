@@ -92,7 +92,7 @@ hosts:
   another.host:
     token: isinvalid
   gl.io:
-    token: 
+    token:
 `, "")()
 
 	cfgFile := config.ConfigFile()
@@ -115,7 +115,7 @@ hosts:
 			stderr: fmt.Sprintf(`gitlab.alpinelinux.org
   ✓ Logged in to gitlab.alpinelinux.org as john_smith (%s)
   ✓ Git operations for gitlab.alpinelinux.org configured to use ssh protocol.
-  ✓ API calls for gitlab.alpinelinux.org are made over https protocol
+  ✓ API calls for gitlab.alpinelinux.org are made over https protocol.
   ✓ REST API Endpoint: https://gitlab.alpinelinux.org/api/v4/
   ✓ GraphQL Endpoint: https://gitlab.alpinelinux.org/api/graphql/
   ✓ Token: **************************
@@ -130,7 +130,7 @@ hosts:
 			stderr: fmt.Sprintf(`gitlab.foo.bar
   ✓ Logged in to gitlab.foo.bar as john_doe (%s)
   ✓ Git operations for gitlab.foo.bar configured to use ssh protocol.
-  ✓ API calls for gitlab.foo.bar are made over https protocol
+  ✓ API calls for gitlab.foo.bar are made over https protocol.
   ✓ REST API Endpoint: https://gitlab.foo.bar/api/v4/
   ✓ GraphQL Endpoint: https://gitlab.foo.bar/api/graphql/
   ✓ Token: **************************
@@ -142,7 +142,7 @@ hosts:
 				Hostname: "invalid.instance",
 			},
 			wantErr: true,
-			stderr:  "x invalid.instance has not been authenticated with glab. Run `glab auth login --hostname invalid.instance` to authenticate",
+			stderr:  "x invalid.instance has not been authenticated with glab. Run `glab auth login --hostname invalid.instance` to authenticate.",
 		},
 		{
 			name: "with token set in env variable",
@@ -151,15 +151,15 @@ hosts:
 			},
 			envVar:  true,
 			wantErr: false,
-			stderr: fmt.Sprintf(`! One of GITLAB_TOKEN, GITLAB_ACCESS_TOKEN, OAUTH_TOKEN environment variables is set. It will be used for all authentication.
-
-gitlab.env.bar
+			stderr: fmt.Sprintf(`gitlab.env.bar
   ✓ Logged in to gitlab.env.bar as john_doe (%s)
   ✓ Git operations for gitlab.env.bar configured to use ssh protocol.
-  ✓ API calls for gitlab.env.bar are made over https protocol
+  ✓ API calls for gitlab.env.bar are made over https protocol.
   ✓ REST API Endpoint: https://gitlab.env.bar/api/v4/
   ✓ GraphQL Endpoint: https://gitlab.env.bar/api/graphql/
   ✓ Token: **************************
+
+! One of GITLAB_TOKEN, GITLAB_ACCESS_TOKEN, OAUTH_TOKEN environment variables is set. It will be used for all authentication.
 `, cfgFile),
 		},
 	}
@@ -233,7 +233,7 @@ hosts:
   another.host:
     token: isinvalid
   gl.io:
-    token: 
+    token:
 `, "")()
 
 	fakeHTTP := &httpmock.Mocker{
@@ -264,25 +264,25 @@ hosts:
 	expectedOutput := fmt.Sprintf(`gitlab.alpinelinux.org
   ✓ Logged in to gitlab.alpinelinux.org as john_smith (%s)
   ✓ Git operations for gitlab.alpinelinux.org configured to use ssh protocol.
-  ✓ API calls for gitlab.alpinelinux.org are made over https protocol
+  ✓ API calls for gitlab.alpinelinux.org are made over https protocol.
   ✓ REST API Endpoint: https://gitlab.alpinelinux.org/api/v4/
   ✓ GraphQL Endpoint: https://gitlab.alpinelinux.org/api/graphql/
   ✓ Token: **************************
 another.host
-  x another.host: api call failed: GET https://another.host/api/v4/user: 401 {message: invalid token}
+  x another.host: API call failed: GET https://another.host/api/v4/user: 401 {message: invalid token}
   ✓ Git operations for another.host configured to use ssh protocol.
-  ✓ API calls for another.host are made over https protocol
+  ✓ API calls for another.host are made over https protocol.
   ✓ REST API Endpoint: https://another.host/api/v4/
   ✓ GraphQL Endpoint: https://another.host/api/graphql/
   ✓ Token: **************************
-  ! Invalid token provided in configuration file
+  ! Invalid token provided in configuration file.
 gl.io
-  x gl.io: api call failed: GET https://gl.io/api/v4/user: 401 {message: no token provided}
+  x gl.io: API call failed: GET https://gl.io/api/v4/user: 401 {message: no token provided}
   ✓ Git operations for gl.io configured to use ssh protocol.
-  ✓ API calls for gl.io are made over https protocol
+  ✓ API calls for gl.io are made over https protocol.
   ✓ REST API Endpoint: https://gl.io/api/v4/
   ✓ GraphQL Endpoint: https://gl.io/api/graphql/
-  ! No token provided in configuration file
+  ! No token provided in configuration file.
 `, cfgFile)
 
 	t.Setenv("GITLAB_TOKEN", "")
@@ -305,7 +305,7 @@ gl.io
 	}
 
 	err = statusRun(opts)
-	assert.Equal(t, "\nx could not authenticate to one or more of the configured GitLab instances", err.Error())
+	assert.Equal(t, "\nx could not authenticate to one or more of the configured GitLab instances.", err.Error())
 	assert.Empty(t, stdout.String())
 	assert.Equal(t, expectedOutput, stderr.String())
 }

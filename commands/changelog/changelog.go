@@ -9,7 +9,7 @@ import (
 func NewCmdChangelog(f *cmdutils.Factory) *cobra.Command {
 	changelogCmd := &cobra.Command{
 		Use:   "changelog <command> [flags]",
-		Short: `Interact with the changelog API`,
+		Short: `Interact with the changelog API.`,
 		Long:  ``,
 	}
 

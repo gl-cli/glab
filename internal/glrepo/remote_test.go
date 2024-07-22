@@ -33,7 +33,7 @@ func TestFindByName(t *testing.T) {
 	eq(t, r.Name, "mona")
 
 	_, err = list.FindByName("nonexist")
-	eq(t, err, errors.New(`no GitLab remotes found`))
+	eq(t, err, errors.New(`no GitLab remotes found.`))
 }
 
 func TestTranslateRemotes(t *testing.T) {
@@ -133,19 +133,19 @@ func Test_FindByRepo(t *testing.T) {
 	t.Run("fail/owner", func(t *testing.T) {
 		got, err := r.FindByRepo("maxice8", "glab")
 		assert.Nil(t, got)
-		assert.EqualError(t, err, "no matching remote found")
+		assert.EqualError(t, err, "no matching remote found.")
 	})
 
 	t.Run("fail/project", func(t *testing.T) {
 		got, err := r.FindByRepo("profclems", "balg")
 		assert.Nil(t, got)
-		assert.EqualError(t, err, "no matching remote found")
+		assert.EqualError(t, err, "no matching remote found.")
 	})
 
 	t.Run("fail/owner and project", func(t *testing.T) {
 		got, err := r.FindByRepo("maxice8", "balg")
 		assert.Nil(t, got)
-		assert.EqualError(t, err, "no matching remote found")
+		assert.EqualError(t, err, "no matching remote found.")
 	})
 }
 

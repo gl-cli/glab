@@ -118,7 +118,7 @@ func IssueFromArg(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interface,
 		var err error
 		baseRepo, err = baseRepoFn()
 		if err != nil {
-			return nil, nil, fmt.Errorf("could not determine base repo: %w", err)
+			return nil, nil, fmt.Errorf("could not determine base repository: %w", err)
 		}
 	} else {
 		// initialize a new HTTP Client with the new host

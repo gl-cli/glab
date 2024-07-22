@@ -28,23 +28,23 @@ users
 ```plaintext
 $ glab repo contributors
 
+# Supports overriding the repository.
 $ glab repo contributors -R gitlab-com/www-gitlab-com
-# Supports repo override
 
 ```
 
 ## Options
 
 ```plaintext
-  -o, --order string      Return contributors ordered by name, email, or commits (orders by commit date) fields (default "commits")
-  -p, --page int          Page number (default 1)
+  -o, --order string      Return contributors ordered by name, email, or commits (orders by commit date) fields. (default "commits")
+  -p, --page int          Page number. (default 1)
   -P, --per-page int      Number of items to list per page. (default 30)
-  -R, --repo OWNER/REPO   Select another repository using the OWNER/REPO or `GROUP/NAMESPACE/REPO` format or full URL or git URL
-  -s, --sort string       Return contributors sorted in asc or desc order
+  -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
+  -s, --sort string       Return contributors. Sort options: asc, desc.
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for command
+      --help   Show help for this command.
 ```

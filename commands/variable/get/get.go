@@ -34,11 +34,11 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Comman
 
 	cmd := &cobra.Command{
 		Use:   "get <key>",
-		Short: "get a project or group variable",
+		Short: "Get a variable for a project or group.",
 		Args:  cobra.RangeArgs(1, 1),
 		Example: heredoc.Doc(`
 			glab variable get VAR_KEY
-            glab variable get -g GROUP VAR_KEY
+			glab variable get -g GROUP VAR_KEY
 			glab variable get -s SCOPE VAR_KEY
 		`),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -66,9 +66,9 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Comman
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. All (*), or specific environments.")
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Get variable for a group")
-	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
+	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. Values: all (*), or specific environments.")
+	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Get variable for a group.")
+	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
 	return cmd
 }
 

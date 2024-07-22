@@ -15,7 +15,6 @@ config:
   hr-style:                         # MD035
     style: "---"
   line-length: false                # MD013
-  link-fragments: false             # MD051
   no-duplicate-heading:             # MD024
     siblings_only: true
   no-emphasis-as-heading: false     # MD036
@@ -153,8 +152,6 @@ config:
       "unicorn-worker-killer",
       "URL",
       "WebdriverIO",
-      "Workload Identity Pool",
-      "Workload Identity Provider",
       "YAML",
       "YouTrack"
     ]

@@ -17,12 +17,14 @@ import (
 func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 	mrUpdateCmd := &cobra.Command{
 		Use:   "update [<id> | <branch>]",
-		Short: `Update merge requests`,
+		Short: `Update a merge request.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
-	glab mr update 23 --ready
-	glab mr update 23 --draft
-	glab mr update --draft  # Updates MR related to current branch
+	$ glab mr update 23 --ready
+	$ glab mr update 23 --draft
+
+	# Updates the merge request for the current branch
+	$ glab mr update --draft
 	`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -33,7 +35,7 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 			c := f.IO.Color()
 
 			if cmd.Flags().Changed("unassign") && cmd.Flags().Changed("assignee") {
-				return &cmdutils.FlagError{Err: fmt.Errorf("--assignee and --unassign are mutually exclusive")}
+				return &cmdutils.FlagError{Err: fmt.Errorf("--assignee and --unassign are mutually exclusive.")}
 			}
 
 			// Parse assignees Early so we can fail early in case of conflicts
@@ -66,7 +68,7 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 
 			if cmd.Flags().Changed("lock-discussion") && cmd.Flags().Changed("unlock-discussion") {
 				return &cmdutils.FlagError{
-					Err: errors.New("--lock-discussion and --unlock-discussion can't be used together"),
+					Err: errors.New("--lock-discussion and --unlock-discussion can't be used together."),
 				}
 			}
 
@@ -213,9 +215,9 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 			if removeSource, _ := cmd.Flags().GetBool("remove-source-branch"); removeSource {
 
 				if mr.ForceRemoveSourceBranch {
-					actions = append(actions, "disabled removal of source branch on merge")
+					actions = append(actions, "disabled removal of source branch on merge.")
 				} else {
-					actions = append(actions, "enabled removal of source branch on merge")
+					actions = append(actions, "enabled removal of source branch on merge.")
 				}
 
 				l.RemoveSourceBranch = gitlab.Ptr(!mr.ForceRemoveSourceBranch)
@@ -224,9 +226,9 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 			if squashBeforeMerge, _ := cmd.Flags().GetBool("squash-before-merge"); squashBeforeMerge {
 
 				if mr.Squash {
-					actions = append(actions, "disabled squashing of commits before merge")
+					actions = append(actions, "disabled squashing of commits before merge.")
 				} else {
-					actions = append(actions, "enabled squashing of commits before merge")
+					actions = append(actions, "enabled squashing of commits before merge.")
 				}
 
 				l.Squash = gitlab.Ptr(!mr.Squash)
@@ -248,25 +250,25 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	mrUpdateCmd.Flags().BoolP("draft", "", false, "Mark merge request as a draft")
-	mrUpdateCmd.Flags().BoolP("ready", "r", false, "Mark merge request as ready to be reviewed and merged")
-	mrUpdateCmd.Flags().BoolP("wip", "", false, "Mark merge request as a work in progress. Alternative to --draft")
-	mrUpdateCmd.Flags().StringP("title", "t", "", "Title of merge request")
-	mrUpdateCmd.Flags().BoolP("lock-discussion", "", false, "Lock discussion on merge request")
-	mrUpdateCmd.Flags().BoolP("unlock-discussion", "", false, "Unlock discussion on merge request")
-	mrUpdateCmd.Flags().StringP("description", "d", "", "merge request description; set to \"-\" to open an editor")
-	mrUpdateCmd.Flags().StringSliceP("label", "l", []string{}, "add labels")
-	mrUpdateCmd.Flags().StringSliceP("unlabel", "u", []string{}, "remove labels")
+	mrUpdateCmd.Flags().BoolP("draft", "", false, "Mark merge request as a draft.")
+	mrUpdateCmd.Flags().BoolP("ready", "r", false, "Mark merge request as ready to be reviewed and merged.")
+	mrUpdateCmd.Flags().BoolP("wip", "", false, "Mark merge request as a work in progress. Alternative to --draft.")
+	mrUpdateCmd.Flags().StringP("title", "t", "", "Title of merge request.")
+	mrUpdateCmd.Flags().BoolP("lock-discussion", "", false, "Lock discussion on merge request.")
+	mrUpdateCmd.Flags().BoolP("unlock-discussion", "", false, "Unlock discussion on merge request.")
+	mrUpdateCmd.Flags().StringP("description", "d", "", "Merge request description. Set to \"-\" to open an editor.")
+	mrUpdateCmd.Flags().StringSliceP("label", "l", []string{}, "Add labels.")
+	mrUpdateCmd.Flags().StringSliceP("unlabel", "u", []string{}, "Remove labels.")
 	mrUpdateCmd.Flags().
-		StringSliceP("assignee", "a", []string{}, "assign users via username, prefix with '!' or '-' to remove from existing assignees, '+' to add, otherwise replace existing assignees with given users")
+		StringSliceP("assignee", "a", []string{}, "Assign users via username. Prefix with '!' or '-' to remove from existing assignees, '+' to add. Otherwise, replace existing assignees with given users.")
 	mrUpdateCmd.Flags().
-		StringSliceP("reviewer", "", []string{}, "request review from users by their usernames, prefix with '!' or '-' to remove from existing reviewers, '+' to add, otherwise replace existing reviewers with given users")
-	mrUpdateCmd.Flags().Bool("unassign", false, "unassign all users")
+		StringSliceP("reviewer", "", []string{}, "Request review from users by their usernames. Prefix with '!' or '-' to remove from existing reviewers, '+' to add. Otherwise, replace existing reviewers with given users.")
+	mrUpdateCmd.Flags().Bool("unassign", false, "Unassign all users.")
 	mrUpdateCmd.Flags().
-		BoolP("squash-before-merge", "", false, "Toggles the option to squash commits into a single commit when merging")
-	mrUpdateCmd.Flags().BoolP("remove-source-branch", "", false, "Toggles the removal of the Source Branch on merge")
-	mrUpdateCmd.Flags().StringP("milestone", "m", "", "title of the milestone to assign, pass \"\" or 0 to unassign")
-	mrUpdateCmd.Flags().String("target-branch", "", "set target branch")
+		BoolP("squash-before-merge", "", false, "Toggles the option to squash commits into a single commit when merging.")
+	mrUpdateCmd.Flags().BoolP("remove-source-branch", "", false, "Toggles the removal of the source branch on merge.")
+	mrUpdateCmd.Flags().StringP("milestone", "m", "", "Title of the milestone to assign. Set to \"\" or 0 to unassign.")
+	mrUpdateCmd.Flags().String("target-branch", "", "Set target branch.")
 
 	return mrUpdateCmd
 }

@@ -53,13 +53,13 @@ func deleteRun(cmd *cobra.Command, opts *DeleteOptions) error {
 
 	expansion, ok := aliasCfg.Get(opts.Name)
 	if !ok {
-		return fmt.Errorf("no such alias %s", opts.Name)
+		return fmt.Errorf("no such alias '%s'.", opts.Name)
 	}
 	err = aliasCfg.Delete(opts.Name)
 	if err != nil {
-		return fmt.Errorf("failed to delete alias %s: %w", opts.Name, err)
+		return fmt.Errorf("failed to delete alias '%s': %w", opts.Name, err)
 	}
 	redCheck := c.Red("✓")
-	fmt.Fprintf(opts.IO.StdErr, "%s Deleted alias %s; was %s\n", redCheck, opts.Name, expansion)
+	fmt.Fprintf(opts.IO.StdErr, "%s Deleted alias '%s'; was '%s'.\n", redCheck, opts.Name, expansion)
 	return nil
 }

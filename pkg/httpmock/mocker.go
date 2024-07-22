@@ -63,7 +63,7 @@ func (r *Mocker) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 		if stub != nil {
 			r.mu.Unlock()
-			return nil, fmt.Errorf("more than 1 stub matched %v", req)
+			return nil, fmt.Errorf("more than one stub matched %v.", req)
 		}
 		stub = s
 	}
@@ -73,7 +73,7 @@ func (r *Mocker) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	if stub == nil {
 		r.mu.Unlock()
-		return nil, fmt.Errorf("no registered stubs matched %v", req)
+		return nil, fmt.Errorf("no registered stubs matched %v.", req)
 	}
 
 	r.Requests = append(r.Requests, req)

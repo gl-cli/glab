@@ -57,13 +57,13 @@ func Test_NewCmdDiff(t *testing.T) {
 			name:    "no argument with --repo override",
 			args:    "-R owner/repo",
 			isTTY:   true,
-			wantErr: "argument required when using the --repo flag",
+			wantErr: "argument required when using the --repo flag.",
 		},
 		{
 			name:    "invalid --color argument",
 			args:    "--color doublerainbow",
 			isTTY:   true,
-			wantErr: `did not understand color: "doublerainbow". Expected one of always, never, or auto`,
+			wantErr: `did not understand color: "doublerainbow". Expected one of 'always', 'never', or 'auto'.`,
 		},
 	}
 	for _, tt := range tests {

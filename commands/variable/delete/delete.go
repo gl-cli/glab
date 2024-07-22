@@ -32,7 +32,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra.Co
 
 	cmd := &cobra.Command{
 		Use:     "delete <key>",
-		Short:   "Delete a project or group variable",
+		Short:   "Delete a variable for a project or group.",
 		Aliases: []string{"remove"},
 		Args:    cobra.ExactArgs(1),
 		Example: heredoc.Doc(`
@@ -49,12 +49,12 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra.Co
 				err = cmdutils.FlagError{Err: fmt.Errorf("invalid key provided.\n%s", variableutils.ValidKeyMsg)}
 				return err
 			} else if len(args) != 1 {
-				err = cmdutils.FlagError{Err: errors.New("no key provided")}
+				err = cmdutils.FlagError{Err: errors.New("no key provided.")}
 				return err
 			}
 
 			if cmd.Flags().Changed("scope") && opts.Group != "" {
-				err = cmdutils.FlagError{Err: errors.New("scope is not required for group variables")}
+				err = cmdutils.FlagError{Err: errors.New("scope is not required for group variables.")}
 				return err
 			}
 
@@ -67,8 +67,8 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra.Co
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. All (*), or specific environments")
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Delete variable from a group")
+	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The 'environment_scope' of the variable. Options: all (*), or specific environments.")
+	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Delete variable from a group.")
 
 	return cmd
 }
@@ -92,7 +92,7 @@ func deleteRun(opts *DeleteOpts) error {
 			return err
 		}
 
-		fmt.Fprintf(opts.IO.StdOut, "%s Deleted variable %s with scope %s for %s\n", c.GreenCheck(), opts.Key, opts.Scope, baseRepo.FullName())
+		fmt.Fprintf(opts.IO.StdOut, "%s Deleted variable %s with scope %s for %s.\n", c.GreenCheck(), opts.Key, opts.Scope, baseRepo.FullName())
 	} else {
 		// Delete group-level variable
 		err = api.DeleteGroupVariable(httpClient, opts.Group, opts.Key)
@@ -100,7 +100,7 @@ func deleteRun(opts *DeleteOpts) error {
 			return err
 		}
 
-		fmt.Fprintf(opts.IO.StdOut, "%s Deleted variable %s for group %s\n", c.GreenCheck(), opts.Key, opts.Group)
+		fmt.Fprintf(opts.IO.StdOut, "%s Deleted variable %s for group %s.\n", c.GreenCheck(), opts.Key, opts.Group)
 	}
 
 	return nil

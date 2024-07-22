@@ -38,7 +38,7 @@ func TestHandleAuthRedirect(t *testing.T) {
 
 	ios, _, _, _ := iostreams.Test()
 
-	tokenCh := handleAuthRedirect(ios, "123", hostname, "http", "abc")
+	tokenCh := handleAuthRedirect(ios, "localhost", "123", hostname, "http", "abc")
 	defer close(tokenCh)
 	time.Sleep(1 * time.Second)
 

@@ -48,16 +48,16 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	repoListCmd.Flags().StringVarP(&opts.OrderBy, "order", "o", "last_activity_at", "Return repositories ordered by id, created_at, or other fields")
-	repoListCmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Return repositories sorted in asc or desc order")
-	repoListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Return only repositories in the given group and its subgroups")
-	repoListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
-	repoListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page")
-	repoListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
-	repoListCmd.Flags().BoolVarP(&opts.FilterAll, "all", "a", false, "List all projects on the instance")
-	repoListCmd.Flags().BoolVarP(&opts.FilterOwned, "mine", "m", false, "Only list projects you own (default if no filters are passed)")
-	repoListCmd.Flags().BoolVar(&opts.FilterMember, "member", false, "Only list projects which you are a member")
-	repoListCmd.Flags().BoolVar(&opts.FilterStarred, "starred", false, "Only list starred projects")
+	repoListCmd.Flags().StringVarP(&opts.OrderBy, "order", "o", "last_activity_at", "Return repositories ordered by id, created_at, or other fields.")
+	repoListCmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Return repositories sorted in asc or desc order.")
+	repoListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Return repositories in only the given group and its subgroups.")
+	repoListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
+	repoListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
+	repoListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
+	repoListCmd.Flags().BoolVarP(&opts.FilterAll, "all", "a", false, "List all projects on the instance.")
+	repoListCmd.Flags().BoolVarP(&opts.FilterOwned, "mine", "m", false, "List only projects you own. Default if no filters are provided.")
+	repoListCmd.Flags().BoolVar(&opts.FilterMember, "member", false, "List only projects of which you are a member.")
+	repoListCmd.Flags().BoolVar(&opts.FilterStarred, "starred", false, "List only starred projects.")
 	return repoListCmd
 }
 
@@ -87,7 +87,7 @@ func runE(opts *Options) error {
 		fmt.Fprintln(opts.IO.StdOut, string(projectListJSON))
 	} else {
 		// Title
-		title := fmt.Sprintf("Showing %d of %d projects (Page %d of %d)\n", len(projects), resp.TotalItems, resp.CurrentPage, resp.TotalPages)
+		title := fmt.Sprintf("Showing %d of %d projects (Page %d of %d).\n", len(projects), resp.TotalItems, resp.CurrentPage, resp.TotalPages)
 
 		// List
 		table := tableprinter.NewTablePrinter()

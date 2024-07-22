@@ -18,7 +18,7 @@ import (
 func NewCmdIncident(f *cmdutils.Factory) *cobra.Command {
 	incidentCmd := &cobra.Command{
 		Use:   "incident [command] [flags]",
-		Short: `Work with GitLab incidents`,
+		Short: `Work with GitLab incidents.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
 			glab incident list
@@ -26,6 +26,7 @@ func NewCmdIncident(f *cmdutils.Factory) *cobra.Command {
 		Annotations: map[string]string{
 			"help:arguments": heredoc.Doc(`
 				An incident can be supplied as argument in any of the following formats:
+
 				- by number, e.g. "123"
 				- by URL, e.g. "https://gitlab.com/NAMESPACE/REPO/-/issues/incident/123"
 			`),

@@ -29,7 +29,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(*ListOpts) error) *cobra.Command 
 	}
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Get a list of currently authenticated user's SSH keys.",
+		Short: "Get a list of SSH keys for the currently authenticated user.",
 		Long:  "",
 		Example: heredoc.Doc(`
 		glab ssh-key list
@@ -47,9 +47,9 @@ func NewCmdList(f *cmdutils.Factory, runE func(*ListOpts) error) *cobra.Command 
 		},
 	}
 
-	cmd.Flags().BoolVarP(&opts.ShowKeyIDs, "show-id", "", false, "Shows IDs of SSH Keys")
-	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number")
-	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page")
+	cmd.Flags().BoolVarP(&opts.ShowKeyIDs, "show-id", "", false, "Shows IDs of SSH keys.")
+	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
+	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
 
 	return cmd
 }
@@ -66,7 +66,7 @@ func listRun(opts *ListOpts) error {
 	}
 	keys, _, err := httpClient.Users.ListSSHKeys(sshKeyListOptions)
 	if err != nil {
-		return cmdutils.WrapError(err, "failed to get ssh keys")
+		return cmdutils.WrapError(err, "failed to get SSH keys.")
 	}
 
 	cs := opts.IO.Color()

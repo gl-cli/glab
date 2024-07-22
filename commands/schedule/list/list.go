@@ -16,7 +16,7 @@ import (
 func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	scheduleListCmd := &cobra.Command{
 		Use:   "list [flags]",
-		Short: `Get the list of schedules`,
+		Short: `Get the list of schedules.`,
 		Example: heredoc.Doc(`
 			glab schedule list
 		`),
@@ -53,7 +53,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	scheduleListCmd.Flags().IntP("page", "p", 1, "Page number")
+	scheduleListCmd.Flags().IntP("page", "p", 1, "Page number.")
 	scheduleListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page.")
 
 	return scheduleListCmd

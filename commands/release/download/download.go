@@ -42,22 +42,22 @@ func NewCmdDownload(f *cmdutils.Factory, runE func(opts *DownloadOpts) error) *c
 
 	cmd := &cobra.Command{
 		Use:   "download <tag>",
-		Short: "Download asset files from a GitLab Release",
-		Long: heredoc.Docf(`Download asset files from a GitLab Release
+		Short: "Download asset files from a GitLab release.",
+		Long: heredoc.Docf(`Download asset files from a GitLab release.
 
-			If no tag is specified, assets are downloaded from the latest release.
-			Use %[1]s--asset-name%[1]s to specify a file name to download from the release assets.
+			If no tag is specified, downloads assets from the latest release.
+			To specify a file name to download from the release assets, use %[1]s--asset-name%[1]s.
 			%[1]s--asset-name%[1]s flag accepts glob patterns.
 		`, "`"),
 		Args: cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
-			Download all assets from the latest release
+			# Download all assets from the latest release
 			$ glab release download
 
-			Download all assets from the specified release tag
+			# Download all assets from the specified release tag
 			$ glab release download v1.1.0
 
-			Download assets with names matching the glob pattern
+			# Download assets with names matching the glob pattern
 			$ glab release download v1.10.1 --asset-name="*.tar.gz"
 `),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -76,8 +76,8 @@ func NewCmdDownload(f *cmdutils.Factory, runE func(opts *DownloadOpts) error) *c
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&opts.AssetNames, "asset-name", "n", []string{}, "Download only assets that match the name or a glob pattern")
-	cmd.Flags().StringVarP(&opts.Dir, "dir", "D", ".", "Directory to download the release assets to")
+	cmd.Flags().StringArrayVarP(&opts.AssetNames, "asset-name", "n", []string{}, "Download only assets that match the name or a glob pattern.")
+	cmd.Flags().StringVarP(&opts.Dir, "dir", "D", ".", "Directory to download the release assets to.")
 
 	return cmd
 }
@@ -103,7 +103,7 @@ func downloadRun(opts *DownloadOpts) error {
 			color.Blue("repo"), repo.FullName())
 		releases, _, err := client.Releases.ListReleases(repo.FullName(), &gitlab.ListReleasesOptions{})
 		if err != nil {
-			return cmdutils.WrapError(err, "could not fetch latest release")
+			return cmdutils.WrapError(err, "could not fetch latest release.")
 		}
 		if len(releases) < 1 {
 			return cmdutils.WrapError(errors.New("not found"), fmt.Sprintf("no release found for %q", repo.FullName()))
@@ -112,7 +112,7 @@ func downloadRun(opts *DownloadOpts) error {
 		release = releases[0]
 		opts.TagName = release.TagName
 	} else {
-		opts.IO.Logf("%s fetching release %s=%s %s=%s\n",
+		opts.IO.Logf("%s fetching release %s=%s %s=%s.\n",
 			color.ProgressIcon(),
 			color.Blue("repo"), repo.FullName(),
 			color.Blue("tag"), opts.TagName)
@@ -122,7 +122,7 @@ func downloadRun(opts *DownloadOpts) error {
 			if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
 				return cmdutils.WrapError(err, "release does not exist.")
 			}
-			return cmdutils.WrapError(err, "failed to fetch release")
+			return cmdutils.WrapError(err, "failed to fetch release.")
 		}
 	}
 
@@ -149,7 +149,7 @@ func downloadRun(opts *DownloadOpts) error {
 	}
 
 	if downloadableAssets == nil || len(downloadableAssets) < 1 {
-		opts.IO.Logf("%s no release assets found\n",
+		opts.IO.Logf("%s no release assets found!\n",
 			color.DotWarnIcon())
 		return nil
 	}
@@ -160,7 +160,7 @@ func downloadRun(opts *DownloadOpts) error {
 
 	err = downloadAssets(api.GetClient(), opts.IO, downloadableAssets, opts.Dir)
 	if err != nil {
-		return cmdutils.WrapError(err, "failed to download release")
+		return cmdutils.WrapError(err, "failed to download release.")
 	}
 
 	opts.IO.Logf(color.Bold("%s release %q downloaded\n"), color.RedCheck(), release.Name)
@@ -181,7 +181,7 @@ func matchAny(patterns []string, name string) bool {
 func downloadAssets(httpClient *api.Client, io *iostreams.IOStreams, toDownload []*upload.ReleaseAsset, destDir string) error {
 	color := io.Color()
 	for _, asset := range toDownload {
-		io.Logf("%s downloading file %s=%s %s=%s\n",
+		io.Logf("%s downloading file %s=%s %s=%s.\n",
 			color.ProgressIcon(),
 			color.Blue("name"), *asset.Name,
 			color.Blue("url"), *asset.URL)
@@ -197,7 +197,7 @@ func downloadAssets(httpClient *api.Client, io *iostreams.IOStreams, toDownload 
 
 		destPath := filepath.Join(destDir, sanitizedAssetName)
 		if !strings.HasPrefix(destPath, destDir) {
-			return fmt.Errorf("invalid file path name")
+			return fmt.Errorf("invalid file path name.")
 		}
 
 		err = downloadAsset(httpClient, *asset.URL, destPath)

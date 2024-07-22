@@ -77,15 +77,15 @@ func Test_repoArchive_Integration(t *testing.T) {
 					continue
 				}
 
+				out := string(b)
+				t.Log(out)
+
 				if err != nil {
 					t.Log(err)
 					if !tt.wantErr {
 						t.Fatal(err)
 					}
 				}
-
-				out := string(b)
-				t.Log(out)
 
 				for _, msg := range tt.wantMsg {
 					assert.Contains(t, out, msg)

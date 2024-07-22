@@ -36,9 +36,9 @@ func NewCmdCheckManifestUsage(f *cmdutils.Factory) *cobra.Command {
 	}
 	checkManifestUsageCmd := &cobra.Command{
 		Use:   "check_manifest_usage [flags]",
-		Short: `Check agent configuration files for built-in GitOps manifests usage`,
-		Long: `Checks a the descendants of a group for registered agents with configuration files that rely on the deprecated GitOps manifests settings.
-The output can be piped to a tab separated value file.
+		Short: `Check agent configuration files for built-in GitOps manifests usage. (EXPERIMENTAL.)`,
+		Long: `Checks the descendants of a group for registered agents with configuration files that rely on the deprecated GitOps manifests settings.
+The output can be piped to a tab-separated value (TSV) file.
 ` + text.ExperimentalString,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient
@@ -47,13 +47,13 @@ The output can be piped to a tab separated value file.
 		},
 	}
 	// Boolean to authorize experimental features
-	checkManifestUsageCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Group ID to check")
+	checkManifestUsageCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Group ID to check.")
 	cobra.CheckErr(checkManifestUsageCmd.MarkFlagRequired("group"))
-	checkManifestUsageCmd.Flags().IntVarP(&opts.ProjectPage, "page", "p", 1, "Page number for projects")
-	checkManifestUsageCmd.Flags().IntVarP(&opts.ProjectPerPage, "per-page", "P", 30, "Number of projects to list per page")
-	checkManifestUsageCmd.Flags().IntVarP(&opts.AgentPage, "agent-page", "a", 1, "Page number for projects")
-	checkManifestUsageCmd.Flags().IntVarP(&opts.AgentPerPage, "agent-per-page", "A", 30, "Number of projects to list per page")
-	checkManifestUsageCmd.Flags().BoolVarP(&opts.Recursive, "recursive", "r", false, "Recursively check subgroups")
+	checkManifestUsageCmd.Flags().IntVarP(&opts.ProjectPage, "page", "p", 1, "Page number for projects.")
+	checkManifestUsageCmd.Flags().IntVarP(&opts.ProjectPerPage, "per-page", "P", 30, "Number of projects to list per page.")
+	checkManifestUsageCmd.Flags().IntVarP(&opts.AgentPage, "agent-page", "a", 1, "Page number for projects.")
+	checkManifestUsageCmd.Flags().IntVarP(&opts.AgentPerPage, "agent-per-page", "A", 30, "Number of projects to list per page.")
+	checkManifestUsageCmd.Flags().BoolVarP(&opts.Recursive, "recursive", "r", false, "Recursively check subgroups.")
 
 	return checkManifestUsageCmd
 }
@@ -126,7 +126,7 @@ func listAllProjectsForGroup(apiClient *gitlab.Client, group string, opts Option
 
 func checkManifestUsageInProject(apiClient *gitlab.Client, opts *Options, project *gitlab.Project) error {
 	color := opts.IO.Color()
-	opts.IO.StartSpinner(fmt.Sprintf("Checking project %s for agents\n", project.PathWithNamespace))
+	opts.IO.StartSpinner(fmt.Sprintf("Checking project %s for agents.\n", project.PathWithNamespace))
 	defer opts.IO.StopSpinner("")
 
 	agents, err := api.ListAgents(apiClient, project.ID, &gitlab.ListAgentsOptions{
@@ -137,11 +137,11 @@ func checkManifestUsageInProject(apiClient *gitlab.Client, opts *Options, projec
 		return err
 	}
 
-	opts.IO.Log(color.ProgressIcon(), fmt.Sprintf("Found %d agents\n", len(agents)))
+	opts.IO.Log(color.ProgressIcon(), fmt.Sprintf("Found %d agents.\n", len(agents)))
 	for _, agent := range agents {
 		found, err := agentUsesManifestProjects(apiClient, opts, agent)
 		if err != nil {
-			opts.IO.Log(color.RedCheck(), "An error happened", err)
+			opts.IO.Log(color.RedCheck(), "An error happened.", err)
 			continue
 		}
 		if found {
@@ -156,13 +156,13 @@ func checkManifestUsageInProject(apiClient *gitlab.Client, opts *Options, projec
 
 func agentUsesManifestProjects(apiClient *gitlab.Client, opts *Options, agent *gitlab.Agent) (bool, error) {
 	color := opts.IO.Color()
-	opts.IO.StartSpinner(fmt.Sprintf("Checking manifests of agent %s\n", agent.Name))
+	opts.IO.StartSpinner(fmt.Sprintf("Checking manifests of agent %s.\n", agent.Name))
 	defer opts.IO.StopSpinner("")
 
 	// GetRawFile
 	file, _, err := apiClient.RepositoryFiles.GetRawFile(agent.ConfigProject.ID, ".gitlab/agents/"+agent.Name+"/config.yaml", &gitlab.GetRawFileOptions{})
 	if err != nil {
-		opts.IO.Log(color.WarnIcon(), fmt.Sprintf("Agent %s uses the default configuration", agent.Name))
+		opts.IO.Log(color.WarnIcon(), fmt.Sprintf("Agent %s uses the default configuration.", agent.Name))
 		return false, nil
 	}
 
@@ -175,10 +175,10 @@ func agentUsesManifestProjects(apiClient *gitlab.Client, opts *Options, agent *g
 	}
 
 	if len(configData.GitOps.ManifestProjects) == 0 {
-		opts.IO.Log(color.GreenCheck(), fmt.Sprintf("Agent %s does not have manifest projects configured", agent.Name))
+		opts.IO.Log(color.GreenCheck(), fmt.Sprintf("Agent %s does not have manifest projects configured.", agent.Name))
 		return false, nil
 	} else {
-		opts.IO.Log(color.FailedIcon(), fmt.Sprintf("Agent %s has %d manifest projects configured", agent.Name, len(configData.GitOps.ManifestProjects)))
+		opts.IO.Log(color.FailedIcon(), fmt.Sprintf("Agent %s has %d manifest projects configured.", agent.Name, len(configData.GitOps.ManifestProjects)))
 		return true, nil
 	}
 }

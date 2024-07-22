@@ -15,7 +15,7 @@ Get an archive of the repository.
 
 ## Synopsis
 
-Clone supports these shorthands
+Clone supports these shorthand references:
 
 - repo
 - namespace/repo
@@ -28,22 +28,28 @@ glab repo archive <command> [flags]
 ## Examples
 
 ```plaintext
-glab repo archive profclems/glab
-glab repo archive  # Downloads zip file of current repository
-glab repo archive profclems/glab mydirectory  # Downloads repo zip file into mydirectory
-glab repo archive profclems/glab --format=zip   # Finds repo for current user and download in zip format
+$ glab repo archive profclems/glab
+
+# Downloads zip file of current repository
+$ glab repo archive
+
+# Downloads repo zip file into mydirectory
+$ glab repo archive profclems/glab mydirectory
+
+# Finds repo for current user and download in ZIP format
+$ glab repo archive profclems/glab --format=zip
 
 ```
 
 ## Options
 
 ```plaintext
-  -f, --format string   Optionally Specify format if you want a downloaded archive: {tar.gz|tar.bz2|tbz|tbz2|tb2|bz2|tar|zip}. (default "zip")
-  -s, --sha string      The commit SHA to download. A tag, branch reference, or SHA can be used. This defaults to the tip of the default branch if not specified
+  -f, --format string   Optional. Specify format if you want a downloaded archive: tar.gz, tar.bz2, tbz, tbz2, tb2, bz2, tar, zip. (default "zip")
+  -s, --sha string      The commit SHA to download. A tag, branch reference, or SHA can be used. Defaults to the tip of the default branch if not specified.
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for command
+      --help   Show help for this command.
 ```

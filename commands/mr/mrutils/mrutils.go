@@ -45,41 +45,41 @@ type MRCheckErrOptions struct {
 // MRCheckErrors checks and return merge request errors specified in MRCheckErrOptions{}
 func MRCheckErrors(mr *gitlab.MergeRequest, err MRCheckErrOptions) error {
 	if mr.WorkInProgress && err.WorkInProgress {
-		return fmt.Errorf("this merge request is still a work in progress. Run `glab mr update %d --ready` to mark it as ready for review", mr.IID)
+		return fmt.Errorf("this merge request is still a draft. Run `glab mr update %d --ready` to mark it as ready for review.", mr.IID)
 	}
 
 	if mr.MergeWhenPipelineSucceeds && err.PipelineStatus && mr.Pipeline != nil {
 		if mr.Pipeline.Status != "success" {
-			return fmt.Errorf("pipeline for this merge request has failed. Pipeline is required to succeed before merging")
+			return fmt.Errorf("the pipeline for this merge request has failed. The pipeline must succeed before merging.")
 		}
 	}
 
 	if mr.State == "merged" && err.Merged {
-		return fmt.Errorf("this merge request has already been merged")
+		return fmt.Errorf("this merge request has already been merged.")
 	}
 
 	if mr.State == "closed" && err.Closed {
-		return fmt.Errorf("this merge request has been closed")
+		return fmt.Errorf("this merge request has been closed.")
 	}
 
 	if mr.State == "opened" && err.Opened {
-		return fmt.Errorf("this merge request is already open")
+		return fmt.Errorf("this merge request is already open.")
 	}
 
 	if mr.Subscribed && err.Subscribed {
-		return fmt.Errorf("you are already subscribed to this merge request")
+		return fmt.Errorf("you are already subscribed to this merge request.")
 	}
 
 	if !mr.Subscribed && err.Unsubscribed {
-		return fmt.Errorf("you are not subscribed to this merge request")
+		return fmt.Errorf("you are not subscribed to this merge request.")
 	}
 
 	if err.MergePrivilege && !mr.User.CanMerge {
-		return fmt.Errorf("you do not have enough privileges to merge this merge request")
+		return fmt.Errorf("you do not have permission to merge this merge request.")
 	}
 
 	if err.Conflict && mr.HasConflicts {
-		return fmt.Errorf("there are merge conflicts. Resolve conflicts and try again or merge locally")
+		return fmt.Errorf("merge conflicts exist. Resolve the conflicts and try again, or merge locally.")
 	}
 
 	return nil
@@ -151,7 +151,7 @@ func MRFromArgsWithOpts(
 		if err != nil {
 			branch = args[0]
 		} else if mrID == 0 { // to check for cases where the user explicitly specified mrID to be zero
-			return nil, nil, fmt.Errorf("invalid merge request ID provided")
+			return nil, nil, fmt.Errorf("invalid merge request ID provided.")
 		}
 	}
 
@@ -282,11 +282,11 @@ var getMRForBranch = func(apiClient *gitlab.Client, baseRepo glrepo.Interface, a
 	pickedMR := mrNames[0]
 	err = prompt.Select(&pickedMR,
 		"mr",
-		"There are multiple merge requests matching the requested branch, pick one",
+		"Multiple merge requests exist for this branch. Select one:",
 		mrNames,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("a merge request must be picked: %w", err)
+		return nil, fmt.Errorf("you must select a merge request: %w", err)
 	}
 	return mrMap[pickedMR], nil
 }
@@ -326,7 +326,7 @@ func RebaseMR(ios *iostreams.IOStreams, apiClient *gitlab.Client, repo glrepo.In
 	if errorMSG != "" {
 		return errors.New(errorMSG)
 	}
-	fmt.Fprintln(ios.StdOut, ios.Color().GreenCheck(), "Rebase successful")
+	fmt.Fprintln(ios.StdOut, ios.Color().GreenCheck(), "Rebase successful!")
 	return nil
 }
 
@@ -337,7 +337,7 @@ func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeReq
 	c := ios.Color()
 
 	if mrApprovals.ApprovalRulesOverwritten {
-		fmt.Fprintln(ios.StdOut, c.Yellow("Approval rules overwritten"))
+		fmt.Fprintln(ios.StdOut, c.Yellow("Approval rules overwritten."))
 	}
 	for _, rule := range mrApprovals.Rules {
 		table := tableprinter.NewTablePrinter()

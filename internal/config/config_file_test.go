@@ -2,10 +2,13 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/test"
 	"gopkg.in/yaml.v3"
 )
@@ -205,6 +208,43 @@ func Test_parseConfigFile(t *testing.T) {
 			}
 			assert.Equal(t, yaml.MappingNode, yamlRoot.Content[0].Kind)
 			assert.Equal(t, 0, len(yamlRoot.Content[0].Content))
+		})
+	}
+}
+
+func Test_ParseConfigFilePermissions(t *testing.T) {
+	tests := map[string]struct {
+		permissions int
+		wantErr     bool
+	}{
+		"bad permissions": {
+			permissions: 0o755,
+			wantErr:     true,
+		},
+		"normal permissions": {
+			permissions: 0o600,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			configFile := filepath.Join(tempDir, "config.yml")
+
+			err := os.WriteFile(
+				configFile,
+				[]byte("---\nhost: https://gitlab.mycompany.global"),
+				os.FileMode(tt.permissions),
+			)
+			require.NoError(t, err)
+
+			_, err = ParseConfig(configFile)
+
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 }

@@ -34,7 +34,7 @@ func NewCmdMirror(f *cmdutils.Factory) *cobra.Command {
 
 	projectMirrorCmd := &cobra.Command{
 		Use:   "mirror [ID | URL | PATH] [flags]",
-		Short: "Mirror a project/repository to the specified location using pull or push method.",
+		Short: "Mirror a project or repository to the specified location, using pull or push methods.",
 		Long:  ``,
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -74,14 +74,14 @@ func NewCmdMirror(f *cmdutils.Factory) *cobra.Command {
 			if opts.Direction != "pull" && opts.Direction != "push" {
 				return cmdutils.WrapError(
 					errors.New("invalid choice for --direction"),
-					"argument direction value should be pull or push",
+					"the argument direction value should be 'pull' or 'push'.",
 				)
 			}
 
 			if opts.Direction == "pull" && opts.AllowDivergence {
 				fmt.Fprintf(
 					f.IO.StdOut,
-					"[Warning] allow-divergence flag has no effect for pull mirror and is ignored.\n",
+					"[Warning] the 'allow-divergence' flag has no effect for pull mirroring, and is ignored.\n",
 				)
 			}
 
@@ -101,7 +101,7 @@ func NewCmdMirror(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 	projectMirrorCmd.Flags().StringVar(&opts.URL, "url", "", "The target URL to which the repository is mirrored.")
-	projectMirrorCmd.Flags().StringVar(&opts.Direction, "direction", "pull", "Mirror direction")
+	projectMirrorCmd.Flags().StringVar(&opts.Direction, "direction", "pull", "Mirror direction. Options: pull, push.")
 	projectMirrorCmd.Flags().BoolVar(&opts.Enabled, "enabled", true, "Determines if the mirror is enabled.")
 	projectMirrorCmd.Flags().BoolVar(&opts.ProtectedBranchesOnly, "protected-branches-only", false, "Determines if only protected branches are mirrored.")
 	projectMirrorCmd.Flags().BoolVar(&opts.AllowDivergence, "allow-divergence", false, "Determines if divergent refs are skipped.")
@@ -135,12 +135,12 @@ func createPushMirror(opts *MirrorOptions) error {
 		&pushOptions,
 	)
 	if err != nil {
-		return cmdutils.WrapError(err, "Failed to create Push Mirror")
+		return cmdutils.WrapError(err, "Failed to create push mirror.")
 	}
 	greenCheck := opts.IO.Color().Green("✓")
 	fmt.Fprintf(
 		opts.IO.StdOut,
-		"%s Created Push Mirror for %s (%d) on GitLab at %s (%d)\n",
+		"%s Created push mirror for %s (%d) on GitLab at %s (%d).\n",
 		greenCheck, pm.URL, pm.ID, opts.BaseRepo.FullName(), opts.ProjectID,
 	)
 	return err
@@ -158,12 +158,12 @@ func createPullMirror(opts *MirrorOptions) error {
 		&pullOptions,
 	)
 	if err != nil {
-		return cmdutils.WrapError(err, "Failed to create Pull Mirror")
+		return cmdutils.WrapError(err, "Failed to create pull mirror.")
 	}
 	greenCheck := opts.IO.Color().Green("✓")
 	fmt.Fprintf(
 		opts.IO.StdOut,
-		"%s Created Pull Mirror for %s on GitLab at %s (%d)\n",
+		"%s Created pull mirror for %s on GitLab at %s (%d).\n",
 		greenCheck, opts.URL, opts.BaseRepo.FullName(), opts.ProjectID,
 	)
 	return err

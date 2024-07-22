@@ -14,7 +14,7 @@ import (
 func NewCmdSchedule(f *cmdutils.Factory) *cobra.Command {
 	scheduleCmd := &cobra.Command{
 		Use:     "schedule <command> [flags]",
-		Short:   `Work with GitLab CI schedules`,
+		Short:   `Work with GitLab CI/CD schedules.`,
 		Long:    ``,
 		Aliases: []string{"sched", "skd"},
 	}

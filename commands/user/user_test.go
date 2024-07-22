@@ -18,5 +18,5 @@ func TestIssueCmd(t *testing.T) {
 
 	out := test.ReturnBuffer(old, r, w)
 
-	assert.Contains(t, out, "Interact with user\n")
+	assert.Contains(t, out, "Interact with a GitLab user account.\n")
 }

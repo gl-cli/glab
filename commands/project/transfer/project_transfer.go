@@ -49,12 +49,12 @@ func NewCmdTransfer(f *cmdutils.Factory) *cobra.Command {
 
 			c := f.IO.Color()
 			fmt.Printf(heredoc.Doc(`
-				🔴 Danger 🔴
+				🔴 WARNING: This operation can be irreversible! 🔴
 
-				The operation you are about to perform is potentially irreversible.
-				You will lose control of the repository you are transferring in case you do not
-				have access to the target namespace. In addition, you won't be able to transfer
-				the repository back to the original namespace unless you have administrative access
+				If you don't have access to the target namespace:
+
+				- You will lose control of the repository.
+				- You won't be able to transfer the repository back to the original namespace, UNLESS you have administrative access
 				to the target namespace.
 
 				Source repository: %s
@@ -77,15 +77,15 @@ func NewCmdTransfer(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(f.IO.StdOut, "%s Successfully transferred repository %s to %s\n",
+			fmt.Fprintf(f.IO.StdOut, "%s Successfully transferred repository %s to %s.\n",
 				c.GreenCheck(), c.Yellow(repo.FullName()), c.Yellow(project.PathWithNamespace))
 
 			return nil
 		},
 	}
 
-	repoTransferCmd.Flags().BoolP("yes", "y", false, "Danger: Skip confirmation prompt and force transfer operation. Transfer cannot be undone.")
-	repoTransferCmd.Flags().StringP("target-namespace", "t", "", "The namespace where your project should be transferred to")
+	repoTransferCmd.Flags().BoolP("yes", "y", false, "Warning: Skip confirmation prompt and force transfer operation. Transfer cannot be undone.")
+	repoTransferCmd.Flags().StringP("target-namespace", "t", "", "The namespace where your project should be transferred to.")
 
 	_ = repoTransferCmd.MarkFlagRequired("target-namespace")
 

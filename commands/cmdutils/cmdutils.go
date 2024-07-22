@@ -159,7 +159,7 @@ func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glre
 		}
 
 		var selectedLabels []string
-		err = prompt.MultiSelect(&selectedLabels, "labels", "Select Labels", labelOptions)
+		err = prompt.MultiSelect(&selectedLabels, "labels", "Select labels", labelOptions)
 		if err != nil {
 			return err
 		}
@@ -168,7 +168,7 @@ func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glre
 	}
 
 	var responseString string
-	err = prompt.AskQuestionWithInput(&responseString, "labels", "Label(s) [Comma Separated]", "", false)
+	err = prompt.AskQuestionWithInput(&responseString, "labels", "Label(s) (comma-separated)", "", false)
 	if err != nil {
 		return err
 	}
@@ -192,7 +192,7 @@ func MilestonesPrompt(response *int, apiClient *gitlab.Client, repoRemote *glrep
 		return err
 	}
 	if len(milestones) == 0 {
-		fmt.Fprintln(io.StdErr, "There are no active milestones in this project")
+		fmt.Fprintln(io.StdErr, "No active milestones exist for this project.")
 		return nil
 	}
 
@@ -202,7 +202,7 @@ func MilestonesPrompt(response *int, apiClient *gitlab.Client, repoRemote *glrep
 	}
 
 	var selectedMilestone string
-	err = prompt.Select(&selectedMilestone, "milestone", "Select Milestone", milestoneOptions)
+	err = prompt.Select(&selectedMilestone, "milestone", "Select milestone", milestoneOptions)
 	if err != nil {
 		return err
 	}
@@ -250,7 +250,7 @@ func UsersPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrep
 		}
 	}
 	if len(userOptions) == 0 {
-		fmt.Fprintf(io.StdErr, "Couldn't fetch any members with minimum permission level %d\n", minimumAccessLevel)
+		fmt.Fprintf(io.StdErr, "Couldn't fetch any members with minimum permission level %d.\n", minimumAccessLevel)
 		return nil
 	}
 
@@ -422,11 +422,11 @@ func ParseAssignees(assignees []string) *UserAssignments {
 func (ua *UserAssignments) VerifyAssignees() error {
 	// Fail if relative and absolute assignees were given, there is no reason to mix them.
 	if len(ua.ToReplace) != 0 && (len(ua.ToAdd) != 0 || len(ua.ToRemove) != 0) {
-		return errors.New("mixing relative (+,!,-) and absolute assignments is forbidden")
+		return errors.New("mixing relative (+,!,-) and absolute assignments is forbidden.")
 	}
 
 	if m := utils.CommonElementsInStringSlice(ua.ToAdd, ua.ToRemove); len(m) != 0 {
-		return fmt.Errorf("%s %q present in both add and remove which is forbidden",
+		return fmt.Errorf("%s %q present in both add and remove, which is forbidden.",
 			utils.Pluralize(len(m), "element"),
 			strings.Join(m, " "))
 	}
@@ -472,7 +472,7 @@ func (ua *UserAssignments) UsersFromAddRemove(
 
 	// Only one of those is required
 	if mergeRequestAssignees != nil && issueAssignees != nil {
-		return &[]int{}, actions, fmt.Errorf("issueAssignes and mergeRequestAssignes can't both not be nil")
+		return &[]int{}, actions, fmt.Errorf("issueAssignees and mergeRequestAssignees can't both be set.")
 	}
 
 	// Path for Issues
@@ -497,7 +497,7 @@ func (ua *UserAssignments) UsersFromAddRemove(
 			usernames = append(usernames, fmt.Sprintf("@%s", x))
 		}
 		if ua.AssignmentType == ReviewerAssignment {
-			actions = append(actions, fmt.Sprintf("removed review request for %q", strings.Join(usernames, " ")))
+			actions = append(actions, fmt.Sprintf("removed review request for %q.", strings.Join(usernames, " ")))
 		} else {
 			actions = append(actions, fmt.Sprintf("unassigned %q", strings.Join(usernames, " ")))
 		}
@@ -524,7 +524,7 @@ func (ua *UserAssignments) UsersFromAddRemove(
 			usernames = append(usernames, fmt.Sprintf("@%s", x))
 		}
 		if ua.AssignmentType == ReviewerAssignment {
-			actions = append(actions, fmt.Sprintf("requested review from %q", strings.Join(usernames, " ")))
+			actions = append(actions, fmt.Sprintf("requested review from %q.", strings.Join(usernames, " ")))
 		} else {
 			actions = append(actions, fmt.Sprintf("assigned %q", strings.Join(usernames, " ")))
 		}
@@ -547,7 +547,7 @@ func ConfirmTransfer() error {
 	options := []string{abortTransferLabel, performTransferLabel}
 
 	var confirmTransfer string
-	err := prompt.Select(&confirmTransfer, "confirmation", "Do you wish to proceed with the repository transfer?", options)
+	err := prompt.Select(&confirmTransfer, "confirmation", "Continue with the repository transfer?", options)
 	if err != nil {
 		return fmt.Errorf("could not prompt: %w", err)
 	}

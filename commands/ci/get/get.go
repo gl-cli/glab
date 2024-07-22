@@ -28,7 +28,7 @@ type PipelineMergedResponse struct {
 func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 	pipelineGetCmd := &cobra.Command{
 		Use:     "get [flags]",
-		Short:   `Get JSON of a running CI/CD pipeline on the current or other specified branch`,
+		Short:   `Get JSON of a running CI/CD pipeline on the current or other specified branch.`,
 		Aliases: []string{"stats"},
 		Example: heredoc.Doc(`
 	glab ci get
@@ -125,14 +125,14 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	pipelineGetCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. (Default is current branch)")
-	pipelineGetCmd.Flags().IntP("pipeline-id", "p", 0, "Provide pipeline ID")
-	pipelineGetCmd.Flags().StringP("output", "F", "text", "Format output as: text, json")
-	pipelineGetCmd.Flags().StringP("output-format", "o", "text", "Use output")
+	pipelineGetCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. (Default: current branch)")
+	pipelineGetCmd.Flags().IntP("pipeline-id", "p", 0, "Provide pipeline ID.")
+	pipelineGetCmd.Flags().StringP("output", "F", "text", "Format output. Options: text, json.")
+	pipelineGetCmd.Flags().StringP("output-format", "o", "text", "Use output.")
 	_ = pipelineGetCmd.Flags().MarkHidden("output-format")
-	_ = pipelineGetCmd.Flags().MarkDeprecated("output-format", "Deprecated use output")
-	pipelineGetCmd.Flags().BoolP("with-job-details", "d", false, "Show extended job information")
-	pipelineGetCmd.Flags().Bool("with-variables", false, "Show variables in pipeline (maintainer role required)")
+	_ = pipelineGetCmd.Flags().MarkDeprecated("output-format", "Deprecated. Use 'output' instead.")
+	pipelineGetCmd.Flags().BoolP("with-job-details", "d", false, "Show extended job information.")
+	pipelineGetCmd.Flags().Bool("with-variables", false, "Show variables in pipeline. Requires the Maintainer role.")
 
 	return pipelineGetCmd
 }

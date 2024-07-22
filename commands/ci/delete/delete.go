@@ -42,7 +42,7 @@ var (
 func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 	pipelineDeleteCmd := &cobra.Command{
 		Use:   "delete <id> [flags]",
-		Short: `Delete CI/CD pipelines`,
+		Short: `Delete CI/CD pipelines.`,
 		Example: heredoc.Doc(`
 	glab ci delete 34
 	glab ci delete 12,34,2
@@ -62,7 +62,7 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if len(args) > 0 {
-				return fmt.Errorf("either a status filter or a pipeline ID must be passed, but not both")
+				return fmt.Errorf("either a status filter or a pipeline ID must be passed, but not both.")
 			}
 
 			return nil
@@ -109,13 +109,13 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 }
 
 func SetupCommandFlags(flags *pflag.FlagSet) {
-	flags.BoolP(FlagDryRun, "", false, "Simulate process, but do not delete anything")
-	flags.StringP(FlagStatus, "s", "", fmt.Sprintf("Delete pipelines by status: {%s}", strings.Join(pipelineStatuses, "|")))
-	flags.String(FlagSource, "", fmt.Sprintf("Filter pipelines by source: {%s}", strings.Join(pipelineSources, "|")))
-	flags.Duration(FlagOlderThan, 0, "Filter pipelines older than the given duration. Valid units: {h|m|s|ms|us|ns}")
-	flags.BoolP(FlagPaginate, "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects --per-page")
-	flags.IntP(FlagPage, "", 0, "Page number")
-	flags.IntP(FlagPerPage, "", 0, "Number of items to list per page")
+	flags.BoolP(FlagDryRun, "", false, "Simulate process, but do not delete anything.")
+	flags.StringP(FlagStatus, "s", "", fmt.Sprintf("Delete pipelines by status: %s.", strings.Join(pipelineStatuses, ", ")))
+	flags.String(FlagSource, "", fmt.Sprintf("Filter pipelines by source: %s.", strings.Join(pipelineSources, ", ")))
+	flags.Duration(FlagOlderThan, 0, "Filter pipelines older than the given duration. Valid units: h, m, s, ms, us, ns.")
+	flags.BoolP(FlagPaginate, "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects '--per-page'.")
+	flags.IntP(FlagPage, "", 0, "Page number.")
+	flags.IntP(FlagPerPage, "", 0, "Number of items to list per page.")
 }
 
 func optsFromFlags(flags *pflag.FlagSet) *gitlab.ListProjectPipelinesOptions {
@@ -165,7 +165,7 @@ func parseRawPipelineIDs(rawPipelineIDs string) ([]int, error) {
 func runDeletion(pipelineIDs []int, dryRunMode bool, w io.Writer, c *iostreams.ColorPalette, apiClient *gitlab.Client, repo glrepo.Interface) error {
 	for _, id := range pipelineIDs {
 		if dryRunMode {
-			fmt.Fprintf(w, "%s Pipeline #%d will be deleted\n", c.DotWarnIcon(), id)
+			fmt.Fprintf(w, "%s Pipeline #%d will be deleted.\n", c.DotWarnIcon(), id)
 			continue
 		}
 
@@ -174,7 +174,7 @@ func runDeletion(pipelineIDs []int, dryRunMode bool, w io.Writer, c *iostreams.C
 			return err
 		}
 
-		fmt.Fprintf(w, "%s Pipeline #%d deleted successfully\n", c.RedCheck(), id)
+		fmt.Fprintf(w, "%s Pipeline #%d deleted successfully.\n", c.RedCheck(), id)
 	}
 	fmt.Println()
 

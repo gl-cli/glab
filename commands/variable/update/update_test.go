@@ -184,7 +184,7 @@ func Test_updateRun_project(t *testing.T) {
 
 	err := updateRun(opts)
 	assert.NoError(t, err)
-	assert.Equal(t, stdout.String(), "✓ Updated variable TEST_VARIABLE for project owner/repo with scope *\n")
+	assert.Equal(t, stdout.String(), "✓ Updated variable TEST_VARIABLE for project owner/repo with scope *.\n")
 }
 
 func Test_updateRun_group(t *testing.T) {
@@ -222,5 +222,5 @@ func Test_updateRun_group(t *testing.T) {
 
 	err := updateRun(opts)
 	assert.NoError(t, err)
-	assert.Equal(t, stdout.String(), "✓ Updated variable TEST_VARIABLE for group mygroup\n")
+	assert.Equal(t, stdout.String(), "✓ Updated variable TEST_VARIABLE for group mygroup.\n")
 }

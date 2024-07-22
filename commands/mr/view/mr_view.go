@@ -113,12 +113,12 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	mrViewCmd.Flags().BoolVarP(&opts.ShowComments, "comments", "c", false, "Show mr comments and activities")
-	mrViewCmd.Flags().BoolVarP(&opts.ShowSystemLogs, "system-logs", "s", false, "Show system activities / logs")
-	mrViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json")
-	mrViewCmd.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open mr in a browser. Uses default browser or browser specified in BROWSER variable")
-	mrViewCmd.Flags().IntVarP(&opts.CommentPageNumber, "page", "p", 0, "Page number")
-	mrViewCmd.Flags().IntVarP(&opts.CommentLimit, "per-page", "P", 20, "Number of items to list per page")
+	mrViewCmd.Flags().BoolVarP(&opts.ShowComments, "comments", "c", false, "Show merge request comments and activities.")
+	mrViewCmd.Flags().BoolVarP(&opts.ShowSystemLogs, "system-logs", "s", false, "Show system activities and logs.")
+	mrViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
+	mrViewCmd.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open merge request in a browser. Uses default browser or browser specified in BROWSER variable.")
+	mrViewCmd.Flags().IntVarP(&opts.CommentPageNumber, "page", "p", 0, "Page number.")
+	mrViewCmd.Flags().IntVarP(&opts.CommentLimit, "per-page", "P", 20, "Number of items to list per page.")
 
 	return mrViewCmd
 }
@@ -192,10 +192,10 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 		fmt.Fprintln(out, mr.Milestone.Title)
 	}
 	if mr.State == "closed" {
-		fmt.Fprintf(out, "Closed By: %s %s\n", mr.ClosedBy.Username, mrTimeAgo)
+		fmt.Fprintf(out, "Closed by: %s %s\n", mr.ClosedBy.Username, mrTimeAgo)
 	}
 	if mr.Pipeline != nil {
-		fmt.Fprint(out, c.Bold("Pipeline Status: "))
+		fmt.Fprint(out, c.Bold("Pipeline status: "))
 		var status string
 		switch s := mr.Pipeline.Status; s {
 		case "failed":
@@ -208,25 +208,25 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 		fmt.Fprintf(out, "%s (View pipeline with `%s`)\n", status, c.Bold("glab ci view "+mr.SourceBranch))
 
 		if mr.MergeWhenPipelineSucceeds && mr.Pipeline.Status != "success" {
-			fmt.Fprintf(out, "%s Requires pipeline to succeed before merging\n", c.WarnIcon())
+			fmt.Fprintf(out, "%s Requires pipeline to succeed before merging.\n", c.WarnIcon())
 		}
 	}
 	if mrApprovals != nil {
-		fmt.Fprintln(out, c.Bold("Approvals Status:"))
+		fmt.Fprintln(out, c.Bold("Approvals status:"))
 		mrutils.PrintMRApprovalState(opts.IO, mrApprovals)
 	}
-	fmt.Fprintf(out, "%s This merge request has %s changes\n", c.GreenCheck(), c.Yellow(mr.ChangesCount))
+	fmt.Fprintf(out, "%s This merge request has %s changes.\n", c.GreenCheck(), c.Yellow(mr.ChangesCount))
 	if mr.State == "merged" && mr.MergedBy != nil {
-		fmt.Fprintf(out, "%s The changes were merged into %s by %s %s\n", c.GreenCheck(), mr.TargetBranch, mr.MergedBy.Name, utils.TimeToPrettyTimeAgo(*mr.MergedAt))
+		fmt.Fprintf(out, "%s The changes were merged into %s by %s %s.\n", c.GreenCheck(), mr.TargetBranch, mr.MergedBy.Name, utils.TimeToPrettyTimeAgo(*mr.MergedAt))
 	}
 
 	if mr.HasConflicts {
-		fmt.Fprintf(out, c.Red("%s This branch has conflicts that must be resolved\n"), c.FailedIcon())
+		fmt.Fprintf(out, c.Red("%s This branch has conflicts that must be resolved.\n"), c.FailedIcon())
 	}
 
 	// Comments
 	if opts.ShowComments {
-		fmt.Fprintln(out, heredoc.Doc(` 
+		fmt.Fprintln(out, heredoc.Doc(`
 			--------------------------------------------
 			Comments / Notes
 			--------------------------------------------
@@ -250,7 +250,7 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 				fmt.Fprintln(out)
 			}
 		} else {
-			fmt.Fprintln(out, "There are no comments on this merge request")
+			fmt.Fprintln(out, "This merge request has no comments.")
 		}
 	}
 

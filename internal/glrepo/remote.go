@@ -22,7 +22,7 @@ func (r Remotes) FindByName(names ...string) (*Remote, error) {
 			}
 		}
 	}
-	return nil, fmt.Errorf("no GitLab remotes found")
+	return nil, fmt.Errorf("no GitLab remotes found.")
 }
 
 // UniqueHosts returns a string of unique hostnames
@@ -46,7 +46,7 @@ func (r Remotes) FindByRepo(owner, name string) (*Remote, error) {
 			return rem, nil
 		}
 	}
-	return nil, fmt.Errorf("no matching remote found")
+	return nil, fmt.Errorf("no matching remote found.")
 }
 
 func remoteNameSortScore(name string) int {

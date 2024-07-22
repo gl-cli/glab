@@ -14,13 +14,13 @@ import (
 )
 
 var closingMessage = map[issuable.IssueType]string{
-	issuable.TypeIssue:    "Closing Issue",
-	issuable.TypeIncident: "Resolving Incident",
+	issuable.TypeIssue:    "Closing issue",
+	issuable.TypeIncident: "Resolving incident",
 }
 
 var closedMessage = map[issuable.IssueType]string{
-	issuable.TypeIssue:    "Closed Issue",
-	issuable.TypeIncident: "Resolved Incident",
+	issuable.TypeIssue:    "Closed issue",
+	issuable.TypeIncident: "Resolved incident",
 }
 
 func NewCmdClose(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
@@ -34,7 +34,7 @@ func NewCmdClose(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 
 	issueCloseCmd := &cobra.Command{
 		Use:     "close [<id> | <url>] [flags]",
-		Short:   fmt.Sprintf(`Close an %s`, issueType),
+		Short:   fmt.Sprintf(`Close an %s.`, issueType),
 		Long:    ``,
 		Aliases: aliases,
 		Example: heredoc.Doc(fmt.Sprintf(`

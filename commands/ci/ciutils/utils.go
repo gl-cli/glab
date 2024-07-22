@@ -101,16 +101,16 @@ func runTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid in
 		}
 		switch job.Status {
 		case "pending":
-			fmt.Fprintf(w, "%s is pending... waiting for job to start\n", job.Name)
+			fmt.Fprintf(w, "%s is pending... waiting for job to start.\n", job.Name)
 			continue
 		case "manual":
-			fmt.Fprintf(w, "Manual job %s not started, waiting for job to start\n", job.Name)
+			fmt.Fprintf(w, "Manual job %s not started, waiting for job to start.\n", job.Name)
 			continue
 		case "skipped":
-			fmt.Fprintf(w, "%s has been skipped\n", job.Name)
+			fmt.Fprintf(w, "%s has been skipped.\n", job.Name)
 		}
 		once.Do(func() {
-			fmt.Fprintf(w, "Showing logs for %s job #%d\n", job.Name, job.ID)
+			fmt.Fprintf(w, "Showing logs for %s job #%d.\n", job.Name, job.ID)
 		})
 		trace, _, err := apiClient.Jobs.GetTraceFile(pid, jobId)
 		if err != nil || trace == nil {
@@ -160,7 +160,7 @@ func GetJobId(inputs *JobInputs, opts *JobOptions) (int, error) {
 		}
 	}
 
-	return 0, fmt.Errorf("pipeline %d contains no jobs", pipelineId)
+	return 0, fmt.Errorf("pipeline %d contains no jobs.", pipelineId)
 }
 
 func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
