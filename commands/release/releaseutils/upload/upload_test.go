@@ -5,6 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/xanzy/go-gitlab"
+
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 func TestReleaseUtilsUpload_AliasFilePathToAssetDirectPath(t *testing.T) {
@@ -56,4 +58,32 @@ func TestReleaseUtilsUpload_AliasFilePathToAssetDirectPath_Conflict(t *testing.T
 	target := &ConflictDirectAssetPathError{}
 	assert.ErrorAs(t, err, &target)
 	assert.False(t, aliased)
+}
+
+func TestContext_CreateReleaseAssetFromProjectFile(t *testing.T) {
+	expected := &ReleaseAsset{
+		Name:            gitlab.Ptr("label"),
+		URL:             gitlab.Ptr("https://gitlab.com/-/project/42/uploads/66dbcd21ec5d24ed6ea225176098d52b/test_file.txt"),
+		DirectAssetPath: gitlab.Ptr("/test_file.txt"),
+		LinkType:        gitlab.Ptr(gitlab.OtherLinkType),
+	}
+
+	releaseFile := &ReleaseFile{
+		Name:  "test_file.txt",
+		Label: "label",
+		Path:  "/test_file.txt",
+		Type:  gitlab.Ptr(gitlab.OtherLinkType),
+	}
+	projectFile := &gitlab.ProjectFile{
+		FullPath: "/-/project/42/uploads/66dbcd21ec5d24ed6ea225176098d52b/test_file.txt",
+	}
+
+	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test")
+	client, _ := f.HttpClient()
+	context := &Context{
+		Client: client,
+	}
+
+	releaseAsset := context.CreateReleaseAssetFromProjectFile(releaseFile, projectFile)
+	assert.Equal(t, expected, releaseAsset)
 }

@@ -48,7 +48,7 @@ func Test_repoArchive_Integration(t *testing.T) {
 		{
 			name:    "Repo is invalid",
 			args:    argFlags{"zip", "master", "cli-automated-testing/testzz", "test"},
-			wantMsg: []string{"404 Project Not Found"},
+			wantMsg: []string{"404 Not Found"},
 			wantErr: true,
 		},
 	}
