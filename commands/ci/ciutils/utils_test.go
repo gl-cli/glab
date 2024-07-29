@@ -59,7 +59,7 @@ func TestGetJobId(t *testing.T) {
 			name:          "when getJobId with name and pipelineId is requested and listJobs throws error",
 			jobName:       "lint",
 			pipelineId:    123,
-			expectedError: "list pipeline jobs: GET https://gitlab.com/api/v4/projects/OWNER/REPO/pipelines/123/jobs: 403 ",
+			expectedError: "list pipeline jobs: GET https://gitlab.com/api/v4/projects/OWNER/REPO/pipelines/123/jobs: 403",
 			expectedOut:   0,
 			httpMocks: []httpMock{
 				{
@@ -104,7 +104,7 @@ func TestGetJobId(t *testing.T) {
 			name:          "when getJobId with name and last pipeline is requested and getCommits throws error",
 			jobName:       "lint",
 			pipelineId:    0,
-			expectedError: "get pipeline: get last pipeline: GET https://gitlab.com/api/v4/projects/OWNER/REPO/repository/commits/main: 403 ",
+			expectedError: "get pipeline: get last pipeline: GET https://gitlab.com/api/v4/projects/OWNER/REPO/repository/commits/main: 403",
 			expectedOut:   0,
 			httpMocks: []httpMock{
 				{
@@ -118,7 +118,7 @@ func TestGetJobId(t *testing.T) {
 			name:          "when getJobId with name and last pipeline is requested and getJobs throws error",
 			jobName:       "lint",
 			pipelineId:    0,
-			expectedError: "list pipeline jobs: GET https://gitlab.com/api/v4/projects/OWNER/REPO/pipelines/123/jobs: 403 ",
+			expectedError: "list pipeline jobs: GET https://gitlab.com/api/v4/projects/OWNER/REPO/pipelines/123/jobs: 403",
 			expectedOut:   0,
 			httpMocks: []httpMock{
 				{
@@ -274,7 +274,7 @@ func TestTraceJob(t *testing.T) {
 		{
 			name:          "when traceJob is requested and getJob throws error",
 			jobName:       "1122",
-			expectedError: "failed to find job: GET https://gitlab.com/api/v4/projects/OWNER/REPO/jobs/1122: 403 ",
+			expectedError: "failed to find job: GET https://gitlab.com/api/v4/projects/OWNER/REPO/jobs/1122: 403",
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
@@ -287,7 +287,7 @@ func TestTraceJob(t *testing.T) {
 		{
 			name:          "when traceJob is requested and getJob throws error",
 			jobName:       "1122",
-			expectedError: "failed to find job: GET https://gitlab.com/api/v4/projects/OWNER/REPO/jobs/1122/trace: 403 ",
+			expectedError: "failed to find job: GET https://gitlab.com/api/v4/projects/OWNER/REPO/jobs/1122/trace: 403",
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,

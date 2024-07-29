@@ -77,7 +77,7 @@ func mockAllResponses(t *testing.T, fakeHTTP *httpmock.Mocker) {
 	)
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues/404",
-		httpmock.NewStringResponse(http.StatusNotFound, `{"message": "404 not found"}`),
+		httpmock.NewStringResponse(http.StatusNotFound, `{"message": "404 Not Found"}`),
 	)
 }
 
@@ -163,7 +163,7 @@ func TestIssuableClose(t *testing.T) {
 			iid:        404,
 			name:       "issue_not_found",
 			issueType:  issuable.TypeIssue,
-			wantOutput: "404 not found",
+			wantOutput: "404 Not Found",
 			wantErr:    true,
 		},
 	}

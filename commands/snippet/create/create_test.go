@@ -103,7 +103,7 @@ func TestSnippetCreate(t *testing.T) {
 		{
 			name:    "Create snippet failure",
 			command: "-d 'Hello World snippet' -f 'testdata/snippet.txt' -t 'This is a snippet'",
-			wantErr: errors.New("failed to create snippet: POST https://gitlab.com/api/v4/projects/OWNER/REPO/snippets: 403 failed to parse unknown error format: "),
+			wantErr: errors.New("failed to create snippet: POST https://gitlab.com/api/v4/projects/OWNER/REPO/snippets: 403"),
 			mock: httpMock{
 				method: http.MethodPost,
 				path:   "/api/v4/projects/OWNER/REPO/snippets",
@@ -114,7 +114,7 @@ func TestSnippetCreate(t *testing.T) {
 		{
 			name:    "Create personal snippet failure",
 			command: "--personal -d 'Hello World snippet' -f 'testdata/snippet.txt' -t 'This is a personal snippet'",
-			wantErr: errors.New("failed to create snippet: POST https://gitlab.com/api/v4/snippets: 403 failed to parse unknown error format: "),
+			wantErr: errors.New("failed to create snippet: POST https://gitlab.com/api/v4/snippets: 403"),
 			mock: httpMock{
 				method: http.MethodPost,
 				path:   "/api/v4/snippets",

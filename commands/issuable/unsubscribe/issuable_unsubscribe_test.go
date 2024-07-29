@@ -202,6 +202,6 @@ func TestIssuableUnsubscribe(t *testing.T) {
 		iid := 404
 		_, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
-		require.Contains(t, err.Error(), "404 not found")
+		require.Contains(t, err.Error(), "404 Not Found")
 	})
 }
