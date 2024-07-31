@@ -51,7 +51,7 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 		"%s?client_id=%s&redirect_uri=%s&response_type=code&state=%s&scope=%s&code_challenge=%s&code_challenge_method=S256",
 		authURL, clientID, redirectURI, state, scopes, codeChallenge)
 
-	tokenCh := handleAuthRedirect(io, "0.0.0.0", codeVerifier, hostname, "https", clientID)
+	tokenCh := handleAuthRedirect(io, "0.0.0.0", codeVerifier, hostname, "https", clientID, state)
 	defer close(tokenCh)
 
 	browser, _ := cfg.Get(hostname, "browser")
@@ -70,13 +70,21 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 	return token.AccessToken, nil
 }
 
-func handleAuthRedirect(io *iostreams.IOStreams, listenHostname, codeVerifier, hostname, protocol, clientID string) chan *AuthToken {
+func handleAuthRedirect(io *iostreams.IOStreams, listenHostname, codeVerifier, hostname, protocol, clientID, originalState string) chan *AuthToken {
 	tokenCh := make(chan *AuthToken)
 
 	server := &http.Server{Addr: listenHostname + ":7171"}
 
 	http.HandleFunc("/auth/redirect", func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
+		state := r.URL.Query().Get("state")
+
+		if state != originalState {
+			fmt.Fprintf(io.StdErr, "Error: Invalid state")
+			tokenCh <- nil
+			return
+		}
+
 		token, err := requestToken(hostname, protocol, clientID, code, codeVerifier)
 		if err != nil {
 			fmt.Fprintf(io.StdErr, "Error occured requesting access token %s.", err)
