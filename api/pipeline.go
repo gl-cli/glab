@@ -118,7 +118,7 @@ var GetLastPipeline = func(client *gitlab.Client, repo string, ref string) (*git
 		client = apiClient.Lab()
 	}
 
-	c, _, err := client.Commits.GetCommit(repo, ref)
+	c, _, err := client.Commits.GetCommit(repo, ref, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +238,7 @@ var GetCommit = func(client *gitlab.Client, repo string, ref string) (*gitlab.Co
 	if client == nil {
 		client = apiClient.Lab()
 	}
-	c, _, err := client.Commits.GetCommit(repo, ref)
+	c, _, err := client.Commits.GetCommit(repo, ref, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -67,7 +67,7 @@ func TestCiRetry(t *testing.T) {
 		{
 			name:          "when retry with job-id throws error",
 			args:          "1122",
-			expectedError: "POST https://gitlab.com/api/v4/projects/OWNER/REPO/jobs/1122/retry: 403 ",
+			expectedError: "POST https://gitlab.com/api/v4/projects/OWNER/REPO/jobs/1122/retry: 403",
 			expectedOut:   "",
 			httpMocks: []httpMock{
 				{
@@ -119,7 +119,7 @@ func TestCiRetry(t *testing.T) {
 		{
 			name:           "when retry with job-name throws error",
 			args:           "lint -b main -p 123",
-			expectedError:  "list pipeline jobs: GET https://gitlab.com/api/v4/projects/OWNER/REPO/pipelines/123/jobs: 403 ",
+			expectedError:  "list pipeline jobs: GET https://gitlab.com/api/v4/projects/OWNER/REPO/pipelines/123/jobs: 403",
 			expectedStderr: "invalid job ID: lint\n",
 			httpMocks: []httpMock{
 				{

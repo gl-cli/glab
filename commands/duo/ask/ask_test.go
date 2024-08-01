@@ -111,7 +111,7 @@ func TestFailedHttpResponse(t *testing.T) {
 			desc:        "API error",
 			code:        http.StatusNotFound,
 			response:    `{"message": "Error message"}`,
-			expectedMsg: "404 {message: Error message}",
+			expectedMsg: "404 Not Found",
 		},
 		{
 			desc:        "Empty response",

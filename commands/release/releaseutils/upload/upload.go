@@ -91,19 +91,8 @@ func (c *Context) UploadFiles(projectID, tagName string) error {
 			return err
 		}
 
-		baseURL := c.Client.BaseURL()
-		baseURL.Path = "/"
-
-		// projectFile.URL from upload: /uploads/<hash>/filename.txt
-		linkURL := baseURL.String() + projectID + projectFile.URL
-		filename := "/" + file.Name
-
-		_, _, err = CreateLink(c.Client, projectID, tagName, &ReleaseAsset{
-			Name:            &file.Label,
-			URL:             &linkURL,
-			DirectAssetPath: &filename,
-			LinkType:        file.Type,
-		})
+		releaseAsset := c.CreateReleaseAssetFromProjectFile(file, projectFile)
+		_, _, err = CreateLink(c.Client, projectID, tagName, releaseAsset)
 		if err != nil {
 			return err
 		}
@@ -159,4 +148,32 @@ func aliasFilePathToDirectAssetPath(asset *ReleaseAsset) (bool /* aliased */, er
 	asset.FilePath = nil
 
 	return true, nil
+}
+
+// CreateReleaseAssetFromProjectFile creates a ReleaseAsset from a ProjectFile and the metadata from a ReleaseFile.
+// See https://docs.gitlab.com/ee/api/projects.html#upload-a-file
+func (c *Context) CreateReleaseAssetFromProjectFile(releaseFile *ReleaseFile, projectFile *gitlab.ProjectFile) *ReleaseAsset {
+	baseURL := c.Client.BaseURL()
+	// projectFile.FullPath contains the absolute path of the file within the
+	// context of the client's baseURL.
+	//
+	// It has a structure like so:
+	// FullPath: /-/project/[project_id]/uploads/[hash]/[file]
+	// Or on older GitLab prior to 17:
+	// FullPath: /[namespace]/[project]/uploads/[hash]/[file]
+	//
+	// Thus, we append it to the base URL to get a usable link.
+	//
+	// See for context https://docs.gitlab.com/ee/api/projects.html#upload-a-file
+	baseURL.Path = projectFile.FullPath
+
+	linkURL := baseURL.String()
+	filename := "/" + releaseFile.Name
+
+	return &ReleaseAsset{
+		Name:            &releaseFile.Label,
+		URL:             &linkURL,
+		DirectAssetPath: &filename,
+		LinkType:        releaseFile.Type,
+	}
 }

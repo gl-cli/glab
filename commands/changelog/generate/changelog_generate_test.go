@@ -60,7 +60,7 @@ func TestChangelogGenerateWithError(t *testing.T) {
 		"not found": {
 			httpStatus:  http.StatusNotFound,
 			httpMsgJSON: "{message: 404 Project Not Found}",
-			errorMsg:    "GET https://gitlab.com/api/v4/projects/37777023/repository/changelog: 404 failed to parse unknown error format: {message: 404 Project Not Found}",
+			errorMsg:    "404 Not Found",
 		},
 	}
 

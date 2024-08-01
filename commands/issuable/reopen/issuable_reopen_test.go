@@ -163,7 +163,7 @@ func TestIssuableReopen(t *testing.T) {
 			iid:        404,
 			name:       "issue_not_found",
 			issueType:  issuable.TypeIssue,
-			wantOutput: "404 not found",
+			wantOutput: "404 Not Found",
 			wantErr:    true,
 		},
 	}

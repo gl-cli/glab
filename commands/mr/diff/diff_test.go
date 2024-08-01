@@ -174,7 +174,7 @@ func TestMRDiff_argument_not_found(t *testing.T) {
 
 	assert.Empty(t, output.String())
 	assert.Empty(t, output.Stderr())
-	assert.Equal(t, `could not find merge request diffs: GET https://gitlab.com/api/v4/projects/OWNER/REPO/merge_requests/123/versions: 404 {message: 404 Not Found}`, err.Error())
+	assert.Equal(t, `could not find merge request diffs: 404 Not Found`, err.Error())
 }
 
 func TestMRDiff_notty(t *testing.T) {

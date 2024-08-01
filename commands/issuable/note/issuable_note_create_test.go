@@ -92,7 +92,7 @@ func Test_NewCmdNote(t *testing.T) {
 			// glab incident note 1 --message "Here is my note"
 			_, err := runCommand(fakeHTTP, true, `122`, cc.issueType)
 			assert.NotNil(t, err)
-			assert.Equal(t, "GET https://gitlab.com/api/v4/projects/OWNER/REPO/issues/122: 404 {message: issue not found}", err.Error())
+			assert.Equal(t, "404 Not Found", err.Error())
 		})
 	}
 }

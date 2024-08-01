@@ -77,7 +77,7 @@ func Test_NewCmdNote(t *testing.T) {
 		// glab mr note 1 --message "Here is my note"
 		_, err := runCommand(fakeHTTP, true, `122`)
 		assert.NotNil(t, err)
-		assert.Equal(t, "failed to get merge request 122: GET https://gitlab.com/api/v4/projects/OWNER/REPO/merge_requests/122: 404 {message: merge request not found}", err.Error())
+		assert.Equal(t, "failed to get merge request 122: 404 Not Found", err.Error())
 	})
 }
 
