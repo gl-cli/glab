@@ -16,6 +16,7 @@ are maintained by the community.
 - [Windows](#windows)
 - [Linux](#linux)
   - [Homebrew](#homebrew)
+  - [ASDF](#asdf)
   - [Snapcraft (currently out of date)](#snapcraft)
   - [Arch Linux](#arch-linux)
   - [Alpine Linux](#alpine-linux)
