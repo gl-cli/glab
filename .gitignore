@@ -48,6 +48,7 @@ coverage*
 vendor
 log.txt.glab-cli
 .git
+gl-*-report.json
 
 # projectionist.vim 
 .projections.json
