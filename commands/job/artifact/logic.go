@@ -2,6 +2,7 @@ package artifact
 
 import (
 	"archive/zip"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -9,10 +10,17 @@ import (
 	"strings"
 
 	"github.com/xanzy/go-gitlab"
+
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
+)
+
+const (
+	// Read limit is 4GB
+	defaultZIPReadLimit int64 = 4 * 1024 * 1024 * 1024
+	defaultZIPFileLimit int   = 100000
 )
 
 func ensurePathIsCreated(filename string) error {
@@ -27,12 +35,7 @@ func ensurePathIsCreated(filename string) error {
 	return nil
 }
 
-func DownloadArtifacts(apiClient *gitlab.Client, repo glrepo.Interface, path string, refName string, jobName string) error {
-	artifact, err := api.DownloadArtifactJob(apiClient, repo.FullName(), refName, &gitlab.DownloadArtifactsFileOptions{Job: &jobName})
-	if err != nil {
-		return err
-	}
-
+func readZip(artifact *bytes.Reader, path string, zipReadLimit int64, zipFileLimit int) error {
 	zipReader, err := zip.NewReader(artifact, artifact.Size())
 	if err != nil {
 		return err
@@ -46,6 +49,11 @@ func DownloadArtifacts(apiClient *gitlab.Client, repo glrepo.Interface, path str
 
 	if !strings.HasSuffix(path, "/") {
 		path = path + "/"
+	}
+
+	var written int64 = 0
+	if len(zipReader.File) > zipFileLimit {
+		return fmt.Errorf("zip archive includes too many files: limit is %d files", zipFileLimit)
 	}
 
 	for _, v := range zipReader.File {
@@ -71,6 +79,8 @@ func DownloadArtifacts(apiClient *gitlab.Client, repo glrepo.Interface, path str
 			}
 			defer srcFile.Close()
 
+			limitedReader := io.LimitReader(srcFile, zipReadLimit)
+
 			err = ensurePathIsCreated(destPath)
 			if err != nil {
 				return err
@@ -86,10 +96,25 @@ func DownloadArtifacts(apiClient *gitlab.Client, repo glrepo.Interface, path str
 			if err != nil {
 				return err
 			}
-			if _, err := io.Copy(dstFile, srcFile); err != nil {
+			var writtenPerFile int64
+			if writtenPerFile, err = io.Copy(dstFile, limitedReader); err != nil {
 				return err
+			}
+
+			written += writtenPerFile
+			if written >= zipReadLimit {
+				return fmt.Errorf("extracted zip too large: limit is %d bytes", zipReadLimit)
 			}
 		}
 	}
 	return nil
+}
+
+func DownloadArtifacts(apiClient *gitlab.Client, repo glrepo.Interface, path string, refName string, jobName string) error {
+	artifact, err := api.DownloadArtifactJob(apiClient, repo.FullName(), refName, &gitlab.DownloadArtifactsFileOptions{Job: &jobName})
+	if err != nil {
+		return err
+	}
+
+	return readZip(artifact, path, defaultZIPReadLimit, defaultZIPFileLimit)
 }
