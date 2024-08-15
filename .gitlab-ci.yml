@@ -26,6 +26,9 @@ include:
   - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
   - component: ${CI_SERVER_FQDN}/gitlab-org/components/danger-review/danger-review@1.4.1
+  - component: ${CI_SERVER_FQDN}/components/code-intelligence/golang-code-intel@v0.0.1
+    inputs:
+      golang_version: ${GO_VERSION}
 
 
 # From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
@@ -97,22 +100,6 @@ lint:
       codequality: gl-code-quality-report.json
     paths:
       - gl-code-quality-report.json
-
-code_navigation:
-  stage: test
-  allow_failure: true
-  before_script:
-    - go install github.com/sourcegraph/scip-go/cmd/scip-go@latest
-    - scip-go
-  script:
-    - git clone https://github.com/sourcegraph/scip.git --depth=1
-    - cd scip
-    - go build ./cmd/scip
-    - chmod +x scip
-    - ./scip convert --from ../index.scip --to ../dump.lsif
-  artifacts:
-    reports:
-      lsif: dump.lsif
 
 run_tests:
   stage: test
