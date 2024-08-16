@@ -29,9 +29,9 @@ func TestSnippetCreate(t *testing.T) {
 	}{
 		{
 			name:       "Create personal snippet",
-			command:    "--personal -d 'Hello World snippet' -f 'testdata/snippet.txt' -t 'This is a snippet'",
+			command:    "testdata/snippet.txt --personal -d 'Hello World snippet' -f 'snippet.txt' -t 'This is a snippet'",
 			wantStderr: []string{"- Creating snippet in personal space"},
-			wantStdout: []string{"https://gitlab.example.com/snippets/1"},
+			wantStdout: []string{"https://gitlab.example.com/-/snippets/1"},
 			mock: httpMock{
 				method: http.MethodPost,
 				path:   "/api/v4/snippets",
@@ -40,12 +40,12 @@ func TestSnippetCreate(t *testing.T) {
   "id": 1,
   "title": "This is a snippet",
   "description": "Hello World snippet",
-  "web_url": "https://gitlab.example.com/snippets/1",
-  "file_name": "test.txt",
+  "web_url": "https://gitlab.example.com/-/snippets/1",
+  "file_name": "snippet.txt",
   "files": [
     {
-      "path": "text.txt",
-      "raw_url": "https://gitlab.example.com/-/snippets/1/raw/main/text.txt"
+      "path": "snippet.txt",
+      "raw_url": "https://gitlab.example.com/-/snippets/1/raw/main/snippet.txt"
     }
   ]
 }`,
@@ -53,7 +53,7 @@ func TestSnippetCreate(t *testing.T) {
 		},
 		{
 			name:       "Create project snippet",
-			command:    "-d 'Hello World snippet' -f 'testdata/snippet.txt' -t 'This is a snippet'",
+			command:    "testdata/snippet.txt -d 'Hello World snippet' -f 'snippet.txt' -t 'This is a snippet'",
 			wantStderr: []string{"- Creating snippet in OWNER/REPO"},
 			wantStdout: []string{"https://gitlab.example.com/OWNER/REPO/-/snippets/1"},
 			mock: httpMock{
@@ -65,11 +65,11 @@ func TestSnippetCreate(t *testing.T) {
   "title": "This is a snippet",
   "description": "Hello World snippet",
   "web_url": "https://gitlab.example.com/OWNER/REPO/-/snippets/1",
-  "file_name": "test.txt",
+  "file_name": "snippet.txt",
   "files": [
     {
-      "path": "text.txt",
-      "raw_url": "https://gitlab.example.com/-/OWNER/REPO/snippets/1/raw/main/text.txt"
+      "path": "snippet.txt",
+      "raw_url": "https://gitlab.example.com/-/OWNER/REPO/snippets/1/raw/main/snippet.txt"
     }
   ]
 }`,
@@ -101,8 +101,8 @@ func TestSnippetCreate(t *testing.T) {
 			},
 		},
 		{
-			name:    "Create snippet failure",
-			command: "-d 'Hello World snippet' -f 'testdata/snippet.txt' -t 'This is a snippet'",
+			name:    "Create snippet 403 failure",
+			command: "testdata/snippet.txt -d 'Hello World snippet' -f 'snippet.txt' -t 'This is a snippet'",
 			wantErr: errors.New("failed to create snippet: POST https://gitlab.com/api/v4/projects/OWNER/REPO/snippets: 403"),
 			mock: httpMock{
 				method: http.MethodPost,
@@ -112,8 +112,8 @@ func TestSnippetCreate(t *testing.T) {
 			},
 		},
 		{
-			name:    "Create personal snippet failure",
-			command: "--personal -d 'Hello World snippet' -f 'testdata/snippet.txt' -t 'This is a personal snippet'",
+			name:    "Create personal snippet 403 failure",
+			command: "testdata/snippet.txt --personal -d 'Hello World snippet' -f 'snippet.txt' -t 'This is a personal snippet'",
 			wantErr: errors.New("failed to create snippet: POST https://gitlab.com/api/v4/snippets: 403"),
 			mock: httpMock{
 				method: http.MethodPost,
@@ -121,6 +121,16 @@ func TestSnippetCreate(t *testing.T) {
 				status: http.StatusForbidden,
 				body:   "",
 			},
+		},
+		{
+			name:    "Create snippet no stdin failure",
+			command: "-d 'Hello World snippet' -f 'snippet.txt' -t 'This is a personal snippet'",
+			wantErr: errors.New("stdin required if no 'path' is provided"),
+		},
+		{
+			name:    "Create snippet no path failure",
+			command: "-d 'Hello World snippet' -t 'This is a personal snippet'",
+			wantErr: errors.New("if 'path' is not provided, 'filename' and stdin are required"),
 		},
 	}
 
@@ -131,7 +141,9 @@ func TestSnippetCreate(t *testing.T) {
 			}
 			defer fakeHTTP.Verify(t)
 
-			fakeHTTP.RegisterResponder(tc.mock.method, tc.mock.path, httpmock.NewStringResponse(tc.mock.status, tc.mock.body))
+			if tc.mock.method != "" || tc.mock.path != "" {
+				fakeHTTP.RegisterResponder(tc.mock.method, tc.mock.path, httpmock.NewStringResponse(tc.mock.status, tc.mock.body))
+			}
 
 			out, err := runCommand(fakeHTTP, tc.command)
 			if tc.wantErr != nil {

@@ -33,6 +33,15 @@ func (opts CreateOpts) isSnippetFromFile() bool {
 	return opts.FilePath != ""
 }
 
+func hasStdIn() bool {
+	fi, err := os.Stdin.Stat()
+	if err != nil {
+		return false
+	}
+
+	return fi.Size() > 0
+}
+
 func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{}
 	snippetCreateCmd := &cobra.Command{
@@ -53,14 +62,16 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			opts.Lab = f.HttpClient
 			if opts.Title == "" {
 				return &cmdutils.FlagError{
-					Err: errors.New("--title required for snippets."),
+					Err: errors.New("--title required for snippets"),
 				}
 			}
 			if len(args) == 0 {
 				if opts.DisplayFilename == "" {
-					return &cmdutils.FlagError{Err: errors.New("if 'path' is not provided, 'filename' is required.")}
+					return &cmdutils.FlagError{Err: errors.New("if 'path' is not provided, 'filename' and stdin are required")}
 				} else {
-					opts.FilePath = opts.DisplayFilename
+					if !hasStdIn() {
+						return errors.New("stdin required if no 'path' is provided")
+					}
 				}
 			} else {
 				if opts.DisplayFilename == "" {
