@@ -366,7 +366,7 @@ func Test_addQuery(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got, err := parseQuery(tt.args.path, tt.args.params); got != tt.want {
 				if err != nil {
-					t.Errorf(err.Error())
+					t.Error(err.Error())
 				}
 				t.Errorf("parseQuery() = %v, want %v", got, tt.want)
 			}
