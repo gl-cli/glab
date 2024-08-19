@@ -14,16 +14,19 @@ import (
 )
 
 type Options struct {
-	OrderBy       string
-	Sort          string
-	Group         string
-	PerPage       int
-	Page          int
-	OutputFormat  string
-	FilterAll     bool
-	FilterOwned   bool
-	FilterMember  bool
-	FilterStarred bool
+	OrderBy          string
+	Sort             string
+	Group            string
+	IncludeSubgroups bool
+	PerPage          int
+	Page             int
+	OutputFormat     string
+	FilterAll        bool
+	FilterOwned      bool
+	FilterMember     bool
+	FilterStarred    bool
+	Archived         bool
+	ArchivedSet      bool
 
 	HTTPClient func() (*gitlab.Client, error)
 	IO         *iostreams.IOStreams
@@ -43,6 +46,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"ls"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient
+			opts.ArchivedSet = cmd.Flags().Changed("archived")
 
 			return runE(opts)
 		},
@@ -50,7 +54,8 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 
 	repoListCmd.Flags().StringVarP(&opts.OrderBy, "order", "o", "last_activity_at", "Return repositories ordered by id, created_at, or other fields.")
 	repoListCmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Return repositories sorted in asc or desc order.")
-	repoListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Return repositories in only the given group and its subgroups.")
+	repoListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Return repositories in only the given group.")
+	repoListCmd.Flags().BoolVarP(&opts.IncludeSubgroups, "include-subgroups", "G", false, "Include projects in subgroups of this group. Default is false. Used with the '--group' flag.")
 	repoListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
 	repoListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
 	repoListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
@@ -58,6 +63,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	repoListCmd.Flags().BoolVarP(&opts.FilterOwned, "mine", "m", false, "List only projects you own. Default if no filters are provided.")
 	repoListCmd.Flags().BoolVar(&opts.FilterMember, "member", false, "List only projects of which you are a member.")
 	repoListCmd.Flags().BoolVar(&opts.FilterStarred, "starred", false, "List only starred projects.")
+	repoListCmd.Flags().BoolVar(&opts.Archived, "archived", false, "Limit by archived status. Used with the '--group' flag.")
 	return repoListCmd
 }
 
@@ -173,6 +179,14 @@ func listAllProjectsForGroup(apiClient *gitlab.Client, opts Options) ([]*gitlab.
 
 		if opts.FilterStarred {
 			l.Starred = gitlab.Ptr(opts.FilterStarred)
+		}
+
+		if opts.IncludeSubgroups {
+			l.IncludeSubGroups = gitlab.Ptr(true)
+		}
+
+		if opts.ArchivedSet {
+			l.Archived = gitlab.Ptr(opts.Archived)
 		}
 	}
 
