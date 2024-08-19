@@ -1,6 +1,7 @@
 package ask
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os/exec"
@@ -129,7 +130,7 @@ func (opts *opts) Result() (*result, error) {
 	}
 
 	if len(r.Predictions) == 0 || len(r.Predictions[0].Candidates) == 0 {
-		return nil, fmt.Errorf(aiResponseErr)
+		return nil, errors.New(aiResponseErr)
 	}
 
 	content := r.Predictions[0].Candidates[0].Content

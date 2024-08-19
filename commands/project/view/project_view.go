@@ -257,7 +257,7 @@ func printProjectContentRaw(opts *ViewOptions, project *gitlab.Project, readme *
 
 	if readme != nil {
 		fmt.Fprintln(opts.IO.StdOut, "---")
-		fmt.Fprintf(opts.IO.StdOut, readme.Content)
+		fmt.Fprint(opts.IO.StdOut, readme.Content)
 		fmt.Fprintln(opts.IO.StdOut)
 	}
 }
