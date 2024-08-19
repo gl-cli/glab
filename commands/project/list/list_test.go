@@ -189,6 +189,63 @@ func TestProjectList(t *testing.T) {
 			args:        "--group /me/group/subgroup",
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0).\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
+		{
+			name: "view all projects in a specific group including subgroups",
+			httpMock: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/groups?search=%2Fme%2Fgroup%2Fsubgroup",
+					http.StatusOK,
+					groupResponse,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/groups/456/projects?include_subgroups=true&order_by=last_activity_at&owned=true&page=1&per_page=30",
+					http.StatusOK,
+					projectResponse,
+				},
+			},
+			args:        "--group /me/group/subgroup --include-subgroups",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0).\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
+		{
+			name: "view all not archived projects in a specific group",
+			httpMock: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/groups?search=%2Fme%2Fgroup%2Fsubgroup",
+					http.StatusOK,
+					groupResponse,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/groups/456/projects?archived=false&order_by=last_activity_at&owned=true&page=1&per_page=30",
+					http.StatusOK,
+					projectResponse,
+				},
+			},
+			args:        "--group /me/group/subgroup --archived=false",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0).\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
+		{
+			name: "view all archived projects in a specific group",
+			httpMock: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/groups?search=%2Fme%2Fgroup%2Fsubgroup",
+					http.StatusOK,
+					groupResponse,
+				},
+				{
+					http.MethodGet,
+					"/api/v4/groups/456/projects?archived=true&order_by=last_activity_at&owned=true&page=1&per_page=30",
+					http.StatusOK,
+					projectResponse,
+				},
+			},
+			args:        "--group /me/group/subgroup --archived=true",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0).\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
 	}
 
 	for _, tc := range tests {

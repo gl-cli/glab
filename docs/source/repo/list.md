@@ -33,16 +33,18 @@ glab repo list
 ## Options
 
 ```plaintext
-  -a, --all             List all projects on the instance.
-  -g, --group string    Return repositories in only the given group and its subgroups.
-      --member          List only projects of which you are a member.
-  -m, --mine            List only projects you own. Default if no filters are provided.
-  -o, --order string    Return repositories ordered by id, created_at, or other fields. (default "last_activity_at")
-  -F, --output string   Format output as: text, json. (default "text")
-  -p, --page int        Page number. (default 1)
-  -P, --per-page int    Number of items to list per page. (default 30)
-  -s, --sort string     Return repositories sorted in asc or desc order.
-      --starred         List only starred projects.
+  -a, --all                 List all projects on the instance.
+      --archived            Limit by archived status. Used with the '--group' flag.
+  -g, --group string        Return repositories in only the given group.
+  -G, --include-subgroups   Include projects in subgroups of this group. Default is false. Used with the '--group' flag.
+      --member              List only projects of which you are a member.
+  -m, --mine                List only projects you own. Default if no filters are provided.
+  -o, --order string        Return repositories ordered by id, created_at, or other fields. (default "last_activity_at")
+  -F, --output string       Format output as: text, json. (default "text")
+  -p, --page int            Page number. (default 1)
+  -P, --per-page int        Number of items to list per page. (default 30)
+  -s, --sort string         Return repositories sorted in asc or desc order.
+      --starred             List only starred projects.
 ```
 
 ## Options inherited from parent commands
