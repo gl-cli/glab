@@ -143,6 +143,8 @@ func EditorPrompt(response *string, question, templateContent, editorCommand str
 	return nil
 }
 
+type GetTextUsingEditor func(editor, tmpFileName, content string) (string, error)
+
 func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote) (err error) {
 	lOpts := &gitlab.ListLabelsOptions{}
 	lOpts.PerPage = 100

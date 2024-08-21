@@ -12,7 +12,6 @@ import (
 	"github.com/briandowns/spinner"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
 	"gitlab.com/gitlab-org/cli/pkg/text"
 	"golang.org/x/crypto/sha3"
 
@@ -22,7 +21,7 @@ import (
 
 var description string
 
-func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
+func NewCmdSaveStack(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor) *cobra.Command {
 	stackSaveCmd := &cobra.Command{
 		Use:   "save",
 		Short: `Save your progress within a stacked diff. (EXPERIMENTAL.)`,
@@ -45,9 +44,9 @@ func NewCmdSaveStack(f *cmdutils.Factory) *cobra.Command {
 
 			// a description is required, so ask if one is not provided
 			if description == "" {
-				err := prompt.AskQuestionWithInput(&description, "description", "How would you describe this change?", "", true)
+				description, err = promptForCommit(f, getText, "")
 				if err != nil {
-					return fmt.Errorf("error prompting for save description: %v", err)
+					return fmt.Errorf("error getting commit message: %v", err)
 				}
 			}
 

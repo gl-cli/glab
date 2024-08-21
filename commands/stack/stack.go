@@ -6,11 +6,18 @@ import (
 	stackMoveCmd "gitlab.com/gitlab-org/cli/commands/stack/navigate"
 	stackSaveCmd "gitlab.com/gitlab-org/cli/commands/stack/save"
 	stackSyncCmd "gitlab.com/gitlab-org/cli/commands/stack/sync"
+	"gitlab.com/gitlab-org/cli/pkg/surveyext"
 	"gitlab.com/gitlab-org/cli/pkg/text"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 )
+
+func wrappedEdit(f *cmdutils.Factory) cmdutils.GetTextUsingEditor {
+	return func(editor, tmpFileName, content string) (string, error) {
+		return surveyext.Edit(editor, tmpFileName, content, f.IO.In, f.IO.StdOut, f.IO.StdErr, nil)
+	}
+}
 
 func NewCmdStack(f *cmdutils.Factory) *cobra.Command {
 	stackCmd := &cobra.Command{
@@ -25,10 +32,11 @@ func NewCmdStack(f *cmdutils.Factory) *cobra.Command {
 	}
 
 	cmdutils.EnableRepoOverride(stackCmd, f)
+	getTextFromEditor := wrappedEdit(f)
 
 	stackCmd.AddCommand(stackCreateCmd.NewCmdCreateStack(f))
-	stackCmd.AddCommand(stackSaveCmd.NewCmdSaveStack(f))
-	stackCmd.AddCommand(stackSaveCmd.NewCmdAmendStack(f))
+	stackCmd.AddCommand(stackSaveCmd.NewCmdSaveStack(f, getTextFromEditor))
+	stackCmd.AddCommand(stackSaveCmd.NewCmdAmendStack(f, getTextFromEditor))
 	stackCmd.AddCommand(stackSyncCmd.NewCmdSyncStack(f))
 	stackCmd.AddCommand(stackMoveCmd.NewCmdStackPrev(f))
 	stackCmd.AddCommand(stackMoveCmd.NewCmdStackNext(f))

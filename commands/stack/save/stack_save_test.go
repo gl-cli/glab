@@ -1,6 +1,7 @@
 package save
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"os"
@@ -17,30 +18,36 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runSaveCommand(rt http.RoundTripper, isTTY bool, args string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStreams, stdout *bytes.Buffer, stderr *bytes.Buffer, factory *cmdutils.Factory) {
+	ios, _, stdout, stderr = cmdtest.InitIOStreams(isTTY, "")
 
-	factory := cmdtest.InitFactory(ios, rt)
+	factory = cmdtest.InitFactory(ios, rt)
 
 	_, _ = factory.HttpClient()
 
-	cmd := NewCmdSaveStack(factory)
+	return
+}
+
+func runSaveCommand(rt http.RoundTripper, getText cmdutils.GetTextUsingEditor, isTTY bool, args string) (*test.CmdOut, error) {
+	_, stdout, stderr, factory := setupTestFactory(rt, isTTY)
+	cmd := NewCmdSaveStack(factory, getText)
 
 	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
 }
 
 func TestSaveNewStack(t *testing.T) {
 	tests := []struct {
-		desc     string
-		args     []string
-		files    []string
-		message  string
-		expected string
-		wantErr  bool
+		desc          string
+		args          []string
+		files         []string
+		message       string
+		expected      string
+		wantErr       bool
+		noTTY         bool
+		editorMessage string
 	}{
 		{
 			desc:     "adding regular files",
@@ -59,10 +66,11 @@ func TestSaveNewStack(t *testing.T) {
 		},
 
 		{
-			desc:     "omitting a message",
-			args:     []string{"."},
-			files:    []string{"testfile"},
-			expected: "• cool-test-feature: Saved with message: \"oh ok fine how about blah blah\".\n",
+			desc:          "omitting a message",
+			args:          []string{"."},
+			files:         []string{"testfile"},
+			editorMessage: "oh ok fine how about blah blah",
+			expected:      "• cool-test-feature: Saved with message: \"oh ok fine how about blah blah\".\n",
 		},
 
 		{
@@ -72,21 +80,21 @@ func TestSaveNewStack(t *testing.T) {
 			expected: "could not save: \"no changes to save.\"",
 			wantErr:  true,
 		},
+
+		{
+			desc:     "Test with no message and noTTY",
+			args:     []string{"."},
+			files:    []string{"testfile"},
+			expected: "glab stack save without `-m` and without a TTY should throw an error.",
+			wantErr:  true,
+			noTTY:    true,
+		},
 	}
 
 	for _, tc := range tests {
+		isTTY := !tc.noTTY
 		t.Run(tc.desc, func(t *testing.T) {
-			if tc.message == "" {
-				as, restoreAsk := prompt.InitAskStubber()
-				defer restoreAsk()
-
-				as.Stub([]*prompt.QuestionStub{
-					{
-						Name:  "description",
-						Value: "oh ok fine how about blah blah",
-					},
-				})
-			} else {
+			if tc.message != "" && isTTY {
 				tc.args = append(tc.args, "-m")
 				tc.args = append(tc.args, "\""+tc.message+"\"")
 			}
@@ -97,9 +105,10 @@ func TestSaveNewStack(t *testing.T) {
 
 			createTemporaryFiles(t, dir, tc.files)
 
+			getText := getMockEditor(tc.editorMessage, &[]string{})
 			args := strings.Join(tc.args, " ")
 
-			output, err := runSaveCommand(nil, true, args)
+			output, err := runSaveCommand(nil, getText, isTTY, args)
 
 			if tc.wantErr {
 				require.Errorf(t, err, tc.expected)
