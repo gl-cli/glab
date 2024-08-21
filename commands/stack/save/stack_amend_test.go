@@ -8,18 +8,18 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
 
 func Test_stackAmendCmd(t *testing.T) {
 	tests := []struct {
-		desc         string
-		args         []string
-		files        []string
-		amendedFiles []string
-		description  string
-		expected     string
-		wantErr      bool
+		desc          string
+		args          []string
+		files         []string
+		amendedFiles  []string
+		description   string
+		expected      string
+		wantErr       bool
+		editorMessage string
 	}{
 		{
 			desc:         "amending regular files",
@@ -30,12 +30,13 @@ func Test_stackAmendCmd(t *testing.T) {
 			expected:     "Amended stack item with description: \"this is a commit message\".\n",
 		},
 		{
-			desc:         "with no message",
-			args:         []string{"testfile", "randomfile"},
-			files:        []string{"testfile", "randomfile"},
-			amendedFiles: []string{"otherfile"},
-			description:  "",
-			expected:     "Amended stack item with description: \"amended description\".\n",
+			desc:          "with no message",
+			args:          []string{"testfile", "randomfile"},
+			files:         []string{"testfile", "randomfile"},
+			amendedFiles:  []string{"otherfile"},
+			description:   "",
+			editorMessage: "amended description",
+			expected:      "Amended stack item with description: \"amended description\".\n",
 		},
 		{
 			desc:         "with no amended changes",
@@ -59,18 +60,6 @@ func Test_stackAmendCmd(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
-			if tc.description == "" {
-				as, restoreAsk := prompt.InitAskStubber()
-				defer restoreAsk()
-
-				as.Stub([]*prompt.QuestionStub{
-					{
-						Name:  "description",
-						Value: "amended description",
-					},
-				})
-			}
-
 			ios, _, _, _ := cmdtest.InitIOStreams(true, "")
 			f := cmdtest.InitFactory(ios, nil)
 
@@ -85,7 +74,8 @@ func Test_stackAmendCmd(t *testing.T) {
 			saveArgs = append(saveArgs, "\"original save message\"")
 			saveArgs = append(saveArgs, tc.args...)
 
-			_, err = runSaveCommand(nil, true, strings.Join(saveArgs, " "))
+			getText := getMockEditor(tc.editorMessage, &[]string{})
+			_, err = runSaveCommand(nil, getText, true, strings.Join(saveArgs, " "))
 			require.Nil(t, err)
 
 			createTemporaryFiles(t, dir, tc.amendedFiles)
@@ -96,7 +86,7 @@ func Test_stackAmendCmd(t *testing.T) {
 				require.Nil(t, err)
 			}
 
-			output, err := amendFunc(f, tc.args, tc.description)
+			output, err := amendFunc(f, tc.args, getText, tc.description)
 
 			if tc.wantErr {
 				require.ErrorContains(t, err, tc.expected)
