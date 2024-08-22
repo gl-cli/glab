@@ -26,7 +26,7 @@ include:
   - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
   - component: ${CI_SERVER_FQDN}/gitlab-org/components/danger-review/danger-review@1.4.1
-  - component: ${CI_SERVER_FQDN}/components/code-intelligence/golang-code-intel@v0.0.1
+  - component: ${CI_SERVER_FQDN}/components/code-intelligence/golang-code-intel@v0.0.2
     inputs:
       golang_version: ${GO_VERSION}
 
