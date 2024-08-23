@@ -44,7 +44,7 @@ func Editor(opts EditorOptions) string {
 	return container
 }
 
-// ReplaceNonAlphaNumericChars : Replaces non alpha-numeric values with provided char/string
+// ReplaceNonAlphaNumericChars: Replaces non alpha-numeric values with provided char/string
 func ReplaceNonAlphaNumericChars(words, replaceWith string) string {
 	reg := regexp.MustCompile("[^A-Za-z0-9]+")
 	newStr := reg.ReplaceAllString(strings.Trim(words, " "), replaceWith)

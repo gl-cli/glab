@@ -157,7 +157,7 @@ func TestCiRetry(t *testing.T) {
 					"/api/v4/projects/OWNER%2FREPO/repository/commits/main",
 					http.StatusOK,
 					`{
-						"last_pipeline" : {
+						"last_pipeline": {
 							"id": 123
 						}
 					}`,

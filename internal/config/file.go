@@ -12,7 +12,7 @@ func CheckPathExists(path string) bool {
 	return false
 }
 
-// CheckFileExists : checks if a file exists and is not a directory.
+// CheckFileExists: checks if a file exists and is not a directory.
 func CheckFileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {

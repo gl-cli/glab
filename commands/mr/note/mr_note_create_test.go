@@ -70,7 +70,7 @@ func Test_NewCmdNote(t *testing.T) {
 		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/merge_requests/122",
 			httpmock.NewStringResponse(http.StatusNotFound, `
 		{
-  			"message" : "merge request not found"
+  			"message": "merge request not found"
 		}
 	`))
 
@@ -89,7 +89,7 @@ func Test_NewCmdNote_error(t *testing.T) {
 		fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/merge_requests/1/notes",
 			httpmock.NewStringResponse(http.StatusUnauthorized, `
 		{
-			"message" : "Unauthorized"
+			"message": "Unauthorized"
 		}
 	`))
 

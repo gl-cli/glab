@@ -133,7 +133,7 @@ updated:	2023-10-10 00:00:00 +0000 UTC
 					"/api/v4/projects/OWNER%2FREPO/repository/commits/main",
 					http.StatusOK,
 					`{
-						"last_pipeline" : {
+						"last_pipeline": {
 							"id": 123
 						}
 					}`,
