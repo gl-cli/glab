@@ -155,7 +155,7 @@ func fatal(err error) {
 	os.Exit(1)
 }
 
-// adapted from : github.com/spf13/cobra/blob/main/doc/md_docs.go
+// adapted from: github.com/spf13/cobra/blob/main/doc/md_docs.go
 // GenMarkdownTreeCustom is the the same as GenMarkdownTree, but
 // with custom filePrepender and linkHandler.
 func GenMarkdownTreeCustom(cmd *cobra.Command, dir string) error {
@@ -237,7 +237,7 @@ func GenMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 	return err
 }
 
-// adapted from : github.com/spf13/cobra/blob/main/doc/md_docs.go
+// adapted from: github.com/spf13/cobra/blob/main/doc/md_docs.go
 func printOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
 	flags := cmd.NonInheritedFlags()
 	flags.SetOutput(buf)

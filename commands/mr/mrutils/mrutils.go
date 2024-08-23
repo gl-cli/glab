@@ -22,23 +22,23 @@ import (
 type MRCheckErrOptions struct {
 	// WorkInProgress: check and return err if merge request is a DRAFT
 	WorkInProgress bool
-	// Closed : check and return err if merge request is closed
+	// Closed: check and return err if merge request is closed
 	Closed bool
-	// Merged : check and return err if merge request is already merged
+	// Merged: check and return err if merge request is already merged
 	Merged bool
-	// Opened : check and return err if merge request is already opened
+	// Opened: check and return err if merge request is already opened
 	Opened bool
-	// Conflict : check and return err if there are merge conflicts
+	// Conflict: check and return err if there are merge conflicts
 	Conflict bool
-	// PipelineStatus : check and return err pipeline did not succeed and it is required before merging
+	// PipelineStatus: check and return err pipeline did not succeed and it is required before merging
 	PipelineStatus bool
-	// MergePermitted : check and return err if user is not authorized to merge
+	// MergePermitted: check and return err if user is not authorized to merge
 	MergePermitted bool
-	// Subscribed : check and return err if user is already subscribed to MR
+	// Subscribed: check and return err if user is already subscribed to MR
 	Subscribed bool
-	// Unsubscribed : check and return err if user is already unsubscribed to MR
+	// Unsubscribed: check and return err if user is already unsubscribed to MR
 	Unsubscribed bool
-	// MergePrivilege : check and return err if user is not authorized to merge
+	// MergePrivilege: check and return err if user is not authorized to merge
 	MergePrivilege bool
 }
 

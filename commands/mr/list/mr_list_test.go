@@ -84,15 +84,15 @@ func TestMergeRequestList_tty(t *testing.T) {
 		httpmock.NewStringResponse(http.StatusOK, `
 [
   {
-    "state" : "opened",
-    "description" : "a description here",
-    "project_id" : 1,
-    "updated_at" : "2016-01-04T15:31:51.081Z",
-    "id" : 76,
-    "title" : "MergeRequest one",
-    "created_at" : "2016-01-04T15:31:51.081Z",
-    "iid" : 6,
-    "labels" : ["foo", "bar"],
+    "state": "opened",
+    "description": "a description here",
+    "project_id": 1,
+    "updated_at": "2016-01-04T15:31:51.081Z",
+    "id": 76,
+    "title": "MergeRequest one",
+    "created_at": "2016-01-04T15:31:51.081Z",
+    "iid": 6,
+    "labels": ["foo", "bar"],
 	"target_branch": "master",
     "source_branch": "test1",
     "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/6",
@@ -103,17 +103,17 @@ func TestMergeRequestList_tty(t *testing.T) {
     }
   },
   {
-    "state" : "opened",
-    "description" : "description two here",
-    "project_id" : 1,
-    "updated_at" : "2016-01-04T15:31:51.081Z",
-    "id" : 77,
-    "title" : "MergeRequest two",
-    "created_at" : "2016-01-04T15:31:51.081Z",
-    "iid" : 7,
+    "state": "opened",
+    "description": "description two here",
+    "project_id": 1,
+    "updated_at": "2016-01-04T15:31:51.081Z",
+    "id": 77,
+    "title": "MergeRequest two",
+    "created_at": "2016-01-04T15:31:51.081Z",
+    "iid": 7,
 	"target_branch": "master",
     "source_branch": "test2",
-    "labels" : ["fooz", "baz"],
+    "labels": ["fooz", "baz"],
     "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/7",
     "references": {
       "full": "OWNER/REPO/merge_requests/7",
@@ -148,7 +148,7 @@ func TestMergeRequestList_tty_withFlags(t *testing.T) {
 			httpmock.NewStringResponse(http.StatusOK, `[]`))
 
 		fakeHTTP.RegisterResponder(http.MethodGet, "/users",
-			httpmock.NewStringResponse(http.StatusOK, `[{"id" : 1, "iid" : 1, "username": "john_smith"}]`))
+			httpmock.NewStringResponse(http.StatusOK, `[{"id": 1, "iid": 1, "username": "john_smith"}]`))
 
 		output, err := runCommand(fakeHTTP, true, "--opened -P1 -p100 -a someuser -l bug -m1", nil, "")
 		if err != nil {
@@ -230,15 +230,15 @@ func TestMergeRequestList_hyperlinks(t *testing.T) {
 				httpmock.NewStringResponse(http.StatusOK, `
 [
   {
-    "state" : "opened",
-    "description" : "a description here",
-    "project_id" : 1,
-    "updated_at" : "2016-01-04T15:31:51.081Z",
-    "id" : 76,
-    "title" : "MergeRequest one",
-    "created_at" : "2016-01-04T15:31:51.081Z",
-    "iid" : 6,
-    "labels" : ["foo", "bar"],
+    "state": "opened",
+    "description": "a description here",
+    "project_id": 1,
+    "updated_at": "2016-01-04T15:31:51.081Z",
+    "id": 76,
+    "title": "MergeRequest one",
+    "created_at": "2016-01-04T15:31:51.081Z",
+    "iid": 6,
+    "labels": ["foo", "bar"],
 	"target_branch": "master",
     "source_branch": "test1",
     "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/6",
@@ -249,17 +249,17 @@ func TestMergeRequestList_hyperlinks(t *testing.T) {
     }
   },
   {
-    "state" : "opened",
-    "description" : "description two here",
-    "project_id" : 1,
-    "updated_at" : "2016-01-04T15:31:51.081Z",
-    "id" : 77,
-    "title" : "MergeRequest two",
-    "created_at" : "2016-01-04T15:31:51.081Z",
-    "iid" : 7,
+    "state": "opened",
+    "description": "description two here",
+    "project_id": 1,
+    "updated_at": "2016-01-04T15:31:51.081Z",
+    "id": 77,
+    "title": "MergeRequest two",
+    "created_at": "2016-01-04T15:31:51.081Z",
+    "iid": 7,
 	"target_branch": "master",
     "source_branch": "test2",
-    "labels" : ["fooz", "baz"],
+    "labels": ["fooz", "baz"],
     "web_url": "http://gitlab.com/OWNER/REPO/merge_requests/7",
     "references": {
       "full": "OWNER/REPO/merge_requests/7",
@@ -326,15 +326,15 @@ func TestMergeRequestList_labels(t *testing.T) {
 				httpmock.NewStringResponse(http.StatusOK, `
 		[
 		  {
-			"state" : "opened",
-			"description" : "a description here",
-			"project_id" : 1,
-			"updated_at" : "2016-01-04T15:31:51.081Z",
-			"id" : 76,
-			"title" : "MergeRequest one",
-			"created_at" : "2016-01-04T15:31:51.081Z",
-			"iid" : 6,
-			"labels" : ["foo", "bar"],
+			"state": "opened",
+			"description": "a description here",
+			"project_id": 1,
+			"updated_at": "2016-01-04T15:31:51.081Z",
+			"id": 76,
+			"title": "MergeRequest one",
+			"created_at": "2016-01-04T15:31:51.081Z",
+			"iid": 6,
+			"labels": ["foo", "bar"],
 			"target_branch": "master",
 			"source_branch": "test1",
 			"web_url": "http://gitlab.com/OWNER/REPO/merge_requests/6",

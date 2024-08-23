@@ -152,8 +152,8 @@ func runCreate(client *gitlab.Client, repo glrepo.Interface, opts *CreateOpts) e
 //	Doesn't support it yet.
 //
 //	See for the API reference: https://docs.gitlab.com/ee/api/snippets.html#create-new-snippet
-//	See for the library docs : https://pkg.go.dev/github.com/xanzy/go-gitlab#CreateSnippetOptions
-//	See for GitHub issue     : https://github.com/xanzy/go-gitlab/issues/1372
+//	See for the library docs: https://pkg.go.dev/github.com/xanzy/go-gitlab#CreateSnippetOptions
+//	See for GitHub issue: https://github.com/xanzy/go-gitlab/issues/1372
 func readSnippetsContent(opts *CreateOpts) (string, error) {
 	if opts.isSnippetFromFile() {
 		return readFromFile(opts.FilePath)

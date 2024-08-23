@@ -156,7 +156,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 
 			opts.CommitSHA = opts.Commit.ID
 			if opts.Commit.LastPipeline == nil {
-				return fmt.Errorf("Can't find pipeline for commit : %s", opts.CommitSHA)
+				return fmt.Errorf("Can't find pipeline for commit: %s", opts.CommitSHA)
 			}
 
 			cfg, _ := f.Config()

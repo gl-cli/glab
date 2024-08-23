@@ -87,7 +87,7 @@ func TestNewCheckUpdateCmd_error(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/gitlab-org/cli/releases?page=1&per_page=1`,
 		httpmock.NewStringResponse(http.StatusNotFound, `
 				{
-					"message" : "test error"
+					"message": "test error"
 				}
 			`))
 

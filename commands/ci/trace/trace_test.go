@@ -163,7 +163,7 @@ func TestCiTrace(t *testing.T) {
 					"/api/v4/projects/OWNER/REPO/repository/commits/main",
 					http.StatusOK,
 					`{
-						"last_pipeline" : {
+						"last_pipeline": {
 							"id": 123
 						}
 					}`,

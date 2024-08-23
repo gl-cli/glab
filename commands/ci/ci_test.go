@@ -63,7 +63,7 @@ func TestPipelineCmd(t *testing.T) {
 			os.Stderr = oldErr
 			stderr := <-errC
 
-			if assert.NoErrorf(t, err, "error running `ci %s` : %v", test.args, err) {
+			if assert.NoErrorf(t, err, "error running `ci %s`: %v", test.args, err) {
 				assert.Contains(t, stderr, wantedErr)
 				assert.Contains(t, stdout, test.expectedOut)
 			}

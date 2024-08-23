@@ -1197,7 +1197,7 @@ func TestCIView(t *testing.T) {
 					http.StatusOK,
 					`{
 						"id": "6104942438c14ec7bd21c6cd5bd995272b3faff6",
-						"last_pipeline" : {
+						"last_pipeline": {
 							"id": 8,
 							"ref": "main",
 							"sha": "2dc6aa325a317eda67812f05600bdf0fcdc70ab0",
