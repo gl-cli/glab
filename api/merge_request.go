@@ -45,7 +45,35 @@ var GetMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *g
 	return mr, nil
 }
 
-var ListGroupMRs = func(client *gitlab.Client, groupID interface{}, opts *gitlab.ListGroupMergeRequestsOptions) ([]*gitlab.MergeRequest, error) {
+// ListGroupMRs retrieves merge requests for a given group with optional filtering by assignees or reviewers.
+//
+// Parameters:
+//   - client: A GitLab client instance.
+//   - groupID: The ID or name of the group.
+//   - opts: GitLab-specific options for listing group merge requests.
+//   - listOpts: Optional list of arguments to filter by assignees or reviewers.
+//     May be any combination of api.WithMRAssignees and api.WithMRReviewers.
+//
+// Returns:
+//   - A slice of GitLab merge request objects and an error, if any.
+//
+// Example usage:
+//
+//	groupMRs, err := api.ListGroupMRs(client, "my-group", &gitlab.ListGroupMergeRequestsOptions{},
+//		api.WithMRAssignees([]int{123}),
+//		api.WithMRReviewers([]int{456, 789}))
+var ListGroupMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListGroupMergeRequestsOptions, listOpts ...CliListMROption) ([]*gitlab.MergeRequest, error) {
+	composedListOpts := composeCliListMROptions(listOpts...)
+	assigneeIds, reviewerIds := composedListOpts.assigneeIds, composedListOpts.reviewerIds
+
+	if len(assigneeIds) > 0 || len(reviewerIds) > 0 {
+		return listGroupMRsWithAssigneesOrReviewers(client, projectID, opts, assigneeIds, reviewerIds)
+	} else {
+		return listGroupMRsBase(client, projectID, opts)
+	}
+}
+
+var listGroupMRsBase = func(client *gitlab.Client, groupID interface{}, opts *gitlab.ListGroupMergeRequestsOptions) ([]*gitlab.MergeRequest, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -58,6 +86,44 @@ var ListGroupMRs = func(client *gitlab.Client, groupID interface{}, opts *gitlab
 		return nil, err
 	}
 
+	return mrs, nil
+}
+
+var listGroupMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListGroupMergeRequestsOptions, assigneeIds []int, reviewerIds []int) ([]*gitlab.MergeRequest, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	if opts.PerPage == 0 {
+		opts.PerPage = DefaultListLimit
+	}
+
+	mrMap := make(map[int]*gitlab.MergeRequest)
+	for _, id := range assigneeIds {
+		opts.AssigneeID = gitlab.AssigneeID(id)
+		assigneeMrs, err := listGroupMRsBase(client, projectID, opts)
+		if err != nil {
+			return nil, err
+		}
+		for _, mr := range assigneeMrs {
+			mrMap[mr.ID] = mr
+		}
+	}
+	opts.AssigneeID = nil // reset because it's Assignee OR Reviewer
+	for _, id := range reviewerIds {
+		opts.ReviewerID = gitlab.ReviewerID(id)
+		reviewerMrs, err := listGroupMRsBase(client, projectID, opts)
+		if err != nil {
+			return nil, err
+		}
+		for _, mr := range reviewerMrs {
+			mrMap[mr.ID] = mr
+		}
+	}
+
+	mrs := make([]*gitlab.MergeRequest, 0, len(mrMap))
+	for _, mr := range mrMap {
+		mrs = append(mrs, mr)
+	}
 	return mrs, nil
 }
 
@@ -90,7 +156,35 @@ var ProjectListMROptionsToGroup = func(l *gitlab.ListProjectMergeRequestsOptions
 	}
 }
 
-var ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions) ([]*gitlab.MergeRequest, error) {
+// ListMRs retrieves merge requests for a given project with optional filtering by assignees or reviewers.
+//
+// Parameters:
+//   - client: A GitLab client instance.
+//   - projectID: The ID or name of the project.
+//   - opts: GitLab-specific options for listing merge requests.
+//   - listOpts: Optional list of arguments to filter by assignees or reviewers.
+//     May be any combination of api.WithMRAssignees and api.WithMRReviewers.
+//
+// Returns:
+//   - A slice of GitLab merge request objects and an error, if any.
+//
+// Example usage:
+//
+//	mrs, err := api.ListMRs(client, "my-group", &gitlab.ListProjectMergeRequestsOptions{},
+//		api.WithMRAssignees([]int{123, 456}),
+//		api.WithMRReviewers([]int{789}))
+var ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...CliListMROption) ([]*gitlab.MergeRequest, error) {
+	composedListOpts := composeCliListMROptions(listOpts...)
+	assigneeIds, reviewerIds := composedListOpts.assigneeIds, composedListOpts.reviewerIds
+
+	if len(assigneeIds) > 0 || len(reviewerIds) > 0 {
+		return listMRsWithAssigneesOrReviewers(client, projectID, opts, assigneeIds, reviewerIds)
+	} else {
+		return listMRsBase(client, projectID, opts)
+	}
+}
+
+var listMRsBase = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions) ([]*gitlab.MergeRequest, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -106,7 +200,7 @@ var ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.Li
 	return mrs, nil
 }
 
-var ListMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, assigneeIds []int, reviewerIds []int) ([]*gitlab.MergeRequest, error) {
+var listMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, assigneeIds []int, reviewerIds []int) ([]*gitlab.MergeRequest, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -114,23 +208,32 @@ var ListMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID inte
 		opts.PerPage = DefaultListLimit
 	}
 
-	mrs := make([]*gitlab.MergeRequest, 0)
+	mrMap := make(map[int]*gitlab.MergeRequest)
 	for _, id := range assigneeIds {
 		opts.AssigneeID = gitlab.AssigneeID(id)
-		assingeMrs, err := ListMRs(client, projectID, opts)
+		assigneeMrs, err := listMRsBase(client, projectID, opts)
 		if err != nil {
 			return nil, err
 		}
-		mrs = append(mrs, assingeMrs...)
+		for _, mr := range assigneeMrs {
+			mrMap[mr.ID] = mr
+		}
 	}
 	opts.AssigneeID = nil // reset because it's Assignee OR Reviewer
 	for _, id := range reviewerIds {
 		opts.ReviewerID = gitlab.ReviewerID(id)
-		reviewerMrs, err := ListMRs(client, projectID, opts)
+		reviewerMrs, err := listMRsBase(client, projectID, opts)
 		if err != nil {
 			return nil, err
 		}
-		mrs = append(mrs, reviewerMrs...)
+		for _, mr := range reviewerMrs {
+			mrMap[mr.ID] = mr
+		}
+	}
+
+	mrs := make([]*gitlab.MergeRequest, 0, len(mrMap))
+	for _, mr := range mrMap {
+		mrs = append(mrs, mr)
 	}
 	return mrs, nil
 }
@@ -293,4 +396,31 @@ var MRTodo = func(client *gitlab.Client, projectID interface{}, mrID int, opts g
 	}
 
 	return mr, nil
+}
+
+type cliListMROptions struct {
+	assigneeIds []int
+	reviewerIds []int
+}
+
+type CliListMROption func(*cliListMROptions)
+
+func WithMRAssignees(assigneeIds []int) CliListMROption {
+	return func(c *cliListMROptions) {
+		c.assigneeIds = assigneeIds
+	}
+}
+
+func WithMRReviewers(reviewerIds []int) CliListMROption {
+	return func(c *cliListMROptions) {
+		c.reviewerIds = reviewerIds
+	}
+}
+
+func composeCliListMROptions(optionSetters ...CliListMROption) *cliListMROptions {
+	opts := &cliListMROptions{}
+	for _, setter := range optionSetters {
+		setter(opts)
+	}
+	return opts
 }

@@ -249,13 +249,11 @@ func listRun(opts *ListOptions) error {
 	title := utils.NewListTitle(opts.TitleQualifier + " merge request")
 	title.RepoName = repo.FullName()
 
-	if len(assigneeIds) > 0 || len(reviewerIds) > 0 {
-		mergeRequests, err = api.ListMRsWithAssigneesOrReviewers(apiClient, repo.FullName(), l, assigneeIds, reviewerIds)
-	} else if opts.Group != "" {
-		mergeRequests, err = api.ListGroupMRs(apiClient, opts.Group, api.ProjectListMROptionsToGroup(l))
+	if opts.Group != "" {
+		mergeRequests, err = api.ListGroupMRs(apiClient, opts.Group, api.ProjectListMROptionsToGroup(l), api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
 		title.RepoName = opts.Group
 	} else {
-		mergeRequests, err = api.ListMRs(apiClient, repo.FullName(), l)
+		mergeRequests, err = api.ListMRs(apiClient, repo.FullName(), l, api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
 	}
 	if err != nil {
 		return err
