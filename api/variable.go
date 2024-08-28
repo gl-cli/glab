@@ -112,11 +112,17 @@ var CreateGroupVariable = func(client *gitlab.Client, groupID interface{}, opts 
 	return vars, nil
 }
 
-var GetGroupVariable = func(client *gitlab.Client, groupID interface{}, key string, opts *gitlab.RequestOptionFunc) (*gitlab.GroupVariable, error) {
+var GetGroupVariable = func(client *gitlab.Client, groupID interface{}, key string, scope string) (*gitlab.GroupVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
-	vars, _, err := client.GroupVariables.GetVariable(groupID, key)
+
+	reqOpts := &gitlab.GetGroupVariableOptions{
+		Filter: &gitlab.VariableFilter{
+			EnvironmentScope: scope,
+		},
+	}
+	vars, _, err := client.GroupVariables.GetVariable(groupID, key, reqOpts)
 	if err != nil {
 		return nil, err
 	}

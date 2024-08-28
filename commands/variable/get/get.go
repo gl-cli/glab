@@ -2,7 +2,6 @@ package get
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -52,11 +51,6 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Comman
 				return
 			}
 
-			if cmd.Flags().Changed("scope") && opts.Group != "" {
-				err = cmdutils.FlagError{Err: errors.New("Scope is not required for group variables.")}
-				return
-			}
-
 			if runE != nil {
 				err = runE(opts)
 				return
@@ -81,7 +75,7 @@ func getRun(opts *GetOps) error {
 	var variableValue string
 
 	if opts.Group != "" {
-		variable, err := api.GetGroupVariable(httpClient, opts.Group, opts.Key, nil)
+		variable, err := api.GetGroupVariable(httpClient, opts.Group, opts.Key, opts.Scope)
 		if err != nil {
 			return err
 		}
