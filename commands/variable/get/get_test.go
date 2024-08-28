@@ -50,6 +50,26 @@ func Test_NewCmdSet(t *testing.T) {
 			wantsErr: false,
 		},
 		{
+			name: "good key, with scope",
+			cli:  "-s foo -g group good_key",
+			wants: GetOps{
+				Key:   "good_key",
+				Group: "group",
+				Scope: "foo",
+			},
+			wantsErr: false,
+		},
+		{
+			name: "good key, with default scope",
+			cli:  "-g group good_key",
+			wants: GetOps{
+				Key:   "good_key",
+				Group: "group",
+				Scope: "*",
+			},
+			wantsErr: false,
+		},
+		{
 			name: "bad key",
 			cli:  "-g group bad-key",
 			wants: GetOps{
