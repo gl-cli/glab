@@ -6,7 +6,6 @@ linters:
     disable-all: true
     enable:
         - errcheck
-        - exportloopref
         - gofumpt
         - goimports
         - gosimple
