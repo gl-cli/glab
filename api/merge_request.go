@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"net/http"
+	"sort"
 
 	"github.com/xanzy/go-gitlab"
 )
@@ -124,6 +125,11 @@ var listGroupMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID
 	for _, mr := range mrMap {
 		mrs = append(mrs, mr)
 	}
+
+	sort.Slice(mrs, func(i, j int) bool {
+		return mrs[i].CreatedAt.After(*mrs[j].CreatedAt)
+	})
+
 	return mrs, nil
 }
 
@@ -235,6 +241,11 @@ var listMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID inte
 	for _, mr := range mrMap {
 		mrs = append(mrs, mr)
 	}
+
+	sort.Slice(mrs, func(i, j int) bool {
+		return mrs[i].CreatedAt.After(*mrs[j].CreatedAt)
+	})
+
 	return mrs, nil
 }
 
