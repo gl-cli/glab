@@ -527,10 +527,10 @@ func TestMergeRequestList_GroupWithAssigneeAndReviewer(t *testing.T) {
     "state": "opened",
     "description": "a description here",
     "project_id": 2,
-    "updated_at": "2016-01-04T15:31:51.081Z",
+    "updated_at": "2024-01-04T15:31:51.081Z",
     "id": 77,
     "title": "MergeRequest one",
-    "created_at": "2016-01-04T15:31:51.081Z",
+    "created_at": "2024-01-04T15:31:51.081Z",
     "iid": 7,
     "labels": ["baz", "bar"],
     "target_branch": "master",
@@ -553,8 +553,8 @@ func TestMergeRequestList_GroupWithAssigneeAndReviewer(t *testing.T) {
 	assert.Equal(t, heredoc.Doc(`
 		Showing 2 open merge requests on GROUP. (Page 1)
 
-		!6	OWNER/REPO/merge_requests/6	MergeRequest one	(master) ← (test1)
 		!7	OWNER/REPO/merge_requests/7	MergeRequest one	(master) ← (test2)
+		!6	OWNER/REPO/merge_requests/6	MergeRequest one	(master) ← (test1)
 
 	`), output.String())
 	assert.Equal(t, ``, output.Stderr())
