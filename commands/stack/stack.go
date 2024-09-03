@@ -26,7 +26,7 @@ func NewCmdStack(f *cmdutils.Factory) *cobra.Command {
 		Long:  `Stacked diffs are a way of creating small changes that build upon each other to ultimately deliver a feature. This kind of workflow can be used to accelerate development time by continuing to build upon your changes, while earlier changes in the stack are reviewed and updated based on feedback.` + "\n" + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			glab stack create cool-new-feature
-			glab sync
+			glab stack sync
 		`),
 		Aliases: []string{"stacks"},
 	}

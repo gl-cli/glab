@@ -35,7 +35,7 @@ glab stack sync [flags]
 ## Examples
 
 ```plaintext
-glab sync
+glab stack sync
 
 ```
 

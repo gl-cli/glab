@@ -33,7 +33,7 @@ stacks
 
 ```plaintext
 glab stack create cool-new-feature
-glab sync
+glab stack sync
 
 ```
 
