@@ -44,9 +44,9 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 		return "", err
 	}
 
-	state := randomString()
-	codeVerifier := randomString()
-	codeChallenge := generateCodeChallenge(codeVerifier)
+	state := GenerateCodeVerifier()
+	codeVerifier := GenerateCodeVerifier()
+	codeChallenge := GenerateCodeChallenge()
 	completeAuthURL := fmt.Sprintf(
 		"%s?client_id=%s&redirect_uri=%s&response_type=code&state=%s&scope=%s&code_challenge=%s&code_challenge_method=S256",
 		authURL, clientID, redirectURI, state, scopes, codeChallenge)
