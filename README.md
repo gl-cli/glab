@@ -183,7 +183,7 @@ To authenticate your installation of `glab` with a personal access token:
 1. Get a GitLab personal access token with at least the `api`
    and `write_repository` scopes. Use the method appropriate for your instance:
    - For GitLab.com, create one at the [personal access tokens](https://gitlab.com/-/user_settings/personal_access_tokens?scopes=api%2Cwrite_repository) page.
-   - For self-managed instances, visit `https://gitlab.example.com/-/profile/personal_access_tokens?scopes=api,write_repository`,
+   - For self-managed instances, visit `https://gitlab.example.com/-/user_settings/personal_access_tokens?scopes=api,write_repository`,
      modifying `gitlab.example.com` to match the domain name of your instance.
 1. Start interactive setup: `glab auth login`
 1. Authenticate with the method appropriate for your GitLab instance:
