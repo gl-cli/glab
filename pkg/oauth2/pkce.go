@@ -8,6 +8,6 @@ func GenerateCodeVerifier() string {
 	return oauthStd.GenerateVerifier()
 }
 
-func GenerateCodeChallenge() string {
-	return oauthStd.S256ChallengeFromVerifier(GenerateCodeVerifier())
+func GenerateCodeChallenge(codeVerifier string) string {
+	return oauthStd.S256ChallengeFromVerifier(codeVerifier)
 }

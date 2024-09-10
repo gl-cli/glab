@@ -7,7 +7,7 @@ import (
 )
 
 func TestRandomStringGeneratesANewRandomString(t *testing.T) {
-	first := GenerateCodeChallenge()
-	second := GenerateCodeChallenge()
+	first := GenerateCodeVerifier()
+	second := GenerateCodeVerifier()
 	require.NotEqual(t, first, second)
 }
