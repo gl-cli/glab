@@ -96,7 +96,8 @@ Validate that the security issue is fixed in the released binary.
 
 [Example in VS Code extension](https://gitlab.com/gitlab-org/security/gitlab-vscode-extension/-/merge_requests/8), TODO: replace with example from CLI
 
-## Push changes back to the [CLI Repo](https://gitlab.com/gitlab-org/cli)
+## Push changes back to the CLI repository
 
-1. Push the patch tag to the [CLI Repo](https://gitlab.com/gitlab-org/cli)
-1. Merge the [Security Repo](https://gitlab.com/gitlab-org/security/cli) `main` branch with the [CLI Repo](https://gitlab.com/gitlab-org/cli/) `main` and push to CLI Repo
+1. Push the patch tag to the [CLI repository](https://gitlab.com/gitlab-org/cli).
+1. Merge the [Security repository](https://gitlab.com/gitlab-org/security/cli) `main` branch with the
+   [CLI repository](https://gitlab.com/gitlab-org/cli/) `main` and push to CLI repository.
