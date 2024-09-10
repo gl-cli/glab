@@ -46,7 +46,7 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 
 	state := GenerateCodeVerifier()
 	codeVerifier := GenerateCodeVerifier()
-	codeChallenge := GenerateCodeChallenge()
+	codeChallenge := GenerateCodeChallenge(codeVerifier)
 	completeAuthURL := fmt.Sprintf(
 		"%s?client_id=%s&redirect_uri=%s&response_type=code&state=%s&scope=%s&code_challenge=%s&code_challenge_method=S256",
 		authURL, clientID, redirectURI, state, scopes, codeChallenge)
@@ -61,6 +61,9 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 		fmt.Fprint(io.StdErr, "Try entering the URL in your browser manually.\n")
 	}
 	token := <-tokenCh
+	if token == nil {
+		return "", fmt.Errorf("authentication failed: no token received")
+	}
 
 	err = token.SetConfig(hostname, cfg)
 	if err != nil {
@@ -120,6 +123,12 @@ func requestToken(hostname, protocol, clientID, code, codeVerifier string) (*Aut
 	}
 
 	resp, err := http.PostForm(tokenURL, form)
+
+	if resp.StatusCode == http.StatusBadRequest {
+		respBody, _ := io.ReadAll(resp.Body)
+		err = fmt.Errorf("bad request: %s\n", string(respBody))
+	}
+
 	if err != nil {
 		return nil, err
 	}
