@@ -51,8 +51,6 @@ dockers:
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source={{.GitURL}}"
       - "--platform=linux/amd64"
-    extra_files:
-      - scripts/entrypoint.sh
   - image_templates:
       - "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}-arm64"
       - "gitlab/glab:{{ .Tag }}-arm64"
@@ -67,8 +65,6 @@ dockers:
       - "--label=org.opencontainers.image.source={{.GitURL}}"
       - "--platform=linux/arm64"
     goarch: arm64
-    extra_files:
-      - scripts/entrypoint.sh
 docker_manifests:
   - name_template: "registry.gitlab.com/gitlab-org/cli:{{ .Tag }}"
     image_templates:
@@ -144,7 +140,7 @@ nfpms:
 checksum:
   name_template: "checksums.txt"
 snapshot:
-  name_template: "{{ .Tag }}"
+  version_template: "{{ .Tag }}"
 changelog:
   sort: asc
   filters:
