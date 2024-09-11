@@ -77,11 +77,11 @@ run:
 
 .PHONY: rt
 rt: ## Test release without publishing
-	goreleaser --snapshot --skip-publish --rm-dist
+	goreleaser release --snapshot --clean
 
 .PHONY: rtdebug
 rtdebug: ## Test release with debug info
-	goreleaser --snapshot --skip-publish --rm-dist --debug
+	goreleaser release --snapshot --clean --verbose
 
 .PHONY: release
 release:
