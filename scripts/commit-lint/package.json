@@ -7,7 +7,7 @@
   "type": "module",
   "dependencies": {
     "@commitlint/config-conventional": "^19.2.2",
-    "@commitlint/format": "^19.3.0",
+    "@commitlint/format": "^19.5.0",
     "@commitlint/lint": "^19.4.1",
     "@commitlint/read": "^19.2.1",
     "axios": "^1.7.7"
