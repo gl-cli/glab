@@ -64,7 +64,7 @@ $ GITLAB_HOST=salsa.debian.org glab repo clone myrepo
   -v, --visibility string     Limit by visibility: public, internal, private. Used with the --group flag.
   -I, --with-issues-enabled   Limit by projects with the issues feature enabled. Default is false. Used with the --group flag.
   -M, --with-mr-enabled       Limit by projects with the merge request feature enabled. Default is false. Used with the --group flag.
-  -S, --with-shared           Include projects shared to this group. Default is false. Used with the --group flag.
+  -S, --with-shared           Include projects shared to this group. Default is true. Used with the --group flag. (default true)
       --paginate              Make additional HTTP requests to fetch all pages of projects before cloning. Respects --per-page.
       --page int              Page number. (default 1)
       --per-page int          Number of items to list per page. (default 30)
