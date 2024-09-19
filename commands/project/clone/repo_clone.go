@@ -146,7 +146,7 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 	repoCloneCmd.Flags().StringVarP(&opts.Visibility, "visibility", "v", "", "Limit by visibility: public, internal, private. Used with the --group flag.")
 	repoCloneCmd.Flags().BoolVarP(&opts.WithIssuesEnabled, "with-issues-enabled", "I", false, "Limit by projects with the issues feature enabled. Default is false. Used with the --group flag.")
 	repoCloneCmd.Flags().BoolVarP(&opts.WithMREnabled, "with-mr-enabled", "M", false, "Limit by projects with the merge request feature enabled. Default is false. Used with the --group flag.")
-	repoCloneCmd.Flags().BoolVarP(&opts.WithShared, "with-shared", "S", false, "Include projects shared to this group. Default is false. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.WithShared, "with-shared", "S", true, "Include projects shared to this group. Default is true. Used with the --group flag.")
 	repoCloneCmd.Flags().BoolVarP(&opts.Paginate, "paginate", "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects --per-page.")
 	repoCloneCmd.Flags().IntVarP(&opts.Page, "page", "", 1, "Page number.")
 	repoCloneCmd.Flags().IntVarP(&opts.PerPage, "per-page", "", 30, "Number of items to list per page.")
@@ -188,8 +188,8 @@ func listProjects(opts *CloneOptions, ListGroupProjectOpts *gitlab.ListGroupProj
 func groupClone(opts *CloneOptions, ctxOpts *ContextOpts) error {
 	c := opts.IO.Color()
 	ListGroupProjectOpts := &gitlab.ListGroupProjectsOptions{}
-	if opts.WithShared {
-		ListGroupProjectOpts.WithShared = gitlab.Ptr(true)
+	if !opts.WithShared {
+		ListGroupProjectOpts.WithShared = gitlab.Ptr(false)
 	}
 	if opts.WithMREnabled {
 		ListGroupProjectOpts.WithMergeRequestsEnabled = gitlab.Ptr(true)
