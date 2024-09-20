@@ -142,10 +142,9 @@ run_tests:
 
 release_test:
   extends: .release
+  stage: release
   rules:
-    - if: $CI_COMMIT_TAG
-      when: never
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script: |
     docker run --rm --privileged \
@@ -153,32 +152,6 @@ release_test:
       -w /go/src/gitlab.com/gitlab-org/cli \
       -v /var/run/docker.sock:/var/run/docker.sock \
       goreleaser/goreleaser release --snapshot
-
-build_windows:
-  stage: test
-  extends: .go-cache
-  script:
-    - GOOS=windows GOARCH=amd64 make build
-    - mv bin/glab bin/glab.exe
-  artifacts:
-    paths:
-      - "bin/glab.exe"
-    expire_in: "30 days"
-
-windows_installer:
-  stage: release
-  image:
-    name: amake/innosetup
-    entrypoint: [""]
-  script:
-    - mv scripts/setup_windows.iss .
-    - iscc "setup_windows.iss" -DVersion=${CI_COMMIT_TAG//v}
-  artifacts:
-    paths:
-      - "bin/*"
-    expire_in: "30 days"
-  dependencies: [build_windows]
-  needs: [build_windows]
 
 release:
   extends: .release
@@ -210,6 +183,40 @@ homebrew-release:
     - git config --global user.name "$GITHUB_NAME"
     - curl "$CI_PROJECT_URL/-/archive/$CI_COMMIT_TAG/$CI_PROJECT_NAME-$CI_COMMIT_TAG.tar.gz" --output "$CI_PROJECT_NAME-$CI_COMMIT_TAG.tar.gz"
     - brew bump-formula-pr glab --no-browse --url="$CI_PROJECT_URL/-/archive/$CI_COMMIT_TAG/$CI_PROJECT_NAME-$CI_COMMIT_TAG.tar.gz" --sha256="$(sha256sum $CI_PROJECT_NAME-$CI_COMMIT_TAG.tar.gz | cut -d ' ' -f 1)"
+
+windows_installer:
+  stage: release
+  image:
+    name: amake/innosetup
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - mv scripts/setup_windows.iss .
+    - iscc "setup_windows.iss" -DVersion=${CI_COMMIT_TAG//v}
+  artifacts:
+    paths:
+      - "bin/*"
+    expire_in: "30 days"
+  dependencies: [build_windows]
+  needs: [build_windows]
+
+build_windows:
+  stage: release
+  extends: .go-cache
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - GOOS=windows GOARCH=amd64 make build
+    - mv bin/glab bin/glab.exe
+  artifacts:
+    paths:
+      - "bin/glab.exe"
+    expire_in: "30 days"
 
 secret_detection:
   dependencies: [] # Don't download artifacts, especially `./public/`
