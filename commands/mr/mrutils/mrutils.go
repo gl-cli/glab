@@ -42,6 +42,13 @@ type MRCheckErrOptions struct {
 	MergePrivilege bool
 }
 
+type mrOptions struct {
+	baseRepo      glrepo.Interface
+	arg           string
+	state         string
+	promptEnabled bool
+}
+
 // MRCheckErrors checks and return merge request errors specified in MRCheckErrOptions{}
 func MRCheckErrors(mr *gitlab.MergeRequest, err MRCheckErrOptions) error {
 	if mr.WorkInProgress && err.WorkInProgress {
@@ -163,7 +170,7 @@ func MRFromArgsWithOpts(
 	}
 
 	if mrID == 0 {
-		mr, err = getMRForBranch(apiClient, baseRepo, branch, state)
+		mr, err = getMRForBranch(apiClient, mrOptions{baseRepo, branch, state, f.IO.PromptEnabled()})
 		if err != nil {
 			return nil, nil, err
 		}
@@ -220,15 +227,15 @@ func MRsFromArgs(f *cmdutils.Factory, args []string, state string) ([]*gitlab.Me
 	return mrs, baseRepo, nil
 }
 
-var getMRForBranch = func(apiClient *gitlab.Client, baseRepo glrepo.Interface, arg string, state string) (*gitlab.MergeRequest, error) {
-	currentBranch := arg // Assume the user is using only 'branch', not 'OWNER:branch'
+var getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.MergeRequest, error) {
+	currentBranch := mrOpts.arg // Assume the user is using only 'branch', not 'OWNER:branch'
 	var owner string
 
 	// If the string contains a ':' then it is using the OWNER:branch format, split it and
 	// assign them to the appropriate values, do note that we do not expect multiple ':' as
 	// git does not allow ':' to be used on branch names
-	if strings.Contains(arg, ":") {
-		t := strings.Split(arg, ":")
+	if strings.Contains(mrOpts.arg, ":") {
+		t := strings.Split(mrOpts.arg, ":")
 		owner = t[0]
 		currentBranch = t[1]
 	}
@@ -240,11 +247,11 @@ var getMRForBranch = func(apiClient *gitlab.Client, baseRepo glrepo.Interface, a
 	// Set the state value if it is not empty, if it is empty then it will look at all possible
 	// values, 'any' is also a descriptive keyword used in the source code that is equivalent to
 	// passing nothing on
-	if state != "" && state != "any" {
-		opts.State = gitlab.Ptr(state)
+	if mrOpts.state != "" && mrOpts.state != "any" {
+		opts.State = gitlab.Ptr(mrOpts.state)
 	}
 
-	mrs, err := api.ListMRs(apiClient, baseRepo.FullName(), &opts)
+	mrs, err := api.ListMRs(apiClient, mrOpts.baseRepo.FullName(), &opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get open merge request for %q: %w", currentBranch, err)
 	}
@@ -280,14 +287,21 @@ var getMRForBranch = func(apiClient *gitlab.Client, baseRepo glrepo.Interface, a
 		mrNames = append(mrNames, t)
 	}
 	pickedMR := mrNames[0]
-	err = prompt.Select(&pickedMR,
-		"mr",
-		"Multiple merge requests exist for this branch. Select one:",
-		mrNames,
-	)
+
+	if !mrOpts.promptEnabled {
+		// NO_PROMPT environment variable is set. Skip prompt and return error when multiple merge requests exist for branch.
+		err = fmt.Errorf("merge request ID number required. Possible matches:\n\n%s", strings.Join(mrNames, "\n"))
+	} else {
+		err = prompt.Select(&pickedMR,
+			"mr",
+			"Multiple merge requests exist for this branch. Select one:",
+			mrNames,
+		)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("you must select a merge request: %w", err)
 	}
+
 	return mrMap[pickedMR], nil
 }
 

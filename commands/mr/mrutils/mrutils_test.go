@@ -213,7 +213,7 @@ func Test_getMRForBranchFails(t *testing.T) {
 			return nil, errors.New("API call failed")
 		}
 
-		got, err := getMRForBranch(&gitlab.Client{}, baseRepo, "foo", "opened")
+		got, err := getMRForBranch(&gitlab.Client{}, mrOptions{baseRepo, "foo", "opened", true})
 		assert.Nil(t, got)
 		assert.EqualError(t, err, `failed to get open merge request for "foo": API call failed`)
 	})
@@ -223,7 +223,7 @@ func Test_getMRForBranchFails(t *testing.T) {
 			return []*gitlab.MergeRequest{}, nil
 		}
 
-		got, err := getMRForBranch(&gitlab.Client{}, baseRepo, "foo", "opened")
+		got, err := getMRForBranch(&gitlab.Client{}, mrOptions{baseRepo, "foo", "opened", true})
 		assert.Nil(t, got)
 		assert.EqualError(t, err, `no open merge request available for "foo"`)
 	})
@@ -246,7 +246,7 @@ func Test_getMRForBranchFails(t *testing.T) {
 			}, nil
 		}
 
-		got, err := getMRForBranch(&gitlab.Client{}, baseRepo, "zemzale:foo", "opened")
+		got, err := getMRForBranch(&gitlab.Client{}, mrOptions{baseRepo, "zemzale:foo", "opened", true})
 		assert.Nil(t, got)
 		assert.EqualError(t, err, `no open merge request available for "foo" owned by @zemzale`)
 	})
@@ -309,7 +309,7 @@ func Test_getMRForBranch(t *testing.T) {
 				return tC.mrs, nil
 			}
 
-			got, err := getMRForBranch(&gitlab.Client{}, baseRepo, tC.input, "opened")
+			got, err := getMRForBranch(&gitlab.Client{}, mrOptions{baseRepo, tC.input, "opened", true})
 			assert.NoError(t, err)
 
 			assert.Equal(t, tC.expect.IID, got.IID)
@@ -349,7 +349,7 @@ func Test_getMRForBranchPrompt(t *testing.T) {
 			},
 		})
 
-		got, err := getMRForBranch(&gitlab.Client{}, baseRepo, "foo", "opened")
+		got, err := getMRForBranch(&gitlab.Client{}, mrOptions{baseRepo, "foo", "opened", true})
 		assert.NoError(t, err)
 
 		assert.Equal(t, 1, got.IID)
@@ -367,7 +367,7 @@ func Test_getMRForBranchPrompt(t *testing.T) {
 			},
 		})
 
-		got, err := getMRForBranch(&gitlab.Client{}, baseRepo, "foo", "opened")
+		got, err := getMRForBranch(&gitlab.Client{}, mrOptions{baseRepo, "foo", "opened", true})
 		assert.Nil(t, got)
 		assert.EqualError(t, err, "you must select a merge request: prompt failed")
 	})
@@ -379,12 +379,13 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 		HttpClient: func() (*gitlab.Client, error) { return &gitlab.Client{}, nil },
 		BaseRepo:   func() (glrepo.Interface, error) { return glrepo.New("foo", "bar"), nil },
 		Branch:     func() (string, error) { return "main", nil },
+		IO:         &iostreams.IOStreams{},
 	}
+	f.IO.SetPrompt("false")
 
 	t.Run("success", func(t *testing.T) {
 		t.Run("via-ID", func(t *testing.T) {
 			f := *f
-
 			api.GetMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				return &gitlab.MergeRequest{
 					IID:          2,
@@ -410,7 +411,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 		t.Run("via-name", func(t *testing.T) {
 			f := *f
 
-			getMRForBranch = func(apiClient *gitlab.Client, baseRepo glrepo.Interface, arg string, state string) (*gitlab.MergeRequest, error) {
+			getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.MergeRequest, error) {
 				return &gitlab.MergeRequest{
 					IID:          2,
 					Title:        "test mr",
@@ -484,8 +485,8 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 		t.Run("invalid-name", func(t *testing.T) {
 			f := *f
 
-			getMRForBranch = func(apiClient *gitlab.Client, baseRepo glrepo.Interface, arg string, state string) (*gitlab.MergeRequest, error) {
-				return nil, fmt.Errorf("no merge requests from branch %q", arg)
+			getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.MergeRequest, error) {
+				return nil, fmt.Errorf("no merge requests from branch %q", mrOpts.arg)
 			}
 
 			gotMR, gotRepo, err := MRFromArgs(&f, []string{"foo"}, "")
