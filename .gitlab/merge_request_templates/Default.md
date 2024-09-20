@@ -1,6 +1,8 @@
 ## Description
 <!--- Describe your changes in detail -->
 
+%{all_commits}
+
 ## Related Issues
 <!--- This project only accepts merge requests related to open issues -->
 <!--- If suggesting a new feature or change, please discuss it in an issue first -->
