@@ -1,0 +1,599 @@
+package bootstrap
+
+import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
+	"testing"
+
+	"github.com/google/shlex"
+	"github.com/xanzy/go-gitlab"
+	glab_api "gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"go.uber.org/mock/gomock"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestAgentBootstrap_FailsToGetDefaultBranchForDefaultManifestBranch(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, _, _ := setupCmdExec(t)
+
+	actualErr := errors.New("dummy error")
+
+	api.EXPECT().GetDefaultBranch().Return("", actualErr)
+	stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error())))
+
+	// WHEN
+	err := exec("test-agent-name")
+
+	// THEN
+	assert.ErrorIs(t, err, actualErr)
+}
+
+func TestAgentBootstrap_HappyPath_AgentNotRegisteredYet(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{Token: agentTokenValue}
+	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
+	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, glab_api.AgentNotFoundErr),
+		api.EXPECT().RegisterAgent(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(agentTokenValue).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
+		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
+		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
+		api.EXPECT().SyncFile(helmReleaseFile, defaultBranch).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Reconciling Flux Helm Resources ... Output from flux command:\n")),
+		fluxWrapper.EXPECT().reconcile().Return(nil),
+		stderr.EXPECT().Write([]byte("Successfully bootstrapped the GitLab Agent\n")),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.NoError(t, err)
+}
+
+func TestAgentBootstrap_HappyPath_AgentAlreadyRegistered(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{Token: agentTokenValue}
+	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
+	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(agentTokenValue).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
+		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
+		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
+		api.EXPECT().SyncFile(helmReleaseFile, defaultBranch).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Reconciling Flux Helm Resources ... Output from flux command:\n")),
+		fluxWrapper.EXPECT().reconcile().Return(nil),
+		stderr.EXPECT().Write([]byte("Successfully bootstrapped the GitLab Agent\n")),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.NoError(t, err)
+}
+
+func TestAgentBootstrap_HappyPath_NoReconcile(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{Token: agentTokenValue}
+	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
+	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, glab_api.AgentNotFoundErr),
+		api.EXPECT().RegisterAgent(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(agentTokenValue).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
+		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
+		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
+		api.EXPECT().SyncFile(helmReleaseFile, defaultBranch).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Successfully bootstrapped the GitLab Agent\n")),
+	)
+
+	// WHEN
+	err := exec(fmt.Sprintf("%s --no-reconcile", agentName))
+
+	// THEN
+	assert.NoError(t, err)
+}
+
+func TestAgentBootstrap_HappyPath_CustomFluxHelmManifestFileNames(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{Token: agentTokenValue}
+	helmRepositoryFile := file{path: "test-1.yaml", content: []byte("any")}
+	helmReleaseFile := file{path: "test-2.yaml", content: []byte("any")}
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, glab_api.AgentNotFoundErr),
+		api.EXPECT().RegisterAgent(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(agentTokenValue).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
+		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
+		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
+		api.EXPECT().SyncFile(helmReleaseFile, defaultBranch).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Reconciling Flux Helm Resources ... Output from flux command:\n")),
+		fluxWrapper.EXPECT().reconcile().Return(nil),
+		stderr.EXPECT().Write([]byte("Successfully bootstrapped the GitLab Agent\n")),
+	)
+
+	// WHEN
+	err := exec(fmt.Sprintf(
+		"%s --helm-repository-filepath=%s --helm-release-filepath=%s",
+		agentName,
+		helmRepositoryFile.path,
+		helmReleaseFile.path,
+	))
+
+	// THEN
+	assert.NoError(t, err)
+}
+
+func TestAgentBootstrap_Error_GetAgentByName(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, _, _ := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+
+	actualErr := errors.New("dummy error")
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, actualErr),
+		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.ErrorIs(t, err, actualErr)
+}
+
+func TestAgentBootstrap_Error_RegisterAgent(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, _, _ := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+
+	actualErr := errors.New("dummy error")
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, glab_api.AgentNotFoundErr),
+		api.EXPECT().RegisterAgent(agentName).Return(nil, actualErr),
+		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.ErrorIs(t, err, actualErr)
+}
+
+func TestAgentBootstrap_Error_CreateAgentToken(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, _, _ := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+
+	actualErr := errors.New("dummy error")
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(nil, actualErr),
+		stderr.EXPECT().Write([]byte("[FAILED]\n")),
+		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.ErrorIs(t, err, actualErr)
+}
+
+func TestAgentBootstrap_Error_createAgentTokenSecret(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, _ := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{Token: agentTokenValue}
+
+	actualErr := errors.New("dummy error")
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(agentTokenValue).Return(actualErr),
+		stderr.EXPECT().Write([]byte("[FAILED]\n")),
+		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.ErrorIs(t, err, actualErr)
+}
+
+func TestAgentBootstrap_Error_createHelmRepositoryManifest(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{Token: agentTokenValue}
+
+	actualErr := errors.New("dummy error")
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(agentTokenValue).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
+		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(file{}, actualErr),
+		stderr.EXPECT().Write([]byte("[FAILED]\n")),
+		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.ErrorIs(t, err, actualErr)
+}
+
+func TestAgentBootstrap_Error_createHelmReleaseManifest(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{Token: agentTokenValue}
+	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
+	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
+
+	actualErr := errors.New("dummy error")
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(agentTokenValue).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
+		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, actualErr),
+		stderr.EXPECT().Write([]byte("[FAILED]\n")),
+		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.ErrorIs(t, err, actualErr)
+}
+
+func TestAgentBootstrap_Error_SyncFile_HelmRepositoryFile(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{Token: agentTokenValue}
+	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
+	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
+
+	actualErr := errors.New("dummy error")
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(agentTokenValue).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
+		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
+		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(actualErr),
+		stderr.EXPECT().Write([]byte("[FAILED]\n")),
+		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.ErrorIs(t, err, actualErr)
+}
+
+func TestAgentBootstrap_Error_SyncFile_HelmReleaseFile(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{Token: agentTokenValue}
+	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
+	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
+
+	actualErr := errors.New("dummy error")
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(agentTokenValue).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
+		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
+		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
+		api.EXPECT().SyncFile(helmReleaseFile, defaultBranch).Return(actualErr),
+		stderr.EXPECT().Write([]byte("[FAILED]\n")),
+		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.ErrorIs(t, err, actualErr)
+}
+
+func TestAgentBootstrap_Error_reconcile(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
+
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{Token: agentTokenValue}
+	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
+	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
+
+	actualErr := errors.New("dummy error")
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(agentTokenValue).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
+		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
+		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
+		api.EXPECT().SyncFile(helmReleaseFile, defaultBranch).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Reconciling Flux Helm Resources ... Output from flux command:\n")),
+		fluxWrapper.EXPECT().reconcile().Return(actualErr),
+		stderr.EXPECT().Write(ContainsBytes([]byte(reconcileErr.Error()))),
+	)
+
+	// WHEN
+	err := exec(agentName)
+
+	// THEN
+	assert.ErrorIs(t, err, reconcileErr)
+}
+
+type execFunc func(cli string) error
+
+func setupCmdExec(t *testing.T) (execFunc, *MockAPI, *MockWriter, *MockWriter, *MockKubectlWrapper, *MockFluxWrapper) {
+	t.Helper()
+
+	ctrl := gomock.NewController(t)
+	mockAPI := NewMockAPI(ctrl)
+	mockStdout := NewMockWriter(ctrl)
+	mockStderr := NewMockWriter(ctrl)
+	mockKubectlWrapper := NewMockKubectlWrapper(ctrl)
+	mockFluxWrapper := NewMockFluxWrapper(ctrl)
+	mockCmd := NewMockCmd(ctrl)
+
+	cmd := NewCmdAgentBootstrap(
+		&cmdutils.Factory{
+			IO: &iostreams.IOStreams{
+				In:       io.NopCloser(&bytes.Buffer{}),
+				StdOut:   mockStdout,
+				StdErr:   mockStderr,
+				IsaTTY:   true,
+				IsInTTY:  true,
+				IsErrTTY: true,
+			},
+			HttpClient: func() (*gitlab.Client, error) { return nil /* unused */, nil },
+			BaseRepo:   func() (glrepo.Interface, error) { return glrepo.New("OWNER", "REPO"), nil },
+		},
+		func() error { return nil },
+		func(*gitlab.Client, any) API { return mockAPI },
+		func(_ Cmd, _, _, _ string) KubectlWrapper { return mockKubectlWrapper },
+		func(_ Cmd, _, _, _, _, _, _, _, _, _, _, _, _ string) FluxWrapper { return mockFluxWrapper },
+		func(_, _ io.Writer, _ []string) Cmd { return mockCmd },
+	)
+
+	cmd.SetIn(&bytes.Buffer{})
+	cmd.SetOut(mockStdout)
+	cmd.SetErr(mockStderr)
+
+	// Set on root cmd, thus we also need to set it here.
+	// cmd.SilenceErrors = true
+	cmd.SilenceUsage = true
+
+	exec := func(cli string) error {
+		argv, err := shlex.Split(cli)
+		if err != nil {
+			return err
+		}
+
+		cmd.SetArgs(argv)
+		_, err = cmd.ExecuteC()
+		return err
+	}
+
+	return exec, mockAPI, mockStdout, mockStderr, mockKubectlWrapper, mockFluxWrapper
+}
+
+func ContainsBytes(b []byte) gomock.Matcher {
+	return &containsBytesMatcher{b: b}
+}
+
+type containsBytesMatcher struct {
+	b       []byte
+	actualB []byte
+}
+
+func (m containsBytesMatcher) Matches(arg interface{}) bool {
+	m.actualB = arg.([]byte)
+	return bytes.Contains(m.actualB, m.b)
+}
+
+func (m containsBytesMatcher) String() string {
+	return fmt.Sprintf("does not contain: %q, got %q", m.b, m.actualB)
+}

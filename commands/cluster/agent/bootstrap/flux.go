@@ -1,0 +1,153 @@
+package bootstrap
+
+import (
+	"bytes"
+	"errors"
+	"fmt"
+	"os"
+	"path"
+	"time"
+
+	"github.com/avast/retry-go/v4"
+)
+
+var _ FluxWrapper = (*localFluxWrapper)(nil)
+
+func NewLocalFluxWrapper(
+	cmd Cmd,
+	binary string,
+	manifestPath string,
+	helmRepositoryName string,
+	helmRepositoryNamespace string,
+	helmRepositoryFilepath string,
+	helmReleaseName string,
+	helmReleaseNamespace string,
+	helmReleaseFilepath string,
+	helmReleaseTargetNamespace string,
+	fluxSourceType string,
+	fluxSourceNamespace string,
+	fluxSourceName string,
+) FluxWrapper {
+	return &localFluxWrapper{
+		cmd:                        cmd,
+		binary:                     binary,
+		manifestPath:               manifestPath,
+		helmRepositoryName:         helmRepositoryName,
+		helmRepositoryNamespace:    helmRepositoryNamespace,
+		helmRepositoryFilepath:     helmRepositoryFilepath,
+		helmReleaseName:            helmReleaseName,
+		helmReleaseNamespace:       helmReleaseNamespace,
+		helmReleaseFilepath:        helmReleaseFilepath,
+		helmReleaseTargetNamespace: helmReleaseTargetNamespace,
+		fluxSourceType:             fluxSourceType,
+		fluxSourceNamespace:        fluxSourceNamespace,
+		fluxSourceName:             fluxSourceName,
+
+		reconcileRetryDelay: 10 * time.Second,
+	}
+}
+
+type localFluxWrapper struct {
+	cmd                        Cmd
+	binary                     string
+	manifestPath               string
+	helmRepositoryName         string
+	helmRepositoryNamespace    string
+	helmRepositoryFilepath     string
+	helmReleaseName            string
+	helmReleaseNamespace       string
+	helmReleaseFilepath        string
+	helmReleaseTargetNamespace string
+	fluxSourceType             string
+	fluxSourceNamespace        string
+	fluxSourceName             string
+	reconcileRetryDelay        time.Duration
+}
+
+func (f *localFluxWrapper) createHelmRepositoryManifest() (file, error) {
+	helmRepositoryYAML, err := f.cmd.RunWithOutput(
+		f.binary,
+		"create",
+		"source",
+		"helm",
+		f.helmRepositoryName,
+		"--export",
+		fmt.Sprintf("-n=%s", f.helmRepositoryNamespace),
+		"--url=https://charts.gitlab.io",
+	)
+	if err != nil {
+		return file{}, err
+	}
+
+	return file{path: path.Join(f.manifestPath, f.helmRepositoryFilepath), content: helmRepositoryYAML}, nil
+}
+
+func (f *localFluxWrapper) createHelmReleaseManifest() (file, error) {
+	// create temporary file for Flux CLI to read values from.
+	// The Flux CLI does not yet support reading values from literal flags.
+	valuesFile, err := os.CreateTemp("", "glab-bootstrap-helmrelease-values")
+	if err != nil {
+		return file{}, err
+	}
+	defer os.Remove(valuesFile.Name())
+	defer valuesFile.Close()
+
+	_, err = valuesFile.Write([]byte(`config:
+  secretName: gitlab-agent-token
+`))
+	if err != nil {
+		return file{}, err
+	}
+
+	if err = valuesFile.Sync(); err != nil {
+		return file{}, err
+	}
+
+	helmReleaseYAML, err := f.cmd.RunWithOutput(
+		f.binary,
+		"create",
+		"helmrelease",
+		f.helmReleaseName,
+		"--export",
+		fmt.Sprintf("-n=%s", f.helmReleaseNamespace),
+		fmt.Sprintf("--target-namespace=%s", f.helmReleaseTargetNamespace),
+		"--create-target-namespace=true",
+		fmt.Sprintf("--source=HelmRepository/%s.%s", f.helmRepositoryName, f.helmRepositoryNamespace),
+		"--chart=gitlab-agent",
+		fmt.Sprintf("--release-name=%s", f.helmReleaseName),
+		fmt.Sprintf("--values=%s", valuesFile.Name()),
+	)
+	if err != nil {
+		return file{}, err
+	}
+
+	return file{path: path.Join(f.manifestPath, f.helmReleaseFilepath), content: helmReleaseYAML}, nil
+}
+
+func (f *localFluxWrapper) reconcile() error {
+	// reconcile flux source to pull new HelmRepository source
+	err := f.cmd.Run(f.binary, "reconcile", "source", f.fluxSourceType, f.fluxSourceName, fmt.Sprintf("-n=%s", f.fluxSourceNamespace))
+	if err != nil {
+		return err
+	}
+
+	// just reconciling doesn't mean that the HelmRelease now exists ... (bug in flux? At least very unfortunate behavior)
+	err = retry.Do(func() error {
+		output, err := f.cmd.RunWithOutput(f.binary, "get", "helmreleases", f.helmReleaseName, fmt.Sprintf("-n=%s", f.helmReleaseNamespace))
+		if err != nil {
+			// flux always returns with exit code 0, even when the helmrelease does not exist (yet)
+			return retry.Unrecoverable(err)
+		}
+
+		if bytes.Contains(output, []byte(fmt.Sprintf(`HelmRelease object '%s' not found in "%s" namespace`, f.helmReleaseName, f.helmReleaseNamespace))) {
+			return errors.New(string(output))
+		}
+
+		return nil
+	}, retry.Attempts(6), retry.Delay(f.reconcileRetryDelay))
+	if err != nil {
+		return err
+	}
+
+	return f.cmd.Run(f.binary, "reconcile", "helmrelease", f.helmReleaseName, fmt.Sprintf("-n=%s", f.helmReleaseNamespace), "--with-source")
+}

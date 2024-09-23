@@ -27,6 +27,7 @@ Manage GitLab Agents for Kubernetes.
 
 ## Subcommands
 
+- [`bootstrap`](bootstrap.md)
 - [`check_manifest_usage`](check_manifest_usage.md)
 - [`get-token`](get-token.md)
 - [`list`](list.md)
