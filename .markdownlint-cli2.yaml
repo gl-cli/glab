@@ -27,8 +27,6 @@ config:
   no-trailing-punctuation:          # MD026
     punctuation: ".,;:!。，；：！？"
   no-trailing-spaces: false         # MD009
-  ol-prefix:                        # MD029
-    style: "one"
   reference-links-images: false     # MD052
   ul-style:                         # MD004
     style: "dash"
