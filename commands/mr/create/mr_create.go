@@ -85,7 +85,7 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 		Branch:   f.Branch,
 		Remotes:  f.Remotes,
 		Config:   f.Config,
-		HeadRepo: resolvedHeadRepo(f),
+		HeadRepo: ResolvedHeadRepo(f),
 	}
 
 	mrCreateCmd := &cobra.Command{
@@ -797,7 +797,7 @@ func generateMRCompareURL(opts *CreateOpts) (string, error) {
 	return u.String(), nil
 }
 
-func resolvedHeadRepo(f *cmdutils.Factory) func() (glrepo.Interface, error) {
+func ResolvedHeadRepo(f *cmdutils.Factory) func() (glrepo.Interface, error) {
 	return func() (glrepo.Interface, error) {
 		httpClient, err := f.HttpClient()
 		if err != nil {
