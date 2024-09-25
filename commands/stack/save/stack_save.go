@@ -99,11 +99,8 @@ func NewCmdSaveStack(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor) *
 			}
 
 			var stackRef git.StackRef
-			if len(stack.Refs) > 0 {
-				lastRef, err := stack.Last()
-				if err != nil {
-					return fmt.Errorf("error getting last ref: %v", err)
-				}
+			if !stack.Empty() {
+				lastRef := stack.Last()
 
 				// update the ref before it (the current last ref)
 				err = git.UpdateStackRefFile(title, git.StackRef{

@@ -111,13 +111,8 @@ func stackSync(f *cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options
 	for {
 		needsToSyncAgain = false
 
-		ref, err := stack.First()
-		if err != nil {
-			return fmt.Errorf("error getting first stack. Your data in %s might be corrupted: %v", git.StackLocation, err)
-		}
-
 		var gr git.StandardGitCommand
-		for {
+		for ref := range stack.Iter() {
 			status, err := branchStatus(&ref, gr)
 			if err != nil {
 				return fmt.Errorf("error getting branch status: %v", err)
@@ -159,12 +154,6 @@ func stackSync(f *cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options
 					return fmt.Errorf("error removing merged merge request: %v", err)
 				}
 			}
-
-			if ref.Next == "" {
-				break
-			}
-
-			ref = stack.Refs[ref.Next]
 		}
 
 		if !needsToSyncAgain {
@@ -232,10 +221,7 @@ func branchStatus(ref *git.StackRef, gr git.GitRunner) (string, error) {
 }
 
 func rebaseWithUpdateRefs(ref *git.StackRef, stack *git.Stack, gr git.GitRunner) error {
-	lastRef, err := stack.Last()
-	if err != nil {
-		return err
-	}
+	lastRef := stack.Last()
 
 	checkout, err := gr.Git("checkout", lastRef.Branch)
 	if err != nil {
@@ -300,7 +286,7 @@ func createMR(
 	}
 
 	var previousBranch string
-	if ref.Prev == "" {
+	if ref.IsFirst() {
 		// Point to the default one
 		previousBranch, err = git.GetDefaultBranch(git.DefaultRemote)
 		if err != nil {

@@ -1,6 +1,7 @@
 package navigate
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -37,11 +38,11 @@ func NewCmdStackFirst(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			ref, err := stack.First()
-			if err != nil {
-				return err
+			if stack.Empty() {
+				return errors.New("you are on an empty stack. To use a stack, first save a diff.")
 			}
 
+			ref := stack.First()
 			err = git.CheckoutBranch(ref.Branch)
 			if err != nil {
 				return err
@@ -71,7 +72,7 @@ func NewCmdStackNext(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			if ref.Next == "" {
+			if ref.IsLast() {
 				return fmt.Errorf("you are already at the last diff. Use `glab stack list` to see the complete list.")
 			}
 
@@ -105,7 +106,7 @@ func NewCmdStackPrev(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			if ref.Prev == "" {
+			if ref.IsFirst() {
 				return fmt.Errorf("you are already at the first diff. Use `glab stack list` to see the complete list.")
 			}
 
@@ -134,10 +135,11 @@ func NewCmdStackLast(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			ref, err := stack.Last()
-			if err != nil {
-				return err
+			if stack.Empty() {
+				return errors.New("stack is empty until you save a diff.")
 			}
+
+			ref := stack.Last()
 
 			err = git.CheckoutBranch(ref.Branch)
 			if err != nil {
@@ -166,25 +168,13 @@ func NewCmdStackMove(f *cmdutils.Factory) *cobra.Command {
 			var branches []string
 			var descriptions []string
 
-			firstRef, err := stack.First()
-			if err != nil {
-				return err
-			}
-
 			i := 1
-			ref := firstRef
-			for {
+			for ref := range stack.Iter() {
 				branches = append(branches, ref.Branch)
 				message := fmt.Sprintf("%v: %v", i, ref.Description)
 				descriptions = append(descriptions, message)
 
 				i++
-
-				if ref.Next == "" {
-					break
-				}
-
-				ref = stack.Refs[ref.Next]
 			}
 
 			var branch string

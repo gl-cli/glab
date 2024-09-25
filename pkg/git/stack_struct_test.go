@@ -2,8 +2,10 @@ package git
 
 import (
 	"path"
+	"slices"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
@@ -120,7 +122,6 @@ func Test_StackLast(t *testing.T) {
 		name     string
 		mockRefs map[string]StackRef
 		expected StackRef
-		wantErr  bool
 	}{
 		{
 			name: "Find last ref",
@@ -130,28 +131,20 @@ func Test_StackLast(t *testing.T) {
 				"sha3": {Prev: "sha2", SHA: "sha3"},
 			},
 			expected: StackRef{Prev: "sha2", SHA: "sha3"},
-			wantErr:  false,
 		},
 		{
 			name:     "No refs",
 			mockRefs: map[string]StackRef{},
 			expected: StackRef{},
-			wantErr:  true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Stack{Refs: tt.mockRefs}
-			got, err := s.Last()
+			got := s.Last()
 
 			require.Equal(t, got, tt.expected)
-
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.Nil(t, err)
-			}
 		})
 	}
 }
@@ -161,38 +154,29 @@ func Test_StackFirst(t *testing.T) {
 		name     string
 		mockRefs map[string]StackRef
 		expected StackRef
-		wantErr  bool
 	}{
 		{
-			name: "Find last ref",
+			name: "Find first ref",
 			mockRefs: map[string]StackRef{
 				"sha1": {Next: "sha2", SHA: "sha1"},
 				"sha2": {Prev: "sha1", Next: "sha3", SHA: "sha2"},
 				"sha3": {Prev: "sha2", SHA: "sha3"},
 			},
 			expected: StackRef{Next: "sha2", SHA: "sha1"},
-			wantErr:  false,
 		},
 		{
 			name:     "No refs",
 			mockRefs: map[string]StackRef{},
 			expected: StackRef{},
-			wantErr:  true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Stack{Refs: tt.mockRefs}
-			got, err := s.First()
+			got := s.First()
 
 			require.Equal(t, got, tt.expected)
-
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.Nil(t, err)
-			}
 		})
 	}
 }
@@ -343,6 +327,46 @@ func Test_GatherStackRefs(t *testing.T) {
 			stacks: []StackRef{
 				{SHA: "123", Prev: "", Next: ""},
 				{SHA: "456", Prev: "123", Next: ""},
+			},
+			expected: Stack{},
+			wantErr:  true,
+		},
+		{
+			name: "with multiple start refs",
+			args: args{title: "sweet-title-123"},
+			stacks: []StackRef{
+				{SHA: "123", Prev: "", Next: "456"},
+				{SHA: "456", Prev: "", Next: ""},
+			},
+			expected: Stack{},
+			wantErr:  true,
+		},
+		{
+			name: "with multiple end refs",
+			args: args{title: "sweet-title-123"},
+			stacks: []StackRef{
+				{SHA: "123", Prev: "", Next: ""},
+				{SHA: "456", Prev: "123", Next: ""},
+			},
+			expected: Stack{},
+			wantErr:  true,
+		},
+		{
+			name: "without start ref",
+			args: args{title: "sweet-title-123"},
+			stacks: []StackRef{
+				{SHA: "123", Prev: "456", Next: "456"},
+				{SHA: "456", Prev: "456", Next: ""},
+			},
+			expected: Stack{},
+			wantErr:  true,
+		},
+		{
+			name: "without end ref",
+			args: args{title: "sweet-title-123"},
+			stacks: []StackRef{
+				{SHA: "123", Prev: "", Next: "456"},
+				{SHA: "456", Prev: "123", Next: "123"},
 			},
 			expected: Stack{},
 			wantErr:  true,
@@ -541,6 +565,47 @@ func Test_validateStackRefs(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestStack_Iter(t *testing.T) {
+	tests := []struct {
+		name               string
+		stack              Stack
+		expectedIterations int
+	}{
+		{
+			name:               "empty stack",
+			stack:              Stack{},
+			expectedIterations: 0,
+		},
+		{
+			name: "single ref stack",
+			stack: Stack{
+				Refs: map[string]StackRef{
+					"abc": {SHA: "abc", Prev: "", Next: ""},
+				},
+			},
+			expectedIterations: 1,
+		},
+		{
+			name: "multi ref stack",
+			stack: Stack{
+				Refs: map[string]StackRef{
+					"abc": {SHA: "abc", Prev: "", Next: "def"},
+					"def": {SHA: "def", Prev: "abc", Next: ""},
+				},
+			},
+			expectedIterations: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			items := slices.Collect(tt.stack.Iter())
+
+			assert.Len(t, items, tt.expectedIterations)
 		})
 	}
 }

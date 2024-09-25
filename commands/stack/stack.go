@@ -3,6 +3,7 @@ package stack
 import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	stackCreateCmd "gitlab.com/gitlab-org/cli/commands/stack/create"
+	stackListCmd "gitlab.com/gitlab-org/cli/commands/stack/list"
 	stackMoveCmd "gitlab.com/gitlab-org/cli/commands/stack/navigate"
 	stackSaveCmd "gitlab.com/gitlab-org/cli/commands/stack/save"
 	stackSyncCmd "gitlab.com/gitlab-org/cli/commands/stack/sync"
@@ -43,6 +44,7 @@ func NewCmdStack(f *cmdutils.Factory) *cobra.Command {
 	stackCmd.AddCommand(stackMoveCmd.NewCmdStackFirst(f))
 	stackCmd.AddCommand(stackMoveCmd.NewCmdStackLast(f))
 	stackCmd.AddCommand(stackMoveCmd.NewCmdStackMove(f))
+	stackCmd.AddCommand(stackListCmd.NewCmdStackList(f))
 
 	return stackCmd
 }

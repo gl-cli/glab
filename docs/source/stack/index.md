@@ -55,6 +55,7 @@ glab stack sync
 - [`create`](create.md)
 - [`first`](first.md)
 - [`last`](last.md)
+- [`list`](list.md)
 - [`move`](move.md)
 - [`next`](next.md)
 - [`prev`](prev.md)
