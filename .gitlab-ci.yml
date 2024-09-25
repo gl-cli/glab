@@ -146,6 +146,8 @@ release_test:
   rules:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - changes:
+        - .goreleaser.yml
   script: |
     docker run --rm --privileged \
       -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
@@ -193,6 +195,8 @@ windows_installer:
     - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - changes:
+        - .goreleaser.yml
   script:
     - mv scripts/setup_windows.iss .
     - iscc "setup_windows.iss" -DVersion=${CI_COMMIT_TAG//v}
@@ -210,6 +214,8 @@ build_windows:
     - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - changes:
+        - .goreleaser.yml
   script:
     - GOOS=windows GOARCH=amd64 make build
     - mv bin/glab bin/glab.exe

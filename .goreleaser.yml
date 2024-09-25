@@ -85,37 +85,16 @@ docker_manifests:
 archives:
   - id: nix
     builds: [macos, linux]
-    <<: &archive_defaults
-      name_template: >-
-        {{ .ProjectName }}_
-        {{- .Version }}_
-        {{- if eq .Os "darwin" }}macOS
-        {{- else if eq .Os "linux" }}Linux
-        {{- else if eq .Os "windows" }}Windows{{ end }}_
-        {{- if eq .Arch "386" }}i386
-        {{- else if eq .Arch "amd64" }}x86_64
-        {{- else if eq .Arch "arm" }}arm
-        {{- else }}{{ .Arch }}{{ end }}
-        {{- if .Arm }}v{{ .Arm }}{{ end }}
-      wrap_in_directory: false
+    wrap_in_directory: false
     format: tar.gz
 
   - id: windows
     builds: [windows]
-    <<: *archive_defaults
     format: zip
 
 nfpms:
   - id: foo
     package_name: glab
-    file_name_template: >-
-      {{ .ProjectName }}_
-      {{- .Version }}_
-      {{- if eq .Os "darwin" }}macOS
-      {{- else if eq .Os "linux" }}Linux{{ end }}_
-      {{- if eq .Arch "386" }}i386
-      {{- else if eq .Arch "amd64" }}x86_64
-      {{- else }}{{ .Arch }}{{ end }}
 
     # Build IDs for the builds you want to create NFPM packages for.
     # Defaults to all builds.
