@@ -56,18 +56,18 @@ func amendFunc(f *cmdutils.Factory, args []string, getText cmdutils.GetTextUsing
 		return "", fmt.Errorf("error running Git command: %v", err)
 	}
 
-	stack, err := checkForStack(title)
+	ref, err := git.CurrentStackRefFromBranch(title)
 	if err != nil {
 		return "", fmt.Errorf("error checking for stack: %v", err)
 	}
 
-	if stack.Branch == "" {
+	if ref.Branch == "" {
 		return "", fmt.Errorf("not currently in a stack. Change to the branch you want to amend.")
 	}
 
 	// a description is required, so ask if one is not provided
 	if description == "" {
-		description, err = promptForCommit(f, getText, stack.Description)
+		description, err = promptForCommit(f, getText, ref.Description)
 		if err != nil {
 			return "", fmt.Errorf("error getting commit message: %v", err)
 		}
@@ -107,24 +107,4 @@ func gitAmend(description string) error {
 	fmt.Println("Amend commit: ", string(output))
 
 	return nil
-}
-
-func checkForStack(title string) (git.StackRef, error) {
-	stack, err := git.GatherStackRefs(title)
-	if err != nil {
-		return git.StackRef{}, err
-	}
-
-	branch, err := git.CurrentBranch()
-	if err != nil {
-		return git.StackRef{}, err
-	}
-
-	for _, ref := range stack.Refs {
-		if ref.Branch == branch {
-			return ref, nil
-		}
-	}
-
-	return git.StackRef{}, nil
 }

@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"iter"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type StackRef struct {
@@ -18,6 +20,14 @@ type StackRef struct {
 	Description string `json:"description"`
 }
 
+// Stack represents a stacked diff data structure.
+// Refs are structured as a doubly linked list where
+// the links are identified with the StackRef.Prev
+// and StackRef.Next fields.
+// The StackRef.SHA is the id that the former two
+// fields can point to.
+// All stacks must be created with GatherStackRefs
+// which validates the stack for consistency.
 type Stack struct {
 	Title string
 	Refs  map[string]StackRef
@@ -26,7 +36,7 @@ type Stack struct {
 func (s Stack) Empty() bool { return len(s.Refs) == 0 }
 
 func (s *Stack) RemoveRef(ref StackRef) error {
-	if ref.Next == "" && ref.Prev == "" {
+	if ref.IsFirst() && ref.IsLast() {
 		// this is the only ref, so just remove it
 		err := DeleteStackRefFile(s.Title, ref)
 		delete(s.Refs, ref.SHA)
@@ -61,7 +71,7 @@ func (s *Stack) RemoveBranch(ref StackRef) error {
 	var branch string
 	var err error
 
-	if ref.Prev == "" {
+	if ref.IsFirst() {
 		branch, err = GetDefaultBranch(DefaultRemote)
 		if err != nil {
 			return err
@@ -116,24 +126,48 @@ func (s *Stack) adjustAdjacentRefs(ref StackRef) error {
 	return nil
 }
 
-func (s *Stack) Last() (StackRef, error) {
+func (s *Stack) Last() StackRef {
+	if s.Empty() {
+		return StackRef{}
+	}
+
 	for _, ref := range s.Refs {
-		if ref.Next == "" {
-			return ref, nil
+		if ref.IsLast() {
+			return ref
 		}
 	}
 
-	return StackRef{}, fmt.Errorf("can't find the last ref in the chain. Data might be corrupted.")
+	// All Stacks should be created with GatherStackRefs which validates the Stack consistency.
+	panic(errors.New("can't find the last ref in the chain. Data might be corrupted."))
 }
 
-func (s *Stack) First() (StackRef, error) {
+func (s *Stack) First() StackRef {
+	if s.Empty() {
+		return StackRef{}
+	}
+
 	for _, ref := range s.Refs {
-		if ref.Prev == "" {
-			return ref, nil
+		if ref.IsFirst() {
+			return ref
 		}
 	}
 
-	return StackRef{}, fmt.Errorf("can't find the first ref in the chain. Data might be corrupted.")
+	// All Stacks should be created with GatherStackRefs which validates the Stack consistency.
+	panic(errors.New("can't find the first ref in the chain. Data might be corrupted."))
+}
+
+// Iter returns an iterator to range from the first to the last ref in the stack.
+func (s *Stack) Iter() iter.Seq[StackRef] {
+	return func(yield func(StackRef) bool) {
+		ref := s.First()
+		for !ref.Empty() {
+			if !yield(ref) {
+				return
+			}
+
+			ref = s.Refs[ref.Next]
+		}
+	}
 }
 
 func GatherStackRefs(title string) (Stack, error) {
@@ -194,18 +228,30 @@ func validateStackRefs(s Stack) error {
 	endRefs := 0
 	startRefs := 0
 
+	if s.Empty() {
+		// empty stacks are okay.
+		return nil
+	}
+
 	for _, ref := range s.Refs {
-		if ref.Next == "" {
+		if ref.IsFirst() {
 			startRefs++
 		}
 
-		if ref.Prev == "" {
+		if ref.IsLast() {
 			endRefs++
 		}
 
 		if endRefs > 1 || startRefs > 1 {
 			return errors.New("More than one end or start ref detected. Data might be corrupted.")
 		}
+	}
+
+	if startRefs != 1 {
+		return errors.New("expected exactly one start ref. Data might be corrupted.")
+	}
+	if endRefs != 1 {
+		return errors.New("expected exactly one end ref. Data might be corrupted.")
 	}
 	return nil
 }
@@ -228,4 +274,29 @@ func CurrentStackRefFromBranch(title string) (StackRef, error) {
 	}
 
 	return StackRef{}, nil
+}
+
+// Empty returns true if the stack ref does not have an associated SHA (commit).
+// This indicates that the StackRef is invalid.
+func (r StackRef) Empty() bool { return r.SHA == "" }
+
+// IsFirst returns true if the stack ref is the first of the stack.
+// A stack ref is considered the first if it does not reference any previous ref.
+func (r StackRef) IsFirst() bool { return r.Prev == "" }
+
+// IsLast returns true if the stack ref is the last of the stack.
+// A stack ref is considered the last if it does not reference any next ref.
+func (r StackRef) IsLast() bool { return r.Next == "" }
+
+// Subject returns the stack ref description suitable as commit Subject
+// and for other in space limited places.
+// It only takes the first line of the description into account
+// and truncates it to 72 characters.
+func (r StackRef) Subject() string {
+	ls := strings.SplitN(r.Description, "\n", 1)
+	if len(ls[0]) <= 72 {
+		return ls[0]
+	}
+
+	return ls[0][:69] + "..."
 }
