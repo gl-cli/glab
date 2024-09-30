@@ -46,34 +46,35 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOptions) error) *co
 		Use:     "create <name>",
 		Aliases: []string{"create", "new"},
 		Args:    cobra.RangeArgs(1, 1),
-		Short:   "Create user, group or project access tokens.",
+		Short:   "Creates user, group, or project access tokens.",
 		Long: heredoc.Doc(`
-			Create a new access token for a user, group or project.
+		Creates a new access token for a user, group, or project. Defaults to a
+		project access token, unless user or group name is specified.
 
-			The name of the token must be unique. The token is printed on stdout.
+		The expiration date of the token is calculated by adding the duration
+		(default: 30 days) to the current date. You can specify a different duration,
+		or an explicit end date.
 
-			Creates a project access token by default, unless you specify the user or group name. The expiration
-			date of the token is calculated by adding the duration (default 30 days) to the current date.
-			Alternatively, you can specify a different duration, or an explicit end date.
+		The name of the token must be unique. The token is printed to stdout.
 
-			Non-administrators can create only personal access tokens for themselves (@me) with the scope 'k8s_proxy'.
-			Administrators can create full-featured personal access tokens for themselves and for other users.
+		Administrators can create full-featured personal access tokens for themselves and for other users.
+		Non-administrators can create personal access tokens only for themselves (@me) with the scope 'k8s_proxy'.
 		`),
 		Example: heredoc.Doc(`
-			# Create project access token for current project
-			glab token create --access-level developer --scope read_repository --scope read_registry my-project-token
+		# Create project access token for current project
+		glab token create --access-level developer --scope read_repository --scope read_registry my-project-token
 
-			# Create project access token for a specific project
-			glab token create --repo user/my-repo  --access-level owner --scope api my-project-token
+		# Create project access token for a specific project
+		glab token create --repo user/my-repo --access-level owner --scope api my-project-token
 
-			# Create a group access token
-			glab token create --group group/sub-group --access-level owner --scope api my-group-token
+		# Create a group access token
+		glab token create --group group/sub-group --access-level owner --scope api my-group-token
 
-			# Create a personal access token for current user
-			glab token create --user @me --scope k8s_proxy my-personal-token
+		# Create a personal access token for current user
+		glab token create --user @me --scope k8s_proxy my-personal-token
 
-			# create a personal access token for another user (administrator only)
-			glab token create --user johndoe --scope api johns-personal-token
+		# (administrator only) Create a personal access token for another user
+		glab token create --user johndoe --scope api johns-personal-token
 
 		`),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
