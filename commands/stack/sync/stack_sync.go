@@ -106,12 +106,18 @@ func stackSync(f *cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options
 		return err
 	}
 
+	var gr git.StandardGitCommand
+
+	err = fetchOrigin(gr)
+	if err != nil {
+		return err
+	}
+
 	var needsToSyncAgain bool
 
 	for {
 		needsToSyncAgain = false
 
-		var gr git.StandardGitCommand
 		for ref := range stack.Iter() {
 			status, err := branchStatus(&ref, gr)
 			if err != nil {
@@ -202,6 +208,17 @@ func gitPull(ref *git.StackRef, gr git.GitRunner) (string, error) {
 	debug("Pulled:", pull)
 
 	return pull, nil
+}
+
+func fetchOrigin(gr git.GitRunner) error {
+	output, err := gr.Git("fetch", git.DefaultRemote)
+	debug("Fetching from remote:", output)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func branchStatus(ref *git.StackRef, gr git.GitRunner) (string, error) {
