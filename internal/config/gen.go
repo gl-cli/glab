@@ -41,7 +41,7 @@ func rootConfig() *yaml.Node {
 		panic(err)
 	}
 
-	err = config.WriteFile("config_stub.go", rootFmted, 0644)
+	err = config.WriteFile("config_stub.go", rootFmted, 0o644)
 	if err != nil {
 		panic(err)
 	}

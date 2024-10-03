@@ -139,3 +139,22 @@ func UpdateStackRefFile(title string, s StackRef) error {
 
 	return nil
 }
+
+func GetStacks() (stacks []Stack, err error) {
+	topLevelDir, err := ToplevelDir()
+	if err != nil {
+		return nil, err
+	}
+	stackLocationDir := filepath.Join(topLevelDir, StackLocation)
+	entries, err := os.ReadDir(stackLocationDir)
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range entries {
+		if !v.IsDir() {
+			continue
+		}
+		stacks = append(stacks, Stack{Title: v.Name()})
+	}
+	return
+}
