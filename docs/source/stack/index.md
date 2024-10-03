@@ -60,4 +60,5 @@ glab stack sync
 - [`next`](next.md)
 - [`prev`](prev.md)
 - [`save`](save.md)
+- [`switch`](switch.md)
 - [`sync`](sync.md)

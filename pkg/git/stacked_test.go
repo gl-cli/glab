@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
@@ -191,6 +192,48 @@ func Test_UpdateStackRefFile(t *testing.T) {
 			require.Equal(t, stackRef, tt.args.stackRef)
 		})
 	}
+}
+
+func Test_GetStacks(t *testing.T) {
+	t.Run("two stacks", func(t *testing.T) {
+		stacks := []Stack{
+			{
+				Title: "stack-0",
+				Refs: map[string]StackRef{
+					"0": {
+						Description: "stack-0 initial commit",
+					},
+				},
+			},
+			{
+				Title: "stack-1",
+				Refs: map[string]StackRef{
+					"0": {
+						Description: "stack-1 initial commit",
+					},
+				},
+			},
+		}
+		InitGitRepo(t)
+		var want []Stack
+		for _, v := range stacks {
+			for _, ref := range v.Refs {
+				err := AddStackRefFile(v.Title, ref)
+				require.Nil(t, err)
+			}
+			want = append(want, Stack{Title: v.Title})
+		}
+		got, err := GetStacks()
+		require.Nil(t, err)
+		require.Equal(t, want, got)
+	})
+	t.Run("no stacks", func(t *testing.T) {
+		InitGitRepo(t)
+		got, err := GetStacks()
+		var want []Stack = nil
+		require.NotNil(t, err)
+		require.Equal(t, want, got)
+	})
 }
 
 func createRefFiles(refs map[string]StackRef, title string) error {
