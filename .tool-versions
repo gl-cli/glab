@@ -1,2 +1,5 @@
 golang 1.23.1
+
+# For linting documentation
+markdownlint-cli2 0.14.0
 vale 3.7.1
