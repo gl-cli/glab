@@ -102,3 +102,27 @@ var CreatePersonalAccessToken = func(client *gitlab.Client, uid int, opts *gitla
 	token, _, err := client.Users.CreatePersonalAccessToken(uid, opts)
 	return token, err
 }
+
+var RevokeProjectAccessToken = func(client *gitlab.Client, pid interface{}, id int) error {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	_, err := client.ProjectAccessTokens.RevokeProjectAccessToken(pid, id)
+	return err
+}
+
+var RevokeGroupAccessToken = func(client *gitlab.Client, gid interface{}, id int) error {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	_, err := client.GroupAccessTokens.RevokeGroupAccessToken(gid, id)
+	return err
+}
+
+var RevokePersonalAccessToken = func(client *gitlab.Client, id int) error {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	_, err := client.PersonalAccessTokens.RevokePersonalAccessToken(id)
+	return err
+}

@@ -63,7 +63,7 @@ glab token create --user johndoe --scope api johns-personal-token
 
 ```plaintext
   -A, --access-level AccessLevel   Access level of the token: one of 'guest', 'reporter', 'developer', 'maintainer', 'owner'. (default no)
-  -D, --duration duration          Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504w. (default 720h0m0s)
+  -D, --duration duration          Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h. (default 720h0m0s)
   -E, --expires-at DATE            Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used. (default 0001-01-01)
   -g, --group string               Create a group access token. Ignored if a user or repository argument is set.
   -F, --output string              Format output as 'text' for the token value, 'json' for the actual API token structure. (default "text")

@@ -16,7 +16,7 @@ Manage personal, project, or group tokens
 ## Aliases
 
 ```plaintext
-tok
+token
 ```
 
 ## Options
@@ -34,3 +34,4 @@ tok
 ## Subcommands
 
 - [`create`](create.md)
+- [`revoke`](revoke.md)
