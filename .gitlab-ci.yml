@@ -160,7 +160,7 @@ release_test:
       -e GO_VERSION="$GO_VERSION" \
       -w /go/src/gitlab.com/gitlab-org/cli \
       -v /var/run/docker.sock:/var/run/docker.sock \
-      goreleaser/goreleaser release --snapshot
+      goreleaser/goreleaser:nightly release --snapshot
 
 release:
   extends: .release
@@ -179,7 +179,7 @@ release:
       -e GO_VERSION="$GO_VERSION" \
       -e GITLAB_TOKEN=$GITLAB_TOKEN_RELEASE \
       --entrypoint "" \
-      goreleaser/goreleaser \
+      goreleaser/goreleaser:nightly \
       bash -c "
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
         docker login -u $DOCKER_IO_USER -p $DOCKER_IO_PASSWORD
