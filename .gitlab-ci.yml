@@ -157,6 +157,7 @@ release_test:
   script: |
     docker run --rm --privileged \
       -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
+      -e GO_VERSION="$GO_VERSION" \
       -w /go/src/gitlab.com/gitlab-org/cli \
       -v /var/run/docker.sock:/var/run/docker.sock \
       goreleaser/goreleaser release --snapshot
@@ -175,6 +176,7 @@ release:
       -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
       -w /go/src/gitlab.com/gitlab-org/cli \
       -v /var/run/docker.sock:/var/run/docker.sock \
+      -e GO_VERSION="$GO_VERSION" \
       -e GITLAB_TOKEN=$GITLAB_TOKEN_RELEASE \
       --entrypoint "" \
       goreleaser/goreleaser \
