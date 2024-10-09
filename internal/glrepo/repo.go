@@ -170,16 +170,49 @@ func FromURL(u *url.URL) (Interface, error) {
 	if u.Hostname() == "" {
 		return nil, fmt.Errorf("no hostname detected")
 	}
-	path := strings.Trim(strings.TrimSuffix(u.Path, ".git"), "/")
-	repo := path[strings.LastIndex(path, "/")+1:]
-	pathWithoutRepo := strings.TrimSuffix(path[:strings.LastIndex(path, "/")+1], "/")
+
+	var path string
+	var repo string
+	var pathWithoutRepo string
+	var hostname string
+
+	cfg, err := config.Init()
+	if err != nil {
+		return nil, err
+	}
+
+	apiHost, _ := cfg.Get(u.Hostname(), "api_host")
+
+	if apiHost != "" {
+		hostname = apiHost
+
+		parts := strings.SplitN(apiHost, "/", 2)
+		if len(parts) > 1 {
+			gitSubdirectory := strings.Replace(apiHost, parts[0], "", 1)
+			path = strings.Replace(apiHost+u.Path, apiHost+gitSubdirectory, "", 1)
+		} else {
+			path = strings.Replace(apiHost+u.Path, apiHost, "", 1)
+		}
+
+		pathWithoutRepo = strings.TrimSuffix(path[:strings.LastIndex(path, "/")+1], "/")
+		pathWithoutRepo = strings.TrimPrefix(pathWithoutRepo, "/")
+	} else {
+		hostname = u.Hostname()
+
+		path = strings.Trim(strings.TrimSuffix(u.Path, ".git"), "/")
+		pathWithoutRepo = strings.TrimSuffix(path[:strings.LastIndex(path, "/")+1], "/")
+	}
+
+	repo = path[strings.LastIndex(path, "/")+1:]
+
 	if repo != "" && pathWithoutRepo != "" {
 		parts := strings.SplitN(pathWithoutRepo, "/", 2)
 		if len(parts) == 1 {
-			return NewWithHost(parts[0], repo, u.Hostname()), nil
+			return NewWithHost(parts[0], repo, hostname), nil
 		}
+
 		if len(parts) == 2 {
-			return NewWithGroup(parts[0], parts[1], repo, u.Hostname()), nil
+			return NewWithGroup(parts[0], parts[1], repo, hostname), nil
 		}
 	}
 	return nil, fmt.Errorf("invalid path: %s", u.Path)

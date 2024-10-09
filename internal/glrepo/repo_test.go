@@ -66,6 +66,16 @@ func Test_RemoteURL(t *testing.T) {
 }
 
 func Test_repoFromURL(t *testing.T) {
+	defer config.StubConfig(`---
+hosts:
+  my.host.com:
+    token: OTOKEN
+    api_host: my.host.com/git
+  git.host.com:
+    token: OTOKEN
+    api_host: git-api.host.com
+`, "")()
+
 	tests := []struct {
 		name   string
 		input  string
@@ -106,6 +116,20 @@ func Test_repoFromURL(t *testing.T) {
 			input:  "https://example.com/one/two",
 			result: "one/two",
 			host:   "example.com",
+			err:    nil,
+		},
+		{
+			name:   "non-GitLab hostname with api_host",
+			input:  "https://git.host.com/one/two",
+			result: "one/two",
+			host:   "git-api.host.com",
+			err:    nil,
+		},
+		{
+			name:   "non-GitLab hostname with subdirectory and api_host",
+			input:  "https://my.host.com/git/one/two",
+			result: "one/two",
+			host:   "my.host.com/git",
 			err:    nil,
 		},
 		{
