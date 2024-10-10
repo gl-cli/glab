@@ -21,7 +21,7 @@ var DeleteProject = func(client *gitlab.Client, projectID interface{}) (*gitlab.
 	if client == nil {
 		client = apiClient.Lab()
 	}
-	project, err := client.Projects.DeleteProject(projectID)
+	project, err := client.Projects.DeleteProject(projectID, nil)
 	if err != nil {
 		return nil, err
 	}
