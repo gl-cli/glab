@@ -61,18 +61,15 @@ func OverrideDefaultProtocol(newProtocol string) {
 }
 
 // IsSelfHosted reports whether a non-normalized host name looks like a Self-hosted GitLab instance
+// staging.gitlab.com is considered self-hosted
 func IsSelfHosted(h string) bool {
 	return NormalizeHostname(h) != Default()
 }
 
 // NormalizeHostname returns the canonical host name of a GitLab instance
-// Taking cover in case GitLab allows subdomains on gitlab.com https://gitlab.com/gitlab-org/gitlab/-/issues/26703
+// Note: GitLab does not allow subdomains on gitlab.com https://gitlab.com/gitlab-org/gitlab/-/issues/26703
 func NormalizeHostname(h string) string {
-	hostname := strings.ToLower(h)
-	if strings.HasSuffix(hostname, "."+Default()) {
-		return Default()
-	}
-	return hostname
+	return strings.ToLower(h)
 }
 
 // StripHostProtocol strips the url protocol and returns the hostname and the protocol
