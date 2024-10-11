@@ -28,7 +28,12 @@ func TestIsSelfHosted(t *testing.T) {
 		{
 			name: "is a gitlab.com subdomain",
 			args: args{h: "example.gitlab.com"},
-			want: false,
+			want: true,
+		},
+		{
+			name: "is a gitlab.com staging",
+			args: args{h: "staging.gitlab.com"},
+			want: true,
 		},
 		{
 			name: "self hosted",
@@ -79,15 +84,19 @@ func TestNormalizeHostname(t *testing.T) {
 		},
 		{
 			host: "subdomain.gitlab.com",
-			want: "gitlab.com",
+			want: "subdomain.gitlab.com",
 		},
 		{
 			host: "ssh.gitlab.com",
-			want: "gitlab.com",
+			want: "ssh.gitlab.com",
 		},
 		{
 			host: "upload.gitlab.com",
-			want: "gitlab.com",
+			want: "upload.gitlab.com",
+		},
+		{
+			host: "staging.gitlab.com",
+			want: "staging.gitlab.com",
 		},
 		{
 			host: "EXAMPLE.COM",
@@ -116,6 +125,10 @@ func TestAPIEndpoint(t *testing.T) {
 		{
 			host: "gitlab.com",
 			want: "https://gitlab.com/api/v4/",
+		},
+		{
+			host: "staging.gitlab.com",
+			want: "https://staging.gitlab.com/api/v4/",
 		},
 		{
 			host: "ghe.io",
