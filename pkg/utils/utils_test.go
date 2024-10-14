@@ -1,11 +1,9 @@
 package utils
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,9 +32,7 @@ func Test_PrettyTimeAgo(t *testing.T) {
 		}
 
 		fuzzy := PrettyTimeAgo(d)
-		if fuzzy != expected {
-			t.Errorf("unexpected fuzzy duration value: %s for %s", fuzzy, duration)
-		}
+		require.Equal(t, fuzzy, expected, "unexpected fuzzy duration value: %s for %s")
 	}
 }
 
@@ -63,9 +59,7 @@ func Test_Pluralize(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
 			got := Pluralize(tC.amount, tC.word)
-			if got != tC.want {
-				t.Errorf("Pluralize() got = %s, want = %s", got, tC.want)
-			}
+			require.Equal(t, got, tC.want, "Pluralize() got = %s, want = %s")
 		})
 	}
 }
@@ -83,9 +77,7 @@ func Test_PresentInStringSlice(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
 			got := PresentInStringSlice(tC.hay, tC.needle)
-			if got != tC.want {
-				t.Errorf("PresentInStringSlice() got = %t, want = %t", got, tC.want)
-			}
+			require.Equal(t, got, tC.want, "PresentInStringSlice() got = %t, want = %t")
 		})
 	}
 }
@@ -103,9 +95,7 @@ func Test_PresentInIntSlice(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
 			got := PresentInIntSlice(tC.hay, tC.needle)
-			if got != tC.want {
-				t.Errorf("PresentInIntSlice() got = %t, want = %t", got, tC.want)
-			}
+			require.Equal(t, got, tC.want, "PresentInIntSlice() got = %t, want = %t")
 		})
 	}
 }
@@ -140,10 +130,7 @@ func Test_SanitizePathName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			filePathWanted := SanitizePathName(tt.filename)
-
-			if filePathWanted != tt.want {
-				t.Errorf("SanitizePathName() got = %s, want = %s", filePathWanted, tt.want)
-			}
+			require.Equal(t, filePathWanted, tt.want, "SanitizePathName() got = %s, want = %s")
 		})
 	}
 }
@@ -171,14 +158,9 @@ func Test_CommonElementsInStringSlice(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
 			got := CommonElementsInStringSlice(tC.array1, tC.array2)
-			if len(got) != len(tC.want) {
-				t.Errorf("CommonElementsInStringSlice() size of got (%d) and wanted (%d) arrays differ",
-					len(got), len(tC.want))
-			}
+			require.Equal(t, len(got), len(tC.want), "CommonElementsInStringSlice() size of got (%d) and wanted (%d) arrays differ")
 			for i := range got {
-				if got[i] != tC.want[i] {
-					t.Errorf("CommonElementsInStringSlice() got = %s, want = %s", got[i], tC.want[i])
-				}
+				require.Equal(t, got[i], tC.want[i], "CommonElementsInStringSlice() got = %s, want = %s")
 			}
 		})
 	}
@@ -220,10 +202,7 @@ func Test_Map(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := Map(tt.slice, tt.fn)
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf(`want %v; but got %v`, tt.want, got)
-			}
+			require.Equal(t, got, tt.want, "Test_Map() want %v; but got %v")
 		})
 	}
 }
@@ -254,7 +233,7 @@ func TestIsValidURL(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			actualIsValid := IsValidURL(test.input)
-			assert.Equal(t, test.expected, actualIsValid)
+			require.Equal(t, test.expected, actualIsValid, "TestIsValidURL() got = %s, want = %s")
 		})
 	}
 }
@@ -272,6 +251,6 @@ func TestPtr(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		require.Equal(t, Ptr(tt.val), &tt.val)
+		require.Equal(t, Ptr(tt.val), &tt.val, "TestPtr() got = %s want = %s")
 	}
 }
