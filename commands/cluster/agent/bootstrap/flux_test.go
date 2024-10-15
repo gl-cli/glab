@@ -55,7 +55,7 @@ func TestFlux_createHelmReReleaseManifest(t *testing.T) {
 		"--chart=gitlab-agent", "--release-name=helm-release-name", StartsWith("--values=")).
 		Return([]byte("content"), nil)
 
-	actualFile, err := f.createHelmReleaseManifest()
+	actualFile, err := f.createHelmReleaseManifest("wss://kas.gitlab.example.com")
 
 	// THEN
 	require.NoError(t, err)
@@ -74,7 +74,7 @@ func TestFlux_createHelmReReleaseManifest_Failure(t *testing.T) {
 		"--chart=gitlab-agent", "--release-name=helm-release-name", StartsWith("--values=")).
 		Return([]byte(""), errors.New("test"))
 
-	actualFile, err := f.createHelmReleaseManifest()
+	actualFile, err := f.createHelmReleaseManifest("wss://kas.gitlab.example.com")
 
 	// THEN
 	require.Error(t, err)

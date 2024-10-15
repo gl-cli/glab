@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"slices"
 
@@ -134,6 +135,19 @@ func (a *apiWrapper) CreateAgentToken(agentID int) (*gitlab.AgentToken, error) {
 
 func (a *apiWrapper) SyncFile(f file, branch string) error {
 	return glab_api.SyncFile(a.client, a.projectID, f.path, f.content, branch)
+}
+
+func (a *apiWrapper) GetKASAddress() (string, error) {
+	metadata, err := glab_api.GetMetadata(a.client)
+	if err != nil {
+		return "", err
+	}
+
+	if !metadata.KAS.Enabled {
+		return "", errors.New("KAS is not configured in this GitLab instance. Please contact your administrator.")
+	}
+
+	return metadata.KAS.ExternalURL, nil
 }
 
 func (a *apiWrapper) getEnvironmentByName(name string) (*gitlab.Environment, error) {

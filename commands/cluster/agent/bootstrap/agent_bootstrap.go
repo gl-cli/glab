@@ -25,11 +25,12 @@ type API interface {
 	ConfigureEnvironment(agentID int, name string, kubernetesNamespace string, fluxResourcePath string) error
 	CreateAgentToken(agentID int) (*gitlab.AgentToken, error)
 	SyncFile(f file, branch string) error
+	GetKASAddress() (string, error)
 }
 
 type FluxWrapper interface {
 	createHelmRepositoryManifest() (file, error)
-	createHelmReleaseManifest() (file, error)
+	createHelmReleaseManifest(kasAddress string) (file, error)
 	reconcile() error
 }
 
@@ -425,7 +426,12 @@ func (c *bootstrapCmd) createFluxHelmResources() ([]file, error) {
 		return nil, err
 	}
 
-	helmRelease, err := c.flux.createHelmReleaseManifest()
+	kasAddress, err := c.api.GetKASAddress()
+	if err != nil {
+		return nil, err
+	}
+
+	helmRelease, err := c.flux.createHelmReleaseManifest(kasAddress)
 	if err != nil {
 		return nil, err
 	}

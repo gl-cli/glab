@@ -232,6 +232,45 @@ func (c *MockAPIGetDefaultBranchCall) DoAndReturn(f func() (string, error)) *Moc
 	return c
 }
 
+// GetKASAddress mocks base method.
+func (m *MockAPI) GetKASAddress() (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetKASAddress")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetKASAddress indicates an expected call of GetKASAddress.
+func (mr *MockAPIMockRecorder) GetKASAddress() *MockAPIGetKASAddressCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetKASAddress", reflect.TypeOf((*MockAPI)(nil).GetKASAddress))
+	return &MockAPIGetKASAddressCall{Call: call}
+}
+
+// MockAPIGetKASAddressCall wrap *gomock.Call
+type MockAPIGetKASAddressCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c *MockAPIGetKASAddressCall) Return(arg0 string, arg1 error) *MockAPIGetKASAddressCall {
+	c.Call = c.Call.Return(arg0, arg1)
+	return c
+}
+
+// Do rewrite *gomock.Call.Do
+func (c *MockAPIGetKASAddressCall) Do(f func() (string, error)) *MockAPIGetKASAddressCall {
+	c.Call = c.Call.Do(f)
+	return c
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c *MockAPIGetKASAddressCall) DoAndReturn(f func() (string, error)) *MockAPIGetKASAddressCall {
+	c.Call = c.Call.DoAndReturn(f)
+	return c
+}
+
 // RegisterAgent mocks base method.
 func (m *MockAPI) RegisterAgent(arg0 string) (*gitlab.Agent, error) {
 	m.ctrl.T.Helper()
@@ -333,18 +372,18 @@ func (m *MockFluxWrapper) EXPECT() *MockFluxWrapperMockRecorder {
 }
 
 // createHelmReleaseManifest mocks base method.
-func (m *MockFluxWrapper) createHelmReleaseManifest() (file, error) {
+func (m *MockFluxWrapper) createHelmReleaseManifest(arg0 string) (file, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "createHelmReleaseManifest")
+	ret := m.ctrl.Call(m, "createHelmReleaseManifest", arg0)
 	ret0, _ := ret[0].(file)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // createHelmReleaseManifest indicates an expected call of createHelmReleaseManifest.
-func (mr *MockFluxWrapperMockRecorder) createHelmReleaseManifest() *MockFluxWrappercreateHelmReleaseManifestCall {
+func (mr *MockFluxWrapperMockRecorder) createHelmReleaseManifest(arg0 any) *MockFluxWrappercreateHelmReleaseManifestCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createHelmReleaseManifest", reflect.TypeOf((*MockFluxWrapper)(nil).createHelmReleaseManifest))
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createHelmReleaseManifest", reflect.TypeOf((*MockFluxWrapper)(nil).createHelmReleaseManifest), arg0)
 	return &MockFluxWrappercreateHelmReleaseManifestCall{Call: call}
 }
 
@@ -360,13 +399,13 @@ func (c *MockFluxWrappercreateHelmReleaseManifestCall) Return(arg0 file, arg1 er
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockFluxWrappercreateHelmReleaseManifestCall) Do(f func() (file, error)) *MockFluxWrappercreateHelmReleaseManifestCall {
+func (c *MockFluxWrappercreateHelmReleaseManifestCall) Do(f func(string) (file, error)) *MockFluxWrappercreateHelmReleaseManifestCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockFluxWrappercreateHelmReleaseManifestCall) DoAndReturn(f func() (file, error)) *MockFluxWrappercreateHelmReleaseManifestCall {
+func (c *MockFluxWrappercreateHelmReleaseManifestCall) DoAndReturn(f func(string) (file, error)) *MockFluxWrappercreateHelmReleaseManifestCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
