@@ -24,6 +24,8 @@ It requires the kubectl and flux commands to be accessible via $PATH.
 This command consists of multiple idempotent steps:
 
 1. Register the agent with the project.
+1. Configure the agent.
+1. Configure an environment with dashboard for the agent.
 1. Create a token for the agent.
    - If the agent has reached the maximum amount of tokens,
      the one that has not been used the longest is revoked
@@ -58,11 +60,21 @@ glab cluster agent bootstrap my-agent --manifest-path manifests/
 # Bootstrap "my-agent" to "manifests/" of Git project in CWD and do not manually trigger a reconilication
 glab cluster agent bootstrap my-agent --manifest-path manifests/ --no-reconcile
 
+# Bootstrap "my-agent" without configuring an environment
+glab cluster agent bootstrap my-agent --create-environment=false
+
+# Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
+glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
+
 ```
 
 ## Options
 
 ```plaintext
+      --create-environment                      Create an Environment for the GitLab Agent. (default true)
+      --environment-flux-resource-path string   Flux Resource Path of the Environment for the GitLab Agent. (default "helm.toolkit.fluxcd.io/v2beta1/namespaces/<helm-release-namespace>/helmreleases/<helm-release-name>")
+      --environment-name string                 Name of the Environment for the GitLab Agent. (default "<helm-release-namespace>/<helm-release-name>")
+      --environment-namespace string            Kubernetes namespace of the Environment for the GitLab Agent. (default "<helm-release-namespace>")
       --flux-source-name string                 Flux source name. (default "flux-system")
       --flux-source-namespace string            Flux source namespace. (default "flux-system")
       --flux-source-type string                 Source type of the flux-system, e.g. git, oci, helm, ... (default "git")
