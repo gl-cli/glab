@@ -23,7 +23,7 @@ type localKubectlWrapper struct {
 	gitlabAgentTokenSecretName string
 }
 
-func (k *localKubectlWrapper) createAgentTokenSecret(token string) error {
+func (k *localKubectlWrapper) createAgentTokenSecret(tokenID int, token string) error {
 	namespaceFlag := fmt.Sprintf("-n=%s", k.gitlabAgentNamespace)
 
 	output, err := k.cmd.RunWithOutput(k.binary, "create", "namespace", k.gitlabAgentNamespace)
@@ -42,7 +42,17 @@ func (k *localKubectlWrapper) createAgentTokenSecret(token string) error {
 	}
 
 	// create the secret again with the next token
-	_, err = k.cmd.RunWithOutput(k.binary, "create", "secret", "generic", k.gitlabAgentTokenSecretName, namespaceFlag, "--type=Opaque", fmt.Sprintf("--from-literal=token=%s", token))
+	_, err = k.cmd.RunWithOutput(
+		k.binary,
+		"create",
+		"secret",
+		"generic",
+		k.gitlabAgentTokenSecretName,
+		namespaceFlag,
+		"--type=Opaque",
+		fmt.Sprintf("--from-literal=token=%s", token),
+		fmt.Sprintf("--from-literal=token-id=%d", tokenID),
+	)
 	if err != nil {
 		return err
 	}

@@ -60,3 +60,25 @@ var SyncFile = func(client *gitlab.Client, projectID interface{}, path string, c
 	})
 	return err
 }
+
+var CreateFile = func(client *gitlab.Client, projectID interface{}, path string, content []byte, ref string) error {
+	_, _, err := client.RepositoryFiles.CreateFile(projectID, path, &gitlab.CreateFileOptions{
+		Branch:        gitlab.Ptr(ref),
+		Content:       gitlab.Ptr(string(content)),
+		CommitMessage: gitlab.Ptr(fmt.Sprintf("Add %s via glab file sync", path)),
+		AuthorName:    gitlab.Ptr(commitAuthorName),
+		AuthorEmail:   gitlab.Ptr(commitAuthorEmail),
+	})
+	return err
+}
+
+var UpdateFile = func(client *gitlab.Client, projectID interface{}, path string, content []byte, ref string) error {
+	_, _, err := client.RepositoryFiles.UpdateFile(projectID, path, &gitlab.UpdateFileOptions{
+		Branch:        gitlab.Ptr(ref),
+		Content:       gitlab.Ptr(string(content)),
+		CommitMessage: gitlab.Ptr(fmt.Sprintf("Update %s via glab file sync", path)),
+		AuthorName:    gitlab.Ptr(commitAuthorName),
+		AuthorEmail:   gitlab.Ptr(commitAuthorEmail),
+	})
+	return err
+}

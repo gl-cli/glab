@@ -39,6 +39,82 @@ func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
 }
 
+// ConfigureAgent mocks base method.
+func (m *MockAPI) ConfigureAgent(arg0 *gitlab.Agent, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfigureAgent", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConfigureAgent indicates an expected call of ConfigureAgent.
+func (mr *MockAPIMockRecorder) ConfigureAgent(arg0, arg1 any) *MockAPIConfigureAgentCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureAgent", reflect.TypeOf((*MockAPI)(nil).ConfigureAgent), arg0, arg1)
+	return &MockAPIConfigureAgentCall{Call: call}
+}
+
+// MockAPIConfigureAgentCall wrap *gomock.Call
+type MockAPIConfigureAgentCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c *MockAPIConfigureAgentCall) Return(arg0 error) *MockAPIConfigureAgentCall {
+	c.Call = c.Call.Return(arg0)
+	return c
+}
+
+// Do rewrite *gomock.Call.Do
+func (c *MockAPIConfigureAgentCall) Do(f func(*gitlab.Agent, string) error) *MockAPIConfigureAgentCall {
+	c.Call = c.Call.Do(f)
+	return c
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c *MockAPIConfigureAgentCall) DoAndReturn(f func(*gitlab.Agent, string) error) *MockAPIConfigureAgentCall {
+	c.Call = c.Call.DoAndReturn(f)
+	return c
+}
+
+// ConfigureEnvironment mocks base method.
+func (m *MockAPI) ConfigureEnvironment(arg0 int, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfigureEnvironment", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConfigureEnvironment indicates an expected call of ConfigureEnvironment.
+func (mr *MockAPIMockRecorder) ConfigureEnvironment(arg0, arg1, arg2, arg3 any) *MockAPIConfigureEnvironmentCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureEnvironment", reflect.TypeOf((*MockAPI)(nil).ConfigureEnvironment), arg0, arg1, arg2, arg3)
+	return &MockAPIConfigureEnvironmentCall{Call: call}
+}
+
+// MockAPIConfigureEnvironmentCall wrap *gomock.Call
+type MockAPIConfigureEnvironmentCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c *MockAPIConfigureEnvironmentCall) Return(arg0 error) *MockAPIConfigureEnvironmentCall {
+	c.Call = c.Call.Return(arg0)
+	return c
+}
+
+// Do rewrite *gomock.Call.Do
+func (c *MockAPIConfigureEnvironmentCall) Do(f func(int, string, string, string) error) *MockAPIConfigureEnvironmentCall {
+	c.Call = c.Call.Do(f)
+	return c
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c *MockAPIConfigureEnvironmentCall) DoAndReturn(f func(int, string, string, string) error) *MockAPIConfigureEnvironmentCall {
+	c.Call = c.Call.DoAndReturn(f)
+	return c
+}
+
 // CreateAgentToken mocks base method.
 func (m *MockAPI) CreateAgentToken(arg0 int) (*gitlab.AgentToken, error) {
 	m.ctrl.T.Helper()
@@ -396,17 +472,17 @@ func (m *MockKubectlWrapper) EXPECT() *MockKubectlWrapperMockRecorder {
 }
 
 // createAgentTokenSecret mocks base method.
-func (m *MockKubectlWrapper) createAgentTokenSecret(arg0 string) error {
+func (m *MockKubectlWrapper) createAgentTokenSecret(arg0 int, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "createAgentTokenSecret", arg0)
+	ret := m.ctrl.Call(m, "createAgentTokenSecret", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // createAgentTokenSecret indicates an expected call of createAgentTokenSecret.
-func (mr *MockKubectlWrapperMockRecorder) createAgentTokenSecret(arg0 any) *MockKubectlWrappercreateAgentTokenSecretCall {
+func (mr *MockKubectlWrapperMockRecorder) createAgentTokenSecret(arg0, arg1 any) *MockKubectlWrappercreateAgentTokenSecretCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createAgentTokenSecret", reflect.TypeOf((*MockKubectlWrapper)(nil).createAgentTokenSecret), arg0)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createAgentTokenSecret", reflect.TypeOf((*MockKubectlWrapper)(nil).createAgentTokenSecret), arg0, arg1)
 	return &MockKubectlWrappercreateAgentTokenSecretCall{Call: call}
 }
 
@@ -422,13 +498,13 @@ func (c *MockKubectlWrappercreateAgentTokenSecretCall) Return(arg0 error) *MockK
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockKubectlWrappercreateAgentTokenSecretCall) Do(f func(string) error) *MockKubectlWrappercreateAgentTokenSecretCall {
+func (c *MockKubectlWrappercreateAgentTokenSecretCall) Do(f func(int, string) error) *MockKubectlWrappercreateAgentTokenSecretCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockKubectlWrappercreateAgentTokenSecretCall) DoAndReturn(f func(string) error) *MockKubectlWrappercreateAgentTokenSecretCall {
+func (c *MockKubectlWrappercreateAgentTokenSecretCall) DoAndReturn(f func(int, string) error) *MockKubectlWrappercreateAgentTokenSecretCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }

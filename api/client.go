@@ -429,3 +429,20 @@ func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*C
 	}
 	return testClient, nil
 }
+
+// Is404 checks if the error represents a 404 response
+func Is404(err error) bool {
+	// If the error is a typed response
+	if errResponse, ok := err.(*gitlab.ErrorResponse); ok &&
+		errResponse.Response != nil &&
+		errResponse.Response.StatusCode == http.StatusNotFound {
+		return true
+	}
+
+	// This can also come back as a string 404 from go-gitlab
+	if err != nil && err.Error() == "404 Not Found" {
+		return true
+	}
+
+	return false
+}
