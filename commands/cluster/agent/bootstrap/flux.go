@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v4"
+	"gopkg.in/yaml.v3"
 )
 
 var _ FluxWrapper = (*localFluxWrapper)(nil)
@@ -82,7 +83,16 @@ func (f *localFluxWrapper) createHelmRepositoryManifest() (file, error) {
 	return file{path: path.Join(f.manifestPath, f.helmRepositoryFilepath), content: helmRepositoryYAML}, nil
 }
 
-func (f *localFluxWrapper) createHelmReleaseManifest() (file, error) {
+type agentHelmChartValues struct {
+	Config *agentHelmChartValuesConfig `yaml:"config"`
+}
+
+type agentHelmChartValuesConfig struct {
+	KASAddress string `yaml:"kasAddress"`
+	SecretName string `yaml:"secretName"`
+}
+
+func (f *localFluxWrapper) createHelmReleaseManifest(kasAddress string) (file, error) {
 	// create temporary file for Flux CLI to read values from.
 	// The Flux CLI does not yet support reading values from literal flags.
 	valuesFile, err := os.CreateTemp("", "glab-bootstrap-helmrelease-values")
@@ -92,14 +102,15 @@ func (f *localFluxWrapper) createHelmReleaseManifest() (file, error) {
 	defer os.Remove(valuesFile.Name())
 	defer valuesFile.Close()
 
-	_, err = valuesFile.Write([]byte(`config:
-  secretName: gitlab-agent-token
-`))
-	if err != nil {
-		return file{}, err
+	cfg := &agentHelmChartValues{
+		Config: &agentHelmChartValuesConfig{
+			KASAddress: kasAddress,
+			SecretName: "gitlab-agent-token",
+		},
 	}
 
-	if err = valuesFile.Sync(); err != nil {
+	enc := yaml.NewEncoder(valuesFile)
+	if err = enc.Encode(cfg); err != nil {
 		return file{}, err
 	}
 

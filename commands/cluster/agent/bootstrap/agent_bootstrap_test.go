@@ -38,6 +38,7 @@ func TestAgentBootstrap_HappyPath_AgentNotRegisteredYet(t *testing.T) {
 	// GIVEN
 	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
 
+	defaultKASAddress := "wss://kas.gitlab.example.com"
 	defaultBranch := "main"
 	agentName := "test-agent-name"
 	agentTokenValue := "glagent-test-token"
@@ -69,7 +70,8 @@ func TestAgentBootstrap_HappyPath_AgentNotRegisteredYet(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
 		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
@@ -92,6 +94,7 @@ func TestAgentBootstrap_HappyPath_AgentAlreadyRegistered(t *testing.T) {
 	// GIVEN
 	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
 
+	defaultKASAddress := "wss://kas.gitlab.example.com"
 	defaultBranch := "main"
 	agentName := "test-agent-name"
 	agentTokenValue := "glagent-test-token"
@@ -122,7 +125,8 @@ func TestAgentBootstrap_HappyPath_AgentAlreadyRegistered(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
 		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
@@ -145,6 +149,7 @@ func TestAgentBootstrap_HappyPath_NoEnvironmentCreation(t *testing.T) {
 	// GIVEN
 	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
 
+	defaultKASAddress := "wss://kas.gitlab.example.com"
 	defaultBranch := "main"
 	agentName := "test-agent-name"
 	agentTokenValue := "glagent-test-token"
@@ -172,7 +177,8 @@ func TestAgentBootstrap_HappyPath_NoEnvironmentCreation(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
 		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
@@ -195,6 +201,7 @@ func TestAgentBootstrap_HappyPath_CustomEnvironmentValues(t *testing.T) {
 	// GIVEN
 	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
 
+	defaultKASAddress := "wss://kas.gitlab.example.com"
 	defaultBranch := "main"
 	agentName := "test-agent-name"
 	agentTokenValue := "glagent-test-token"
@@ -226,7 +233,8 @@ func TestAgentBootstrap_HappyPath_CustomEnvironmentValues(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
 		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
@@ -255,6 +263,7 @@ func TestAgentBootstrap_HappyPath_NoReconcile(t *testing.T) {
 	// GIVEN
 	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
 
+	defaultKASAddress := "wss://kas.gitlab.example.com"
 	defaultBranch := "main"
 	agentName := "test-agent-name"
 	agentTokenValue := "glagent-test-token"
@@ -286,7 +295,8 @@ func TestAgentBootstrap_HappyPath_NoReconcile(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
 		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
@@ -308,6 +318,7 @@ func TestAgentBootstrap_HappyPath_CustomFluxHelmManifestFileNames(t *testing.T) 
 	// GIVEN
 	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
 
+	defaultKASAddress := "wss://kas.gitlab.example.com"
 	defaultBranch := "main"
 	agentName := "test-agent-name"
 	agentTokenValue := "glagent-test-token"
@@ -339,7 +350,8 @@ func TestAgentBootstrap_HappyPath_CustomFluxHelmManifestFileNames(t *testing.T) 
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
 		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
@@ -602,6 +614,7 @@ func TestAgentBootstrap_Error_createHelmReleaseManifest(t *testing.T) {
 	// GIVEN
 	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
 
+	defaultKASAddress := "wss://kas.gitlab.example.com"
 	defaultBranch := "main"
 	agentName := "test-agent-name"
 	agentTokenValue := "glagent-test-token"
@@ -634,7 +647,8 @@ func TestAgentBootstrap_Error_createHelmReleaseManifest(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, actualErr),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, actualErr),
 		stderr.EXPECT().Write([]byte("[FAILED]\n")),
 		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
 	)
@@ -650,6 +664,7 @@ func TestAgentBootstrap_Error_SyncFile_HelmRepositoryFile(t *testing.T) {
 	// GIVEN
 	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
 
+	defaultKASAddress := "wss://kas.gitlab.example.com"
 	defaultBranch := "main"
 	agentName := "test-agent-name"
 	agentTokenValue := "glagent-test-token"
@@ -682,7 +697,8 @@ func TestAgentBootstrap_Error_SyncFile_HelmRepositoryFile(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
 		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(actualErr),
@@ -701,6 +717,7 @@ func TestAgentBootstrap_Error_SyncFile_HelmReleaseFile(t *testing.T) {
 	// GIVEN
 	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
 
+	defaultKASAddress := "wss://kas.gitlab.example.com"
 	defaultBranch := "main"
 	agentName := "test-agent-name"
 	agentTokenValue := "glagent-test-token"
@@ -733,7 +750,8 @@ func TestAgentBootstrap_Error_SyncFile_HelmReleaseFile(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
 		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
@@ -753,6 +771,7 @@ func TestAgentBootstrap_Error_reconcile(t *testing.T) {
 	// GIVEN
 	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
 
+	defaultKASAddress := "wss://kas.gitlab.example.com"
 	defaultBranch := "main"
 	agentName := "test-agent-name"
 	agentTokenValue := "glagent-test-token"
@@ -785,7 +804,8 @@ func TestAgentBootstrap_Error_reconcile(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest().Return(helmReleaseFile, nil),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
 		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
