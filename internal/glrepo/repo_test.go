@@ -71,6 +71,9 @@ hosts:
   my.host.com:
     token: OTOKEN
     api_host: my.host.com/git
+  gdk.test:
+    token: OTOKEN
+    api_host: gdk.test:3443
   git.host.com:
     token: OTOKEN
     api_host: git-api.host.com
@@ -122,14 +125,21 @@ hosts:
 			name:   "non-GitLab hostname with api_host",
 			input:  "https://git.host.com/one/two",
 			result: "one/two",
-			host:   "git-api.host.com",
+			host:   "git.host.com",
+			err:    nil,
+		},
+		{
+			name:   "GDK with api_host",
+			input:  "https://gdk.test:3443/one/two",
+			result: "one/two",
+			host:   "gdk.test",
 			err:    nil,
 		},
 		{
 			name:   "non-GitLab hostname with subdirectory and api_host",
 			input:  "https://my.host.com/git/one/two",
 			result: "one/two",
-			host:   "my.host.com/git",
+			host:   "my.host.com",
 			err:    nil,
 		},
 		{
