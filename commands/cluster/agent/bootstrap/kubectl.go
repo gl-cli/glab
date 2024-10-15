@@ -41,7 +41,7 @@ func (k *localKubectlWrapper) createAgentTokenSecret(tokenID int, token string) 
 		}
 	}
 
-	// create the secret again with the next token
+	// create the secret (again) with the next token
 	_, err = k.cmd.RunWithOutput(
 		k.binary,
 		"create",
@@ -51,7 +51,19 @@ func (k *localKubectlWrapper) createAgentTokenSecret(tokenID int, token string) 
 		namespaceFlag,
 		"--type=Opaque",
 		fmt.Sprintf("--from-literal=token=%s", token),
-		fmt.Sprintf("--from-literal=token-id=%d", tokenID),
+	)
+	if err != nil {
+		return err
+	}
+
+	// annotate the secret with some metadata
+	_, err = k.cmd.RunWithOutput(
+		k.binary,
+		"annotate",
+		"secrets",
+		k.gitlabAgentTokenSecretName,
+		namespaceFlag,
+		fmt.Sprintf("gitlab.com/agent-token-id=%d", tokenID),
 	)
 	if err != nil {
 		return err

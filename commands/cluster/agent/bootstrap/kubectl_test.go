@@ -14,7 +14,8 @@ func TestKubectl_createAgentSecretToken_NewNamespace(t *testing.T) {
 
 	gomock.InOrder(
 		mockCmd.EXPECT().RunWithOutput("kubectl", "create", "namespace", "gitlab-agent"),
-		mockCmd.EXPECT().RunWithOutput("kubectl", "create", "secret", "generic", "gitlab-agent-token", "-n=gitlab-agent", "--type=Opaque", "--from-literal=token=any-token", "--from-literal=token-id=42"),
+		mockCmd.EXPECT().RunWithOutput("kubectl", "create", "secret", "generic", "gitlab-agent-token", "-n=gitlab-agent", "--type=Opaque", "--from-literal=token=any-token"),
+		mockCmd.EXPECT().RunWithOutput("kubectl", "annotate", "secrets", "gitlab-agent-token", "-n=gitlab-agent", "gitlab.com/agent-token-id=42"),
 	)
 
 	// WHEN
@@ -31,7 +32,8 @@ func TestKubectl_createAgentSecretToken_NamespaceAlreadyExists(t *testing.T) {
 	gomock.InOrder(
 		mockCmd.EXPECT().RunWithOutput("kubectl", "create", "namespace", "gitlab-agent").Return([]byte("already exists"), errors.New("test")),
 		mockCmd.EXPECT().RunWithOutput("kubectl", "delete", "secret", "gitlab-agent-token", "-n=gitlab-agent").Return([]byte("not found"), errors.New("test")),
-		mockCmd.EXPECT().RunWithOutput("kubectl", "create", "secret", "generic", "gitlab-agent-token", "-n=gitlab-agent", "--type=Opaque", "--from-literal=token=any-token", "--from-literal=token-id=42"),
+		mockCmd.EXPECT().RunWithOutput("kubectl", "create", "secret", "generic", "gitlab-agent-token", "-n=gitlab-agent", "--type=Opaque", "--from-literal=token=any-token"),
+		mockCmd.EXPECT().RunWithOutput("kubectl", "annotate", "secrets", "gitlab-agent-token", "-n=gitlab-agent", "gitlab.com/agent-token-id=42"),
 	)
 
 	// WHEN
@@ -76,7 +78,7 @@ func TestKubectl_createAgentSecretToken_SecretCreationFails(t *testing.T) {
 
 	gomock.InOrder(
 		mockCmd.EXPECT().RunWithOutput("kubectl", "create", "namespace", "gitlab-agent"),
-		mockCmd.EXPECT().RunWithOutput("kubectl", "create", "secret", "generic", "gitlab-agent-token", "-n=gitlab-agent", "--type=Opaque", "--from-literal=token=any-token", "--from-literal=token-id=42").Return([]byte("unknown error"), errors.New("test")),
+		mockCmd.EXPECT().RunWithOutput("kubectl", "create", "secret", "generic", "gitlab-agent-token", "-n=gitlab-agent", "--type=Opaque", "--from-literal=token=any-token").Return([]byte("unknown error"), errors.New("test")),
 	)
 
 	// WHEN
