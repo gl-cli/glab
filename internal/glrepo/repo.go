@@ -174,29 +174,27 @@ func FromURL(u *url.URL) (Interface, error) {
 	var urlPath string
 	var repo string
 	var pathWithoutRepo string
-	var hostname string
+	var apiHost string
 
 	cfg, err := config.ParseDefaultConfig()
 	// an error is fine here, there might not be a config available
 	if err == nil {
-		hostname, _ = cfg.Get(u.Hostname(), "api_host")
+		apiHost, _ = cfg.Get(u.Hostname(), "api_host")
 	}
 
-	if hostname != "" {
-		parts := strings.SplitN(hostname, "/", 2)
+	if apiHost != "" {
+		parts := strings.SplitN(apiHost, "/", 2)
 		if len(parts) > 1 {
-			gitSubdirectory := strings.Replace(hostname, parts[0], "", 1)
-			urlPath = strings.Replace(hostname+u.Path, hostname+gitSubdirectory, "", 1)
+			gitSubdirectory := strings.Replace(apiHost, parts[0], "", 1)
+			urlPath = strings.Replace(apiHost+u.Path, apiHost+gitSubdirectory, "", 1)
 		} else {
-			urlPath = strings.Replace(hostname+u.Path, hostname, "", 1)
+			urlPath = strings.Replace(apiHost+u.Path, apiHost, "", 1)
 		}
 
 		urlPath = strings.Trim(strings.TrimSuffix(urlPath, ".git"), "/")
 		pathWithoutRepo = strings.TrimSuffix(urlPath[:strings.LastIndex(urlPath, "/")+1], "/")
 		pathWithoutRepo = strings.TrimPrefix(pathWithoutRepo, "/")
 	} else {
-		hostname = u.Hostname()
-
 		urlPath = strings.Trim(strings.TrimSuffix(u.Path, ".git"), "/")
 		pathWithoutRepo = strings.TrimSuffix(urlPath[:strings.LastIndex(urlPath, "/")+1], "/")
 	}
@@ -206,11 +204,11 @@ func FromURL(u *url.URL) (Interface, error) {
 	if repo != "" && pathWithoutRepo != "" {
 		parts := strings.SplitN(pathWithoutRepo, "/", 2)
 		if len(parts) == 1 {
-			return NewWithHost(parts[0], repo, hostname), nil
+			return NewWithHost(parts[0], repo, u.Hostname()), nil
 		}
 
 		if len(parts) == 2 {
-			return NewWithGroup(parts[0], parts[1], repo, hostname), nil
+			return NewWithGroup(parts[0], parts[1], repo, u.Hostname()), nil
 		}
 	}
 	return nil, fmt.Errorf("invalid path: %s", u.Path)
