@@ -58,7 +58,8 @@ func NewCmdSyncStack(f *cmdutils.Factory) *cobra.Command {
 		Short: `Sync and submit progress on a stacked diff. (EXPERIMENTAL.)`,
 		Long: heredoc.Doc(`Sync and submit progress on a stacked diff. This command runs these steps:
 
-1. Creates a merge request for any branches without one.
+1. Optional. If working in a fork, select whether to push to the fork,
+   or the upstream repository.
 1. Pushes any amended changes to their merge requests.
 1. Rebases any changes that happened previously in the stack.
 1. Removes any branches that were already merged, or with a closed merge request.
@@ -94,6 +95,8 @@ func stackSync(f *cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options
 		return fmt.Errorf("error determining base repo: %v", err)
 	}
 
+	// This prompts the user for the head repo if they're in a fork,
+	// allowing them to choose between their fork and the original repository
 	source, err := create.ResolvedHeadRepo(f)()
 	if err != nil {
 		return fmt.Errorf("error determining head repo: %v", err)
