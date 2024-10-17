@@ -25,6 +25,8 @@ func NewLocalFluxWrapper(
 	helmReleaseNamespace string,
 	helmReleaseFilepath string,
 	helmReleaseTargetNamespace string,
+	helmReleaseValues []string,
+	helmReleaseValuesFrom []string,
 	fluxSourceType string,
 	fluxSourceNamespace string,
 	fluxSourceName string,
@@ -40,6 +42,8 @@ func NewLocalFluxWrapper(
 		helmReleaseNamespace:       helmReleaseNamespace,
 		helmReleaseFilepath:        helmReleaseFilepath,
 		helmReleaseTargetNamespace: helmReleaseTargetNamespace,
+		helmReleaseValues:          helmReleaseValues,
+		helmReleaseValuesFrom:      helmReleaseValuesFrom,
 		fluxSourceType:             fluxSourceType,
 		fluxSourceNamespace:        fluxSourceNamespace,
 		fluxSourceName:             fluxSourceName,
@@ -59,6 +63,8 @@ type localFluxWrapper struct {
 	helmReleaseNamespace       string
 	helmReleaseFilepath        string
 	helmReleaseTargetNamespace string
+	helmReleaseValues          []string
+	helmReleaseValuesFrom      []string
 	fluxSourceType             string
 	fluxSourceNamespace        string
 	fluxSourceName             string
@@ -114,8 +120,7 @@ func (f *localFluxWrapper) createHelmReleaseManifest(kasAddress string) (file, e
 		return file{}, err
 	}
 
-	helmReleaseYAML, err := f.cmd.RunWithOutput(
-		f.binary,
+	args := []string{
 		"create",
 		"helmrelease",
 		f.helmReleaseName,
@@ -127,6 +132,18 @@ func (f *localFluxWrapper) createHelmReleaseManifest(kasAddress string) (file, e
 		"--chart=gitlab-agent",
 		fmt.Sprintf("--release-name=%s", f.helmReleaseName),
 		fmt.Sprintf("--values=%s", valuesFile.Name()),
+	}
+
+	for _, v := range f.helmReleaseValues {
+		args = append(args, fmt.Sprintf("--values=%s", v))
+	}
+	for _, v := range f.helmReleaseValuesFrom {
+		args = append(args, fmt.Sprintf("--values-from=%s", v))
+	}
+
+	helmReleaseYAML, err := f.cmd.RunWithOutput(
+		f.binary,
+		args...,
 	)
 	if err != nil {
 		return file{}, err

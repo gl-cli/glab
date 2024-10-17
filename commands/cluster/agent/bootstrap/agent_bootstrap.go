@@ -41,7 +41,7 @@ type KubectlWrapper interface {
 type (
 	APIFactory            func(*gitlab.Client, any) API
 	KubectlWrapperFactory func(Cmd, string, string, string) KubectlWrapper
-	FluxWrapperFactory    func(Cmd, string, string, string, string, string, string, string, string, string, string, string, string) FluxWrapper
+	FluxWrapperFactory    func(Cmd, string, string, string, string, string, string, string, string, string, []string, []string, string, string, string) FluxWrapper
 	CmdFactory            func(io.Writer, io.Writer, []string) Cmd
 )
 
@@ -103,6 +103,12 @@ glab cluster agent bootstrap my-agent --create-environment=false
 
 # Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
 glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
+
+# Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a local file
+glab cluster agent bootstrap my-agent --helm-release-values values.yaml
+
+# Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a Kubernetes ConfigMap
+glab cluster agent bootstrap my-agent --helm-release-values-from ConfigMap/agent-config
 `,
 		Aliases: []string{"bs"},
 		Args:    cobra.ExactArgs(1),
@@ -170,6 +176,14 @@ glab cluster agent bootstrap my-agent --environment-name production --environmen
 				return err
 			}
 			helmReleaseTargetNamespace, err := cmd.Flags().GetString("helm-release-target-namespace")
+			if err != nil {
+				return err
+			}
+			helmReleaseValues, err := cmd.Flags().GetStringSlice("helm-release-values")
+			if err != nil {
+				return err
+			}
+			helmReleaseValuesFrom, err := cmd.Flags().GetStringSlice("helm-release-values-from")
 			if err != nil {
 				return err
 			}
@@ -245,6 +259,7 @@ glab cluster agent bootstrap my-agent --environment-name production --environmen
 					c, fluxBinaryName, manifestPath,
 					helmRepositoryName, helmRepositoryNamespace, helmRepositoryFilepath,
 					helmReleaseName, helmReleaseNamespace, helmReleaseFilepath, helmReleaseTargetNamespace,
+					helmReleaseValues, helmReleaseValuesFrom,
 					fluxSourceType, fluxSourceNamespace, fluxSourceName,
 				),
 				noReconcile:    noReconcile,
@@ -265,6 +280,8 @@ glab cluster agent bootstrap my-agent --environment-name production --environmen
 	agentBootstrapCmd.Flags().String("helm-release-namespace", "flux-system", "Namespace of the Flux HelmRelease manifest.")
 	agentBootstrapCmd.Flags().String("helm-release-filepath", "gitlab-agent-helm-release.yaml", "Filepath within the GitLab Agent project to commit the Flux HelmRelease to.")
 	agentBootstrapCmd.Flags().String("helm-release-target-namespace", "gitlab-agent", "Namespace of the GitLab Agent deployment.")
+	agentBootstrapCmd.Flags().StringSlice("helm-release-values", nil, "Local path to values.yaml files")
+	agentBootstrapCmd.Flags().StringSlice("helm-release-values-from", nil, "Kubernetes object reference that contains the values.yaml data key in the format '<kind>/<name>', where kind must be one of: (Secret,ConfigMap)")
 
 	agentBootstrapCmd.Flags().String("gitlab-agent-token-secret-name", "gitlab-agent-token", "Name of the Secret where the token for the GitLab Agent is stored. The helm-release-target-namespace is implied for the namespace of the Secret.")
 
