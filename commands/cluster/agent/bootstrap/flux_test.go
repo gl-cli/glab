@@ -52,7 +52,7 @@ func TestFlux_createHelmReReleaseManifest(t *testing.T) {
 		"flux", "create", "helmrelease", "helm-release-name", "--export",
 		"-n=helm-release-namespace", "--target-namespace=helm-release-target-namespace",
 		"--create-target-namespace=true", "--source=HelmRepository/helm-repository-name.helm-repository-namespace",
-		"--chart=gitlab-agent", "--release-name=helm-release-name", StartsWith("--values=")).
+		"--chart=gitlab-agent", "--release-name=helm-release-name", StartsWith("--values="), "--values=helm-release-values-1", "--values=helm-release-values-2", "--values-from=helm-release-values-from-1").
 		Return([]byte("content"), nil)
 
 	actualFile, err := f.createHelmReleaseManifest("wss://kas.gitlab.example.com")
@@ -71,7 +71,7 @@ func TestFlux_createHelmReReleaseManifest_Failure(t *testing.T) {
 		"flux", "create", "helmrelease", "helm-release-name", "--export",
 		"-n=helm-release-namespace", "--target-namespace=helm-release-target-namespace",
 		"--create-target-namespace=true", "--source=HelmRepository/helm-repository-name.helm-repository-namespace",
-		"--chart=gitlab-agent", "--release-name=helm-release-name", StartsWith("--values=")).
+		"--chart=gitlab-agent", "--release-name=helm-release-name", StartsWith("--values="), "--values=helm-release-values-1", "--values=helm-release-values-2", "--values-from=helm-release-values-from-1").
 		Return([]byte(""), errors.New("test"))
 
 	actualFile, err := f.createHelmReleaseManifest("wss://kas.gitlab.example.com")
@@ -138,6 +138,7 @@ func setupFlux(t *testing.T) (*MockCmd, FluxWrapper) {
 		"flux", "manifest-path",
 		"helm-repository-name", "helm-repository-namespace", "helm-repository-filepath",
 		"helm-release-name", "helm-release-namespace", "helm-release-filepath", "helm-release-target-namespace",
+		[]string{"helm-release-values-1", "helm-release-values-2"}, []string{"helm-release-values-from-1"},
 		"flux-source-type", "flux-source-namespace", "flux-source-name",
 	)
 	fHack := f.(*localFluxWrapper)

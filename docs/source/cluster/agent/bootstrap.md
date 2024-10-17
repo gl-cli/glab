@@ -66,6 +66,12 @@ glab cluster agent bootstrap my-agent --create-environment=false
 # Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
 glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
 
+# Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a local file
+glab cluster agent bootstrap my-agent --helm-release-values values.yaml
+
+# Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a Kubernetes ConfigMap
+glab cluster agent bootstrap my-agent --helm-release-values-from ConfigMap/agent-config
+
 ```
 
 ## Options
@@ -83,6 +89,8 @@ glab cluster agent bootstrap my-agent --environment-name production --environmen
       --helm-release-name string                Name of the Flux HelmRelease manifest. (default "gitlab-agent")
       --helm-release-namespace string           Namespace of the Flux HelmRelease manifest. (default "flux-system")
       --helm-release-target-namespace string    Namespace of the GitLab Agent deployment. (default "gitlab-agent")
+      --helm-release-values strings             Local path to values.yaml files
+      --helm-release-values-from strings        Kubernetes object reference that contains the values.yaml data key in the format '<kind>/<name>', where kind must be one of: (Secret,ConfigMap)
       --helm-repository-filepath string         Filepath within the GitLab Agent project to commit the Flux HelmRepository to. (default "gitlab-helm-repository.yaml")
       --helm-repository-name string             Name of the Flux HelmRepository manifest. (default "gitlab")
       --helm-repository-namespace string        Namespace of the Flux HelmRepository manifest. (default "flux-system")
