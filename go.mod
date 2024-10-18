@@ -37,7 +37,7 @@ require (
 	github.com/xanzy/go-gitlab v0.112.0
 	github.com/zalando/go-keyring v0.2.5
 	go.uber.org/goleak v1.3.0
-	go.uber.org/mock v0.4.0
+	go.uber.org/mock v0.5.0
 	golang.org/x/crypto v0.28.0
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	golang.org/x/oauth2 v0.23.0
