@@ -107,7 +107,8 @@ func statusRun(opts *StatusOpts) error {
 				c.GreenCheck(), instance, c.Bold(proto))
 		}
 		apiProto, _ := cfg.Get(instance, "api_protocol")
-		apiEndpoint := glinstance.APIEndpoint(instance, apiProto)
+		apiHost, _ := cfg.Get(instance, "api_host")
+		apiEndpoint := glinstance.APIEndpoint(instance, apiProto, apiHost)
 		graphQLEndpoint := glinstance.GraphQLEndpoint(instance, apiProto)
 		if apiProto != "" {
 			addMsg("%s API calls for %s are made over %s protocol.",
