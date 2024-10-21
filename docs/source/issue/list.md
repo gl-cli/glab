@@ -44,6 +44,7 @@ glab issue list --milestone release-2.0.0 --opened
   -g, --group string           Select a group or subgroup. Ignored if a repo argument is set.
       --in string              search in: title, description. (default "title,description")
   -t, --issue-type string      Filter issue by its type. Options: issue, incident, test_case.
+  -i, --iteration int          Filter issue by iteration <id>.
   -l, --label strings          Filter issue by label <name>.
   -m, --milestone string       Filter issue by milestone <id>.
       --not-assignee strings   Filter issue by not being assigneed to <username>.

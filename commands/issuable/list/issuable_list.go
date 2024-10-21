@@ -34,6 +34,7 @@ type ListOptions struct {
 	Search      string
 	Group       string
 	IssueType   string
+	Iteration   int
 
 	// issue states
 	State        string
@@ -148,6 +149,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueTy
 
 	if issueType == issuable.TypeIssue {
 		issueListCmd.Flags().StringVarP(&opts.IssueType, "issue-type", "t", "", "Filter issue by its type. Options: issue, incident, test_case.")
+		issueListCmd.Flags().IntVarP(&opts.Iteration, "iteration", "i", 0, "Filter issue by iteration <id>.")
 	}
 
 	issueListCmd.Flags().BoolP("opened", "o", false, fmt.Sprintf("Get only open %ss.", issueType))
@@ -244,6 +246,9 @@ func listRun(opts *ListOptions) error {
 		listOpts.IssueType = gitlab.Ptr(opts.IssueType)
 		opts.ListType = "search"
 		issueType = opts.IssueType
+	}
+	if issueType == "issue" && opts.Iteration != 0 {
+		listOpts.IterationID = gitlab.Ptr(opts.Iteration)
 	}
 
 	var issues []*gitlab.Issue
