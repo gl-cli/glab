@@ -5,6 +5,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/token/create"
 	"gitlab.com/gitlab-org/cli/commands/token/revoke"
+	"gitlab.com/gitlab-org/cli/commands/token/rotate"
 )
 
 func NewTokenCmd(f *cmdutils.Factory) *cobra.Command {
@@ -17,5 +18,6 @@ func NewTokenCmd(f *cmdutils.Factory) *cobra.Command {
 	cmdutils.EnableRepoOverride(cmd, f)
 	cmd.AddCommand(create.NewCmdCreate(f, nil))
 	cmd.AddCommand(revoke.NewCmdRevoke(f, nil))
+	cmd.AddCommand(rotate.NewCmdRotate(f, nil))
 	return cmd
 }

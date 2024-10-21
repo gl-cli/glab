@@ -251,7 +251,7 @@ func createTokenRun(opts *CreateOptions) error {
 			return err
 		}
 	} else {
-		if _, err := opts.IO.StdOut.Write([]byte(outputTokenValue)); err != nil {
+		if _, err := fmt.Fprintf(opts.IO.StdOut, "%s\n", outputTokenValue); err != nil {
 			return err
 		}
 	}

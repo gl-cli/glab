@@ -35,3 +35,4 @@ token
 
 - [`create`](create.md)
 - [`revoke`](revoke.md)
+- [`rotate`](rotate.md)
