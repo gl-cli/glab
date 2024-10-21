@@ -126,3 +126,27 @@ var RevokePersonalAccessToken = func(client *gitlab.Client, id int) error {
 	_, err := client.PersonalAccessTokens.RevokePersonalAccessToken(id)
 	return err
 }
+
+var RotateProjectAccessToken = func(client *gitlab.Client, pid interface{}, id int, opts *gitlab.RotateProjectAccessTokenOptions) (*gitlab.ProjectAccessToken, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	token, _, err := client.ProjectAccessTokens.RotateProjectAccessToken(pid, id, opts)
+	return token, err
+}
+
+var RotateGroupAccessToken = func(client *gitlab.Client, gid interface{}, id int, opts *gitlab.RotateGroupAccessTokenOptions) (*gitlab.GroupAccessToken, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	token, _, err := client.GroupAccessTokens.RotateGroupAccessToken(gid, id, opts)
+	return token, err
+}
+
+var RotatePersonalAccessToken = func(client *gitlab.Client, id int, opts *gitlab.RotatePersonalAccessTokenOptions) (*gitlab.PersonalAccessToken, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+	token, _, err := client.PersonalAccessTokens.RotatePersonalAccessToken(id, opts)
+	return token, err
+}
