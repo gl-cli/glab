@@ -189,6 +189,27 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 	})
 }
 
+func TestIssueList_filterByIteration(t *testing.T) {
+	fakeHTTP := &httpmock.Mocker{
+		MatchURL: httpmock.PathAndQuerystring,
+	}
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/issues?in=title%2Cdescription&iteration_id=9&page=1&per_page=30&state=opened",
+		httpmock.NewStringResponse(http.StatusOK, `[]`))
+
+	output, err := runCommand("issue", fakeHTTP, true, "--iteration 9", nil, "")
+	if err != nil {
+		t.Errorf("error running command `issue list`: %v", err)
+	}
+
+	cmdtest.Eq(t, output.Stderr(), "")
+	cmdtest.Eq(t, output.String(), `No open issues match your search in OWNER/REPO.
+
+
+`)
+}
+
 func TestIssueList_tty_withIssueType(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
