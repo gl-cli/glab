@@ -33,6 +33,10 @@ type LoginOptions struct {
 	Hostname string
 	Token    string
 
+	ApiHost     string
+	ApiProtocol string
+	GitProtocol string
+
 	UseKeyring bool
 }
 
@@ -54,6 +58,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 			Authenticate with a GitLab instance.
 			You can pass in a token on standard input by using %[1]s--stdin%[1]s.
 			The minimum required scopes for the token are: %[1]sapi%[1]s, %[1]swrite_repository%[1]s.
+			Configuration and credentials are stored in the global configuration file (Default: %[1]s~/.config/glab-cli/config.yml%[1]s)
 		`, "`"),
 		Example: heredoc.Docf(`
 			# start interactive setup
@@ -62,14 +67,18 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 			$ glab auth login --stdin < myaccesstoken.txt
 			# authenticate with a self-hosted GitLab instance
 			$ glab auth login --hostname salsa.debian.org
+			# non-interactive setup
+			$ glab auth login --hostname gitlab.example.org --token glpat-xxx --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh
+			# non-interactive setup reading token from a file
+			$ glab auth login --hostname gitlab.example.org --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh  --stdin < myaccesstoken.txt
 		`, "`"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !opts.IO.PromptEnabled() && !tokenStdin && opts.Token == "" {
-				return &cmdutils.FlagError{Err: errors.New("'--stdin' or '--token' required when not running interactively.")}
+				return &cmdutils.FlagError{Err: errors.New("'--stdin' or '--token' required when not running interactively")}
 			}
 
 			if opts.Token != "" && tokenStdin {
-				return &cmdutils.FlagError{Err: errors.New("specify one of '--token' or '--stdin'. You cannot use both flags at the same time.")}
+				return &cmdutils.FlagError{Err: errors.New("specify one of '--token' or '--stdin'. You cannot use both flags at the same time")}
 			}
 
 			if tokenStdin {
@@ -95,6 +104,10 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 				opts.Hostname = glinstance.Default()
 			}
 
+			if opts.Interactive && (opts.ApiHost != "" || opts.ApiProtocol != "" || opts.GitProtocol != "") {
+				return &cmdutils.FlagError{Err: errors.New("api-host, api-protocol, and git-protocol can only be used in non-interactive mode")}
+			}
+
 			if err := loginRun(opts); err != nil {
 				return cmdutils.WrapError(err, "Could not sign in!")
 			}
@@ -107,6 +120,9 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.Token, "token", "t", "", "Your GitLab access token.")
 	cmd.Flags().BoolVar(&tokenStdin, "stdin", false, "Read token from standard input.")
 	cmd.Flags().BoolVar(&opts.UseKeyring, "use-keyring", false, "Store token in your operating system's keyring.")
+	cmd.Flags().StringVarP(&opts.ApiHost, "api-host", "a", "", "API host url")
+	cmd.Flags().StringVarP(&opts.ApiProtocol, "api-protocol", "p", "", "API protocol: https, http")
+	cmd.Flags().StringVarP(&opts.GitProtocol, "git-protocol", "g", "", "Git protocol: ssh, https, http")
 
 	return cmd
 }
@@ -134,6 +150,26 @@ func loginRun(opts *LoginOptions) error {
 			if token := config.GetFromEnv("token"); token != "" {
 				fmt.Fprintf(opts.IO.StdErr, "%s One of %s environment variables is set. If you don't want to use it for glab, unset it.\n", c.Yellow("WARNING:"), strings.Join(config.EnvKeyEquivalence("token"), ", "))
 			}
+			if opts.ApiHost != "" {
+				err = cfg.Set(opts.Hostname, "api_host", opts.ApiHost)
+				if err != nil {
+					return err
+				}
+			}
+
+			if opts.ApiProtocol != "" {
+				err = cfg.Set(opts.Hostname, "api_protocol", opts.ApiProtocol)
+				if err != nil {
+					return err
+				}
+			}
+
+			if opts.GitProtocol != "" {
+				err = cfg.Set(opts.Hostname, "git_protocol", opts.GitProtocol)
+				if err != nil {
+					return err
+				}
+			}
 
 			return cfg.Write()
 		}
@@ -142,6 +178,11 @@ func loginRun(opts *LoginOptions) error {
 
 	hostname := opts.Hostname
 	apiHostname := opts.Hostname
+
+	if opts.ApiHost != "" {
+		apiHostname = opts.ApiHost
+	}
+
 	defaultHostname := glinstance.OverridableDefault()
 	isSelfHosted := false
 
@@ -257,7 +298,7 @@ func loginRun(opts *LoginOptions) error {
 	}
 
 	if hostname == "" {
-		return errors.New("empty hostname would leak the token.")
+		return errors.New("empty hostname would leak the token")
 	}
 
 	err = cfg.Set(hostname, "api_host", apiHostname)
@@ -356,6 +397,7 @@ func loginRun(opts *LoginOptions) error {
 	}
 
 	fmt.Fprintf(opts.IO.StdErr, "%s Logged in as %s\n", c.GreenCheck(), c.Bold(username))
+	fmt.Fprintf(opts.IO.StdErr, "%s Configuration saved to %s/%s\n", c.GreenCheck(), config.ConfigDir(), config.ConfigFile())
 
 	return nil
 }

@@ -195,6 +195,7 @@ To authenticate your installation of `glab` with a personal access token:
      matching your self-managed instance's host. Alternatively set `GITLAB_HOST` to direct your command to your self-managed instance.
    - Authenticate with token and hostname: `glab auth login --hostname gitlab.example.org --token xxxxx`
      Not recommended for shared environments.
+   - Credentials are stored in the global configuration file.
 
 ## Configuration
 

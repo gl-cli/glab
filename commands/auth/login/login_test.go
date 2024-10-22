@@ -24,6 +24,7 @@ func Test_NewCmdLogin(t *testing.T) {
 		wants    LoginOptions
 		stdinTTY bool
 		wantsErr bool
+		err      string
 	}{
 		{
 			name:  "nontty, stdin",
@@ -48,12 +49,14 @@ func Test_NewCmdLogin(t *testing.T) {
 			name:     "nontty, hostname",
 			cli:      "--hostname salsa.debian.org",
 			wantsErr: true,
+			err:      "could not get login type",
 			stdinTTY: false,
 		},
 		{
 			name:     "nontty",
 			cli:      "",
 			wantsErr: true,
+			err:      "could not prompt",
 			stdinTTY: false,
 		},
 		{
@@ -74,6 +77,57 @@ func Test_NewCmdLogin(t *testing.T) {
 				Token:    "gli789",
 			},
 			stdinTTY: true,
+		},
+		{
+			name: "non-interactive hostname, token, api-host",
+			cli:  "--hostname gl.io --token foo --api-host api.gitlab.com",
+			wants: LoginOptions{
+				Hostname: "gl.io",
+				Token:    "foo",
+				ApiHost:  "api.gitlab.com",
+			},
+		},
+		{
+			name: "non-interactive hostname, token, api-host, api-protocol, git-protocol",
+			cli:  "--hostname gl.io --token foo --api-host gl.io:3443 --api-protocol https --git-protocol ssh",
+			wants: LoginOptions{
+				Hostname:    "gl.io",
+				Token:       "foo",
+				ApiHost:     "gl.io:3443",
+				ApiProtocol: "https",
+				GitProtocol: "ssh",
+			},
+		},
+		{
+			name:  "non-interactive hostname, api-host, api-protocol, git-protocol with stdin token",
+			cli:   "--hostname gl.io --api-host gl.io:3443 --api-protocol https --git-protocol ssh --stdin",
+			stdin: "gli789",
+			wants: LoginOptions{
+				Hostname:    "gl.io",
+				Token:       "gli789",
+				ApiHost:     "gl.io:3443",
+				ApiProtocol: "https",
+				GitProtocol: "ssh",
+			},
+			stdinTTY: true,
+		},
+		{
+			name:     "api-host in interactive mode",
+			cli:      "--hostname gl.io --api-host api.gitlab.com",
+			wantsErr: true,
+			err:      "api-host, api-protocol, and git-protocol can only be used in non-interactive mode",
+		},
+		{
+			name:     "api-protocol in interactive mode",
+			cli:      "--hostname gl.io --api-protocol http",
+			wantsErr: true,
+			err:      "api-host, api-protocol, and git-protocol can only be used in non-interactive mode",
+		},
+		{
+			name:     "git-protocol in interactive mode",
+			cli:      "--hostname gl.io --git-protocol ssh",
+			wantsErr: true,
+			err:      "api-host, api-protocol, and git-protocol can only be used in non-interactive mode",
 		},
 		// TODO: how to test survey
 		//{
@@ -100,6 +154,7 @@ func Test_NewCmdLogin(t *testing.T) {
 			name:     "token and stdin",
 			cli:      "--token xxxx --stdin",
 			wantsErr: true,
+			err:      "specify one of '--token' or '--stdin'. You cannot use both flags at the same time",
 		},
 		{
 			name: "no keyring, token",
@@ -121,7 +176,7 @@ func Test_NewCmdLogin(t *testing.T) {
 		},
 	}
 
-	// Enable keyring mocking, so no changes are made to it accidentaly and to prevent failing in some environments
+	// Enable keyring mocking, so no changes are made to it accidentally and to prevent failing in some environments
 	keyring.MockInit()
 
 	for _, tt := range tests {
@@ -157,6 +212,7 @@ func Test_NewCmdLogin(t *testing.T) {
 
 			if tt.wantsErr {
 				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.err)
 				return
 			}
 			assert.NoError(t, err)
@@ -164,6 +220,9 @@ func Test_NewCmdLogin(t *testing.T) {
 			assert.Equal(t, tt.wants.Token, opts.Token)
 			assert.Equal(t, tt.wants.Hostname, opts.Hostname)
 			assert.Equal(t, tt.wants.Interactive, opts.Interactive)
+			assert.Equal(t, tt.wants.ApiHost, opts.ApiHost)
+			assert.Equal(t, tt.wants.ApiProtocol, opts.ApiProtocol)
+			assert.Equal(t, tt.wants.GitProtocol, opts.GitProtocol)
 		})
 	}
 }
