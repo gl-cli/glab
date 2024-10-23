@@ -45,7 +45,7 @@ require (
 	golang.org/x/term v0.25.0
 	golang.org/x/text v0.19.0
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/apimachinery v0.31.1
+	k8s.io/apimachinery v0.31.2
 	k8s.io/client-go v0.31.1
 )
 
