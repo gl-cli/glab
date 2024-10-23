@@ -93,59 +93,87 @@ func Test_exportRun_project(t *testing.T) {
 	}
 	defer reg.Verify(t)
 
-	reg.RegisterResponder(http.MethodGet, "https://gitlab.com/api/v4/projects/owner%2Frepo/variables?page=1&per_page=10",
-		httpmock.NewJSONResponse(http.StatusOK, nil),
-	)
+	mockProjectVariables := []gitlab.ProjectVariable{
+		{
+			Key:   "VAR1",
+			Value: "value1",
+		},
+		{
+			Key:   "VAR2",
+			Value: "value2",
+		},
+	}
 
 	io, _, stdout, _ := iostreams.Test()
 
-	opts := &ExportOpts{
-		HTTPClient: func() (*gitlab.Client, error) {
-			a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
-			return a.Lab(), nil
-		},
-		BaseRepo: func() (glrepo.Interface, error) {
-			return glrepo.FromFullName("owner/repo")
-		},
-		IO:      io,
-		Page:    1,
-		PerPage: 10,
-	}
-	_, _ = opts.HTTPClient()
+	outputFormats := []string{"env", "export", "json"}
 
-	err := exportRun(opts)
-	assert.NoError(t, err)
-	assert.Equal(t, "", stdout.String())
+	for _, format := range outputFormats {
+		reg.RegisterResponder(http.MethodGet, "https://gitlab.com/api/v4/projects/owner%2Frepo/variables?page=1&per_page=10",
+			httpmock.NewJSONResponse(http.StatusOK, mockProjectVariables),
+		)
+		opts := &ExportOpts{
+			HTTPClient: func() (*gitlab.Client, error) {
+				a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
+				return a.Lab(), nil
+			},
+			BaseRepo: func() (glrepo.Interface, error) {
+				return glrepo.FromFullName("owner/repo")
+			},
+			IO:           io,
+			Page:         1,
+			PerPage:      10,
+			OutputFormat: format,
+		}
+		_, _ = opts.HTTPClient()
+
+		err := exportRun(opts)
+		assert.NoError(t, err)
+		assert.Equal(t, "", stdout.String())
+	}
 }
 
 func Test_exportRun_group(t *testing.T) {
+	mockGroupVariables := []gitlab.GroupVariable{
+		{
+			Key:   "VAR1",
+			Value: "value1",
+		},
+		{
+			Key:   "VAR2",
+			Value: "value2",
+		},
+	}
 	reg := &httpmock.Mocker{
 		MatchURL: httpmock.FullURL,
 	}
 	defer reg.Verify(t)
-
-	reg.RegisterResponder(http.MethodGet, "https://gitlab.com/api/v4/groups/GROUP/variables?page=7&per_page=77",
-		httpmock.NewJSONResponse(http.StatusOK, nil),
-	)
-
 	io, _, stdout, _ := iostreams.Test()
+	outputFormats := []string{"env", "export", "json"}
 
-	opts := &ExportOpts{
-		HTTPClient: func() (*gitlab.Client, error) {
-			a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
-			return a.Lab(), nil
-		},
-		BaseRepo: func() (glrepo.Interface, error) {
-			return glrepo.FromFullName("owner/repo")
-		},
-		IO:      io,
-		Page:    7,
-		PerPage: 77,
-		Group:   "GROUP",
+	for _, format := range outputFormats {
+		reg.RegisterResponder(http.MethodGet, "https://gitlab.com/api/v4/groups/GROUP/variables?page=7&per_page=77",
+			httpmock.NewJSONResponse(http.StatusOK, mockGroupVariables),
+		)
+
+		opts := &ExportOpts{
+			HTTPClient: func() (*gitlab.Client, error) {
+				a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
+				return a.Lab(), nil
+			},
+			BaseRepo: func() (glrepo.Interface, error) {
+				return glrepo.FromFullName("owner/repo")
+			},
+			IO:           io,
+			Page:         7,
+			PerPage:      77,
+			Group:        "GROUP",
+			OutputFormat: format,
+		}
+		_, _ = opts.HTTPClient()
+
+		err := exportRun(opts)
+		assert.NoError(t, err)
+		assert.Equal(t, "", stdout.String())
 	}
-	_, _ = opts.HTTPClient()
-
-	err := exportRun(opts)
-	assert.NoError(t, err)
-	assert.Equal(t, "", stdout.String())
 }

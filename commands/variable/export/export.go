@@ -19,8 +19,9 @@ type ExportOpts struct {
 	IO         *iostreams.IOStreams
 	BaseRepo   func() (glrepo.Interface, error)
 
-	ValueSet bool
-	Group    string
+	ValueSet     bool
+	Group        string
+	OutputFormat string
 
 	Page    int
 	PerPage int
@@ -46,11 +47,11 @@ func NewCmdExport(f *cmdutils.Factory, runE func(opts *ExportOpts) error) *cobra
 		Aliases: []string{"ex"},
 		Args:    cobra.ExactArgs(0),
 		Example: heredoc.Doc(`
-			glab variable export
-			glab variable export --per-page 1000 --page 1
-			glab variable export --group gitlab-org
-			glab variable export --group gitlab-org --per-page 1000 --page 1
-		`),
+                        glab variable export
+                        glab variable export --per-page 1000 --page 1
+                        glab variable export --group gitlab-org
+                        glab variable export --group gitlab-org --per-page 1000 --page 1
+                `),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// Supports repo override
 			opts.HTTPClient = f.HttpClient
@@ -75,6 +76,8 @@ func NewCmdExport(f *cmdutils.Factory, runE func(opts *ExportOpts) error) *cobra
 	cmd.PersistentFlags().StringP("group", "g", "", "Select a group or subgroup. Ignored if a repository argument is set.")
 	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
 	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 100, "Number of items to list per page.")
+	cmd.Flags().StringVarP(&opts.OutputFormat, "format", "F", "json", "Format of output: json, export, env.")
+
 	return cmd
 }
 
@@ -103,15 +106,9 @@ func exportRun(opts *ExportOpts) error {
 			return nil
 		}
 
-		res, err := marshalJson(groupVariables)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(string(res))
+		return printGroupVariables(groupVariables, opts)
 
 	} else {
-
 		createVarOpts := &gitlab.ListProjectVariablesOptions{Page: opts.Page, PerPage: opts.PerPage}
 		projectVariables, err := api.ListProjectVariables(httpClient, repo.FullName(), createVarOpts)
 		if err != nil {
@@ -124,14 +121,50 @@ func exportRun(opts *ExportOpts) error {
 			return nil
 		}
 
-		res, err := marshalJson(projectVariables)
+		return printProjectVariables(projectVariables, opts)
+	}
+}
+
+func printGroupVariables(variables []*gitlab.GroupVariable, opts *ExportOpts) error {
+	switch opts.OutputFormat {
+	case "env":
+		for _, variable := range variables {
+			fmt.Printf("%s=%s\n", variable.Key, variable.Value)
+		}
+	case "export":
+		for _, variable := range variables {
+			fmt.Printf("export %s=%s\n", variable.Key, variable.Value)
+		}
+	case "json":
+		res, err := marshalJson(variables)
 		if err != nil {
 			return err
 		}
-
 		fmt.Println(string(res))
-
+	default:
+		return fmt.Errorf("unsupported output format: %s", opts.OutputFormat)
 	}
+	return nil
+}
 
+func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts) error {
+	switch opts.OutputFormat {
+	case "env":
+		for _, variable := range variables {
+			fmt.Printf("%s=%s\n", variable.Key, variable.Value)
+		}
+	case "export":
+		for _, variable := range variables {
+			fmt.Printf("export %s=%s\n", variable.Key, variable.Value)
+		}
+	case "json":
+		res, err := marshalJson(variables)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(res))
+	default:
+		return fmt.Errorf("unsupported output format: %s", opts.OutputFormat)
+	}
 	return nil
 }
