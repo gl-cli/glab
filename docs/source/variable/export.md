@@ -36,6 +36,7 @@ glab variable export --group gitlab-org --per-page 1000 --page 1
 ## Options
 
 ```plaintext
+  -F, --format string     Format of output: json, export, env. (default "json")
   -g, --group string      Select a group or subgroup. Ignored if a repository argument is set.
   -p, --page int          Page number. (default 1)
   -P, --per-page int      Number of items to list per page. (default 100)
