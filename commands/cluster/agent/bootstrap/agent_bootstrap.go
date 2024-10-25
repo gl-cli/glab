@@ -395,7 +395,7 @@ func (c *bootstrapCmd) run() error {
 		fmt.Fprintln(c.stderr, "Output from flux command:")
 		err = c.fluxReconcile()
 		if err != nil {
-			return reconcileErr
+			return fmt.Errorf("%w:\n%w", reconcileErr, err)
 		}
 	} else {
 		fmt.Fprintf(c.stderr, "[SKIPPED]\n")
