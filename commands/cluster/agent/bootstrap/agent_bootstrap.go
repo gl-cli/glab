@@ -75,18 +75,18 @@ It requires the kubectl and flux commands to be accessible via $PATH.
 This command consists of multiple idempotent steps:
 
 1. Register the agent with the project.
-1. Configure the agent.
-1. Configure an environment with dashboard for the agent.
-1. Create a token for the agent.
+2. Configure the agent.
+3. Configure an environment with dashboard for the agent.
+4. Create a token for the agent.
    - If the agent has reached the maximum amount of tokens,
      the one that has not been used the longest is revoked
      and a new one is created.
    - If the agent has not reached the maximum amount of tokens,
      a new one is created.
-1. Push the Kubernetes Secret that contains the token to the cluster.
-1. Create Flux HelmRepository and HelmRelease resource.
-1. Commit and Push the created Flux Helm resources to the manifest path.
-1. Trigger Flux reconciliation of GitLab Agent HelmRelease.
+5. Push the Kubernetes Secret that contains the token to the cluster.
+6. Create Flux HelmRepository and HelmRelease resource.
+7. Commit and Push the created Flux Helm resources to the manifest path.
+8. Trigger Flux reconciliation of GitLab Agent HelmRelease.
 `,
 		Example: `
 # Bootstrap "my-agent" to root of Git project in CWD and trigger reconciliation
