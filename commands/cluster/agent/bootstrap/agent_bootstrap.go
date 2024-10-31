@@ -93,6 +93,9 @@ This command consists of multiple idempotent steps:
 glab cluster agent bootstrap my-agent
 
 # Bootstrap "my-agent" to "manifests/" of Git project in CWD and trigger reconciliation
+# This is especially useful when "flux bootstrap gitlab --path manifests/" was used.
+# Make sure that the "--path" from the "flux bootstrap gitlab" command matches
+# the "--manifest-path" of the "glab cluster agent bootstrap" command.
 glab cluster agent bootstrap my-agent --manifest-path manifests/
 
 # Bootstrap "my-agent" to "manifests/" of Git project in CWD and do not manually trigger a reconilication
