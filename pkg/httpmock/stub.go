@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -19,6 +20,7 @@ type Stub struct {
 	matched   bool
 	Matcher   Matcher
 	Responder Responder
+	body      string
 }
 
 func MatchAny(*http.Request) bool {
@@ -56,6 +58,23 @@ func newRequest(method, path string, match matchType) Matcher {
 	}
 }
 
+func newRequestWithBody(method, path, body string) Matcher {
+	return func(req *http.Request) bool {
+		if !strings.EqualFold(req.Method, method) {
+			return false
+		}
+		u, err := url.Parse(path)
+		if err != nil {
+			return false
+		}
+
+		bytedata, _ := io.ReadAll(req.Body)
+		reqBodyString := string(bytedata)
+
+		return req.URL.RawQuery == u.RawQuery && req.URL.Path == u.Path && bodyEqual(reqBodyString, body)
+	}
+}
+
 func NewStringResponse(status int, body string) Responder {
 	return func(req *http.Request) (*http.Response, error) {
 		return httpResponse(status, req, bytes.NewBufferString(body)), nil
@@ -85,4 +104,13 @@ func httpResponse(status int, req *http.Request, body io.Reader) *http.Response 
 		Request:    req,
 		Body:       io.NopCloser(body),
 	}
+}
+
+func bodyEqual(expected, actual string) bool {
+	var expectedJSON, actualJSON interface{}
+
+	_ = json.Unmarshal([]byte(expected), &expectedJSON)
+	_ = json.Unmarshal([]byte(actual), &actualJSON)
+
+	return reflect.DeepEqual(expectedJSON, actualJSON)
 }
