@@ -34,6 +34,14 @@ func (r *Mocker) RegisterResponder(method, path string, resp Responder) {
 	})
 }
 
+func (r *Mocker) RegisterResponderWithBody(method, path, body string, resp Responder) {
+	r.stubs = append(r.stubs, &Stub{
+		Matcher:   newRequestWithBody(method, path, body),
+		Responder: resp,
+		body:      body,
+	})
+}
+
 type Testing interface {
 	Errorf(string, ...interface{})
 	Helper()
