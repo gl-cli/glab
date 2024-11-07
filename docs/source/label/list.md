@@ -29,12 +29,14 @@ ls
 glab label list
 glab label ls
 glab label list -R owner/repository
+glab label list -g mygroup
 
 ```
 
 ## Options
 
 ```plaintext
+  -g, --group string    List labels for a group.
   -F, --output string   Format output as: text, json. (default "text")
   -p, --page int        Page number. (default 1)
   -P, --per-page int    Number of items to list per page. (default 30)

@@ -3,10 +3,10 @@ package list
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/api"
-
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
@@ -14,9 +14,16 @@ import (
 	"github.com/xanzy/go-gitlab"
 )
 
-var OutputFormat string
+type LabelListOptions struct {
+	Group        string
+	Page         int
+	PerPage      int
+	OutputFormat string
+}
 
 func NewCmdList(f *cmdutils.Factory) *cobra.Command {
+	opts := &LabelListOptions{}
+
 	labelListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List labels in the repository.`,
@@ -26,6 +33,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			glab label list
 			glab label ls
 			glab label list -R owner/repository
+			glab label list -g mygroup
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -41,56 +49,64 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			l := &gitlab.ListLabelsOptions{}
+			labelApiOpts := &api.ListLabelsOptions{}
+			labelApiOpts.WithCounts = gitlab.Ptr(true)
 
-			l.WithCounts = gitlab.Ptr(true)
-
-			if p, _ := cmd.Flags().GetInt("page"); p != 0 {
-				l.Page = p
+			if p := opts.Page; p != 0 {
+				labelApiOpts.Page = p
 			}
-			if p, _ := cmd.Flags().GetInt("per-page"); p != 0 {
-				l.PerPage = p
+			if pp := opts.PerPage; pp != 0 {
+				labelApiOpts.PerPage = pp
 			}
 
-			// List all labels
-			labels, err := api.ListLabels(apiClient, repo.FullName(), l)
-			if err != nil {
-				return err
-			}
-			if OutputFormat == "json" {
-				labelListJSON, _ := json.Marshal(labels)
-				fmt.Fprintln(f.IO.StdOut, string(labelListJSON))
+			var labelBuilder strings.Builder
 
-			} else {
-				fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d on %s.\n\n", len(labels), len(labels), repo.FullName())
-				var labelPrintInfo string
-				for _, label := range labels {
-					var description string
-					if label.Description != "" {
-						description = fmt.Sprintf(" -> %s", label.Description)
-					}
-					labelPrintInfo += fmt.Sprintf("%s%s (%s)\n", label.Name, description, label.Color)
+			if opts.Group != "" {
+				labels, err := api.ListGroupLabels(apiClient, opts.Group, labelApiOpts)
+				if err != nil {
+					return err
 				}
-				fmt.Fprintln(f.IO.StdOut, utils.Indent(labelPrintInfo, " "))
+				if opts.OutputFormat == "json" {
+					labelListJSON, _ := json.Marshal(labels)
+					fmt.Fprintln(f.IO.StdOut, string(labelListJSON))
+				} else {
+					fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d for group %s.\n\n", len(labels), len(labels), opts.Group)
+					for _, label := range labels {
+						labelBuilder.WriteString(formatLabelInfo(label.Description, label.Name, label.Color))
+					}
+				}
+			} else {
+				labels, err := api.ListLabels(apiClient, repo.FullName(), labelApiOpts)
+				if err != nil {
+					return err
+				}
+				if opts.OutputFormat == "json" {
+					labelListJSON, _ := json.Marshal(labels)
+					fmt.Fprintln(f.IO.StdOut, string(labelListJSON))
+				} else {
+					fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d on %s.\n\n", len(labels), len(labels), repo.FullName())
+					for _, label := range labels {
+						labelBuilder.WriteString(formatLabelInfo(label.Description, label.Name, label.Color))
+					}
+				}
+
 			}
-
-			// Cache labels for host
-			//labelNames := make([]string, 0, len(labels))
-			//for _, label := range labels {
-			//	labelNames = append(labelNames, label.Name)
-			//}
-			//labelsEntry := strings.Join(labelNames, ",")
-			//if err := cfg.Set(repo.RepoHost(), "project_labels", labelsEntry); err != nil {
-			//	_ = cfg.Write()
-			//}
-
+			fmt.Fprintln(f.IO.StdOut, utils.Indent(labelBuilder.String(), " "))
 			return nil
 		},
 	}
 
-	labelListCmd.Flags().IntP("page", "p", 1, "Page number.")
-	labelListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page.")
-	labelListCmd.Flags().StringVarP(&OutputFormat, "output", "F", "text", "Format output as: text, json.")
+	labelListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
+	labelListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
+	labelListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
+	labelListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "List labels for a group.")
 
 	return labelListCmd
+}
+
+func formatLabelInfo(description string, name string, color string) string {
+	if description != "" {
+		description = fmt.Sprintf(" -> %s", description)
+	}
+	return fmt.Sprintf("%s%s (%s)\n", name, description, color)
 }
