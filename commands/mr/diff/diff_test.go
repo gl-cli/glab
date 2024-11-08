@@ -256,6 +256,16 @@ func DiffTest(fakeHTTP *httpmock.Mocker) string {
   "merge_request_id": 105,
   "state": "collected",
   "real_size": "1"
+}, {
+  "id": 108,
+  "head_commit_sha": "3eed087b29835c48015768f839d76e5ea8f07a24",
+  "base_commit_sha": "eeb57dffe83deb686a60a71c16c32f71046868fd",
+  "start_commit_sha": "eeb57dffe83deb686a60a71c16c32f71046868fd",
+  "created_at": "2016-07-25T14:21:33.028Z",
+  "merge_request_id": 105,
+  "state": "collected",
+  "real_size": "1",
+  "patch_id_sha": "72c30d1f0115fc1d2bb0b29b24dc2982cbcdfd32"
 }]`))
 
 	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions/110`,
@@ -305,4 +315,43 @@ func DiffTest(fakeHTTP *httpmock.Mocker) string {
   }]
 }`))
 	return "--- /dev/null\n+++ b/LICENSE\n@@ -0,0 +1,21 @@\n+The MIT License (MIT)\n+\n+Copyright (c) 2018 Administrator\n+\n+Permission is hereby granted, free of charge, to any person obtaining a copy\n+of this software and associated documentation files (the \"Software\"), to deal\n+in the Software without restriction, including without limitation the rights\n+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n+copies of the Software, and to permit persons to whom the Software is\n+furnished to do so, subject to the following conditions:\n+\n+The above copyright notice and this permission notice shall be included in all\n+copies or substantial portions of the Software.\n+\n+THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n+SOFTWARE.\n"
+}
+
+func TestMRDiff_no_diffs_found(t *testing.T) {
+	fakeHTTP := &httpmock.Mocker{
+		MatchURL: httpmock.PathAndQuerystring,
+	}
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests?per_page=30&source_branch=feature`,
+		httpmock.NewStringResponse(http.StatusOK, `[{
+	"id": 123,
+	"iid": 123,
+	"project_id": 3,
+	"title": "test1",
+	"description": "fixed login page css paddings",
+	"state": "merged"}]`))
+
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
+		httpmock.NewStringResponse(http.StatusOK, `{
+	"id": 123,
+	"iid": 123,
+	"project_id": 3,
+	"title": "test1",
+	"description": "fixed login page css paddings",
+	"state": "merged"}`))
+
+	EmptyDiffsTest(fakeHTTP)
+
+	_, err := runCommand(fakeHTTP, nil, false, "")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	assert.Error(t, err, "no merge request diffs found")
+}
+
+func EmptyDiffsTest(fakeHTTP *httpmock.Mocker) {
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions`,
+		httpmock.NewStringResponse(http.StatusOK, `[]`))
 }
