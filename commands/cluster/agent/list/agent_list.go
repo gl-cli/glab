@@ -12,10 +12,7 @@ import (
 	"github.com/xanzy/go-gitlab"
 )
 
-var factory *cmdutils.Factory
-
 func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
-	factory = f
 	agentListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List GitLab Agents for Kubernetes in a project.`,
@@ -23,7 +20,6 @@ func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"ls"},
 		Args:    cobra.MaximumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			factory = f
 			page, err := cmd.Flags().GetUint("page")
 			if err != nil {
 				return err
@@ -32,7 +28,7 @@ func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return listAgents(int(page), int(perPage))
+			return listAgents(f, int(page), int(perPage))
 		},
 	}
 	agentListCmd.Flags().UintP("page", "p", 1, "Page number.")
@@ -41,7 +37,7 @@ func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
 	return agentListCmd
 }
 
-func listAgents(page, perPage int) error {
+func listAgents(factory *cmdutils.Factory, page, perPage int) error {
 	apiClient, err := factory.HttpClient()
 	if err != nil {
 		return err
