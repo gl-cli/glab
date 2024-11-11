@@ -32,7 +32,7 @@ This command creates a personal access token that is valid until the end of the 
 You might receive an email from your GitLab instance that a new personal access token has been created.
 `, desc),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			agentID, err := cmd.Flags().GetInt("agent")
+			agentID, err := cmd.Flags().GetInt64("agent")
 			if err != nil {
 				return err
 			}
@@ -40,13 +40,13 @@ You might receive an email from your GitLab instance that a new personal access 
 			return runGetToken(f, agentID)
 		},
 	}
-	agentGetTokenCmd.Flags().IntP("agent", "a", 0, "The numerical Agent ID to connect to.")
+	agentGetTokenCmd.Flags().Int64P("agent", "a", 0, "The numerical Agent ID to connect to.")
 	cobra.CheckErr(agentGetTokenCmd.MarkFlagRequired("agent"))
 
 	return agentGetTokenCmd
 }
 
-func runGetToken(factory *cmdutils.Factory, agentID int) error {
+func runGetToken(factory *cmdutils.Factory, agentID int64) error {
 	apiClient, err := factory.HttpClient()
 	if err != nil {
 		return err
