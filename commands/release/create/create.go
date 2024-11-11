@@ -34,6 +34,7 @@ type CreateOpts struct {
 	Name             string
 	Ref              string
 	TagName          string
+	TagMessage       string
 	Notes            string
 	NotesFile        string
 	Milestone        []string
@@ -155,6 +156,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "The release name or title.")
 	cmd.Flags().StringVarP(&opts.Ref, "ref", "r", "", "If the specified tag doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.")
+	cmd.Flags().StringVarP(&opts.TagMessage, "tag-message", "T", "", "Message to use if creating a new annotated tag.")
 	cmd.Flags().StringVarP(&opts.Notes, "notes", "N", "", "The release notes or description. You can use Markdown.")
 	cmd.Flags().StringVarP(&opts.NotesFile, "notes-file", "F", "", "Read release notes 'file'. Specify '-' as the value to read from stdin.")
 	cmd.Flags().StringVarP(&opts.ReleasedAt, "released-at", "D", "", "The 'date' when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).")
@@ -326,6 +328,10 @@ func createRun(opts *CreateOpts) error {
 
 		if opts.Ref != "" {
 			createOpts.Ref = &opts.Ref
+		}
+
+		if opts.TagMessage != "" {
+			createOpts.TagMessage = &opts.TagMessage
 		}
 
 		if opts.ReleasedAt != "" {

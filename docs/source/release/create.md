@@ -80,6 +80,7 @@ $ glab release create v1.0.1 --assets-links='
   -F, --notes-file string                                                                                                                                          Read release notes 'file'. Specify '-' as the value to read from stdin.
   -r, --ref string                                                                                                                                                 If the specified tag doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.
   -D, --released-at string                                                                                                                                         The 'date' when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).
+  -T, --tag-message string                                                                                                                                         Message to use if creating a new annotated tag.
 ```
 
 ## Options inherited from parent commands

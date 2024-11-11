@@ -31,6 +31,7 @@ func TestReleaseCreate(t *testing.T) {
 		cli  string
 
 		expectedDescription string
+		expectedTagMessage  string
 	}{
 		{
 			name: "when a release is created",
@@ -40,6 +41,11 @@ func TestReleaseCreate(t *testing.T) {
 			name:                "when a release is created with a description",
 			cli:                 `0.0.1 --notes "bugfix release"`,
 			expectedDescription: "bugfix release",
+		},
+		{
+			name:               "when a release is created with a tag message",
+			cli:                `0.0.1 --tag-message "tag message"`,
+			expectedTagMessage: "tag message",
 		},
 	}
 
@@ -61,6 +67,9 @@ func TestReleaseCreate(t *testing.T) {
 
 					if tc.expectedDescription != "" {
 						assert.Contains(t, string(rb), `"description":"bugfix release"`)
+					}
+					if tc.expectedTagMessage != "" {
+						assert.Contains(t, string(rb), `"tag_message":"tag message"`)
 					}
 					resp, _ := httpmock.NewStringResponse(http.StatusCreated,
 						`{
