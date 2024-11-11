@@ -13,10 +13,7 @@ import (
 	"github.com/xanzy/go-gitlab"
 )
 
-var factory *cmdutils.Factory
-
 func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
-	factory = f
 	releaseListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List releases in a repository.`,
@@ -24,8 +21,7 @@ func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"ls"},
 		Args:    cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			factory = f
-			return listReleases(cmd, args)
+			return listReleases(f, cmd)
 		},
 	}
 
@@ -43,7 +39,7 @@ func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
 	return releaseListCmd
 }
 
-func listReleases(cmd *cobra.Command, args []string) error {
+func listReleases(factory *cmdutils.Factory, cmd *cobra.Command) error {
 	l := &gitlab.ListReleasesOptions{}
 
 	page, _ := cmd.Flags().GetInt("page")
