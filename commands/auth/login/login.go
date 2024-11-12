@@ -61,24 +61,28 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 			Configuration and credentials are stored in the global configuration file (Default: %[1]s~/.config/glab-cli/config.yml%[1]s)
 		`, "`"),
 		Example: heredoc.Docf(`
-			# start interactive setup
+			# Start interactive setup
 			$ glab auth login
-			# authenticate against %[1]sgitlab.com%[1]s by reading the token from a file
+
+			# Authenticate against %[1]sgitlab.com%[1]s by reading the token from a file
 			$ glab auth login --stdin < myaccesstoken.txt
-			# authenticate with a self-hosted GitLab instance
+
+			# Authenticate with a self-hosted GitLab instance
 			$ glab auth login --hostname salsa.debian.org
-			# non-interactive setup
+
+			# Non-interactive setup
 			$ glab auth login --hostname gitlab.example.org --token glpat-xxx --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh
-			# non-interactive setup reading token from a file
+
+			# Non-interactive setup reading token from a file
 			$ glab auth login --hostname gitlab.example.org --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh  --stdin < myaccesstoken.txt
 		`, "`"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !opts.IO.PromptEnabled() && !tokenStdin && opts.Token == "" {
-				return &cmdutils.FlagError{Err: errors.New("'--stdin' or '--token' required when not running interactively")}
+				return &cmdutils.FlagError{Err: errors.New("'--stdin' or '--token' required when not running interactively.")}
 			}
 
 			if opts.Token != "" && tokenStdin {
-				return &cmdutils.FlagError{Err: errors.New("specify one of '--token' or '--stdin'. You cannot use both flags at the same time")}
+				return &cmdutils.FlagError{Err: errors.New("specify one of '--token' or '--stdin'. You cannot use both flags at the same time.")}
 			}
 
 			if tokenStdin {
@@ -105,7 +109,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if opts.Interactive && (opts.ApiHost != "" || opts.ApiProtocol != "" || opts.GitProtocol != "") {
-				return &cmdutils.FlagError{Err: errors.New("api-host, api-protocol, and git-protocol can only be used in non-interactive mode")}
+				return &cmdutils.FlagError{Err: errors.New("api-host, api-protocol, and git-protocol can only be used in non-interactive mode.")}
 			}
 
 			if err := loginRun(opts); err != nil {
@@ -120,7 +124,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.Token, "token", "t", "", "Your GitLab access token.")
 	cmd.Flags().BoolVar(&tokenStdin, "stdin", false, "Read token from standard input.")
 	cmd.Flags().BoolVar(&opts.UseKeyring, "use-keyring", false, "Store token in your operating system's keyring.")
-	cmd.Flags().StringVarP(&opts.ApiHost, "api-host", "a", "", "API host url")
+	cmd.Flags().StringVarP(&opts.ApiHost, "api-host", "a", "", "API host url.")
 	cmd.Flags().StringVarP(&opts.ApiProtocol, "api-protocol", "p", "", "API protocol: https, http")
 	cmd.Flags().StringVarP(&opts.GitProtocol, "git-protocol", "g", "", "Git protocol: ssh, https, http")
 
