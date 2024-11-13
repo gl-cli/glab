@@ -153,11 +153,15 @@ func stackSync(f *cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options
 					return err
 				}
 			} else {
-				// we have an MR. let's make sure it's still open.
-				mr, _, err := mrutils.MRFromArgsWithOpts(f, nil, nil, "opened")
+				// we found an MR. let's get the status:
+				mr, _, err := mrutils.MRFromArgsWithOpts(f, []string{ref.Branch}, nil, "any")
 				if err != nil {
 					return fmt.Errorf("error getting merge request from branch: %v. Does it still exist?", err)
 				}
+
+				// remove the MR from the stack if it's merged
+				// do not remove the MR from the stack if it is closed,
+				// but alert the user
 				err = removeOldMrs(&ref, mr, &stack)
 				if err != nil {
 					return fmt.Errorf("error removing merged merge request: %v", err)
