@@ -162,7 +162,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	return issueCreateCmd
 }
 
-func createRun(opts *CreateOpts) error {
+var createRun = func(opts *CreateOpts) error {
 	apiClient, err := opts.HTTPClient()
 	if err != nil {
 		return err
@@ -371,6 +371,7 @@ func createRun(opts *CreateOpts) error {
 			}
 			issueCreateOpts.DueDate = gitlab.Ptr(dueDate)
 		}
+
 		if len(opts.Assignees) > 0 {
 			users, err := api.UsersByNames(apiClient, opts.Assignees)
 			if err != nil {
