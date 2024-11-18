@@ -275,6 +275,7 @@ glab config set ca_cert /path/to/server.pem --host gitlab.example.com
   Available options are (`dark`|`light`|`notty`) or set a [custom style](https://github.com/charmbracelet/glamour#styles)
 - `NO_COLOR`: set to any value to avoid printing ANSI escape sequences for color output.
 - `FORCE_HYPERLINKS`: set to `1` to force hyperlinks to be output, even when not outputting to a TTY
+- `DEBUG`: set to `1` or `true` to output additional information for each command
 
 ### Token and environment variable precedence
 
@@ -282,6 +283,14 @@ GLab uses tokens in this order:
 
 1. Environment variable (`GITLAB_TOKEN`).
 1. Configuration file (`$HOME/.config/glab-cli/config.yml`).
+
+### Debugging
+
+When the `DEBUG` environment variable is set to `1` or `true`, `glab` outputs more logging information, including:
+
+- Underlying Git commands.
+- Expanded aliases.
+- DNS error details.
 
 ## Issues
 
