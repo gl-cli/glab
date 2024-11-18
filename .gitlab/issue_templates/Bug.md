@@ -20,6 +20,7 @@ and verify the issue you're about to submit isn't a duplicate.
 - [ ] GitLab version (if self-managed) _GitLab version here_
   (Use the `version` endpoint, like this: gitlab.my-company.com/api/v4/version) 
 - [ ] I have performed `glab auth status` to check for authentication issues
+- [ ] Run the command in debug mode (like `DEBUG=true glab mr list`) and attach any useful output
 
 ### Summary
 
