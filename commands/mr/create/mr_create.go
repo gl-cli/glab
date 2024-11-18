@@ -79,7 +79,7 @@ type CreateOpts struct {
 	TargetProject *gitlab.Project `json:"target_project,omitempty"`
 }
 
-func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra.Command {
+func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{
 		IO:       f.IO,
 		Branch:   f.Branch,
@@ -147,10 +147,6 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOpts) error) *cobra
 
 			if opts.CopyIssueLabels && opts.RelatedIssue == "" {
 				return &cmdutils.FlagError{Err: errors.New("--copy-issue-labels can only be used with --related-issue.")}
-			}
-
-			if runE != nil {
-				return runE(opts)
 			}
 
 			if err := createRun(opts); err != nil {
