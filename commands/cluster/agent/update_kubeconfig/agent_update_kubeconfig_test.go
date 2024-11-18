@@ -1,11 +1,9 @@
 package update_kubeconfig
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/xanzy/go-gitlab"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -19,8 +17,8 @@ func TestAgent_UpdateKubeConfig_GlabExec(t *testing.T) {
 		startingConfig: *startingConfig,
 		glabExecutable: "glab",
 		glHost:         "gitlab.example.com",
-		glKasUrl:       &url.URL{Scheme: "wss", Host: "kas.gitlab.example.com"},
 		glUser:         "gitlab-user",
+		kasK8sProxyURL: "https://kas.gitlab.example.com/k8s-proxy",
 		agent:          &gitlab.Agent{ID: 42, Name: "test-agent", ConfigProject: gitlab.ConfigProject{PathWithNamespace: "foo/bar"}},
 	}
 	modifiedConfig, contextName := updateKubeconfig(params)
@@ -48,47 +46,4 @@ func TestAgent_UpdateKubeConfig_GlabExec(t *testing.T) {
 
 	// verify returned context name
 	assert.Equal(t, "gitlab_example_com-foo_bar-test-agent", contextName)
-}
-
-func TestAgent_constructKasProxyUrl(t *testing.T) {
-	// GIVEN
-	testcases := []struct {
-		name                string
-		externalUrl         string
-		expectedKasProxyUrl string
-	}{
-		{
-			name:                "GitLab.com",
-			externalUrl:         "wss://kas.gitlab.com",
-			expectedKasProxyUrl: "https://kas.gitlab.com/k8s-proxy",
-		},
-		{
-			name:                "Without Subdomain",
-			externalUrl:         "wss://example.com",
-			expectedKasProxyUrl: "https://example.com/k8s-proxy",
-		},
-		{
-			name:                "On subpath",
-			externalUrl:         "wss://example.com/-/kubernetes-agent/",
-			expectedKasProxyUrl: "https://example.com/-/kubernetes-agent/k8s-proxy",
-		},
-		{
-			name:                "On port",
-			externalUrl:         "wss://example.com:4242",
-			expectedKasProxyUrl: "https://example.com:4242/k8s-proxy",
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			// WHEN
-			u, err := url.Parse(tc.externalUrl)
-			require.NoError(t, err)
-
-			actualKasProxyUrl := constructKasProxyURL(u)
-
-			// THEN
-			require.Equal(t, tc.expectedKasProxyUrl, actualKasProxyUrl)
-		})
-	}
 }
