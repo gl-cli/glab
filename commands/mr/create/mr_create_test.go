@@ -13,6 +13,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -21,7 +22,7 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string) (*test.CmdOut, error) {
+func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string, letItFail bool) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 
@@ -31,7 +32,7 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string) (*t
 			{
 				Remote: &git.Remote{
 					Name:     "upstream",
-					Resolved: "base",
+					Resolved: "head",
 					PushURL:  pu,
 				},
 				Repo: glrepo.New("OWNER", "REPO"),
@@ -53,14 +54,13 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string) (*t
 	// TODO: shouldn't be there but the stub doesn't work without it
 	_, _ = factory.HttpClient()
 
-	runE := func(opts *CreateOpts) error {
-		opts.HeadRepo = func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
+	if letItFail {
+		factory.HttpClient = func() (*gitlab.Client, error) {
+			return nil, errors.New("fail on purpose")
 		}
-		return createRun(opts)
 	}
 
-	cmd := NewCmdCreate(factory, runE)
+	cmd := NewCmdCreate(factory)
 	cmd.PersistentFlags().StringP("repo", "R", "", "")
 
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
@@ -138,7 +138,7 @@ func TestNewCmdCreate_tty(t *testing.T) {
 
 	t.Log(cli)
 
-	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli)
+	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli, false)
 	if err != nil {
 		if errors.Is(err, cmdutils.SilentError) {
 			t.Errorf("Unexpected error: %q", output.Stderr())
@@ -222,7 +222,7 @@ func TestNewCmdCreate_RelatedIssue(t *testing.T) {
 
 	t.Log(cli)
 
-	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli)
+	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli, false)
 	if err != nil {
 		if errors.Is(err, cmdutils.SilentError) {
 			t.Errorf("Unexpected error: %q", output.Stderr())
@@ -318,7 +318,7 @@ func TestNewCmdCreate_TemplateFromCommitMessages(t *testing.T) {
 
 	t.Log(cli)
 
-	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli)
+	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli, false)
 	if err != nil {
 		if errors.Is(err, cmdutils.SilentError) {
 			t.Errorf("Unexpected error: %q", output.Stderr())
@@ -399,7 +399,7 @@ func TestNewCmdCreate_RelatedIssueWithTitleAndDescription(t *testing.T) {
 
 	t.Log(cli)
 
-	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli)
+	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli, false)
 	if err != nil {
 		if errors.Is(err, cmdutils.SilentError) {
 			t.Errorf("Unexpected error: %q", output.Stderr())
@@ -416,7 +416,7 @@ func TestMRCreate_nontty_insufficient_flags(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	_, err := runCommand(fakeHTTP, "test-br", false, "")
+	_, err := runCommand(fakeHTTP, "test-br", false, "", false)
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -549,4 +549,104 @@ func TestGenerateMRCompareURL(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, expectedUrl, u)
+}
+
+func Test_MRCreate_With_Recover_Integration(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/merge_requests",
+		httpmock.NewStringResponse(http.StatusCreated, `
+			{
+ 				"id": 1,
+ 				"iid": 12,
+ 				"project_id": 3,
+ 				"title": "myMRtitle",
+ 				"description": "myMRbody",
+ 				"state": "opened",
+ 				"target_branch": "master",
+ 				"source_branch": "feat-new-mr",
+				"web_url": "https://gitlab.com/OWNER/REPO/-/merge_requests/12"
+			}
+		`),
+	)
+	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO",
+		httpmock.NewStringResponse(http.StatusOK, `
+			{
+ 				"id": 1,
+				"description": null,
+				"default_branch": "master",
+				"web_url": "http://gitlab.com/OWNER/REPO",
+				"name": "OWNER",
+				"path": "REPO",
+				"merge_requests_enabled": true,
+				"path_with_namespace": "OWNER/REPO"
+			}
+		`),
+	)
+	fakeHTTP.RegisterResponder(http.MethodGet, "/users",
+		httpmock.NewStringResponse(http.StatusOK, `
+			[{
+ 				"username": "testuser"
+			}]
+		`),
+	)
+
+	ask, teardown := prompt.InitAskStubber()
+	defer teardown()
+
+	ask.Stub([]*prompt.QuestionStub{
+		{
+			Name:  "confirmation",
+			Value: 0,
+		},
+	})
+
+	cs, csTeardown := test.InitCmdStubber()
+	defer csTeardown()
+	cs.Stub("HEAD branch: master\n")
+	cs.Stub(heredoc.Doc(`
+		deadbeef HEAD
+		deadb00f refs/remotes/upstream/feat-new-mr
+		deadbeef refs/remotes/origin/feat-new-mr
+	`))
+
+	cliStr := []string{
+		"-t", "myMRtitle",
+		"-d", "myMRbody",
+		"-l", "test,bug",
+		"--milestone", "1",
+		"--assignee", "testuser",
+	}
+
+	cli := strings.Join(cliStr, " ")
+
+	t.Log(cli)
+
+	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli, true)
+
+	outErr := output.Stderr()
+
+	require.Errorf(t, err, "fail on purpose")
+	require.Contains(t, outErr, "Failed to create merge request. Created recovery file: ")
+
+	// Run create issue with recover
+	newCliStr := append(cliStr, "--recover")
+
+	newCli := strings.Join(newCliStr, " ")
+
+	newOutput, newErr := runCommand(fakeHTTP, "feat-new-mr", true, newCli, false)
+	if newErr != nil {
+		if errors.Is(err, cmdutils.SilentError) {
+			t.Errorf("Unexpected error: %q", newOutput.Stderr())
+		}
+		t.Error(newErr)
+		return
+	}
+
+	require.NoError(t, newErr)
+	assert.Contains(t, cmdtest.FirstLine([]byte(newOutput.String())), "Recovered create options from file")
+	assert.Contains(t, newOutput.String(), "!12 myMRtitle (feat-new-mr)")
+	assert.Contains(t, newOutput.Stderr(), "\nCreating merge request for feat-new-mr into master in OWNER/REPO\n\n")
+	assert.Contains(t, newOutput.String(), "https://gitlab.com/OWNER/REPO/-/merge_requests/12")
 }
