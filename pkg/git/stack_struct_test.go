@@ -101,7 +101,7 @@ func Test_StackRemoveRef(t *testing.T) {
 			if tt.args.remove.Prev != "" {
 				branches[tt.args.remove.Prev] = tt.args.stack.Refs[tt.args.remove.Prev]
 			}
-			createBranches(t, branches)
+			CreateBranches(t, branches)
 
 			err = CheckoutBranch("main")
 			require.NoError(t, err)
@@ -252,7 +252,7 @@ func Test_StackRemoveBranch(t *testing.T) {
 			_, err := run.PrepareCmd(gitAddRemote).Output()
 			require.Nil(t, err)
 
-			createBranches(t, tt.stack.Refs)
+			CreateBranches(t, tt.stack.Refs)
 
 			err = tt.stack.RemoveBranch(tt.ref)
 
@@ -610,7 +610,7 @@ func TestStack_Iter(t *testing.T) {
 	}
 }
 
-func createBranches(t *testing.T, refs map[string]StackRef) {
+func CreateBranches(t *testing.T, refs map[string]StackRef) {
 	// older versions of git could default to a different branch,
 	// so making sure this one exists.
 	_ = CheckoutNewBranch("main")

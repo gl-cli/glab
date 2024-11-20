@@ -170,6 +170,14 @@ func (s *Stack) Iter() iter.Seq[StackRef] {
 	}
 }
 
+func (s *Stack) Branches() (branches []string) {
+	for ref := range s.Iter() {
+		branches = append(branches, ref.Branch)
+	}
+
+	return
+}
+
 func GatherStackRefs(title string) (Stack, error) {
 	stack := Stack{Title: title}
 	stack.Refs = make(map[string]StackRef)
