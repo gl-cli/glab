@@ -34,6 +34,10 @@ func GetDefaultBranch(remote string) (string, error) {
 		return "master", err
 	}
 
+	return ParseDefaultBranch(output)
+}
+
+func ParseDefaultBranch(output []byte) (string, error) {
 	var headBranch string
 
 	for _, o := range strings.Split(string(output), "\n") {
@@ -47,7 +51,7 @@ func GetDefaultBranch(remote string) (string, error) {
 			break
 		}
 	}
-	return headBranch, err
+	return headBranch, nil
 }
 
 // ErrNotOnAnyBranch indicates that the user is in detached HEAD state
