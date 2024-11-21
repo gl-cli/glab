@@ -174,6 +174,26 @@ func Test_NewCmdLogin(t *testing.T) {
 				UseKeyring: true,
 			},
 		},
+		{
+			name: "non-interactive hostname, jobToken, api-host",
+			cli:  "--hostname gl.io --job-token foo --api-host api.gitlab.com",
+			wants: LoginOptions{
+				Hostname: "gl.io",
+				JobToken: "foo",
+				ApiHost:  "api.gitlab.com",
+			},
+		},
+		{
+			name: "non-interactive hostname, jobToken, api-host, api-protocol, git-protocol",
+			cli:  "--hostname gl.io --job-token foo --api-host gl.io:3443 --api-protocol https --git-protocol ssh",
+			wants: LoginOptions{
+				Hostname:    "gl.io",
+				JobToken:    "foo",
+				ApiHost:     "gl.io:3443",
+				ApiProtocol: "https",
+				GitProtocol: "ssh",
+			},
+		},
 	}
 
 	// Enable keyring mocking, so no changes are made to it accidentally and to prevent failing in some environments
@@ -218,6 +238,7 @@ func Test_NewCmdLogin(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.Equal(t, tt.wants.Token, opts.Token)
+			assert.Equal(t, tt.wants.JobToken, opts.JobToken)
 			assert.Equal(t, tt.wants.Hostname, opts.Hostname)
 			assert.Equal(t, tt.wants.Interactive, opts.Interactive)
 			assert.Equal(t, tt.wants.ApiHost, opts.ApiHost)

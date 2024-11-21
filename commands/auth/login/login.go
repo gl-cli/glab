@@ -32,6 +32,7 @@ type LoginOptions struct {
 
 	Hostname string
 	Token    string
+	JobToken string
 
 	ApiHost     string
 	ApiProtocol string
@@ -75,10 +76,16 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 
 			# Non-interactive setup reading token from a file
 			$ glab auth login --hostname gitlab.example.org --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh  --stdin < myaccesstoken.txt
+			# non-interactive job token setup
+			$ glab auth login --hostname gitlab.example.org --job-token $CI_JOB_TOKEN
 		`, "`"),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if !opts.IO.PromptEnabled() && !tokenStdin && opts.Token == "" {
-				return &cmdutils.FlagError{Err: errors.New("'--stdin' or '--token' required when not running interactively.")}
+			if !opts.IO.PromptEnabled() && !tokenStdin && opts.Token == "" && opts.JobToken == "" {
+				return &cmdutils.FlagError{Err: errors.New("'--stdin', '--token', or '--job-token' required when not running interactively.")}
+			}
+
+			if opts.JobToken != "" && (opts.Token != "" || tokenStdin) {
+				return &cmdutils.FlagError{Err: errors.New("specify one of '--job-token' or '--token' or '--stdin'. You cannot use more than one of these at the same time.")}
 			}
 
 			if opts.Token != "" && tokenStdin {
@@ -94,7 +101,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 				opts.Token = strings.TrimSpace(string(token))
 			}
 
-			if opts.IO.PromptEnabled() && opts.Token == "" && opts.IO.IsaTTY {
+			if opts.IO.PromptEnabled() && opts.Token == "" && opts.JobToken == "" && opts.IO.IsaTTY {
 				opts.Interactive = true
 			}
 
@@ -122,6 +129,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Hostname, "hostname", "h", "", "The hostname of the GitLab instance to authenticate with.")
 	cmd.Flags().StringVarP(&opts.Token, "token", "t", "", "Your GitLab access token.")
+	cmd.Flags().StringVarP(&opts.JobToken, "job-token", "j", "", "CI job token.")
 	cmd.Flags().BoolVar(&tokenStdin, "stdin", false, "Read token from standard input.")
 	cmd.Flags().BoolVar(&opts.UseKeyring, "use-keyring", false, "Store token in your operating system's keyring.")
 	cmd.Flags().StringVarP(&opts.ApiHost, "api-host", "a", "", "API host url.")
@@ -178,6 +186,44 @@ func loginRun(opts *LoginOptions) error {
 			return cfg.Write()
 		}
 
+	}
+
+	if opts.JobToken != "" {
+		if opts.Hostname == "" {
+			return errors.New("empty hostname would leak `oauth_token`")
+		}
+
+		if opts.UseKeyring {
+			return keyring.Set("glab:"+opts.Hostname, "", opts.JobToken)
+		} else {
+			err := cfg.Set(opts.Hostname, "job_token", opts.JobToken)
+			if err != nil {
+				return err
+			}
+
+			if opts.ApiHost != "" {
+				err = cfg.Set(opts.Hostname, "api_host", opts.ApiHost)
+				if err != nil {
+					return err
+				}
+			}
+
+			if opts.ApiProtocol != "" {
+				err = cfg.Set(opts.Hostname, "api_protocol", opts.ApiProtocol)
+				if err != nil {
+					return err
+				}
+			}
+
+			if opts.GitProtocol != "" {
+				err = cfg.Set(opts.Hostname, "git_protocol", opts.GitProtocol)
+				if err != nil {
+					return err
+				}
+			}
+
+			return cfg.Write()
+		}
 	}
 
 	hostname := opts.Hostname
