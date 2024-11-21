@@ -1,4 +1,4 @@
-package ci
+package artifact
 
 import (
 	"archive/zip"

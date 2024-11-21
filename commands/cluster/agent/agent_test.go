@@ -1,4 +1,4 @@
-package cluster
+package agent
 
 import (
 	"os"
