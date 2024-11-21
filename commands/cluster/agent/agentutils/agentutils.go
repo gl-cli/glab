@@ -1,10 +1,17 @@
 package agentutils
 
 import (
+	"net/url"
+
 	"github.com/xanzy/go-gitlab"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
+)
+
+const (
+	kasProxyProtocol = "https"
+	kasProxyEndpoint = "k8s-proxy"
 )
 
 func DisplayAllAgents(io *iostreams.IOStreams, agents []*gitlab.Agent) string {
@@ -15,4 +22,20 @@ func DisplayAllAgents(io *iostreams.IOStreams, agents []*gitlab.Agent) string {
 		table.AddRow(r.ID, r.Name, c.Gray(utils.TimeToPrettyTimeAgo(*r.CreatedAt)))
 	}
 	return table.Render()
+}
+
+func GetKasK8SProxyURL(m *gitlab.Metadata) (string, error) {
+	switch {
+	case m.KAS.ExternalK8SProxyURL != "":
+		return m.KAS.ExternalK8SProxyURL, nil
+	default:
+		// NOTE: this fallback is only here because m.KAS.ExternalK8SProxyURL was recently introduced with 17.6.
+		u, err := url.Parse(m.KAS.ExternalURL)
+		if err != nil {
+			return "", err
+		}
+		ku := *u.JoinPath(kasProxyEndpoint)
+		ku.Scheme = kasProxyProtocol
+		return ku.String(), nil
+	}
 }
