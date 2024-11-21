@@ -197,6 +197,21 @@ To authenticate your installation of `glab` with a personal access token:
      Not recommended for shared environments.
    - Credentials are stored in the global configuration file.
 
+### CI Job Token
+
+To authenticate your installation of `glab` with a CI job token, the `glab` command must be run in a GitLab CI job.
+The token is automatically provided by the GitLab Runner via the `CI_JOB_TOKEN` environment variable.
+
+Example:
+
+```shell
+glab auth login --job-token $CI_JOB_TOKEN --hostname $CI_SERVER_HOST --api-protocol $CI_SERVER_PROTOCOL
+GITLAB_HOST=$CI_SERVER_URL glab release list -R $CI_PROJECT_PATH
+```
+
+Endpoints allowing the use of the CI job token are listed in the
+[GitLab documentation](https://docs.gitlab.com/ee/ci/jobs/ci_job_token.html#job-token-feature-access).
+
 ## Configuration
 
 By default, `glab` follows the

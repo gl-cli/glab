@@ -58,6 +58,7 @@ type Client struct {
 
 	isGraphQL          bool
 	isOauth2           bool
+	isJobToken         bool
 	allowInsecure      bool
 	refreshLabInstance bool
 }
@@ -147,12 +148,13 @@ func tlsConfig(host string) *tls.Config {
 }
 
 // NewClient initializes a api client for use throughout glab.
-func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 bool) (*Client, error) {
+func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 bool, isJobToken bool) (*Client, error) {
 	apiClient.host = host
 	apiClient.token = token
 	apiClient.allowInsecure = allowInsecure
 	apiClient.isGraphQL = isGraphQL
 	apiClient.isOauth2 = isOAuth2
+	apiClient.isJobToken = isJobToken
 
 	if apiClient.httpClientOverride == nil {
 		apiClient.httpClient = &http.Client{
@@ -300,17 +302,21 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (clien
 	}
 
 	token, _ := cfg.Get(repoHost, "token")
+	jobToken, _ := cfg.Get(repoHost, "job_token")
 	tlsVerify, _ := cfg.Get(repoHost, "skip_tls_verify")
 	skipTlsVerify := tlsVerify == "true" || tlsVerify == "1"
 	caCert, _ := cfg.Get(repoHost, "ca_cert")
 	clientCert, _ := cfg.Get(repoHost, "client_cert")
 	keyFile, _ := cfg.Get(repoHost, "client_key")
+
 	if caCert != "" && clientCert != "" && keyFile != "" {
 		client, err = NewClientWithCustomCAClientCert(apiHost, token, caCert, clientCert, keyFile, isGraphQL, isOAuth2)
 	} else if caCert != "" {
 		client, err = NewClientWithCustomCA(apiHost, token, caCert, isGraphQL, isOAuth2)
+	} else if jobToken != "" {
+		client, err = NewClient(apiHost, jobToken, skipTlsVerify, isGraphQL, isOAuth2, true)
 	} else {
-		client, err = NewClient(apiHost, token, skipTlsVerify, isGraphQL, isOAuth2)
+		client, err = NewClient(apiHost, token, skipTlsVerify, isGraphQL, isOAuth2, false)
 	}
 	return
 }
@@ -336,6 +342,8 @@ func (c *Client) NewLab() error {
 
 		if c.isOauth2 {
 			c.LabClient, err = gitlab.NewOAuthClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+		} else if c.isJobToken {
+			c.LabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
 		} else {
 			c.LabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
 		}
@@ -417,7 +425,7 @@ func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, 
 }
 
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*Client, error) {
-	testClient, err := NewClient(host, token, true, isGraphQL, false)
+	testClient, err := NewClient(host, token, true, isGraphQL, false, false)
 	if err != nil {
 		return nil, err
 	}
