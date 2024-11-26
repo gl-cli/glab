@@ -116,3 +116,49 @@ func TestLabelListJSON(t *testing.T) {
 	assert.JSONEq(t, expectedBody, output.String())
 	assert.Empty(t, output.Stderr())
 }
+
+func TestGroupLabelList(t *testing.T) {
+	fakeHTTP := &httpmock.Mocker{}
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/groups/foo/labels",
+		httpmock.NewStringResponse(http.StatusOK, `
+	[
+		{
+			"id":1,
+			"name":"groupbug",
+			"description":null,
+			"text_color":"#FFFFFF",
+			"color":"#6699cc",
+			"priority":null,
+			"is_project_label":false
+		},
+		{
+			"id":2,
+			"name":"groupux",
+			"description":"User Experience",
+			"text_color":"#FFFFFF",
+			"color":"#3cb371",
+			"priority":null,
+			"is_project_label":false
+		}
+	]
+	`))
+
+	flags := "--group foo"
+	output, err := runCommand(fakeHTTP, flags)
+	if err != nil {
+		t.Errorf("error running command `label list %s`: %v", flags, err)
+	}
+
+	out := output.String()
+
+	assert.Equal(t, heredoc.Doc(`
+		Showing label 2 of 2 for group foo.
+
+		 groupbug (#6699cc)
+		 groupux -> User Experience (#3cb371)
+ 
+	`), out)
+	assert.Empty(t, output.Stderr())
+}
