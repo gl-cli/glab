@@ -1,0 +1,10 @@
+spec:
+  inputs:
+    test_framework:
+      default: unittest
+
+---
+
+test:
+  script:
+    - echo $[[ inputs.test_framework ]]

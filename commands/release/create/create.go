@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	catalog "gitlab.com/gitlab-org/cli/commands/release/create/catalog"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
 
@@ -41,6 +42,7 @@ type CreateOpts struct {
 	AssetLinksAsJson string
 	ReleasedAt       string
 	RepoOverride     string
+	PublishToCatalog bool
 
 	NoteProvided       bool
 	ReleaseNotesAction string
@@ -78,7 +80,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 		To fetch the new tag locally after the release, run %[1]sgit fetch --tags origin%[1]s.
 		`, "`"),
 		Args: cmdutils.MinimumArgs(1, "no tag name provided"),
-		Example: heredoc.Doc(`
+		Example: heredoc.Docf(`
 			# Interactively create a release
 			$ glab release create v1.0.1
 
@@ -110,7 +112,23 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			      "direct_asset_path": "path/to/file"
 			    }
 			  ]'
-`),
+
+			# [EXPERIMENTAL] Create a release and publish it to the GitLab CI/CD catalog
+			# This command should NOT be run manually, but rather as part of a CI/CD pipeline with the "release" keyword.
+			# The API endpoint accepts only "CI_JOB_TOKEN" as the authentication token.
+			# This command retrieves components from the current repository by searching for %[1]syml%[1]s files
+			# within the "templates" directory and its subdirectories.
+			# This flag will not work if the feature flag %[1]sci_release_cli_catalog_publish_option%[1]s is not enabled
+			# for the project in the GitLab instance.
+
+			# Components can be defined;
+
+			# - In single files ending in %[1]s.yml%[1]s for each component, like %[1]stemplates/secret-detection.yml%[1]s.
+			# - In sub-directories containing %[1]stemplate.yml%[1]s files as entry points,
+			# 	for components that bundle together multiple related files. For example,
+			# 	%[1]stemplates/secret-detection/template.yml%[1]s.
+			$ glab release create v1.0.1 --publish-to-catalog
+`, "`"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			opts.RepoOverride, _ = cmd.Flags().GetString("repo")
@@ -162,6 +180,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.ReleasedAt, "released-at", "D", "", "The 'date' when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).")
 	cmd.Flags().StringSliceVarP(&opts.Milestone, "milestone", "m", []string{}, "The title of each milestone the release is associated with.")
 	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "'JSON' string representation of assets links, like `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
+	cmd.Flags().BoolVar(&opts.PublishToCatalog, "publish-to-catalog", false, "[EXPERIMENTAL] Publish the release to the GitLab CI/CD catalog.")
 
 	return cmd
 }
@@ -396,6 +415,14 @@ func createRun(opts *CreateOpts) error {
 		}
 	}
 	opts.IO.Logf(color.Bold("%s Release succeeded after %0.2fs.\n"), color.GreenCheck(), time.Since(start).Seconds())
+
+	if opts.PublishToCatalog {
+		err = catalog.Publish(opts.IO, client, repo.FullName(), release.TagName)
+		if err != nil {
+			return cmdutils.WrapError(err, "failed to publish the release to the GitLab CI/CD catalog")
+		}
+	}
+
 	return nil
 }
 
