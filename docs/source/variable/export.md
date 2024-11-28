@@ -41,6 +41,7 @@ glab variable export --group gitlab-org --per-page 1000 --page 1
   -p, --page int          Page number. (default 1)
   -P, --per-page int      Number of items to list per page. (default 100)
   -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
+  -s, --scope string      The environment_scope of the variables. Values: '*' (default), or specific environments. (default "*")
 ```
 
 ## Options inherited from parent commands
