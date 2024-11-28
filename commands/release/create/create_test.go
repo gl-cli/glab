@@ -3,9 +3,12 @@ package create
 import (
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
@@ -306,4 +309,123 @@ func TestReleaseCreate_WithAssetsLinksJSON(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestReleaseCreateWithPublishToCatalog(t *testing.T) {
+	tests := []struct {
+		name string
+		cli  string
+
+		wantOutput string
+		wantBody   string
+		wantErr    bool
+		errMsg     string
+	}{
+		{
+			name: "with version",
+			cli:  "0.0.1 --publish-to-catalog",
+			wantBody: `{
+				"version": "0.0.1",
+				"metadata": {
+					"components": [
+						{
+							"component_type": "template",
+							"name": "component-1",
+							"spec": {
+								"inputs": {
+									"compiler": {
+										"default": "gcc"
+									}
+								}
+							}
+						},
+						{
+							"component_type": "template",
+							"name": "component-2",
+							"spec": null
+						},
+						{
+							"component_type": "template",
+							"name": "component-3",
+							"spec": {
+								"inputs": {
+									"test_framework": {
+										"default": "unittest"
+									}
+								}
+							}
+						}
+					]
+				}
+			}`,
+			wantOutput: `• Publishing release tag=0.0.1 to the GitLab CI/CD catalog for repo=OWNER/REPO...
+✓ Release published: url=https://gitlab.example.com/explore/catalog/my-namespace/my-component-project`,
+		},
+	}
+
+	originalWd, err := os.Getwd()
+	require.NoError(t, err)
+
+	err = os.Chdir(filepath.Join(originalWd, "catalog", "testdata", "test-repo"))
+	require.NoError(t, err)
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fakeHTTP := &httpmock.Mocker{
+				MatchURL: httpmock.PathAndQuerystring,
+			}
+			defer fakeHTTP.Verify(t)
+
+			fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/releases/0%2E0%2E1",
+				httpmock.NewStringResponse(http.StatusNotFound, `{"message":"404 Not Found"}`))
+
+			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/releases",
+				func(req *http.Request) (*http.Response, error) {
+					resp, _ := httpmock.NewStringResponse(http.StatusCreated,
+						`{
+							"name": "test_release",
+							"tag_name": "0.0.1",
+							"description": "bugfix release",
+							"created_at": "2023-01-19T02:58:32.622Z",
+							"released_at": "2023-01-19T02:58:32.622Z",
+							"upcoming_release": false,
+							"tag_path": "/OWNER/REPO/-/tags/0.0.1",
+							"_links": {
+								"self": "https://gitlab.com/OWNER/REPO/-/releases/0.0.1"
+							}
+						}`)(req)
+					return resp, nil
+				},
+			)
+
+			if tc.wantBody != "" {
+				fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/catalog/publish",
+					func(req *http.Request) (*http.Response, error) {
+						body, _ := io.ReadAll(req.Body)
+
+						assert.JSONEq(t, tc.wantBody, string(body))
+
+						response := httpmock.NewJSONResponse(http.StatusOK, map[string]interface{}{
+							"catalog_url": "https://gitlab.example.com/explore/catalog/my-namespace/my-component-project",
+						})
+
+						return response(req)
+					},
+				)
+			}
+
+			output, err := runCommand(fakeHTTP, false, tc.cli)
+
+			if tc.wantErr {
+				assert.Error(t, err)
+				assert.Equal(t, tc.errMsg, err.Error())
+			} else {
+				assert.NoError(t, err)
+				assert.Contains(t, output.Stderr(), tc.wantOutput)
+			}
+		})
+	}
+
+	err = os.Chdir(originalWd)
+	require.NoError(t, err)
 }

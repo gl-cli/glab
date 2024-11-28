@@ -1,0 +1,10 @@
+spec:
+  inputs:
+    compiler:
+      default: gcc
+
+---
+
+test:
+  script:
+    - echo $[[ inputs.compiler ]]

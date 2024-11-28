@@ -1,0 +1,9 @@
+spec:
+  inputs:
+    should_be_ignored:
+      default: hello
+
+---
+
+build:
+  script: echo "Hello, World!"

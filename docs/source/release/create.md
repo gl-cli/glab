@@ -68,6 +68,22 @@ $ glab release create v1.0.1 --assets-links='
     }
   ]'
 
+# [EXPERIMENTAL] Create a release and publish it to the GitLab CI/CD catalog
+# This command should NOT be run manually, but rather as part of a CI/CD pipeline with the "release" keyword.
+# The API endpoint accepts only "CI_JOB_TOKEN" as the authentication token.
+# This command retrieves components from the current repository by searching for `yml` files
+# within the "templates" directory and its subdirectories.
+# This flag will not work if the feature flag `ci_release_cli_catalog_publish_option` is not enabled
+# for the project in the GitLab instance.
+
+# Components can be defined;
+
+# - In single files ending in `.yml` for each component, like `templates/secret-detection.yml`.
+# - In sub-directories containing `template.yml` files as entry points,
+# 	for components that bundle together multiple related files. For example,
+# 	`templates/secret-detection/template.yml`.
+$ glab release create v1.0.1 --publish-to-catalog
+
 ```
 
 ## Options
@@ -78,6 +94,7 @@ $ glab release create v1.0.1 --assets-links='
   -n, --name string                                                                                                                                                The release name or title.
   -N, --notes string                                                                                                                                               The release notes or description. You can use Markdown.
   -F, --notes-file string                                                                                                                                          Read release notes 'file'. Specify '-' as the value to read from stdin.
+      --publish-to-catalog                                                                                                                                         [EXPERIMENTAL] Publish the release to the GitLab CI/CD catalog.
   -r, --ref string                                                                                                                                                 If the specified tag doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.
   -D, --released-at string                                                                                                                                         The 'date' when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).
   -T, --tag-message string                                                                                                                                         Message to use if creating a new annotated tag.

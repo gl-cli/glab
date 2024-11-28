@@ -1,0 +1,10 @@
+spec:
+  inputs:
+    abc:
+      default: eee
+
+---
+
+test:
+  script:
+    - echo a

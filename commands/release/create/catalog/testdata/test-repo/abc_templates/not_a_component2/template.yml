@@ -1,0 +1,10 @@
+spec:
+  inputs:
+    fff:
+      default: ggg
+
+---
+
+test:
+  script:
+    - echo a
