@@ -35,11 +35,12 @@ type ListOptions struct {
 	Group        string
 
 	// issue states
-	State  string
-	Closed bool
-	Merged bool
-	All    bool
-	Draft  bool
+	State    string
+	Closed   bool
+	Merged   bool
+	All      bool
+	Draft    bool
+	NotDraft bool
 
 	// Pagination
 	Page         int
@@ -76,6 +77,8 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 			glab mr list --label needs-review
 			glab mr list --not-label waiting-maintainer-feedback,subsystem-x
 			glab mr list -M --per-page 10
+			glab mr list --draft
+			glab mr list --not-draft
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -134,6 +137,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 	mrListCmd.Flags().BoolVarP(&opts.Closed, "closed", "c", false, "Get only closed merge requests.")
 	mrListCmd.Flags().BoolVarP(&opts.Merged, "merged", "M", false, "Get only merged merge requests.")
 	mrListCmd.Flags().BoolVarP(&opts.Draft, "draft", "d", false, "Filter by draft merge requests.")
+	mrListCmd.Flags().BoolVarP(&opts.NotDraft, "not-draft", "", false, "Filter by non-draft merge requests.")
 	mrListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
 	mrListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
 	mrListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
@@ -148,6 +152,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 	_ = mrListCmd.Flags().MarkHidden("mine")
 	_ = mrListCmd.Flags().MarkDeprecated("mine", "use --assignee=@me.")
 	mrListCmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
+	mrListCmd.MarkFlagsMutuallyExclusive("draft", "not-draft")
 
 	return mrListCmd
 }
@@ -217,6 +222,10 @@ func listRun(opts *ListOptions) error {
 	}
 	if opts.Draft {
 		l.WIP = gitlab.Ptr("yes")
+		opts.ListType = "search"
+	}
+	if opts.NotDraft {
+		l.WIP = gitlab.Ptr("no")
 		opts.ListType = "search"
 	}
 

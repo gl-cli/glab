@@ -36,6 +36,8 @@ glab mr list --search "this adds feature X"
 glab mr list --label needs-review
 glab mr list --not-label waiting-maintainer-feedback,subsystem-x
 glab mr list -M --per-page 10
+glab mr list --draft
+glab mr list --not-draft
 
 ```
 
@@ -51,6 +53,7 @@ glab mr list -M --per-page 10
   -l, --label strings          Filter merge request by label <name>.
   -M, --merged                 Get only merged merge requests.
   -m, --milestone string       Filter merge request by milestone <id>.
+      --not-draft              Filter by non-draft merge requests.
       --not-label strings      Filter merge requests by not having label <name>.
   -F, --output string          Format output as: text, json. (default "text")
   -p, --page int               Page number. (default 1)
