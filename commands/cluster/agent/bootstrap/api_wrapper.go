@@ -90,6 +90,12 @@ func (a *apiWrapper) ConfigureAgent(agent *gitlab.Agent, branch string) error {
 			return err
 		}
 
+		if cfg.UserAccess == nil {
+			cfg.UserAccess = &agentConfigUserAccess{
+				AccessAs: &agentConfigAccessAs{Agent: struct{}{}},
+			}
+		}
+
 		if !slices.ContainsFunc(cfg.UserAccess.Projects, func(p *agentConfigProject) bool { return p.ID == agent.ConfigProject.PathWithNamespace }) {
 			cfg.UserAccess.Projects = append(cfg.UserAccess.Projects, &agentConfigProject{ID: agent.ConfigProject.PathWithNamespace})
 		}
