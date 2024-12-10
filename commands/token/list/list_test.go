@@ -252,6 +252,29 @@ func TestListPersonalAccessTokenAsText(t *testing.T) {
 	assert.Empty(t, output.Stderr())
 }
 
+func TestListActivePersonalAccessTokenAsText(t *testing.T) {
+	fakeHTTP := &httpmock.Mocker{}
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, "/personal_access_tokens",
+		httpmock.NewStringResponse(http.StatusOK, personalAccessTokenResponse))
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/user",
+		httpmock.NewStringResponse(http.StatusOK, userResponse))
+
+	output, err := runCommand(fakeHTTP, "--user @me --active")
+	if err != nil {
+		t.Errorf("error running command `token list --user @me`: %v", err)
+	}
+
+	out := output.String()
+
+	assert.Equal(t, heredoc.Doc(`
+		ID       NAME  ACCESS_LEVEL ACTIVE  REVOKED  CREATED_AT           EXPIRES_AT LAST_USED_AT         SCOPES 
+		10171440 api   -            true    false    2024-07-05T10:02:37Z 2024-08-04 2024-07-07T20:02:49Z api    
+	`), out)
+	assert.Empty(t, output.Stderr())
+}
+
 func TestListPersonalAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP := &httpmock.Mocker{}
 	defer fakeHTTP.Verify(t)
