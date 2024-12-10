@@ -28,6 +28,7 @@ type ListOpts struct {
 	User         string
 	Group        string
 	OutputFormat string
+	ListActive   bool
 }
 
 func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Command {
@@ -92,6 +93,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Com
 	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "List group access tokens. Ignored if a user or repository argument is set.")
 	cmd.Flags().StringVarP(&opts.User, "user", "U", "", "List personal access tokens. Use @me for the current user.")
 	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json. text provides a readable table, json outputs the tokens with metadata.")
+	cmd.Flags().BoolVarP(&opts.ListActive, "active", "a", false, "List only the active tokens.")
 
 	return cmd
 }
@@ -194,7 +196,9 @@ func listRun(opts *ListOpts) error {
 		apiTokens = tokens
 		outputTokens = make([]Token, 0, len(tokens))
 		for _, token := range tokens {
-			outputTokens = append(outputTokens, newTokenFromPersonalAccessToken(token))
+			if !opts.ListActive || token.Active {
+				outputTokens = append(outputTokens, newTokenFromPersonalAccessToken(token))
+			}
 		}
 	case opts.Group != "":
 		options := &gitlab.ListGroupAccessTokensOptions{}
@@ -205,7 +209,9 @@ func listRun(opts *ListOpts) error {
 		apiTokens = tokens
 		outputTokens = make([]Token, 0, len(tokens))
 		for _, token := range tokens {
-			outputTokens = append(outputTokens, newTokenFromGroupAccessToken(token))
+			if !opts.ListActive || token.Active {
+				outputTokens = append(outputTokens, newTokenFromGroupAccessToken(token))
+			}
 		}
 	default:
 		tokens, err := api.ListProjectAccessTokens(httpClient, repo.FullName(), &gitlab.ListProjectAccessTokensOptions{})
@@ -215,7 +221,9 @@ func listRun(opts *ListOpts) error {
 		apiTokens = tokens
 		outputTokens = make([]Token, 0, len(tokens))
 		for _, token := range tokens {
-			outputTokens = append(outputTokens, newTokenFromProjectAccessToken(token))
+			if !opts.ListActive || token.Active {
+				outputTokens = append(outputTokens, newTokenFromProjectAccessToken(token))
+			}
 		}
 	}
 
