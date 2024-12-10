@@ -67,7 +67,7 @@ func NewCmdStackNext(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			ref, err := git.CurrentStackRefFromBranch(stack.Title)
+			ref, err := git.CurrentStackRefFromCurrentBranch(stack.Title)
 			if err != nil {
 				return err
 			}
@@ -101,7 +101,7 @@ func NewCmdStackPrev(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			ref, err := git.CurrentStackRefFromBranch(stack.Title)
+			ref, err := git.CurrentStackRefFromCurrentBranch(stack.Title)
 			if err != nil {
 				return err
 			}
