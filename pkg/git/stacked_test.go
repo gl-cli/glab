@@ -235,14 +235,3 @@ func Test_GetStacks(t *testing.T) {
 		require.Equal(t, want, got)
 	})
 }
-
-func createRefFiles(refs map[string]StackRef, title string) error {
-	for _, ref := range refs {
-		err := AddStackRefFile(title, ref)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}

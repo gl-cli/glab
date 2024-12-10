@@ -52,3 +52,25 @@ func configureGitConfig(t *testing.T) {
 	_, err = run.PrepareCmd(emailConfig).Output()
 	require.NoError(t, err)
 }
+
+func CreateRefFiles(refs map[string]StackRef, title string) error {
+	for _, ref := range refs {
+		err := AddStackRefFile(title, ref)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func CreateBranches(t *testing.T, branches []string) {
+	// older versions of git could default to a different branch,
+	// so making sure this one exists.
+	_ = CheckoutNewBranch("main")
+
+	for _, branch := range branches {
+		err := CheckoutNewBranch(branch)
+		require.Nil(t, err)
+	}
+}

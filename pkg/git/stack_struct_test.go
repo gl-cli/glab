@@ -93,14 +93,16 @@ func Test_StackRemoveRef(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			dir := InitGitRepoWithCommit(t)
 
-			err := createRefFiles(tt.args.stack.Refs, tt.args.stack.Title)
+			err := CreateRefFiles(tt.args.stack.Refs, tt.args.stack.Title)
 			require.Nil(t, err)
 
-			branches := map[string]StackRef{}
-			branches[tt.args.remove.SHA] = tt.args.remove
+			var branches []string
+
+			branches = append(branches, tt.args.remove.Branch)
 			if tt.args.remove.Prev != "" {
-				branches[tt.args.remove.Prev] = tt.args.stack.Refs[tt.args.remove.Prev]
+				branches = append(branches, tt.args.stack.Refs[tt.args.remove.Prev].Branch)
 			}
+
 			CreateBranches(t, branches)
 
 			err = CheckoutBranch("main")
@@ -252,7 +254,7 @@ func Test_StackRemoveBranch(t *testing.T) {
 			_, err := run.PrepareCmd(gitAddRemote).Output()
 			require.Nil(t, err)
 
-			CreateBranches(t, tt.stack.Refs)
+			CreateBranches(t, tt.stack.Branches())
 
 			err = tt.stack.RemoveBranch(tt.ref)
 
@@ -569,6 +571,76 @@ func Test_validateStackRefs(t *testing.T) {
 	}
 }
 
+func TestStack_IndexAt(t *testing.T) {
+	tests := []struct {
+		name     string
+		stack    Stack
+		ref      StackRef
+		expected int
+	}{
+		{
+			name: "Find existing ref in the middle",
+			stack: Stack{
+				Refs: map[string]StackRef{
+					"sha1": {SHA: "sha1", Branch: "branch1", Next: "sha2", Prev: ""},
+					"sha2": {SHA: "sha2", Branch: "branch2", Next: "sha3", Prev: "sha1"},
+					"sha3": {SHA: "sha3", Branch: "branch3", Next: "", Prev: "sha2"},
+				},
+			},
+			ref:      StackRef{SHA: "sha2", Branch: "branch2", Next: "sha3", Prev: "sha1"},
+			expected: 1,
+		},
+		{
+			name: "Find first ref",
+			stack: Stack{
+				Refs: map[string]StackRef{
+					"sha1": {SHA: "sha1", Branch: "branch1", Next: "sha2", Prev: ""},
+					"sha2": {SHA: "sha2", Branch: "branch2", Next: "", Prev: "sha1"},
+				},
+			},
+			ref:      StackRef{SHA: "sha1", Branch: "branch1", Next: "sha2", Prev: ""},
+			expected: 0,
+		},
+		{
+			name: "Find last ref",
+			stack: Stack{
+				Refs: map[string]StackRef{
+					"sha1": {SHA: "sha1", Branch: "branch1", Next: "sha2", Prev: ""},
+					"sha2": {SHA: "sha2", Branch: "branch2", Next: "sha3", Prev: "sha1"},
+					"sha3": {SHA: "sha3", Branch: "branch3", Next: "", Prev: "sha2"},
+				},
+			},
+			ref:      StackRef{SHA: "sha3", Branch: "branch3", Next: "", Prev: "sha2"},
+			expected: 2,
+		},
+		{
+			name: "Ref not found",
+			stack: Stack{
+				Refs: map[string]StackRef{
+					"sha1": {SHA: "sha1", Branch: "branch1", Next: "sha2", Prev: ""},
+					"sha2": {SHA: "sha2", Branch: "branch2", Next: "sha3", Prev: "sha1"},
+					"sha3": {SHA: "sha3", Branch: "branch3", Next: "", Prev: "sha2"},
+				},
+			},
+			ref:      StackRef{SHA: "sha4", Branch: "branch3"},
+			expected: -1,
+		},
+		{
+			name:     "Empty stack",
+			stack:    Stack{},
+			ref:      StackRef{SHA: "sha1", Branch: "branch1"},
+			expected: -1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.stack.IndexAt(tt.ref)
+			require.Equal(t, tt.expected, result)
+		})
+	}
+}
+
 func TestStack_Iter(t *testing.T) {
 	tests := []struct {
 		name               string
@@ -610,13 +682,62 @@ func TestStack_Iter(t *testing.T) {
 	}
 }
 
-func CreateBranches(t *testing.T, refs map[string]StackRef) {
-	// older versions of git could default to a different branch,
-	// so making sure this one exists.
-	_ = CheckoutNewBranch("main")
+func TestStack_Iter2(t *testing.T) {
+	type result struct {
+		index int
+		ref   StackRef
+	}
+	tests := []struct {
+		name     string
+		stack    Stack
+		expected []result
+	}{
+		{
+			name: "Empty stack",
+			stack: Stack{
+				Refs: map[string]StackRef{},
+			},
+			expected: []result{},
+		},
+		{
+			name: "Stack with multiple refs",
+			stack: Stack{
+				Refs: map[string]StackRef{
+					"sha1": {SHA: "sha1", Branch: "branch1", Prev: "", Next: "sha2"},
+					"sha2": {SHA: "sha2", Branch: "branch2", Prev: "sha1", Next: "sha3"},
+					"sha3": {SHA: "sha3", Branch: "branch3", Prev: "sha2", Next: ""},
+				},
+			},
+			expected: []result{
+				{0, StackRef{SHA: "sha1", Branch: "branch1", Next: "sha2"}},
+				{1, StackRef{SHA: "sha2", Branch: "branch2", Prev: "sha1", Next: "sha3"}},
+				{2, StackRef{SHA: "sha3", Branch: "branch3", Prev: "sha2"}},
+			},
+		},
+		{
+			name: "Stack with 1 ref",
+			stack: Stack{
+				Refs: map[string]StackRef{
+					"sha1": {SHA: "sha1", Branch: "branch1", Prev: "", Next: ""},
+				},
+			},
+			expected: []result{
+				{0, StackRef{SHA: "sha1", Branch: "branch1", Next: ""}},
+			},
+		},
+	}
 
-	for _, ref := range refs {
-		err := CheckoutNewBranch(ref.Branch)
-		require.Nil(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			results := []result{}
+
+			for i, v := range tt.stack.Iter2() {
+				assert.Equal(t, i, tt.expected[i].index)
+				assert.Equal(t, v, tt.expected[i].ref)
+				results = append(results, result{i, v})
+			}
+
+			assert.Equal(t, tt.expected, results)
+		})
 	}
 }

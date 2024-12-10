@@ -58,7 +58,7 @@ func amendFunc(f *cmdutils.Factory, args []string, getText cmdutils.GetTextUsing
 		return "", fmt.Errorf("error running Git command: %v", err)
 	}
 
-	ref, err := git.CurrentStackRefFromBranch(title)
+	ref, err := git.CurrentStackRefFromCurrentBranch(title)
 	if err != nil {
 		return "", fmt.Errorf("error checking for stack: %v", err)
 	}
