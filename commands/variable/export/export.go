@@ -235,7 +235,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.Scope) {
 				if !strings.Contains(variable.EnvironmentScope, "*") {
-					fmt.Fprintf(out, "%s=%s\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "%s=\"%s\"\n", variable.Key, variable.Value)
 					writtenKeys = append(writtenKeys, variable.Key)
 				}
 			}
@@ -244,7 +244,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.Scope) {
 				if !(keysMap[variable.Key]) && (strings.Contains(variable.EnvironmentScope, "*")) {
-					fmt.Fprintf(out, "%s=%s\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "%s=\"%s\"\n", variable.Key, variable.Value)
 				}
 			}
 		}
@@ -252,7 +252,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.Scope) {
 				if !strings.Contains(variable.EnvironmentScope, "*") {
-					fmt.Fprintf(out, "export %s=%s\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "export %s=\"%s\"\n", variable.Key, variable.Value)
 					writtenKeys = append(writtenKeys, variable.Key)
 				}
 			}
@@ -261,7 +261,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts
 		for _, variable := range variables {
 			if matchesScope(variable.EnvironmentScope, opts.Scope) {
 				if !(keysMap[variable.Key]) && (strings.Contains(variable.EnvironmentScope, "*")) {
-					fmt.Fprintf(out, "export %s=%s\n", variable.Key, variable.Value)
+					fmt.Fprintf(out, "export %s=\"%s\"\n", variable.Key, variable.Value)
 				}
 			}
 		}
