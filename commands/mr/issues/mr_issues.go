@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func NewCmdIssues(f *cmdutils.Factory) *cobra.Command {

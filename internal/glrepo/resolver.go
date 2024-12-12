@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 // cap the number of git remotes looked up, since the user might have an

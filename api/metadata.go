@@ -1,6 +1,6 @@
 package api
 
-import "github.com/xanzy/go-gitlab"
+import gitlab "gitlab.com/gitlab-org/api/client-go"
 
 var GetMetadata = func(client *gitlab.Client) (*gitlab.Metadata, error) {
 	if client == nil {

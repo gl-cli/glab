@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/oauth2"
@@ -447,7 +447,7 @@ func Is404(err error) bool {
 		return true
 	}
 
-	// This can also come back as a string 404 from go-gitlab
+	// This can also come back as a string 404 from gitlab client-go
 	if err != nil && err.Error() == "404 Not Found" {
 		return true
 	}

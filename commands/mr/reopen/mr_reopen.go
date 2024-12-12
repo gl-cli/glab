@@ -9,7 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 
 	"github.com/spf13/cobra"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {

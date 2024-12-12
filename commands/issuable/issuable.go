@@ -3,7 +3,7 @@ package issuable
 import (
 	"fmt"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 type IssueType string

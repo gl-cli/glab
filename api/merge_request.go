@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 var ErrTodoExists = errors.New("To-do already exists.")

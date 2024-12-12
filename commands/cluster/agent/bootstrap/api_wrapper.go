@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	glab_api "gitlab.com/gitlab-org/cli/api"
 	"gopkg.in/yaml.v3"
 )

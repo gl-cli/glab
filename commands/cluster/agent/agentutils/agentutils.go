@@ -3,7 +3,7 @@ package agentutils
 import (
 	"net/url"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 	"gitlab.com/gitlab-org/cli/pkg/utils"

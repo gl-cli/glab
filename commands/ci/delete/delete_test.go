@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/stretchr/testify/require"
 

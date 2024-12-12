@@ -1,6 +1,6 @@
 package api
 
-import "github.com/xanzy/go-gitlab"
+import gitlab "gitlab.com/gitlab-org/api/client-go"
 
 var GenerateChangelog = func(client *gitlab.Client, projectID interface{}, options *gitlab.GenerateChangelogDataOptions) (*gitlab.ChangelogData, error) {
 	if client == nil {

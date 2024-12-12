@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/hashicorp/go-retryablehttp"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 var CreateProjectVariable = func(client *gitlab.Client, projectID interface{}, opts *gitlab.CreateProjectVariableOptions) (*gitlab.ProjectVariable, error) {

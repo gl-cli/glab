@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 var ListProjectAccessTokens = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectAccessTokensOptions) ([]*gitlab.ProjectAccessToken, error) {

@@ -1,10 +1,10 @@
-// This is a silly wrapper for go-gitlab but helps maintain consistency
+// This is a silly wrapper for gitlab client-go but helps maintain consistency
 package api
 
 import (
 	"net/http"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 var ListIssueNotes = func(client *gitlab.Client, projectID interface{}, issueID int, opts *gitlab.ListIssueNotesOptions) ([]*gitlab.Note, error) {

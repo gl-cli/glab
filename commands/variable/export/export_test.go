@@ -8,7 +8,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -155,6 +155,7 @@ func Test_exportRun_project(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "dev",
                 "description": ""
@@ -165,6 +166,7 @@ func Test_exportRun_project(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "prod",
                 "description": ""
@@ -175,6 +177,7 @@ func Test_exportRun_project(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "*",
                 "description": ""
@@ -185,6 +188,7 @@ func Test_exportRun_project(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "dev/a",
                 "description": ""
@@ -195,6 +199,7 @@ func Test_exportRun_project(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "dev/b",
                 "description": ""
@@ -205,6 +210,7 @@ func Test_exportRun_project(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "feature-1",
                 "description": ""
@@ -215,6 +221,7 @@ func Test_exportRun_project(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "feature-2",
                 "description": ""
@@ -225,6 +232,7 @@ func Test_exportRun_project(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "feature-*",
                 "description": ""
@@ -243,6 +251,7 @@ func Test_exportRun_project(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "*",
                 "description": ""
@@ -253,6 +262,7 @@ func Test_exportRun_project(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "dev/b",
                 "description": ""
@@ -418,6 +428,7 @@ func Test_exportRun_group(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "dev",
                 "description": ""
@@ -428,6 +439,7 @@ func Test_exportRun_group(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "prod",
                 "description": ""
@@ -438,6 +450,7 @@ func Test_exportRun_group(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "*",
                 "description": ""
@@ -448,6 +461,7 @@ func Test_exportRun_group(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "dev/a",
                 "description": ""
@@ -458,6 +472,7 @@ func Test_exportRun_group(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "dev/b",
                 "description": ""
@@ -468,6 +483,7 @@ func Test_exportRun_group(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "feature-1",
                 "description": ""
@@ -478,6 +494,7 @@ func Test_exportRun_group(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "feature-2",
                 "description": ""
@@ -488,6 +505,7 @@ func Test_exportRun_group(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "feature-*",
                 "description": ""
@@ -506,6 +524,7 @@ func Test_exportRun_group(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "*",
                 "description": ""
@@ -516,6 +535,7 @@ func Test_exportRun_group(t *testing.T) {
                 "variable_type": "",
                 "protected": false,
                 "masked": false,
+                "hidden": false,
                 "raw": false,
                 "environment_scope": "dev/b",
                 "description": ""

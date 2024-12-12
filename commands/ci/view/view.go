@@ -23,7 +23,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"

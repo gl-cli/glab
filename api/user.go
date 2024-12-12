@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 var CurrentUser = func(client *gitlab.Client) (*gitlab.User, error) {
