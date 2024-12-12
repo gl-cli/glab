@@ -6,7 +6,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 // agentTokenLimit specifies the maximal amount of agent tokens that can be active per agent at any given time.

@@ -1,6 +1,6 @@
 package api
 
-import "github.com/xanzy/go-gitlab"
+import gitlab "gitlab.com/gitlab-org/api/client-go"
 
 var GetProject = func(client *gitlab.Client, projectID interface{}) (*gitlab.Project, error) {
 	if client == nil {

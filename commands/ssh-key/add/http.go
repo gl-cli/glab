@@ -3,7 +3,7 @@ package add
 import (
 	"time"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func UploadSSHKey(client *gitlab.Client, title, key, expiresAt string) error {

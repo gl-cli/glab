@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/spf13/cobra"
 

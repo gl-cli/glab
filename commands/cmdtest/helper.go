@@ -21,7 +21,7 @@ import (
 	"github.com/google/shlex"
 	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"

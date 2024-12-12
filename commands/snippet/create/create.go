@@ -8,7 +8,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -152,8 +152,8 @@ func runCreate(client *gitlab.Client, repo glrepo.Interface, opts *CreateOpts) e
 //	Doesn't support it yet.
 //
 //	See for the API reference: https://docs.gitlab.com/ee/api/snippets.html#create-new-snippet
-//	See for the library docs: https://pkg.go.dev/github.com/xanzy/go-gitlab#CreateSnippetOptions
-//	See for GitHub issue: https://github.com/xanzy/go-gitlab/issues/1372
+//	See for the library docs: https://pkg.go.dev/gitlab.com/gitlab-org/api/client-go#CreateSnippetOptions
+//	See for GitHub issue: https://gitlab.com/gitlab-org/api/client-go/issues/1372
 func readSnippetsContent(opts *CreateOpts) (string, error) {
 	if opts.isSnippetFromFile() {
 		return readFromFile(opts.FilePath)

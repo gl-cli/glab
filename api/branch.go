@@ -1,6 +1,6 @@
 package api
 
-import "github.com/xanzy/go-gitlab"
+import gitlab "gitlab.com/gitlab-org/api/client-go"
 
 var CreateBranch = func(client *gitlab.Client, projectID interface{}, opts *gitlab.CreateBranchOptions) (*gitlab.Branch, error) {
 	if client == nil {

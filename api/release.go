@@ -1,6 +1,6 @@
 package api
 
-import "github.com/xanzy/go-gitlab"
+import gitlab "gitlab.com/gitlab-org/api/client-go"
 
 var CreateRelease = func(client *gitlab.Client, projectID interface{}, opts *gitlab.CreateReleaseOptions) (*gitlab.Release, error) {
 	if client == nil {

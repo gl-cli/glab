@@ -18,7 +18,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func DisplayIssueList(streams *iostreams.IOStreams, issues []*gitlab.Issue, projectID string) string {

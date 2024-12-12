@@ -18,7 +18,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/spf13/cobra"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 type ListOptions struct {

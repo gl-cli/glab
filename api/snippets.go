@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 // CreateSnippet for the user inside the users snippets

@@ -8,7 +8,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func Test_RemoteURL(t *testing.T) {

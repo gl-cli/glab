@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 var CurrentUserEvents = func(client *gitlab.Client, opts *gitlab.ListContributionEventsOptions) ([]*gitlab.ContributionEvent, error) {

@@ -16,7 +16,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
