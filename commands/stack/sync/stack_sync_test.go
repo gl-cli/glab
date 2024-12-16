@@ -1,9 +1,7 @@
 package sync
 
 import (
-	"math/rand/v2"
 	"net/http"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,7 +9,6 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"go.uber.org/mock/gomock"
 )
@@ -25,14 +22,6 @@ type SyncScenario struct {
 type TestRef struct {
 	ref   git.StackRef
 	state string
-}
-
-type httpMock struct {
-	method      string
-	path        string
-	requestBody string
-	body        string
-	status      int
 }
 
 func setupTestFactory(rt http.RoundTripper) (*iostreams.IOStreams, *cmdutils.Factory, *Options) {
@@ -77,7 +66,7 @@ func Test_stackSync(t *testing.T) {
 	tests := []struct {
 		name      string
 		args      args
-		httpMocks []httpMock
+		httpMocks []git.HttpMock
 		wantErr   bool
 	}{
 		{
@@ -101,11 +90,11 @@ func Test_stackSync(t *testing.T) {
 				},
 			},
 
-			httpMocks: []httpMock{
-				mockUser(),
-				mockListMRsByBranch("Branch1", "25"),
-				mockGetMR("Branch1", "25"),
-				mockPostMR("Branch2", "Branch1", "3"),
+			httpMocks: []git.HttpMock{
+				git.MockStackUser(),
+				git.MockListStackMRsByBranch("Branch1", "25"),
+				git.MockGetStackMR("Branch1", "25"),
+				git.MockPostStackMR("Branch2", "Branch1", "3"),
 			},
 		},
 
@@ -127,10 +116,10 @@ func Test_stackSync(t *testing.T) {
 				},
 			},
 
-			httpMocks: []httpMock{
-				mockUser(),
-				mockPostMR("Branch1", "", "3"),
-				mockPostMR("Branch2", "Branch1", "3"),
+			httpMocks: []git.HttpMock{
+				git.MockStackUser(),
+				git.MockPostStackMR("Branch1", "", "3"),
+				git.MockPostStackMR("Branch2", "Branch1", "3"),
 			},
 		},
 
@@ -172,15 +161,15 @@ func Test_stackSync(t *testing.T) {
 				},
 			},
 
-			httpMocks: []httpMock{
-				mockUser(),
-				mockListMRsByBranch("Branch1", "25"),
-				mockGetMR("Branch1", "25"),
-				mockPostMR("Branch2", "Branch1", "3"),
-				mockPostMR("Branch3", "Branch2", "3"),
-				mockPostMR("Branch4", "Branch3", "3"),
-				mockPostMR("Branch5", "Branch4", "3"),
-				mockPostMR("Branch6", "Branch5", "3"),
+			httpMocks: []git.HttpMock{
+				git.MockStackUser(),
+				git.MockListStackMRsByBranch("Branch1", "25"),
+				git.MockGetStackMR("Branch1", "25"),
+				git.MockPostStackMR("Branch2", "Branch1", "3"),
+				git.MockPostStackMR("Branch3", "Branch2", "3"),
+				git.MockPostStackMR("Branch4", "Branch3", "3"),
+				git.MockPostStackMR("Branch5", "Branch4", "3"),
+				git.MockPostStackMR("Branch6", "Branch5", "3"),
 			},
 		},
 	}
@@ -189,7 +178,7 @@ func Test_stackSync(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			git.InitGitRepoWithCommit(t)
 
-			fakeHTTP := setupMocks(tc.httpMocks)
+			fakeHTTP := git.SetupMocks(tc.httpMocks)
 			defer fakeHTTP.Verify(t)
 
 			ctrl := gomock.NewController(t)
@@ -260,97 +249,6 @@ func createStack(t *testing.T, title string, scenario map[string]TestRef) {
 		err = git.CheckoutNewBranch(ref.ref.Branch)
 		require.NoError(t, err)
 	}
-}
-
-func setupMocks(mocks []httpMock) *httpmock.Mocker {
-	fakeHTTP := &httpmock.Mocker{
-		MatchURL: httpmock.PathAndQuerystring,
-	}
-
-	for _, mock := range mocks {
-		if mock.requestBody != "" {
-			fakeHTTP.RegisterResponderWithBody(
-				mock.method,
-				mock.path,
-				mock.requestBody,
-				httpmock.NewStringResponse(mock.status, mock.body),
-			)
-		} else {
-			fakeHTTP.RegisterResponder(
-				mock.method,
-				mock.path,
-				httpmock.NewStringResponse(mock.status, mock.body),
-			)
-		}
-	}
-
-	return fakeHTTP
-}
-
-func mockUser() httpMock {
-	return httpMock{
-		method: http.MethodGet,
-		path:   "/api/v4/user",
-		status: http.StatusOK,
-		body:   `{ "username": "stack_guy" }`,
-	}
-}
-
-func mockPostMR(source, target, project string) httpMock {
-	return httpMock{
-		method: http.MethodPost,
-		path:   "/api/v4/projects/stack_guy%2Fstackproject/merge_requests",
-		status: http.StatusOK,
-		requestBody: `{
-				"title": "",
-				"source_branch":"` + source + `",
-				"target_branch":"` + target + `",
-				"assignee_id":0,
-				"target_project_id": ` + project + `,
-				"remove_source_branch":true
-			}`,
-		body: `{
-			"title": "Test MR",
-			"iid": ` + strconv.Itoa(rand.IntN(100)) + `,
-			"source_branch":"` + source + `",
-			"target_branch":"` + target + `"
-		}`,
-	}
-}
-
-func mockListMRsByBranch(branch, iid string) httpMock {
-	return httpMock{
-		method: http.MethodGet,
-		path:   "/api/v4/projects/stack_guy%2Fstackproject/merge_requests?per_page=30&source_branch=" + branch,
-		status: http.StatusOK,
-		body:   "[" + mrMockData(branch, iid) + "]",
-	}
-}
-
-func mockGetMR(branch, iid string) httpMock {
-	return httpMock{
-		method: http.MethodGet,
-		path:   "https://gitlab.com/api/v4/projects/stack_guy%2Fstackproject/merge_requests/" + iid,
-		status: http.StatusOK,
-		body:   mrMockData(branch, iid),
-	}
-}
-
-func mrMockData(branch, iid string) string {
-	return `{
-				"id": ` + iid + `,
-				"iid": ` + iid + `,
-				"project_id": 3,
-				"title": "test mr title",
-				"target_branch": "main",
-				"source_branch": "` + branch + `",
-				"description": "test mr description` + iid + `",
-				"author": {
-					"id": 1,
-					"username": "admin"
-				},
-				"state": "opened"
-			}`
 }
 
 func checkoutBranch(branch string) func(_ ...string) (string, error) {
