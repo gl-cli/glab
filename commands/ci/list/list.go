@@ -3,6 +3,7 @@ package list
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/ci/ciutils"
@@ -62,6 +63,41 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			if p, _ := cmd.Flags().GetInt("per-page"); p != 0 {
 				l.PerPage = p
 			}
+			if m, _ := cmd.Flags().GetString("ref"); m != "" {
+				l.Ref = gitlab.Ptr(m)
+			}
+			if m, _ := cmd.Flags().GetString("scope"); m != "" {
+				l.Scope = gitlab.Ptr(m)
+			}
+			if m, _ := cmd.Flags().GetString("source"); m != "" {
+				l.Source = gitlab.Ptr(m)
+			}
+			if m, _ := cmd.Flags().GetString("sha"); m != "" {
+				l.SHA = gitlab.Ptr(m)
+			}
+			if m, _ := cmd.Flags().GetBool("yaml-errors"); m {
+				l.YamlErrors = gitlab.Ptr(true)
+			}
+			if m, _ := cmd.Flags().GetString("name"); m != "" {
+				l.Name = gitlab.Ptr(m)
+			}
+			if m, _ := cmd.Flags().GetString("username"); m != "" {
+				l.Username = gitlab.Ptr(m)
+			}
+			if m, _ := cmd.Flags().GetString("updated-after"); m != "" {
+				updatedAfterTime, err := time.Parse("2006-01-02 15:04:05Z", m)
+				if err != nil {
+					return err
+				}
+				l.UpdatedAfter = gitlab.Ptr(updatedAfterTime)
+			}
+			if m, _ := cmd.Flags().GetString("updated-before"); m != "" {
+				updatedBeforeTime, err := time.Parse("2006-01-02 15:04:05Z", m)
+				if err != nil {
+					return err
+				}
+				l.UpdatedBefore = gitlab.Ptr(updatedBeforeTime)
+			}
 
 			pipes, err := api.ListProjectPipelines(apiClient, repo.FullName(), l)
 			if err != nil {
@@ -88,6 +124,15 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	pipelineListCmd.Flags().IntP("page", "p", 1, "Page number.")
 	pipelineListCmd.Flags().IntP("per-page", "P", 30, "Number of items to list per page.")
 	pipelineListCmd.Flags().StringP("output", "F", "text", "Format output. Options: text, json.")
+	pipelineListCmd.Flags().StringP("ref", "r", "", "Return only pipelines for given ref.")
+	pipelineListCmd.Flags().String("scope", "", "Return only pipelines with the given scope: {running|pending|finished|branches|tags}")
+	pipelineListCmd.Flags().String("source", "", "Return only pipelines triggered via the given source. See https://docs.gitlab.com/ee/ci/jobs/job_rules.html#ci_pipeline_source-predefined-variable for full list. Commonly used options: {merge_request_event|parent_pipeline|pipeline|push|trigger}")
+	pipelineListCmd.Flags().String("sha", "", "Return only pipelines with the given SHA.")
+	pipelineListCmd.Flags().BoolP("yaml-errors", "y", false, "Return only pipelines with invalid configurations.")
+	pipelineListCmd.Flags().StringP("name", "n", "", "Return only pipelines with the given name.")
+	pipelineListCmd.Flags().StringP("username", "u", "", "Return only pipelines triggered by the given username.")
+	pipelineListCmd.Flags().StringP("updated-before", "b", "", "Return only pipelines updated before the specified date. Expected in ISO 8601 format (2019-03-15T08:00:00Z).")
+	pipelineListCmd.Flags().StringP("updated-after", "a", "", "Return only pipelines updated after the specified date. Expected in ISO 8601 format (2019-03-15T08:00:00Z).")
 
 	return pipelineListCmd
 }

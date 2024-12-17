@@ -28,12 +28,21 @@ glab ci list --status=failed
 ## Options
 
 ```plaintext
-  -o, --orderBy string   Order pipelines by this field. Options: id, status, ref, updated_at, user_id. (default "id")
-  -F, --output string    Format output. Options: text, json. (default "text")
-  -p, --page int         Page number. (default 1)
-  -P, --per-page int     Number of items to list per page. (default 30)
-      --sort string      Sort pipelines. Options: asc, desc. (default "desc")
-  -s, --status string    Get pipeline with this status. Options: running, pending, success, failed, canceled, skipped, created, manual, waiting_for_resource, preparing, scheduled}
+  -n, --name string             Return only pipelines with the given name.
+  -o, --orderBy string          Order pipelines by this field. Options: id, status, ref, updated_at, user_id. (default "id")
+  -F, --output string           Format output. Options: text, json. (default "text")
+  -p, --page int                Page number. (default 1)
+  -P, --per-page int            Number of items to list per page. (default 30)
+  -r, --ref string              Return only pipelines for given ref.
+      --scope string            Return only pipelines with the given scope: {running|pending|finished|branches|tags}
+      --sha string              Return only pipelines with the given SHA.
+      --sort string             Sort pipelines. Options: asc, desc. (default "desc")
+      --source string           Return only pipelines triggered via the given source. See https://docs.gitlab.com/ee/ci/jobs/job_rules.html#ci_pipeline_source-predefined-variable for full list. Commonly used options: {merge_request_event|parent_pipeline|pipeline|push|trigger}
+  -s, --status string           Get pipeline with this status. Options: running, pending, success, failed, canceled, skipped, created, manual, waiting_for_resource, preparing, scheduled}
+  -a, --updated-after string    Return only pipelines updated after the specified date. Expected in ISO 8601 format (2019-03-15T08:00:00Z).
+  -b, --updated-before string   Return only pipelines updated before the specified date. Expected in ISO 8601 format (2019-03-15T08:00:00Z).
+  -u, --username string         Return only pipelines triggered by the given username.
+  -y, --yaml-errors             Return only pipelines with invalid configurations.
 ```
 
 ## Options inherited from parent commands
