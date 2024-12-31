@@ -80,6 +80,14 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 				actions = append(actions, "unlocked dicussion")
 				l.DiscussionLocked = gitlab.Ptr(false)
 			}
+			if cmd.Flags().Changed("weight") {
+				weight, _ := cmd.Flags().GetInt("weight")
+				if weight < 0 {
+					return &cmdutils.FlagError{Err: errors.New("weight must be a positive integer or zero")}
+				}
+				actions = append(actions, fmt.Sprintf("set weight to %d", weight))
+				l.Weight = gitlab.Ptr(weight)
+			}
 
 			if m, _ := cmd.Flags().GetString("description"); m != "" {
 				actions = append(actions, "updated description")
@@ -191,6 +199,7 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 	issueUpdateCmd.Flags().
 		StringSliceP("assignee", "a", []string{}, "Assign users by username. Prefix with '!' or '-' to remove from existing assignees, or '+' to add new. Otherwise, replace existing assignees with these users.")
 	issueUpdateCmd.Flags().Bool("unassign", false, "Unassign all users.")
+	issueUpdateCmd.Flags().IntP("weight", "w", 0, "Set weight of the issue")
 
 	return issueUpdateCmd
 }
