@@ -199,7 +199,7 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 	issueUpdateCmd.Flags().
 		StringSliceP("assignee", "a", []string{}, "Assign users by username. Prefix with '!' or '-' to remove from existing assignees, or '+' to add new. Otherwise, replace existing assignees with these users.")
 	issueUpdateCmd.Flags().Bool("unassign", false, "Unassign all users.")
-	issueUpdateCmd.Flags().IntP("weight", "w", 0, "Set weight of the issue")
+	issueUpdateCmd.Flags().IntP("weight", "w", 0, "Set weight of the issue.")
 
 	return issueUpdateCmd
 }
