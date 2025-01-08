@@ -40,7 +40,7 @@ func Publish(io *iostreams.IOStreams, client *gitlab.Client, repoName string, ta
 
 	body, err := publishToCatalogRequestBody(tagName)
 	if err != nil {
-		return cmdutils.WrapError(err, "failed to create a request body")
+		return cmdutils.WrapError(err, "failed to create a request body.")
 	}
 
 	path := fmt.Sprintf(publishToCatalogApiPath, url.PathEscape(repoName))
