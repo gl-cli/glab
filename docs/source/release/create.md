@@ -36,10 +36,10 @@ glab release create <tag> [<files>...] [flags]
 ## Examples
 
 ```plaintext
-# Interactively create a release
+# Create a release interactively
 $ glab release create v1.0.1
 
-# Non-interactively create a release by specifying a note
+# Create a release non-interactively by specifying a note
 $ glab release create v1.0.1 --notes "bugfix release"
 
 # Use release notes from a file
@@ -51,10 +51,10 @@ $ glab release create v1.0.1 '/path/to/asset.zip#My display label'
 # Upload a release asset with a display name and type
 $ glab release create v1.0.1 '/path/to/asset.png#My display label#image'
 
-# Upload all assets in a specified folder (types will default to 'other')
+# Upload all assets in a specified folder (types default to 'other')
 $ glab release create v1.0.1 ./dist/*
 
-# Upload all tarballs in a specified folder (types will default to 'other')
+# Upload all tarballs in a specified folder (types default to 'other')
 $ glab release create v1.0.1 ./dist/*.tar.gz
 
 # Create a release with assets specified as JSON object
@@ -69,19 +69,23 @@ $ glab release create v1.0.1 --assets-links='
   ]'
 
 # [EXPERIMENTAL] Create a release and publish it to the GitLab CI/CD catalog
-# This command should NOT be run manually, but rather as part of a CI/CD pipeline with the "release" keyword.
-# The API endpoint accepts only "CI_JOB_TOKEN" as the authentication token.
-# This command retrieves components from the current repository by searching for `yml` files
-# within the "templates" directory and its subdirectories.
-# This flag will not work if the feature flag `ci_release_cli_catalog_publish_option` is not enabled
-# for the project in the GitLab instance.
+# Requires the feature flag `ci_release_cli_catalog_publish_option` to be enabled
+# for this project in your GitLab instance. Do NOT run this manually. Use it as part
+# of a CI/CD pipeline with the "release" keyword:
+#
+# - The API endpoint accepts only "CI_JOB_TOKEN" as the authentication token.
+# - It retrieves components from the current repository by searching for
+#   `yml` files within the "templates" directory and its subdirectories.
+# - It fails if the feature flag `ci_release_cli_catalog_publish_option`
+#   is not enabled for this project in your GitLab instance.
 
-# Components can be defined;
+# Components can be defined:
 
 # - In single files ending in `.yml` for each component, like `templates/secret-detection.yml`.
-# - In sub-directories containing `template.yml` files as entry points,
-# 	for components that bundle together multiple related files. For example,
-# 	`templates/secret-detection/template.yml`.
+# - In subdirectories containing `template.yml` files as entry points,
+#   for components that bundle together multiple related files. For example,
+#   `templates/secret-detection/template.yml`.
+
 $ glab release create v1.0.1 --publish-to-catalog
 
 ```
