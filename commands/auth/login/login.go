@@ -447,7 +447,7 @@ func loginRun(opts *LoginOptions) error {
 	}
 
 	fmt.Fprintf(opts.IO.StdErr, "%s Logged in as %s\n", c.GreenCheck(), c.Bold(username))
-	fmt.Fprintf(opts.IO.StdErr, "%s Configuration saved to %s/%s\n", c.GreenCheck(), config.ConfigDir(), config.ConfigFile())
+	fmt.Fprintf(opts.IO.StdErr, "%s Configuration saved to %s\n", c.GreenCheck(), config.ConfigFile())
 
 	return nil
 }
