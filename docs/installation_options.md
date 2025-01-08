@@ -24,6 +24,7 @@ are maintained by the community.
     - [Alpine Linux Docker-way](#alpine-linux-docker-way)
   - [Fedora](#fedora)
   - [Nix/NixOS](#nixnixos)
+  - [WakeMeOps (Debian/Ubuntu)](#wakemeops-debianubuntu)
   - [MPR (Debian/Ubuntu)](#mpr-debianubuntu)
     - [Prebuilt-MPR](#prebuilt-mpr)
   - [Spack](#spack)
@@ -156,16 +157,6 @@ Install it with the command `dnf install glab`.
 
 Nix (NixOS) users can install from [nixpkgs](https://search.nixos.org/packages?channel=unstable&show=glab&from=0&size=30&sort=relevance&query=glab) with the command `nix-env -iA nixos.glab`.
 
-### MPR (Debian/Ubuntu)
-
-`glab` is available inside the [makedeb package repository](https://mpr.makedeb.org/packages/glab). To install, run the following:
-
-```shell
-git clone 'https://mpr.makedeb.org/glab'
-cd glab/
-makedeb -si
-```
-
 ### WakeMeOps (Debian/Ubuntu)
 
 `glab` also exists in the [WakeMeOps repository](https://docs.wakemeops.com/packages/glab/):
@@ -178,6 +169,16 @@ curl -sSL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/instal
 sudo apt install glab
 ```
 
+### MPR (Debian/Ubuntu)
+
+`glab` is available inside the [makedeb package repository](https://mpr.makedeb.org/packages/glab). To install, run the following:
+
+```shell
+git clone 'https://mpr.makedeb.org/glab'
+cd glab/
+makedeb -si
+```
+
 #### Prebuilt-MPR
 
 The above method downloads glab from source and builds it before packaging it into a `.deb` package. If you don't want to compile or just want a prebuilt package, you can also install glab from the Prebuilt-MPR:
@@ -185,7 +186,7 @@ The above method downloads glab from source and builds it before packaging it in
 1. Set up [the Prebuilt-MPR on your system](https://docs.makedeb.org/prebuilt-mpr/getting-started/#setting-up-the-repository).
 1. Install with the command `sudo apt install glab`.
 
-#### Spack
+### Spack
 
 - To install: `spack install glab`.
 - To update: `spack uninstall glab && spack install glab`
