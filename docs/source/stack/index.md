@@ -59,6 +59,7 @@ glab stack sync
 - [`move`](move.md)
 - [`next`](next.md)
 - [`prev`](prev.md)
+- [`reorder`](reorder.md)
 - [`save`](save.md)
 - [`switch`](switch.md)
 - [`sync`](sync.md)

@@ -5,6 +5,7 @@ import (
 	stackCreateCmd "gitlab.com/gitlab-org/cli/commands/stack/create"
 	stackListCmd "gitlab.com/gitlab-org/cli/commands/stack/list"
 	stackMoveCmd "gitlab.com/gitlab-org/cli/commands/stack/navigate"
+	stackReorderCmd "gitlab.com/gitlab-org/cli/commands/stack/reorder"
 	stackSaveCmd "gitlab.com/gitlab-org/cli/commands/stack/save"
 	stackSwitchCmd "gitlab.com/gitlab-org/cli/commands/stack/switch"
 	stackSyncCmd "gitlab.com/gitlab-org/cli/commands/stack/sync"
@@ -46,6 +47,7 @@ func NewCmdStack(f *cmdutils.Factory) *cobra.Command {
 	stackCmd.AddCommand(stackMoveCmd.NewCmdStackLast(f))
 	stackCmd.AddCommand(stackMoveCmd.NewCmdStackMove(f))
 	stackCmd.AddCommand(stackListCmd.NewCmdStackList(f))
+	stackCmd.AddCommand(stackReorderCmd.NewCmdReorderStack(f, getTextFromEditor))
 	stackCmd.AddCommand(stackSwitchCmd.NewCmdStackSwitch(f))
 
 	return stackCmd
