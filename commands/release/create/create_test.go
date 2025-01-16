@@ -429,3 +429,61 @@ func TestReleaseCreateWithPublishToCatalog(t *testing.T) {
 	err = os.Chdir(originalWd)
 	require.NoError(t, err)
 }
+
+func TestReleaseCreate_NoUpdate(t *testing.T) {
+	tests := []struct {
+		name    string
+		cli     string
+		exists  bool
+		wantErr bool
+	}{
+		{
+			name:    "when release doesn't exist with --no-update flag",
+			cli:     "0.0.1 --no-update",
+			exists:  false,
+			wantErr: false,
+		},
+		{
+			name:    "when release exists with --no-update flag",
+			cli:     "0.0.1 --no-update",
+			exists:  true,
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fakeHTTP := &httpmock.Mocker{
+				MatchURL: httpmock.PathAndQuerystring,
+			}
+			defer fakeHTTP.Verify(t)
+
+			if tc.exists {
+				fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/releases/0%2E0%2E1",
+					httpmock.NewStringResponse(http.StatusOK, `{
+						"name": "test_release",
+						"tag_name": "0.0.1"
+					}`))
+			} else {
+				fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/releases/0%2E0%2E1",
+					httpmock.NewStringResponse(http.StatusNotFound, `{"message":"404 Not Found"}`))
+
+				fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/releases",
+					httpmock.NewStringResponse(http.StatusCreated, `{
+						"name": "test_release",
+						"tag_name": "0.0.1"
+					}`))
+			}
+
+			output, err := runCommand(fakeHTTP, false, tc.cli)
+
+			if tc.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "release for tag \"0.0.1\" already exists and --no-update flag was specified")
+			} else {
+				assert.NoError(t, err)
+				assert.Contains(t, output.Stderr(), "Release created:")
+			}
+		})
+	}
+}

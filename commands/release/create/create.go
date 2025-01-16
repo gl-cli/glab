@@ -43,6 +43,7 @@ type CreateOpts struct {
 	ReleasedAt       string
 	RepoOverride     string
 	PublishToCatalog bool
+	NoUpdate         bool
 
 	NoteProvided       bool
 	ReleaseNotesAction string
@@ -185,6 +186,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().StringSliceVarP(&opts.Milestone, "milestone", "m", []string{}, "The title of each milestone the release is associated with.")
 	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "'JSON' string representation of assets links, like `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
 	cmd.Flags().BoolVar(&opts.PublishToCatalog, "publish-to-catalog", false, "[EXPERIMENTAL] Publish the release to the GitLab CI/CD catalog.")
+	cmd.Flags().BoolVar(&opts.NoUpdate, "no-update", false, "Prevent updating the existing release.")
 
 	return cmd
 }
@@ -372,6 +374,10 @@ func createRun(opts *CreateOpts) error {
 		opts.IO.Logf("%s Release created:\t%s=%s\n", color.GreenCheck(),
 			color.Blue("url"), release.Links.Self)
 	} else {
+		if opts.NoUpdate {
+			return releaseFailedErr(fmt.Errorf("release for tag %q already exists and --no-update flag was specified", opts.TagName), start)
+		}
+
 		updateOpts := &gitlab.UpdateReleaseOptions{
 			Name: &opts.Name,
 		}
