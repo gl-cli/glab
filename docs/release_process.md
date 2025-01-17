@@ -102,7 +102,7 @@ To update the WinGet package:
 
 For automated testing, you need to [set up credentials](https://gitlab.com/groups/gitlab-org/-/epics/8251) for unit testing.
 
-For releasing, you also need to add a `GITLAB_TOKEN_RELEASE`. This is how you create this token:
+For releasing, you also need to add a `GITLAB_TOKEN_RELEASE`. To create this token:
 
 1. Go to Settings -> [Access Tokens](https://gitlab.com/gitlab-org/cli/-/settings/access_tokens)
 1. Generate a new project token with `api` scope and `Maintainer` role.
