@@ -487,3 +487,87 @@ func TestReleaseCreate_NoUpdate(t *testing.T) {
 		})
 	}
 }
+
+func TestReleaseCreate_MilestoneClosing(t *testing.T) {
+	tests := []struct {
+		name           string
+		cli            string
+		extraHttpStubs func(*httpmock.Mocker)
+		wantOutput     string
+		wantErr        bool
+	}{
+		{
+			name: "successfully closes milestone after release",
+			cli:  "0.0.1 --milestone 'v1.0'",
+			extraHttpStubs: func(fakeHTTP *httpmock.Mocker) {
+				fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/milestones?title=v1.0",
+					httpmock.NewStringResponse(http.StatusOK, `[{
+						"id": 1,
+						"iid": 1,
+						"title": "v1.0",
+						"state": "active"
+					}]`))
+
+				fakeHTTP.RegisterResponder(http.MethodPut, "/api/v4/projects/OWNER/REPO/milestones/1",
+					httpmock.NewStringResponse(http.StatusOK, `{
+						"id": 1,
+						"iid": 1,
+						"title": "v1.0",
+						"state": "closed"
+					}`))
+			},
+			wantOutput: `• Validating tag 0.0.1
+
+• Creating or updating release repo=OWNER/REPO tag=0.0.1
+✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
+✓ Closed milestone "v1.0"`,
+			wantErr: false,
+		},
+		{
+			name:           "skips milestone closing when --no-close-milestone is set",
+			cli:            "0.0.1 --milestone 'v1.0' --no-close-milestone",
+			extraHttpStubs: nil,
+			wantOutput: `• Validating tag 0.0.1
+
+• Creating or updating release repo=OWNER/REPO tag=0.0.1
+✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
+✓ Skipping closing milestones`,
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeHTTP := &httpmock.Mocker{
+				MatchURL: httpmock.PathAndQuerystring,
+			}
+			defer fakeHTTP.Verify(t)
+
+			fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/releases/0%2E0%2E1",
+				httpmock.NewStringResponse(http.StatusNotFound, `{"message":"404 Not Found"}`))
+
+			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/releases",
+				httpmock.NewStringResponse(http.StatusCreated, `{
+					"name": "0.0.1",
+					"tag_name": "0.0.1",
+					"description": "Release with milestone",
+					"_links": {
+						"self": "https://gitlab.com/OWNER/REPO/-/releases/0.0.1"
+					}
+				}`))
+
+			if tt.extraHttpStubs != nil {
+				tt.extraHttpStubs(fakeHTTP)
+			}
+
+			output, err := runCommand(fakeHTTP, false, tt.cli)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Contains(t, output.Stderr(), tt.wantOutput)
+			}
+		})
+	}
+}

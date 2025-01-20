@@ -44,6 +44,7 @@ type CreateOpts struct {
 	RepoOverride     string
 	PublishToCatalog bool
 	NoUpdate         bool
+	NoCloseMilestone bool
 
 	NoteProvided       bool
 	ReleaseNotesAction string
@@ -187,6 +188,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "'JSON' string representation of assets links, like `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
 	cmd.Flags().BoolVar(&opts.PublishToCatalog, "publish-to-catalog", false, "[EXPERIMENTAL] Publish the release to the GitLab CI/CD catalog.")
 	cmd.Flags().BoolVar(&opts.NoUpdate, "no-update", false, "Prevent updating the existing release.")
+	cmd.Flags().BoolVar(&opts.NoCloseMilestone, "no-close-milestone", false, "Prevent closing milestones after creating the release.")
 
 	return cmd
 }
@@ -408,19 +410,20 @@ func createRun(opts *CreateOpts) error {
 		return releaseFailedErr(err, start)
 	}
 
-	if len(opts.Milestone) > 0 {
-		// close all associated milestones
-		for _, milestone := range opts.Milestone {
-			// run loading msg
-			opts.IO.StartSpinner("Closing milestone %q", milestone)
-			// close milestone
-			err := closeMilestone(opts, milestone)
-			// stop loading
-			opts.IO.StopSpinner("")
-			if err != nil {
-				opts.IO.Log(color.FailedIcon(), err.Error())
-			} else {
-				opts.IO.Logf("%s Closed milestone %q\n", color.GreenCheck(), milestone)
+	if opts.NoCloseMilestone {
+		opts.IO.Logf("%s Skipping closing milestones\n", color.GreenCheck())
+	} else {
+		if len(opts.Milestone) > 0 {
+			// close all associated milestones
+			for _, milestone := range opts.Milestone {
+				opts.IO.StartSpinner("Closing milestone %q", milestone)
+				err := closeMilestone(opts, milestone)
+				opts.IO.StopSpinner("")
+				if err != nil {
+					opts.IO.Log(color.FailedIcon(), err.Error())
+				} else {
+					opts.IO.Logf("%s Closed milestone %q\n", color.GreenCheck(), milestone)
+				}
 			}
 		}
 	}
