@@ -7,6 +7,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
@@ -58,9 +59,11 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 				if err != nil {
 					return err
 				}
+				dbg.Debug("Current branch:", branch)
 			}
 			runningPipeline, err := api.GetLastPipeline(apiClient, repo.FullName(), branch)
 			if err != nil {
+				dbg.Debug("Repository:", repo.FullName())
 				redCheck := c.Red("✘")
 				fmt.Fprintf(f.IO.StdOut, "%s No pipelines running or available on branch: %s\n", redCheck, branch)
 				return err

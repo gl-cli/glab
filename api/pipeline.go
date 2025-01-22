@@ -7,6 +7,7 @@ import (
 	"sort"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
@@ -120,6 +121,7 @@ var GetLastPipeline = func(client *gitlab.Client, repo string, ref string) (*git
 
 	c, _, err := client.Commits.GetCommit(repo, ref, nil)
 	if err != nil {
+		dbg.Debug("go-client GetCommit error:", err.Error())
 		return nil, err
 	}
 	if c.LastPipeline != nil {

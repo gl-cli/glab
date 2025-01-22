@@ -3,8 +3,6 @@ package sync
 import (
 	"errors"
 	"fmt"
-	"log"
-	"os"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -18,6 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/text"
@@ -211,14 +210,14 @@ func gitPull(gr git.GitRunner) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	debug("Pulled:", pull)
+	dbg.Debug("Pulled:", pull)
 
 	return pull, nil
 }
 
 func fetchOrigin(gr git.GitRunner) error {
 	output, err := gr.Git("fetch", git.DefaultRemote)
-	debug("Fetching from remote:", output)
+	dbg.Debug("Fetching from remote:", output)
 
 	if err != nil {
 		return err
@@ -232,13 +231,13 @@ func branchStatus(ref *git.StackRef, gr git.GitRunner) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	debug("Checked out:", checkout)
+	dbg.Debug("Checked out:", checkout)
 
 	output, err := gr.Git("status", "-uno")
 	if err != nil {
 		return "", err
 	}
-	debug("Git status:", output)
+	dbg.Debug("Git status:", output)
 
 	return output, nil
 }
@@ -250,13 +249,13 @@ func rebaseWithUpdateRefs(ref *git.StackRef, stack *git.Stack, gr git.GitRunner)
 	if err != nil {
 		return err
 	}
-	debug("Checked out:", checkout)
+	dbg.Debug("Checked out:", checkout)
 
 	rebase, err := gr.Git("rebase", "--fork-point", "--update-refs", ref.Branch)
 	if err != nil {
 		return err
 	}
-	debug("Rebased:", rebase)
+	dbg.Debug("Rebased:", rebase)
 
 	return nil
 }
@@ -381,12 +380,6 @@ func progressString(lines ...string) string {
 		return fmt.Sprintf("\n%s %s \n  %s", blueDot, title, body)
 	}
 	return fmt.Sprintf("\n%s %s\n", blueDot, title)
-}
-
-func debug(output ...string) {
-	if os.Getenv("DEBUG") != "" {
-		log.Print(output)
-	}
 }
 
 func branchDiverged(ref *git.StackRef, stack *git.Stack, gr git.GitRunner) (bool, error) {
