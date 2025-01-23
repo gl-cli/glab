@@ -63,7 +63,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	repoListCmd.Flags().BoolVarP(&opts.FilterOwned, "mine", "m", false, "List only projects you own. Default if no filters are provided.")
 	repoListCmd.Flags().BoolVar(&opts.FilterMember, "member", false, "List only projects of which you are a member.")
 	repoListCmd.Flags().BoolVar(&opts.FilterStarred, "starred", false, "List only starred projects.")
-	repoListCmd.Flags().BoolVar(&opts.Archived, "archived", false, "Limit by archived status. Used with the '--group' flag.")
+	repoListCmd.Flags().BoolVar(&opts.Archived, "archived", false, "Limit by archived status. Use 'false' to exclude archived repositories. Used with the '--group' flag.")
 	return repoListCmd
 }
 
