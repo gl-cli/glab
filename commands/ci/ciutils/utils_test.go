@@ -2,10 +2,12 @@ package ciutils
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -202,7 +204,11 @@ func TestGetJobId(t *testing.T) {
 			defer fakeHTTP.Verify(t)
 
 			for _, mock := range tc.httpMocks {
-				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
+				fakeHTTP.RegisterResponder(
+					mock.method,
+					mock.path,
+					httpmock.NewStringResponse(mock.status, mock.body),
+				)
 			}
 
 			ios, _, _, _ := iostreams.Test()
@@ -229,6 +235,49 @@ func TestGetJobId(t *testing.T) {
 				require.NotNil(t, err)
 				require.Equal(t, tc.expectedError, err.Error())
 			}
+			assert.Equal(t, tc.expectedOut, output)
+		})
+	}
+}
+
+func TestParseCSVToIntSlice(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       string
+		expectedOut []int
+	}{
+		{
+			name:        "when input is empty",
+			input:       "",
+			expectedOut: nil,
+		},
+		{
+			name:        "when input is a comma-separated string",
+			input:       "111,222,333",
+			expectedOut: []int{111, 222, 333},
+		},
+		{
+			name:        "when input is a space-separated string",
+			input:       "111 222 333 4444",
+			expectedOut: []int{111, 222, 333, 4444},
+		},
+		{
+			name:        "when input is a space-separated and comma-separated string",
+			input:       "111, 222, 333, 4444",
+			expectedOut: []int{111, 222, 333, 4444},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// Simulate splitting raw input
+			args := strings.Fields(tc.input)
+
+			output, err := IDsFromArgs(args)
+			if err != nil {
+				require.Nil(t, err)
+			}
+
 			assert.Equal(t, tc.expectedOut, output)
 		})
 	}
@@ -317,7 +366,11 @@ func TestTraceJob(t *testing.T) {
 			defer fakeHTTP.Verify(t)
 
 			for _, mock := range tc.httpMocks {
-				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
+				fakeHTTP.RegisterResponder(
+					mock.method,
+					mock.path,
+					httpmock.NewStringResponse(mock.status, mock.body),
+				)
 			}
 
 			ios, _, _, _ := iostreams.Test()

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	jobArtifactCmd "gitlab.com/gitlab-org/cli/commands/ci/artifact"
+	ciCancelCmd "gitlab.com/gitlab-org/cli/commands/ci/cancel"
 	ciConfigCmd "gitlab.com/gitlab-org/cli/commands/ci/config"
 	pipeDeleteCmd "gitlab.com/gitlab-org/cli/commands/ci/delete"
 	pipeGetCmd "gitlab.com/gitlab-org/cli/commands/ci/get"
@@ -40,6 +41,7 @@ func NewCmdCI(f *cmdutils.Factory) *cobra.Command {
 	ciCmd.AddCommand(ciTraceCmd.NewCmdTrace(f))
 	ciCmd.AddCommand(ciViewCmd.NewCmdView(f))
 	ciCmd.AddCommand(ciLintCmd.NewCmdLint(f))
+	ciCmd.AddCommand(ciCancelCmd.NewCmdCancel(f))
 	ciCmd.AddCommand(pipeDeleteCmd.NewCmdDelete(f))
 	ciCmd.AddCommand(pipeListCmd.NewCmdList(f))
 	ciCmd.AddCommand(pipeStatusCmd.NewCmdStatus(f))
