@@ -6,6 +6,7 @@ import (
 	"io"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -320,4 +321,23 @@ func TraceJob(inputs *JobInputs, opts *JobOptions) error {
 	}
 	fmt.Fprintln(opts.IO.StdOut)
 	return runTrace(context.Background(), opts.ApiClient, opts.IO.StdOut, opts.Repo.FullName(), jobID)
+}
+
+// IDsFromArgs parses list of IDs from space or comma-separated values
+func IDsFromArgs(args []string) ([]int, error) {
+	var parsedValues []int
+
+	f := func(r rune) bool {
+		return r == ',' || r == ' '
+	}
+
+	processed := strings.FieldsFunc(strings.Join(args, " "), f)
+	for _, v := range processed {
+		id, err := strconv.Atoi(v)
+		if err != nil {
+			return nil, err
+		}
+		parsedValues = append(parsedValues, id)
+	}
+	return parsedValues, nil
 }
