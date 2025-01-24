@@ -647,3 +647,68 @@ func TestMergeRequestList_GroupWithAssigneeAndReviewer(t *testing.T) {
 	// 2 for users lookup, 2 for merge requests (assignee and reviewer)
 	assert.Len(t, requests, 4)
 }
+
+func TestMergeRequestList_SortAndOrderBy(t *testing.T) {
+	fakeHTTP := &httpmock.Mocker{
+		MatchURL: httpmock.PathAndQuerystring,
+	}
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/merge_requests?order_by=created_at&page=1&per_page=30&sort=desc&state=opened",
+		httpmock.NewStringResponse(http.StatusOK, `[
+				{
+					"state": "opened",
+					"description": "a description here",
+					"project_id": 1,
+					"updated_at": "2016-01-04T16:00:00.081Z",
+					"id": 76,
+					"title": "MergeRequest one",
+					"created_at": "2016-01-04T16:00:00.081Z",
+					"iid": 6,
+					"draft": true,
+					"labels": ["foo", "bar"],
+					"target_branch": "master",
+					"source_branch": "test1",
+					"web_url": "http://gitlab.com/OWNER/REPO/merge_requests/6",
+					"references": {
+					"full": "OWNER/REPO/merge_requests/6",
+					"relative": "#6",
+					"short": "#6"
+					}
+				},
+				{
+					"state": "opened",
+					"description": "description two here",
+					"project_id": 1,
+					"updated_at": "2016-01-04T15:00:00.081Z",
+					"id": 77,
+					"title": "MergeRequest two",
+					"created_at": "2016-01-04T15:00:00.081Z",
+					"iid": 7,
+					"draft": true,
+					"target_branch": "master",
+					"source_branch": "test2",
+					"labels": ["fooz", "baz"],
+					"web_url": "http://gitlab.com/OWNER/REPO/merge_requests/7",
+					"references": {
+					  "full": "OWNER/REPO/merge_requests/7",
+					  "relative": "#7",
+					  "short": "#7"
+					}
+				}
+	]`))
+
+	output, err := runCommand(fakeHTTP, true, "--order created_at --sort desc", nil, "")
+	if err != nil {
+		t.Errorf("error running command `mr list`: %v", err)
+	}
+
+	assert.Equal(t, output.Stderr(), "")
+	assert.Equal(t, heredoc.Doc(`
+	Showing 2 open merge requests in OWNER/REPO that match your search. (Page 1)
+
+	!6	OWNER/REPO/merge_requests/6	MergeRequest one	(master) ← (test1)
+	!7	OWNER/REPO/merge_requests/7	MergeRequest two	(master) ← (test2)
+	
+	`), output.String())
+}

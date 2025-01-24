@@ -51,6 +51,10 @@ type ListOptions struct {
 	ListType       string
 	TitleQualifier string
 
+	// sort options
+	Sort    string
+	OrderBy string
+
 	IO         *iostreams.IOStreams
 	BaseRepo   func() (glrepo.Interface, error)
 	HTTPClient func() (*gitlab.Client, error)
@@ -143,6 +147,8 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 	mrListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
 	mrListCmd.Flags().StringSliceVarP(&opts.Assignee, "assignee", "a", []string{}, "Get only merge requests assigned to users.")
 	mrListCmd.Flags().StringSliceVarP(&opts.Reviewer, "reviewer", "r", []string{}, "Get only merge requests with users as reviewer.")
+	mrListCmd.Flags().StringVarP(&opts.Sort, "sort", "S", "", "Sort merge requests by <field>. Sort options: asc, desc.")
+	mrListCmd.Flags().StringVarP(&opts.OrderBy, "order", "o", "", "Order merge requests by <field>. Order options: created_at, title, merged_at or updated_at.")
 
 	mrListCmd.Flags().BoolP("opened", "O", false, "Get only open merge requests.")
 	_ = mrListCmd.Flags().MarkHidden("opened")
@@ -232,6 +238,15 @@ func listRun(opts *ListOptions) error {
 	if opts.Mine {
 		l.Scope = gitlab.Ptr("assigned_to_me")
 		opts.ListType = "search"
+	}
+
+	if opts.OrderBy != "" {
+		l.OrderBy = gitlab.Ptr(opts.OrderBy)
+		opts.ListType = "search"
+	}
+
+	if opts.Sort != "" {
+		l.Sort = gitlab.Ptr(opts.Sort)
 	}
 
 	assigneeIds := make([]int, 0)

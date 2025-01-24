@@ -55,12 +55,14 @@ glab mr list --not-draft
   -m, --milestone string       Filter merge request by milestone <id>.
       --not-draft              Filter by non-draft merge requests.
       --not-label strings      Filter merge requests by not having label <name>.
+  -o, --order string           Order merge requests by <field>. Order options: created_at, title, merged_at or updated_at.
   -F, --output string          Format output as: text, json. (default "text")
   -p, --page int               Page number. (default 1)
   -P, --per-page int           Number of items to list per page. (default 30)
   -R, --repo OWNER/REPO        Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
   -r, --reviewer strings       Get only merge requests with users as reviewer.
       --search string          Filter by <string> in title and description.
+  -S, --sort string            Sort merge requests by <field>. Sort options: asc, desc.
   -s, --source-branch string   Filter by source branch <name>.
   -t, --target-branch string   Filter by target branch <name>.
 ```
