@@ -83,7 +83,8 @@ func TestNewCmdClone(t *testing.T) {
 			name: "directory argument",
 			args: "NAMESPACE/REPO mydir",
 			wantOpts: CloneOptions{
-				GitFlags: []string{"mydir"},
+				GitFlags: []string{},
+				Dir:      "mydir",
 			},
 			wantCtxOpts: ContextOpts{
 				Repo: "NAMESPACE/REPO",
@@ -97,6 +98,16 @@ func TestNewCmdClone(t *testing.T) {
 			},
 			wantCtxOpts: ContextOpts{
 				Repo: "NAMESPACE/REPO",
+			},
+		},
+		{
+			name: "group clone arguments",
+			args: "-g NAMESPACE/REPO -- --depth 1 --recurse-submodules",
+			wantOpts: CloneOptions{
+				GitFlags: []string{"--depth", "1", "--recurse-submodules"},
+			},
+			wantCtxOpts: ContextOpts{
+				Repo: "",
 			},
 		},
 		{

@@ -16,6 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
@@ -54,8 +55,9 @@ type ContextOpts struct {
 
 func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) error) *cobra.Command {
 	opts := &CloneOptions{
-		IO:     f.IO,
-		Config: f.Config,
+		GitFlags: []string{},
+		IO:       f.IO,
+		Config:   f.Config,
 	}
 
 	ctxOpts := &ContextOpts{}
@@ -95,13 +97,20 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 		- project ID
 	`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Move arguments after "--" to gitFlags
+			if dashPos := cmd.ArgsLenAtDash(); dashPos != -1 {
+				opts.GitFlags = args[dashPos:]
+				args = args[:dashPos]
+			}
+			dbg.Debug("Args:", strings.Join(args, " "))
+			dbg.Debug("GitFlags:", strings.Join(opts.GitFlags, " "))
 			if nArgs := len(args); nArgs > 0 {
 				ctxOpts.Repo = args[0]
 				if nArgs > 1 && !opts.PreserveNamespace {
 					opts.Dir = args[1]
 				}
-				opts.GitFlags = args[1:]
 			}
+			dbg.Debug("Dir:", opts.Dir)
 
 			if ctxOpts.Repo == "" && opts.GroupName == "" {
 				return &cmdutils.FlagError{Err: fmt.Errorf("Specify repository argument, or use the --group flag to specify a group to clone all repos from the group.")}
@@ -270,10 +279,10 @@ func cloneRun(opts *CloneOptions, ctxOpts *ContextOpts) (err error) {
 	if opts.PreserveNamespace {
 		namespacedDir := ctxOpts.Project.PathWithNamespace
 		opts.Dir = namespacedDir
-		gitFlags = append([]string{namespacedDir}, opts.GitFlags...)
-	} else {
-		gitFlags = opts.GitFlags
 	}
+	gitFlags = append([]string{opts.Dir}, opts.GitFlags...)
+	// FIXME: RunClone treats first flag as target if it doesn't start with "-"
+	// https://gitlab.com/gitlab-org/cli/-/issues/7740
 	_, err = git.RunClone(ctxOpts.Repo, gitFlags)
 	if err != nil {
 		return
