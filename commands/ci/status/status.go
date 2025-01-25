@@ -181,6 +181,9 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 					})
 				}
 			}
+			if runningPipeline.Status == "failed" {
+				return cmdutils.SilentError
+			}
 			return nil
 		},
 	}
