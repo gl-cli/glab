@@ -63,7 +63,8 @@ func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) err
 	ctxOpts := &ContextOpts{}
 
 	repoCloneCmd := &cobra.Command{
-		Use:   "clone <repo> [flags] [<dir>] [-- [<gitflags>...]]",
+		Use: `clone <repo> [flags] [<dir>] [-- <gitflags>...]
+glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 		Short: `Clone a GitLab repository or project.`,
 		Example: heredoc.Doc(`
 	$ glab repo clone profclems/glab

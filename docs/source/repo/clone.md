@@ -23,7 +23,8 @@ Clone supports these shorthand references:
 - project ID
 
 ```plaintext
-glab repo clone <repo> [flags] [<dir>] [-- [<gitflags>...]]
+glab repo clone <repo> [flags] [<dir>] [-- <gitflags>...]
+glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]
 ```
 
 ## Examples
