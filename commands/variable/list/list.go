@@ -80,11 +80,6 @@ func listRun(opts *ListOpts) error {
 		return err
 	}
 
-	repo, err := opts.BaseRepo()
-	if err != nil {
-		return err
-	}
-
 	table := tableprinter.NewTablePrinter()
 	table.AddRow("KEY", "PROTECTED", "MASKED", "EXPANDED", "SCOPE")
 
@@ -105,6 +100,10 @@ func listRun(opts *ListOpts) error {
 			}
 		}
 	} else {
+		repo, err := opts.BaseRepo()
+		if err != nil {
+			return err
+		}
 		opts.IO.Logf("Listing variables for the %s project:\n\n", color.Bold(repo.FullName()))
 		createVarOpts := &gitlab.ListProjectVariablesOptions{}
 		variables, err := api.ListProjectVariables(httpClient, repo.FullName(), createVarOpts)
@@ -122,7 +121,7 @@ func listRun(opts *ListOpts) error {
 	}
 
 	if opts.OutputFormat != "json" {
-		opts.IO.Log(table.String())
+		fmt.Fprint(opts.IO.StdOut, table.String())
 	}
 	return nil
 }
