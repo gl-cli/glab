@@ -2,6 +2,7 @@ package update
 
 import (
 	"net/http"
+	"os"
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
@@ -183,6 +184,65 @@ func TestCheckUpdate_NoRun(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Nil(t, CheckUpdate(nil, "1.1.1", true, tt.previousCommand))
+		})
+	}
+}
+
+func TestShouldSkipUpdate_EnvVarCheck(t *testing.T) {
+	tests := []struct {
+		name       string
+		envVarKey  string
+		envVarVal  string
+		shouldSkip bool
+	}{
+		{
+			name:       "when the value is true",
+			envVarKey:  "GLAB_DISABLE_VERSION_CHECK",
+			envVarVal:  "true",
+			shouldSkip: true,
+		},
+		{
+			name:       "when the value is yes",
+			envVarKey:  "GLAB_DISABLE_VERSION_CHECK",
+			envVarVal:  "yes",
+			shouldSkip: true,
+		},
+		{
+			name:       "when the value is 1",
+			envVarKey:  "GLAB_DISABLE_VERSION_CHECK",
+			envVarVal:  "1",
+			shouldSkip: true,
+		},
+		{
+			name:       "when GLAB_DISABLE_VERSION_CHECK is not set",
+			shouldSkip: false,
+		},
+		{
+			name:       "when the GLAB_DISABLE_VERSION_CHECK value is false",
+			envVarKey:  "GLAB_DISABLE_VERSION_CHECK",
+			envVarVal:  "false",
+			shouldSkip: false,
+		},
+		{
+			name:       "when the GLAB_DISABLE_VERSION_CHECK value is not a valid option",
+			envVarKey:  "GLAB_DISABLE_VERSION_CHECK",
+			envVarVal:  "value-not-supported",
+			shouldSkip: false,
+		},
+	}
+	for _, tt := range tests {
+		if tt.envVarKey != "" {
+			t.Setenv(tt.envVarKey, tt.envVarVal)
+		}
+
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				if tt.envVarKey != "" {
+					os.Unsetenv(tt.envVarKey)
+				}
+			})
+
+			assert.Equal(t, tt.shouldSkip, shouldSkipUpdate("example"))
 		})
 	}
 }

@@ -2,6 +2,7 @@ package update
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/pkg/utils"
@@ -89,8 +90,16 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previo
 func shouldSkipUpdate(previousCommand string) bool {
 	isCheckUpdate := previousCommand == commandUse || utils.PresentInStringSlice(commandAliases, previousCommand)
 	isCompletion := previousCommand == "completion"
+	isVersionCheckDisabled := false
 
-	return isCheckUpdate || isCompletion
+	if envVal, ok := os.LookupEnv("GLAB_DISABLE_VERSION_CHECK"); ok {
+		switch strings.ToUpper(envVal) {
+		case "TRUE", "YES", "Y", "1":
+			isVersionCheckDisabled = true
+		}
+	}
+
+	return isCheckUpdate || isCompletion || isVersionCheckDisabled
 }
 
 func isOlderVersion(latestVersion, appVersion string) bool {
