@@ -62,6 +62,7 @@ check_docs_update:
       git status
       if [[ $(git add -A --dry-run) ]]; then
         echo '✖ ERROR: Documentation changes detected!';
+        git diff --color --ws-error-highlight=all
         echo '✖ These changes require a documentation update. To regenerate the docs, read https://gitlab.com/gitlab-org/cli/-/tree/main/docs#generating-the-docs.';
         exit 1;
       else
