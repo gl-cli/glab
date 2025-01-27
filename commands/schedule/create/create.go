@@ -62,7 +62,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 				}
 				variable.Key = &split[0]
 				variable.Value = &split[1]
-				err = api.CreateScheduleVariable(apiClient, repo.FullName(), schedule, variable)
+				err = api.CreateScheduleVariable(apiClient, repo.FullName(), schedule.ID, variable)
 				if err != nil {
 					return err
 				}

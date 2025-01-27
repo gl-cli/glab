@@ -47,14 +47,53 @@ var CreateSchedule = func(client *gitlab.Client, repo string, scheduleOpts *gitl
 	return nil, schedule
 }
 
-var CreateScheduleVariable = func(client *gitlab.Client, repo string, schedule *gitlab.PipelineSchedule, scheduleVarOpts *gitlab.CreatePipelineScheduleVariableOptions, opts ...gitlab.RequestOptionFunc) error {
+var EditSchedule = func(client *gitlab.Client, repo string, scheduleId int, scheduleOpts *gitlab.EditPipelineScheduleOptions, opts ...gitlab.RequestOptionFunc) (*gitlab.PipelineSchedule, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
 
-	_, _, err := client.PipelineSchedules.CreatePipelineScheduleVariable(repo, schedule.ID, scheduleVarOpts, opts...)
+	schedule, _, err := client.PipelineSchedules.EditPipelineSchedule(repo, scheduleId, scheduleOpts, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("editing scheduled pipeline status: %w", err)
+	}
+
+	return schedule, nil
+}
+
+var CreateScheduleVariable = func(client *gitlab.Client, repo string, scheduleId int, scheduleVarOpts *gitlab.CreatePipelineScheduleVariableOptions, opts ...gitlab.RequestOptionFunc) error {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+
+	_, _, err := client.PipelineSchedules.CreatePipelineScheduleVariable(repo, scheduleId, scheduleVarOpts, opts...)
 	if err != nil {
 		return fmt.Errorf("creating scheduled pipeline status: %w", err)
+	}
+
+	return nil
+}
+
+var EditScheduleVariable = func(client *gitlab.Client, repo string, scheduleId int, variableKey string, scheduleVarOpts *gitlab.EditPipelineScheduleVariableOptions, opts ...gitlab.RequestOptionFunc) error {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+
+	_, _, err := client.PipelineSchedules.EditPipelineScheduleVariable(repo, scheduleId, variableKey, scheduleVarOpts, opts...)
+	if err != nil {
+		return fmt.Errorf("editing scheduled pipeline status: %w", err)
+	}
+
+	return nil
+}
+
+var DeleteScheduleVariable = func(client *gitlab.Client, repo string, scheduleId int, variableKey string, opts ...gitlab.RequestOptionFunc) (err error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+
+	_, _, err = client.PipelineSchedules.DeletePipelineScheduleVariable(repo, scheduleId, variableKey, opts...)
+	if err != nil {
+		return fmt.Errorf("deleting scheduled pipeline status: %w", err)
 	}
 
 	return nil

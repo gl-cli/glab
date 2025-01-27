@@ -38,3 +38,4 @@ skd
 - [`delete`](delete.md)
 - [`list`](list.md)
 - [`run`](run.md)
+- [`update`](update.md)
