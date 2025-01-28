@@ -7,6 +7,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
@@ -45,11 +46,6 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			repo, err := f.BaseRepo()
-			if err != nil {
-				return err
-			}
-
 			branch, _ := cmd.Flags().GetString("branch")
 			live, _ := cmd.Flags().GetBool("live")
 			compact, _ := cmd.Flags().GetBool("compact")
@@ -61,9 +57,31 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 				}
 				dbg.Debug("Current branch:", branch)
 			}
-			runningPipeline, err := api.GetLastPipeline(apiClient, repo.FullName(), branch)
+
+			var repo glrepo.Interface
+			branchConfig := git.ReadBranchConfig(branch)
+			if branchConfig.RemoteName == "" {
+				repo, err = f.BaseRepo()
+				if err != nil {
+					return err
+				}
+			} else {
+				remotes, err := f.Remotes()
+				if err != nil {
+					return err
+				}
+				repo, err = remotes.FindByName(branchConfig.RemoteName)
+				if err != nil {
+					redCheck := c.Red("x")
+					fmt.Fprintf(f.IO.StdOut, "%s Remote '%s' for branch '%s' is gone.\n", redCheck, branchConfig.RemoteName, branch)
+					return err
+				}
+			}
+			repoName := repo.FullName()
+			dbg.Debug("Repository:", repoName)
+
+			runningPipeline, err := api.GetLastPipeline(apiClient, repoName, branch)
 			if err != nil {
-				dbg.Debug("Repository:", repo.FullName())
 				redCheck := c.Red("✘")
 				fmt.Fprintf(f.IO.StdOut, "%s No pipelines running or available on branch: %s\n", redCheck, branch)
 				return err
@@ -77,7 +95,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 			writer.Start()
 			defer writer.Stop()
 			for isRunning {
-				jobs, err := api.GetPipelineJobs(apiClient, runningPipeline.ID, repo.FullName())
+				jobs, err := api.GetPipelineJobs(apiClient, runningPipeline.ID, repoName)
 				if err != nil {
 					return err
 				}
@@ -124,7 +142,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 					break
 				}
 				if (runningPipeline.Status == "pending" || runningPipeline.Status == "running") && live {
-					runningPipeline, err = api.GetLastPipeline(apiClient, repo.FullName(), branch)
+					runningPipeline, err = api.GetLastPipeline(apiClient, repoName, branch)
 					if err != nil {
 						return err
 					}
@@ -139,11 +157,11 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 						if retry == "View logs" {
 							isRunning = false
 						} else {
-							_, err = api.RetryPipeline(apiClient, runningPipeline.ID, repo.FullName())
+							_, err = api.RetryPipeline(apiClient, runningPipeline.ID, repoName)
 							if err != nil {
 								return err
 							}
-							runningPipeline, err = api.GetLastPipeline(apiClient, repo.FullName(), branch)
+							runningPipeline, err = api.GetLastPipeline(apiClient, repoName, branch)
 							if err != nil {
 								return err
 							}
