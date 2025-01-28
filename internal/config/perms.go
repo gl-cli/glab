@@ -1,10 +1,14 @@
-//go:build !windows
-// +build !windows
-
 package config
 
-import "io/fs"
+import (
+	"io/fs"
+	"runtime"
+)
 
 func HasSecurePerms(m fs.FileMode) bool {
-	return m == 0o600
+	if runtime.GOOS == "windows" {
+		return true
+	} else {
+		return m == 0o600
+	}
 }
