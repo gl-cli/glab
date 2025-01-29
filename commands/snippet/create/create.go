@@ -22,14 +22,14 @@ type CreateOpts struct {
 	Visibility      string
 	Personal        bool
 
-	FilePath string
+	FilePaths []string
 
 	IO       *iostreams.IOStreams
 	BaseRepo func() (glrepo.Interface, error)
 }
 
 func (opts CreateOpts) isSnippetFromFile() bool {
-	return opts.FilePath != ""
+	return len(opts.FilePaths) == 0
 }
 
 func hasStdIn() bool {
@@ -76,7 +76,7 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 				if opts.DisplayFilename == "" {
 					opts.DisplayFilename = args[0]
 				}
-				opts.FilePath = args[0]
+				opts.FilePaths = args
 			}
 
 			return nil
@@ -155,7 +155,7 @@ func runCreate(client *gitlab.Client, repo glrepo.Interface, opts *CreateOpts) e
 //	See for GitHub issue: https://gitlab.com/gitlab-org/api/client-go/issues/1372
 func readSnippetsContent(opts *CreateOpts) (string, error) {
 	if opts.isSnippetFromFile() {
-		return readFromFile(opts.FilePath)
+		return readFromFile(opts.FilePaths[0])
 	}
 	return readFromSTDIN(opts.IO)
 }
