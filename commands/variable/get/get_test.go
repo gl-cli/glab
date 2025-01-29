@@ -15,7 +15,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-func Test_NewCmdSet(t *testing.T) {
+func Test_NewCmdGet(t *testing.T) {
 	tests := []struct {
 		name     string
 		cli      string
@@ -95,7 +95,7 @@ func Test_NewCmdSet(t *testing.T) {
 			assert.NoError(t, err)
 
 			var gotOpts *GetOps
-			cmd := NewCmdSet(f, func(opts *GetOps) error {
+			cmd := NewCmdGet(f, func(opts *GetOps) error {
 				gotOpts = opts
 				return nil
 			})
