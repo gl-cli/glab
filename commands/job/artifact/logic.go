@@ -14,6 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
@@ -68,8 +69,10 @@ func readZip(artifact *bytes.Reader, path string, zipReadLimit int64, zipFileLim
 			return fmt.Errorf("invalid file path name")
 		}
 
+		dbg.Debug("Writing:", destPath)
+
 		if v.FileInfo().IsDir() {
-			if err := os.Mkdir(destPath, v.Mode()); err != nil {
+			if err := os.MkdirAll(destPath, v.Mode()); err != nil {
 				return err
 			}
 		} else {
