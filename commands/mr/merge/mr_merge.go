@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/surveyext"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -90,6 +91,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 				PipelineStatus: true,
 				MergePrivilege: true,
 			}); err != nil {
+				dbg.Debug("MRCheckErrors failed")
 				return err
 			}
 

@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -53,6 +54,13 @@ type mrOptions struct {
 func MRCheckErrors(mr *gitlab.MergeRequest, err MRCheckErrOptions) error {
 	if mr.WorkInProgress && err.WorkInProgress {
 		return fmt.Errorf("this merge request is still a draft. Run `glab mr update %d --ready` to mark it as ready for review.", mr.IID)
+	}
+
+	dbg.Debug("MergeWhenPipelineSucceeds:", strconv.FormatBool(mr.MergeWhenPipelineSucceeds))
+	dbg.Debug("DetailedMergeStatus:", mr.DetailedMergeStatus)
+
+	if mr.DetailedMergeStatus == "ci_must_pass" {
+		return fmt.Errorf("this merge request requires a passing pipeline before merging.")
 	}
 
 	if mr.MergeWhenPipelineSucceeds && err.PipelineStatus && mr.Pipeline != nil {
