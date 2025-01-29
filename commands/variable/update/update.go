@@ -30,7 +30,7 @@ type UpdateOpts struct {
 	Group     string
 }
 
-func NewCmdSet(f *cmdutils.Factory, runE func(opts *UpdateOpts) error) *cobra.Command {
+func NewCmdUpdate(f *cmdutils.Factory, runE func(opts *UpdateOpts) error) *cobra.Command {
 	opts := &UpdateOpts{
 		IO: f.IO,
 	}

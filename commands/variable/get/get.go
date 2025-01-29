@@ -26,7 +26,7 @@ type GetOps struct {
 	JSONOutput   bool
 }
 
-func NewCmdSet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Command {
+func NewCmdGet(f *cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Command {
 	opts := &GetOps{
 		IO: f.IO,
 	}

@@ -26,7 +26,7 @@ type ListOpts struct {
 	OutputFormat string
 }
 
-func NewCmdSet(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Command {
+func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Command {
 	opts := &ListOpts{
 		IO: f.IO,
 	}

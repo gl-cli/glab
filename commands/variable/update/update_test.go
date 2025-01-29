@@ -16,7 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 )
 
-func Test_NewCmdSet(t *testing.T) {
+func Test_NewCmdUpdate(t *testing.T) {
 	tests := []struct {
 		name     string
 		cli      string
@@ -126,7 +126,7 @@ func Test_NewCmdSet(t *testing.T) {
 			assert.NoError(t, err)
 
 			var gotOpts *UpdateOpts
-			cmd := NewCmdSet(f, func(opts *UpdateOpts) error {
+			cmd := NewCmdUpdate(f, func(opts *UpdateOpts) error {
 				gotOpts = opts
 				return nil
 			})

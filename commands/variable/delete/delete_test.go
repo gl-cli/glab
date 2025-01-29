@@ -16,7 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 )
 
-func Test_NewCmdSet(t *testing.T) {
+func Test_NewCmdDelete(t *testing.T) {
 	tests := []struct {
 		name     string
 		cli      string
@@ -68,7 +68,7 @@ func Test_NewCmdSet(t *testing.T) {
 			argv, err := shlex.Split(tt.cli)
 			assert.NoError(t, err)
 
-			cmd := NewCmdSet(f, func(opts *DeleteOpts) error {
+			cmd := NewCmdDelete(f, func(opts *DeleteOpts) error {
 				return nil
 			})
 
