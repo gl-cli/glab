@@ -61,7 +61,7 @@ GOLANGCI_VERSION = 1.32.2
 .PHONY: build
 .DEFAULT_GOAL := build
 build:
-	go build -trimpath -ldflags "$(GO_LDFLAGS) -X main.debugMode=$(DEBUG)" -o $(BUILDLOC) $(GOURL)/cmd/glab
+	go build -trimpath -ldflags "$(GO_LDFLAGS) -X main.debugMode=$(DEBUG) -w -s" -o $(BUILDLOC) $(GOURL)/cmd/glab
 
 clean: ## Clear the working area and the project
 	rm -rf ./bin ./.glab-cli ./test/testdata-* ./coverage.txt coverage-*
@@ -69,7 +69,7 @@ clean: ## Clear the working area and the project
 
 .PHONY: install
 install: ## Install glab in $GOPATH/bin
-	GO111MODULE=on go install -trimpath -ldflags "$(GO_LDFLAGS) -X main.debugMode=$(DEBUG)" $(GOURL)/cmd/glab
+	GO111MODULE=on go install -trimpath -ldflags "$(GO_LDFLAGS) -X main.debugMode=$(DEBUG) -w -s" $(GOURL)/cmd/glab
 
 .PHONY: run
 run:
