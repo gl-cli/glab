@@ -196,36 +196,36 @@ func TestShouldSkipUpdate_EnvVarCheck(t *testing.T) {
 		shouldSkip bool
 	}{
 		{
-			name:       "when the value is true",
-			envVarKey:  "GLAB_DISABLE_VERSION_CHECK",
+			name:       "when the GLAB_CHECK_UPDATE value is true",
+			envVarKey:  "GLAB_CHECK_UPDATE",
 			envVarVal:  "true",
-			shouldSkip: true,
+			shouldSkip: false,
 		},
 		{
-			name:       "when the value is yes",
-			envVarKey:  "GLAB_DISABLE_VERSION_CHECK",
+			name:       "when the GLAB_CHECK_UPDATE value is yes",
+			envVarKey:  "GLAB_CHECK_UPDATE",
 			envVarVal:  "yes",
-			shouldSkip: true,
+			shouldSkip: false,
 		},
 		{
-			name:       "when the value is 1",
-			envVarKey:  "GLAB_DISABLE_VERSION_CHECK",
+			name:       "when the GLAB_CHECK_UPDATE value is 1",
+			envVarKey:  "GLAB_CHECK_UPDATE",
 			envVarVal:  "1",
+			shouldSkip: false,
+		},
+		{
+			name:       "when GLAB_CHECK_UPDATE is not set",
+			shouldSkip: false,
+		},
+		{
+			name:       "when the GLAB_CHECK_UPDATE value is false",
+			envVarKey:  "GLAB_CHECK_UPDATE",
+			envVarVal:  "false",
 			shouldSkip: true,
 		},
 		{
-			name:       "when GLAB_DISABLE_VERSION_CHECK is not set",
-			shouldSkip: false,
-		},
-		{
-			name:       "when the GLAB_DISABLE_VERSION_CHECK value is false",
-			envVarKey:  "GLAB_DISABLE_VERSION_CHECK",
-			envVarVal:  "false",
-			shouldSkip: false,
-		},
-		{
-			name:       "when the GLAB_DISABLE_VERSION_CHECK value is not a valid option",
-			envVarKey:  "GLAB_DISABLE_VERSION_CHECK",
+			name:       "when the GLAB_CHECK_UPDATE value is not a valid option",
+			envVarKey:  "GLAB_CHECK_UPDATE",
 			envVarVal:  "value-not-supported",
 			shouldSkip: false,
 		},

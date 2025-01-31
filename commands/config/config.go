@@ -26,7 +26,7 @@ Current respected settings:
 - visual: Takes precedence over 'editor'. If unset, uses the default editor. Override with environment variable $VISUAL.
 - glamour_style: Your desired Markdown renderer style. Options are dark, light, notty. Custom styles are available using [glamour](https://github.com/charmbracelet/glamour#styles).
 - glab_pager: Your desired pager command to use, such as 'less -R'.
-- check_update: If true, notifies of new versions of glab. Defaults to true.
+- check_update: If true, notifies of new versions of glab. Defaults to true. Override with environment variable $GLAB_CHECK_UPDATE.
 - display_hyperlinks: If true, and using a TTY, outputs hyperlinks for issues and merge request lists. Defaults to false.
 `, "`"),
 		Aliases: []string{"conf"},
