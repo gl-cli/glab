@@ -148,14 +148,14 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	scheduleUpdateCmd.Flags().String("description", "", "Description of the schedule")
-	scheduleUpdateCmd.Flags().String("ref", "", "Target branch or tag")
-	scheduleUpdateCmd.Flags().String("cron", "", "Cron interval pattern")
-	scheduleUpdateCmd.Flags().String("cronTimeZone", "", "Cron timezone")
-	scheduleUpdateCmd.Flags().Bool("active", true, "Whether or not the schedule is active")
-	scheduleUpdateCmd.Flags().StringSliceVar(&variablesToCreate, "create-variable", []string{}, "Pass new variables to schedule in format <key>:<value>")
-	scheduleUpdateCmd.Flags().StringSliceVar(&variablesToUpdate, "update-variable", []string{}, "Pass updated variables to schedule in format <key>:<value>")
-	scheduleUpdateCmd.Flags().StringSliceVar(&variablesToDelete, "delete-variable", []string{}, "Pass variables you want to delete from schedule in format <key>")
+	scheduleUpdateCmd.Flags().String("description", "", "Description of the schedule.")
+	scheduleUpdateCmd.Flags().String("ref", "", "Target branch or tag.")
+	scheduleUpdateCmd.Flags().String("cron", "", "Cron interval pattern.")
+	scheduleUpdateCmd.Flags().String("cronTimeZone", "", "Cron timezone.")
+	scheduleUpdateCmd.Flags().Bool("active", true, "Whether or not the schedule is active.")
+	scheduleUpdateCmd.Flags().StringSliceVar(&variablesToCreate, "create-variable", []string{}, "Pass new variables to schedule in format <key>:<value>.")
+	scheduleUpdateCmd.Flags().StringSliceVar(&variablesToUpdate, "update-variable", []string{}, "Pass updated variables to schedule in format <key>:<value>.")
+	scheduleUpdateCmd.Flags().StringSliceVar(&variablesToDelete, "delete-variable", []string{}, "Pass variables you want to delete from schedule in format <key>.")
 	scheduleUpdateCmd.Flags().Lookup("active").DefValue = "to not change"
 
 	return scheduleUpdateCmd
