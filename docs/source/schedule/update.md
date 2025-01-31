@@ -27,14 +27,14 @@ glab schedule update 10 --cron "0 * * * *" --description "Describe your pipeline
 ## Options
 
 ```plaintext
-      --active                    Whether or not the schedule is active (default to not change)
-      --create-variable strings   Pass new variables to schedule in format <key>:<value>
-      --cron string               Cron interval pattern
-      --cronTimeZone string       Cron timezone
-      --delete-variable strings   Pass variables you want to delete from schedule in format <key>
-      --description string        Description of the schedule
-      --ref string                Target branch or tag
-      --update-variable strings   Pass updated variables to schedule in format <key>:<value>
+      --active                    Whether or not the schedule is active. (default to not change)
+      --create-variable strings   Pass new variables to schedule in format <key>:<value>.
+      --cron string               Cron interval pattern.
+      --cronTimeZone string       Cron timezone.
+      --delete-variable strings   Pass variables you want to delete from schedule in format <key>.
+      --description string        Description of the schedule.
+      --ref string                Target branch or tag.
+      --update-variable strings   Pass updated variables to schedule in format <key>:<value>.
 ```
 
 ## Options inherited from parent commands
