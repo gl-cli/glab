@@ -90,16 +90,19 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previo
 func shouldSkipUpdate(previousCommand string) bool {
 	isCheckUpdate := previousCommand == commandUse || utils.PresentInStringSlice(commandAliases, previousCommand)
 	isCompletion := previousCommand == "completion"
-	isVersionCheckDisabled := false
 
-	if envVal, ok := os.LookupEnv("GLAB_DISABLE_VERSION_CHECK"); ok {
+	if envVal, ok := os.LookupEnv("GLAB_CHECK_UPDATE"); ok {
 		switch strings.ToUpper(envVal) {
 		case "TRUE", "YES", "Y", "1":
-			isVersionCheckDisabled = true
+			// if GLAB_CHECK_UPDATE is true, we want to perform the update check, so we return false to not skip
+			return false
+		case "FALSE", "NO", "N", "0":
+			// If GLAB_CHECK_UPDATE is false, we don't want to perform the update check, so we return true to skip
+			return true
 		}
 	}
 
-	return isCheckUpdate || isCompletion || isVersionCheckDisabled
+	return isCheckUpdate || isCompletion
 }
 
 func isOlderVersion(latestVersion, appVersion string) bool {
