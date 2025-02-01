@@ -41,6 +41,16 @@ var CreateLabel = func(client *gitlab.Client, projectID interface{}, opts *gitla
 	return label, nil
 }
 
+var DeleteLabel = func(client *gitlab.Client, projectID interface{}, label string, opts *gitlab.DeleteLabelOptions) error {
+	client = getClient(client)
+
+	_, err := client.Labels.DeleteLabel(projectID, label, opts)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 var ListLabels = func(client *gitlab.Client, projectID interface{}, opts *ListLabelsOptions) ([]*gitlab.Label, error) {
 	client = getClient(client)
 
