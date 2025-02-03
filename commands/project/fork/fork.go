@@ -296,7 +296,7 @@ loop:
 
 			forkedRepoURL := glrepo.RemoteURL(forkedProject, protocol)
 
-			cloneDir, err := git.RunClone(forkedRepoURL, []string{})
+			cloneDir, err := git.RunClone(forkedRepoURL, "", []string{})
 			if err != nil {
 				return fmt.Errorf("failed to clone fork: %w", err)
 			}

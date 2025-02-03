@@ -306,26 +306,8 @@ func CheckoutNewBranch(branch string) error {
 	return err
 }
 
-func parseCloneArgs(extraArgs []string) (args []string, target string) {
-	args, target = parseArgs(extraArgs)
-	return
-}
-
-func parseArgs(cmdWithArgs []string) (args []string, command string) {
-	args = cmdWithArgs
-
-	if len(args) > 0 {
-		if !strings.HasPrefix(args[0], "-") {
-			command, args = args[0], args[1:]
-		}
-	}
-	return
-}
-
-func RunClone(cloneURL string, args []string) (target string, err error) {
-	cloneArgs, target := parseCloneArgs(args)
-
-	cloneArgs = append(cloneArgs, cloneURL)
+func RunClone(cloneURL string, target string, args []string) (cloneDir string, err error) {
+	cloneArgs := append(args, cloneURL)
 
 	// If the args contain an explicit target, pass it to clone
 	//    otherwise, parse the URL to determine where git cloned it to so we can return it
@@ -343,7 +325,7 @@ func RunClone(cloneURL string, args []string) (target string, err error) {
 	cloneCmd.Stderr = os.Stderr
 
 	err = run.PrepareCmd(cloneCmd).Run()
-	return
+	return target, err
 }
 
 func AddUpstreamRemote(upstreamURL, cloneDir string) error {
