@@ -27,10 +27,10 @@ lookup
 ## Examples
 
 ```plaintext
-glab project search title
-glab repo search title
-glab project find title
-glab project lookup title
+glab project search -s "title"
+glab repo search -s "title"
+glab project find -s "title"
+glab project lookup -s "title"
 
 ```
 
