@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -12,6 +13,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
@@ -82,14 +84,19 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 				}
 				opts.addFile(&opts.DisplayFilename, &content)
 			} else {
-				if opts.DisplayFilename == "" {
-					opts.DisplayFilename = args[0]
+				for _, path := range args {
+					filename := path
+					if len(args) == 1 && opts.DisplayFilename != "" {
+						filename = opts.DisplayFilename
+					}
+
+					content, err := readFromFile(path)
+					if err != nil {
+						return err
+					}
+					dbg.Debug("Adding:", filename)
+					opts.addFile(&filename, &content)
 				}
-				content, err := readFromFile(args[0])
-				if err != nil {
-					return err
-				}
-				opts.addFile(&opts.DisplayFilename, &content)
 			}
 
 			return nil
@@ -145,8 +152,13 @@ func runCreate(client *gitlab.Client, repo glrepo.Interface, opts *CreateOpts) e
 		return fmt.Errorf("failed to create snippet: %w", err)
 	}
 	snippetID := opts.IO.Color().Green(fmt.Sprintf("$%d", snippet.ID))
+	var files []string
+	for _, file := range opts.Files {
+		files = append(files, *file.FilePath)
+	}
+	names := strings.Join(files, " ")
 	if opts.IO.IsaTTY {
-		fmt.Fprintf(opts.IO.StdOut, "%s %s (%s)\n %s\n", snippetID, snippet.Title, snippet.FileName, snippet.WebURL)
+		fmt.Fprintf(opts.IO.StdOut, "%s %s (%s)\n %s\n", snippetID, snippet.Title, names, snippet.WebURL)
 	} else {
 		fmt.Fprintln(opts.IO.StdOut, snippet.WebURL)
 	}
