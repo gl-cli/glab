@@ -53,6 +53,8 @@ func Test_NewCmdUpdate(t *testing.T) {
 				Protected: true,
 				Value:     "a secret",
 				Group:     "",
+				Type:      "env_var",
+				Scope:     "*",
 			},
 		},
 		{
@@ -63,6 +65,8 @@ func Test_NewCmdUpdate(t *testing.T) {
 				Protected: false,
 				Value:     "cool",
 				Group:     "coolGroup",
+				Type:      "env_var",
+				Scope:     "*",
 			},
 		},
 		{
@@ -73,6 +77,8 @@ func Test_NewCmdUpdate(t *testing.T) {
 				Value: "$variable_name",
 				Raw:   true,
 				Group: "",
+				Scope: "*",
+				Type:  "env_var",
 			},
 		},
 		{
@@ -83,6 +89,8 @@ func Test_NewCmdUpdate(t *testing.T) {
 				Value: "$variable_name",
 				Raw:   true,
 				Group: "coolGroup",
+				Scope: "*",
+				Type:  "env_var",
 			},
 		},
 		{
@@ -93,9 +101,22 @@ func Test_NewCmdUpdate(t *testing.T) {
 				Value: "$variable_name",
 				Raw:   false,
 				Group: "",
+				Scope: "*",
+				Type:  "env_var",
 			},
 		},
-
+		{
+			name: "var with desription",
+			cli:  `cool_secret -d"description"`,
+			wants: UpdateOpts{
+				Key:         "cool_secret",
+				Raw:         false,
+				Group:       "",
+				Scope:       "*",
+				Type:        "env_var",
+				Description: "description",
+			},
+		},
 		{
 			name: "leading numbers in name",
 			cli:  `123_TOKEN -v"cool"`,
@@ -104,6 +125,8 @@ func Test_NewCmdUpdate(t *testing.T) {
 				Protected: false,
 				Value:     "cool",
 				Group:     "",
+				Scope:     "*",
+				Type:      "env_var",
 			},
 		},
 		{
@@ -145,6 +168,12 @@ func Test_NewCmdUpdate(t *testing.T) {
 			assert.Equal(t, tt.wants.Key, gotOpts.Key)
 			assert.Equal(t, tt.wants.Value, gotOpts.Value)
 			assert.Equal(t, tt.wants.Group, gotOpts.Group)
+			assert.Equal(t, tt.wants.Protected, gotOpts.Protected)
+			assert.Equal(t, tt.wants.Raw, gotOpts.Raw)
+			assert.Equal(t, tt.wants.Masked, gotOpts.Masked)
+			assert.Equal(t, tt.wants.Type, gotOpts.Type)
+			assert.Equal(t, tt.wants.Description, gotOpts.Description)
+			assert.Equal(t, tt.wants.Scope, gotOpts.Scope)
 		})
 	}
 }
