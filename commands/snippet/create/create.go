@@ -22,14 +22,17 @@ type CreateOpts struct {
 	Visibility      string
 	Personal        bool
 
-	FilePaths []string
+	Files []*gitlab.CreateSnippetFileOptions
 
 	IO       *iostreams.IOStreams
 	BaseRepo func() (glrepo.Interface, error)
 }
 
-func (opts CreateOpts) isSnippetFromFile() bool {
-	return len(opts.FilePaths) == 0
+func (opts *CreateOpts) addFile(path, content *string) {
+	opts.Files = append(opts.Files, &gitlab.CreateSnippetFileOptions{
+		FilePath: path,
+		Content:  content,
+	})
 }
 
 func hasStdIn() bool {
@@ -72,11 +75,21 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 						return errors.New("stdin required if no 'path' is provided")
 					}
 				}
+				fmt.Println("reading from stdin:")
+				content, err := readFromSTDIN(f.IO)
+				if err != nil {
+					return err
+				}
+				opts.addFile(&opts.DisplayFilename, &content)
 			} else {
 				if opts.DisplayFilename == "" {
 					opts.DisplayFilename = args[0]
 				}
-				opts.FilePaths = args
+				content, err := readFromFile(args[0])
+				if err != nil {
+					return err
+				}
+				opts.addFile(&opts.DisplayFilename, &content)
 			}
 
 			return nil
@@ -109,28 +122,23 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 }
 
 func runCreate(client *gitlab.Client, repo glrepo.Interface, opts *CreateOpts) error {
-	content, err := readSnippetsContent(opts)
-	if err != nil {
-		return err
-	}
 	var snippet *gitlab.Snippet
+	var err error
 	if opts.Personal {
 		fmt.Fprintln(opts.IO.StdErr, "- Creating snippet in personal space")
 		snippet, err = api.CreateSnippet(client, &gitlab.CreateSnippetOptions{
 			Title:       &opts.Title,
 			Description: &opts.Description,
-			Content:     gitlab.Ptr(string(content)),
-			FileName:    &opts.DisplayFilename,
 			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility)),
+			Files:       &opts.Files,
 		})
 	} else {
 		fmt.Fprintln(opts.IO.StdErr, "- Creating snippet in", repo.FullName())
 		snippet, err = api.CreateProjectSnippet(client, repo.FullName(), &gitlab.CreateProjectSnippetOptions{
 			Title:       &opts.Title,
 			Description: &opts.Description,
-			Content:     gitlab.Ptr(string(content)),
-			FileName:    &opts.DisplayFilename,
 			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility)),
+			Files:       &opts.Files,
 		})
 	}
 	if err != nil {
@@ -144,20 +152,6 @@ func runCreate(client *gitlab.Client, repo glrepo.Interface, opts *CreateOpts) e
 	}
 
 	return nil
-}
-
-// FIXME: Adding more then one file can't be done right now because the GitLab API library
-//
-//	Doesn't support it yet.
-//
-//	See for the API reference: https://docs.gitlab.com/ee/api/snippets.html#create-new-snippet
-//	See for the library docs: https://pkg.go.dev/gitlab.com/gitlab-org/api/client-go#CreateSnippetOptions
-//	See for GitHub issue: https://gitlab.com/gitlab-org/api/client-go/issues/1372
-func readSnippetsContent(opts *CreateOpts) (string, error) {
-	if opts.isSnippetFromFile() {
-		return readFromFile(opts.FilePaths[0])
-	}
-	return readFromSTDIN(opts.IO)
 }
 
 func readFromSTDIN(ioStream *iostreams.IOStreams) (string, error) {
