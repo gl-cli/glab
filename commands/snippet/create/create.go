@@ -25,7 +25,6 @@ type CreateOpts struct {
 	FilePath string
 
 	IO       *iostreams.IOStreams
-	Lab      func() (*gitlab.Client, error)
 	BaseRepo func() (glrepo.Interface, error)
 }
 
@@ -60,7 +59,6 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			opts.IO = f.IO
 			opts.BaseRepo = f.BaseRepo
-			opts.Lab = f.HttpClient
 			if opts.Title == "" {
 				return &cmdutils.FlagError{
 					Err: errors.New("--title required for snippets"),
@@ -84,7 +82,7 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := opts.Lab()
+			client, err := f.HttpClient()
 			if err != nil {
 				return err
 			}
