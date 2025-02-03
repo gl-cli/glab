@@ -49,7 +49,7 @@ func hasStdIn() bool {
 func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{}
 	snippetCreateCmd := &cobra.Command{
-		Use: `create [flags] -t <title> <file>
+		Use: `create [flags] -t <title> <file1> [<file2>...]
 glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 		Short:   `Create a new snippet.`,
 		Long:    ``,
