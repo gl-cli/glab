@@ -20,14 +20,15 @@ type UpdateOpts struct {
 	IO         *iostreams.IOStreams
 	BaseRepo   func() (glrepo.Interface, error)
 
-	Key       string
-	Value     string
-	Type      string
-	Scope     string
-	Protected bool
-	Masked    bool
-	Raw       bool
-	Group     string
+	Key         string
+	Value       string
+	Type        string
+	Scope       string
+	Protected   bool
+	Masked      bool
+	Raw         bool
+	Group       string
+	Description string
 }
 
 func NewCmdUpdate(f *cmdutils.Factory, runE func(opts *UpdateOpts) error) *cobra.Command {
@@ -98,6 +99,7 @@ func NewCmdUpdate(f *cmdutils.Factory, runE func(opts *UpdateOpts) error) *cobra
 	cmd.Flags().BoolVarP(&opts.Masked, "masked", "m", false, "Whether the variable is masked.")
 	cmd.Flags().BoolVarP(&opts.Raw, "raw", "r", false, "Whether the variable is treated as a raw string.")
 	cmd.Flags().BoolVarP(&opts.Protected, "protected", "p", false, "Whether the variable is protected.")
+	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Set description of a variable.")
 	return cmd
 }
 
@@ -117,6 +119,7 @@ func updateRun(opts *UpdateOpts) error {
 			Protected:        gitlab.Ptr(opts.Protected),
 			Raw:              gitlab.Ptr(opts.Raw),
 			EnvironmentScope: gitlab.Ptr(opts.Scope),
+			Description:      gitlab.Ptr(opts.Description),
 		}
 
 		_, err = api.UpdateGroupVariable(httpClient, opts.Group, opts.Key, updateGroupVarOpts)
@@ -141,6 +144,7 @@ func updateRun(opts *UpdateOpts) error {
 		Protected:        gitlab.Ptr(opts.Protected),
 		Raw:              gitlab.Ptr(opts.Raw),
 		EnvironmentScope: gitlab.Ptr(opts.Scope),
+		Description:      gitlab.Ptr(opts.Description),
 	}
 
 	_, err = api.UpdateProjectVariable(httpClient, baseRepo.FullName(), opts.Key, updateProjectVarOpts)

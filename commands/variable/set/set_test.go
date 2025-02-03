@@ -53,6 +53,8 @@ func Test_NewCmdSet(t *testing.T) {
 				Protected: true,
 				Value:     "a secret",
 				Group:     "",
+				Scope:     "*",
+				Type:      "env_var",
 			},
 		},
 		{
@@ -63,6 +65,8 @@ func Test_NewCmdSet(t *testing.T) {
 				Protected: false,
 				Value:     "cool",
 				Group:     "coolGroup",
+				Scope:     "*",
+				Type:      "env_var",
 			},
 		},
 		{
@@ -73,6 +77,8 @@ func Test_NewCmdSet(t *testing.T) {
 				Protected: false,
 				Value:     "cool",
 				Group:     "",
+				Scope:     "*",
+				Type:      "env_var",
 			},
 		},
 		{
@@ -82,12 +88,13 @@ func Test_NewCmdSet(t *testing.T) {
 		},
 		{
 			name: "environment scope in group",
-			cli:  `cool_secret --group coolGroup -v"cool"`,
+			cli:  `cool_secret --group coolGroup -v"cool" -s"production"`,
 			wants: SetOpts{
 				Key:   "cool_secret",
 				Scope: "production",
 				Value: "cool",
 				Group: "coolGroup",
+				Type:  "env_var",
 			},
 		},
 		{
@@ -98,6 +105,8 @@ func Test_NewCmdSet(t *testing.T) {
 				Value: "$variable_name",
 				Raw:   true,
 				Group: "",
+				Scope: "*",
+				Type:  "env_var",
 			},
 		},
 		{
@@ -108,16 +117,34 @@ func Test_NewCmdSet(t *testing.T) {
 				Value: "$variable_name",
 				Raw:   true,
 				Group: "coolGroup",
+				Scope: "*",
+				Type:  "env_var",
 			},
 		},
 		{
 			name: "raw is false by default",
 			cli:  `cool_secret -v"$variable_name"`,
 			wants: SetOpts{
-				Key:   "cool_secret",
-				Value: "$variable_name",
-				Raw:   false,
-				Group: "",
+				Key:       "cool_secret",
+				Value:     "$variable_name",
+				Raw:       false,
+				Group:     "",
+				Scope:     "*",
+				Protected: false,
+				Type:      "env_var",
+			},
+		},
+		{
+			name: "var with descripton",
+			cli:  `var_desc -v"var_desc" -d "cool var description"`,
+			wants: SetOpts{
+				Key:         "var_desc",
+				Protected:   false,
+				Value:       "var_desc",
+				Group:       "",
+				Description: "cool var description",
+				Scope:       "*",
+				Type:        "env_var",
 			},
 		},
 	}
@@ -154,6 +181,12 @@ func Test_NewCmdSet(t *testing.T) {
 			assert.Equal(t, tt.wants.Key, gotOpts.Key)
 			assert.Equal(t, tt.wants.Value, gotOpts.Value)
 			assert.Equal(t, tt.wants.Group, gotOpts.Group)
+			assert.Equal(t, tt.wants.Scope, gotOpts.Scope)
+			assert.Equal(t, tt.wants.Protected, gotOpts.Protected)
+			assert.Equal(t, tt.wants.Description, gotOpts.Description)
+			assert.Equal(t, tt.wants.Raw, gotOpts.Raw)
+			assert.Equal(t, tt.wants.Masked, gotOpts.Masked)
+			assert.Equal(t, tt.wants.Type, gotOpts.Type)
 		})
 	}
 }

@@ -20,14 +20,15 @@ type SetOpts struct {
 	IO         *iostreams.IOStreams
 	BaseRepo   func() (glrepo.Interface, error)
 
-	Key       string
-	Value     string
-	Type      string
-	Scope     string
-	Protected bool
-	Masked    bool
-	Raw       bool
-	Group     string
+	Key         string
+	Value       string
+	Type        string
+	Scope       string
+	Protected   bool
+	Masked      bool
+	Raw         bool
+	Group       string
+	Description string
 }
 
 func NewCmdSet(f *cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Command {
@@ -42,6 +43,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Comma
 		Args:    cobra.RangeArgs(1, 2),
 		Example: heredoc.Doc(`
 			glab variable set WITH_ARG "some value"
+			glab variable set WITH_DESC "some value" --description "some description"
 			glab variable set FROM_FLAG -v "some value"
 			glab variable set FROM_ENV_WITH_ARG "${ENV_VAR}"
 			glab variable set FROM_ENV_WITH_FLAG -v"${ENV_VAR}"
@@ -94,6 +96,7 @@ func NewCmdSet(f *cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Comma
 	cmd.Flags().BoolVarP(&opts.Masked, "masked", "m", false, "Whether the variable is masked.")
 	cmd.Flags().BoolVarP(&opts.Raw, "raw", "r", false, "Whether the variable is treated as a raw string.")
 	cmd.Flags().BoolVarP(&opts.Protected, "protected", "p", false, "Whether the variable is protected.")
+	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Set description of a variable.")
 	return cmd
 }
 
@@ -114,7 +117,9 @@ func setRun(opts *SetOpts) error {
 			Protected:        gitlab.Ptr(opts.Protected),
 			VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(opts.Type)),
 			Raw:              gitlab.Ptr(opts.Raw),
+			Description:      gitlab.Ptr(opts.Description),
 		}
+
 		_, err = api.CreateGroupVariable(httpClient, opts.Group, createVarOpts)
 		if err != nil {
 			return err
@@ -137,6 +142,7 @@ func setRun(opts *SetOpts) error {
 		Protected:        gitlab.Ptr(opts.Protected),
 		VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(opts.Type)),
 		Raw:              gitlab.Ptr(opts.Raw),
+		Description:      gitlab.Ptr(opts.Description),
 	}
 	_, err = api.CreateProjectVariable(httpClient, baseRepo.FullName(), createVarOpts)
 	if err != nil {
