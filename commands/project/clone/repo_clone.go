@@ -276,15 +276,11 @@ func cloneRun(opts *CloneOptions, ctxOpts *ContextOpts) (err error) {
 		ctxOpts.Repo += ".git"
 	}
 	// To preserve namespaces, we deep copy gitFlags for group clones
-	var gitFlags []string
 	if opts.PreserveNamespace {
 		namespacedDir := ctxOpts.Project.PathWithNamespace
 		opts.Dir = namespacedDir
 	}
-	gitFlags = append([]string{opts.Dir}, opts.GitFlags...)
-	// FIXME: RunClone treats first flag as target if it doesn't start with "-"
-	// https://gitlab.com/gitlab-org/cli/-/issues/7740
-	_, err = git.RunClone(ctxOpts.Repo, gitFlags)
+	_, err = git.RunClone(ctxOpts.Repo, opts.Dir, opts.GitFlags)
 	if err != nil {
 		return
 	}
