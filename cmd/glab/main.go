@@ -153,7 +153,14 @@ func main() {
 	rootCmd.SetArgs(expandedArgs)
 
 	if cmd, err := rootCmd.ExecuteC(); err != nil {
-		printError(cmdFactory.IO, err, cmd, debug, true)
+		printError(cmdFactory.IO, err, cmd, debug)
+
+		var exitError *cmdutils.ExitError
+		if errors.As(err, &exitError) {
+			os.Exit(exitError.Code)
+		} else {
+			os.Exit(1)
+		}
 	}
 
 	if help.HasFailed() {
@@ -173,20 +180,19 @@ func main() {
 
 		err = update.CheckUpdate(cmdFactory, version, true, argCommand)
 		if err != nil {
-			printError(cmdFactory.IO, err, rootCmd, debug, false)
+			printError(cmdFactory.IO, err, rootCmd, debug)
 		}
 	}
 
 	api.GetClient().HTTPClient().CloseIdleConnections()
 }
 
-func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, debug, shouldExit bool) {
+func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, debug bool) {
 	if errors.Is(err, cmdutils.SilentError) {
 		return
 	}
 	color := streams.Color()
 	printMore := true
-	exitCode := 1
 
 	var dnsError *net.DNSError
 	if errors.As(err, &dnsError) {
@@ -201,7 +207,6 @@ func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, deb
 		var exitError *cmdutils.ExitError
 		if errors.As(err, &exitError) {
 			streams.Logf("%s %s %s=%s\n", color.FailedIcon(), color.Bold(exitError.Details), color.Red("error"), exitError.Err)
-			exitCode = exitError.Code
 			printMore = false
 		}
 
@@ -220,9 +225,6 @@ func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, deb
 
 	if cmd != nil {
 		cmd.Print("\n")
-	}
-	if shouldExit {
-		os.Exit(exitCode)
 	}
 }
 
