@@ -108,8 +108,7 @@ func lintRun(f *cmdutils.Factory, path string) error {
 			i++
 			fmt.Fprintln(out, i, err)
 		}
-		// Returning the error to cobra here causes the process to exit with code 0, so we exit manually.
-		os.Exit(1)
+		return cmdutils.SilentError
 	}
 	fmt.Fprintln(out, c.GreenCheck(), "CI/CD YAML is valid!")
 	return nil

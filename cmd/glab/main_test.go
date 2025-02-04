@@ -89,7 +89,7 @@ x lookup https://gitlab.com/api/v4:
 			streams, _, _, _ := iostreams.Test()
 			out := &bytes.Buffer{}
 			streams.StdErr = out
-			printError(streams, tt.args.err, tt.args.cmd, tt.args.debug, false)
+			printError(streams, tt.args.err, tt.args.cmd, tt.args.debug)
 			if gotOut := out.String(); gotOut != tt.wantOut {
 				t.Errorf("printError() = %q, want %q", gotOut, tt.wantOut)
 			}
