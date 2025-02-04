@@ -93,7 +93,8 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 			} else {
 				repo, err := opts.BaseRepo()
 				if err != nil {
-					return err
+					redCheck := opts.IO.Color().FailedIcon()
+					return fmt.Errorf("%s Project snippet needs a repository. Do you want --personal?", redCheck)
 				}
 				return runCreate(client, repo, opts)
 
