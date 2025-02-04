@@ -77,7 +77,7 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 						return errors.New("stdin required if no 'path' is provided")
 					}
 				}
-				fmt.Println("reading from stdin:")
+				fmt.Fprintln(opts.IO.StdOut, "reading from stdin:")
 				content, err := readFromSTDIN(f.IO)
 				if err != nil {
 					return err
