@@ -60,6 +60,15 @@ func rootConfig() *yaml.Node {
 						Value: "true",
 					},
 					{
+						HeadComment: "# Last update check timestamp, used for checking when the last update check was performed.",
+						Kind:        yaml.ScalarNode,
+						Value:       "last_update_check_timestamp",
+					},
+					{
+						Kind:  yaml.ScalarNode,
+						Value: "",
+					},
+					{
 						HeadComment: "# Whether or not to display hyperlink escape characters when listing items like issues or merge requests. Set to TRUE to display hyperlinks in TTYs only. Force hyperlinks by setting FORCE_HYPERLINKS=1 as an environment variable.",
 						Kind:        yaml.ScalarNode,
 						Value:       "display_hyperlinks",

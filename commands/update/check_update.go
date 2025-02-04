@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
@@ -40,8 +42,17 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previo
 		return nil
 	}
 
+	moreThan24hAgo, err := checkLastUpdate(f)
+	if err != nil {
+		return err
+	}
+	// if the last update check was less than 24h ago we skip the version check
+	if !moreThan24hAgo {
+		return nil
+	}
+
 	// We set the project to the `glab` project to check for `glab` updates
-	err := f.RepoOverride(defaultProjectURL)
+	err = f.RepoOverride(defaultProjectURL)
 	if err != nil {
 		return err
 	}
@@ -91,17 +102,6 @@ func shouldSkipUpdate(previousCommand string) bool {
 	isCheckUpdate := previousCommand == commandUse || utils.PresentInStringSlice(commandAliases, previousCommand)
 	isCompletion := previousCommand == "completion"
 
-	if envVal, ok := os.LookupEnv("GLAB_CHECK_UPDATE"); ok {
-		switch strings.ToUpper(envVal) {
-		case "TRUE", "YES", "Y", "1":
-			// if GLAB_CHECK_UPDATE is true, we want to perform the update check, so we return false to not skip
-			return false
-		case "FALSE", "NO", "N", "0":
-			// If GLAB_CHECK_UPDATE is false, we don't want to perform the update check, so we return true to skip
-			return true
-		}
-	}
-
 	return isCheckUpdate || isCompletion
 }
 
@@ -113,4 +113,80 @@ func isOlderVersion(latestVersion, appVersion string) bool {
 	vw, we := version.NewVersion(appVersion)
 
 	return ve == nil && we == nil && vv.GreaterThan(vw)
+}
+
+// returns true if we should check for updates
+//
+// returns false if we should skip the update check
+//
+// We only want to check for updates once every 24 hours
+func checkLastUpdate(f *cmdutils.Factory) (bool, error) {
+	const updateCheckInterval = 24 * time.Hour
+	cfg, err := f.Config()
+	if err != nil {
+		return false, err
+	}
+
+	// We don't care when the command was run if the environment variable is forcing an update
+	if isEnvForcingUpdate() {
+		if err := updateLastCheckTimestamp(cfg); err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+
+	last_update, err := cfg.Get("", "last_update_check_timestamp")
+	if err != nil {
+		return false, err
+	}
+
+	// this might be the first time running the command, so last_update might be empty
+	// we want to save the current time and check for an update
+	if last_update == "" {
+		if err := updateLastCheckTimestamp(cfg); err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+
+	last_update_time, err := time.Parse(time.RFC3339, last_update)
+	if err != nil {
+		return false, err
+	}
+
+	// if the last check was more than 24h ago we check for an update
+	moreThan24hAgo := time.Since(last_update_time) > updateCheckInterval
+	if moreThan24hAgo {
+		if err := updateLastCheckTimestamp(cfg); err != nil {
+			return false, err
+		}
+	}
+	return moreThan24hAgo, nil
+}
+
+// isEnvForcingUpdate - returns true if the environment variable `GLAB_CHECK_UPDATE` is set to true
+func isEnvForcingUpdate() bool {
+	if envVal, ok := os.LookupEnv("GLAB_CHECK_UPDATE"); ok {
+		switch strings.ToUpper(envVal) {
+		case "TRUE", "YES", "Y", "1":
+			return true
+		case "FALSE", "NO", "N", "0":
+			return false
+		}
+	}
+	// if the value is not set or is not a valid value
+	return false
+}
+
+// updateLastCheckTimestamp - saves the current time as last_update_check_timestamp to config.yml
+func updateLastCheckTimestamp(cfg config.Config) error {
+	if err := cfg.Set("", "last_update_check_timestamp", time.Now().Format(time.RFC3339)); err != nil {
+		return err
+	}
+
+	if err := cfg.Write(); err != nil {
+		return err
+	}
+
+	return nil
 }
