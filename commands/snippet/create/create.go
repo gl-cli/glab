@@ -73,11 +73,11 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 				if opts.DisplayFilename == "" {
 					return &cmdutils.FlagError{Err: errors.New("if 'path' is not provided, 'filename' and stdin are required")}
 				} else {
-					if !hasStdIn() {
+					if !f.IO.IsInTTY && !hasStdIn() {
 						return errors.New("stdin required if no 'path' is provided")
 					}
 				}
-				fmt.Fprintln(opts.IO.StdOut, "reading from stdin:")
+				fmt.Fprintln(f.IO.StdOut, "reading from stdin (Ctrl+D to finish, Ctrl+C to abort):")
 				content, err := readFromSTDIN(f.IO)
 				if err != nil {
 					return err
