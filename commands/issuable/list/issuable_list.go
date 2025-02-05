@@ -261,7 +261,7 @@ func listRun(opts *ListOptions) error {
 		}
 		title.RepoName = opts.Group
 	} else {
-		issues, err = api.ListIssues(apiClient, repo.FullName(), listOpts)
+		issues, err = api.ListProjectIssues(apiClient, repo.FullName(), listOpts)
 		if err != nil {
 			return err
 		}

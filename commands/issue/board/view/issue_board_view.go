@@ -429,7 +429,7 @@ func getGroupBoardIssues(groupID int, opts *issueBoardViewOptions) ([]*gitlab.Is
 
 func getProjectBoardIssues(opts *issueBoardViewOptions) ([]*gitlab.Issue, error) {
 	reqOpts := opts.getListProjectIssueOptions()
-	issues, err := api.ListIssues(apiClient, repo.FullName(), reqOpts)
+	issues, err := api.ListProjectIssues(apiClient, repo.FullName(), reqOpts)
 	if err != nil {
 		return nil, fmt.Errorf("retrieving list issues: %w", err)
 	}

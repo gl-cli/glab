@@ -89,7 +89,7 @@ var ListGroupIssues = func(client *gitlab.Client, groupID interface{}, opts *git
 	return issues, nil
 }
 
-var ListIssues = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectIssuesOptions) ([]*gitlab.Issue, error) {
+var ListProjectIssues = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectIssuesOptions) ([]*gitlab.Issue, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
