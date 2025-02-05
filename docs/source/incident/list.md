@@ -45,8 +45,8 @@ glab incident list --milestone release-2.0.0 --opened
       --in string              search in: title, description. (default "title,description")
   -l, --label strings          Filter incident by label <name>.
   -m, --milestone string       Filter incident by milestone <id>.
-      --not-assignee strings   Filter incident by not being assigneed to <username>.
-      --not-author strings     Filter by not being by author(s) <username>.
+      --not-assignee string    Filter incident by not being assigned to <username>.
+      --not-author string      Filter incident by not being by author(s) <username>.
       --not-label strings      Filter incident by lack of label <name>.
   -O, --output string          Options: 'text' or 'json'. (default "text")
   -F, --output-format string   Options: 'details', 'ids', 'urls'. (default "details")

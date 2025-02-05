@@ -24,9 +24,9 @@ import (
 type ListOptions struct {
 	// metadata
 	Assignee    string
-	NotAssignee []string
+	NotAssignee string
 	Author      string
-	NotAuthor   []string
+	NotAuthor   string
 	Labels      []string
 	NotLabels   []string
 	Milestone   string
@@ -129,9 +129,9 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueTy
 	}
 	cmdutils.EnableRepoOverride(issueListCmd, f)
 	issueListCmd.Flags().StringVarP(&opts.Assignee, "assignee", "a", "", fmt.Sprintf("Filter %s by assignee <username>.", issueType))
-	issueListCmd.Flags().StringSliceVar(&opts.NotAssignee, "not-assignee", []string{}, fmt.Sprintf("Filter %s by not being assigneed to <username>.", issueType))
+	issueListCmd.Flags().StringVar(&opts.NotAssignee, "not-assignee", "", fmt.Sprintf("Filter %s by not being assigned to <username>.", issueType))
 	issueListCmd.Flags().StringVar(&opts.Author, "author", "", fmt.Sprintf("Filter %s by author <username>.", issueType))
-	issueListCmd.Flags().StringSliceVar(&opts.NotAuthor, "not-author", []string{}, "Filter by not being by author(s) <username>.")
+	issueListCmd.Flags().StringVar(&opts.NotAuthor, "not-author", "", fmt.Sprintf("Filter %s by not being by author(s) <username>.", issueType))
 	issueListCmd.Flags().StringVar(&opts.Search, "search", "", "Search <string> in the fields defined by '--in'.")
 	issueListCmd.Flags().StringVar(&opts.In, "in", "title,description", "search in: title, description.")
 	issueListCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, fmt.Sprintf("Filter %s by label <name>.", issueType))
@@ -191,12 +191,12 @@ func listRun(opts *ListOptions) error {
 		}
 		listOpts.AssigneeUsername = gitlab.Ptr(opts.Assignee)
 	}
-	if len(opts.NotAssignee) != 0 {
-		u, err := api.UsersByNames(apiClient, opts.NotAssignee)
+	if opts.NotAssignee != "" {
+		u, err := api.UserByName(apiClient, opts.NotAssignee)
 		if err != nil {
 			return err
 		}
-		listOpts.NotAssigneeID = cmdutils.IDsFromUsers(u)
+		listOpts.NotAssigneeID = gitlab.Ptr(u.ID)
 	}
 	if opts.Author != "" {
 		u, err := api.UserByName(apiClient, opts.Author)
@@ -205,12 +205,12 @@ func listRun(opts *ListOptions) error {
 		}
 		listOpts.AuthorID = gitlab.Ptr(u.ID)
 	}
-	if len(opts.NotAuthor) != 0 {
-		u, err := api.UsersByNames(apiClient, opts.NotAuthor)
+	if opts.NotAuthor != "" {
+		u, err := api.UserByName(apiClient, opts.NotAuthor)
 		if err != nil {
 			return err
 		}
-		listOpts.NotAuthorID = cmdutils.IDsFromUsers(u)
+		listOpts.NotAuthorID = gitlab.Ptr(u.ID)
 	}
 	if opts.Search != "" {
 		listOpts.Search = gitlab.Ptr(opts.Search)

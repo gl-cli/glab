@@ -47,8 +47,8 @@ glab issue list --milestone release-2.0.0 --opened
   -i, --iteration int          Filter issue by iteration <id>.
   -l, --label strings          Filter issue by label <name>.
   -m, --milestone string       Filter issue by milestone <id>.
-      --not-assignee strings   Filter issue by not being assigneed to <username>.
-      --not-author strings     Filter by not being by author(s) <username>.
+      --not-assignee string    Filter issue by not being assigned to <username>.
+      --not-author string      Filter issue by not being by author(s) <username>.
       --not-label strings      Filter issue by lack of label <name>.
   -O, --output string          Options: 'text' or 'json'. (default "text")
   -F, --output-format string   Options: 'details', 'ids', 'urls'. (default "details")
