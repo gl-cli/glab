@@ -153,7 +153,9 @@ func main() {
 	rootCmd.SetArgs(expandedArgs)
 
 	if cmd, err := rootCmd.ExecuteC(); err != nil {
-		printError(cmdFactory.IO, err, cmd, debug)
+		if !errors.Is(err, cmdutils.SilentError) {
+			printError(cmdFactory.IO, err, cmd, debug)
+		}
 
 		var exitError *cmdutils.ExitError
 		if errors.As(err, &exitError) {
@@ -188,9 +190,6 @@ func main() {
 }
 
 func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, debug bool) {
-	if errors.Is(err, cmdutils.SilentError) {
-		return
-	}
 	color := streams.Color()
 	printMore := true
 
