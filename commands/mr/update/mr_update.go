@@ -3,6 +3,7 @@ package update
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/api"
@@ -101,21 +102,24 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 			}
 			if isDraft || isWIP {
 				if isDraft {
-					actions = append(actions, "marked as Draft")
-					mergeTitle = "Draft: " + mergeTitle
+					if strings.HasPrefix(strings.ToLower(mergeTitle), "draft:") {
+						actions = append(actions, "already a Draft")
+					} else {
+						actions = append(actions, "marked as Draft")
+						mergeTitle = "Draft: " + mergeTitle
+					}
 				} else {
-					actions = append(actions, "marked as WIP")
-					mergeTitle = "WIP: " + mergeTitle
+					if strings.HasPrefix(strings.ToLower(mergeTitle), "wip:") {
+						actions = append(actions, "already a WIP")
+					} else {
+						actions = append(actions, "marked as WIP")
+						mergeTitle = "WIP: " + mergeTitle
+					}
 				}
 			} else if isReady, _ := cmd.Flags().GetBool("ready"); isReady {
 				actions = append(actions, "marked as ready")
-				mergeTitle = strings.TrimPrefix(mergeTitle, "Draft:")
-				mergeTitle = strings.TrimPrefix(mergeTitle, "draft:")
-				mergeTitle = strings.TrimPrefix(mergeTitle, "DRAFT:")
-				mergeTitle = strings.TrimPrefix(mergeTitle, "WIP:")
-				mergeTitle = strings.TrimPrefix(mergeTitle, "wip:")
-				mergeTitle = strings.TrimPrefix(mergeTitle, "Wip:")
-				mergeTitle = strings.TrimSpace(mergeTitle)
+				re := regexp.MustCompile(`(?i)^(\s*(?:draft:|wip:)\s*)*`)
+				mergeTitle = re.ReplaceAllString(mergeTitle, "")
 			}
 
 			l.Title = gitlab.Ptr(mergeTitle)
