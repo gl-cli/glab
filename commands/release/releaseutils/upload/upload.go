@@ -81,6 +81,8 @@ func (c *Context) UploadFiles(projectID, tagName string) error {
 		if err != nil {
 			return err
 		}
+		// Ignoring SA1019 - not sure what to do yet, see https://gitlab.com/gitlab-org/cli/-/merge_requests/1895#note_2331674215.
+		//nolint:staticcheck
 		projectFile, _, err := c.Client.Projects.UploadFile(
 			projectID,
 			r,

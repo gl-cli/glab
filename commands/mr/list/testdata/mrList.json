@@ -19,7 +19,8 @@
       "state": "active",
       "created_at": null,
       "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/8814129/avatar.png",
-      "web_url": "https://gitlab.com/OWNER"
+      "web_url": "https://gitlab.com/OWNER",
+      "locked": false
     },
     "assignee":
     {
@@ -29,7 +30,8 @@
       "state": "active",
       "created_at": null,
       "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/8814129/avatar.png",
-      "web_url": "https://gitlab.com/OWNER"
+      "web_url": "https://gitlab.com/OWNER",
+      "locked": false
     },
     "assignees":
     [
@@ -40,7 +42,8 @@
         "state": "active",
         "created_at": null,
         "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/8814129/avatar.png",
-        "web_url": "https://gitlab.com/OWNER"
+        "web_url": "https://gitlab.com/OWNER",
+        "locked": false
       }
     ],
     "reviewers":
@@ -133,7 +136,8 @@
       "state": "active",
       "created_at": null,
       "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/8814129/avatar.png",
-      "web_url": "https://gitlab.com/OWNER"
+      "web_url": "https://gitlab.com/OWNER",
+      "locked": false
     },
     "assignee": null,
     "assignees":
