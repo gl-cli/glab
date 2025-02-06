@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/spf13/cast"
 	"gitlab.com/gitlab-org/cli/pkg/text"
 )
 
@@ -271,7 +270,9 @@ func (c *TableCell) String() string {
 		return text.PadLeft(" ", c.Width, ' ')
 	}
 
-	s := cast.ToString(c.Value)
+	// convert value to string
+	s := fmt.Sprintf("%v", c.Value)
+	// wrap or truncate the string if needed
 	if c.Width > 0 && c.isaTTY {
 		if c.Wrap && len(s) > c.Width {
 			return text.WrapString(s, c.Width)
