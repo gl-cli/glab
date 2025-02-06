@@ -2,7 +2,11 @@ package tableprinter
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_ttyTablePrinter_truncate(t *testing.T) {
@@ -46,4 +50,21 @@ func Test_nonTTYTablePrinter_truncate(t *testing.T) {
 	if buf.String() != expected {
 		t.Errorf("expected: %q, got: %q", expected, buf.Bytes())
 	}
+}
+
+func TestTablePrinter(t *testing.T) {
+	t.Run("nil pointer cell value", func(t *testing.T) {
+		var createdAt *time.Time
+		var status *string
+		updatedAt := time.Now().UTC()
+
+		tp := NewTablePrinter()
+		tp.AddRow("id:", 1)
+		tp.AddRow("Status:", status)
+		tp.AddRow("Created:", createdAt)
+		tp.AddRow("Updated:", updatedAt)
+
+		expected := fmt.Sprintf("id:\t1\nStatus:\t<nil>\nCreated:\t<nil>\nUpdated:\t%v\n", updatedAt)
+		require.Equal(t, expected, tp.String())
+	})
 }
