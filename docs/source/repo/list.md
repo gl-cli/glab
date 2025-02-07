@@ -45,6 +45,7 @@ glab repo list
   -P, --per-page int        Number of items to list per page. (default 30)
   -s, --sort string         Return repositories sorted in asc or desc order.
       --starred             List only starred projects.
+  -u, --user string         List user projects.
 ```
 
 ## Options inherited from parent commands
