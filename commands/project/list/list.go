@@ -27,6 +27,7 @@ type Options struct {
 	FilterStarred    bool
 	Archived         bool
 	ArchivedSet      bool
+	User             string
 
 	HTTPClient func() (*gitlab.Client, error)
 	IO         *iostreams.IOStreams
@@ -61,9 +62,12 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 	repoListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
 	repoListCmd.Flags().BoolVarP(&opts.FilterAll, "all", "a", false, "List all projects on the instance.")
 	repoListCmd.Flags().BoolVarP(&opts.FilterOwned, "mine", "m", false, "List only projects you own. Default if no filters are provided.")
+	repoListCmd.Flags().StringVarP(&opts.User, "user", "u", "", "List user projects.")
 	repoListCmd.Flags().BoolVar(&opts.FilterMember, "member", false, "List only projects of which you are a member.")
 	repoListCmd.Flags().BoolVar(&opts.FilterStarred, "starred", false, "List only starred projects.")
 	repoListCmd.Flags().BoolVar(&opts.Archived, "archived", false, "Limit by archived status. Use 'false' to exclude archived repositories. Used with the '--group' flag.")
+
+	repoListCmd.MarkFlagsMutuallyExclusive("user", "group")
 	return repoListCmd
 }
 
@@ -80,6 +84,8 @@ func runE(opts *Options) error {
 	var resp *gitlab.Response
 	if len(opts.Group) > 0 {
 		projects, resp, err = listAllProjectsForGroup(apiClient, *opts)
+	} else if opts.User != "" {
+		projects, resp, err = listAllProjectsForUser(apiClient, *opts)
 	} else {
 		projects, resp, err = listAllProjects(apiClient, *opts)
 	}
@@ -112,6 +118,10 @@ func runE(opts *Options) error {
 
 func listAllProjects(apiClient *gitlab.Client, opts Options) ([]*gitlab.Project, *gitlab.Response, error) {
 	l := &gitlab.ListProjectsOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: opts.PerPage,
+			Page:    opts.Page,
+		},
 		OrderBy: gitlab.Ptr(opts.OrderBy),
 	}
 
@@ -143,9 +153,6 @@ func listAllProjects(apiClient *gitlab.Client, opts Options) ([]*gitlab.Project,
 		l.Sort = gitlab.Ptr(opts.Sort)
 	}
 
-	l.PerPage = opts.PerPage
-	l.Page = opts.Page
-
 	return apiClient.Projects.ListProjects(l)
 }
 
@@ -167,6 +174,10 @@ func listAllProjectsForGroup(apiClient *gitlab.Client, opts Options) ([]*gitlab.
 	}
 
 	l := &gitlab.ListGroupProjectsOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: opts.PerPage,
+			Page:    opts.Page,
+		},
 		OrderBy: gitlab.Ptr(opts.OrderBy),
 	}
 
@@ -198,8 +209,29 @@ func listAllProjectsForGroup(apiClient *gitlab.Client, opts Options) ([]*gitlab.
 		l.Sort = gitlab.Ptr(opts.Sort)
 	}
 
-	l.PerPage = opts.PerPage
-	l.Page = opts.Page
-
 	return apiClient.Groups.ListGroupProjects(group.ID, l)
+}
+
+func listAllProjectsForUser(apiClient *gitlab.Client, opts Options) ([]*gitlab.Project, *gitlab.Response, error) {
+	l := &gitlab.ListProjectsOptions{
+		OrderBy: gitlab.Ptr(opts.OrderBy),
+		ListOptions: gitlab.ListOptions{
+			PerPage: opts.PerPage,
+			Page:    opts.Page,
+		},
+	}
+
+	if opts.ArchivedSet {
+		l.Archived = gitlab.Ptr(opts.Archived)
+	}
+
+	if opts.FilterStarred {
+		l.Starred = gitlab.Ptr(opts.FilterStarred)
+	}
+
+	if opts.Sort != "" {
+		l.Sort = gitlab.Ptr(opts.Sort)
+	}
+
+	return apiClient.Projects.ListUserProjects(opts.User, l)
 }

@@ -30,6 +30,11 @@ func TestProjectList(t *testing.T) {
 		status int
 		body   string
 	}
+	userResponse := `[{
+							"id": 123,
+							"description": "This is a test project",
+							"path_with_namespace": "testuser/example"
+					}]`
 
 	projectResponse := `[{
 							"id": 123,
@@ -271,6 +276,19 @@ func TestProjectList(t *testing.T) {
 			},
 			args:        "-a --archived=false",
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0).\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
+		},
+		{
+			name: "view all projects for a given user",
+			httpMock: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/users/testuser/projects?order_by=last_activity_at&page=1&per_page=30",
+					http.StatusOK,
+					userResponse,
+				},
+			},
+			args:        "-u testuser",
+			expectedOut: "Showing 1 of 0 projects (Page 0 of 0).\n\ntestuser/example\t\tThis is a test project\n\n",
 		},
 	}
 
