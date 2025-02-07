@@ -178,14 +178,15 @@ func listRun(opts *ListOptions) error {
 
 	l := &gitlab.ListProjectMergeRequestsOptions{
 		State: gitlab.Ptr(opts.State),
+		ListOptions: gitlab.ListOptions{
+			Page:    1,
+			PerPage: 30,
+		},
 	}
 	jsonOutput := opts.OutputFormat == "json"
 	if jsonOutput {
 		l.Page = 0
 		l.PerPage = 0
-	} else {
-		l.Page = 1
-		l.PerPage = 30
 	}
 
 	if opts.Author != "" {

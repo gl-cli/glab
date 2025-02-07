@@ -86,9 +86,11 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			if opts.ShowComments {
 				l := &gitlab.ListMergeRequestNotesOptions{
 					Sort: gitlab.Ptr("asc"),
+					ListOptions: gitlab.ListOptions{
+						Page:    opts.CommentPageNumber,
+						PerPage: opts.CommentLimit,
+					},
 				}
-				l.Page = opts.CommentPageNumber
-				l.PerPage = opts.CommentLimit
 
 				notes, err = api.ListMRNotes(apiClient, baseRepo.FullName(), mr.IID, l)
 				if err != nil {

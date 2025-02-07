@@ -116,10 +116,12 @@ func listAllGroupsForGroup(apiClient *gitlab.Client, group string) ([]*gitlab.Gr
 }
 
 func listAllProjectsForGroup(apiClient *gitlab.Client, group string, opts Options) ([]*gitlab.Project, *gitlab.Response, error) {
-	l := &gitlab.ListGroupProjectsOptions{}
-
-	l.PerPage = opts.ProjectPerPage
-	l.Page = opts.ProjectPage
+	l := &gitlab.ListGroupProjectsOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: opts.ProjectPerPage,
+			Page:    opts.ProjectPage,
+		},
+	}
 
 	return apiClient.Groups.ListGroupProjects(group, l)
 }

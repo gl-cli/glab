@@ -78,12 +78,15 @@ func runE(opts *Options) error {
 
 	l := &gitlab.ListContributorsOptions{
 		OrderBy: gitlab.Ptr(opts.OrderBy),
+		ListOptions: gitlab.ListOptions{
+			Page:    opts.Page,
+			PerPage: opts.PerPage,
+		},
 	}
+
 	if opts.Sort != "" {
 		l.Sort = gitlab.Ptr(opts.Sort)
 	}
-	l.PerPage = opts.PerPage
-	l.Page = opts.Page
 
 	users, _, err := apiClient.Repositories.Contributors(repo.FullName(), l)
 	if err != nil {
