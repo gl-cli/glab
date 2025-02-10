@@ -376,6 +376,7 @@ func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeReq
 			approvedBy[by.Username] = by
 		}
 
+		table.AddRow("Name", "Username", "Approved")
 		for _, eligibleApprover := range eligibleApprovers {
 			approved := "-"
 			source := ""

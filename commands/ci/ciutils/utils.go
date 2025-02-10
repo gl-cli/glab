@@ -56,7 +56,7 @@ func DisplayMultiplePipelines(s *iostreams.IOStreams, p []*gitlab.PipelineInfo, 
 	table := tableprinter.NewTablePrinter()
 
 	if len(p) > 0 {
-
+		table.AddRow("State", "IID", "Ref", "Created")
 		for _, pipeline := range p {
 			duration := ""
 

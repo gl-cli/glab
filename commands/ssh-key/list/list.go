@@ -73,6 +73,10 @@ func listRun(opts *ListOpts) error {
 	table := tableprinter.NewTablePrinter()
 	isTTy := opts.IO.IsOutputTTY()
 
+	if len(keys) > 0 {
+		table.AddRow("Title", "Key", "Created At")
+	}
+
 	for _, key := range keys {
 		createdAt := key.CreatedAt.String()
 		if opts.ShowKeyIDs {

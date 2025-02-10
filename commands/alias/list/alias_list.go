@@ -66,6 +66,7 @@ func listRun(cmd *cobra.Command, opts *ListOptions) error {
 	}
 	sort.Strings(keys)
 
+	table.AddRow("Alias", "Command")
 	for _, alias := range keys {
 		table.AddRow(alias, aliasMap[alias])
 	}

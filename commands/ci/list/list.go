@@ -118,7 +118,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
-	pipelineListCmd.Flags().StringP("status", "s", "", "Get pipeline with this status. Options: running, pending, success, failed, canceled, skipped, created, manual, waiting_for_resource, preparing, scheduled}")
+	pipelineListCmd.Flags().StringP("status", "s", "", "Get pipeline with this status. Options: running, pending, success, failed, canceled, skipped, created, manual, waiting_for_resource, preparing, scheduled")
 	pipelineListCmd.Flags().StringP("orderBy", "o", "id", "Order pipelines by this field. Options: id, status, ref, updated_at, user_id.")
 	pipelineListCmd.Flags().StringP("sort", "", "desc", "Sort pipelines. Options: asc, desc.")
 	pipelineListCmd.Flags().IntP("page", "p", 1, "Page number.")

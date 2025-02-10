@@ -79,6 +79,7 @@ func TestMrApprove(t *testing.T) {
 		Listing merge request !123 eligible approvers:
 		Approval rules overwritten.
 		Rule "All Members" sufficient approvals (1/1 required):
+		Name	Username	Approved
 		Abc Approver	approver_1	-	
 		Bar Approver	approver_2	-	
 		Foo Reviewer	foo_reviewer	👍	

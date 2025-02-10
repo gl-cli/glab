@@ -38,7 +38,7 @@ glab ci list --status=failed
       --sha string              Return only pipelines with the given SHA.
       --sort string             Sort pipelines. Options: asc, desc. (default "desc")
       --source string           Return only pipelines triggered via the given source. See https://docs.gitlab.com/ee/ci/jobs/job_rules.html#ci_pipeline_source-predefined-variable for full list. Commonly used options: {merge_request_event|parent_pipeline|pipeline|push|trigger}
-  -s, --status string           Get pipeline with this status. Options: running, pending, success, failed, canceled, skipped, created, manual, waiting_for_resource, preparing, scheduled}
+  -s, --status string           Get pipeline with this status. Options: running, pending, success, failed, canceled, skipped, created, manual, waiting_for_resource, preparing, scheduled
   -a, --updated-after string    Return only pipelines updated after the specified date. Expected in ISO 8601 format (2019-03-15T08:00:00Z).
   -b, --updated-before string   Return only pipelines updated before the specified date. Expected in ISO 8601 format (2019-03-15T08:00:00Z).
   -u, --username string         Return only pipelines triggered by the given username.
