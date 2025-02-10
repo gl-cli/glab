@@ -294,6 +294,7 @@ glab config set ca_cert /path/to/server.pem --host gitlab.example.com
 | `GLAMOUR_STYLE`    | `glamour_style` | `dark`                                       | Environment variable to set your desired Markdown renderer style. Available options are (`dark`, `light`, `notty`) or set a [custom style](https://github.com/charmbracelet/glamour#styles). |
 | `NO_COLOR`         | -            | `true`                                        | Set to any value to avoid printing ANSI escape sequences for color output. |
 | `VISUAL`, `EDITOR` | `editor`        | `nano`                                        | (in order of precedence) The editor tool to use for authoring text. Can be set in the config with `glab config set editor vim`. |
+| `GLAB_CHECK_UPDATE` | -            | -            | Set to `1`, `TRUE`, or `yes` to force an update check. |
 
 ### Other variables
 
