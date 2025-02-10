@@ -311,6 +311,17 @@ func Test_apiRun(t *testing.T) {
 			stderr: "glab: ALSO\nFINE\n",
 		},
 		{
+			name: "REST string errors and we can't unmarshal",
+			httpResponse: &http.Response{
+				StatusCode: http.StatusBadRequest,
+				Body:       io.NopCloser(bytes.NewBufferString(`{"message": {"password": ["is too short (minimum is 8 characters)"] } }`)),
+				Header:     http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
+			},
+			err:    cmdutils.SilentError,
+			stdout: `{"message": {"password": ["is too short (minimum is 8 characters)"] } }`,
+			stderr: "glab: map[message:map[password:[is too short (minimum is 8 characters)]]]+\n",
+		},
+		{
 			name: "GraphQL error",
 			options: ApiOptions{
 				RequestPath: "graphql",
