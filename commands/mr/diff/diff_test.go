@@ -9,6 +9,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -132,6 +133,36 @@ func runCommand(rt http.RoundTripper, remotes glrepo.Remotes, isTTY bool, cli st
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
+func TestMRDiff_raw(t *testing.T) {
+	fakeHTTP := &httpmock.Mocker{
+		MatchURL: httpmock.PathAndQuerystring,
+	}
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(
+		http.MethodGet,
+		`https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
+		MRGetResponse(),
+	)
+
+	rawDiff := heredoc.Doc(`
+	diff --git a/file.txt b/file.txt
+	index 123..456 100644
+	--- a/file.txt
+	+++ b/file.txt
+	@@ -1 +1 @@
+	-old line
+	+new line`)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/raw_diffs`,
+		httpmock.NewStringResponse(http.StatusOK, rawDiff))
+
+	output, err := runCommand(fakeHTTP, nil, false, "123 --raw")
+	require.NoError(t, err)
+	assert.Equal(t, rawDiff, output.String())
+	assert.Empty(t, output.Stderr())
+}
+
 func TestPRDiff_no_current_mr(t *testing.T) {
 	fakeHTTP := &httpmock.Mocker{
 		MatchURL: httpmock.PathAndQuerystring,
@@ -154,15 +185,7 @@ func TestMRDiff_argument_not_found(t *testing.T) {
 	}
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder(http.MethodGet, `/projects/OWNER/REPO/merge_requests/123`,
-		httpmock.NewStringResponse(http.StatusOK, `{
-			"id": 123,
-			"iid": 123,
-			"project_id": 3,
-			"title": "test1",
-			"description": "fixed login page css paddings",
-			"state": "merged"
-		}`))
+	fakeHTTP.RegisterResponder(http.MethodGet, `/projects/OWNER/REPO/merge_requests/123`, MRGetResponse())
 
 	fakeHTTP.RegisterResponder(http.MethodGet, `/projects/OWNER/REPO/merge_requests/123/versions`,
 		httpmock.NewStringResponse(http.StatusNotFound, `{"message":"404 Not Found"}`))
@@ -194,13 +217,7 @@ func TestMRDiff_notty(t *testing.T) {
     "state": "merged"}]`))
 
 	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
-		httpmock.NewStringResponse(http.StatusOK, `{
-    "id": 123,
-    "iid": 123,
-    "project_id": 3,
-    "title": "test1",
-    "description": "fixed login page css paddings",
-    "state": "merged"}`))
+		MRGetResponse())
 
 	testDiff := DiffTest(fakeHTTP)
 	output, err := runCommand(fakeHTTP, nil, false, "")
@@ -229,13 +246,7 @@ func TestMRDiff_tty(t *testing.T) {
     "state": "merged"}]`))
 
 	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
-		httpmock.NewStringResponse(http.StatusOK, `{
-    "id": 123,
-    "iid": 123,
-    "project_id": 3,
-    "title": "test1",
-    "description": "fixed login page css paddings",
-    "state": "merged"}`))
+		MRGetResponse())
 
 	DiffTest(fakeHTTP)
 	output, err := runCommand(fakeHTTP, nil, true, "")
@@ -333,13 +344,7 @@ func TestMRDiff_no_diffs_found(t *testing.T) {
 	"state": "merged"}]`))
 
 	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123`,
-		httpmock.NewStringResponse(http.StatusOK, `{
-	"id": 123,
-	"iid": 123,
-	"project_id": 3,
-	"title": "test1",
-	"description": "fixed login page css paddings",
-	"state": "merged"}`))
+		MRGetResponse())
 
 	EmptyDiffsTest(fakeHTTP)
 
@@ -354,4 +359,15 @@ func TestMRDiff_no_diffs_found(t *testing.T) {
 func EmptyDiffsTest(fakeHTTP *httpmock.Mocker) {
 	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/versions`,
 		httpmock.NewStringResponse(http.StatusOK, `[]`))
+}
+
+func MRGetResponse() httpmock.Responder {
+	return httpmock.NewStringResponse(http.StatusOK, `{
+		"id": 123,
+		"iid": 123,
+		"project_id": 3,
+		"title": "test1",
+		"description": "fixed login page css paddings",
+		"state": "merged"
+	}`)
 }
