@@ -530,7 +530,13 @@ func parseErrorResponse(r io.Reader, statusCode int) (io.Reader, string, error) 
 	}
 	err = json.Unmarshal(b, &parsedBody)
 	if err != nil {
-		return r, "", err
+		// in cases where it's an object within an object we can try to parse it as is
+		var t interface{}
+		err = json.Unmarshal(b, &t)
+		if err != nil {
+			return r, "", err
+		}
+		return bodyCopy, fmt.Sprintf("%v+", t), nil
 	}
 	if parsedBody.Message != "" {
 		return bodyCopy, fmt.Sprintf("%s (HTTP %d)", parsedBody.Message, statusCode), nil
