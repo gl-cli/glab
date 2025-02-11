@@ -1,6 +1,7 @@
 package create
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -567,6 +568,112 @@ func TestReleaseCreate_MilestoneClosing(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Contains(t, output.Stderr(), tt.wantOutput)
+			}
+		})
+	}
+}
+
+func TestReleaseCreate_ExperimentalNotes(t *testing.T) {
+	tests := []struct {
+		name                string
+		cli                 string
+		files               map[string]string
+		wantErr             bool
+		errMsg              string
+		setupHTTPStubs      bool
+		expectedDescription string
+	}{
+		{
+			name:           "when experimental notes is used with notes flag",
+			cli:            `0.0.1 --experimental-notes-text-or-file "test.md" --notes "test"`,
+			wantErr:        true,
+			errMsg:         "if any flags in the group [experimental-notes-text-or-file notes] are set none of the others can be; [experimental-notes-text-or-file notes] were all set",
+			setupHTTPStubs: false,
+		},
+		{
+			name:           "when experimental notes is used with notes-file flag",
+			cli:            `0.0.1 --experimental-notes-text-or-file "test.md" --notes-file "other.md"`,
+			wantErr:        true,
+			errMsg:         "if any flags in the group [experimental-notes-text-or-file notes-file] are set none of the others can be; [experimental-notes-text-or-file notes-file] were all set",
+			setupHTTPStubs: false,
+		},
+		{
+			name: "when experimental notes points to existing file",
+			cli:  `0.0.1 --experimental-notes-text-or-file "test.md"`,
+			files: map[string]string{
+				"test.md": "# Test Release\nThis is a test release.",
+			},
+			setupHTTPStubs:      true,
+			expectedDescription: "# Test Release\nThis is a test release.",
+		},
+		{
+			name:                "when experimental notes has non-existent file and falls back to text",
+			cli:                 `0.0.1 --experimental-notes-text-or-file "This is plain text"`,
+			setupHTTPStubs:      true,
+			expectedDescription: "This is plain text",
+		},
+		{
+			name:                "when experimental notes contains spaces, treats as text",
+			cli:                 `0.0.1 --experimental-notes-text-or-file "This contains spaces.md"`,
+			setupHTTPStubs:      true,
+			expectedDescription: "This contains spaces.md",
+		},
+		{
+			name:                "when experimental notes has leading/trailing spaces",
+			cli:                 `0.0.1 --experimental-notes-text-or-file " notes.md "`,
+			setupHTTPStubs:      true,
+			expectedDescription: " notes.md ",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			err := os.Chdir(tempDir)
+			require.NoError(t, err)
+
+			for filename, content := range tt.files {
+				err := os.WriteFile(filename, []byte(content), 0o600)
+				require.NoError(t, err)
+			}
+
+			fakeHTTP := &httpmock.Mocker{
+				MatchURL: httpmock.PathAndQuerystring,
+			}
+			defer fakeHTTP.Verify(t)
+
+			if tt.setupHTTPStubs {
+				fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/releases/0%2E0%2E1",
+					httpmock.NewStringResponse(http.StatusNotFound, `{"message":"404 Not Found"}`))
+
+				fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/releases",
+					func(req *http.Request) (*http.Response, error) {
+						var reqBody map[string]interface{}
+						err := json.NewDecoder(req.Body).Decode(&reqBody)
+						require.NoError(t, err)
+
+						assert.Equal(t, tt.expectedDescription, reqBody["description"])
+
+						resp, _ := httpmock.NewStringResponse(http.StatusCreated, `{
+							"name": "test_release",
+							"tag_name": "0.0.1",
+							"_links": {
+								"self": "https://gitlab.com/OWNER/REPO/-/releases/0.0.1"
+							}
+						}`)(req)
+						return resp, nil
+					})
+			}
+
+			output, err := runCommand(fakeHTTP, false, tt.cli)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				assert.Equal(t, tt.errMsg, err.Error())
+			} else {
+				require.NoErrorf(t, err, "error running command `create %s`: %v", tt.cli, err)
+				assert.Contains(t, output.Stderr(), "✓ Release created:")
+				assert.Empty(t, output.String())
 			}
 		})
 	}
