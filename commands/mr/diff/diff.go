@@ -27,6 +27,7 @@ type DiffOptions struct {
 
 	Args     []string
 	UseColor string
+	RawDiff  bool
 }
 
 func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Command {
@@ -73,6 +74,7 @@ func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comma
 	}
 
 	cmd.Flags().StringVar(&opts.UseColor, "color", "auto", "Use color in diff output: always, never, auto.")
+	cmd.Flags().BoolVar(&opts.RawDiff, "raw", false, "Use raw diff format that can be piped to commands")
 
 	return cmd
 }
@@ -87,33 +89,42 @@ func diffRun(opts *DiffOptions) error {
 		return err
 	}
 
-	diffs, _, err := apiClient.MergeRequests.GetMergeRequestDiffVersions(baseRepo.FullName(), mr.IID, &gitlab.GetMergeRequestDiffVersionsOptions{})
-	if err != nil {
-		return fmt.Errorf("could not find merge request diffs: %w", err)
-	}
-	if len(diffs) == 0 {
-		return fmt.Errorf("no merge request diffs found")
-	}
-
 	diffOut := &bytes.Buffer{}
 
-	// diff versions are returned by the API in order of most recent first
-	diff := diffs[0]
+	if opts.RawDiff {
+		rawDiff, _, err := apiClient.MergeRequests.ShowMergeRequestRawDiffs(baseRepo.FullName(), mr.IID, nil)
+		if err != nil {
+			return fmt.Errorf("could not obtain raw diff: %w", err)
+		}
 
-	// the diffs are not included in the GetMergeRequestDiffVersions so we query for the diff version
-	diffVersion, _, err := apiClient.MergeRequests.GetSingleMergeRequestDiffVersion(baseRepo.FullName(), mr.IID, diff.ID, &gitlab.GetSingleMergeRequestDiffVersionOptions{})
-	if err != nil {
-		return fmt.Errorf("could not find merge request diff: %w", err)
+		diffOut.Write(rawDiff)
+	} else {
+		diffs, _, err := apiClient.MergeRequests.GetMergeRequestDiffVersions(baseRepo.FullName(), mr.IID, &gitlab.GetMergeRequestDiffVersionsOptions{})
+		if err != nil {
+			return fmt.Errorf("could not find merge request diffs: %w", err)
+		}
+		if len(diffs) == 0 {
+			return fmt.Errorf("no merge request diffs found")
+		}
+
+		// diff versions are returned by the API in order of most recent first
+		diff := diffs[0]
+
+		// the diffs are not included in the GetMergeRequestDiffVersions so we query for the diff version
+		diffVersion, _, err := apiClient.MergeRequests.GetSingleMergeRequestDiffVersion(baseRepo.FullName(), mr.IID, diff.ID, &gitlab.GetSingleMergeRequestDiffVersionOptions{})
+		if err != nil {
+			return fmt.Errorf("could not find merge request diff: %w", err)
+		}
+		for _, diffLine := range diffVersion.Diffs {
+			// output the unified diff header
+			diffOut.WriteString("--- " + diffLine.OldPath + "\n")
+			diffOut.WriteString("+++ " + diffLine.NewPath + "\n")
+
+			diffOut.WriteString(diffLine.Diff)
+		}
+
+		defer diffOut.Reset()
 	}
-	for _, diffLine := range diffVersion.Diffs {
-		// output the unified diff header
-		diffOut.WriteString("--- " + diffLine.OldPath + "\n")
-		diffOut.WriteString("+++ " + diffLine.NewPath + "\n")
-
-		diffOut.WriteString(diffLine.Diff)
-	}
-
-	defer diffOut.Reset()
 
 	err = opts.IO.StartPager()
 	if err != nil {
