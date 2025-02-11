@@ -39,13 +39,15 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			l := &gitlab.ListProjectPipelinesOptions{}
+			l := &gitlab.ListProjectPipelinesOptions{
+				ListOptions: gitlab.ListOptions{
+					Page:    1,
+					PerPage: 30,
+				},
+			}
 
 			format, _ := cmd.Flags().GetString("output")
 			jsonOut := format == "json"
-
-			l.Page = 1
-			l.PerPage = 30
 
 			if m, _ := cmd.Flags().GetString("status"); m != "" {
 				l.Status = gitlab.Ptr(gitlab.BuildStateValue(m))
