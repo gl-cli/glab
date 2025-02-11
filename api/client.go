@@ -337,7 +337,7 @@ func (c *Client) NewLab() error {
 		if c.isGraphQL {
 			baseURL = glinstance.GraphQLEndpoint(c.host, c.Protocol)
 		} else {
-			baseURL = glinstance.APIEndpoint(c.host, c.Protocol)
+			baseURL = glinstance.APIEndpoint(c.host, c.Protocol, "")
 		}
 
 		if c.isOauth2 {
