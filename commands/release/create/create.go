@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	securejoin "github.com/cyphar/filepath-securejoin"
 	catalog "gitlab.com/gitlab-org/cli/commands/release/create/catalog"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
@@ -32,19 +33,20 @@ import (
 )
 
 type CreateOpts struct {
-	Name             string
-	Ref              string
-	TagName          string
-	TagMessage       string
-	Notes            string
-	NotesFile        string
-	Milestone        []string
-	AssetLinksAsJson string
-	ReleasedAt       string
-	RepoOverride     string
-	PublishToCatalog bool
-	NoUpdate         bool
-	NoCloseMilestone bool
+	Name                        string
+	Ref                         string
+	TagName                     string
+	TagMessage                  string
+	Notes                       string
+	NotesFile                   string
+	ExperimentalNotesTextOrFile string
+	Milestone                   []string
+	AssetLinksAsJson            string
+	ReleasedAt                  string
+	RepoOverride                string
+	PublishToCatalog            bool
+	NoUpdate                    bool
+	NoCloseMilestone            bool
 
 	NoteProvided       bool
 	ReleaseNotesAction string
@@ -155,24 +157,11 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			opts.NoteProvided = cmd.Flags().Changed("notes")
-			if opts.NotesFile != "" {
-				var b []byte
-				var err error
-				if opts.NotesFile == "-" {
-					b, err = io.ReadAll(opts.IO.In)
-					_ = opts.IO.In.Close()
-				} else {
-					b, err = os.ReadFile(opts.NotesFile)
-				}
-
-				if err != nil {
-					return err
-				}
-
-				opts.Notes = string(b)
-				opts.NoteProvided = true
+			opts.Notes, err = resolveNotes(cmd, opts)
+			if err != nil {
+				return err
 			}
+			opts.NoteProvided = opts.Notes != ""
 
 			return createRun(opts)
 		},
@@ -189,8 +178,76 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	cmd.Flags().BoolVar(&opts.PublishToCatalog, "publish-to-catalog", false, "[EXPERIMENTAL] Publish the release to the GitLab CI/CD catalog.")
 	cmd.Flags().BoolVar(&opts.NoUpdate, "no-update", false, "Prevent updating the existing release.")
 	cmd.Flags().BoolVar(&opts.NoCloseMilestone, "no-close-milestone", false, "Prevent closing milestones after creating the release.")
+	cmd.Flags().StringVar(&opts.ExperimentalNotesTextOrFile, "experimental-notes-text-or-file", "", "[EXPERIMENTAL] Value to use as release notes. If a file exists with this value as path, its content will be used. Otherwise, the value itself will be used as text.")
+	_ = cmd.Flags().MarkHidden("experimental-notes-text-or-file")
+
+	// These two need to be separately exclusive to avoid a breaking change
+	// because there may be existing scripts that already use both notes and notes-file.
+	cmd.MarkFlagsMutuallyExclusive("experimental-notes-text-or-file", "notes")
+	cmd.MarkFlagsMutuallyExclusive("experimental-notes-text-or-file", "notes-file")
 
 	return cmd
+}
+
+func resolveNotes(cmd *cobra.Command, opts *CreateOpts) (string, error) {
+	if cmd.Flags().Changed("notes") {
+		return opts.Notes, nil
+	}
+
+	if opts.NotesFile != "" {
+		return resolveNotesFile(opts)
+	}
+
+	if opts.ExperimentalNotesTextOrFile != "" {
+		return resolveNotesFileOrText(opts)
+	}
+
+	return "", nil
+}
+
+func resolveNotesFile(opts *CreateOpts) (string, error) {
+	var b []byte
+	var err error
+
+	if opts.NotesFile == "-" {
+		b, err = io.ReadAll(opts.IO.In)
+		_ = opts.IO.In.Close()
+	} else {
+		b, err = os.ReadFile(opts.NotesFile)
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
+}
+
+func resolveNotesFileOrText(opts *CreateOpts) (string, error) {
+	// Rules from: https://docs.gitlab.com/ee/ci/yaml/index.html#releasedescription
+
+	// Rule 1: A file path can't have spaces
+	if strings.Contains(strings.TrimSpace(opts.ExperimentalNotesTextOrFile), " ") {
+		return opts.ExperimentalNotesTextOrFile, nil
+	}
+
+	// Rule 2: A file must be relative to the repository
+	baseDir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	filePath, err := securejoin.SecureJoin(baseDir, opts.ExperimentalNotesTextOrFile)
+	if err != nil {
+		return "", err
+	}
+
+	b, err := os.ReadFile(filePath)
+	if err != nil {
+		// Rule 3: fallback to using the value as text
+		return opts.ExperimentalNotesTextOrFile, nil
+	}
+
+	return string(b), nil
 }
 
 func createRun(opts *CreateOpts) error {
