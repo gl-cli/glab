@@ -7,7 +7,9 @@ apk update
 apk add --no-cache \
         git \
         nano \
-        openssh
+        openssh \
+        ca-certificates
+update-ca-certificates
 SCRIPT
 
 COPY glab_*.apk /tmp/
