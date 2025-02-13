@@ -51,18 +51,18 @@ hosts:
 		}
 
 		mr := &gitlab.MergeRequest{
-			ID:          1,
-			IID:         1,
-			Title:       "mrtitile",
+			ID:          mrID,
+			IID:         mrID,
+			Title:       *opts.Title,
 			Labels:      gitlab.Labels{"bug", "test"},
 			State:       "opened",
 			Description: "mrbody",
 			Author: &gitlab.BasicUser{
-				ID:       1,
+				ID:       mrID,
 				Name:     "John Dev Wick",
 				Username: "jdwick",
 			},
-			WebURL:    "https://" + repo.RepoHost() + "/" + repo.FullName() + "/-/merge_requests/1",
+			WebURL:    "https://" + repo.RepoHost() + "/" + repo.FullName() + "/-/merge_requests/" + fmt.Sprintf("%d", mrID),
 			CreatedAt: &timer,
 		}
 
@@ -82,10 +82,15 @@ hosts:
 		if err != nil {
 			return nil, err
 		}
+		title := map[int]string{
+			1: "mrTitle",
+			2: "Draft: mrTitle",
+			3: "Draft: wip: wip: draft: DrAfT: mrTitle",
+		}[mrID]
 		return &gitlab.MergeRequest{
 			ID:                      mrID,
 			IID:                     mrID,
-			Title:                   "mrTitle",
+			Title:                   title,
 			Labels:                  gitlab.Labels{"test", "bug"},
 			State:                   "opened",
 			Description:             "mrBody",
@@ -136,12 +141,32 @@ hosts:
 			ExpectedMsg: []string{"- Updating merge request !0", "error expected"},
 			wantErr:     true,
 		},
+		{
+			Name:        "Set draft",
+			Args:        "1 --draft",
+			ExpectedMsg: []string{"marked as Draft", "!1 Draft: mrTitle"},
+		},
+		{
+			Name:        "Don't set draft twice",
+			Args:        "2 --draft",
+			ExpectedMsg: []string{"✓ already a Draft", "2 Draft: mrTitle"},
+		},
+		{
+			Name:        "Set ready",
+			Args:        "2 --ready",
+			ExpectedMsg: []string{"✓ marked as ready", "2 mrTitle"},
+		},
+		{
+			Name:        "Set ready with multiple draft prefixes",
+			Args:        "3 --ready",
+			ExpectedMsg: []string{"✓ marked as ready", "3 mrTitle"},
+		},
 	}
 
-	cmd := NewCmdUpdate(stubFactory)
-	cmdutils.EnableRepoOverride(cmd, stubFactory)
-
+	cumulativePreviousOutputLen := 0
 	for _, tc := range testCases {
+		cmd := NewCmdUpdate(stubFactory)
+		cmdutils.EnableRepoOverride(cmd, stubFactory)
 		t.Run(tc.Name, func(t *testing.T) {
 			argv, err := shlex.Split(tc.Args)
 			if err != nil {
@@ -158,7 +183,8 @@ hosts:
 				}
 			}
 
-			out := stripansi.Strip(stdout.String())
+			out := stripansi.Strip(stdout.String())[cumulativePreviousOutputLen:]
+			cumulativePreviousOutputLen += len(out)
 
 			for _, msg := range tc.ExpectedMsg {
 				assert.Contains(t, out, msg)
