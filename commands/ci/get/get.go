@@ -52,14 +52,22 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 
 			// Parse arguments into local vars
 			branch, _ := cmd.Flags().GetString("branch")
-			if branch == "" {
-				branch, err = git.CurrentBranch()
-				if err != nil {
-					return err
-				}
-			}
 			pipelineId, err := cmd.Flags().GetInt("pipeline-id")
-			if err != nil || pipelineId == 0 {
+			if err != nil {
+				return err
+			}
+
+			var msgNotFound string
+			if pipelineId != 0 {
+				msgNotFound = fmt.Sprintf("No pipeline with the given ID: %d", pipelineId)
+			} else {
+				if branch == "" {
+					branch, err = git.CurrentBranch()
+					if err != nil {
+						return err
+					}
+				}
+
 				commit, err := api.GetCommit(apiClient, repo.FullName(), branch)
 				if err != nil {
 					return err
@@ -82,12 +90,13 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 				} else {
 					pipelineId = commit.LastPipeline.ID
 				}
+				msgNotFound = fmt.Sprintf("No pipelines running or available on branch: %s", branch)
 			}
 
 			pipeline, err := api.GetPipeline(apiClient, pipelineId, nil, repo.FullName())
 			if err != nil {
 				redCheck := c.Red("✘")
-				fmt.Fprintf(f.IO.StdOut, "%s No pipelines running or available on branch: %s\n", redCheck, branch)
+				fmt.Fprintf(f.IO.StdOut, "%s %s\n", redCheck, msgNotFound)
 				return err
 			}
 
