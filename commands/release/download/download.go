@@ -148,7 +148,7 @@ func downloadRun(opts *DownloadOpts) error {
 		})
 	}
 
-	if downloadableAssets == nil || len(downloadableAssets) < 1 {
+	if len(downloadableAssets) < 1 {
 		opts.IO.Logf("%s no release assets found!\n",
 			color.DotWarnIcon())
 		return nil

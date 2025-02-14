@@ -9,6 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -18,9 +19,8 @@ import (
 var (
 	PipelineVarTypeEnv  = gitlab.EnvVariableType
 	PipelineVarTypeFile = gitlab.FileVariableType
+	envVariables        = []string{}
 )
-
-var envVariables = []string{}
 
 func parseVarArg(s string) (*gitlab.PipelineVariableOptions, error) {
 	// From https://pkg.go.dev/strings#Split:
@@ -64,6 +64,8 @@ func extractFileVar(s string) (*gitlab.PipelineVariableOptions, error) {
 }
 
 func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
+	openInBrowser := false
+
 	pipelineRunCmd := &cobra.Command{
 		Use:     "run [flags]",
 		Short:   `Create or run a new CI/CD pipeline.`,
@@ -154,7 +156,24 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintln(f.IO.StdOut, "Created pipeline (id:", pipe.ID, "), status:", pipe.Status, ", ref:", pipe.Ref, ", weburl: ", pipe.WebURL, ")")
+			if openInBrowser { // open in browser if --web flag is specified
+				webURL := pipe.WebURL
+
+				if f.IO.IsOutputTTY() {
+					fmt.Fprintf(f.IO.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
+				}
+
+				cfg, err := f.Config()
+				if err != nil {
+					return err
+				}
+
+				browser, _ := cfg.Get(repo.RepoHost(), "browser")
+				return utils.OpenInBrowser(webURL, browser)
+			}
+
+			output := fmt.Sprintf("Created pipeline (id: %d), status: %s, ref: %s, weburl: %s", pipe.ID, pipe.Status, pipe.Ref, pipe.WebURL)
+			fmt.Fprintln(f.IO.StdOut, output)
 			return nil
 		},
 	}
@@ -163,6 +182,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables-env", "", []string{}, "Pass variables to pipeline in format <key>:<value>.")
 	pipelineRunCmd.Flags().StringSliceP("variables-file", "", []string{}, "Pass file contents as a file variable to pipeline in format <key>:<filename>.")
 	pipelineRunCmd.Flags().StringP("variables-from", "f", "", "JSON file containing variables for pipeline execution.")
+	pipelineRunCmd.Flags().BoolVarP(&openInBrowser, "web", "w", false, "Open pipeline in a browser. Uses default browser, or browser specified in BROWSER environment variable.")
 
 	return pipelineRunCmd
 }

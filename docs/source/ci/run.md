@@ -43,6 +43,7 @@ glab ci run -b main --variables-file MYKEY:file1 --variables KEY2:some_value
       --variables-env strings    Pass variables to pipeline in format <key>:<value>.
       --variables-file strings   Pass file contents as a file variable to pipeline in format <key>:<filename>.
   -f, --variables-from string    JSON file containing variables for pipeline execution.
+  -w, --web                      Open pipeline in a browser. Uses default browser, or browser specified in BROWSER environment variable.
 ```
 
 ## Options inherited from parent commands
