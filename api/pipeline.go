@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"sort"
+	"strconv"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/pkg/dbg"
@@ -114,6 +115,26 @@ var GetJobs = func(client *gitlab.Client, repo string, opts *gitlab.ListJobsOpti
 	return jobs, nil
 }
 
+var GetLatestPipeline = func(client *gitlab.Client, repo string, ref string) (*gitlab.Pipeline, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+
+	l := &gitlab.GetLatestPipelineOptions{
+		Ref: gitlab.Ptr(ref),
+	}
+
+	pipeline, _, err := client.Pipelines.GetLatestPipeline(repo, l)
+	if err != nil {
+		return nil, err
+	}
+
+	return pipeline, nil
+}
+
+// XXX Deprecate and use GetLatestPipeline
+// Commit.LastPipeline may return pipeline from a wrong branch
+// See https://gitlab.com/gitlab-org/gitlab/-/issues/515375
 var GetLastPipeline = func(client *gitlab.Client, repo string, ref string) (*gitlab.PipelineInfo, error) {
 	if client == nil {
 		client = apiClient.Lab()
@@ -125,6 +146,7 @@ var GetLastPipeline = func(client *gitlab.Client, repo string, ref string) (*git
 		return nil, err
 	}
 	if c.LastPipeline != nil {
+		dbg.Debug("GetCommit LastPipeline:", strconv.Itoa(c.LastPipeline.ID))
 		return c.LastPipeline, nil
 	}
 

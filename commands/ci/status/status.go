@@ -80,7 +80,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 			repoName := repo.FullName()
 			dbg.Debug("Repository:", repoName)
 
-			runningPipeline, err := api.GetLastPipeline(apiClient, repoName, branch)
+			runningPipeline, err := api.GetLatestPipeline(apiClient, repoName, branch)
 			if err != nil {
 				redCheck := c.Red("✘")
 				fmt.Fprintf(f.IO.StdOut, "%s No pipelines running or available on branch: %s\n", redCheck, branch)
@@ -142,7 +142,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 					break
 				}
 				if (runningPipeline.Status == "pending" || runningPipeline.Status == "running") && live {
-					runningPipeline, err = api.GetLastPipeline(apiClient, repoName, branch)
+					runningPipeline, err = api.GetLatestPipeline(apiClient, repoName, branch)
 					if err != nil {
 						return err
 					}
@@ -161,7 +161,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 							if err != nil {
 								return err
 							}
-							runningPipeline, err = api.GetLastPipeline(apiClient, repoName, branch)
+							runningPipeline, err = api.GetLatestPipeline(apiClient, repoName, branch)
 							if err != nil {
 								return err
 							}
