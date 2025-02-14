@@ -235,8 +235,8 @@ github.com/yuin/goldmark-emoji v1.0.3 h1:aLRkLHOuBR2czCY4R8olwMjID+tENfhyFDMCRhb
 github.com/yuin/goldmark-emoji v1.0.3/go.mod h1:tTkZEbwu5wkPmgTcitqddVxY9osFZiavD+r4AzQrh1U=
 github.com/zalando/go-keyring v0.2.6 h1:r7Yc3+H+Ux0+M72zacZoItR3UDxeWfKTcabvkI8ua9s=
 github.com/zalando/go-keyring v0.2.6/go.mod h1:2TCrxYrbUNYfNS/Kgy/LSrkSQzZ5UPVH85RwfczwvcI=
-gitlab.com/gitlab-org/api/client-go v0.122.0 h1:Nog85APtgquS+HHkMkP4DiZ6lXlUZYhQKqguS4OJYNM=
-gitlab.com/gitlab-org/api/client-go v0.122.0/go.mod h1:Jh0qjLILEdbO6z/OY94RD+3NDQRUKiuFSFYozN6cpKM=
+gitlab.com/gitlab-org/api/client-go v0.123.0 h1:W3LZ5QNyiSCJA0Zchkwz8nQIUzOuDoSWMZtRDT5DjPI=
+gitlab.com/gitlab-org/api/client-go v0.123.0/go.mod h1:Jh0qjLILEdbO6z/OY94RD+3NDQRUKiuFSFYozN6cpKM=
 go.uber.org/atomic v1.9.0 h1:ECmE8Bn/WFTYwEW/bpKD3M8VtR/zQVbavAoalC1PYyE=
 go.uber.org/atomic v1.9.0/go.mod h1:fEN4uk6kAWBTFdckzkM89CLk9XfWZrxpCo0nPH17wJc=
 go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
