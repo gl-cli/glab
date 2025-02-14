@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os/exec"
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/run"
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -18,8 +20,8 @@ type ResponseJSON struct {
 	Ref string `json:"ref"`
 }
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error, func()) {
+	ios, _, stdout, stderr := cmdtest.InitIOStreams(true, "")
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -27,11 +29,16 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, err
 		return "custom-branch-123", nil
 	}
 
+	restoreCmd := run.SetPrepareCmd(func(cmd *exec.Cmd) run.Runnable {
+		return &test.OutputStub{}
+	})
+
 	_, _ = factory.HttpClient()
 
 	cmd := NewCmdRun(factory)
+	cmdOut, err := cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 
-	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
+	return cmdOut, err, restoreCmd
 }
 
 func TestCIRun(t *testing.T) {
@@ -41,18 +48,25 @@ func TestCIRun(t *testing.T) {
 
 		expectedPOSTBody string
 		expectedOut      string
+		expectedErr      string
 	}{
 		{
 			name:             "when running `ci run` without any parameter, defaults to current branch",
 			cli:              "",
-			expectedPOSTBody: fmt.Sprintf(`"ref":"%s"`, "custom-branch-123"),
-			expectedOut:      fmt.Sprintf("Created pipeline (id: 123 ), status: created , ref: %s , weburl:  https://gitlab.com/OWNER/REPO/-/pipelines/123 )\n", "custom-branch-123"),
+			expectedPOSTBody: `"ref":"custom-branch-123"`,
+			expectedOut:      "Created pipeline (id: 123), status: created, ref: custom-branch-123, weburl: https://gitlab.com/OWNER/REPO/-/pipelines/123\n",
 		},
 		{
 			name:             "when running `ci run` with branch parameter, run CI at branch",
 			cli:              "-b ci-cd-improvement-399",
 			expectedPOSTBody: `"ref":"ci-cd-improvement-399"`,
-			expectedOut:      "Created pipeline (id: 123 ), status: created , ref: ci-cd-improvement-399 , weburl:  https://gitlab.com/OWNER/REPO/-/pipelines/123 )\n",
+			expectedOut:      "Created pipeline (id: 123), status: created, ref: ci-cd-improvement-399, weburl: https://gitlab.com/OWNER/REPO/-/pipelines/123\n",
+		},
+		{
+			name:             "when running `ci run` with --web opens the browser",
+			cli:              "-b web-branch --web",
+			expectedPOSTBody: `"ref":"web-branch"`,
+			expectedErr:      "Opening gitlab.com/OWNER/REPO/-/pipelines/123 in your browser.\n",
 		},
 	}
 
@@ -86,12 +100,13 @@ func TestCIRun(t *testing.T) {
 				},
 			)
 
-			output, _ := runCommand(fakeHTTP, false, tc.cli)
+			output, err, restoreCmd := runCommand(fakeHTTP, tc.cli)
+			defer restoreCmd()
 
-			out := output.String()
+			assert.NoErrorf(t, err, "error running command `ci run %s`: %v", tc.cli, err)
 
-			assert.Equal(t, tc.expectedOut, out)
-			assert.Empty(t, output.Stderr())
+			assert.Equal(t, tc.expectedOut, output.String())
+			assert.Equal(t, tc.expectedErr, output.Stderr())
 		})
 	}
 }
