@@ -22,6 +22,7 @@ import (
 func DisplayAllReleases(io *iostreams.IOStreams, releases []*gitlab.Release, repoName string) string {
 	c := io.Color()
 	table := tableprinter.NewTablePrinter()
+	table.AddRow("Name", "Tag", "Created")
 	for _, r := range releases {
 		table.AddRow(r.Name, r.TagName, c.Gray(utils.TimeToPrettyTimeAgo(*r.CreatedAt)))
 	}
