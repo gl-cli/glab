@@ -72,6 +72,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"create"},
 		Example: heredoc.Doc(`
 	glab ci run
+	glab ci run --variables \"key1:value,with,comma\"
 	glab ci run -b main
 	glab ci run -b main --variables-env key1:val1
 	glab ci run -b main --variables-env key1:val1,key2:val2
