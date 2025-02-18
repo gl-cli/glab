@@ -2,13 +2,10 @@ package api
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"sort"
-	"strconv"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
@@ -132,45 +129,6 @@ var GetLatestPipeline = func(client *gitlab.Client, repo string, ref string) (*g
 	return pipeline, nil
 }
 
-// XXX Deprecate and use GetLatestPipeline
-// Commit.LastPipeline may return pipeline from a wrong branch
-// See https://gitlab.com/gitlab-org/gitlab/-/issues/515375
-var GetLastPipeline = func(client *gitlab.Client, repo string, ref string) (*gitlab.PipelineInfo, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
-	c, _, err := client.Commits.GetCommit(repo, ref, nil)
-	if err != nil {
-		dbg.Debug("go-client GetCommit error:", err.Error())
-		return nil, err
-	}
-	if c.LastPipeline != nil {
-		dbg.Debug("GetCommit LastPipeline:", strconv.Itoa(c.LastPipeline.ID))
-		return c.LastPipeline, nil
-	}
-
-	l := &gitlab.ListProjectPipelinesOptions{
-		Ref:  gitlab.Ptr(ref),
-		Sort: gitlab.Ptr("desc"),
-		ListOptions: gitlab.ListOptions{
-			Page:    1,
-			PerPage: 1,
-		},
-	}
-
-	pipes, err := GetPipelines(client, l, repo)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(pipes) == 0 {
-		return nil, errors.New("No pipeline running or available for ref " + ref)
-	}
-
-	return pipes[0], nil
-}
-
 var GetPipelines = func(client *gitlab.Client, l *gitlab.ListProjectPipelinesOptions, repo interface{}) ([]*gitlab.PipelineInfo, error) {
 	if client == nil {
 		client = apiClient.Lab()
@@ -282,7 +240,7 @@ var GetPipelineFromBranch = func(client *gitlab.Client, ref, repo string) ([]*gi
 		}
 	}
 
-	pipeline, err := GetLastPipeline(client, repo, ref)
+	pipeline, err := GetLatestPipeline(client, repo, ref)
 	if err != nil {
 		return nil, err
 	}

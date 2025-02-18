@@ -169,12 +169,12 @@ func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
 		return inputs.PipelineId, nil
 	}
 
-	branch, err := getBranch(inputs.Branch, opts)
+	branch, err := getBranch(inputs.Branch)
 	if err != nil {
 		return 0, fmt.Errorf("get branch: %w", err)
 	}
 
-	pipeline, err := api.GetLastPipeline(opts.ApiClient, opts.Repo.FullName(), branch)
+	pipeline, err := api.GetLatestPipeline(opts.ApiClient, opts.Repo.FullName(), branch)
 	if err != nil {
 		return 0, fmt.Errorf("get last pipeline: %w", err)
 	}
@@ -202,7 +202,7 @@ func GetDefaultBranch(f *cmdutils.Factory) string {
 	return branch
 }
 
-func getBranch(branch string, opts *JobOptions) (string, error) {
+func getBranch(branch string) (string, error) {
 	if branch != "" {
 		return branch, nil
 	}

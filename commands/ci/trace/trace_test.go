@@ -160,12 +160,10 @@ func TestCiTrace(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO/repository/commits/main",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/latest?ref=main",
 					http.StatusOK,
 					`{
-						"last_pipeline": {
-							"id": 123
-						}
+						"id": 123
 					}`,
 				},
 				{
