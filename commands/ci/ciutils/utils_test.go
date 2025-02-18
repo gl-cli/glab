@@ -78,12 +78,10 @@ func TestGetJobId(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO/repository/commits/main",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/latest?ref=main",
 					http.StatusOK,
 					`{
-						"last_pipeline": {
-							"id": 123
-						}
+						"id": 123
 					}`,
 				},
 				{
@@ -106,12 +104,12 @@ func TestGetJobId(t *testing.T) {
 			name:          "when getJobId with name and last pipeline is requested and getCommits throws error",
 			jobName:       "lint",
 			pipelineId:    0,
-			expectedError: "get pipeline: get last pipeline: GET https://gitlab.com/api/v4/projects/OWNER/REPO/repository/commits/main: 403",
+			expectedError: "get pipeline: get last pipeline: GET https://gitlab.com/api/v4/projects/OWNER/REPO/pipelines/latest: 403",
 			expectedOut:   0,
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO/repository/commits/main",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/latest?ref=main",
 					http.StatusForbidden,
 					`{}`,
 				},
@@ -125,12 +123,10 @@ func TestGetJobId(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO/repository/commits/main",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/latest?ref=main",
 					http.StatusOK,
 					`{
-						"last_pipeline": {
-							"id": 123
-						}
+						"id": 123
 					}`,
 				},
 				{
