@@ -40,7 +40,7 @@ var UserByName = func(client *gitlab.Client, name string) (*gitlab.User, error) 
 	}
 
 	if len(users) != 1 {
-		return nil, fmt.Errorf("failed to find user by name : %s", name)
+		return nil, fmt.Errorf("failed to find user by name: %s", name)
 	}
 
 	return users[0], nil
