@@ -27,6 +27,7 @@ create
 
 ```plaintext
 glab ci run
+glab ci run --variables \"key1:value,with,comma\"
 glab ci run -b main
 glab ci run -b main --variables-env key1:val1
 glab ci run -b main --variables-env key1:val1,key2:val2
