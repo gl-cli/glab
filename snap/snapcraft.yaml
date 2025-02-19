@@ -12,7 +12,7 @@ description: |
 adopt-info: glab
 grade: stable
 confinement: strict  # classic
-base: core18
+base: core24
 license: MIT
 parts:
   glab:
@@ -30,7 +30,7 @@ parts:
     - ssh
     override-pull: |
       snapcraftctl pull
-      snapcraftctl set-version `(git describe --tags) 2>/dev/null`
+      snapcraftctl set-version `(git describe --tags --abbrev=0) 2>/dev/null`
     override-build: |
       LDFLAGS='' make -j2
       cp bin/glab $SNAPCRAFT_PART_INSTALL/
