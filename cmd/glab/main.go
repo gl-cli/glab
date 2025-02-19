@@ -191,7 +191,6 @@ func main() {
 
 func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, debug bool) {
 	color := streams.Color()
-	printMore := true
 
 	var dnsError *net.DNSError
 	if errors.As(err, &dnsError) {
@@ -200,25 +199,18 @@ func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, deb
 			streams.Log(color.FailedIcon(), dnsError)
 		}
 		streams.Logf("%s Check your internet connection and status.gitlab.com. If on a self-managed instance, run 'sudo gitlab-ctl status' on your server.\n", color.DotWarnIcon())
-		printMore = false
-	}
-	if printMore {
+	} else {
 		var exitError *cmdutils.ExitError
 		if errors.As(err, &exitError) {
 			streams.Logf("%s %s %s=%s\n", color.FailedIcon(), color.Bold(exitError.Details), color.Red("error"), exitError.Err)
-			printMore = false
-		}
-
-		if printMore {
-			streams.Log(err)
+		} else {
+			streams.Log("ERROR:", err)
 
 			var flagError *cmdutils.FlagError
 			if errors.As(err, &flagError) || strings.HasPrefix(err.Error(), "unknown command ") {
-				if !strings.HasSuffix(err.Error(), "\n") {
-					streams.Log()
-				}
-				streams.Log(cmd.UsageString())
+				streams.Logf("Try '%s --help' for more information.", cmd.CommandPath())
 			}
+
 		}
 	}
 
