@@ -74,7 +74,11 @@ func listRun(opts *ListOpts) error {
 	isTTy := opts.IO.IsOutputTTY()
 
 	if len(keys) > 0 {
-		table.AddRow("Title", "Key", "Created At")
+		if opts.ShowKeyIDs {
+			table.AddRow("ID", "Title", "Key", "Usage type", "Created At")
+		} else {
+			table.AddRow("Title", "Key", "Usage type", "Created At")
+		}
 	}
 
 	for _, key := range keys {
@@ -85,7 +89,7 @@ func listRun(opts *ListOpts) error {
 		if isTTy {
 			createdAt = utils.TimeToPrettyTimeAgo(*key.CreatedAt)
 		}
-		table.AddRow(key.Title, key.Key, cs.Gray(createdAt))
+		table.AddRow(key.Title, key.Key, key.UsageType, cs.Gray(createdAt))
 	}
 
 	opts.IO.LogInfo(table.String())
