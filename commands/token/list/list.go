@@ -173,10 +173,6 @@ func listRun(opts *ListOpts) error {
 	if err != nil {
 		return err
 	}
-	repo, err := opts.BaseRepo()
-	if err != nil {
-		return err
-	}
 
 	var apiTokens interface{}
 	var outputTokens Tokens
@@ -214,6 +210,11 @@ func listRun(opts *ListOpts) error {
 			}
 		}
 	default:
+		repo, err := opts.BaseRepo()
+		if err != nil {
+			return err
+		}
+
 		tokens, err := api.ListProjectAccessTokens(httpClient, repo.FullName(), &gitlab.ListProjectAccessTokensOptions{})
 		if err != nil {
 			return err
