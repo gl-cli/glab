@@ -87,14 +87,12 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			isRunning := true
-			retry := "Exit"
 			writer := uilive.New()
 
 			// start listening for updates and render
 			writer.Start()
 			defer writer.Stop()
-			for isRunning {
+			for {
 				jobs, err := api.GetPipelineJobs(apiClient, runningPipeline.ID, repoName)
 				if err != nil {
 					return err
@@ -137,48 +135,41 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 				}
 				fmt.Fprintf(writer.Newline(), "Pipeline state: %s\n\n", runningPipeline.Status)
 
-				// break loop if input or output is a TTY to avoid prompting
-				if !(f.IO.IsInputTTY() && f.IO.PromptEnabled()) {
-					break
-				}
 				if (runningPipeline.Status == "pending" || runningPipeline.Status == "running") && live {
 					runningPipeline, err = api.GetLatestPipeline(apiClient, repoName, branch)
 					if err != nil {
 						return err
 					}
-				} else {
+				} else if f.IO.IsInputTTY() && f.IO.PromptEnabled() {
 					prompt := &survey.Select{
 						Message: "Choose an action:",
 						Options: []string{"View logs", "Retry", "Exit"},
 						Default: "Exit",
 					}
-					_ = survey.AskOne(prompt, &retry)
-					if retry != "" && retry != "Exit" {
-						if retry == "View logs" {
-							isRunning = false
-						} else {
-							_, err = api.RetryPipeline(apiClient, runningPipeline.ID, repoName)
-							if err != nil {
-								return err
-							}
-							runningPipeline, err = api.GetLatestPipeline(apiClient, repoName, branch)
-							if err != nil {
-								return err
-							}
-							isRunning = true
+					var answer string
+					_ = survey.AskOne(prompt, &answer)
+					if answer == "View logs" {
+						return ciutils.TraceJob(&ciutils.JobInputs{
+							Branch: branch,
+						}, &ciutils.JobOptions{
+							Repo:      repo,
+							ApiClient: apiClient,
+							IO:        f.IO,
+						})
+					} else if answer == "Retry" {
+						_, err = api.RetryPipeline(apiClient, runningPipeline.ID, repoName)
+						if err != nil {
+							return err
+						}
+						runningPipeline, err = api.GetLatestPipeline(apiClient, repoName, branch)
+						if err != nil {
+							return err
 						}
 					} else {
-						isRunning = false
+						break
 					}
-				}
-				if retry == "View logs" {
-					return ciutils.TraceJob(&ciutils.JobInputs{
-						Branch: branch,
-					}, &ciutils.JobOptions{
-						Repo:      repo,
-						ApiClient: apiClient,
-						IO:        f.IO,
-					})
+				} else {
+					break
 				}
 			}
 			return nil
