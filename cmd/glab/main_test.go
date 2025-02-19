@@ -34,7 +34,7 @@ func Test_printError(t *testing.T) {
 				cmd:   cmd,
 				debug: false,
 			},
-			wantOut: "the app exploded\n",
+			wantOut: "ERROR: the app exploded\n",
 		},
 		{
 			name: "DNS error",
@@ -71,7 +71,7 @@ x lookup https://gitlab.com/api/v4:
 				cmd:   cmd,
 				debug: false,
 			},
-			wantOut: "unknown flag --foo\n\nUsage:\n\n",
+			wantOut: "ERROR: unknown flag --foo\nTry ' --help' for more information.",
 		},
 		{
 			name: "unknown Cobra command error",
@@ -80,7 +80,7 @@ x lookup https://gitlab.com/api/v4:
 				cmd:   cmd,
 				debug: false,
 			},
-			wantOut: "unknown command foo\n\nUsage:\n\n",
+			wantOut: "ERROR: unknown command foo\nTry ' --help' for more information.",
 		},
 	}
 
