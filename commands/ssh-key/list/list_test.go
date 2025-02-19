@@ -58,7 +58,7 @@ func TestSSHKeyList(t *testing.T) {
 				http.StatusOK,
 				keyResponse,
 			}},
-			expectedOut: "Title\tKey\tCreated At\nkey title\tssh-ed25519 example\t2025-01-01 00:00:00 +0000 UTC\n\n",
+			expectedOut: "Title\tKey\tUsage type\tCreated At\nkey title\tssh-ed25519 example\tauth_and_signing\t2025-01-01 00:00:00 +0000 UTC\n\n",
 		},
 	}
 
