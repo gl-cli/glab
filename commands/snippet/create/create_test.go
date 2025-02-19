@@ -19,6 +19,34 @@ func TestSnippetCreate(t *testing.T) {
 		body   string
 	}
 
+	httpPersonal := `{
+    "id": 1,
+    "title": "This is a snippet",
+    "description": "Hello World snippet",
+    "web_url": "https://gitlab.example.com/-/snippets/1",
+    "file_name": "snippet.txt",
+    "files": [
+      {
+        "path": "snippet.txt",
+        "raw_url": "https://gitlab.example.com/-/snippets/1/raw/main/snippet.txt"
+      }
+    ]
+  }`
+
+	httpProject := `{
+  "id": 1,
+  "title": "This is a snippet",
+  "description": "Hello World snippet",
+  "web_url": "https://gitlab.example.com/OWNER/REPO/-/snippets/1",
+  "file_name": "snippet.txt",
+  "files": [
+    {
+      "path": "snippet.txt",
+      "raw_url": "https://gitlab.example.com/-/OWNER/REPO/snippets/1/raw/main/snippet.txt"
+    }
+  ]
+}`
+
 	testCases := []struct {
 		name       string
 		command    string
@@ -36,19 +64,7 @@ func TestSnippetCreate(t *testing.T) {
 				method: http.MethodPost,
 				path:   "/api/v4/snippets",
 				status: http.StatusCreated,
-				body: `{
-  "id": 1,
-  "title": "This is a snippet",
-  "description": "Hello World snippet",
-  "web_url": "https://gitlab.example.com/-/snippets/1",
-  "file_name": "snippet.txt",
-  "files": [
-    {
-      "path": "snippet.txt",
-      "raw_url": "https://gitlab.example.com/-/snippets/1/raw/main/snippet.txt"
-    }
-  ]
-}`,
+				body:   httpPersonal,
 			},
 		},
 		{
@@ -60,19 +76,7 @@ func TestSnippetCreate(t *testing.T) {
 				method: http.MethodPost,
 				path:   "/api/v4/projects/OWNER/REPO/snippets",
 				status: http.StatusCreated,
-				body: `{
-  "id": 1,
-  "title": "This is a snippet",
-  "description": "Hello World snippet",
-  "web_url": "https://gitlab.example.com/OWNER/REPO/-/snippets/1",
-  "file_name": "snippet.txt",
-  "files": [
-    {
-      "path": "snippet.txt",
-      "raw_url": "https://gitlab.example.com/-/OWNER/REPO/snippets/1/raw/main/snippet.txt"
-    }
-  ]
-}`,
+				body:   httpProject,
 			},
 		},
 
@@ -85,19 +89,20 @@ func TestSnippetCreate(t *testing.T) {
 				method: http.MethodPost,
 				path:   "/api/v4/projects/OWNER/REPO/snippets",
 				status: http.StatusCreated,
-				body: `{
-  "id": 1,
-  "title": "This is a snippet",
-  "description": "Hello World snippet",
-  "web_url": "https://gitlab.example.com/OWNER/REPO/-/snippets/1",
-  "file_name": "test.txt",
-  "files": [
-    {
-      "path": "text.txt",
-      "raw_url": "https://gitlab.example.com/-/OWNER/REPO/snippets/1/raw/main/text.txt"
-    }
-  ]
-}`,
+				body:   httpProject,
+			},
+		},
+
+		{
+			name:       "Create project snippet from multiple files",
+			command:    "-d 'Hello World snippet' -t 'This is a snippet' testdata/file1.md testdata/file2.md",
+			wantStderr: []string{"- Creating snippet in OWNER/REPO"},
+			wantStdout: []string{"https://gitlab.example.com/OWNER/REPO/-/snippets/1"},
+			mock: httpMock{
+				method: http.MethodPost,
+				path:   "/api/v4/projects/OWNER/REPO/snippets",
+				status: http.StatusCreated,
+				body:   httpProject,
 			},
 		},
 		{

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -12,6 +13,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
@@ -22,15 +24,17 @@ type CreateOpts struct {
 	Visibility      string
 	Personal        bool
 
-	FilePath string
+	Files []*gitlab.CreateSnippetFileOptions
 
 	IO       *iostreams.IOStreams
-	Lab      func() (*gitlab.Client, error)
 	BaseRepo func() (glrepo.Interface, error)
 }
 
-func (opts CreateOpts) isSnippetFromFile() bool {
-	return opts.FilePath != ""
+func (opts *CreateOpts) addFile(path, content *string) {
+	opts.Files = append(opts.Files, &gitlab.CreateSnippetFileOptions{
+		FilePath: path,
+		Content:  content,
+	})
 }
 
 func hasStdIn() bool {
@@ -45,7 +49,7 @@ func hasStdIn() bool {
 func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{}
 	snippetCreateCmd := &cobra.Command{
-		Use: `create [flags] -t <title> <file>
+		Use: `create [flags] -t <title> <file1> [<file2>...]
 glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 		Short:   `Create a new snippet.`,
 		Long:    ``,
@@ -60,7 +64,6 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			opts.IO = f.IO
 			opts.BaseRepo = f.BaseRepo
-			opts.Lab = f.HttpClient
 			if opts.Title == "" {
 				return &cmdutils.FlagError{
 					Err: errors.New("--title required for snippets"),
@@ -70,21 +73,36 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 				if opts.DisplayFilename == "" {
 					return &cmdutils.FlagError{Err: errors.New("if 'path' is not provided, 'filename' and stdin are required")}
 				} else {
-					if !hasStdIn() {
+					if !f.IO.IsInTTY && !hasStdIn() {
 						return errors.New("stdin required if no 'path' is provided")
 					}
 				}
-			} else {
-				if opts.DisplayFilename == "" {
-					opts.DisplayFilename = args[0]
+				fmt.Fprintln(f.IO.StdOut, "reading from stdin (Ctrl+D to finish, Ctrl+C to abort):")
+				content, err := readFromSTDIN(f.IO)
+				if err != nil {
+					return err
 				}
-				opts.FilePath = args[0]
+				opts.addFile(&opts.DisplayFilename, &content)
+			} else {
+				for _, path := range args {
+					filename := path
+					if len(args) == 1 && opts.DisplayFilename != "" {
+						filename = opts.DisplayFilename
+					}
+
+					content, err := readFromFile(path)
+					if err != nil {
+						return err
+					}
+					dbg.Debug("Adding:", filename)
+					opts.addFile(&filename, &content)
+				}
 			}
 
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := opts.Lab()
+			client, err := f.HttpClient()
 			if err != nil {
 				return err
 			}
@@ -112,55 +130,41 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 }
 
 func runCreate(client *gitlab.Client, repo glrepo.Interface, opts *CreateOpts) error {
-	content, err := readSnippetsContent(opts)
-	if err != nil {
-		return err
-	}
 	var snippet *gitlab.Snippet
+	var err error
 	if opts.Personal {
 		fmt.Fprintln(opts.IO.StdErr, "- Creating snippet in personal space")
 		snippet, err = api.CreateSnippet(client, &gitlab.CreateSnippetOptions{
 			Title:       &opts.Title,
 			Description: &opts.Description,
-			Content:     gitlab.Ptr(string(content)),
-			FileName:    &opts.DisplayFilename,
 			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility)),
+			Files:       &opts.Files,
 		})
 	} else {
 		fmt.Fprintln(opts.IO.StdErr, "- Creating snippet in", repo.FullName())
 		snippet, err = api.CreateProjectSnippet(client, repo.FullName(), &gitlab.CreateProjectSnippetOptions{
 			Title:       &opts.Title,
 			Description: &opts.Description,
-			Content:     gitlab.Ptr(string(content)),
-			FileName:    &opts.DisplayFilename,
 			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility)),
+			Files:       &opts.Files,
 		})
 	}
 	if err != nil {
 		return fmt.Errorf("failed to create snippet: %w", err)
 	}
 	snippetID := opts.IO.Color().Green(fmt.Sprintf("$%d", snippet.ID))
+	var files []string
+	for _, file := range opts.Files {
+		files = append(files, *file.FilePath)
+	}
+	names := strings.Join(files, " ")
 	if opts.IO.IsaTTY {
-		fmt.Fprintf(opts.IO.StdOut, "%s %s (%s)\n %s\n", snippetID, snippet.Title, snippet.FileName, snippet.WebURL)
+		fmt.Fprintf(opts.IO.StdOut, "%s %s (%s)\n %s\n", snippetID, snippet.Title, names, snippet.WebURL)
 	} else {
 		fmt.Fprintln(opts.IO.StdOut, snippet.WebURL)
 	}
 
 	return nil
-}
-
-// FIXME: Adding more then one file can't be done right now because the GitLab API library
-//
-//	Doesn't support it yet.
-//
-//	See for the API reference: https://docs.gitlab.com/ee/api/snippets.html#create-new-snippet
-//	See for the library docs: https://pkg.go.dev/gitlab.com/gitlab-org/api/client-go#CreateSnippetOptions
-//	See for GitHub issue: https://gitlab.com/gitlab-org/api/client-go/issues/1372
-func readSnippetsContent(opts *CreateOpts) (string, error) {
-	if opts.isSnippetFromFile() {
-		return readFromFile(opts.FilePath)
-	}
-	return readFromSTDIN(opts.IO)
 }
 
 func readFromSTDIN(ioStream *iostreams.IOStreams) (string, error) {
