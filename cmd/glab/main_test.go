@@ -46,7 +46,7 @@ func Test_printError(t *testing.T) {
 				debug: false,
 			},
 			wantOut: `x error connecting to https://gitlab.com/api/v4
-• Check your internet connection and status.gitlab.com. If on a self-managed instance, run 'sudo gitlab-ctl status' on your server.
+• Check your internet connection and status.gitlab.com. If on GitLab Self-Managed, run 'sudo gitlab-ctl status' on your server.
 `,
 		},
 		{
@@ -61,7 +61,7 @@ func Test_printError(t *testing.T) {
 
 			wantOut: `x error connecting to https://gitlab.com/api/v4
 x lookup https://gitlab.com/api/v4: 
-• Check your internet connection and status.gitlab.com. If on a self-managed instance, run 'sudo gitlab-ctl status' on your server.
+• Check your internet connection and status.gitlab.com. If on GitLab Self-Managed, run 'sudo gitlab-ctl status' on your server.
 `,
 		},
 		{

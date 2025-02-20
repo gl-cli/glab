@@ -2,9 +2,15 @@
 
 ![GLab](docs/assets/glab-logo.png)
 
-GLab is an open source GitLab CLI tool bringing GitLab to your terminal next to where you are already working with `git` and your code without switching between windows and browser tabs. Work with issues, merge requests, **watch running pipelines directly from your CLI** among other features.
+GLab is an open source GitLab CLI tool. It brings GitLab to your terminal, next to where you are already working with `git` and your code, without switching between windows and browser tabs. While it's powerful for issues and merge requests, `glab` does even more:
 
-`glab` is available for repositories hosted on GitLab.com and self-managed GitLab instances. `glab` supports multiple authenticated GitLab instances and automatically detects the authenticated hostname from the remotes available in the working Git directory.
+- View, manage, and retry CI/CD pipelines directly from your CLI.
+- Create changelogs.
+- Create and manage releases.
+- Ask GitLab Duo Chat questions about Git.
+- Manage GitLab agents for Kubernetes.
+
+`glab` is available for repositories hosted on GitLab.com, GitLab Dedicated, and GitLab Self-Managed. It supports multiple authenticated GitLab instances, and automatically detects the authenticated hostname from the remotes available in your working Git directory.
 
 ![command example](docs/assets/glabgettingstarted.gif)
 
@@ -152,7 +158,7 @@ To authenticate your installation of `glab` with an OAuth application connected 
 1. Select **Authorize**.
 1. Complete the authentication process in your terminal, selecting the appropriate options for your needs.
 
-### OAuth (self-managed)
+### OAuth (GitLab Self-Managed, GitLab Dedicated)
 
 Prerequisites:
 
@@ -166,13 +172,13 @@ Prerequisites:
   - **Scopes** are `openid`, `profile`, `read_user`, `write_repository`, and `api`.
 
 To authenticate your installation of `glab` with an OAuth application connected
-to your self-managed instance:
+to your GitLab Self-Managed or GitLab Dedicated instance:
 
 1. Store the application ID with `glab config set client_id <CLIENT_ID> --host <HOSTNAME>`.
    For `<CLIENT_ID>`, provide your application ID.
 1. Start interactive setup with `glab auth login --hostname <HOSTNAME>`.
 1. For the login method, select **Web**. This selection launches your web browser
-   to request authorization for the GitLab CLI to use your self-managed account.
+   to request authorization for the GitLab CLI to use your GitLab Self-Managed or GitLab Dedicated account.
 1. Select **Authorize**.
 1. Complete the authentication process in your terminal, selecting the appropriate options for your needs.
 
@@ -183,16 +189,16 @@ To authenticate your installation of `glab` with a personal access token:
 1. Get a GitLab personal access token with at least the `api`
    and `write_repository` scopes. Use the method appropriate for your instance:
    - For GitLab.com, create one at the [personal access tokens](https://gitlab.com/-/user_settings/personal_access_tokens?scopes=api%2Cwrite_repository) page.
-   - For self-managed instances, visit `https://gitlab.example.com/-/user_settings/personal_access_tokens?scopes=api,write_repository`,
+   - For GitLab Self-Managed and GitLab Dedicated, visit `https://gitlab.example.com/-/user_settings/personal_access_tokens?scopes=api,write_repository`,
      modifying `gitlab.example.com` to match the domain name of your instance.
 1. Start interactive setup: `glab auth login`
 1. Authenticate with the method appropriate for your GitLab instance:
    - For GitLab SaaS, authenticate against `gitlab.com` by reading the token
      from a file: `glab auth login --stdin < myaccesstoken.txt`
-   - For self-managed instances, authenticate by reading from a file:
+   - For GitLab Self-Managed and GitLab Dedicated, authenticate by reading from a file:
      `glab auth login --hostname gitlab.example.com --stdin < myaccesstoken.txt`. This will allow you to perform
-     authenticated `glab` commands against a self-managed instance when you are in a Git repository with a remote
-     matching your self-managed instance's host. Alternatively set `GITLAB_HOST` to direct your command to your self-managed instance.
+     authenticated `glab` commands against your instance when you are in a Git repository with a remote
+     matching your instance's host. Alternatively, set `GITLAB_HOST` to direct your command to your instance.
    - Authenticate with token and hostname: `glab auth login --hostname gitlab.example.org --token xxxxx`
      Not recommended for shared environments.
    - Credentials are stored in the global [configuration file](#configuration).
@@ -227,10 +233,10 @@ Configure it globally, locally, or per host:
   the `--host` parameter to meet your needs.
   - Per-host configuration info is always stored in the global configuration file, with or without the `global` flag.
 
-### Configure `glab` to use your self-managed instance
+### Configure `glab` to use your GitLab Self-Managed or GitLab Dedicated instance
 
 When outside a Git repository, `glab` uses `gitlab.com` by default. For `glab` to default
-to your self-managed instance when you are not in a Git repository, change the host
+to your GitLab Self-Managed or GitLab Dedicated instance when you are not in a Git repository, change the host
 configuration settings. Use this command, changing `gitlab.example.com` to the domain name
 of your instance:
 
@@ -239,7 +245,7 @@ glab config set -g host gitlab.example.com
 ```
 
 Setting this configuration enables you to perform commands outside a Git repository while
-using your self-managed instance. For example:
+using your GitLab Self-Managed or GitLab Dedicated instance. For example:
 
 - `glab repo clone group/project`
 - `glab issue list -R group/project`
@@ -253,22 +259,22 @@ the `GITLAB_HOST` environment variable, like this:
 When inside a Git repository `glab` will use that repository's GitLab host by default. For example `glab issue list`
 will list all issues of the current directory's Git repository.
 
-### Configure `glab` to use self-signed certificates for self-managed instances
+### Configure `glab` to use self-signed certificates
 
-The GitLab CLI can be configured to support self-managed instances using self-signed certificate
-authorities by making either of the following changes:
+The GitLab CLI can be configured to support GitLab Self-Managed and GitLab Dedicated instances using
+self-signed certificate authorities by making either of these changes:
 
-You can disable TLS verification with:
+- You can disable TLS verification with:
 
-```shell
-glab config set skip_tls_verify true --host gitlab.example.com
-```
+  ```shell
+  glab config set skip_tls_verify true --host gitlab.example.com
+  ```
 
-Or add the path to the self signed CA:
+- Or add the path to the self signed CA:
 
-```shell
-glab config set ca_cert /path/to/server.pem --host gitlab.example.com
-```
+  ```shell
+  glab config set ca_cert /path/to/server.pem --host gitlab.example.com
+  ```
 
 ## Environment variables
 

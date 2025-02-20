@@ -65,8 +65,10 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previo
 		return err
 	}
 
-	// Since the `gitlab.com/gitlab-org/cli` is public, we remove the token for this single request, so when users have
-	// a `GITLAB_TOKEN` set with a token for their self-managed instance, we don't use it to authenticate to gitlab.com
+	// Since the `gitlab.com/gitlab-org/cli` is public, we remove the token
+	// for this single request. When users have a `GITLAB_TOKEN` set with a
+	// token for GitLab Self-Managed or GitLab Dedicated, we shouldn't use it
+	// to authenticate to gitlab.com.
 	releases, _, err := apiClient.Releases.ListReleases(
 		repo.FullName(), &gitlab.ListReleasesOptions{ListOptions: gitlab.ListOptions{Page: 1, PerPage: 1}}, gitlab.WithToken(gitlab.PrivateToken, ""))
 	if err != nil {
