@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -25,9 +26,12 @@ var commandAliases = []string{"update"}
 
 func NewCheckUpdateCmd(f *cmdutils.Factory, version string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     commandUse,
-		Short:   "Check for latest glab releases.",
-		Long:    ``,
+		Use:   commandUse,
+		Short: "Check for latest glab releases.",
+		Long: heredoc.Doc(`Checks for new versions every 24 hours after any 'glab' command is run. Does not recheck if the most recent recheck is less than 24 hours old.
+
+		To override the recheck behavior and force an update check, set the GLAB_CHECK_UPDATE environment variable to 'true'.
+		`),
 		Aliases: commandAliases,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return CheckUpdate(f, version, false, "")
