@@ -49,7 +49,7 @@ $ glab repo clone -g everyonecancontribute --paginate
 # Clones all non-archived repos in a group
 $ glab repo clone -g everyonecancontribute --archived=false --paginate
 
-# Clones from a self-hosted instance
+# Clones from a GitLab Self-Managed or GitLab Dedicated instance
 $ GITLAB_HOST=salsa.debian.org glab repo clone myrepo
 
 ```

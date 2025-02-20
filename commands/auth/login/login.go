@@ -68,7 +68,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 			# Authenticate against %[1]sgitlab.com%[1]s by reading the token from a file
 			$ glab auth login --stdin < myaccesstoken.txt
 
-			# Authenticate with a self-hosted GitLab instance
+			# Authenticate with GitLab Self-Managed or GitLab Dedicated
 			$ glab auth login --hostname salsa.debian.org
 
 			# Non-interactive setup
@@ -239,10 +239,10 @@ func loginRun(opts *LoginOptions) error {
 	if hostname == "" {
 		var hostType int
 		err := survey.AskOne(&survey.Select{
-			Message: "What GitLab instance do you want to log into?",
+			Message: "What GitLab instance do you want to sign in to?",
 			Options: []string{
 				defaultHostname,
-				"GitLab Self-hosted Instance",
+				"GitLab Self-Managed or GitLab Dedicated instance",
 			},
 		}, &hostType)
 		if err != nil {
@@ -262,7 +262,7 @@ func loginRun(opts *LoginOptions) error {
 			}
 			err = survey.AskOne(&survey.Input{
 				Message: "API hostname:",
-				Help:    "For instances with different hostname for the API endpoint.",
+				Help:    "For instances with a different hostname for the API endpoint.",
 				Default: hostname,
 			}, &apiHostname, survey.WithValidator(hostnameValidator))
 			if err != nil {
@@ -273,7 +273,7 @@ func loginRun(opts *LoginOptions) error {
 		isSelfHosted = glinstance.IsSelfHosted(hostname)
 	}
 
-	fmt.Fprintf(opts.IO.StdErr, "- Logging into %s\n", hostname)
+	fmt.Fprintf(opts.IO.StdErr, "- Signing into %s\n", hostname)
 
 	if token := config.GetFromEnv("token"); token != "" {
 		fmt.Fprintf(opts.IO.StdErr, "%s One of %s environment variables is set. If you don't want to use it for glab, unset it.\n", c.Yellow("WARNING:"), strings.Join(config.EnvKeyEquivalence("token"), ", "))
@@ -318,7 +318,7 @@ func loginRun(opts *LoginOptions) error {
 			},
 		}, &loginType)
 		if err != nil {
-			return fmt.Errorf("could not get login type: %w", err)
+			return fmt.Errorf("could not get sign-in type: %w", err)
 		}
 	}
 

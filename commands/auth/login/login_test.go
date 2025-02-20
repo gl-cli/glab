@@ -49,7 +49,7 @@ func Test_NewCmdLogin(t *testing.T) {
 			name:     "nontty, hostname",
 			cli:      "--hostname salsa.debian.org",
 			wantsErr: true,
-			err:      "could not get login type",
+			err:      "could not get sign-in type",
 			stdinTTY: false,
 		},
 		{

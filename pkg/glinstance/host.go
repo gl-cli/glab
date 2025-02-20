@@ -60,8 +60,8 @@ func OverrideDefaultProtocol(newProtocol string) {
 	protocolOverride = newProtocol
 }
 
-// IsSelfHosted reports whether a non-normalized host name looks like a Self-hosted GitLab instance
-// staging.gitlab.com is considered self-hosted
+// IsSelfHosted reports whether a non-normalized host name looks like a GitLab Self-Managed instance
+// staging.gitlab.com is considered self-managed
 func IsSelfHosted(h string) bool {
 	return NormalizeHostname(h) != Default()
 }

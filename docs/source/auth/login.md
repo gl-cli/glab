@@ -33,7 +33,7 @@ $ glab auth login
 # Authenticate against `gitlab.com` by reading the token from a file
 $ glab auth login --stdin < myaccesstoken.txt
 
-# Authenticate with a self-hosted GitLab instance
+# Authenticate with GitLab Self-Managed or GitLab Dedicated
 $ glab auth login --hostname salsa.debian.org
 
 # Non-interactive setup

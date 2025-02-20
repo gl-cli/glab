@@ -198,7 +198,7 @@ func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, deb
 		if debug {
 			streams.Log(color.FailedIcon(), dnsError)
 		}
-		streams.Logf("%s Check your internet connection and status.gitlab.com. If on a self-managed instance, run 'sudo gitlab-ctl status' on your server.\n", color.DotWarnIcon())
+		streams.Logf("%s Check your internet connection and status.gitlab.com. If on GitLab Self-Managed, run 'sudo gitlab-ctl status' on your server.\n", color.DotWarnIcon())
 	} else {
 		var exitError *cmdutils.ExitError
 		if errors.As(err, &exitError) {
