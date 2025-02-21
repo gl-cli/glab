@@ -117,17 +117,24 @@ func newTokenFromPersonalAccessToken(t *gitlab.PersonalAccessToken) Token {
 	if t.LastUsedAt != nil {
 		lastUsed = t.LastUsedAt.Format(time.RFC3339)
 	}
-	return Token{
+
+	token := Token{
 		Name:        t.Name,
 		ID:          strconv.FormatInt(int64(t.ID), 10),
 		AccessLevel: "-",
 		Active:      strconv.FormatBool(t.Active),
 		Revoked:     strconv.FormatBool(t.Revoked),
 		CreatedAt:   t.CreatedAt.Format(time.RFC3339),
-		ExpiresAt:   t.ExpiresAt.String(),
+		ExpiresAt:   "-",
 		LastUsedAt:  lastUsed,
 		Scopes:      strings.Join(t.Scopes, ","),
 	}
+
+	if t.ExpiresAt != nil {
+		token.ExpiresAt = t.ExpiresAt.String()
+	}
+
+	return token
 }
 
 func newTokenFromGroupAccessToken(t *gitlab.GroupAccessToken) Token {
@@ -136,17 +143,24 @@ func newTokenFromGroupAccessToken(t *gitlab.GroupAccessToken) Token {
 	if t.LastUsedAt != nil {
 		lastUsed = t.LastUsedAt.Format(time.RFC3339)
 	}
-	return Token{
+
+	token := Token{
 		Name:        t.Name,
 		ID:          strconv.FormatInt(int64(t.ID), 10),
 		AccessLevel: level.String(),
 		Active:      strconv.FormatBool(t.Active),
 		Revoked:     strconv.FormatBool(t.Revoked),
 		CreatedAt:   t.CreatedAt.Format(time.RFC3339),
-		ExpiresAt:   t.ExpiresAt.String(),
+		ExpiresAt:   "-",
 		LastUsedAt:  lastUsed,
 		Scopes:      strings.Join(t.Scopes, ","),
 	}
+
+	if t.ExpiresAt != nil {
+		token.ExpiresAt = t.ExpiresAt.String()
+	}
+
+	return token
 }
 
 func newTokenFromProjectAccessToken(t *gitlab.ProjectAccessToken) Token {
@@ -155,17 +169,24 @@ func newTokenFromProjectAccessToken(t *gitlab.ProjectAccessToken) Token {
 	if t.LastUsedAt != nil {
 		lastUsed = t.LastUsedAt.Format(time.RFC3339)
 	}
-	return Token{
+
+	token := Token{
 		Name:        t.Name,
 		ID:          strconv.FormatInt(int64(t.ID), 10),
 		AccessLevel: level.String(),
 		Active:      strconv.FormatBool(t.Active),
 		Revoked:     strconv.FormatBool(t.Revoked),
 		CreatedAt:   t.CreatedAt.Format(time.RFC3339),
-		ExpiresAt:   t.ExpiresAt.String(),
+		ExpiresAt:   "-",
 		LastUsedAt:  lastUsed,
 		Scopes:      strings.Join(t.Scopes, ","),
 	}
+
+	if t.ExpiresAt != nil {
+		token.ExpiresAt = t.ExpiresAt.String()
+	}
+
+	return token
 }
 
 func listRun(opts *ListOpts) error {
