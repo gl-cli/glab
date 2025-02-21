@@ -292,3 +292,71 @@ func TestListPersonalAccessTokenAsJSON(t *testing.T) {
 	assert.Empty(t, output.Stderr())
 	assert.JSONEq(t, personalAccessTokenResponse, output.String())
 }
+
+var personalAccessTokenResponseWithoutExpiration = heredoc.Doc(`
+			[
+			  {
+			    "id": 1,
+			    "name": "awsssm",
+			    "revoked": false,
+			    "created_at": "2024-05-29T07:25:56.846Z",
+			    "scopes": [
+			      "api"
+			    ],
+			    "user_id": 926857,
+			    "active": false,
+			    "expires_at": null
+			  },
+			  {
+			    "id": 2,
+			    "name": "glab",
+			    "revoked": false,
+			    "created_at": "2024-05-29T07:34:14.044Z",
+			    "scopes": [
+			      "api"
+			    ],
+			    "user_id": 926857,
+			    "last_used_at": "2024-06-05T17:32:34.466Z",
+			    "active": false,
+			    "expires_at": "2024-06-28"
+			  },
+			  {
+			    "id": 3,
+			    "name": "api",
+			    "revoked": false,
+			    "created_at": "2024-07-05T10:02:37.182Z",
+			    "scopes": [
+			      "api"
+			    ],
+			    "user_id": 926857,
+			    "last_used_at": "2024-07-07T20:02:49.595Z",
+			    "active": true,
+			    "expires_at": "2024-08-04"
+			  }
+			]
+		`)
+
+func TestListPersonalAccessTokenWithoutExpirationAsText(t *testing.T) {
+	fakeHTTP := &httpmock.Mocker{}
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(http.MethodGet, "/personal_access_tokens",
+		httpmock.NewStringResponse(http.StatusOK, personalAccessTokenResponseWithoutExpiration))
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/user",
+		httpmock.NewStringResponse(http.StatusOK, userResponse))
+
+	output, err := runCommand(fakeHTTP, "--user @me")
+	if err != nil {
+		t.Errorf("error running command `token list --user @me`: %v", err)
+	}
+
+	out := output.String()
+
+	assert.Equal(t, heredoc.Doc(`
+	ID  NAME   ACCESS_LEVEL ACTIVE  REVOKED  CREATED_AT           EXPIRES_AT LAST_USED_AT         SCOPES 
+	1   awsssm -            false   false    2024-05-29T07:25:56Z -          -                    api    
+	2   glab   -            false   false    2024-05-29T07:34:14Z 2024-06-28 2024-06-05T17:32:34Z api    
+	3   api    -            true    false    2024-07-05T10:02:37Z 2024-08-04 2024-07-07T20:02:49Z api    
+	`), out)
+	assert.Empty(t, output.Stderr())
+}
