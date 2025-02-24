@@ -38,7 +38,7 @@ require (
 	gitlab.com/gitlab-org/api/client-go v0.123.0
 	go.uber.org/goleak v1.3.0
 	go.uber.org/mock v0.5.0
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.35.0
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	golang.org/x/oauth2 v0.26.0
 	golang.org/x/sync v0.11.0
