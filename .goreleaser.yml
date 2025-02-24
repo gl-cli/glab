@@ -130,6 +130,8 @@ checksum:
 snapshot:
   version_template: "{{ .Tag }}"
 changelog:
+  # https://goreleaser.com/customization/changelog/
+  use: gitlab
   sort: asc
   filters:
     exclude:
