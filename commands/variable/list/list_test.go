@@ -25,6 +25,8 @@ func Test_NewCmdList(t *testing.T) {
 			wants: ListOpts{
 				Group:        "",
 				OutputFormat: "text",
+				PerPage:      20,
+				Page:         1,
 			},
 		},
 		{
@@ -34,6 +36,8 @@ func Test_NewCmdList(t *testing.T) {
 			wants: ListOpts{
 				Group:        "",
 				OutputFormat: "json",
+				PerPage:      20,
+				Page:         1,
 			},
 		},
 		{
@@ -43,6 +47,19 @@ func Test_NewCmdList(t *testing.T) {
 			wants: ListOpts{
 				Group:        "group/group",
 				OutputFormat: "text",
+				PerPage:      20,
+				Page:         1,
+			},
+		},
+		{
+			name:     "per page",
+			cli:      "--per-page 100 --page 1",
+			wantsErr: false,
+			wants: ListOpts{
+				Group:        "",
+				OutputFormat: "text",
+				Page:         1,
+				PerPage:      100,
 			},
 		},
 	}
@@ -78,6 +95,8 @@ func Test_NewCmdList(t *testing.T) {
 
 			assert.Equal(t, tt.wants.Group, gotOpts.Group)
 			assert.Equal(t, tt.wants.OutputFormat, gotOpts.OutputFormat)
+			assert.Equal(t, tt.wants.Page, gotOpts.Page)
+			assert.Equal(t, tt.wants.PerPage, gotOpts.PerPage)
 		})
 	}
 }

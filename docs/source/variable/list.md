@@ -27,6 +27,9 @@ ls
 
 ```plaintext
 glab variable list
+glab variable list --per-page 100 --page 1
+glab variable list --group gitlab-org
+glab variable list --group gitlab-org --per-page 100
 
 ```
 
@@ -35,6 +38,8 @@ glab variable list
 ```plaintext
   -g, --group string      Select a group or subgroup. Ignored if a repository argument is set.
   -F, --output string     Format output as: text, json. (default "text")
+  -p, --page int          Page number. (default 1)
+  -P, --per-page int      Number of items to list per page. (default 20)
   -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
 ```
 
