@@ -6,15 +6,15 @@ This guide is based on the main [`gitlab-org/gitlab` security release process](h
 
 As a developer working on a fix for a security vulnerability, your main concern is not disclosing the vulnerability or the fix before we're ready to publicly disclose it.
 
-To that end, you'll need to be sure that security vulnerabilities are fixed in the [Security Repo](https://gitlab.com/gitlab-org/security/cli).
+To that end, you'll need to be sure that security vulnerabilities are fixed in the [`security` repository](https://gitlab.com/gitlab-org/security/cli).
 
-This is fundamental to our security release process because the [Security Repo](https://gitlab.com/gitlab-org/security/cli) is not publicly-accessible.
+This is fundamental to our security release process because the [`security` repository](https://gitlab.com/gitlab-org/security/cli) is not publicly-accessible.
 
 ## Process
 
 A security fix starts with an issue identifying the vulnerability. In this case, it should be a confidential issue on the `gitlab-org/cli` project on [GitLab.com](https://gitlab.com/)
 
-Once a security issue is assigned to a developer, we follow the same merge request and code review process as any other change, but on the [Security Repo](https://gitlab.com/gitlab-org/security/cli).
+Once a security issue is assigned to a developer, we follow the same merge request and code review process as any other change, but on the [`security` repository](https://gitlab.com/gitlab-org/security/cli).
 
 ### Schema
 
