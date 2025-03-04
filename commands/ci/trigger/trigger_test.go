@@ -43,7 +43,7 @@ func TestCiTrigger(t *testing.T) {
 		{
 			name:        "when trigger with job-id",
 			args:        "1122",
-			expectedOut: "Triggered job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
+			expectedOut: "Triggered job (ID: 1123), status: pending, ref: branch-name, weburl: https://gitlab.com/OWNER/REPO/-/jobs/1123\n",
 			httpMocks: []httpMock{
 				{
 					http.MethodPost,
@@ -81,7 +81,7 @@ func TestCiTrigger(t *testing.T) {
 		{
 			name:        "when trigger with job-name",
 			args:        "lint -b main -p 123",
-			expectedOut: "Triggered job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
+			expectedOut: "Triggered job (ID: 1123), status: pending, ref: branch-name, weburl: https://gitlab.com/OWNER/REPO/-/jobs/1123\n",
 			httpMocks: []httpMock{
 				{
 					http.MethodPost,
@@ -133,7 +133,7 @@ func TestCiTrigger(t *testing.T) {
 		{
 			name:        "when trigger with job-name and last pipeline",
 			args:        "lint -b main",
-			expectedOut: "Triggered job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
+			expectedOut: "Triggered job (ID: 1123), status: pending, ref: branch-name, weburl: https://gitlab.com/OWNER/REPO/-/jobs/1123\n",
 			httpMocks: []httpMock{
 				{
 					http.MethodPost,
