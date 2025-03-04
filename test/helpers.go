@@ -113,6 +113,7 @@ func ClearEnvironmentVariables(t *testing.T) {
 	t.Setenv("EDITOR", "")
 	t.Setenv("GITLAB_ACCESS_TOKEN", "")
 	t.Setenv("OAUTH_TOKEN", "")
+	t.Setenv("USERNAME", "")
 }
 
 func GetHostOrSkip(t testing.TB) string {
