@@ -34,7 +34,7 @@ $ glab ci retry lint
 ## Options
 
 ```plaintext
-  -b, --branch string     The branch to search for the job. Default: current branch.
+  -b, --branch string     The branch to search for the job. (default current branch)
   -p, --pipeline-id int   The pipeline ID to search for the job.
 ```
 

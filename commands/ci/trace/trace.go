@@ -51,7 +51,7 @@ func NewCmdTrace(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	pipelineCITraceCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. Default: current branch.")
+	pipelineCITraceCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. (default current branch)")
 	pipelineCITraceCmd.Flags().IntP("pipeline-id", "p", 0, "The pipeline ID to search for the job.")
 	return pipelineCITraceCmd
 }

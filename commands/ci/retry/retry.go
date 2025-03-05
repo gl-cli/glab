@@ -75,7 +75,7 @@ func NewCmdRetry(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	pipelineRetryCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. Default: current branch.")
+	pipelineRetryCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. (default current branch)")
 	pipelineRetryCmd.Flags().IntP("pipeline-id", "p", 0, "The pipeline ID to search for the job.")
 	return pipelineRetryCmd
 }

@@ -73,7 +73,7 @@ func NewCmdConfigGet(f *cmdutils.Factory) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&hostname, "host", "h", "", "Get per-host setting.")
-	cmd.Flags().BoolP("global", "g", false, "Read from global config file (~/.config/glab-cli/config.yml). Default: checks 'Environment variables → Local → Global'.")
+	cmd.Flags().BoolP("global", "g", false, "Read from global config file (~/.config/glab-cli/config.yml). (default checks 'Environment variables → Local → Global')")
 
 	return cmd
 }

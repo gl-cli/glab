@@ -181,7 +181,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 
 	pipelineStatusCmd.Flags().BoolP("live", "l", false, "Show status in real time until the pipeline ends.")
 	pipelineStatusCmd.Flags().BoolP("compact", "c", false, "Show status in compact format.")
-	pipelineStatusCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. Default: current branch.")
+	pipelineStatusCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. (default current branch)")
 
 	return pipelineStatusCmd
 }
