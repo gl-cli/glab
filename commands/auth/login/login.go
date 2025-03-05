@@ -59,7 +59,7 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 			Authenticate with a GitLab instance.
 			You can pass in a token on standard input by using %[1]s--stdin%[1]s.
 			The minimum required scopes for the token are: %[1]sapi%[1]s, %[1]swrite_repository%[1]s.
-			Configuration and credentials are stored in the global configuration file (Default: %[1]s~/.config/glab-cli/config.yml%[1]s)
+			Configuration and credentials are stored in the global configuration file (default %[1]s~/.config/glab-cli/config.yml%[1]s)
 		`, "`"),
 		Example: heredoc.Docf(`
 			# Start interactive setup

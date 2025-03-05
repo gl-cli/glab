@@ -31,7 +31,7 @@ glab config get <key> [flags]
 ## Options
 
 ```plaintext
-  -g, --global        Read from global config file (~/.config/glab-cli/config.yml). Default: checks 'Environment variables → Local → Global'.
+  -g, --global        Read from global config file (~/.config/glab-cli/config.yml). (default checks 'Environment variables → Local → Global')
   -h, --host string   Get per-host setting.
 ```
 

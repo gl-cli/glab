@@ -134,7 +134,7 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	pipelineGetCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. (Default: current branch)")
+	pipelineGetCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. (default current branch)")
 	pipelineGetCmd.Flags().IntP("pipeline-id", "p", 0, "Provide pipeline ID.")
 	pipelineGetCmd.Flags().StringP("output", "F", "text", "Format output. Options: text, json.")
 	pipelineGetCmd.Flags().StringP("output-format", "o", "text", "Use output.")

@@ -78,7 +78,7 @@ func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	pipelineTriggerCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. Default: current branch.")
+	pipelineTriggerCmd.Flags().StringP("branch", "b", "", "The branch to search for the job. (default current branch)")
 	pipelineTriggerCmd.Flags().IntP("pipeline-id", "p", 0, "The pipeline ID to search for the job.")
 	return pipelineTriggerCmd
 }
