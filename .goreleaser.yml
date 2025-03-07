@@ -87,19 +87,15 @@ docker_manifests:
     image_templates:
       - "gitlab/glab:{{ .Tag }}-amd64"
       - "gitlab/glab:{{ .Tag }}-arm64"
+
 archives:
   - id: nix
-    builds: [macos, linux]
+    ids: [macos, linux, freebsd]
     wrap_in_directory: false
-    format: tar.gz
-
-  - id: freebsd
-    wrap_in_directory: false
-    builds: [freebsd]
 
   - id: windows
-    builds: [windows]
-    format: zip
+    ids: [windows]
+    formats: zip
 
 nfpms:
   - id: foo
