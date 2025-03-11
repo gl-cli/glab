@@ -69,7 +69,8 @@ func NewCmdRetry(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return cmdutils.WrapError(err, fmt.Sprintf("Could not retry job with ID: %d", jobID))
 			}
-			fmt.Fprintln(f.IO.StdOut, "Retried job (ID:", job.ID, "), status:", job.Status, ", ref:", job.Ref, ", weburl: ", job.WebURL, ")")
+			output := fmt.Sprintf("Retried job (ID: %d), status: %s, ref: %s, weburl: %s", job.ID, job.Status, job.Ref, job.WebURL)
+			fmt.Fprintln(f.IO.StdOut, output)
 
 			return nil
 		},

@@ -43,7 +43,7 @@ func TestCiRetry(t *testing.T) {
 		{
 			name:        "when retry with job-id",
 			args:        "1122",
-			expectedOut: "Retried job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
+			expectedOut: "Retried job (ID: 1123), status: pending, ref: branch-name, weburl: https://gitlab.com/OWNER/REPO/-/jobs/1123\n",
 			httpMocks: []httpMock{
 				{
 					http.MethodPost,
@@ -81,7 +81,7 @@ func TestCiRetry(t *testing.T) {
 		{
 			name:        "when retry with job-name",
 			args:        "lint -b main -p 123",
-			expectedOut: "Retried job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
+			expectedOut: "Retried job (ID: 1123), status: pending, ref: branch-name, weburl: https://gitlab.com/OWNER/REPO/-/jobs/1123\n",
 			httpMocks: []httpMock{
 				{
 					http.MethodPost,
@@ -133,7 +133,7 @@ func TestCiRetry(t *testing.T) {
 		{
 			name:        "when retry with job-name and last pipeline",
 			args:        "lint -b main",
-			expectedOut: "Retried job (ID: 1123 ), status: pending , ref: branch-name , weburl:  https://gitlab.com/OWNER/REPO/-/jobs/1123 )\n",
+			expectedOut: "Retried job (ID: 1123), status: pending, ref: branch-name, weburl: https://gitlab.com/OWNER/REPO/-/jobs/1123\n",
 			httpMocks: []httpMock{
 				{
 					http.MethodPost,

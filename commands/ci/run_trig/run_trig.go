@@ -103,7 +103,9 @@ func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintln(f.IO.StdOut, "Created pipeline (ID:", pipe.ID, "), status:", pipe.Status, ", ref:", pipe.Ref, ", weburl: ", pipe.WebURL, ")")
+			output := fmt.Sprintf("Created pipeline (ID: %d), status: %s, ref: %s, weburl: %s", pipe.ID, pipe.Status, pipe.Ref, pipe.WebURL)
+			fmt.Fprintln(f.IO.StdOut, output)
+
 			return nil
 		},
 	}
