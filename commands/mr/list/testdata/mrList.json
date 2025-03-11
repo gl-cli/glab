@@ -7,114 +7,90 @@
     "project_id": 29316529,
     "title": "Draft: Resolve \"fake issue\"",
     "state": "opened",
+    "imported": false,
+    "imported_from": "",
     "created_at": "2022-01-20T21:20:50.665Z",
     "updated_at": "2022-01-20T21:47:54.11Z",
     "upvotes": 0,
     "downvotes": 0,
-    "author":
-    {
+    "author": {
       "id": 8814129,
       "username": "OWNER",
       "name": "Some User",
       "state": "active",
+      "locked": false,
       "created_at": null,
       "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/8814129/avatar.png",
-      "web_url": "https://gitlab.com/OWNER",
-      "locked": false
+      "web_url": "https://gitlab.com/OWNER"
     },
-    "assignee":
-    {
+    "assignee": {
       "id": 8814129,
       "username": "OWNER",
       "name": "Some User",
       "state": "active",
+      "locked": false,
       "created_at": null,
       "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/8814129/avatar.png",
-      "web_url": "https://gitlab.com/OWNER",
-      "locked": false
+      "web_url": "https://gitlab.com/OWNER"
     },
-    "assignees":
-    [
+    "assignees": [
       {
         "id": 8814129,
         "username": "OWNER",
         "name": "Some User",
         "state": "active",
+        "locked": false,
         "created_at": null,
         "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/8814129/avatar.png",
-        "web_url": "https://gitlab.com/OWNER",
-        "locked": false
+        "web_url": "https://gitlab.com/OWNER"
       }
     ],
-    "reviewers":
-    [],
+    "reviewers": [],
     "source_project_id": 29316529,
     "target_project_id": 29316529,
     "labels": [],
     "label_details": null,
     "description": "Closes #1",
     "draft": true,
-    "work_in_progress": true,
     "milestone": null,
     "merge_when_pipeline_succeeds": false,
     "detailed_merge_status": "draft_status",
-    "merge_error": "",
     "merged_by": null,
+    "merge_user": null,
     "merged_at": null,
+    "merge_after": null,
+    "prepared_at": null,
     "closed_by": null,
     "closed_at": null,
-    "subscribed": false,
     "sha": "44eb489568f7cb1a5a730fce6b247cd3797172ca",
     "merge_commit_sha": "",
     "squash_commit_sha": "",
     "user_notes_count": 0,
-    "changes_count": "",
     "should_remove_source_branch": false,
     "force_remove_source_branch": true,
     "allow_collaboration": false,
+    "allow_maintainer_to_push": false,
     "web_url": "https://gitlab.com/OWNER/REPO/-/merge_requests/4",
-    "references":
-    {
+    "references": {
       "short": "!4",
       "relative": "!4",
       "full": "OWNER/REPO!4"
     },
     "discussion_locked": false,
-    "changes": null,
-    "user":
-    {
-      "can_merge": false
-    },
-    "time_stats":
-    {
+    "time_stats": {
       "human_time_estimate": "",
       "human_total_time_spent": "",
       "time_estimate": 0,
       "total_time_spent": 0
     },
     "squash": false,
-    "pipeline": null,
-    "head_pipeline": null,
-    "diff_refs":
-    {
-      "base_sha": "",
-      "head_sha": "",
-      "start_sha": ""
-    },
-    "diverged_commits_count": 0,
-    "rebase_in_progress": false,
-    "approvals_before_merge": 0,
-    "reference": "!4",
-    "first_contribution": false,
-    "task_completion_status":
-    {
+    "squash_on_merge": false,
+    "task_completion_status": {
       "count": 0,
       "completed_count": 0
     },
     "has_conflicts": false,
-    "blocking_discussions_resolved": true,
-    "overflow": false,
-    "merge_status": "can_be_merged"
+    "blocking_discussions_resolved": true
   },
   {
     "id": 135750125,
@@ -124,92 +100,69 @@
     "project_id": 29316529,
     "title": "Update .gitlab-ci.yml",
     "state": "opened",
+    "imported": false,
+    "imported_from": "",
     "created_at": "2022-01-18T17:02:23.27Z",
     "updated_at": "2022-01-18T18:06:50.054Z",
     "upvotes": 0,
     "downvotes": 0,
-    "author":
-    {
+    "author": {
       "id": 8814129,
       "username": "OWNER",
       "name": "Some User",
       "state": "active",
+      "locked": false,
       "created_at": null,
       "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/8814129/avatar.png",
-      "web_url": "https://gitlab.com/OWNER",
-      "locked": false
+      "web_url": "https://gitlab.com/OWNER"
     },
     "assignee": null,
-    "assignees":
-    [],
-    "reviewers":
-    [],
+    "assignees": [],
+    "reviewers": [],
     "source_project_id": 29316529,
     "target_project_id": 29316529,
     "labels": [],
     "label_details": null,
     "description": "",
     "draft": false,
-    "work_in_progress": false,
     "milestone": null,
     "merge_when_pipeline_succeeds": false,
     "detailed_merge_status": "mergeable",
-    "merge_error": "",
     "merged_by": null,
+    "merge_user": null,
     "merged_at": null,
+    "merge_after": null,
+    "prepared_at": null,
     "closed_by": null,
     "closed_at": null,
-    "subscribed": false,
     "sha": "123f34ebfd5d97ef562974e55e01b83f06ae7b4a",
     "merge_commit_sha": "",
     "squash_commit_sha": "",
     "user_notes_count": 0,
-    "changes_count": "",
     "should_remove_source_branch": false,
     "force_remove_source_branch": true,
     "allow_collaboration": false,
+    "allow_maintainer_to_push": false,
     "web_url": "https://gitlab.com/OWNER/REPO/-/merge_requests/1",
-    "references":
-    {
+    "references": {
       "short": "!1",
       "relative": "!1",
       "full": "OWNER/REPO!1"
     },
     "discussion_locked": false,
-    "changes": null,
-    "user":
-    {
-      "can_merge": false
-    },
-    "time_stats":
-    {
+    "time_stats": {
       "human_time_estimate": "",
       "human_total_time_spent": "",
       "time_estimate": 0,
       "total_time_spent": 0
     },
     "squash": false,
-    "pipeline": null,
-    "head_pipeline": null,
-    "diff_refs":
-    {
-      "base_sha": "",
-      "head_sha": "",
-      "start_sha": ""
-    },
-    "diverged_commits_count": 0,
-    "rebase_in_progress": false,
-    "approvals_before_merge": 0,
-    "reference": "!1",
-    "first_contribution": false,
-    "task_completion_status":
-    {
+    "squash_on_merge": false,
+    "task_completion_status": {
       "count": 0,
       "completed_count": 0
     },
     "has_conflicts": false,
-    "blocking_discussions_resolved": true,
-    "overflow": false,
-    "merge_status": "can_be_merged"
+    "blocking_discussions_resolved": true
   }
 ]

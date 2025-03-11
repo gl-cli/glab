@@ -180,7 +180,7 @@ func TestNewCmdView(t *testing.T) {
 						ID:    1,
 						Body:  "Note Body",
 						Title: "Note Title",
-						Author: cmdtest.Author{
+						Author: gitlab.NoteAuthor{
 							ID:       1,
 							Username: "johnwick",
 							Name:     "John Wick",
@@ -193,7 +193,7 @@ func TestNewCmdView(t *testing.T) {
 						ID:    1,
 						Body:  fmt.Sprintf("Marked %s as stale", testIssuable.issueType),
 						Title: "",
-						Author: cmdtest.Author{
+						Author: gitlab.NoteAuthor{
 							ID:       1,
 							Username: "johnwick",
 							Name:     "John Wick",

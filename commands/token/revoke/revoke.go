@@ -170,7 +170,7 @@ func revokeTokenRun(opts *RevokeOptions) error {
 			if err != nil {
 				return err
 			}
-			options := &gitlab.ListProjectAccessTokensOptions{PerPage: 100}
+			options := &gitlab.ListProjectAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
 			tokens, err := api.ListProjectAccessTokens(httpClient, repo.FullName(), options)
 			if err != nil {
 				return err

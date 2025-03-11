@@ -21,8 +21,8 @@ import (
 )
 
 type MRCheckErrOptions struct {
-	// WorkInProgress: check and return err if merge request is a DRAFT
-	WorkInProgress bool
+	// Draft: check and return err if merge request is a DRAFT
+	Draft bool
 	// Closed: check and return err if merge request is closed
 	Closed bool
 	// Merged: check and return err if merge request is already merged
@@ -52,7 +52,7 @@ type mrOptions struct {
 
 // MRCheckErrors checks and return merge request errors specified in MRCheckErrOptions{}
 func MRCheckErrors(mr *gitlab.MergeRequest, err MRCheckErrOptions) error {
-	if mr.WorkInProgress && err.WorkInProgress {
+	if mr.Draft && err.Draft {
 		return fmt.Errorf("this merge request is still a draft. Run `glab mr update %d --ready` to mark it as ready for review.", mr.IID)
 	}
 
@@ -100,7 +100,7 @@ func MRCheckErrors(mr *gitlab.MergeRequest, err MRCheckErrOptions) error {
 	return nil
 }
 
-func DisplayMR(c *iostreams.ColorPalette, mr *gitlab.MergeRequest, isTTY bool) string {
+func DisplayMR(c *iostreams.ColorPalette, mr *gitlab.BasicMergeRequest, isTTY bool) string {
 	mrID := MRState(c, mr)
 	if isTTY {
 		return fmt.Sprintf("%s %s (%s)\n %s\n", mrID, mr.Title, mr.SourceBranch, mr.WebURL)
@@ -109,7 +109,7 @@ func DisplayMR(c *iostreams.ColorPalette, mr *gitlab.MergeRequest, isTTY bool) s
 	}
 }
 
-func MRState(c *iostreams.ColorPalette, m *gitlab.MergeRequest) string {
+func MRState(c *iostreams.ColorPalette, m *gitlab.BasicMergeRequest) string {
 	if m.State == "opened" {
 		return c.Green(fmt.Sprintf("!%d", m.IID))
 	} else if m.State == "merged" {
@@ -119,7 +119,7 @@ func MRState(c *iostreams.ColorPalette, m *gitlab.MergeRequest) string {
 	}
 }
 
-func DisplayAllMRs(streams *iostreams.IOStreams, mrs []*gitlab.MergeRequest) string {
+func DisplayAllMRs(streams *iostreams.IOStreams, mrs []*gitlab.BasicMergeRequest) string {
 	c := streams.Color()
 	table := tableprinter.NewTablePrinter()
 	table.SetIsTTY(streams.IsOutputTTY())
@@ -178,11 +178,11 @@ func MRFromArgsWithOpts(
 	}
 
 	if mrID == 0 {
-		mr, err = getMRForBranch(apiClient, mrOptions{baseRepo, branch, state, f.IO.PromptEnabled()})
+		basicMR, err := getMRForBranch(apiClient, mrOptions{baseRepo, branch, state, f.IO.PromptEnabled()})
 		if err != nil {
 			return nil, nil, err
 		}
-		mrID = mr.IID
+		mrID = basicMR.IID
 	}
 	mr, err = api.GetMR(apiClient, baseRepo.FullName(), mrID, opts)
 	if err != nil {
@@ -235,7 +235,7 @@ func MRsFromArgs(f *cmdutils.Factory, args []string, state string) ([]*gitlab.Me
 	return mrs, baseRepo, nil
 }
 
-var getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.MergeRequest, error) {
+var getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.BasicMergeRequest, error) {
 	currentBranch := mrOpts.arg // Assume the user is using only 'branch', not 'OWNER:branch'
 	var owner string
 
@@ -287,7 +287,7 @@ var getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.M
 	}
 
 	// No 'OWNER:' prompt the user to pick a merge request
-	mrMap := map[string]*gitlab.MergeRequest{}
+	mrMap := map[string]*gitlab.BasicMergeRequest{}
 	var mrNames []string
 	for i := range mrs {
 		t := fmt.Sprintf("!%d (%s) by @%s", mrs[i].IID, currentBranch, mrs[i].Author.Username)

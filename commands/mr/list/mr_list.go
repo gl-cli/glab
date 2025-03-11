@@ -164,7 +164,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 }
 
 func listRun(opts *ListOptions) error {
-	var mergeRequests []*gitlab.MergeRequest
+	var mergeRequests []*gitlab.BasicMergeRequest
 
 	apiClient, err := opts.HTTPClient()
 	if err != nil {

@@ -56,38 +56,40 @@ hosts:
 			return nil, err
 		}
 		return &gitlab.MergeRequest{
-			ID:          mrID,
-			IID:         mrID,
-			Title:       "mrTitle",
-			Labels:      gitlab.Labels{"test", "bug"},
-			State:       "opened",
-			Description: "mrBody",
-			Author: &gitlab.BasicUser{
-				ID:       mrID,
-				Name:     "John Dev Wick",
-				Username: "jdwick",
-			},
-			Assignees: []*gitlab.BasicUser{
-				{
-					Username: "mona",
+			BasicMergeRequest: gitlab.BasicMergeRequest{
+				ID:          mrID,
+				IID:         mrID,
+				Title:       "mrTitle",
+				Labels:      gitlab.Labels{"test", "bug"},
+				State:       "opened",
+				Description: "mrBody",
+				Author: &gitlab.BasicUser{
+					ID:       mrID,
+					Name:     "John Dev Wick",
+					Username: "jdwick",
 				},
-				{
-					Username: "lisa",
+				Assignees: []*gitlab.BasicUser{
+					{
+						Username: "mona",
+					},
+					{
+						Username: "lisa",
+					},
 				},
-			},
-			Reviewers: []*gitlab.BasicUser{
-				{
-					Username: "lisa",
+				Reviewers: []*gitlab.BasicUser{
+					{
+						Username: "lisa",
+					},
+					{
+						Username: "mona",
+					},
 				},
-				{
-					Username: "mona",
+				WebURL:         fmt.Sprintf("https://%s/%s/-/merge_requests/%d", repo.RepoHost(), repo.FullName(), mrID),
+				CreatedAt:      &timer,
+				UserNotesCount: 2,
+				Milestone: &gitlab.Milestone{
+					Title: "MilestoneTitle",
 				},
-			},
-			WebURL:         fmt.Sprintf("https://%s/%s/-/merge_requests/%d", repo.RepoHost(), repo.FullName(), mrID),
-			CreatedAt:      &timer,
-			UserNotesCount: 2,
-			Milestone: &gitlab.Milestone{
-				Title: "MilestoneTitle",
 			},
 		}, nil
 	}
@@ -136,7 +138,7 @@ func TestMRView(t *testing.T) {
 				ID:    1,
 				Body:  "Note Body",
 				Title: "Note Title",
-				Author: cmdtest.Author{
+				Author: gitlab.NoteAuthor{
 					ID:       1,
 					Username: "johnwick",
 					Name:     "John Wick",
@@ -149,7 +151,7 @@ func TestMRView(t *testing.T) {
 				ID:    1,
 				Body:  "Marked MR as ready",
 				Title: "",
-				Author: cmdtest.Author{
+				Author: gitlab.NoteAuthor{
 					ID:       1,
 					Username: "johnwick",
 					Name:     "John Wick",
@@ -235,17 +237,19 @@ func Test_rawMRPreview(t *testing.T) {
 	time2, _ := time.Parse(time.RFC3339, "2023-03-09T16:52:30.222Z")
 
 	mr := &gitlab.MergeRequest{
-		IID:            503,
-		Title:          "MR title",
-		Description:    "MR description",
-		State:          "merged",
-		Author:         &gitlab.BasicUser{Username: "alice"},
-		Labels:         gitlab.Labels{"label1", "label2"},
-		Assignees:      []*gitlab.BasicUser{{Username: "alice"}, {Username: "bob"}},
-		Reviewers:      []*gitlab.BasicUser{{Username: "john"}, {Username: "paul"}},
-		UserNotesCount: 2,
-		Milestone:      &gitlab.Milestone{Title: "Some milestone"},
-		WebURL:         "https://gitlab.com/OWNER/REPO/-/merge_requests/503",
+		BasicMergeRequest: gitlab.BasicMergeRequest{
+			IID:            503,
+			Title:          "MR title",
+			Description:    "MR description",
+			State:          "merged",
+			Author:         &gitlab.BasicUser{Username: "alice"},
+			Labels:         gitlab.Labels{"label1", "label2"},
+			Assignees:      []*gitlab.BasicUser{{Username: "alice"}, {Username: "bob"}},
+			Reviewers:      []*gitlab.BasicUser{{Username: "john"}, {Username: "paul"}},
+			UserNotesCount: 2,
+			Milestone:      &gitlab.Milestone{Title: "Some milestone"},
+			WebURL:         "https://gitlab.com/OWNER/REPO/-/merge_requests/503",
+		},
 	}
 
 	notes := []*gitlab.Note{
@@ -373,17 +377,23 @@ func Test_labelsList(t *testing.T) {
 	}{
 		{
 			"no labels",
-			&gitlab.MergeRequest{Labels: gitlab.Labels{}},
+			&gitlab.MergeRequest{BasicMergeRequest: gitlab.BasicMergeRequest{
+				Labels: gitlab.Labels{},
+			}},
 			"",
 		},
 		{
 			"one label",
-			&gitlab.MergeRequest{Labels: gitlab.Labels{"label1"}},
+			&gitlab.MergeRequest{BasicMergeRequest: gitlab.BasicMergeRequest{
+				Labels: gitlab.Labels{"label1"},
+			}},
 			"label1",
 		},
 		{
 			"two labels",
-			&gitlab.MergeRequest{Labels: gitlab.Labels{"label1", "label2"}},
+			&gitlab.MergeRequest{BasicMergeRequest: gitlab.BasicMergeRequest{
+				Labels: gitlab.Labels{"label1", "label2"},
+			}},
 			"label1, label2",
 		},
 	}
@@ -407,17 +417,23 @@ func Test_assigneesList(t *testing.T) {
 	}{
 		{
 			"no assignee",
-			&gitlab.MergeRequest{Assignees: []*gitlab.BasicUser{}},
+			&gitlab.MergeRequest{BasicMergeRequest: gitlab.BasicMergeRequest{
+				Assignees: []*gitlab.BasicUser{},
+			}},
 			"",
 		},
 		{
 			"one assignee",
-			&gitlab.MergeRequest{Assignees: []*gitlab.BasicUser{{Username: "Alice"}}},
+			&gitlab.MergeRequest{BasicMergeRequest: gitlab.BasicMergeRequest{
+				Assignees: []*gitlab.BasicUser{{Username: "Alice"}},
+			}},
 			"Alice",
 		},
 		{
 			"two assignees",
-			&gitlab.MergeRequest{Assignees: []*gitlab.BasicUser{{Username: "Alice"}, {Username: "Bob"}}},
+			&gitlab.MergeRequest{BasicMergeRequest: gitlab.BasicMergeRequest{
+				Assignees: []*gitlab.BasicUser{{Username: "Alice"}, {Username: "Bob"}},
+			}},
 			"Alice, Bob",
 		},
 	}
@@ -441,17 +457,23 @@ func Test_reviewersList(t *testing.T) {
 	}{
 		{
 			"no assignee",
-			&gitlab.MergeRequest{Reviewers: []*gitlab.BasicUser{}},
+			&gitlab.MergeRequest{BasicMergeRequest: gitlab.BasicMergeRequest{
+				Reviewers: []*gitlab.BasicUser{},
+			}},
 			"",
 		},
 		{
 			"one assignee",
-			&gitlab.MergeRequest{Reviewers: []*gitlab.BasicUser{{Username: "Alice"}}},
+			&gitlab.MergeRequest{BasicMergeRequest: gitlab.BasicMergeRequest{
+				Reviewers: []*gitlab.BasicUser{{Username: "Alice"}},
+			}},
 			"Alice",
 		},
 		{
 			"two assignees",
-			&gitlab.MergeRequest{Reviewers: []*gitlab.BasicUser{{Username: "Alice"}, {Username: "Bob"}}},
+			&gitlab.MergeRequest{BasicMergeRequest: gitlab.BasicMergeRequest{
+				Reviewers: []*gitlab.BasicUser{{Username: "Alice"}, {Username: "Bob"}},
+			}},
 			"Alice, Bob",
 		},
 	}

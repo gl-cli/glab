@@ -135,7 +135,7 @@ var DeleteGroupVariable = func(client *gitlab.Client, groupID interface{}, key s
 		client = apiClient.Lab()
 	}
 
-	_, err := client.GroupVariables.RemoveVariable(groupID, key)
+	_, err := client.GroupVariables.RemoveVariable(groupID, key, nil)
 	if err != nil {
 		return err
 	}

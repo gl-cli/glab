@@ -419,7 +419,7 @@ func populateMR(ref *git.StackRef, opts *Options, client *gitlab.Client, gr git.
 	}
 
 	fmt.Println(progressString("Merge request created!"))
-	fmt.Println(mrutils.DisplayMR(iostream.Color(), mr, true))
+	fmt.Println(mrutils.DisplayMR(iostream.Color(), &mr.BasicMergeRequest, true))
 
 	// update the ref
 	ref.MR = mr.WebURL

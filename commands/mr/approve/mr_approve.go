@@ -41,9 +41,9 @@ func NewCmdApprove(f *cmdutils.Factory) *cobra.Command {
 
 			for _, mr := range mrs {
 				if err = mrutils.MRCheckErrors(mr, mrutils.MRCheckErrOptions{
-					WorkInProgress: true,
-					Closed:         true,
-					Merged:         true,
+					Draft:  true,
+					Closed: true,
+					Merged: true,
 				}); err != nil {
 					return err
 				}

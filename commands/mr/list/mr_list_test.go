@@ -709,6 +709,6 @@ func TestMergeRequestList_SortAndOrderBy(t *testing.T) {
 
 	!6	OWNER/REPO/merge_requests/6	MergeRequest one	(master) ← (test1)
 	!7	OWNER/REPO/merge_requests/7	MergeRequest two	(master) ← (test2)
-	
+
 	`), output.String())
 }

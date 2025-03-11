@@ -216,7 +216,7 @@ func createTokenRun(opts *CreateOptions) error {
 			if err != nil {
 				return err
 			}
-			listOptions := &gitlab.ListProjectAccessTokensOptions{PerPage: 100}
+			listOptions := &gitlab.ListProjectAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
 			tokens, err := api.ListProjectAccessTokens(httpClient, repo.FullName(), listOptions)
 			if err != nil {
 				return err

@@ -636,7 +636,7 @@ func createRun(opts *CreateOpts) error {
 			return err
 		}
 
-		fmt.Fprintln(out, mrutils.DisplayMR(c, mr, opts.IO.IsaTTY))
+		fmt.Fprintln(out, mrutils.DisplayMR(c, &mr.BasicMergeRequest, opts.IO.IsaTTY))
 		return nil
 	}
 

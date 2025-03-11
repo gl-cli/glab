@@ -86,6 +86,8 @@ var personalAccessTokenResponse = heredoc.Doc(`
 			    "name": "my-pat",
 			    "revoked": false,
 			    "created_at": "2024-07-08T01:23:04.311Z",
+		        "description": "",
+
 			    "scopes": [
 			      "k8s_proxy"
 			    ],
@@ -156,6 +158,7 @@ var groupAccessTokenResponse = heredoc.Doc(`
       "read_repository"
     ],
     "created_at": "2024-07-08T17:33:34.829Z",
+    "description": "",
     "expires_at": "2024-08-07",
     "last_used_at": null,
     "active": true,
@@ -221,6 +224,7 @@ var projectAccessTokenResponse = heredoc.Doc(`
 			"read_repository"
 		],
 		"created_at": "2024-07-08T19:47:14.727Z",
+		"description": "",
 		"last_used_at": null,
 		"expires_at": "2024-08-07",
 		"active": true,
