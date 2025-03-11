@@ -51,19 +51,21 @@ hosts:
 		}
 
 		mr := &gitlab.MergeRequest{
-			ID:          mrID,
-			IID:         mrID,
-			Title:       *opts.Title,
-			Labels:      gitlab.Labels{"bug", "test"},
-			State:       "opened",
-			Description: "mrbody",
-			Author: &gitlab.BasicUser{
-				ID:       mrID,
-				Name:     "John Dev Wick",
-				Username: "jdwick",
+			BasicMergeRequest: gitlab.BasicMergeRequest{
+				ID:          mrID,
+				IID:         mrID,
+				Title:       *opts.Title,
+				Labels:      gitlab.Labels{"bug", "test"},
+				State:       "opened",
+				Description: "mrbody",
+				Author: &gitlab.BasicUser{
+					ID:       mrID,
+					Name:     "John Dev Wick",
+					Username: "jdwick",
+				},
+				WebURL:    "https://" + repo.RepoHost() + "/" + repo.FullName() + "/-/merge_requests/" + fmt.Sprintf("%d", mrID),
+				CreatedAt: &timer,
 			},
-			WebURL:    "https://" + repo.RepoHost() + "/" + repo.FullName() + "/-/merge_requests/" + fmt.Sprintf("%d", mrID),
-			CreatedAt: &timer,
 		}
 
 		if opts.RemoveSourceBranch != nil {
@@ -88,24 +90,26 @@ hosts:
 			3: "Draft: wip: wip: draft: DrAfT: mrTitle",
 		}[mrID]
 		return &gitlab.MergeRequest{
-			ID:                      mrID,
-			IID:                     mrID,
-			Title:                   title,
-			Labels:                  gitlab.Labels{"test", "bug"},
-			State:                   "opened",
-			Description:             "mrBody",
-			ForceRemoveSourceBranch: toggle,
-			Author: &gitlab.BasicUser{
-				ID:       mrID,
-				Name:     "John Dev Wick",
-				Username: "jdwick",
+			BasicMergeRequest: gitlab.BasicMergeRequest{
+				ID:                      mrID,
+				IID:                     mrID,
+				Title:                   title,
+				Labels:                  gitlab.Labels{"test", "bug"},
+				State:                   "opened",
+				Description:             "mrBody",
+				ForceRemoveSourceBranch: toggle,
+				Author: &gitlab.BasicUser{
+					ID:       mrID,
+					Name:     "John Dev Wick",
+					Username: "jdwick",
+				},
+				WebURL: fmt.Sprintf("https://%s/%s/-/merge_requests/%d", repo.RepoHost(), repo.FullName(), mrID),
 			},
-			WebURL: fmt.Sprintf("https://%s/%s/-/merge_requests/%d", repo.RepoHost(), repo.FullName(), mrID),
 		}, nil
 	}
 
-	api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.MergeRequest, error) {
-		return []*gitlab.MergeRequest{}, nil
+	api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+		return []*gitlab.BasicMergeRequest{}, nil
 	}
 
 	testCases := []struct {

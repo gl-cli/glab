@@ -84,7 +84,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if err = mrutils.MRCheckErrors(mr, mrutils.MRCheckErrOptions{
-				WorkInProgress: true,
+				Draft:          true,
 				Closed:         true,
 				Merged:         true,
 				Conflict:       true,
@@ -246,7 +246,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 				}
 				fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), action)
 			}
-			fmt.Fprintln(f.IO.StdOut, mrutils.DisplayMR(c, mr, f.IO.IsaTTY))
+			fmt.Fprintln(f.IO.StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO.IsaTTY))
 			return nil
 		},
 	}

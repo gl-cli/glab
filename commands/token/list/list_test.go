@@ -34,6 +34,7 @@ var projectAccessTokenResponse = heredoc.Doc(`
 		    "read_api"
 		  ],
 		  "created_at": "2024-07-07T07:59:35.767Z",
+		  "description": "",
 		  "last_used_at": null,
 		  "expires_at": "2024-08-06",
 		  "active": true,
@@ -88,6 +89,7 @@ var groupAccessTokenResponse = heredoc.Doc(`
 		        "read_api"
 		      ],
 		      "created_at": "2024-07-07T08:41:16.287Z",
+		      "description": "",
 		      "expires_at": "2024-08-06",
 		      "last_used_at": null,
 		      "active": true,
@@ -140,6 +142,7 @@ var personalAccessTokenResponse = heredoc.Doc(`
 			    "name": "awsssm",
 			    "revoked": false,
 			    "created_at": "2024-05-29T07:25:56.846Z",
+			    "description": "",
 			    "scopes": [
 			      "api"
 			    ],
@@ -152,6 +155,7 @@ var personalAccessTokenResponse = heredoc.Doc(`
 			    "name": "glab",
 			    "revoked": false,
 			    "created_at": "2024-05-29T07:34:14.044Z",
+			    "description": "",
 			    "scopes": [
 			      "api"
 			    ],
@@ -165,6 +169,7 @@ var personalAccessTokenResponse = heredoc.Doc(`
 			    "name": "api",
 			    "revoked": false,
 			    "created_at": "2024-07-05T10:02:37.182Z",
+			    "description": "",
 			    "scopes": [
 			      "api"
 			    ],

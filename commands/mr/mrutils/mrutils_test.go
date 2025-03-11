@@ -18,13 +18,13 @@ import (
 func Test_DisplayMR(t *testing.T) {
 	testCases := []struct {
 		name        string
-		mr          *gitlab.MergeRequest
+		mr          *gitlab.BasicMergeRequest
 		output      string
 		outputToTTY bool
 	}{
 		{
 			name: "opened",
-			mr: &gitlab.MergeRequest{
+			mr: &gitlab.BasicMergeRequest{
 				IID:          1,
 				State:        "opened",
 				Title:        "This is open",
@@ -36,7 +36,7 @@ func Test_DisplayMR(t *testing.T) {
 		},
 		{
 			name: "merged",
-			mr: &gitlab.MergeRequest{
+			mr: &gitlab.BasicMergeRequest{
 				IID:          2,
 				State:        "merged",
 				Title:        "This is merged",
@@ -48,7 +48,7 @@ func Test_DisplayMR(t *testing.T) {
 		},
 		{
 			name: "closed",
-			mr: &gitlab.MergeRequest{
+			mr: &gitlab.BasicMergeRequest{
 				IID:          3,
 				State:        "closed",
 				Title:        "This is closed",
@@ -60,7 +60,7 @@ func Test_DisplayMR(t *testing.T) {
 		},
 		{
 			name: "non-tty terse output",
-			mr: &gitlab.MergeRequest{
+			mr: &gitlab.BasicMergeRequest{
 				IID:          4,
 				State:        "open",
 				Title:        "This shouldn't be visible",
@@ -90,19 +90,23 @@ func Test_MRCheckErrors(t *testing.T) {
 		{
 			name: "draft",
 			mr: &gitlab.MergeRequest{
-				IID:            1,
-				WorkInProgress: true,
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID:   1,
+					Draft: true,
+				},
 			},
 			errOpts: MRCheckErrOptions{
-				WorkInProgress: true,
+				Draft: true,
 			},
 			output: "this merge request is still a draft. Run `glab mr update 1 --ready` to mark it as ready for review.",
 		},
 		{
 			name: "pipeline",
 			mr: &gitlab.MergeRequest{
-				IID:                       1,
-				MergeWhenPipelineSucceeds: true,
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID:                       1,
+					MergeWhenPipelineSucceeds: true,
+				},
 				Pipeline: &gitlab.PipelineInfo{
 					Status: "failure",
 				},
@@ -115,8 +119,10 @@ func Test_MRCheckErrors(t *testing.T) {
 		{
 			name: "merged",
 			mr: &gitlab.MergeRequest{
-				IID:   1,
-				State: "merged",
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID:   1,
+					State: "merged",
+				},
 			},
 			errOpts: MRCheckErrOptions{
 				Merged: true,
@@ -126,8 +132,10 @@ func Test_MRCheckErrors(t *testing.T) {
 		{
 			name: "closed",
 			mr: &gitlab.MergeRequest{
-				IID:   1,
-				State: "closed",
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID:   1,
+					State: "closed",
+				},
 			},
 			errOpts: MRCheckErrOptions{
 				Closed: true,
@@ -137,8 +145,10 @@ func Test_MRCheckErrors(t *testing.T) {
 		{
 			name: "opened",
 			mr: &gitlab.MergeRequest{
-				IID:   1,
-				State: "opened",
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID:   1,
+					State: "opened",
+				},
 			},
 			errOpts: MRCheckErrOptions{
 				Opened: true,
@@ -148,7 +158,9 @@ func Test_MRCheckErrors(t *testing.T) {
 		{
 			name: "subscribed",
 			mr: &gitlab.MergeRequest{
-				IID:        1,
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID: 1,
+				},
 				Subscribed: true,
 			},
 			errOpts: MRCheckErrOptions{
@@ -159,7 +171,9 @@ func Test_MRCheckErrors(t *testing.T) {
 		{
 			name: "unsubscribed",
 			mr: &gitlab.MergeRequest{
-				IID:        1,
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID: 1,
+				},
 				Subscribed: false,
 			},
 			errOpts: MRCheckErrOptions{
@@ -170,7 +184,9 @@ func Test_MRCheckErrors(t *testing.T) {
 		{
 			name: "merge-privilege",
 			mr: &gitlab.MergeRequest{
-				IID: 1,
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID: 1,
+				},
 				User: struct {
 					CanMerge bool "json:\"can_merge\""
 				}{CanMerge: false},
@@ -183,8 +199,10 @@ func Test_MRCheckErrors(t *testing.T) {
 		{
 			name: "conflicts",
 			mr: &gitlab.MergeRequest{
-				IID:          1,
-				HasConflicts: true,
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID:          1,
+					HasConflicts: true,
+				},
 			},
 			errOpts: MRCheckErrOptions{
 				Conflict: true,
@@ -209,7 +227,7 @@ func Test_getMRForBranchFails(t *testing.T) {
 	baseRepo := glrepo.NewWithHost("foo", "bar", "gitlab.com")
 
 	t.Run("API-call-failed", func(t *testing.T) {
-		api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.MergeRequest, error) {
+		api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 			return nil, errors.New("API call failed")
 		}
 
@@ -219,8 +237,8 @@ func Test_getMRForBranchFails(t *testing.T) {
 	})
 
 	t.Run("no-return", func(t *testing.T) {
-		api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.MergeRequest, error) {
-			return []*gitlab.MergeRequest{}, nil
+		api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+			return []*gitlab.BasicMergeRequest{}, nil
 		}
 
 		got, err := getMRForBranch(&gitlab.Client{}, mrOptions{baseRepo, "foo", "opened", true})
@@ -229,8 +247,8 @@ func Test_getMRForBranchFails(t *testing.T) {
 	})
 
 	t.Run("owner-no-match", func(t *testing.T) {
-		api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.MergeRequest, error) {
-			return []*gitlab.MergeRequest{
+		api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+			return []*gitlab.BasicMergeRequest{
 				{
 					IID: 1,
 					Author: &gitlab.BasicUser{
@@ -258,12 +276,12 @@ func Test_getMRForBranch(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  string
-		mrs    []*gitlab.MergeRequest
+		mrs    []*gitlab.BasicMergeRequest
 		expect *gitlab.MergeRequest
 	}{
 		{
 			name: "one-match",
-			mrs: []*gitlab.MergeRequest{
+			mrs: []*gitlab.BasicMergeRequest{
 				{
 					IID: 1,
 					Author: &gitlab.BasicUser{
@@ -272,16 +290,18 @@ func Test_getMRForBranch(t *testing.T) {
 				},
 			},
 			expect: &gitlab.MergeRequest{
-				IID: 1,
-				Author: &gitlab.BasicUser{
-					Username: "profclems",
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID: 1,
+					Author: &gitlab.BasicUser{
+						Username: "profclems",
+					},
 				},
 			},
 		},
 		{
 			name:  "owner-match",
 			input: "maxice8:foo",
-			mrs: []*gitlab.MergeRequest{
+			mrs: []*gitlab.BasicMergeRequest{
 				{
 					IID: 1,
 					Author: &gitlab.BasicUser{
@@ -296,16 +316,18 @@ func Test_getMRForBranch(t *testing.T) {
 				},
 			},
 			expect: &gitlab.MergeRequest{
-				IID: 2,
-				Author: &gitlab.BasicUser{
-					Username: "maxice8",
+				BasicMergeRequest: gitlab.BasicMergeRequest{
+					IID: 2,
+					Author: &gitlab.BasicUser{
+						Username: "maxice8",
+					},
 				},
 			},
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			api.ListMRs = func(_ *gitlab.Client, _ interface{}, _ *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.MergeRequest, error) {
+			api.ListMRs = func(_ *gitlab.Client, _ interface{}, _ *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 				return tC.mrs, nil
 			}
 
@@ -321,8 +343,8 @@ func Test_getMRForBranch(t *testing.T) {
 func Test_getMRForBranchPrompt(t *testing.T) {
 	baseRepo := glrepo.NewWithHost("foo", "bar", "gitlab.com")
 
-	api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.MergeRequest, error) {
-		return []*gitlab.MergeRequest{
+	api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+		return []*gitlab.BasicMergeRequest{
 			{
 				IID: 1,
 				Author: &gitlab.BasicUser{
@@ -388,9 +410,11 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			f := *f
 			api.GetMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				return &gitlab.MergeRequest{
-					IID:          2,
-					Title:        "test mr",
-					SourceBranch: "main",
+					BasicMergeRequest: gitlab.BasicMergeRequest{
+						IID:          2,
+						Title:        "test mr",
+						SourceBranch: "main",
+					},
 				}, nil
 			}
 
@@ -411,8 +435,8 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 		t.Run("via-name", func(t *testing.T) {
 			f := *f
 
-			getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.MergeRequest, error) {
-				return &gitlab.MergeRequest{
+			getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.BasicMergeRequest, error) {
+				return &gitlab.BasicMergeRequest{
 					IID:          2,
 					Title:        "test mr",
 					SourceBranch: "main",
@@ -421,9 +445,11 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 
 			api.GetMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				return &gitlab.MergeRequest{
-					IID:          2,
-					Title:        "test mr",
-					SourceBranch: "main",
+					BasicMergeRequest: gitlab.BasicMergeRequest{
+						IID:          2,
+						Title:        "test mr",
+						SourceBranch: "main",
+					},
 				}, nil
 			}
 
@@ -485,7 +511,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 		t.Run("invalid-name", func(t *testing.T) {
 			f := *f
 
-			getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.MergeRequest, error) {
+			getMRForBranch = func(_ *gitlab.Client, mrOpts mrOptions) (*gitlab.BasicMergeRequest, error) {
 				return nil, fmt.Errorf("no merge requests from branch %q", mrOpts.arg)
 			}
 
@@ -511,7 +537,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 
 func Test_DisplayAllMRs(t *testing.T) {
 	streams, _, _, _ := iostreams.Test()
-	mrs := []*gitlab.MergeRequest{
+	mrs := []*gitlab.BasicMergeRequest{
 		{
 			IID:          1,
 			State:        "opened",

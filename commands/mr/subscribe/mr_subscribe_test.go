@@ -49,20 +49,21 @@ hosts:
 			return nil, err
 		}
 		return &gitlab.MergeRequest{
-			ID:          1,
-			IID:         1,
-			Title:       "mrtitile",
-			Labels:      gitlab.Labels{"bug", "test"},
-			State:       "opened",
-			Description: "mrbody",
-			Subscribed:  false,
-			Author: &gitlab.BasicUser{
-				ID:       1,
-				Name:     "John Dev Wick",
-				Username: "jdwick",
+			BasicMergeRequest: gitlab.BasicMergeRequest{
+				ID:          1,
+				IID:         1,
+				Title:       "mrtitile",
+				Labels:      gitlab.Labels{"bug", "test"},
+				State:       "opened",
+				Description: "mrbody",
+				Author: &gitlab.BasicUser{
+					ID:       1,
+					Name:     "John Dev Wick",
+					Username: "jdwick",
+				},
+				WebURL:    "https://" + repo.RepoHost() + "/" + repo.FullName() + "/-/merge_requests/1",
+				CreatedAt: &timer,
 			},
-			WebURL:    "https://" + repo.RepoHost() + "/" + repo.FullName() + "/-/merge_requests/1",
-			CreatedAt: &timer,
 		}, nil
 	}
 
@@ -75,18 +76,20 @@ hosts:
 			return nil, err
 		}
 		return &gitlab.MergeRequest{
-			ID:          mrID,
-			IID:         mrID,
-			Title:       "mrTitle",
-			Labels:      gitlab.Labels{"test", "bug"},
-			State:       "opened",
-			Description: "mrBody",
-			Author: &gitlab.BasicUser{
-				ID:       mrID,
-				Name:     "John Dev Wick",
-				Username: "jdwick",
+			BasicMergeRequest: gitlab.BasicMergeRequest{
+				ID:          mrID,
+				IID:         mrID,
+				Title:       "mrTitle",
+				Labels:      gitlab.Labels{"test", "bug"},
+				State:       "opened",
+				Description: "mrBody",
+				Author: &gitlab.BasicUser{
+					ID:       mrID,
+					Name:     "John Dev Wick",
+					Username: "jdwick",
+				},
+				WebURL: fmt.Sprintf("https://%s/%s/-/merge_requests/%d", repo.RepoHost(), repo.FullName(), mrID),
 			},
-			WebURL: fmt.Sprintf("https://%s/%s/-/merge_requests/%d", repo.RepoHost(), repo.FullName(), mrID),
 		}, nil
 	}
 

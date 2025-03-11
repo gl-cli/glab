@@ -53,23 +53,25 @@ hosts:
 			return nil, err
 		}
 		return &gitlab.MergeRequest{
-			ID:          mrID,
-			IID:         mrID,
-			Title:       "mrTitle",
-			Labels:      gitlab.Labels{"test", "bug"},
-			State:       "opened",
-			Description: "mrBody",
-			Author: &gitlab.BasicUser{
-				ID:       mrID,
-				Name:     "John Dev Wick",
-				Username: "jdwick",
+			BasicMergeRequest: gitlab.BasicMergeRequest{
+				ID:          mrID,
+				IID:         mrID,
+				Title:       "mrTitle",
+				Labels:      gitlab.Labels{"test", "bug"},
+				State:       "opened",
+				Description: "mrBody",
+				Author: &gitlab.BasicUser{
+					ID:       mrID,
+					Name:     "John Dev Wick",
+					Username: "jdwick",
+				},
+				WebURL: fmt.Sprintf("https://%s/%s/-/merge_requests/%d", repo.RepoHost(), repo.FullName(), mrID),
 			},
-			WebURL: fmt.Sprintf("https://%s/%s/-/merge_requests/%d", repo.RepoHost(), repo.FullName(), mrID),
 		}, nil
 	}
 
-	api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.MergeRequest, error) {
-		return []*gitlab.MergeRequest{}, nil
+	api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+		return []*gitlab.BasicMergeRequest{}, nil
 	}
 
 	tests := []struct {
