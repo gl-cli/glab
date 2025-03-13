@@ -367,7 +367,7 @@ func TestReleaseCreateWithPublishToCatalog(t *testing.T) {
 	originalWd, err := os.Getwd()
 	require.NoError(t, err)
 
-	err = os.Chdir(filepath.Join(originalWd, "catalog", "testdata", "test-repo"))
+	err = os.Chdir(filepath.Join(originalWd, "..", "..", "project", "publish", "catalog", "testdata", "test-repo"))
 	require.NoError(t, err)
 
 	for _, tc := range tests {

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	securejoin "github.com/cyphar/filepath-securejoin"
-	catalog "gitlab.com/gitlab-org/cli/commands/release/create/catalog"
+	catalog "gitlab.com/gitlab-org/cli/commands/project/publish/catalog"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
 
