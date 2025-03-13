@@ -5,12 +5,33 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
-	"gitlab.com/gitlab-org/cli/pkg/utils"
-
+	"github.com/charmbracelet/glamour"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
+
+// renderWithGlamour renders markdown text using Glamour
+func renderWithGlamour(text string) string {
+	if text == "" {
+		return ""
+	}
+
+	renderer, err := glamour.NewTermRenderer(
+		glamour.WithAutoStyle(),
+		glamour.WithWordWrap(80),
+	)
+	if err != nil {
+		return text
+	}
+
+	renderedText, err := renderer.Render(text)
+	if err != nil {
+		return text
+	}
+
+	return strings.TrimSpace(renderedText)
+}
 
 // This code forked from the GitHub CLI at http://github.com/cli - cli/pkg/text/indent.go
 // https://github.com/cli/cli/blob/929e082c13909044e2585af292ae952c9ca6f25c/pkg/text/indent.go
@@ -99,9 +120,22 @@ func isRootCmd(command *cobra.Command) bool {
 }
 
 func RootHelpFunc(c *iostreams.ColorPalette, command *cobra.Command, args []string) {
+	originalLong := command.Long
+	originalExample := command.Example
+
+	if command.Long != "" {
+		command.Long = renderWithGlamour(command.Long)
+	}
+	if command.Example != "" {
+		command.Example = renderWithGlamour(command.Example)
+	}
+
 	if isRootCmd(command.Parent()) && len(args) >= 2 && args[1] != "--help" && args[1] != "-h" {
 		nestedSuggestFunc(command, args[1])
 		hasFailed = true
+
+		command.Long = originalLong
+		command.Example = originalExample
 		return
 	}
 
@@ -186,6 +220,9 @@ Use 'glab <command> <subcommand> --help' for more information about a command.`}
 		}
 		fmt.Fprintln(out)
 	}
+
+	command.Long = originalLong
+	command.Example = originalExample
 }
 
 // rpad adds padding to the right of a string.

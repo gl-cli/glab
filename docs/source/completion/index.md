@@ -22,7 +22,7 @@ evaluated by an interactive shell. To load completions:
 
 To load completions in your current shell session:
 
-```plaintext
+```shell
 source <(glab completion -s bash)
 ```
 
@@ -30,13 +30,13 @@ To load completions for every new session, run this command one time:
 
 #### Linux
 
-```plaintext
+```shell
 glab completion -s bash > /etc/bash_completion.d/glab
 ```
 
 #### macOS
 
-```plaintext
+```shell
 glab completion -s bash > /usr/local/etc/bash_completion.d/glab
 ```
 
@@ -45,13 +45,13 @@ glab completion -s bash > /usr/local/etc/bash_completion.d/glab
 If shell completion is not already enabled in your environment you must
 enable it. Run this command one time:
 
-```plaintext
+```shell
 echo "autoload -U compinit; compinit" >> ~/.zshrc
 ```
 
 To load completions in your current shell session:
 
-```plaintext
+```shell
 source <(glab completion -s zsh); compdef _glab glab
 ```
 
@@ -59,7 +59,7 @@ To load completions for every new session, run this command one time:
 
 #### Linux
 
-```plaintext
+```shell
 glab completion -s zsh > "${fpath[1]}/_glab"
 ```
 
@@ -67,7 +67,7 @@ glab completion -s zsh > "${fpath[1]}/_glab"
 
 For older versions of macOS, you might need this command:
 
-```plaintext
+```shell
 glab completion -s zsh > /usr/local/share/zsh/site-functions/_glab
 ```
 
@@ -77,13 +77,13 @@ The Homebrew version of glab should install completions automatically.
 
 To load completions in your current shell session:
 
-```plaintext
+```shell
 glab completion -s fish | source
 ```
 
 To load completions for every new session, run this command one time:
 
-```plaintext
+```shell
 glab completion -s fish > ~/.config/fish/completions/glab.fish
 ```
 
@@ -91,7 +91,7 @@ glab completion -s fish > ~/.config/fish/completions/glab.fish
 
 To load completions in your current shell session:
 
-```plaintext
+```shell
 glab completion -s powershell | Out-String | Invoke-Expression
 ```
 
