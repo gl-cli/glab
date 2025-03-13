@@ -28,7 +28,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 
 		To load completions in your current shell session:
 
-		%[2]splaintext
+		%[2]sshell
 		source <(glab completion -s bash)
 		%[2]s
 
@@ -36,13 +36,13 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 
 		#### Linux
 
-		%[2]splaintext
+		%[2]sshell
 		glab completion -s bash > /etc/bash_completion.d/glab
 		%[2]s
 
 		#### macOS
 
-		%[2]splaintext
+		%[2]sshell
 		glab completion -s bash > /usr/local/etc/bash_completion.d/glab
 		%[2]s
 
@@ -51,13 +51,13 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		If shell completion is not already enabled in your environment you must
 		enable it. Run this command one time:
 
-		%[2]splaintext
+		%[2]sshell
 		echo "autoload -U compinit; compinit" >> ~/.zshrc
 		%[2]s
 
 		To load completions in your current shell session:
 
-		%[2]splaintext
+		%[2]sshell
 		source <(glab completion -s zsh); compdef _glab glab
 		%[2]s
 
@@ -65,7 +65,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 
 		#### Linux
 
-		%[2]splaintext
+		%[2]sshell
 		glab completion -s zsh > "${fpath[1]}/_glab"
 		%[2]s
 
@@ -73,7 +73,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 
 		For older versions of macOS, you might need this command:
 
-		%[2]splaintext
+		%[2]sshell
 		glab completion -s zsh > /usr/local/share/zsh/site-functions/_glab
 		%[2]s
 
@@ -83,13 +83,13 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 
 		To load completions in your current shell session:
 
-		%[2]splaintext
+		%[2]sshell
 		glab completion -s fish | source
 		%[2]s
 
 		To load completions for every new session, run this command one time:
 
-		%[2]splaintext
+		%[2]sshell
 		glab completion -s fish > ~/.config/fish/completions/glab.fish
 		%[2]s
 
@@ -97,7 +97,7 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 
 		To load completions in your current shell session:
 
-		%[2]splaintext
+		%[2]sshell
 		glab completion -s powershell | Out-String | Invoke-Expression
 		%[2]s
 
