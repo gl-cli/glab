@@ -35,11 +35,9 @@ var projectAccessTokenResponse = heredoc.Doc(`
 		  ],
 		  "created_at": "2024-07-07T07:59:35.767Z",
 		  "description": "",
-		  "last_used_at": null,
 		  "expires_at": "2024-08-06",
 		  "active": true,
 		  "revoked": false,
-		  "token": "",
 		  "access_level": 10
 		}
 	]
@@ -91,10 +89,8 @@ var groupAccessTokenResponse = heredoc.Doc(`
 		      "created_at": "2024-07-07T08:41:16.287Z",
 		      "description": "",
 		      "expires_at": "2024-08-06",
-		      "last_used_at": null,
 		      "active": true,
 		      "revoked": false,
-		      "token": "",
 		      "access_level": 10
 		    }
 		]
