@@ -8,18 +8,23 @@ import (
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	git_testing "gitlab.com/gitlab-org/cli/pkg/git/testing"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 	"gitlab.com/gitlab-org/cli/test"
+	"go.uber.org/mock/gomock"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, args string) (*test.CmdOut, error) {
+func runCommand(rt http.RoundTripper, isTTY bool, args string, t *testing.T) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 
 	factory := cmdtest.InitFactory(ios, rt)
 
 	_, _ = factory.HttpClient()
 
-	cmd := NewCmdCreateStack(factory)
+	ctrl := gomock.NewController(t)
+	mockCmd := git_testing.NewMockGitRunner(ctrl)
+
+	cmd := NewCmdCreateStack(factory, mockCmd)
 
 	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
 }
@@ -67,7 +72,7 @@ func TestCreateNewStack(t *testing.T) {
 				})
 			}
 
-			output, err := runCommand(nil, true, tc.branch)
+			output, err := runCommand(nil, true, tc.branch, t)
 			require.Nil(t, err)
 
 			require.Equal(t, "New stack created with title \""+tc.expectedBranch+"\".\n", output.String())
@@ -82,7 +87,7 @@ func TestCreateNewStack(t *testing.T) {
 			require.Nil(t, err)
 
 			require.Equal(t, tc.expectedBranch, configValue)
-			require.DirExists(t, path.Join(tempDir, "/.git/refs/stacked/", tc.expectedBranch))
+			require.DirExists(t, path.Join(tempDir, "/.git/stacked/", tc.expectedBranch))
 		})
 	}
 }

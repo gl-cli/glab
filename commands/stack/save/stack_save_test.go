@@ -17,8 +17,10 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	git_testing "gitlab.com/gitlab-org/cli/pkg/git/testing"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/test"
+	"go.uber.org/mock/gomock"
 )
 
 func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStreams, stdout *bytes.Buffer, stderr *bytes.Buffer, factory *cmdutils.Factory) {
@@ -31,9 +33,13 @@ func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStream
 	return
 }
 
-func runSaveCommand(rt http.RoundTripper, getText cmdutils.GetTextUsingEditor, isTTY bool, args string) (*test.CmdOut, error) {
+func runSaveCommand(rt http.RoundTripper, t *testing.T, getText cmdutils.GetTextUsingEditor, isTTY bool, args string) (*test.CmdOut, error) {
 	_, stdout, stderr, factory := setupTestFactory(rt, isTTY)
-	cmd := NewCmdSaveStack(factory, getText)
+
+	ctrl := gomock.NewController(t)
+	mockCmd := git_testing.NewMockGitRunner(ctrl)
+
+	cmd := NewCmdSaveStack(factory, mockCmd, getText)
 
 	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
 }
@@ -108,7 +114,7 @@ func TestSaveNewStack(t *testing.T) {
 			getText := getMockEditor(tc.editorMessage, &[]string{})
 			args := strings.Join(tc.args, " ")
 
-			output, err := runSaveCommand(nil, getText, isTTY, args)
+			output, err := runSaveCommand(nil, t, getText, isTTY, args)
 
 			if tc.wantErr {
 				require.Errorf(t, err, tc.expected)

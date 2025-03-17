@@ -109,7 +109,9 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			// Check out branch
-			if err := git.CheckoutBranch(mrCheckoutCfg.branch); err != nil {
+			var gr git.StandardGitCommand
+
+			if err := git.CheckoutBranch(mrCheckoutCfg.branch, gr); err != nil {
 				return err
 			}
 

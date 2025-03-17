@@ -282,10 +282,13 @@ func ReadBranchConfig(branch string) (cfg BranchConfig) {
 	return
 }
 
-func DeleteLocalBranch(branch string) error {
-	branchCmd := GitCommand("branch", "-D", branch)
-	err := run.PrepareCmd(branchCmd).Run()
-	return err
+func DeleteLocalBranch(branch string, gr GitRunner) error {
+	_, err := gr.Git("branch", "-D", branch)
+	if err != nil {
+		return fmt.Errorf("could not delete local branch: %w", err)
+	}
+
+	return nil
 }
 
 func HasLocalBranch(branch string) bool {
@@ -294,10 +297,13 @@ func HasLocalBranch(branch string) bool {
 	return err == nil
 }
 
-func CheckoutBranch(branch string) error {
-	configCmd := GitCommand("checkout", branch)
-	err := run.PrepareCmd(configCmd).Run()
-	return err
+func CheckoutBranch(branch string, gr GitRunner) error {
+	_, err := gr.Git("checkout", branch)
+	if err != nil {
+		return fmt.Errorf("could not checkout branch: %w", err)
+	}
+
+	return nil
 }
 
 func CheckoutNewBranch(branch string) error {

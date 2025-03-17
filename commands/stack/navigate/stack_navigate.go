@@ -26,7 +26,7 @@ func baseCommand() (git.Stack, error) {
 	return stack, nil
 }
 
-func NewCmdStackFirst(f *cmdutils.Factory) *cobra.Command {
+func NewCmdStackFirst(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:     "first",
 		Short:   "Moves to the first diff in the stack. (EXPERIMENTAL.)",
@@ -43,7 +43,7 @@ func NewCmdStackFirst(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			ref := stack.First()
-			err = git.CheckoutBranch(ref.Branch)
+			err = git.CheckoutBranch(ref.Branch, gr)
 			if err != nil {
 				return err
 			}
@@ -55,7 +55,7 @@ func NewCmdStackFirst(f *cmdutils.Factory) *cobra.Command {
 	}
 }
 
-func NewCmdStackNext(f *cmdutils.Factory) *cobra.Command {
+func NewCmdStackNext(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:     "next",
 		Short:   "Moves to the next diff in the stack. (EXPERIMENTAL.)",
@@ -76,7 +76,7 @@ func NewCmdStackNext(f *cmdutils.Factory) *cobra.Command {
 				return fmt.Errorf("you are already at the last diff. Use `glab stack list` to see the complete list.")
 			}
 
-			err = git.CheckoutBranch(stack.Refs[ref.Next].Branch)
+			err = git.CheckoutBranch(stack.Refs[ref.Next].Branch, gr)
 			if err != nil {
 				return err
 			}
@@ -89,7 +89,7 @@ func NewCmdStackNext(f *cmdutils.Factory) *cobra.Command {
 	}
 }
 
-func NewCmdStackPrev(f *cmdutils.Factory) *cobra.Command {
+func NewCmdStackPrev(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:     "prev",
 		Short:   "Moves to the previous diff in the stack. (EXPERIMENTAL.)",
@@ -110,7 +110,7 @@ func NewCmdStackPrev(f *cmdutils.Factory) *cobra.Command {
 				return fmt.Errorf("you are already at the first diff. Use `glab stack list` to see the complete list.")
 			}
 
-			err = git.CheckoutBranch(stack.Refs[ref.Prev].Branch)
+			err = git.CheckoutBranch(stack.Refs[ref.Prev].Branch, gr)
 			if err != nil {
 				return err
 			}
@@ -123,7 +123,7 @@ func NewCmdStackPrev(f *cmdutils.Factory) *cobra.Command {
 	}
 }
 
-func NewCmdStackLast(f *cmdutils.Factory) *cobra.Command {
+func NewCmdStackLast(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:     "last",
 		Short:   "Moves to the last diff in the stack. (EXPERIMENTAL.)",
@@ -141,7 +141,7 @@ func NewCmdStackLast(f *cmdutils.Factory) *cobra.Command {
 
 			ref := stack.Last()
 
-			err = git.CheckoutBranch(ref.Branch)
+			err = git.CheckoutBranch(ref.Branch, gr)
 			if err != nil {
 				return err
 			}
@@ -153,7 +153,7 @@ func NewCmdStackLast(f *cmdutils.Factory) *cobra.Command {
 	}
 }
 
-func NewCmdStackMove(f *cmdutils.Factory) *cobra.Command {
+func NewCmdStackMove(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:     "move",
 		Short:   "Moves to any selected entry in the stack. (EXPERIMENTAL.)",
@@ -190,7 +190,7 @@ func NewCmdStackMove(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			err = git.CheckoutBranch(branch)
+			err = git.CheckoutBranch(branch, gr)
 			if err != nil {
 				return err
 			}

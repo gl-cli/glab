@@ -35,7 +35,7 @@ type Stack struct {
 
 func (s Stack) Empty() bool { return len(s.Refs) == 0 }
 
-func (s *Stack) RemoveRef(ref StackRef) error {
+func (s *Stack) RemoveRef(ref StackRef, gr GitRunner) error {
 	if ref.IsFirst() && ref.IsLast() {
 		// this is the only ref, so just remove it
 		err := DeleteStackRefFile(s.Title, ref)
@@ -57,7 +57,7 @@ func (s *Stack) RemoveRef(ref StackRef) error {
 		return fmt.Errorf("could not delete reference file %v:", err)
 	}
 
-	err = s.RemoveBranch(ref)
+	err = s.RemoveBranch(ref, gr)
 	if err != nil {
 		return fmt.Errorf("could not remove branch %v:", err)
 	}
@@ -67,12 +67,12 @@ func (s *Stack) RemoveRef(ref StackRef) error {
 	return nil
 }
 
-func (s *Stack) RemoveBranch(ref StackRef) error {
+func (s *Stack) RemoveBranch(ref StackRef, gr GitRunner) error {
 	var branch string
 	var err error
 
 	if ref.IsFirst() {
-		branch, err = GetDefaultBranch(DefaultRemote)
+		branch, err = gr.Git("remote", "show", DefaultRemote)
 		if err != nil {
 			return err
 		}
@@ -81,12 +81,12 @@ func (s *Stack) RemoveBranch(ref StackRef) error {
 		branch = s.Refs[ref.Prev].Branch
 	}
 
-	err = CheckoutBranch(branch)
+	err = CheckoutBranch(branch, gr)
 	if err != nil {
 		return err
 	}
 
-	err = DeleteLocalBranch(ref.Branch)
+	err = DeleteLocalBranch(ref.Branch, gr)
 	if err != nil {
 		return err
 	}

@@ -9,6 +9,7 @@ import (
 	stackSaveCmd "gitlab.com/gitlab-org/cli/commands/stack/save"
 	stackSwitchCmd "gitlab.com/gitlab-org/cli/commands/stack/switch"
 	stackSyncCmd "gitlab.com/gitlab-org/cli/commands/stack/sync"
+	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/surveyext"
 	"gitlab.com/gitlab-org/cli/pkg/text"
 
@@ -34,21 +35,23 @@ func NewCmdStack(f *cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"stacks"},
 	}
 
+	var gr git.StandardGitCommand
+
 	cmdutils.EnableRepoOverride(stackCmd, f)
 	getTextFromEditor := wrappedEdit(f)
 
-	stackCmd.AddCommand(stackCreateCmd.NewCmdCreateStack(f))
-	stackCmd.AddCommand(stackSaveCmd.NewCmdSaveStack(f, getTextFromEditor))
-	stackCmd.AddCommand(stackSaveCmd.NewCmdAmendStack(f, getTextFromEditor))
-	stackCmd.AddCommand(stackSyncCmd.NewCmdSyncStack(f))
-	stackCmd.AddCommand(stackMoveCmd.NewCmdStackPrev(f))
-	stackCmd.AddCommand(stackMoveCmd.NewCmdStackNext(f))
-	stackCmd.AddCommand(stackMoveCmd.NewCmdStackFirst(f))
-	stackCmd.AddCommand(stackMoveCmd.NewCmdStackLast(f))
-	stackCmd.AddCommand(stackMoveCmd.NewCmdStackMove(f))
-	stackCmd.AddCommand(stackListCmd.NewCmdStackList(f))
-	stackCmd.AddCommand(stackReorderCmd.NewCmdReorderStack(f, getTextFromEditor))
-	stackCmd.AddCommand(stackSwitchCmd.NewCmdStackSwitch(f))
+	stackCmd.AddCommand(stackCreateCmd.NewCmdCreateStack(f, gr))
+	stackCmd.AddCommand(stackSaveCmd.NewCmdSaveStack(f, gr, getTextFromEditor))
+	stackCmd.AddCommand(stackSaveCmd.NewCmdAmendStack(f, gr, getTextFromEditor))
+	stackCmd.AddCommand(stackSyncCmd.NewCmdSyncStack(f, gr))
+	stackCmd.AddCommand(stackMoveCmd.NewCmdStackPrev(f, gr))
+	stackCmd.AddCommand(stackMoveCmd.NewCmdStackNext(f, gr))
+	stackCmd.AddCommand(stackMoveCmd.NewCmdStackFirst(f, gr))
+	stackCmd.AddCommand(stackMoveCmd.NewCmdStackLast(f, gr))
+	stackCmd.AddCommand(stackMoveCmd.NewCmdStackMove(f, gr))
+	stackCmd.AddCommand(stackListCmd.NewCmdStackList(f, gr))
+	stackCmd.AddCommand(stackReorderCmd.NewCmdReorderStack(f, gr, getTextFromEditor))
+	stackCmd.AddCommand(stackSwitchCmd.NewCmdStackSwitch(f, gr))
 
 	return stackCmd
 }

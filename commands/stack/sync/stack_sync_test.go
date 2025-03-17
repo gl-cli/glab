@@ -9,6 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	git_testing "gitlab.com/gitlab-org/cli/pkg/git/testing"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"go.uber.org/mock/gomock"
 )
@@ -182,7 +183,7 @@ func Test_stackSync(t *testing.T) {
 			defer fakeHTTP.Verify(t)
 
 			ctrl := gomock.NewController(t)
-			mockCmd := NewMockGitRunner(ctrl)
+			mockCmd := git_testing.NewMockGitRunner(ctrl)
 
 			ios, f, opts := setupTestFactory(fakeHTTP)
 
@@ -198,7 +199,7 @@ func Test_stackSync(t *testing.T) {
 			for ref := range stack.Iter() {
 				state := tc.args.stack.refs[ref.SHA].state
 
-				mockCmd.EXPECT().Git([]string{"checkout", ref.Branch}).Do(checkoutBranch(ref.Branch))
+				mockCmd.EXPECT().Git([]string{"checkout", ref.Branch})
 				mockCmd.EXPECT().Git([]string{"status", "-uno"}).Return(state, nil)
 
 				switch state {
@@ -206,7 +207,7 @@ func Test_stackSync(t *testing.T) {
 					mockCmd.EXPECT().Git([]string{"pull"}).Return(state, nil)
 
 				case BranchHasDiverged:
-					mockCmd.EXPECT().Git([]string{"checkout", stack.Last().Branch}).Do(checkoutBranch(stack.Last().Branch))
+					mockCmd.EXPECT().Git([]string{"checkout", stack.Last().Branch})
 					mockCmd.EXPECT().Git([]string{"rebase", "--fork-point", "--update-refs", ref.Branch})
 
 				case NothingToCommit:
@@ -248,12 +249,5 @@ func createStack(t *testing.T, title string, scenario map[string]TestRef) {
 
 		err = git.CheckoutNewBranch(ref.ref.Branch)
 		require.NoError(t, err)
-	}
-}
-
-func checkoutBranch(branch string) func(_ ...string) (string, error) {
-	return func(_ ...string) (string, error) {
-		err := git.CheckoutBranch(branch)
-		return "", err
 	}
 }
