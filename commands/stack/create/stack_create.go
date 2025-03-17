@@ -64,6 +64,16 @@ func NewCmdCreateStack(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 				return fmt.Errorf("error adding stack metadata directory: %v", err)
 			}
 
+			currentBranch, err := gr.Git("symbolic-ref", "--quiet", "--short", "HEAD")
+			if err != nil {
+				return fmt.Errorf("error getting current branch: %w", err)
+			}
+
+			err = git.AddStackBaseBranch(title, currentBranch)
+			if err != nil {
+				return fmt.Errorf("error adding current branch to metadata: %w", err)
+			}
+
 			if f.IO.IsOutputTTY() {
 				fmt.Fprintf(f.IO.StdOut, "New stack created with title \"%s\".\n", title)
 			}

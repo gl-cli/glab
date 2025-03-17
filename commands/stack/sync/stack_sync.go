@@ -291,11 +291,18 @@ func createMR(client *gitlab.Client, opts *Options, ref *git.StackRef, gr git.Gi
 
 	var previousBranch string
 	if ref.IsFirst() {
-		// Point to the default one
-		previousBranch, err = getDefaultBranch(git.DefaultRemote, gr)
+		// Point to the base branch
+		previousBranch, err = opts.stack.BaseBranch(gr)
 		if err != nil {
-			return &gitlab.MergeRequest{}, fmt.Errorf("error getting default branch: %v", err)
+			return &gitlab.MergeRequest{}, fmt.Errorf("error getting base branch: %w", err)
 		}
+
+		if !git.RemoteBranchExists(previousBranch, gr) {
+			return &gitlab.MergeRequest{}, fmt.Errorf("branch %q does not exist on remote %q. Please push the branch to the remote before syncing",
+				previousBranch,
+				git.DefaultRemote)
+		}
+
 	} else {
 		// if we have a previous branch, let's point to that
 		previousBranch = opts.stack.Refs[ref.Prev].Branch
@@ -429,18 +436,4 @@ func populateMR(ref *git.StackRef, opts *Options, client *gitlab.Client, gr git.
 	}
 
 	return nil
-}
-
-func getDefaultBranch(remote string, gr git.GitRunner) (string, error) {
-	defBranchOutput, err := gr.Git("remote", "show", remote)
-	if err != nil {
-		return "", err
-	}
-
-	branch, err := git.ParseDefaultBranch([]byte(defBranchOutput))
-	if err != nil {
-		return "", err
-	}
-
-	return branch, nil
 }
