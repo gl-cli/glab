@@ -21,6 +21,7 @@ type AddOpts struct {
 	Title     string
 	Key       string
 	ExpiresAt string
+	UsageType string
 
 	KeyFile string
 }
@@ -41,8 +42,8 @@ func NewCmdAdd(f *cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
 		# Read ssh key from stdin and upload.
 		$ glab ssh-key add -t "my title"
 
-		# Read ssh key from specified key file and upload.
-		$ glab ssh-key add ~/.ssh/id_ed25519.pub -t "my title"
+		# Read ssh key from specified key file, upload and set the ssh key type to "authentication".
+		$ glab ssh-key add ~/.ssh/id_ed25519.pub -t "my title" --usage-type "auth"
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -67,6 +68,7 @@ func NewCmdAdd(f *cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&opts.Title, "title", "t", "", "New SSH key's title.")
+	cmd.Flags().StringVarP(&opts.UsageType, "usage-type", "u", "auth_and_signing", "Usage scope for the key. Possible values: 'auth', 'signing' or 'auth_and_signing'. Default value: 'auth_and_signing'.")
 	cmd.Flags().StringVarP(&opts.ExpiresAt, "expires-at", "e", "", "The expiration date of the SSH key. Uses ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.")
 
 	_ = cmd.MarkFlagRequired("title")
@@ -101,7 +103,7 @@ func addRun(opts *AddOpts) error {
 
 	opts.Key = string(keyInBytes)
 
-	err = UploadSSHKey(httpClient, opts.Title, opts.Key, opts.ExpiresAt)
+	err = UploadSSHKey(httpClient, opts.Title, opts.Key, opts.UsageType, opts.ExpiresAt)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to add new SSH public key.")
 	}

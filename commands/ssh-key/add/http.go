@@ -6,10 +6,11 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func UploadSSHKey(client *gitlab.Client, title, key, expiresAt string) error {
+func UploadSSHKey(client *gitlab.Client, title, key, usage_type, expiresAt string) error {
 	sshKeyAddOptions := &gitlab.AddSSHKeyOptions{
-		Title: &title,
-		Key:   &key,
+		Title:     &title,
+		Key:       &key,
+		UsageType: &usage_type,
 	}
 
 	if expiresAt != "" {

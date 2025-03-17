@@ -29,8 +29,8 @@ glab ssh-key add [key-file] [flags]
 # Read ssh key from stdin and upload.
 $ glab ssh-key add -t "my title"
 
-# Read ssh key from specified key file and upload.
-$ glab ssh-key add ~/.ssh/id_ed25519.pub -t "my title"
+# Read ssh key from specified key file, upload and set the ssh key type to "authentication".
+$ glab ssh-key add ~/.ssh/id_ed25519.pub -t "my title" --usage-type "auth"
 
 ```
 
@@ -39,6 +39,7 @@ $ glab ssh-key add ~/.ssh/id_ed25519.pub -t "my title"
 ```plaintext
   -e, --expires-at string   The expiration date of the SSH key. Uses ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.
   -t, --title string        New SSH key's title.
+  -u, --usage-type string   Usage scope for the key. Possible values: 'auth', 'signing' or 'auth_and_signing'. Default value: 'auth_and_signing'. (default "auth_and_signing")
 ```
 
 ## Options inherited from parent commands
