@@ -17,6 +17,7 @@ import (
 type SyncScenario struct {
 	refs       map[string]TestRef
 	title      string
+	baseBranch string
 	pushNeeded bool
 }
 
@@ -119,7 +120,7 @@ func Test_stackSync(t *testing.T) {
 
 			httpMocks: []git.HttpMock{
 				git.MockStackUser(),
-				git.MockPostStackMR("Branch1", "", "3"),
+				git.MockPostStackMR("Branch1", "main", "3"),
 				git.MockPostStackMR("Branch2", "Branch1", "3"),
 			},
 		},
@@ -173,6 +174,31 @@ func Test_stackSync(t *testing.T) {
 				git.MockPostStackMR("Branch6", "Branch5", "3"),
 			},
 		},
+		{
+			name: "non standard base branch",
+			args: args{
+				stack: SyncScenario{
+					title:      "my cool stack",
+					baseBranch: "jawn",
+					refs: map[string]TestRef{
+						"1": {
+							ref:   git.StackRef{SHA: "1", Prev: "", Next: "2", Branch: "Branch1", MR: ""},
+							state: BranchIsBehind,
+						},
+						"2": {
+							ref:   git.StackRef{SHA: "2", Prev: "1", Next: "", Branch: "Branch2", MR: ""},
+							state: BranchIsBehind,
+						},
+					},
+				},
+			},
+
+			httpMocks: []git.HttpMock{
+				git.MockStackUser(),
+				git.MockPostStackMR("Branch1", "jawn", "3"),
+				git.MockPostStackMR("Branch2", "Branch1", "3"),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -214,12 +240,20 @@ func Test_stackSync(t *testing.T) {
 				}
 
 				if ref.MR == "" {
-					mockCmd.EXPECT().Git([]string{"push", "--set-upstream", "origin", ref.Branch})
-
 					if ref.IsFirst() == true {
-						// this is to check for the default branch
-						mockCmd.EXPECT().Git([]string{"remote", "show", "origin"}).Return("main", nil)
+						if tc.args.stack.baseBranch != "" {
+							err := git.AddStackBaseBranch(tc.args.stack.title, tc.args.stack.baseBranch)
+							require.NoError(t, err)
+							mockCmd.EXPECT().Git([]string{"ls-remote", "--exit-code", "--heads", "origin", tc.args.stack.baseBranch})
+						} else {
+							// this is to check for the default branch
+							mockCmd.EXPECT().Git([]string{"remote", "show", "origin"}).Return("HEAD branch: main", nil)
+							mockCmd.EXPECT().Git([]string{"ls-remote", "--exit-code", "--heads", "origin", "main"})
+						}
 					}
+
+					mockCmd.EXPECT().Git([]string{"push", "--set-upstream", "origin", ref.Branch}).Return("a", nil)
+
 				}
 			}
 

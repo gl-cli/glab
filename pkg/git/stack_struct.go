@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 type StackRef struct {
@@ -72,7 +74,7 @@ func (s *Stack) RemoveBranch(ref StackRef, gr GitRunner) error {
 	var err error
 
 	if ref.IsFirst() {
-		branch, err = gr.Git("remote", "show", DefaultRemote)
+		branch, err = s.BaseBranch(gr)
 		if err != nil {
 			return err
 		}
@@ -203,6 +205,67 @@ func (s *Stack) Iter2() iter.Seq2[int, StackRef] {
 			ref = s.Refs[ref.Next]
 		}
 	}
+}
+
+func (s *Stack) BaseBranch(gr GitRunner) (branch string, err error) {
+	root, err := StackRootDir(s.Title)
+	if err != nil {
+		return "", fmt.Errorf("could not determine stack root: %w", err)
+	}
+
+	filename := filepath.Join(root, BaseBranchFile)
+
+	// we do have a base branch in the metadata
+	fileInfo, err := os.Stat(filename)
+	if err == nil && !fileInfo.IsDir() {
+		trimmed, err := config.TrimmedFileContents(filename)
+		if err != nil {
+			return "", fmt.Errorf("could not read base branch file: %w", err)
+		}
+
+		return trimmed, nil
+	}
+
+	// if there's an error reading the file, show that.
+	// it's ok if doesn't exist yet, however.
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "", fmt.Errorf("could not access base branch file: %w", err)
+	}
+
+	// no metadata file - lets try to get it from git
+	defBranchOutput, err := gr.Git("remote", "show", DefaultRemote)
+	if err != nil {
+		return "", fmt.Errorf("could not get remote data: %w", err)
+	}
+
+	branch, err = ParseDefaultBranch([]byte(defBranchOutput))
+	if err != nil {
+		return "", fmt.Errorf("could not parse default branch from remote data: %w", err)
+	}
+
+	return branch, nil
+}
+
+func AddStackBaseBranch(title string, branch string) error {
+	root, err := StackRootDir(title)
+	if err != nil {
+		return fmt.Errorf("could not determine stack root: %w", err)
+	}
+
+	filename := filepath.Join(root, BaseBranchFile)
+	_, err = os.Create(filename)
+	if err != nil {
+		return err
+	}
+
+	data := []byte(branch)
+
+	err = os.WriteFile(filename, data, 0o644)
+	if err != nil {
+		return fmt.Errorf("error adding branch metadata file %v: %v", filename, err)
+	}
+
+	return nil
 }
 
 func GatherStackRefs(title string) (Stack, error) {

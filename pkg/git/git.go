@@ -37,6 +37,11 @@ func GetDefaultBranch(remote string) (string, error) {
 	return ParseDefaultBranch(output)
 }
 
+func RemoteBranchExists(branch string, gr GitRunner) bool {
+	_, err := gr.Git("ls-remote", "--exit-code", "--heads", DefaultRemote, branch)
+	return err == nil
+}
+
 func ParseDefaultBranch(output []byte) (string, error) {
 	var headBranch string
 

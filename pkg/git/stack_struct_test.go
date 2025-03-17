@@ -1,7 +1,10 @@
 package git
 
 import (
+	"errors"
+	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"testing"
 
@@ -117,6 +120,52 @@ func Test_StackRemoveRef(t *testing.T) {
 	}
 }
 
+func Test_AddStackBaseBranch(t *testing.T) {
+	tests := []struct {
+		name   string
+		title  string
+		branch string
+	}{
+		{
+			name:   "successfully add branch",
+			title:  "test-stack",
+			branch: "main",
+		},
+		{
+			name:   "successfully add custom branch",
+			title:  "custom-stack",
+			branch: "feature/branch",
+		},
+		{
+			name:   "successfully add custom branch",
+			title:  "custom-stack",
+			branch: "feature/branch",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			InitGitRepo(t)
+
+			_, err := AddStackRefDir(tt.title)
+			require.NoError(t, err)
+
+			err = AddStackBaseBranch(tt.title, tt.branch)
+			require.NoError(t, err)
+
+			stackRoot, err := StackRootDir(tt.title)
+			require.NoError(t, err)
+
+			filename := filepath.Join(stackRoot, BaseBranchFile)
+			require.FileExists(t, filename)
+
+			content, err := os.ReadFile(filename)
+			require.NoError(t, err)
+			assert.Equal(t, tt.branch, string(content))
+		})
+	}
+}
+
 func Test_StackLast(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -181,6 +230,89 @@ func Test_StackFirst(t *testing.T) {
 	}
 }
 
+func Test_StackBaseBranch(t *testing.T) {
+	tests := []struct {
+		name           string
+		title          string
+		setupFile      bool
+		branchInFile   string
+		mockRemoteShow string
+		gitError       error
+		expectedBranch string
+		expectedError  bool
+	}{
+		{
+			name:           "successfully read branch from file",
+			title:          "test-stack",
+			setupFile:      true,
+			branchInFile:   "custom-branch",
+			expectedBranch: "custom-branch",
+			expectedError:  false,
+		},
+		{
+			name:      "get default branch when file doesn't exist",
+			title:     "test-stack",
+			setupFile: false,
+			mockRemoteShow: `* remote origin
+		Fetch URL: https://gitlab.org/gitlab-org/cli.git
+		Push  URL: https://gitlab.org/gitlab-org/cli.git
+		HEAD branch: main
+		Remote branches:`,
+			expectedBranch: "main",
+			expectedError:  false,
+		},
+		{
+			name:          "error getting remote data",
+			title:         "test-stack",
+			setupFile:     false,
+			gitError:      errors.New("git command failed"),
+			expectedError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			InitGitRepo(t)
+
+			stack := Stack{
+				Title: tt.title,
+				Refs:  make(map[string]StackRef),
+			}
+
+			ctrl := gomock.NewController(t)
+			mockGitRunner := git_testing.NewMockGitRunner(ctrl)
+
+			if tt.setupFile {
+				_, err := AddStackRefDir(tt.title)
+				require.NoError(t, err)
+
+				err = AddStackBaseBranch(tt.title, tt.branchInFile)
+				require.NoError(t, err)
+			} else {
+				if tt.gitError != nil {
+					mockGitRunner.EXPECT().
+						Git([]string{"remote", "show", DefaultRemote}).
+						Return("", tt.gitError)
+				} else {
+					mockGitRunner.EXPECT().
+						Git([]string{"remote", "show", DefaultRemote}).
+						Return(tt.mockRemoteShow, nil)
+				}
+			}
+
+			branch, err := stack.BaseBranch(mockGitRunner)
+
+			if tt.expectedError {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedBranch, branch)
+		})
+	}
+}
+
 func Test_StackEmpty(t *testing.T) {
 	s := Stack{Refs: make(map[string]StackRef)}
 	if !s.Empty() {
@@ -195,10 +327,11 @@ func Test_StackEmpty(t *testing.T) {
 
 func Test_StackRemoveBranch(t *testing.T) {
 	tests := []struct {
-		name    string
-		stack   Stack
-		ref     StackRef
-		wantErr bool
+		name             string
+		stack            Stack
+		ref              StackRef
+		wantErr          bool
+		expectBaseBranch bool
 	}{
 		{
 			name: "remove single ref",
@@ -206,7 +339,8 @@ func Test_StackRemoveBranch(t *testing.T) {
 				Title: "test-stack",
 				Refs:  map[string]StackRef{"sha1": {SHA: "sha1", Branch: "branch123"}},
 			},
-			ref: StackRef{SHA: "sha1", Branch: "branch123"},
+			ref:              StackRef{SHA: "sha1", Branch: "branch123"},
+			expectBaseBranch: true,
 		},
 		{
 			name: "remove first ref",
@@ -217,7 +351,8 @@ func Test_StackRemoveBranch(t *testing.T) {
 					"sha2": {SHA: "sha2", Prev: "sha1", Branch: "branch456"},
 				},
 			},
-			ref: StackRef{SHA: "sha1", Next: "sha2", Branch: "branch123"},
+			ref:              StackRef{SHA: "sha1", Next: "sha2", Branch: "branch123"},
+			expectBaseBranch: true,
 		},
 		{
 			name: "remove middle ref",
@@ -229,7 +364,8 @@ func Test_StackRemoveBranch(t *testing.T) {
 					"sha3": {SHA: "sha3", Prev: "sha2", Branch: "branch789"},
 				},
 			},
-			ref: StackRef{SHA: "sha2", Prev: "sha1", Next: "sha3", Branch: "branch456"},
+			ref:              StackRef{SHA: "sha2", Prev: "sha1", Next: "sha3", Branch: "branch456"},
+			expectBaseBranch: false,
 		},
 		{
 			name: "remove last ref",
@@ -240,7 +376,8 @@ func Test_StackRemoveBranch(t *testing.T) {
 					"sha2": {SHA: "sha2", Prev: "sha1", Branch: "branch456"},
 				},
 			},
-			ref: StackRef{SHA: "sha2", Prev: "sha1", Branch: "branch456"},
+			ref:              StackRef{SHA: "sha2", Prev: "sha1", Branch: "branch456"},
+			expectBaseBranch: false,
 		},
 	}
 
@@ -251,24 +388,23 @@ func Test_StackRemoveBranch(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockCmd := git_testing.NewMockGitRunner(ctrl)
 
+			_, err := AddStackRefDir(tt.stack.Title)
+			require.NoError(t, err)
+
+			err = AddStackBaseBranch(tt.stack.Title, "base")
+			require.NoError(t, err)
+
 			if tt.ref.Prev != "" {
 				prevBranch := tt.stack.Refs[tt.ref.Prev].Branch
 				mockCmd.EXPECT().Git([]string{"checkout", prevBranch})
 				mockCmd.EXPECT().Git([]string{"branch", "-D", tt.ref.Branch})
 			} else {
-				mockCmd.EXPECT().Git([]string{"remote", "show", "origin"}).Return("main", nil)
-				mockCmd.EXPECT().Git([]string{"checkout", "main"})
+				mockCmd.EXPECT().Git([]string{"checkout", "base"})
 				mockCmd.EXPECT().Git([]string{"branch", "-D", tt.ref.Branch})
 			}
-
-			err := tt.stack.RemoveBranch(tt.ref, mockCmd)
-			require.Nil(t, err)
-
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.Nil(t, err)
-			}
+			//
+			err = tt.stack.RemoveBranch(tt.ref, mockCmd)
+			require.NoError(t, err)
 		})
 	}
 }

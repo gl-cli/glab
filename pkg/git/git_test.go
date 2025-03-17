@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	git_testing "gitlab.com/gitlab-org/cli/pkg/git/testing"
+	gomock "go.uber.org/mock/gomock"
 
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/test"
@@ -20,6 +22,54 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func TestRemoteBranchExists(t *testing.T) {
+	tests := []struct {
+		name     string
+		branch   string
+		mockOut  string
+		mockErr  bool
+		expected bool
+	}{
+		{
+			name:     "branch exists",
+			branch:   "main",
+			mockErr:  false,
+			expected: true,
+		},
+		{
+			name:     "branch does not exist",
+			branch:   "non-existent-branch",
+			mockErr:  true,
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockCmd := git_testing.NewMockGitRunner(ctrl)
+
+			if tt.mockErr {
+				mockCmd.EXPECT().Git("ls-remote",
+					"--exit-code",
+					"--heads",
+					DefaultRemote,
+					tt.branch).Return("", errors.New("can't find branch"))
+			} else {
+				mockCmd.EXPECT().Git("ls-remote",
+					"--exit-code",
+					"--heads",
+					DefaultRemote,
+					tt.branch)
+			}
+
+			result := RemoteBranchExists(tt.branch, mockCmd)
+
+			assert.Equal(t, tt.expected, result)
+		})
+	}
 }
 
 func Test_isFilesystemPath(t *testing.T) {

@@ -1,12 +1,12 @@
 package create
 
 import (
-	"net/http"
 	"path"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	git_testing "gitlab.com/gitlab-org/cli/pkg/git/testing"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
@@ -14,15 +14,16 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, args string, t *testing.T) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(
+	mockCmd git.GitRunner,
+	args string,
+	t *testing.T,
+) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.InitIOStreams(true, "")
 
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.InitFactory(ios, nil)
 
 	_, _ = factory.HttpClient()
-
-	ctrl := gomock.NewController(t)
-	mockCmd := git_testing.NewMockGitRunner(ctrl)
 
 	cmd := NewCmdCreateStack(factory, mockCmd)
 
@@ -34,23 +35,27 @@ func TestCreateNewStack(t *testing.T) {
 		desc           string
 		branch         string
 		expectedBranch string
+		baseBranch     string
 		warning        bool
 	}{
 		{
 			desc:           "basic method",
 			branch:         "test description here",
+			baseBranch:     "main",
 			expectedBranch: "test-description-here",
 			warning:        false,
 		},
 		{
 			desc:           "empty string",
 			branch:         "",
+			baseBranch:     "master",
 			expectedBranch: "oh-ok-fine-how-about-blah-blah",
 			warning:        true,
 		},
 		{
 			desc:           "weird characters git won't like",
 			branch:         "hey@#$!^$#)()*1234hmm",
+			baseBranch:     "hello",
 			expectedBranch: "hey-1234hmm",
 			warning:        true,
 		},
@@ -59,6 +64,10 @@ func TestCreateNewStack(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
 			tempDir := git.InitGitRepo(t)
+
+			ctrl := gomock.NewController(t)
+			mockCmd := git_testing.NewMockGitRunner(ctrl)
+			mockCmd.EXPECT().Git([]string{"symbolic-ref", "--quiet", "--short", "HEAD"}).Return(tc.baseBranch, nil)
 
 			if tc.branch == "" {
 				as, restoreAsk := prompt.InitAskStubber()
@@ -72,7 +81,7 @@ func TestCreateNewStack(t *testing.T) {
 				})
 			}
 
-			output, err := runCommand(nil, true, tc.branch, t)
+			output, err := runCommand(mockCmd, tc.branch, t)
 			require.Nil(t, err)
 
 			require.Equal(t, "New stack created with title \""+tc.expectedBranch+"\".\n", output.String())
@@ -86,8 +95,19 @@ func TestCreateNewStack(t *testing.T) {
 			configValue, err := git.GetCurrentStackTitle()
 			require.Nil(t, err)
 
+			createdBaseFile := path.Join(
+				tempDir,
+				"/.git/stacked/",
+				tc.expectedBranch,
+				git.BaseBranchFile,
+			)
+
+			fileContents, err := config.TrimmedFileContents(createdBaseFile)
+			require.NoError(t, err)
+
+			require.Equal(t, tc.baseBranch, fileContents)
 			require.Equal(t, tc.expectedBranch, configValue)
-			require.DirExists(t, path.Join(tempDir, "/.git/stacked/", tc.expectedBranch))
+			require.FileExists(t, createdBaseFile)
 		})
 	}
 }
