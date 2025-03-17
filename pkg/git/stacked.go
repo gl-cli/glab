@@ -1,3 +1,5 @@
+//go:generate go run go.uber.org/mock/mockgen@v0.4.0 -typed -destination=./testing/git_runner.go -package=git gitlab.com/gitlab-org/cli/pkg/git GitRunner
+
 package git
 
 import (
@@ -10,6 +12,8 @@ import (
 )
 
 var StackLocation = filepath.Join(".git", "stacked")
+
+const BaseBranchFile = "BASE_BRANCH"
 
 type GitRunner interface {
 	Git(args ...string) (string, error)
@@ -56,7 +60,7 @@ func AddStackRefDir(dir string) (string, error) {
 		return "", fmt.Errorf("finding top-level Git directory: %w", err)
 	}
 
-	createdDir := filepath.Join(baseDir, "/.git/refs/stacked/", dir)
+	createdDir := filepath.Join(baseDir, "/.git/stacked/", dir)
 
 	err = os.MkdirAll(createdDir, 0o755)
 	if err != nil {

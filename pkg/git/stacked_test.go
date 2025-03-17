@@ -78,7 +78,7 @@ func Test_AddStackRefDir(t *testing.T) {
 			_, err := AddStackRefDir(tt.branch)
 			require.NoError(t, err)
 
-			refDir := filepath.Join(baseDir, "/.git/refs/stacked/")
+			refDir := filepath.Join(baseDir, "/.git/stacked/")
 
 			_, err = os.Stat(filepath.Join(refDir, tt.branch))
 			require.NoError(t, err)

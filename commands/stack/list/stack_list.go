@@ -10,7 +10,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/text"
 )
 
-func NewCmdStackList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdStackList(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},

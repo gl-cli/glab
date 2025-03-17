@@ -19,7 +19,7 @@ import (
 var longString = `Create a new stacked diff. Adds metadata to your "./.git/stacked" directory.
 ` + text.ExperimentalString
 
-func NewCmdCreateStack(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCreateStack(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	stackCreateCmd := &cobra.Command{
 		Use:     "create",
 		Short:   `Create a new stacked diff. (EXPERIMENTAL.)`,

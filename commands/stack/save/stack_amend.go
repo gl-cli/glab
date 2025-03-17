@@ -16,7 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdAmendStack(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor) *cobra.Command {
+func NewCmdAmendStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
 	stackSaveCmd := &cobra.Command{
 		Use:   "amend",
 		Short: `Save more changes to a stacked diff. (EXPERIMENTAL.)`,

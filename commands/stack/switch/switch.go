@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/text"
 )
 
-func NewCmdStackSwitch(f *cmdutils.Factory) *cobra.Command {
+func NewCmdStackSwitch(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	stackSwitchCmd := &cobra.Command{
 		Use:   "switch <stack-name>",
 		Short: "Switch between stacks. (EXPERIMENTAL.)",

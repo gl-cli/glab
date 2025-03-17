@@ -8,7 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/internal/run"
+	git_testing "gitlab.com/gitlab-org/cli/pkg/git/testing"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_StackRemoveRef(t *testing.T) {
@@ -93,22 +94,19 @@ func Test_StackRemoveRef(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			dir := InitGitRepoWithCommit(t)
 
+			ctrl := gomock.NewController(t)
+			mockCmd := git_testing.NewMockGitRunner(ctrl)
+
+			if tt.args.remove.Prev != "" {
+				prevBranch := tt.args.stack.Refs[tt.args.remove.Prev].Branch
+				mockCmd.EXPECT().Git([]string{"checkout", prevBranch}).Return("main", nil)
+				mockCmd.EXPECT().Git([]string{"branch", "-D", tt.args.remove.Branch})
+			}
+
 			err := CreateRefFiles(tt.args.stack.Refs, tt.args.stack.Title)
 			require.Nil(t, err)
 
-			var branches []string
-
-			branches = append(branches, tt.args.remove.Branch)
-			if tt.args.remove.Prev != "" {
-				branches = append(branches, tt.args.stack.Refs[tt.args.remove.Prev].Branch)
-			}
-
-			CreateBranches(t, branches)
-
-			err = CheckoutBranch("main")
-			require.NoError(t, err)
-
-			err = tt.args.stack.RemoveRef(tt.args.remove)
+			err = tt.args.stack.RemoveRef(tt.args.remove, mockCmd)
 			require.Nil(t, err)
 
 			require.Equal(t, tt.expected, tt.args.stack.Refs)
@@ -250,23 +248,26 @@ func Test_StackRemoveBranch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			InitGitRepoWithCommit(t)
 
-			gitAddRemote := GitCommand("remote", "add", "origin", "http://gitlab.com/gitlab-org/cli.git")
-			_, err := run.PrepareCmd(gitAddRemote).Output()
+			ctrl := gomock.NewController(t)
+			mockCmd := git_testing.NewMockGitRunner(ctrl)
+
+			if tt.ref.Prev != "" {
+				prevBranch := tt.stack.Refs[tt.ref.Prev].Branch
+				mockCmd.EXPECT().Git([]string{"checkout", prevBranch})
+				mockCmd.EXPECT().Git([]string{"branch", "-D", tt.ref.Branch})
+			} else {
+				mockCmd.EXPECT().Git([]string{"remote", "show", "origin"}).Return("main", nil)
+				mockCmd.EXPECT().Git([]string{"checkout", "main"})
+				mockCmd.EXPECT().Git([]string{"branch", "-D", tt.ref.Branch})
+			}
+
+			err := tt.stack.RemoveBranch(tt.ref, mockCmd)
 			require.Nil(t, err)
 
-			CreateBranches(t, tt.stack.Branches())
-
-			err = tt.stack.RemoveBranch(tt.ref)
-
-			require.Nil(t, err)
 			if tt.wantErr {
 				require.Error(t, err)
 			} else {
 				require.Nil(t, err)
-
-				showref := GitCommand("show-ref", "--verify", "--quiet", "refs/heads/"+tt.ref.Branch)
-				_, err := run.PrepareCmd(showref).Output()
-				require.Error(t, err)
 			}
 		})
 	}
