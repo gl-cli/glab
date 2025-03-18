@@ -46,6 +46,7 @@ $ glab repo create glab-cli/my-project
   -P, --public                 Make project public: visible without any authentication.
       --readme README.md       Initialize project with README.md.
       --remoteName origin      Remote name for the Git repository you're in. Defaults to origin if not provided. (default "origin")
+  -s, --skipGitInit            Skip run 'git init'.
   -t, --tag stringArray        The list of tags for the project.
 ```
 

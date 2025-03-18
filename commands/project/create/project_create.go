@@ -54,6 +54,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	projectCreateCmd.Flags().BoolP("private", "p", false, "Make project private: visible only to project members.")
 	projectCreateCmd.Flags().BoolP("public", "P", false, "Make project public: visible without any authentication.")
 	projectCreateCmd.Flags().Bool("readme", false, "Initialize project with `README.md`.")
+	projectCreateCmd.Flags().BoolP("skipGitInit", "s", false, "Skip run 'git init'.")
 
 	return projectCreateCmd
 }
@@ -77,9 +78,12 @@ func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) er
 	if err != nil {
 		return err
 	}
-	err = initGit(defaultBranch)
-	if err != nil {
-		return err
+	skipGitInit, _ := cmd.Flags().GetBool("skipGitInit")
+	if !skipGitInit && f.IO.PromptEnabled() {
+		err = initGit(defaultBranch)
+		if err != nil {
+			return err
+		}
 	}
 	apiClient, err := f.HttpClient()
 	if err != nil {
