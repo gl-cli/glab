@@ -67,10 +67,12 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string, let
 }
 
 func TestNewCmdCreate_tty(t *testing.T) {
-	fakeHTTP := httpmock.New()
+	fakeHTTP := &httpmock.Mocker{
+		MatchURL: httpmock.PathAndQuerystring,
+	}
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder(http.MethodPost, "/projects/OWNER/REPO/merge_requests",
+	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/merge_requests",
 		httpmock.NewStringResponse(http.StatusCreated, `
 			{
  				"id": 1,
@@ -85,7 +87,7 @@ func TestNewCmdCreate_tty(t *testing.T) {
 			}
 		`),
 	)
-	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO",
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO?license=true&with_custom_attributes=true",
 		httpmock.NewStringResponse(http.StatusOK, `
 			{
  				"id": 1,
@@ -99,7 +101,18 @@ func TestNewCmdCreate_tty(t *testing.T) {
 			}
 		`),
 	)
-	fakeHTTP.RegisterResponder(http.MethodGet, "/users",
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/milestones?include_parent_milestones=true&per_page=30&title=foo",
+		httpmock.NewStringResponse(http.StatusOK, `
+			[
+			  {
+				"id": 1,
+				"iid": 3,
+				"description": "foo"
+			  }
+			]
+		`),
+	)
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/users?per_page=30&username=testuser",
 		httpmock.NewStringResponse(http.StatusOK, `
 			[{
  				"username": "testuser"
@@ -130,7 +143,7 @@ func TestNewCmdCreate_tty(t *testing.T) {
 		"-t", "myMRtitle",
 		"-d", "myMRbody",
 		"-l", "test,bug",
-		"--milestone", "1",
+		"--milestone", "foo",
 		"--assignee", "testuser",
 	}
 
