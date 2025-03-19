@@ -18,7 +18,7 @@ builds:
       env:
         - CGO_ENABLED=0
       ldflags:
-        - -s -w -X main.version=v{{.Version}} -X main.build={{time "2006-01-02"}} -X "main.goversion={{.Env.GO_VERSION}}"
+        - -s -w -X main.version=v{{.Version}} -X main.commit={{.ShortCommit}} -X "main.goversion={{.Env.GO_VERSION}}"
     id: macos
     goos: [darwin]
     goarch: [amd64, arm64]

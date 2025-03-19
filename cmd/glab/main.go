@@ -33,8 +33,8 @@ import (
 var (
 	// version is set dynamically at build
 	version = "DEV"
-	// buildDate is set dynamically at build
-	buildDate string
+	// commit is set dynamically at build
+	commit string
 	// platform is set dynamically at build
 	platform = runtime.GOOS
 )
@@ -81,7 +81,7 @@ func main() {
 		}
 	}
 
-	rootCmd := commands.NewCmdRoot(cmdFactory, version, buildDate)
+	rootCmd := commands.NewCmdRoot(cmdFactory, version, commit)
 
 	// Set Debug mode from config if not previously set by debugMode
 	if !debug {

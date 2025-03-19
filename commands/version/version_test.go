@@ -10,8 +10,8 @@ import (
 
 func Test_Version(t *testing.T) {
 	ios, _, stdout, stderr := iostreams.Test()
-	assert.Nil(t, NewCmdVersion(ios, "v1.0.0", "2020-01-01").Execute())
+	assert.Nil(t, NewCmdVersion(ios, "v1.0.0", "abcdefgh").Execute())
 
-	assert.Equal(t, "Current glab version: 1.0.0 (2020-01-01)\n", stdout.String())
+	assert.Equal(t, "glab 1.0.0 (abcdefgh)\n", stdout.String())
 	assert.Equal(t, "", stderr.String())
 }

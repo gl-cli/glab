@@ -12,13 +12,8 @@ endif
 TEST_FORMAT = short-verbose
 endif
 
-GLAB_VERSION ?= $(shell git describe --tags 2>/dev/null || git rev-parse --short HEAD)
-DATE_FMT = +%Y-%m-%d
-ifdef SOURCE_DATE_EPOCH
-    BUILD_DATE ?= $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u -r "$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u "$(DATE_FMT)")
-else
-    BUILD_DATE ?= $(shell date "$(DATE_FMT)")
-endif
+GLAB_VERSION ?= $(shell git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD)
+BUILD_COMMIT_SHA ?= $(shell git rev-parse --short HEAD)
 
 ifndef CGO_CPPFLAGS
     export CGO_CPPFLAGS := $(CPPFLAGS)
@@ -45,7 +40,7 @@ else
     GOLINT=bin/golangci-lint
 endif
 
-GO_LDFLAGS := -X main.buildDate=$(BUILD_DATE) $(GO_LDFLAGS)
+GO_LDFLAGS := -X main.commit=$(BUILD_COMMIT_SHA) $(GO_LDFLAGS)
 GO_LDFLAGS := $(GO_LDFLAGS) -X main.version=$(GLAB_VERSION)
 GOURL ?= gitlab.com/gitlab-org/cli
 BUILDLOC ?= ./bin/glab
