@@ -9,26 +9,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdVersion(s *iostreams.IOStreams, version, buildDate string) *cobra.Command {
+func NewCmdVersion(s *iostreams.IOStreams, version, commit string) *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:     "version",
 		Short:   "Show version information for glab.",
 		Long:    ``,
 		Aliases: []string{"v"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Fprint(s.StdOut, Scheme(version, buildDate))
+			fmt.Fprint(s.StdOut, Scheme(version, commit))
 			return nil
 		},
 	}
 	return versionCmd
 }
 
-func Scheme(version, buildDate string) string {
-	version = strings.TrimPrefix(version, "v")
-
-	if buildDate != "" {
-		version = fmt.Sprintf("%s (%s)", version, buildDate)
-	}
-
-	return fmt.Sprintf("Current glab version: %s\n", version)
+func Scheme(version, commit string) string {
+	return fmt.Sprintf("glab %s (%s)\n", strings.TrimPrefix(version, "v"), commit)
 }

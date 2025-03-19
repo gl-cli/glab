@@ -18,20 +18,20 @@ func TestRootVersion(t *testing.T) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	rootCmd := NewCmdRoot(cmdutils.NewFactory(), "v1.0.0", "2020-01-01")
+	rootCmd := NewCmdRoot(cmdutils.NewFactory(), "v1.0.0", "abcdefgh")
 	assert.Nil(t, rootCmd.Flag("version").Value.Set("true"))
 	assert.Nil(t, rootCmd.Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 
-	assert.Equal(t, "Current glab version: 1.0.0 (2020-01-01)\n", out)
+	assert.Equal(t, "glab 1.0.0 (abcdefgh)\n", out)
 }
 
 func TestRootNoArg(t *testing.T) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	rootCmd := NewCmdRoot(cmdutils.NewFactory(), "v1.0.0", "2020-01-01")
+	rootCmd := NewCmdRoot(cmdutils.NewFactory(), "v1.0.0", "abcdefgh")
 	assert.Nil(t, rootCmd.Execute())
 
 	out := test.ReturnBuffer(old, r, w)
