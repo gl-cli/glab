@@ -73,7 +73,6 @@ $ glab release create v1.0.1 --assets-links='
 # for this project in your GitLab instance. Do NOT run this manually. Use it as part
 # of a CI/CD pipeline with the "release" keyword:
 #
-# - The API endpoint accepts only "CI_JOB_TOKEN" as the authentication token.
 # - It retrieves components from the current repository by searching for
 #   `yml` files within the "templates" directory and its subdirectories.
 # - It fails if the feature flag `ci_release_cli_catalog_publish_option`

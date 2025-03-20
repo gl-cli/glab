@@ -8,8 +8,11 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gopkg.in/yaml.v3"
 )
@@ -28,6 +31,72 @@ type publishToCatalogRequest struct {
 
 type publishToCatalogResponse struct {
 	CatalogUrl string `json:"catalog_url"`
+}
+
+type Options struct {
+	TagName string
+
+	HTTPClient func() (*gitlab.Client, error)
+	BaseRepo   func() (glrepo.Interface, error)
+	IO         *iostreams.IOStreams
+}
+
+func NewCmdPublishCatalog(f *cmdutils.Factory) *cobra.Command {
+	opts := &Options{
+		IO:       f.IO,
+		BaseRepo: f.BaseRepo,
+	}
+	publishCatalogCmd := &cobra.Command{
+		Use:   "catalog <tag-name>",
+		Short: `[EXPERIMENTAL] Publishes CI/CD components to the catalog.`,
+		Long: heredoc.Docf(`[EXPERIMENTAL] Publishes CI/CD components in the project to the CI/CD catalog using the provided tag name.
+    
+    Requires the feature flag %[1]sci_release_cli_catalog_publish_option%[1]s to be enabled
+    for this project in your GitLab instance.
+
+    Requires the same user as the release author.
+
+    - It retrieves components from the current repository by searching for
+      %[1]syml%[1]s files within the "templates" directory and its subdirectories.
+    - It fails if the feature flag %[1]sci_release_cli_catalog_publish_option%[1]s
+      is not enabled for this project in your GitLab instance.
+
+    Components can be defined:
+
+    - In single files ending in %[1]s.yml%[1]s for each component, like %[1]stemplates/secret-detection.yml%[1]s.
+    - In subdirectories containing %[1]stemplate.yml%[1]s files as entry points,
+      for components that bundle together multiple related files. For example,
+      %[1]stemplates/secret-detection/template.yml%[1]s.
+    `, "`"),
+		Example: heredoc.Doc(`
+	glab repo publish catalog v1.2.3
+	`),
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.HTTPClient = f.HttpClient
+			opts.BaseRepo = f.BaseRepo
+
+			repo, err := opts.BaseRepo()
+			if err != nil {
+				return err
+			}
+			apiClient, err := opts.HTTPClient()
+			if err != nil {
+				return err
+			}
+			opts.TagName = args[0]
+			_, _, err = apiClient.Tags.GetTag(repo.FullName(), opts.TagName)
+			if err != nil {
+				return &cmdutils.FlagError{Err: fmt.Errorf("Invalid tag %s.", opts.TagName)}
+			}
+
+			return Publish(opts.IO, apiClient, repo.FullName(), opts.TagName)
+		},
+	}
+
+	publishCatalogCmd.Flags().StringVarP(&opts.TagName, "tag", "t", "", "An existing tag that should be published.")
+
+	return publishCatalogCmd
 }
 
 func Publish(io *iostreams.IOStreams, client *gitlab.Client, repoName string, tagName string) error {

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	securejoin "github.com/cyphar/filepath-securejoin"
-	catalog "gitlab.com/gitlab-org/cli/commands/release/create/catalog"
+	catalog "gitlab.com/gitlab-org/cli/commands/project/publish/catalog"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
 
@@ -122,7 +122,6 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			# for this project in your GitLab instance. Do NOT run this manually. Use it as part
 			# of a CI/CD pipeline with the "release" keyword:
 			#
-			# - The API endpoint accepts only "CI_JOB_TOKEN" as the authentication token.
 			# - It retrieves components from the current repository by searching for
 			#   %[1]syml%[1]s files within the "templates" directory and its subdirectories.
 			# - It fails if the feature flag %[1]sci_release_cli_catalog_publish_option%[1]s

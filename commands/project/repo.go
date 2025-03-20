@@ -10,6 +10,7 @@ import (
 	repoCmdFork "gitlab.com/gitlab-org/cli/commands/project/fork"
 	repoCmdList "gitlab.com/gitlab-org/cli/commands/project/list"
 	repoCmdMirror "gitlab.com/gitlab-org/cli/commands/project/mirror"
+	repoCmdPublish "gitlab.com/gitlab-org/cli/commands/project/publish"
 	repoCmdSearch "gitlab.com/gitlab-org/cli/commands/project/search"
 	repoCmdTransfer "gitlab.com/gitlab-org/cli/commands/project/transfer"
 	repoCmdView "gitlab.com/gitlab-org/cli/commands/project/view"
@@ -36,6 +37,7 @@ func NewCmdRepo(f *cmdutils.Factory) *cobra.Command {
 	repoCmd.AddCommand(repoCmdTransfer.NewCmdTransfer(f))
 	repoCmd.AddCommand(repoCmdView.NewCmdView(f))
 	repoCmd.AddCommand(repoCmdMirror.NewCmdMirror(f))
+	repoCmd.AddCommand(repoCmdPublish.NewCmdPublish(f))
 
 	return repoCmd
 }
