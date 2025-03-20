@@ -7,27 +7,29 @@ import (
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/pkg/browser"
 )
 
-var isGlobal bool
-
 func NewCmdConfig(f *cmdutils.Factory) *cobra.Command {
+	var isGlobal bool
+
 	configCmd := &cobra.Command{
 		Use:   "config [flags]",
-		Short: `Set and get glab settings.`,
-		Long: heredoc.Docf(`Get and set key/value strings.
+		Short: `Manage glab settings.`,
+		Long: heredoc.Docf(`Manage key/value strings.
 
 Current respected settings:
 
-- token: Your GitLab access token. Defaults to environment variables.
-- host: If unset, defaults to %[1]shttps://gitlab.com%[1]s.
 - browser: If unset, uses the default browser. Override with environment variable $BROWSER.
-- editor: If unset, uses the default editor. Override with environment variable $EDITOR.
-- visual: Takes precedence over 'editor'. If unset, uses the default editor. Override with environment variable $VISUAL.
-- glamour_style: Your desired Markdown renderer style. Options are dark, light, notty. Custom styles are available using [glamour](https://github.com/charmbracelet/glamour#styles).
-- glab_pager: Your desired pager command to use, such as 'less -R'.
 - check_update: If true, notifies of new versions of glab. Defaults to true. Override with environment variable $GLAB_CHECK_UPDATE.
 - display_hyperlinks: If true, and using a TTY, outputs hyperlinks for issues and merge request lists. Defaults to false.
+- editor: If unset, uses the default editor. Override with environment variable $EDITOR.
+- glab_pager: Your desired pager command to use, such as 'less -R'.
+- glamour_style: Your desired Markdown renderer style. Options are dark, light, notty. Custom styles are available using [glamour](https://github.com/charmbracelet/glamour#styles).
+- host: If unset, defaults to %[1]shttps://gitlab.com%[1]s.
+- token: Your GitLab access token. Defaults to environment variables.
+- visual: Takes precedence over 'editor'. If unset, uses the default editor. Override with environment variable $VISUAL.
 `, "`"),
 		Aliases: []string{"conf"},
 	}
@@ -36,6 +38,7 @@ Current respected settings:
 
 	configCmd.AddCommand(NewCmdConfigGet(f))
 	configCmd.AddCommand(NewCmdConfigSet(f))
+	configCmd.AddCommand(NewCmdConfigEdit(f))
 
 	return configCmd
 }
@@ -80,6 +83,7 @@ func NewCmdConfigGet(f *cmdutils.Factory) *cobra.Command {
 
 func NewCmdConfigSet(f *cmdutils.Factory) *cobra.Command {
 	var hostname string
+	var isGlobal bool
 
 	cmd := &cobra.Command{
 		Use:   "set <key> <value>",
@@ -128,5 +132,68 @@ Specifying the '--hostname' flag also saves in the global configuration file.
 
 	cmd.Flags().StringVarP(&hostname, "host", "h", "", "Set per-host setting.")
 	cmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "Write to global '~/.config/glab-cli/config.yml' file rather than the repository's '.git/glab-cli/config.yml' file.")
+	return cmd
+}
+
+func NewCmdConfigEdit(f *cmdutils.Factory) *cobra.Command {
+	var isLocal bool
+
+	cmd := &cobra.Command{
+		Use:   "edit",
+		Short: "Opens the glab configuration file.",
+		Long: heredoc.Doc(`Opens the glab configuration file.
+The command uses the following order when choosing the editor to use:
+1. 'glab_editor' field in the configuration file
+2. 'VISUAL' environment variable
+3. 'EDITOR' environment variable
+`),
+		Example: heredoc.Doc(`
+			# Open the configuration file with the default editor
+			$ glab config edit
+
+			# Open the configuration file with vim
+			$ EDITOR=vim glab config edit
+
+			# Set vim to be used for all future 'glab config edit' invocations
+			$ glab config set editor vim
+			$ glab config edit
+
+			# Open the local configuration file with the default editor
+			$ glab config edit -l
+		`),
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var configPath string
+
+			if isLocal {
+				configPath = ".git/glab-cli/config.yml"
+			} else {
+				configPath = fmt.Sprintf("%s/config.yml", config.ConfigDir())
+			}
+
+			editor, err := cmdutils.GetEditor(f.Config)
+			if err != nil {
+				return err
+			}
+
+			editorCommand, err := browser.Command(configPath, editor)
+			if err != nil {
+				return err
+			}
+
+			editorCommand.Stdin = cmd.InOrStdin()
+			editorCommand.Stdout = cmd.OutOrStdout()
+			editorCommand.Stderr = cmd.ErrOrStderr()
+
+			err = editorCommand.Run()
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVarP(&isLocal, "local", "l", false, "Open '.git/glab-cli/config.yml' file instead of the global '~/.config/glab-cli/config.yml' file.")
 	return cmd
 }
