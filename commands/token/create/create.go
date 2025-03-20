@@ -28,6 +28,7 @@ type CreateOptions struct {
 	BaseRepo   func() (glrepo.Interface, error)
 
 	Name         string
+	Description  string
 	User         string
 	Group        string
 	AccessLevel  accesslevel.AccessLevel
@@ -65,7 +66,7 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOptions) error) *co
 		glab token create --access-level developer --scope read_repository --scope read_registry my-project-token
 
 		# Create project access token for a specific project
-		glab token create --repo user/my-repo --access-level owner --scope api my-project-token
+		glab token create --repo user/my-repo --access-level owner --scope api my-project-token --description "example description"
 
 		# Create a group access token
 		glab token create --group group/sub-group --access-level owner --scope api my-group-token
@@ -126,6 +127,7 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOptions) error) *co
 	cmdutils.EnableRepoOverride(cmd, f)
 	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Create a group access token. Ignored if a user or repository argument is set.")
 	cmd.Flags().StringVarP(&opts.User, "user", "U", "", "Create a personal access token. For the current user, use @me.")
+	cmd.Flags().StringVarP(&opts.Description, "description", "", "description", "Sets the token's description.")
 	cmd.Flags().DurationVarP(&opts.Duration, "duration", "D", time.Duration(30*24*time.Hour), "Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h.")
 	cmd.Flags().VarP(&opts.ExpireAt, "expires-at", "E", "Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used.")
 	cmd.Flags().StringSliceVarP(&opts.Scopes, "scope", "S", []string{"read_repository"}, "Scopes for the token. For a list, see https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#personal-access-token-scopes.")
@@ -173,9 +175,10 @@ func createTokenRun(opts *CreateOptions) error {
 			outputTokenValue = token.Token
 		} else {
 			createOptions := &gitlab.CreatePersonalAccessTokenOptions{
-				Name:      &opts.Name,
-				ExpiresAt: &expirationDate,
-				Scopes:    &opts.Scopes,
+				Name:        &opts.Name,
+				Description: &opts.Description,
+				ExpiresAt:   &expirationDate,
+				Scopes:      &opts.Scopes,
 			}
 			token, err := api.CreatePersonalAccessToken(httpClient, user.ID, createOptions)
 			if err != nil {
@@ -200,6 +203,7 @@ func createTokenRun(opts *CreateOptions) error {
 
 			options := gitlab.CreateGroupAccessTokenOptions{
 				Name:        &opts.Name,
+				Description: &opts.Description,
 				Scopes:      &opts.Scopes,
 				AccessLevel: &opts.AccessLevel.Value,
 				ExpiresAt:   &expirationDate,
@@ -231,6 +235,7 @@ func createTokenRun(opts *CreateOptions) error {
 
 			options := gitlab.CreateProjectAccessTokenOptions{
 				Name:        &opts.Name,
+				Description: &opts.Description,
 				Scopes:      &opts.Scopes,
 				AccessLevel: &opts.AccessLevel.Value,
 				ExpiresAt:   &expirationDate,
