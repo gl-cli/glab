@@ -123,6 +123,9 @@ nfpms:
 
 checksum:
   name_template: "checksums.txt"
+  extra_files:
+    - glob: ./bin/*installer.exe
+
 snapshot:
   version_template: "{{ .Tag }}"
 changelog:
