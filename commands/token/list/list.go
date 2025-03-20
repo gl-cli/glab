@@ -101,6 +101,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Com
 type Token struct {
 	ID          string
 	Name        string
+	Description string
 	AccessLevel string
 	Active      string
 	Revoked     string
@@ -112,81 +113,36 @@ type Token struct {
 
 type Tokens []Token
 
-func newTokenFromPersonalAccessToken(t *gitlab.PersonalAccessToken) Token {
-	lastUsed := "-"
-	if t.LastUsedAt != nil {
-		lastUsed = t.LastUsedAt.Format(time.RFC3339)
+func formatLastUsedAt(lastUsedAt *time.Time) string {
+	if lastUsedAt == nil {
+		return "-"
 	}
-
-	token := Token{
-		Name:        t.Name,
-		ID:          strconv.FormatInt(int64(t.ID), 10),
-		AccessLevel: "-",
-		Active:      strconv.FormatBool(t.Active),
-		Revoked:     strconv.FormatBool(t.Revoked),
-		CreatedAt:   t.CreatedAt.Format(time.RFC3339),
-		ExpiresAt:   "-",
-		LastUsedAt:  lastUsed,
-		Scopes:      strings.Join(t.Scopes, ","),
-	}
-
-	if t.ExpiresAt != nil {
-		token.ExpiresAt = t.ExpiresAt.String()
-	}
-
-	return token
+	return lastUsedAt.Format(time.RFC3339)
 }
 
-func newTokenFromGroupAccessToken(t *gitlab.GroupAccessToken) Token {
-	level := accesslevel.AccessLevel{Value: t.AccessLevel}
-	lastUsed := "-"
-	if t.LastUsedAt != nil {
-		lastUsed = t.LastUsedAt.Format(time.RFC3339)
+func formatDescription(description string) string {
+	if description == "" {
+		return "-"
 	}
-
-	token := Token{
-		Name:        t.Name,
-		ID:          strconv.FormatInt(int64(t.ID), 10),
-		AccessLevel: level.String(),
-		Active:      strconv.FormatBool(t.Active),
-		Revoked:     strconv.FormatBool(t.Revoked),
-		CreatedAt:   t.CreatedAt.Format(time.RFC3339),
-		ExpiresAt:   "-",
-		LastUsedAt:  lastUsed,
-		Scopes:      strings.Join(t.Scopes, ","),
-	}
-
-	if t.ExpiresAt != nil {
-		token.ExpiresAt = t.ExpiresAt.String()
-	}
-
-	return token
+	return description
 }
 
-func newTokenFromProjectAccessToken(t *gitlab.ProjectAccessToken) Token {
-	level := accesslevel.AccessLevel{Value: t.AccessLevel}
-	lastUsed := "-"
-	if t.LastUsedAt != nil {
-		lastUsed = t.LastUsedAt.Format(time.RFC3339)
+func formatAccessLevel(accessLevel gitlab.AccessLevelValue) string {
+	level := accesslevel.AccessLevel{Value: accessLevel}
+	levelStr := level.String()
+
+	if levelStr == "no" {
+		return "-"
 	}
 
-	token := Token{
-		Name:        t.Name,
-		ID:          strconv.FormatInt(int64(t.ID), 10),
-		AccessLevel: level.String(),
-		Active:      strconv.FormatBool(t.Active),
-		Revoked:     strconv.FormatBool(t.Revoked),
-		CreatedAt:   t.CreatedAt.Format(time.RFC3339),
-		ExpiresAt:   "-",
-		LastUsedAt:  lastUsed,
-		Scopes:      strings.Join(t.Scopes, ","),
-	}
+	return levelStr
+}
 
-	if t.ExpiresAt != nil {
-		token.ExpiresAt = t.ExpiresAt.String()
+func formatExpiresAt(expiresAt *gitlab.ISOTime) string {
+	if expiresAt == nil {
+		return "-"
 	}
-
-	return token
+	return expiresAt.String()
 }
 
 func listRun(opts *ListOpts) error {
@@ -214,7 +170,18 @@ func listRun(opts *ListOpts) error {
 		outputTokens = make([]Token, 0, len(tokens))
 		for _, token := range tokens {
 			if !opts.ListActive || token.Active {
-				outputTokens = append(outputTokens, newTokenFromPersonalAccessToken(token))
+				outputTokens = append(outputTokens, Token{
+					ID:          strconv.FormatInt(int64(token.ID), 10),
+					Name:        token.Name,
+					Description: formatDescription(token.Description),
+					AccessLevel: "-",
+					Active:      strconv.FormatBool(token.Active),
+					Revoked:     strconv.FormatBool(token.Revoked),
+					CreatedAt:   token.CreatedAt.Format(time.RFC3339),
+					ExpiresAt:   formatExpiresAt(token.ExpiresAt),
+					LastUsedAt:  formatLastUsedAt(token.LastUsedAt),
+					Scopes:      strings.Join(token.Scopes, ","),
+				})
 			}
 		}
 	case opts.Group != "":
@@ -227,7 +194,18 @@ func listRun(opts *ListOpts) error {
 		outputTokens = make([]Token, 0, len(tokens))
 		for _, token := range tokens {
 			if !opts.ListActive || token.Active {
-				outputTokens = append(outputTokens, newTokenFromGroupAccessToken(token))
+				outputTokens = append(outputTokens, Token{
+					ID:          strconv.FormatInt(int64(token.ID), 10),
+					Name:        token.Name,
+					Description: formatDescription(token.Description),
+					AccessLevel: formatAccessLevel(token.AccessLevel),
+					Active:      strconv.FormatBool(token.Active),
+					Revoked:     strconv.FormatBool(token.Revoked),
+					CreatedAt:   token.CreatedAt.Format(time.RFC3339),
+					ExpiresAt:   formatExpiresAt(token.ExpiresAt),
+					LastUsedAt:  formatLastUsedAt(token.LastUsedAt),
+					Scopes:      strings.Join(token.Scopes, ","),
+				})
 			}
 		}
 	default:
@@ -244,7 +222,18 @@ func listRun(opts *ListOpts) error {
 		outputTokens = make([]Token, 0, len(tokens))
 		for _, token := range tokens {
 			if !opts.ListActive || token.Active {
-				outputTokens = append(outputTokens, newTokenFromProjectAccessToken(token))
+				outputTokens = append(outputTokens, Token{
+					ID:          strconv.FormatInt(int64(token.ID), 10),
+					Name:        token.Name,
+					Description: formatDescription(token.Description),
+					AccessLevel: formatAccessLevel(token.AccessLevel),
+					Active:      strconv.FormatBool(token.Active),
+					Revoked:     strconv.FormatBool(token.Revoked),
+					CreatedAt:   token.CreatedAt.Format(time.RFC3339),
+					ExpiresAt:   formatExpiresAt(token.ExpiresAt),
+					LastUsedAt:  formatLastUsedAt(token.LastUsedAt),
+					Scopes:      strings.Join(token.Scopes, ","),
+				})
 			}
 		}
 	}

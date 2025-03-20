@@ -31,71 +31,70 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 
 var userResponse = heredoc.Doc(`
 	{
-	  "id": 1,
-	  "username": "johndoe",
-	  "name": "John Doe",
-	  "state": "active",
-	  "locked": false,
-	  "avatar_url": "https://secure.gravatar.com/avatar/johndoe?s=80&d=identicon",
-	  "web_url": "https://gitlab.com/johndoe",
-	  "created_at": "2017-01-05T08:36:01.368Z",
-	  "bio": "",
-	  "location": "",
-	  "public_email": "",
-	  "skype": "",
-	  "linkedin": "",
-	  "twitter": "",
-	  "discord": "",
-	  "website_url": "",
-	  "organization": "",
-	  "job_title": "",
-	  "pronouns": null,
-	  "bot": false,
-	  "work_information": null,
-	  "local_time": null,
-	  "last_sign_in_at": "2024-07-07T06:57:16.562Z",
-	  "confirmed_at": "2017-01-05T08:36:24.701Z",
-	  "last_activity_on": "2024-07-07",
-	  "email": "john.doe@acme.com",
-	  "theme_id": null,
-	  "color_scheme_id": 1,
-	  "projects_limit": 100000,
-	  "current_sign_in_at": "2024-07-07T07:57:57.858Z",
-	  "identities": [
-	    {
-	      "provider": "google_oauth2",
-	      "extern_uid": "102139960402025821780",
-	      "saml_provider_id": null
-	    }
-	  ],
-	  "can_create_group": true,
-	  "can_create_project": true,
-	  "two_factor_enabled": true,
-	  "external": false,
-	  "private_profile": false,
-	  "commit_email": "john.doe@acme.com",
-	  "shared_runners_minutes_limit": 2000,
-	  "extra_shared_runners_minutes_limit": null,
-	  "scim_identities": []
+		"id": 1,
+		"username": "johndoe",
+		"name": "John Doe",
+		"state": "active",
+		"locked": false,
+		"avatar_url": "https://secure.gravatar.com/avatar/johndoe?s=80&d=identicon",
+		"web_url": "https://gitlab.com/johndoe",
+		"created_at": "2017-01-05T08:36:01.368Z",
+		"bio": "",
+		"location": "",
+		"public_email": "",
+		"skype": "",
+		"linkedin": "",
+		"twitter": "",
+		"discord": "",
+		"website_url": "",
+		"organization": "",
+		"job_title": "",
+		"pronouns": null,
+		"bot": false,
+		"work_information": null,
+		"local_time": null,
+		"last_sign_in_at": "2024-07-07T06:57:16.562Z",
+		"confirmed_at": "2017-01-05T08:36:24.701Z",
+		"last_activity_on": "2024-07-07",
+		"email": "john.doe@acme.com",
+		"theme_id": null,
+		"color_scheme_id": 1,
+		"projects_limit": 100000,
+		"current_sign_in_at": "2024-07-07T07:57:57.858Z",
+		"identities": [
+			{
+				"provider": "google_oauth2",
+				"extern_uid": "102139960402025821780",
+				"saml_provider_id": null
+			}
+		],
+		"can_create_group": true,
+		"can_create_project": true,
+		"two_factor_enabled": true,
+		"external": false,
+		"private_profile": false,
+		"commit_email": "john.doe@acme.com",
+		"shared_runners_minutes_limit": 2000,
+		"extra_shared_runners_minutes_limit": null,
+		"scim_identities": []
 	}
 `)
 
 var personalAccessTokenResponse = heredoc.Doc(`
-			{
-			    "id": 10183862,
-			    "name": "my-pat",
-			    "revoked": false,
-			    "created_at": "2024-07-08T01:23:04.311Z",
-                "description": "",
-			    "scopes": [
-			      "k8s_proxy"
-			    ],
-			    "user_id": 926857,
-			    "active": true,
-			    "expires_at": "2024-08-07",
-			    "token": "glpat-jRHatYQ8Fs77771111ps"
-			  }
-		`)
+	{
+		"id": 10183862,
+		"name": "my-pat",
+		"revoked": false,
+		"created_at": "2024-07-08T01:23:04.311Z",
+		"description": "",
+		"scopes": [
+			"k8s_proxy"
+		],
+		"user_id": 926857,
+		"active": true,
+		"expires_at": "2024-08-07",
+		"token": "glpat-jRHatYQ8Fs77771111ps"
+	}`)
 
 func TestRevokePersonalAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP := &httpmock.Mocker{}
@@ -146,22 +145,22 @@ func TestRevokePersonalAccessTokenAsText(t *testing.T) {
 }
 
 var groupAccessTokenResponse = heredoc.Doc(`
-  {
-    "id": 10190772,
-    "user_id": 21989300,
-    "name": "my-group-token",
-    "scopes": [
-      "read_registry",
-      "read_repository"
-    ],
-    "created_at": "2024-07-08T17:33:34.829Z",
-    "description": "",
-    "expires_at": "2024-08-07",
-    "active": true,
-    "revoked": false,
-    "token": "glpat-yz2791KMU-xxxxxxxxx",
-    "access_level": 30
-  }`)
+	{
+		"id": 10190772,
+		"user_id": 21989300,
+		"name": "my-group-token",
+		"scopes": [
+			"read_registry",
+			"read_repository"
+		],
+		"created_at": "2024-07-08T17:33:34.829Z",
+		"description": "",
+		"expires_at": "2024-08-07",
+		"active": true,
+		"revoked": false,
+		"token": "glpat-yz2791KMU-xxxxxxxxx",
+		"access_level": 30
+	}`)
 
 func TestRevokeGroupAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP := &httpmock.Mocker{}
@@ -220,7 +219,7 @@ var projectAccessTokenResponse = heredoc.Doc(`
 			"read_repository"
 		],
 		"created_at": "2024-07-08T19:47:14.727Z",
-        "description": "",
+		"description": "",
 		"expires_at": "2024-08-07",
 		"active": true,
 		"revoked": false,

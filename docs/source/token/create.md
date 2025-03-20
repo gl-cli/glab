@@ -45,7 +45,7 @@ new
 glab token create --access-level developer --scope read_repository --scope read_registry my-project-token
 
 # Create project access token for a specific project
-glab token create --repo user/my-repo --access-level owner --scope api my-project-token
+glab token create --repo user/my-repo --access-level owner --scope api my-project-token --description "example description"
 
 # Create a group access token
 glab token create --group group/sub-group --access-level owner --scope api my-group-token
@@ -63,6 +63,7 @@ glab token create --user johndoe --scope api johns-personal-token
 
 ```plaintext
   -A, --access-level AccessLevel   Access level of the token: one of 'guest', 'reporter', 'developer', 'maintainer', 'owner'. (default no)
+      --description string         Sets the token's description. (default "description")
   -D, --duration duration          Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h. (default 720h0m0s)
   -E, --expires-at DATE            Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used. (default 0001-01-01)
   -g, --group string               Create a group access token. Ignored if a user or repository argument is set.
