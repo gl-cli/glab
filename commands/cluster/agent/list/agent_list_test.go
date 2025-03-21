@@ -1,58 +1,46 @@
 package list
 
 import (
-	"fmt"
-	"net/http"
 	"testing"
 	"time"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/pkg/httpmock"
-	"gitlab.com/gitlab-org/cli/test"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 
 	"github.com/stretchr/testify/assert"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlab_testing "gitlab.com/gitlab-org/api/client-go/testing"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string, doHyperlinks string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, doHyperlinks)
-	f := cmdtest.InitFactory(ios, rt)
-
-	// Note: This sets the RoundTripper, which is necessary for stubs to work.
-	_, _ = f.HttpClient()
-
-	cmd := NewCmdAgentList(f)
-
-	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
-}
-
 func TestAgentList(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	defer fakeHTTP.Verify(t)
+	// GIVEN
+	tc := gitlab_testing.NewTestClient(t)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentList, cmdtest.WithGitLabClient(tc.Client))
 
-	deterministicCreatedAt := time.Now().Add(-24 * time.Hour).Format(time.RFC3339)
-	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/cluster_agents",
-		httpmock.NewStringResponse(http.StatusOK, fmt.Sprintf(`
-			[
-			  {
-				"id": 1,
-				"name": "local",
-				"created_at": "%[1]s"
-			  },
-			  {
-				"id": 2,
-				"name": "prd",
-				"created_at": "%[1]s"
-			  }
-			]
-	`, deterministicCreatedAt)))
+	tc.MockClusterAgents.EXPECT().
+		ListAgents("OWNER/REPO", &gitlab.ListAgentsOptions{Page: 1, PerPage: 30}).
+		Return([]*gitlab.Agent{
+			{
+				ID:        1,
+				Name:      "local",
+				CreatedAt: gitlab.Ptr(time.Now().Add(-24 * time.Hour)),
+			},
+			{
+				ID:        2,
+				Name:      "prd",
+				CreatedAt: gitlab.Ptr(time.Now().Add(-24 * time.Hour)),
+			},
+		}, &gitlab.Response{}, nil).
+		Times(1)
 
-	output, err := runCommand(fakeHTTP, true, "", "")
+	// WHEN
+	output, err := exec("")
 	if err != nil {
 		t.Errorf("error running command `cluster agent list`: %v", err)
 	}
 
+	// THEN
 	assert.Equal(t, heredoc.Doc(`
 		Showing 2 agents on OWNER/REPO. (Page 1)
 
@@ -65,37 +53,30 @@ func TestAgentList(t *testing.T) {
 }
 
 func TestAgentList_Pagination(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	defer fakeHTTP.Verify(t)
+	// GIVEN
+	tc := gitlab_testing.NewTestClient(t)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentList, cmdtest.WithGitLabClient(tc.Client))
 
-	deterministicCreatedAt := time.Now().Add(-24 * time.Hour).Format(time.RFC3339)
-	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/cluster_agents",
-		httpmock.NewStringResponse(http.StatusOK, fmt.Sprintf(`
-			[
-			  {
-				"id": 1,
-				"name": "local",
-				"created_at": "%[1]s"
-			  },
-			  {
-				"id": 2,
-				"name": "prd",
-				"created_at": "%[1]s"
-			  }
-			]
-		`, deterministicCreatedAt)))
+	tc.MockClusterAgents.EXPECT().
+		ListAgents("OWNER/REPO", &gitlab.ListAgentsOptions{Page: 2, PerPage: 1}).
+		Return([]*gitlab.Agent{
+			{
+				ID:        2,
+				Name:      "prd",
+				CreatedAt: gitlab.Ptr(time.Now().Add(-24 * time.Hour)),
+			},
+		}, &gitlab.Response{NextPage: 0}, nil)
 
-	cli := "--page 42 --per-page 10"
-	output, err := runCommand(fakeHTTP, true, cli, "")
+	// WHEN
+	output, err := exec("--page 2 --per-page 1")
 	if err != nil {
 		t.Errorf("error running command `cluster agent list`: %v", err)
 	}
 
 	assert.Equal(t, heredoc.Doc(`
-		Showing 2 agents on OWNER/REPO. (Page 42)
+		Showing 1 agent on OWNER/REPO. (Page 2)
 
 		ID	Name	Created At
-		1	local	about 1 day ago
 		2	prd	about 1 day ago
 
 	`), output.String())
