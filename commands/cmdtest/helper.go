@@ -168,6 +168,91 @@ func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *cmdutils.Facto
 	}
 }
 
+type CmdExecFunc func(cli string) (*test.CmdOut, error)
+
+type CmdFunc func(f *cmdutils.Factory) *cobra.Command
+
+// FactoryOption is a function that configures a Factory
+type FactoryOption func(f *cmdutils.Factory)
+
+// WithGitLabClient configures the Factory with a specific GitLab client
+func WithGitLabClient(client *gitlab.Client) FactoryOption {
+	return func(f *cmdutils.Factory) {
+		f.HttpClient = func() (*gitlab.Client, error) {
+			return client, nil
+		}
+	}
+}
+
+// WithConfig configures the Factory with a specific config
+func WithConfig(cfg config.Config) FactoryOption {
+	return func(f *cmdutils.Factory) {
+		f.Config = func() (config.Config, error) {
+			return cfg, nil
+		}
+	}
+}
+
+func WithConfigError(err error) FactoryOption {
+	return func(f *cmdutils.Factory) {
+		f.Config = func() (config.Config, error) {
+			return nil, err
+		}
+	}
+}
+
+// WithBaseRepo configures the Factory with a specific base repository
+func WithBaseRepo(owner, repo string) FactoryOption {
+	return func(f *cmdutils.Factory) {
+		f.BaseRepo = func() (glrepo.Interface, error) {
+			return glrepo.New(owner, repo), nil
+		}
+	}
+}
+
+// WithBranch configures the Factory with a specific branch
+func WithBranch(branch string) FactoryOption {
+	return func(f *cmdutils.Factory) {
+		f.Branch = func() (string, error) {
+			return branch, nil
+		}
+	}
+}
+
+// SetupCmdForTest creates a test environment with a configured Factory
+func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdExecFunc {
+	t.Helper()
+
+	ios, _, stdout, stderr := InitIOStreams(true, "")
+
+	// Create a default factory
+	f := &cmdutils.Factory{
+		IO: ios,
+		HttpClient: func() (*gitlab.Client, error) {
+			t.Errorf("You must configure a GitLab Test client in your tests. Use the WithGitLabClient option function")
+			return nil, nil
+		},
+		Config: func() (config.Config, error) {
+			return config.NewBlankConfig(), nil
+		},
+		BaseRepo: func() (glrepo.Interface, error) {
+			return glrepo.New("OWNER", "REPO"), nil
+		},
+		Branch: func() (string, error) {
+			return "main", nil
+		},
+	}
+
+	// Apply all options
+	for _, opt := range opts {
+		opt(f)
+	}
+
+	return func(cli string) (*test.CmdOut, error) {
+		return ExecuteCommand(cmdFunc(f), cli, stdout, stderr)
+	}
+}
+
 func ExecuteCommand(cmd *cobra.Command, cli string, stdout *bytes.Buffer, stderr *bytes.Buffer) (*test.CmdOut, error) {
 	argv, err := shlex.Split(cli)
 	if err != nil {
