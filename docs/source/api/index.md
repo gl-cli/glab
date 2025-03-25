@@ -73,11 +73,11 @@ glab api <endpoint> [flags]
 ## Examples
 
 ```plaintext
-$ glab api projects/:fullpath/releases
+- glab api projects/:fullpath/releases
 
-$ glab api projects/gitlab-com%2Fwww-gitlab-com/issues
+- glab api projects/gitlab-com%2Fwww-gitlab-com/issues
 
-$ glab api issues --paginate
+- glab api issues --paginate
 
 $ glab api graphql -f query='
   query {

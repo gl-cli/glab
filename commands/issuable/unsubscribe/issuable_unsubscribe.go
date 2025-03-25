@@ -31,9 +31,9 @@ func NewCmdUnsubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra
 		Long:    ``,
 		Aliases: []string{"unsub"},
 		Example: heredoc.Doc(fmt.Sprintf(`
-			glab %[1]s unsubscribe 123
-			glab %[1]s unsub 123
-			glab %[1]s unsubscribe https://gitlab.com/OWNER/REPO/-/%[2]s
+			- glab %[1]s unsubscribe 123
+			- glab %[1]s unsub 123
+			- glab %[1]s unsubscribe https://gitlab.com/OWNER/REPO/-/%[2]s
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

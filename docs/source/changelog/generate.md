@@ -20,7 +20,7 @@ glab changelog generate [flags]
 ## Examples
 
 ```plaintext
-glab changelog generate
+- glab changelog generate
 
 ```
 

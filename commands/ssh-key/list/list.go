@@ -32,7 +32,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(*ListOpts) error) *cobra.Command 
 		Short: "Get a list of SSH keys for the currently authenticated user.",
 		Long:  "",
 		Example: heredoc.Doc(`
-		glab ssh-key list
+		  - glab ssh-key list
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

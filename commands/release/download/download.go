@@ -51,15 +51,15 @@ func NewCmdDownload(f *cmdutils.Factory, runE func(opts *DownloadOpts) error) *c
 		`, "`"),
 		Args: cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
-			# Download all assets from the latest release
-			$ glab release download
+			Download all assets from the latest release
+			- glab release download
 
-			# Download all assets from the specified release tag
-			$ glab release download v1.1.0
+			Download all assets from the specified release tag
+			- glab release download v1.1.0
 
-			# Download assets with names matching the glob pattern
-			$ glab release download v1.10.1 --asset-name="*.tar.gz"
-`),
+			Download assets with names matching the glob pattern
+			- glab release download v1.10.1 --asset-name="*.tar.gz"
+		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient
 			opts.BaseRepo = f.BaseRepo

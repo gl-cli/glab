@@ -34,18 +34,16 @@ func NewCmdGet(f *cmdutils.Factory, runE func(*GetOpts) error) *cobra.Command {
 		Use:   "get <key-id>",
 		Short: "Returns a single SSH key specified by the ID.",
 		Long:  ``,
-		Example: heredoc.Doc(
-			`
-		# Get ssh key with ID as argument
-		$ glab ssh-key get 7750633
+		Example: heredoc.Doc(`
+			Get ssh key with ID as argument
+			- glab ssh-key get 7750633
 
-		# Interactive
-		$ glab ssh-key get
+			Interactive
+			- glab ssh-key get
 
-		# Interactive, with pagination
-		$ glab ssh-key get -P 50 -p 2
-		`,
-		),
+			Interactive, with pagination
+			- glab ssh-key get -P 50 -p 2
+		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient

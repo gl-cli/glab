@@ -28,9 +28,9 @@ func NewCmdSaveStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.Get
 		Long: `Save your current progress with a diff on the stack.
 ` + text.ExperimentalString,
 		Example: heredoc.Doc(`
-			glab stack save added_file
-			glab stack save . -m "added a function"
-			glab stack save -m "added a function"`),
+			- glab stack save added_file
+			- glab stack save . -m "added a function"
+			- glab stack save -m "added a function"`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("message") && cmd.Flags().Changed("description") {
 				return &cmdutils.FlagError{Err: errors.New("specify either of --message or --description.")}

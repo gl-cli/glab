@@ -17,8 +17,8 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		Short: `Delete labels for a repository or project.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
-			glab label delete foo
-			glab label delete -R owner/repo foo
+			- glab label delete foo
+			- glab label delete -R owner/repo foo
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

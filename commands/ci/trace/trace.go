@@ -13,15 +13,15 @@ func NewCmdTrace(f *cmdutils.Factory) *cobra.Command {
 		Use:   "trace [<job-id>] [flags]",
 		Short: `Trace a CI/CD job log in real time.`,
 		Example: heredoc.Doc(`
-	$ glab ci trace
-	# Interactively select a job to trace
+			Interactively select a job to trace
+			- glab ci trace
 
-	$ glab ci trace 224356863
-	# Trace job with ID 224356863
+			Trace job with ID 224356863
+			- glab ci trace 224356863
 
-	$ glab ci trace lint
-	# Trace job with the name 'lint'
-	`),
+			Trace job with the name 'lint'
+			- glab ci trace lint
+		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			repo, err := f.BaseRepo()

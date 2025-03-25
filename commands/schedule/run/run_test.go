@@ -91,5 +91,5 @@ func Test_ScheduleRunNoID(t *testing.T) {
 
 	out := test.ReturnBuffer(old, r, w)
 
-	assert.Contains(t, out, "Error: accepts 1 arg(s), received 0\nUsage:\n  run <id> [flags]\n\nExamples:\nglab schedule run 1\n\n\nFlags:\n  -h, --help   help for run\n\n")
+	assert.Contains(t, out, "Error: accepts 1 arg(s), received 0\n")
 }

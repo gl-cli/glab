@@ -36,29 +36,29 @@ glab release create <tag> [<files>...] [flags]
 ## Examples
 
 ```plaintext
-# Create a release interactively
-$ glab release create v1.0.1
+Create a release interactively
+- glab release create v1.0.1
 
-# Create a release non-interactively by specifying a note
-$ glab release create v1.0.1 --notes "bugfix release"
+Create a release non-interactively by specifying a note
+- glab release create v1.0.1 --notes "bugfix release"
 
-# Use release notes from a file
-$ glab release create v1.0.1 -F changelog.md
+Use release notes from a file
+- glab release create v1.0.1 -F changelog.md
 
-# Upload a release asset with a display name (type will default to 'other')
-$ glab release create v1.0.1 '/path/to/asset.zip#My display label'
+Upload a release asset with a display name (type will default to 'other')
+- glab release create v1.0.1 '/path/to/asset.zip#My display label'
 
-# Upload a release asset with a display name and type
-$ glab release create v1.0.1 '/path/to/asset.png#My display label#image'
+Upload a release asset with a display name and type
+- glab release create v1.0.1 '/path/to/asset.png#My display label#image'
 
-# Upload all assets in a specified folder (types default to 'other')
-$ glab release create v1.0.1 ./dist/*
+Upload all assets in a specified folder (types default to 'other')
+- glab release create v1.0.1 ./dist/*
 
-# Upload all tarballs in a specified folder (types default to 'other')
-$ glab release create v1.0.1 ./dist/*.tar.gz
+Upload all tarballs in a specified folder (types default to 'other')
+- glab release create v1.0.1 ./dist/*.tar.gz
 
-# Create a release with assets specified as JSON object
-$ glab release create v1.0.1 --assets-links='
+Create a release with assets specified as JSON object
+- glab release create v1.0.1 --assets-links='
   [
     {
       "name": "Asset1",
@@ -85,7 +85,7 @@ $ glab release create v1.0.1 --assets-links='
 #   for components that bundle together multiple related files. For example,
 #   `templates/secret-detection/template.yml`.
 
-$ glab release create v1.0.1 --publish-to-catalog
+- glab release create v1.0.1 --publish-to-catalog
 
 ```
 

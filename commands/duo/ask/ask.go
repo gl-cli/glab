@@ -72,9 +72,9 @@ func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
 			Generate Git commands from natural language.
 		`),
 		Example: heredoc.Doc(`
-			$ glab duo ask list last 10 commit titles
+			- glab duo ask list last 10 commit titles
 
-			# => A list of Git commands to show the titles of the latest 10 commits with an explanation and an option to execute the commands.
+			=> A list of Git commands to show the titles of the latest 10 commits with an explanation and an option to execute the commands.
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !opts.Git {

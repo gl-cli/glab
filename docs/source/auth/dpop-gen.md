@@ -42,15 +42,15 @@ glab auth dpop-gen [flags]
 ## Examples
 
 ```plaintext
-# Generate a DPoP JWT for authentication to GitLab
-$ glab auth dpop-gen [flags]
-$ glab auth dpop-gen --private-key "~/.ssh/id_rsa" --pat "glpat-xxxxxxxxxxxxxxxxxxxx"
+Generate a DPoP JWT for authentication to GitLab
+- glab auth dpop-gen [flags]
+- glab auth dpop-gen --private-key "~/.ssh/id_rsa" --pat "glpat-xxxxxxxxxxxxxxxxxxxx"
 
-# No PAT required if you previously used the 'glab auth login' command with a PAT
-$ glab auth dpop-gen --private-key "~/.ssh/id_rsa"
+No PAT required if you previously used the 'glab auth login' command with a PAT
+- glab auth dpop-gen --private-key "~/.ssh/id_rsa"
 
-# Generate a DPoP JWT for a different GitLab instance
-$ glab auth dpop-gen --private-key "~/.ssh/id_rsa" --hostname "https://gitlab.com"
+Generate a DPoP JWT for a different GitLab instance
+- glab auth dpop-gen --private-key "~/.ssh/id_rsa" --hostname "https://gitlab.com"
 
 ```
 

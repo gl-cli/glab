@@ -20,7 +20,7 @@ glab schedule run <id> [flags]
 ## Examples
 
 ```plaintext
-glab schedule run 1
+- glab schedule run 1
 
 ```
 

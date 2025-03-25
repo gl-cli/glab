@@ -26,8 +26,8 @@ push
 ## Examples
 
 ```plaintext
-glab ci artifact main build
-glab ci artifact main deploy --path="artifacts/"
+- glab ci artifact main build
+- glab ci artifact main deploy --path="artifacts/"
 
 ```
 

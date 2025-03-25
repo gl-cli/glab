@@ -26,12 +26,13 @@ unsub
 ## Examples
 
 ```plaintext
-$ glab mr unsubscribe 123
-$ glab mr unsub 123
-$ glab mr unsubscribe branch
+Unsubscribe from a merge request
+- glab mr unsubscribe 123
+- glab mr unsub 123
+- glab mr unsubscribe branch
 
-# Unsubscribe from multiple merge requests
-$ glab mr unsubscribe 123 branch
+Unsubscribe from multiple merge requests
+- glab mr unsubscribe 123 branch
 
 ```
 

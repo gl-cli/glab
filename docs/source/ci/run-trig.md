@@ -26,11 +26,11 @@ run-trig
 ## Examples
 
 ```plaintext
-glab ci run-trig -t xxxx
-glab ci run-trig -t xxxx -b main
-glab ci run-trig -t xxxx -b main --variables key1:val1
-glab ci run-trig -t xxxx -b main --variables key1:val1,key2:val2
-glab ci run-trig -t xxxx -b main --variables key1:val1 --variables key2:val2
+- glab ci run-trig -t xxxx
+- glab ci run-trig -t xxxx -b main
+- glab ci run-trig -t xxxx -b main --variables key1:val1
+- glab ci run-trig -t xxxx -b main --variables key1:val1,key2:val2
+- glab ci run-trig -t xxxx -b main --variables key1:val1 --variables key2:val2
 
 ```
 

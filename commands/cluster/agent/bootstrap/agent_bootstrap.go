@@ -10,6 +10,7 @@ import (
 	glab_api "gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
@@ -88,31 +89,31 @@ This command consists of multiple idempotent steps:
 7. Commit and Push the created Flux Helm resources to the manifest path.
 8. Trigger Flux reconciliation of GitLab Agent HelmRelease.
 `,
-		Example: `
-# Bootstrap "my-agent" to root of Git project in CWD and trigger reconciliation
-glab cluster agent bootstrap my-agent
+		Example: heredoc.Doc(`
+			Bootstrap "my-agent" to root of Git project in CWD and trigger reconciliation
+			- glab cluster agent bootstrap my-agent
 
-# Bootstrap "my-agent" to "manifests/" of Git project in CWD and trigger reconciliation
-# This is especially useful when "flux bootstrap gitlab --path manifests/" was used.
-# Make sure that the "--path" from the "flux bootstrap gitlab" command matches
-# the "--manifest-path" of the "glab cluster agent bootstrap" command.
-glab cluster agent bootstrap my-agent --manifest-path manifests/
+			Bootstrap "my-agent" to "manifests/" of Git project in CWD and trigger reconciliation
+			This is especially useful when "flux bootstrap gitlab --path manifests/" was used.
+			Make sure that the "--path" from the "flux bootstrap gitlab" command matches
+			the "--manifest-path" of the "glab cluster agent bootstrap" command.
+			- glab cluster agent bootstrap my-agent --manifest-path manifests/
 
-# Bootstrap "my-agent" to "manifests/" of Git project in CWD and do not manually trigger a reconilication
-glab cluster agent bootstrap my-agent --manifest-path manifests/ --no-reconcile
+			Bootstrap "my-agent" to "manifests/" of Git project in CWD and do not manually trigger a reconilication
+			- glab cluster agent bootstrap my-agent --manifest-path manifests/ --no-reconcile
 
-# Bootstrap "my-agent" without configuring an environment
-glab cluster agent bootstrap my-agent --create-environment=false
+			Bootstrap "my-agent" without configuring an environment
+			- glab cluster agent bootstrap my-agent --create-environment=false
 
-# Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
-glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
+			Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
+			- glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
 
-# Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a local file
-glab cluster agent bootstrap my-agent --helm-release-values values.yaml
+			Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a local file
+			- glab cluster agent bootstrap my-agent --helm-release-values values.yaml
 
-# Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a Kubernetes ConfigMap
-glab cluster agent bootstrap my-agent --helm-release-values-from ConfigMap/agent-config
-`,
+			Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a Kubernetes ConfigMap
+			- glab cluster agent bootstrap my-agent --helm-release-values-from ConfigMap/agent-config
+		`),
 		Aliases: []string{"bs"},
 		Args:    cobra.ExactArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {

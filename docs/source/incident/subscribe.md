@@ -26,9 +26,9 @@ sub
 ## Examples
 
 ```plaintext
-glab incident subscribe 123
-glab incident sub 123
-glab incident subscribe https://gitlab.com/OWNER/REPO/-/issues/incident/123
+- glab incident subscribe 123
+- glab incident sub 123
+- glab incident subscribe https://gitlab.com/OWNER/REPO/-/issues/incident/123
 
 ```
 

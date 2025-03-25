@@ -20,7 +20,7 @@ glab ssh-key list [flags]
 ## Examples
 
 ```plaintext
-glab ssh-key list
+- glab ssh-key list
 
 ```
 

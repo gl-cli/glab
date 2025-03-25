@@ -18,9 +18,9 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"del"},
 		Example: heredoc.Doc(`
-			glab issue delete 123
-			glab issue del 123
-			glab issue delete https://gitlab.com/profclems/glab/-/issues/123
+			- glab issue delete 123
+			- glab issue del 123
+			- glab issue delete https://gitlab.com/profclems/glab/-/issues/123
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

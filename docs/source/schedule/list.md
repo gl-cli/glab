@@ -20,7 +20,7 @@ glab schedule list [flags]
 ## Examples
 
 ```plaintext
-glab schedule list
+- glab schedule list
 
 ```
 

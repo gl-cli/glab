@@ -26,8 +26,8 @@ func NewCmdCreateStack(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 		Long:    strings.Replace(longString, "\"./.git/stacked\"", "`./.git/stacked`", 1),
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
-			glab stack create cool-new-feature
-			glab stack new cool-new-feature
+			- glab stack create cool-new-feature
+			- glab stack new cool-new-feature
 		`),
 		Args: cobra.MaximumNArgs(10),
 		RunE: func(cmd *cobra.Command, args []string) error {

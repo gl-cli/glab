@@ -20,14 +20,14 @@ glab ssh-key get <key-id> [flags]
 ## Examples
 
 ```plaintext
-# Get ssh key with ID as argument
-$ glab ssh-key get 7750633
+Get ssh key with ID as argument
+- glab ssh-key get 7750633
 
-# Interactive
-$ glab ssh-key get
+Interactive
+- glab ssh-key get
 
-# Interactive, with pagination
-$ glab ssh-key get -P 50 -p 2
+Interactive, with pagination
+- glab ssh-key get -P 50 -p 2
 
 ```
 

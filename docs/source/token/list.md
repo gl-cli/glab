@@ -36,21 +36,21 @@ ls
 ## Examples
 
 ```plaintext
-# List the current project's access tokens
-glab token list
-glab token list --output json
+List the current project's access tokens
+- glab token list
+- glab token list --output json
 
-# List the project access tokens of a specific project
-glab token list --repo user/my-repo
+List the project access tokens of a specific project
+- glab token list --repo user/my-repo
 
-# List group access tokens
-glab token list --group group/sub-group
+List group access tokens
+- glab token list --group group/sub-group
 
-# List my personal access tokens
-glab token list --user @me
+List my personal access tokens
+- glab token list --user @me
 
-# Administrators only: list the personal access tokens of another user
-glab token list --user johndoe
+Administrators only: list the personal access tokens of another user
+- glab token list --user johndoe
 
 ```
 

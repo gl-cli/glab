@@ -18,13 +18,11 @@ func NewCmdConfigCompile(f *cmdutils.Factory) *cobra.Command {
 		Short: "View the fully expanded CI/CD configuration.",
 		Args:  cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
-		# Uses .gitlab-ci.yml in the current directory
-		$ glab ci config compile
-
-		$ glab ci config compile .gitlab-ci.yml
-
-		$ glab ci config compile path/to/.gitlab-ci.yml
-	`),
+			Uses .gitlab-ci.yml in the current directory
+			- glab ci config compile
+			- glab ci config compile .gitlab-ci.yml
+			- glab ci config compile path/to/.gitlab-ci.yml
+		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path := ".gitlab-ci.yml"
 			if len(args) == 1 {

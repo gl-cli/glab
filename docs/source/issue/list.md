@@ -26,10 +26,10 @@ ls
 ## Examples
 
 ```plaintext
-glab issue list --all
-glab issue ls --all
-glab issue list --assignee=@me
-glab issue list --milestone release-2.0.0 --opened
+- glab issue list --all
+- glab issue ls --all
+- glab issue list --assignee=@me
+- glab issue list --milestone release-2.0.0 --opened
 
 ```
 

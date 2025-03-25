@@ -43,13 +43,13 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 			return deleteRun(opts)
 		},
 		Example: heredoc.Doc(`
-		# Delete a personal repository.
-		$ glab repo delete dotfiles
+			Delete a personal repository.
+			- glab repo delete dotfiles
 
-		# Delete a repository in a GitLab group, or another repository
-		# you have write access to:
-		$ glab repo delete mygroup/dotfiles
-		$ glab repo delete myorg/mynamespace/dotfiles
+			Delete a repository in a GitLab group, or another repository
+			you have write access to:
+			- glab repo delete mygroup/dotfiles
+			- glab repo delete myorg/mynamespace/dotfiles
 	  `),
 	}
 

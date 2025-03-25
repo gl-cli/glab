@@ -20,8 +20,8 @@ glab ci list [flags]
 ## Examples
 
 ```plaintext
-glab ci list
-glab ci list --status=failed
+- glab ci list
+- glab ci list --status=failed
 
 ```
 

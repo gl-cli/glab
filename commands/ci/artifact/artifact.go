@@ -13,9 +13,9 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 		Short:   `Download all artifacts from the last pipeline.`,
 		Aliases: []string{"push"},
 		Example: heredoc.Doc(`
-	glab ci artifact main build
-	glab ci artifact main deploy --path="artifacts/"
-	`),
+			- glab ci artifact main build
+			- glab ci artifact main deploy --path="artifacts/"
+		`),
 		Long: ``,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {

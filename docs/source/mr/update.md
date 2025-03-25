@@ -20,11 +20,14 @@ glab mr update [<id> | <branch>] [flags]
 ## Examples
 
 ```plaintext
-$ glab mr update 23 --ready
-$ glab mr update 23 --draft
+Mark a merge request as ready
+- glab mr update 23 --ready
 
-# Updates the merge request for the current branch
-$ glab mr update --draft
+Mark a merge request as draft
+- glab mr update 23 --draft
+
+Updates the merge request for the current branch
+- glab mr update --draft
 
 ```
 

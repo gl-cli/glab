@@ -55,11 +55,11 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 		Long:    ``,
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
-			glab snippet create script.py --title "Title of the snippet"
-			echo "package main" | glab snippet new --title "Title of the snippet" --filename "main.go"
-			glab snippet create -t Title -f "different.go" -d Description main.go
-			glab snippet create -t Title -f "different.go" -d Description --filename different.go main.go
-			glab snippet create --personal --title "Personal snippet" script.py
+			- glab snippet create script.py --title "Title of the snippet"
+			- echo "package main" | glab snippet new --title "Title of the snippet" --filename "main.go"
+			- glab snippet create -t Title -f "different.go" -d Description main.go
+			- glab snippet create -t Title -f "different.go" -d Description --filename different.go main.go
+			- glab snippet create --personal --title "Personal snippet" script.py
 		`),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			opts.IO = f.IO
