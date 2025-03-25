@@ -30,27 +30,27 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]
 ## Examples
 
 ```plaintext
-$ glab repo clone profclems/glab
+Clones repository into current directory
+- glab repo clone gitlab-org/cli
+- glab repo clone https://gitlab.com/gitlab-org/cli
 
-$ glab repo clone https://gitlab.com/profclems/glab
+Clones repository into 'mydirectory'
+- glab repo clone gitlab-org/cli mydirectory
 
-# Clones repository into 'mydirectory'
-$ glab repo clone profclems/glab mydirectory
+Clones repository 'glab' for current user
+- glab repo clone glab
 
-# Clones repository 'glab' for current user
-$ glab repo clone glab
+Finds the project by the ID provided and clones it
+- glab repo clone 4356677
 
-# Finds the project by the ID provided and clones it
-$ glab repo clone 4356677
+Clones all repos in a group
+- glab repo clone -g everyonecancontribute --paginate
 
-# Clones all repos in a group
-$ glab repo clone -g everyonecancontribute --paginate
+Clones all non-archived repos in a group
+- glab repo clone -g everyonecancontribute --archived=false --paginate
 
-# Clones all non-archived repos in a group
-$ glab repo clone -g everyonecancontribute --archived=false --paginate
-
-# Clones from a GitLab Self-Managed or GitLab Dedicated instance
-$ GITLAB_HOST=salsa.debian.org glab repo clone myrepo
+Clones from a GitLab Self-Managed or GitLab Dedicated instance
+- GITLAB_HOST=salsa.debian.org glab repo clone myrepo
 
 ```
 

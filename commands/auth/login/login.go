@@ -62,22 +62,23 @@ func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
 			Configuration and credentials are stored in the global configuration file (default %[1]s~/.config/glab-cli/config.yml%[1]s)
 		`, "`"),
 		Example: heredoc.Docf(`
-			# Start interactive setup
-			$ glab auth login
+			Start interactive setup
+			- glab auth login
 
-			# Authenticate against %[1]sgitlab.com%[1]s by reading the token from a file
-			$ glab auth login --stdin < myaccesstoken.txt
+			Authenticate against %[1]sgitlab.com%[1]s by reading the token from a file
+			- glab auth login --stdin < myaccesstoken.txt
 
-			# Authenticate with GitLab Self-Managed or GitLab Dedicated
-			$ glab auth login --hostname salsa.debian.org
+			Authenticate with GitLab Self-Managed or GitLab Dedicated
+			- glab auth login --hostname salsa.debian.org
 
-			# Non-interactive setup
-			$ glab auth login --hostname gitlab.example.org --token glpat-xxx --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh
+			Non-interactive setup
+			- glab auth login --hostname gitlab.example.org --token glpat-xxx --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh
 
-			# Non-interactive setup reading token from a file
-			$ glab auth login --hostname gitlab.example.org --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh  --stdin < myaccesstoken.txt
-			# non-interactive job token setup
-			$ glab auth login --hostname gitlab.example.org --job-token $CI_JOB_TOKEN
+			Non-interactive setup reading token from a file
+			- glab auth login --hostname gitlab.example.org --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh  --stdin < myaccesstoken.txt
+
+			Non-interactive job token setup
+			- glab auth login --hostname gitlab.example.org --job-token $CI_JOB_TOKEN
 		`, "`"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !opts.IO.PromptEnabled() && !tokenStdin && opts.Token == "" && opts.JobToken == "" {

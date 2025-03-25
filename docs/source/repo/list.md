@@ -26,7 +26,7 @@ ls
 ## Examples
 
 ```plaintext
-glab repo list
+- glab repo list
 
 ```
 

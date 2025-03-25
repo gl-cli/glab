@@ -57,20 +57,20 @@ func NewCmdUpload(f *cmdutils.Factory) *cobra.Command {
 			}
 		}(),
 		Example: heredoc.Doc(`
-			# Upload a release asset with a display name. 'Type' defaults to 'other'.
-			$ glab release upload v1.0.1 '/path/to/asset.zip#My display label'
+			Upload a release asset with a display name. 'Type' defaults to 'other'.
+			- glab release upload v1.0.1 '/path/to/asset.zip#My display label'
 
-			# Upload a release asset with a display name and type.
-			$ glab release upload v1.0.1 '/path/to/asset.png#My display label#image'
+			Upload a release asset with a display name and type.
+			- glab release upload v1.0.1 '/path/to/asset.png#My display label#image'
 
-			# Upload all assets in a specified folder. 'Type' defaults to 'other'.
-			$ glab release upload v1.0.1 ./dist/*
+			Upload all assets in a specified folder. 'Type' defaults to 'other'.
+			- glab release upload v1.0.1 ./dist/*
 
-			# Upload all tarballs in a specified folder. 'Type' defaults to 'other'.
-			$ glab release upload v1.0.1 ./dist/*.tar.gz
+			Upload all tarballs in a specified folder. 'Type' defaults to 'other'.
+			- glab release upload v1.0.1 ./dist/*.tar.gz
 
-			# Upload release assets links specified as JSON string
-			$ glab release upload v1.0.1 --assets-links='
+			Upload release assets links specified as JSON string
+			- glab release upload v1.0.1 --assets-links='
 			  [
 			    {
 			      "name": "Asset1",
@@ -79,7 +79,7 @@ func NewCmdUpload(f *cmdutils.Factory) *cobra.Command {
 			      "direct_asset_path": "path/to/file"
 			    }
 			  ]'
-`),
+		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			opts.HTTPClient = f.HttpClient

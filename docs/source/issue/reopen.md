@@ -26,9 +26,9 @@ open
 ## Examples
 
 ```plaintext
-glab issue reopen 123
-glab issue open 123
-glab issue reopen https://gitlab.com/NAMESPACE/REPO/-/issues/123
+- glab issue reopen 123
+- glab issue open 123
+- glab issue reopen https://gitlab.com/NAMESPACE/REPO/-/issues/123
 
 ```
 

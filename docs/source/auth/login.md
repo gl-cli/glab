@@ -27,22 +27,23 @@ glab auth login [flags]
 ## Examples
 
 ```plaintext
-# Start interactive setup
-$ glab auth login
+Start interactive setup
+- glab auth login
 
-# Authenticate against `gitlab.com` by reading the token from a file
-$ glab auth login --stdin < myaccesstoken.txt
+Authenticate against `gitlab.com` by reading the token from a file
+- glab auth login --stdin < myaccesstoken.txt
 
-# Authenticate with GitLab Self-Managed or GitLab Dedicated
-$ glab auth login --hostname salsa.debian.org
+Authenticate with GitLab Self-Managed or GitLab Dedicated
+- glab auth login --hostname salsa.debian.org
 
-# Non-interactive setup
-$ glab auth login --hostname gitlab.example.org --token glpat-xxx --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh
+Non-interactive setup
+- glab auth login --hostname gitlab.example.org --token glpat-xxx --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh
 
-# Non-interactive setup reading token from a file
-$ glab auth login --hostname gitlab.example.org --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh  --stdin < myaccesstoken.txt
-# non-interactive job token setup
-$ glab auth login --hostname gitlab.example.org --job-token $CI_JOB_TOKEN
+Non-interactive setup reading token from a file
+- glab auth login --hostname gitlab.example.org --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh  --stdin < myaccesstoken.txt
+
+Non-interactive job token setup
+- glab auth login --hostname gitlab.example.org --job-token $CI_JOB_TOKEN
 
 ```
 

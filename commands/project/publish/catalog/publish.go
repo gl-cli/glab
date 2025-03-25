@@ -69,8 +69,8 @@ func NewCmdPublishCatalog(f *cmdutils.Factory) *cobra.Command {
       %[1]stemplates/secret-detection/template.yml%[1]s.
     `, "`"),
 		Example: heredoc.Doc(`
-	glab repo publish catalog v1.2.3
-	`),
+			- glab repo publish catalog v1.2.3
+		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient

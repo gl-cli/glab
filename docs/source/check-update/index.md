@@ -19,6 +19,9 @@ Checks for new versions every 24 hours after any 'glab' command is run. Does not
 
 To override the recheck behavior and force an update check, set the GLAB_CHECK_UPDATE environment variable to 'true'.
 
+To disable the update check entirely, run 'glab config set check_update false'.
+To re-enable the update check, run 'glab config set check_update true'.
+
 ```plaintext
 glab check-update [flags]
 ```

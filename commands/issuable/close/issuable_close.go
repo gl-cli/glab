@@ -38,8 +38,8 @@ func NewCmdClose(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 		Long:    ``,
 		Aliases: aliases,
 		Example: heredoc.Doc(fmt.Sprintf(`
-			glab %[1]s close 123
-			glab %[1]s close https://gitlab.com/NAMESPACE/REPO/-/%s
+			- glab %[1]s close 123
+			- glab %[1]s close https://gitlab.com/NAMESPACE/REPO/-/%s
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

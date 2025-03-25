@@ -38,12 +38,11 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Com
 		Short:   "List variables for a project or group.",
 		Aliases: []string{"ls"},
 		Args:    cobra.ExactArgs(0),
-		Example: heredoc.Doc(
-			`
-			glab variable list
-			glab variable list --per-page 100 --page 1
-			glab variable list --group gitlab-org
-			glab variable list --group gitlab-org --per-page 100
+		Example: heredoc.Doc(`
+			- glab variable list
+			- glab variable list --per-page 100 --page 1
+			- glab variable list --group gitlab-org
+			- glab variable list --group gitlab-org --per-page 100
 		`,
 		),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -67,12 +66,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Com
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)
-	cmd.PersistentFlags().StringP(
-		"group",
-		"g",
-		"",
-		"Select a group or subgroup. Ignored if a repository argument is set.",
-	)
+	cmd.PersistentFlags().StringP("group", "g", "", "Select a group or subgroup. Ignored if a repository argument is set.")
 	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
 	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 20, "Number of items to list per page.")
 	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")

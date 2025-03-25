@@ -26,11 +26,12 @@ issue
 ## Examples
 
 ```plaintext
-$ glab mr issues 46
-$ glab mr issues branch
+List issues for merge request 46
+- glab mr issues 46
+- glab mr issues branch
 
-# Use the checked-out branch
-$ glab mr issues
+Use the checked-out branch
+- glab mr issues
 
 ```
 

@@ -26,11 +26,11 @@ glab release view <tag> [flags]
 ## Examples
 
 ```plaintext
-# View the latest release of a GitLab repository
-$ glab release view
+View the latest release of a GitLab repository
+- glab release view
 
-# View a release with specified tag name
-$ glab release view v1.0.1
+View a release with specified tag name
+- glab release view v1.0.1
 
 ```
 

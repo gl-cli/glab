@@ -44,13 +44,13 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		Use:   "delete <id> [flags]",
 		Short: `Delete CI/CD pipelines.`,
 		Example: heredoc.Doc(`
-	glab ci delete 34
-	glab ci delete 12,34,2
-	glab ci delete --source=api
-	glab ci delete --status=failed
-	glab ci delete --older-than 24h
-	glab ci delete --older-than 24h --status=failed
-	`),
+			- glab ci delete 34
+			- glab ci delete 12,34,2
+			- glab ci delete --source=api
+			- glab ci delete --status=failed
+			- glab ci delete --older-than 24h
+			- glab ci delete --older-than 24h --status=failed
+		`),
 		Long: ``,
 		Args: func(cmd *cobra.Command, args []string) error {
 			olderThanDuration, _ := cmd.Flags().GetDuration(FlagOlderThan)

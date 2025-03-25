@@ -20,11 +20,10 @@ glab config get <key> [flags]
 ## Examples
 
 ```plaintext
-
-  $ glab config get editor
-  vim
-  $ glab config get glamour_style
-  notty
+- glab config get editor
+vim
+- glab config get glamour_style
+notty
 
 ```
 

@@ -41,7 +41,7 @@ glab repo publish catalog <tag-name> [flags]
 ## Examples
 
 ```plaintext
-glab repo publish catalog v1.2.3
+- glab repo publish catalog v1.2.3
 
 ```
 

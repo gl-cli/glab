@@ -39,11 +39,11 @@ func NewCmdAdd(f *cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
 		Requires the '--title' flag.
 		`),
 		Example: heredoc.Doc(`
-		# Read ssh key from stdin and upload.
-		$ glab ssh-key add -t "my title"
+			Read ssh key from stdin and upload.
+			- glab ssh-key add -t "my title"
 
-		# Read ssh key from specified key file, upload and set the ssh key type to "authentication".
-		$ glab ssh-key add ~/.ssh/id_ed25519.pub -t "my title" --usage-type "auth"
+			Read ssh key from specified key file, upload and set the ssh key type to "authentication".
+			- glab ssh-key add ~/.ssh/id_ed25519.pub -t "my title" --usage-type "auth"
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

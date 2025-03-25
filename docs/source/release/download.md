@@ -28,14 +28,14 @@ glab release download <tag> [flags]
 ## Examples
 
 ```plaintext
-# Download all assets from the latest release
-$ glab release download
+Download all assets from the latest release
+- glab release download
 
-# Download all assets from the specified release tag
-$ glab release download v1.1.0
+Download all assets from the specified release tag
+- glab release download v1.1.0
 
-# Download assets with names matching the glob pattern
-$ glab release download v1.10.1 --asset-name="*.tar.gz"
+Download assets with names matching the glob pattern
+- glab release download v1.10.1 --asset-name="*.tar.gz"
 
 ```
 

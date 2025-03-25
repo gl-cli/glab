@@ -20,7 +20,7 @@ glab schedule create [flags]
 ## Examples
 
 ```plaintext
-glab schedule create --cron "0 * * * *" --description "Describe your pipeline here" --ref "main" --variable "foo:bar" --variable "baz:baz"
+- glab schedule create --cron "0 * * * *" --description "Describe your pipeline here" --ref "main" --variable "foo:bar" --variable "baz:baz"
 
 ```
 

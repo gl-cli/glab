@@ -26,11 +26,11 @@ new
 ## Examples
 
 ```plaintext
-glab issue create
-glab issue new
-glab issue create -m release-2.0.0 -t "we need this feature" --label important
-glab issue new -t "Fix CVE-YYYY-XXXX" -l security --linked-mr 123
-glab issue create -m release-1.0.1 -t "security fix" --label security --web --recover
+- glab issue create
+- glab issue new
+- glab issue create -m release-2.0.0 -t "we need this feature" --label important
+- glab issue new -t "Fix CVE-YYYY-XXXX" -l security --linked-mr 123
+- glab issue create -m release-1.0.1 -t "security fix" --label security --web --recover
 
 ```
 

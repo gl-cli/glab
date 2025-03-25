@@ -32,8 +32,8 @@ stacks
 ## Examples
 
 ```plaintext
-glab stack create cool-new-feature
-glab stack sync
+- glab stack create cool-new-feature
+- glab stack sync
 
 ```
 

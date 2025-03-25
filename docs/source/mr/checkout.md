@@ -20,13 +20,13 @@ glab mr checkout [<id> | <branch>] [flags]
 ## Examples
 
 ```plaintext
-$ glab mr checkout 1
-$ glab mr checkout branch
-$ glab mr checkout 12 --branch todo-fix
-$ glab mr checkout new-feature --set-upstream-to=upstream/main
+- glab mr checkout 1
+- glab mr checkout branch
+- glab mr checkout 12 --branch todo-fix
+- glab mr checkout new-feature --set-upstream-to=upstream/main
 
-# Uses the checked-out branch
-$ glab mr checkout
+Uses the checked-out branch
+- glab mr checkout
 
 ```
 

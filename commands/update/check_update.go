@@ -31,6 +31,9 @@ func NewCheckUpdateCmd(f *cmdutils.Factory, version string) *cobra.Command {
 		Long: heredoc.Doc(`Checks for new versions every 24 hours after any 'glab' command is run. Does not recheck if the most recent recheck is less than 24 hours old.
 
 		To override the recheck behavior and force an update check, set the GLAB_CHECK_UPDATE environment variable to 'true'.
+
+		To disable the update check entirely, run 'glab config set check_update false'.
+		To re-enable the update check, run 'glab config set check_update true'.
 		`),
 		Aliases: commandAliases,
 		RunE: func(cmd *cobra.Command, args []string) error {

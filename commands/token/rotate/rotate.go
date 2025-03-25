@@ -57,20 +57,20 @@ func NewCmdRotate(f *cmdutils.Factory, runE func(opts *RotateOptions) error) *co
 			Administrators can rotate personal access tokens belonging to other users.
 		`),
 		Example: heredoc.Doc(`
-			# Rotate project access token of current project
-			glab token rotate  my-project-token
+			Rotate project access token of current project
+			- glab token rotate  my-project-token
 
-			# Rotate project access token of another project, set to expiration date
-			glab token rotate --repo user/repo my-project-token --expires-at 2024-08-08
+			Rotate project access token of another project, set to expiration date
+			- glab token rotate --repo user/repo my-project-token --expires-at 2024-08-08
 
-			# Rotate group access token
-			glab token rotate --group group/sub-group my-group-token
+			Rotate group access token
+			- glab token rotate --group group/sub-group my-group-token
 
-			# Rotate personal access token and extend duration to 7 days
-			glab token rotate --user @me --duration $((7 * 24))h my-personal-token
+			Rotate personal access token and extend duration to 7 days
+			- glab token rotate --user @me --duration $((7 * 24))h my-personal-token
 
-			# Rotate a personal access token of another user (administrator only)
-			glab token rotate --user johndoe johns-personal-token
+			Rotate a personal access token of another user (administrator only)
+			- glab token rotate --user johndoe johns-personal-token
 		`),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// Supports repo override

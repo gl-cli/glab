@@ -21,12 +21,15 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 		Short: `Update a merge request.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
-	$ glab mr update 23 --ready
-	$ glab mr update 23 --draft
+			Mark a merge request as ready
+			- glab mr update 23 --ready
 
-	# Updates the merge request for the current branch
-	$ glab mr update --draft
-	`),
+			Mark a merge request as draft
+			- glab mr update 23 --draft
+
+			Updates the merge request for the current branch
+			- glab mr update --draft
+		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error

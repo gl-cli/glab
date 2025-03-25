@@ -26,11 +26,11 @@ show
 ## Examples
 
 ```plaintext
-glab issue view 123
-glab issue show 123
-glab issue view --web 123
-glab issue view --comments 123
-glab issue view https://gitlab.com/NAMESPACE/REPO/-/issues/123
+- glab issue view 123
+- glab issue show 123
+- glab issue view --web 123
+- glab issue view --comments 123
+- glab issue view https://gitlab.com/NAMESPACE/REPO/-/issues/123
 
 ```
 

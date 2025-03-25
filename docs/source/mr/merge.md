@@ -26,11 +26,12 @@ accept
 ## Examples
 
 ```plaintext
-$ glab mr merge 235
-$ glab mr accept 235
+Merge a merge request
+- glab mr merge 235
+- glab mr accept 235
 
-# Finds open merge request from current branch
-$ glab mr merge
+Finds open merge request from current branch
+- glab mr merge
 
 ```
 

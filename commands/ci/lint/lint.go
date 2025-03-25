@@ -27,13 +27,11 @@ func NewCmdLint(f *cmdutils.Factory) *cobra.Command {
 		Short: "Checks if your `.gitlab-ci.yml` file is valid.",
 		Args:  cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
-		# Uses .gitlab-ci.yml in the current directory
-		$ glab ci lint
-
-		$ glab ci lint .gitlab-ci.yml
-
-		$ glab ci lint path/to/.gitlab-ci.yml
-	`),
+			Uses .gitlab-ci.yml in the current directory
+			- glab ci lint
+			- glab ci lint .gitlab-ci.yml
+			- glab ci lint path/to/.gitlab-ci.yml
+		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path := ".gitlab-ci.yml"
 			if len(args) == 1 {

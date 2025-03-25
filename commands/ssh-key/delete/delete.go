@@ -34,16 +34,15 @@ func NewCmdDelete(f *cmdutils.Factory, runE func(*DeleteOpts) error) *cobra.Comm
 		Use:   "delete <key-id>",
 		Short: "Deletes a single SSH key specified by the ID.",
 		Long:  ``,
-		Example: heredoc.Doc(
-			`
-		# Delete SSH key with ID as argument
-		$ glab ssh-key delete 7750633
+		Example: heredoc.Doc(`
+			Delete SSH key with ID as argument
+			- glab ssh-key delete 7750633
 
-		# Interactive
-		$ glab ssh-key delete
+			Interactive
+			- glab ssh-key delete
 
-		# Interactive, with pagination
-		$ glab ssh-key delete -P 50 -p 2`,
+			Interactive, with pagination
+			- glab ssh-key delete -P 50 -p 2`,
 		),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

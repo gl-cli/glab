@@ -19,7 +19,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 		Use:   "create [flags]",
 		Short: `Schedule a new pipeline.`,
 		Example: heredoc.Doc(`
-			glab schedule create --cron "0 * * * *" --description "Describe your pipeline here" --ref "main" --variable "foo:bar" --variable "baz:baz"
+			- glab schedule create --cron "0 * * * *" --description "Describe your pipeline here" --ref "main" --variable "foo:bar" --variable "baz:baz"
 		`),
 		Long: ``,
 		RunE: func(cmd *cobra.Command, args []string) error {

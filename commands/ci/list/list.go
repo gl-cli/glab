@@ -20,9 +20,9 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 		Use:   "list [flags]",
 		Short: `Get the list of CI/CD pipelines.`,
 		Example: heredoc.Doc(`
-	glab ci list
-	glab ci list --status=failed
-	`),
+			- glab ci list
+			- glab ci list --status=failed
+		`),
 		Long: ``,
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {

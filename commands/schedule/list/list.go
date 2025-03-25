@@ -18,7 +18,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 		Use:   "list [flags]",
 		Short: `Get the list of schedules.`,
 		Example: heredoc.Doc(`
-			glab schedule list
+			- glab schedule list
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(0),

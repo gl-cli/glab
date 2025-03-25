@@ -33,11 +33,12 @@ func NewCmdContributors(f *cmdutils.Factory) *cobra.Command {
 		Use:   "contributors",
 		Short: `Get repository contributors list.`,
 		Example: heredoc.Doc(`
-	$ glab repo contributors
+			List contributors for the current repository
+			- glab repo contributors
 
-	# Supports overriding the repository.
-	$ glab repo contributors -R gitlab-com/www-gitlab-com
-	`),
+			List contributors for a specific repository
+			- glab repo contributors -R gitlab-com/www-gitlab-com
+		`),
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"users"},
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -41,20 +41,20 @@ new
 ## Examples
 
 ```plaintext
-# Create project access token for current project
-glab token create --access-level developer --scope read_repository --scope read_registry my-project-token
+Create project access token for current project
+- glab token create --access-level developer --scope read_repository --scope read_registry my-project-token
 
-# Create project access token for a specific project
-glab token create --repo user/my-repo --access-level owner --scope api my-project-token --description "example description"
+Create project access token for a specific project
+- glab token create --repo user/my-repo --access-level owner --scope api my-project-token --description "example description"
 
-# Create a group access token
-glab token create --group group/sub-group --access-level owner --scope api my-group-token
+Create a group access token
+- glab token create --group group/sub-group --access-level owner --scope api my-group-token
 
-# Create a personal access token for current user
-glab token create --user @me --scope k8s_proxy my-personal-token
+Create a personal access token for current user
+- glab token create --user @me --scope k8s_proxy my-personal-token
 
-# (administrator only) Create a personal access token for another user
-glab token create --user johndoe --scope api johns-personal-token
+(administrator only) Create a personal access token for another user
+- glab token create --user johndoe --scope api johns-personal-token
 
 
 ```

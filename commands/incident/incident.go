@@ -21,7 +21,7 @@ func NewCmdIncident(f *cmdutils.Factory) *cobra.Command {
 		Short: `Work with GitLab incidents.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
-			glab incident list
+			- glab incident list
 		`),
 		Annotations: map[string]string{
 			"help:arguments": heredoc.Doc(`
