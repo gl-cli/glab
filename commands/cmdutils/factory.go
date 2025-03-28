@@ -111,20 +111,18 @@ func OverrideAPIProtocol(cfg config.Config, repo glrepo.Interface) {
 	api.SetProtocol(protocol)
 }
 
-func HTTPClientFactory(f *Factory) {
-	f.HttpClient = func() (*gitlab.Client, error) {
-		cfg, err := configFunc()
-		if err != nil {
-			return nil, err
-		}
-		repo, err := baseRepoFunc()
-		if err != nil {
-			// use default hostname if remote resolver fails
-			repo = glrepo.NewWithHost("", "", glinstance.OverridableDefault())
-		}
-		OverrideAPIProtocol(cfg, repo)
-		return LabClientFunc(repo.RepoHost(), cfg, false)
+func HTTPClientFunc() (*gitlab.Client, error) {
+	cfg, err := configFunc()
+	if err != nil {
+		return nil, err
 	}
+	repo, err := baseRepoFunc()
+	if err != nil {
+		// use default hostname if remote resolver fails
+		repo = glrepo.NewWithHost("", "", glinstance.OverridableDefault())
+	}
+	OverrideAPIProtocol(cfg, repo)
+	return LabClientFunc(repo.RepoHost(), cfg, false)
 }
 
 func NewFactory() *Factory {
@@ -134,7 +132,7 @@ func NewFactory() *Factory {
 		HttpClient: func() (*gitlab.Client, error) {
 			// do not initialize httpclient since it may not be required by
 			// some commands like version, help, etc...
-			// It should be explicitly initialize with HTTPClientFactory()
+			// It should be explicitly set to HTTPClientFunc
 			return nil, nil
 		},
 		BaseRepo: baseRepoFunc,
