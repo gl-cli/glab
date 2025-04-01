@@ -11,7 +11,7 @@ workflow:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 default:
-  image: golang:${GO_VERSION}
+  image: ${GITLAB_DEPENDENCY_PROXY}golang:${GO_VERSION}
   tags:
     # NOTE: largest linux-based hosted runner available in Free tier.
     # see https://docs.gitlab.com/ee/ci/runners/hosted_runners/linux.html#machine-types-available-for-linux---x86-64
@@ -83,7 +83,7 @@ check_docs_markdown:
 
 lint_commit:
   stage: test
-  image: node:22-slim
+  image: ${GITLAB_DEPENDENCY_PROXY}node:22-slim
   script:
     - apt-get update && apt-get install -y git
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_MERGE_REQUEST_TARGET_BRANCH_NAME && git checkout $CI_COMMIT_SHA
@@ -94,7 +94,7 @@ lint_commit:
       when: always
 
 lint:
-  image: golangci/golangci-lint:$GOLANGCI_LINT_VERSION
+  image: ${GITLAB_DEPENDENCY_PROXY}golangci/golangci-lint:$GOLANGCI_LINT_VERSION
   stage: test
   script:
     # Write the code coverage report to gl-code-quality-report.json
@@ -135,7 +135,7 @@ run_tests:
 
 .release:
   stage: release
-  image: docker:stable
+  image: ${GITLAB_DEPENDENCY_PROXY}docker:stable
   services:
     - docker:dind
   variables:
@@ -188,7 +188,7 @@ release:
       "
 
 homebrew-release:
-  image: homebrew/ubuntu22.04:latest
+  image: ${GITLAB_DEPENDENCY_PROXY}homebrew/ubuntu22.04:latest
   stage: release
   needs: [release]
   rules:
