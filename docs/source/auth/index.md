@@ -24,4 +24,5 @@ Manage glab's authentication state.
 - [`dpop-gen`](dpop-gen.md)
 - [`git-credential`](git-credential.md)
 - [`login`](login.md)
+- [`logout`](logout.md)
 - [`status`](status.md)
