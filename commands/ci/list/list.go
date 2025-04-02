@@ -87,14 +87,14 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 				l.Username = gitlab.Ptr(m)
 			}
 			if m, _ := cmd.Flags().GetString("updated-after"); m != "" {
-				updatedAfterTime, err := time.Parse("2006-01-02 15:04:05Z", m)
+				updatedAfterTime, err := time.Parse("2006-01-02T15:04:05Z", m)
 				if err != nil {
 					return err
 				}
 				l.UpdatedAfter = gitlab.Ptr(updatedAfterTime)
 			}
 			if m, _ := cmd.Flags().GetString("updated-before"); m != "" {
-				updatedBeforeTime, err := time.Parse("2006-01-02 15:04:05Z", m)
+				updatedBeforeTime, err := time.Parse("2006-01-02T15:04:05Z", m)
 				if err != nil {
 					return err
 				}
