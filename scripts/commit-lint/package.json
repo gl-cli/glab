@@ -9,7 +9,6 @@
     "@commitlint/config-conventional": "^19.8.0",
     "@commitlint/format": "^19.8.0",
     "@commitlint/lint": "^19.8.0",
-    "@commitlint/read": "^19.8.0",
-    "axios": "^1.8.4"
+    "@commitlint/read": "^19.8.0"
   }
 }
