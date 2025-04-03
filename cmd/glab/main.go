@@ -169,19 +169,31 @@ func main() {
 		os.Exit(1)
 	}
 
-	checkUpdate, _ := cfg.Get("", "check_update")
-	if checkUpdate, err := strconv.ParseBool(checkUpdate); err == nil && checkUpdate {
+	var argCommand string
+	if expandedArgs != nil {
+		argCommand = expandedArgs[0]
+	} else {
+		argCommand = ""
+	}
 
-		var argCommand string
+	shouldCheck := false
 
-		if expandedArgs != nil {
-			argCommand = expandedArgs[0]
-		} else {
-			argCommand = ""
+	// GLAB_CHECK_UPDATE has higher priority than the check_update configuration value
+	if envVal, ok := os.LookupEnv("GLAB_CHECK_UPDATE"); ok {
+		if checkUpdate, err := strconv.ParseBool(envVal); err == nil {
+			shouldCheck = checkUpdate
 		}
+	} else {
+		// Fall back to config value if env var not set
+		if checkUpdate, _ := cfg.Get("", "check_update"); checkUpdate != "" {
+			if parsed, err := strconv.ParseBool(checkUpdate); err == nil {
+				shouldCheck = parsed
+			}
+		}
+	}
 
-		err = update.CheckUpdate(cmdFactory, version, true, argCommand)
-		if err != nil {
+	if shouldCheck {
+		if err := update.CheckUpdate(cmdFactory, version, true, argCommand); err != nil {
 			printError(cmdFactory.IO, err, rootCmd, debug)
 		}
 	}
