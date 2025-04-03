@@ -1,71 +1,85 @@
-import axios from "axios";
-import read from "@commitlint/read";
-import lint from "@commitlint/lint";
-import format from "@commitlint/format";
-import config from "@commitlint/config-conventional";
-
-const maximumLineLength = 72;
+import read from '@commitlint/read';
+import lint from '@commitlint/lint';
+import format from '@commitlint/format';
+import config from '@commitlint/config-conventional';
 
 // You can test the script by setting these environment variables
 const {
-  CI_MERGE_REQUEST_PROJECT_ID, // 5261717
-  CI_MERGE_REQUEST_IID,
-  CI_COMMIT_SHA,
-  CI_MERGE_REQUEST_TARGET_BRANCH_NAME, // usually main
+  CI_MERGE_REQUEST_DIFF_BASE_SHA, // refers to the main branch
+  CI_MERGE_REQUEST_SQUASH_ON_MERGE, // true if the squash MR checkbox is ticked
+  CI_MERGE_REQUEST_TITLE, // MR Title
+  CI_MERGE_REQUEST_EVENT_TYPE, // equal to 'merge_train' if the pipeline is a merge train pipeline
+  CI, // true when script is run in a CI/CD pipeline
+  LAST_MR_COMMIT, // This variable is created by `lint.sh` script. It represents the MR commit that's direct parent of the newly created merge commit.
 } = process.env;
 
 const urlSemanticRelease =
-  'https://gitlab.com/gitlab-org/cli/-/blob/main/CONTRIBUTING.md#commit-messages';
+  'https://gitlab.com/gitlab-org/gitlab-vscode-extension/-/blob/main/docs/developer/commits.md';
 
+// See rule docs https://commitlint.js.org/#/reference-rules
 const customRules = {
-  'header-max-length': [2, 'always', maximumLineLength],
+  'header-max-length': [2, 'always', 100],
   'body-leading-blank': [2, 'always'],
   'footer-leading-blank': [2, 'always'],
   'subject-case': [0],
+  'body-max-line-length': [1, 'always', 100],
 };
 
-async function getMr() {
-  const result = await axios.get(
-    `https://gitlab.com/api/v4/projects/${CI_MERGE_REQUEST_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}`,
-  );
-  const { title, squash } = result.data;
-  return {
-    title,
-    squash,
-  };
-}
-
 async function getCommitsInMr() {
-  const targetBranch = CI_MERGE_REQUEST_TARGET_BRANCH_NAME;
-  const sourceCommit = CI_COMMIT_SHA;
-  const messages = await read({ from: targetBranch, to: sourceCommit });
+  const diffBaseSha = CI_MERGE_REQUEST_DIFF_BASE_SHA;
+  const sourceBranchSha = LAST_MR_COMMIT;
+  const messages = await read({ from: diffBaseSha, to: sourceBranchSha });
   return messages;
 }
 
+const messageMatcher = r => r.test.bind(r);
+
 async function isConventional(message) {
-  return lint(message, { ...config.rules, ...customRules }, { defaultIgnores: true });
+  return lint(
+    message,
+    { ...config.rules, ...customRules },
+    {
+      defaultIgnores: false,
+      ignores: [
+        messageMatcher(/^[Rr]evert .*/),
+        messageMatcher(/^(?:fixup|squash)!/),
+        messageMatcher(/^Merge branch/),
+        messageMatcher(/^\d+\.\d+\.\d+/),
+      ],
+    },
+  );
 }
 
 async function lintMr() {
-  const mr = await getMr();
   const commits = await getCommitsInMr();
 
-  if (!mr.squash || commits.length === 1) {
+  // When MR is set to squash, but it's not yet being merged, we check the MR Title
+  if (
+    CI_MERGE_REQUEST_SQUASH_ON_MERGE === 'true' &&
+    CI_MERGE_REQUEST_EVENT_TYPE !== 'merge_train'
+  ) {
     console.log(
-      "INFO: Either the merge request isn't set to squash commits, or contains only one commit. Every commit message must use conventional commits.\n" +
-        'INFO: For help, read https://gitlab.com/gitlab-org/gitlab-vscode-extension/-/blob/main/docs/developer/commits.md',
+      'INFO: The MR is set to squash. We will lint the MR Title (used as the commit message by default).',
     );
-    return Promise.all(commits.map(isConventional));
+    return isConventional(CI_MERGE_REQUEST_TITLE).then(Array.of);
   }
-
-  console.log(
-    'INFO: The merge request is set to both squash commits and use the merge request title for the squash commit.\n' +
-      'INFO: If the merge request title is incorrect, fix the title and rerun this CI/CD job.\n',
-  );
-  return isConventional(mr.title).then(Array.of);
+  console.log('INFO: Checking all commits that will be added by this MR.');
+  return Promise.all(commits.map(commit => isConventional(commit)));
 }
 
 async function run() {
+  if (!CI) {
+    console.error('This script can only run in GitLab CI.');
+    process.exit(1);
+  }
+
+  if (!LAST_MR_COMMIT) {
+    console.error(
+      'LAST_MR_COMMIT environment variable is not present. Make sure this script is run from `lint.sh`',
+    );
+    process.exit(1);
+  }
+
   const results = await lintMr();
 
   console.error(format({ results }, { helpUrl: urlSemanticRelease }));
