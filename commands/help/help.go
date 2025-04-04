@@ -19,7 +19,7 @@ func renderWithGlamour(text string) string {
 
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithAutoStyle(),
-		glamour.WithWordWrap(80),
+		glamour.WithWordWrap(85),
 	)
 	if err != nil {
 		return text
