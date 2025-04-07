@@ -73,6 +73,7 @@ Run `glab --help` to view a list of core commands in your terminal.
 - [`glab release`](docs/source/release)
 - [`glab repo`](docs/source/repo)
 - [`glab schedule`](docs/source/schedule)
+- [`glab securefile`](docs/source/securefile)
 - [`glab snippet`](docs/source/snippet)
 - [`glab ssh-key`](docs/source/ssh-key)
 - [`glab stack`](docs/source/stack)
