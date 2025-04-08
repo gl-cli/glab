@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
+	securefileDownloadCmd "gitlab.com/gitlab-org/cli/commands/securefile/download"
 	securefileListCmd "gitlab.com/gitlab-org/cli/commands/securefile/list"
 )
 
@@ -22,6 +23,7 @@ func NewCmdSecurefile(f *cmdutils.Factory) *cobra.Command {
 
 	cmdutils.EnableRepoOverride(securefileCmd, f)
 
+	securefileCmd.AddCommand(securefileDownloadCmd.NewCmdDownload(f))
 	securefileCmd.AddCommand(securefileListCmd.NewCmdList(f))
 	return securefileCmd
 }
