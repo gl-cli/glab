@@ -34,4 +34,5 @@ and binary files are supported, but they must be smaller than 5 MB.
 
 ## Subcommands
 
+- [`download`](download.md)
 - [`list`](list.md)
