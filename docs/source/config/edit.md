@@ -17,6 +17,7 @@ Opens the glab configuration file.
 
 Opens the glab configuration file.
 The command uses the following order when choosing the editor to use:
+
 1. 'glab_editor' field in the configuration file
 2. 'VISUAL' environment variable
 3. 'EDITOR' environment variable

@@ -91,12 +91,11 @@ func NewCmdConfigSet(f *cmdutils.Factory) *cobra.Command {
 		Long: `Update the configuration by setting a key to a value.
 Use 'glab config set --global' to set a global config.
 Specifying the '--hostname' flag also saves in the global configuration file.
-		`,
+`,
 		Example: heredoc.Doc(`
-  		- glab config set editor vim
-  		- glab config set token xxxxx -h gitlab.com
-  		- glab config set check_update false --global
-		`),
+- glab config set editor vim
+- glab config set token xxxxx -h gitlab.com
+- glab config set check_update false --global`),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := f.Config()
@@ -143,6 +142,7 @@ func NewCmdConfigEdit(f *cmdutils.Factory) *cobra.Command {
 		Short: "Opens the glab configuration file.",
 		Long: heredoc.Doc(`Opens the glab configuration file.
 The command uses the following order when choosing the editor to use:
+
 1. 'glab_editor' field in the configuration file
 2. 'VISUAL' environment variable
 3. 'EDITOR' environment variable
