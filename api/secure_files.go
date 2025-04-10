@@ -43,3 +43,12 @@ var ListSecureFiles = func(client *gitlab.Client, l *gitlab.ListProjectSecureFil
 	}
 	return files, nil
 }
+
+var RemoveSecureFile = func(client *gitlab.Client, projectID interface{}, id int) error {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+
+	_, err := client.SecureFiles.RemoveSecureFile(projectID, id)
+	return err
+}
