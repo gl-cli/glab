@@ -2,7 +2,6 @@ OS = $(shell uname | tr A-Z a-z)
 DEBUG ?= false
 export PATH := $(abspath bin/):${PATH}
 
-
 # Build variables
 export CGO_ENABLED ?= 0
 ifeq (${VERBOSE}, 1)
@@ -121,7 +120,7 @@ test: EDITOR=
 test: PAGER=
 test: export CI_PROJECT_PATH=$(shell git remote get-url origin)
 test: bin/gotestsum ## Run tests
-	$(GOTEST) --jsonfile test-output.log --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
+	$(GOTEST) --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
 
 .PHONY: test-race
 test-race: SHELL = /bin/bash # set environment variables to ensure consistent test behavior

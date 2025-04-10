@@ -128,10 +128,9 @@ run_tests:
   coverage: /^total:\t+\(statements\)\t+\d+\.\d+%$/
   artifacts:
     when: always
-    paths:
-      - test-output.log
     reports:
       junit: coverage.xml
+    access: 'developer'
 
 .release:
   stage: release
