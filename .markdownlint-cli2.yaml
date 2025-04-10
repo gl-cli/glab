@@ -160,5 +160,3 @@ config:
       "YAML",
       "YouTrack"
     ]
-ignores:
-  - "docs/source"
