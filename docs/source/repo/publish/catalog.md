@@ -45,12 +45,6 @@ glab repo publish catalog <tag-name> [flags]
 
 ```
 
-## Options
-
-```plaintext
-  -t, --tag string   An existing tag that should be published.
-```
-
 ## Options inherited from parent commands
 
 ```plaintext
