@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
@@ -33,6 +34,7 @@ type ListOptions struct {
 	Mine        bool
 	Search      string
 	Group       string
+	Epic        int
 	IssueType   string
 	Iteration   int
 
@@ -120,6 +122,28 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueTy
 			}
 			opts.Group = group
 
+			if opts.Epic != 0 && opts.Group == "" {
+				repo, err := opts.BaseRepo()
+				if err != nil {
+					return err
+				}
+				opts.Group = repo.RepoOwner()
+			}
+			if opts.Epic != 0 && opts.Group == "" {
+				return cmdutils.FlagError{
+					Err: errors.New("flag --epic requires flag --group"),
+				}
+			}
+
+			// The underlying API, ListEpicIssues, does not support filtering, so we do the filtering client-side.
+			// That means to implement pagination, we'd still need to request all previous issues and filter them.
+			// That means client side pagination is more expensive (O(n^2)) than requesting all issues belonging to an epic (O(n)).
+			if opts.Epic != 0 && opts.Page > 1 {
+				return cmdutils.FlagError{
+					Err: errors.New("--epic does not support the --page flag"),
+				}
+			}
+
 			if runE != nil {
 				return runE(opts)
 			}
@@ -145,6 +169,7 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueTy
 	issueListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
 	issueListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
 	issueListCmd.PersistentFlags().StringP("group", "g", "", "Select a group or subgroup. Ignored if a repo argument is set.")
+	issueListCmd.Flags().IntVarP(&opts.Epic, "epic", "e", 0, "List issues belonging to a given epic (requires --group, no pagination support).")
 	issueListCmd.MarkFlagsMutuallyExclusive("output", "output-format")
 
 	if issueType == issuable.TypeIssue {
@@ -181,37 +206,43 @@ func listRun(opts *ListOptions) error {
 	listOpts.Page = 1
 	listOpts.PerPage = 30
 
-	if opts.Assignee != "" || opts.Mine {
-		if opts.Assignee == "@me" || opts.Mine {
-			u, err := api.CurrentUser(nil)
-			if err != nil {
-				return err
-			}
-			opts.Assignee = u.Username
-		}
-		listOpts.AssigneeUsername = gitlab.Ptr(opts.Assignee)
+	if opts.Assignee == "" && opts.Mine {
+		opts.Assignee = "@me"
 	}
+
+	if opts.Assignee != "" {
+		uid, err := userID(apiClient, opts.Assignee)
+		if err != nil {
+			return err
+		}
+
+		listOpts.AssigneeID = gitlab.Ptr(uid)
+	}
+
 	if opts.NotAssignee != "" {
-		u, err := api.UserByName(apiClient, opts.NotAssignee)
+		uid, err := userID(apiClient, opts.NotAssignee)
 		if err != nil {
 			return err
 		}
-		listOpts.NotAssigneeID = gitlab.Ptr(u.ID)
+		listOpts.NotAssigneeID = gitlab.Ptr(uid)
 	}
+
 	if opts.Author != "" {
-		u, err := api.UserByName(apiClient, opts.Author)
+		uid, err := userID(apiClient, opts.Author)
 		if err != nil {
 			return err
 		}
-		listOpts.AuthorID = gitlab.Ptr(u.ID)
+		listOpts.AuthorID = gitlab.Ptr(uid)
 	}
+
 	if opts.NotAuthor != "" {
-		u, err := api.UserByName(apiClient, opts.NotAuthor)
+		uid, err := userID(apiClient, opts.NotAuthor)
 		if err != nil {
 			return err
 		}
-		listOpts.NotAuthorID = gitlab.Ptr(u.ID)
+		listOpts.NotAuthorID = gitlab.Ptr(uid)
 	}
+
 	if opts.Search != "" {
 		listOpts.Search = gitlab.Ptr(opts.Search)
 		opts.ListType = "search"
@@ -254,13 +285,22 @@ func listRun(opts *ListOptions) error {
 	var issues []*gitlab.Issue
 	title := utils.NewListTitle(fmt.Sprintf("%s %s", opts.TitleQualifier, issueType))
 	title.RepoName = repo.FullName()
-	if opts.Group != "" {
+	switch {
+	case opts.Epic != 0:
+		issues, err = listEpicIssues(apiClient, opts, listOpts)
+		if err != nil {
+			return err
+		}
+		title.RepoName = fmt.Sprintf("%s&%d", opts.Group, opts.Epic)
+
+	case opts.Group != "":
 		issues, err = api.ListGroupIssues(apiClient, opts.Group, api.ProjectListIssueOptionsToGroup(listOpts))
 		if err != nil {
 			return err
 		}
 		title.RepoName = opts.Group
-	} else {
+
+	default:
 		issues, err = api.ListProjectIssues(apiClient, repo.FullName(), listOpts)
 		if err != nil {
 			return err
@@ -298,4 +338,168 @@ func listRun(opts *ListOptions) error {
 
 	fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title.Describe(), issueutils.DisplayIssueList(opts.IO, issues, repo.FullName()))
 	return nil
+}
+
+func userID(client *gitlab.Client, username string) (int, error) {
+	if username == "@me" {
+		me, err := api.CurrentUser(nil)
+		if err != nil {
+			return 0, err
+		}
+		return me.ID, nil
+	}
+
+	u, err := api.UserByName(client, username)
+	if err != nil {
+		return 0, err
+	}
+	return u.ID, nil
+}
+
+// listEpicIssues is a wrapper around the API call of the same name.
+// Since the GitLab API doesn't support filtering for this method, it implements client-side filtering of issues instead.
+func listEpicIssues(client *gitlab.Client, opts *ListOptions, projListOpts *gitlab.ListProjectIssuesOptions) ([]*gitlab.Issue, error) {
+	var (
+		listOpts = gitlab.ListOptions{
+			Page: 1,
+		}
+		issues []*gitlab.Issue
+	)
+
+	maxIssues := opts.PerPage
+	if maxIssues <= 0 {
+		maxIssues = api.DefaultListLimit
+	}
+
+	listOpts.PerPage = maxIssues
+	if listOpts.PerPage > api.MaxPerPage {
+		listOpts.PerPage = api.MaxPerPage
+	}
+
+	for {
+		is, req, err := client.EpicIssues.ListEpicIssues(opts.Group, opts.Epic, &listOpts)
+		if err != nil {
+			return nil, err
+		}
+
+		// The "list issues for an epic" api doesn't support filtering, requiring client-side filtering.
+		is = filterIssues(is, projListOpts)
+
+		// If the number of issues exceeds the page size, trim the list.
+		if len(issues)+len(is) > maxIssues {
+			is = is[:maxIssues-len(issues)]
+		}
+
+		issues = append(issues, is...)
+
+		if len(issues) >= maxIssues || req.NextPage == 0 {
+			break
+		}
+
+		listOpts.Page = req.NextPage
+	}
+
+	return issues, nil
+}
+
+func filterIssues(issues []*gitlab.Issue, opts *gitlab.ListProjectIssuesOptions) []*gitlab.Issue {
+	var ret []*gitlab.Issue
+
+	for _, issue := range issues {
+		if isMatch(issue, opts) {
+			ret = append(ret, issue)
+		}
+	}
+
+	return ret
+}
+
+func isMatch(issue *gitlab.Issue, opts *gitlab.ListProjectIssuesOptions) bool {
+	if opts.AssigneeID != nil && !hasAssignee(issue, *opts.AssigneeID) {
+		return false
+	}
+	if opts.NotAssigneeID != nil && hasAssignee(issue, *opts.NotAssigneeID) {
+		return false
+	}
+	if opts.AuthorID != nil && (issue.Author == nil || issue.Author.ID != *opts.AuthorID) {
+		return false
+	}
+	if opts.NotAuthorID != nil && issue.Author != nil && issue.Author.ID == *opts.NotAuthorID {
+		return false
+	}
+	if opts.Labels != nil && !hasAllLabels(issue, []string(*opts.Labels)) {
+		return false
+	}
+	if opts.NotLabels != nil && hasAnyLabel(issue, []string(*opts.NotLabels)) {
+		return false
+	}
+	if opts.Milestone != nil && (issue.Milestone == nil || !strings.EqualFold(issue.Milestone.Title, *opts.Milestone)) {
+		return false
+	}
+	if opts.Search != nil && !strings.Contains(strings.ToLower(issue.Title), strings.ToLower(*opts.Search)) {
+		return false
+	}
+	if opts.IterationID != nil && (issue.Iteration == nil || issue.Iteration.ID != *opts.IterationID) {
+		return false
+	}
+
+	if !stateMatches(issue, opts) {
+		return false
+	}
+	if opts.Confidential != nil && *opts.Confidential != issue.Confidential {
+		return false
+	}
+
+	return true
+}
+
+func hasAssignee(issue *gitlab.Issue, userID int) bool {
+	for _, assignee := range issue.Assignees {
+		if assignee.ID == userID {
+			return true
+		}
+	}
+
+	return false
+}
+
+func stateMatches(issue *gitlab.Issue, opts *gitlab.ListProjectIssuesOptions) bool {
+	switch {
+	case opts.State == nil:
+		return true
+	case *opts.State == "all":
+		return true
+	default:
+		return *opts.State == issue.State
+	}
+}
+
+func hasAllLabels(issue *gitlab.Issue, labels []string) bool {
+	issueLabels := make(map[string]bool)
+	for _, l := range issue.Labels {
+		issueLabels[l] = true
+	}
+
+	for _, l := range labels {
+		if _, ok := issueLabels[l]; !ok {
+			return false
+		}
+	}
+
+	return true
+}
+
+func hasAnyLabel(issue *gitlab.Issue, labels []string) bool {
+	issueLabels := make(map[string]bool)
+	for _, l := range issue.Labels {
+		issueLabels[l] = true
+	}
+
+	for _, l := range labels {
+		if _, ok := issueLabels[l]; ok {
+			return true
+		}
+	}
+
+	return false
 }
