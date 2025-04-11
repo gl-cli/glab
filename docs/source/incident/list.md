@@ -41,6 +41,7 @@ ls
       --author string          Filter incident by author <username>.
   -c, --closed                 Get only closed incidents.
   -C, --confidential           Filter by confidential incidents.
+  -e, --epic int               List issues belonging to a given epic (requires --group, no pagination support).
   -g, --group string           Select a group or subgroup. Ignored if a repo argument is set.
       --in string              search in: title, description. (default "title,description")
   -l, --label strings          Filter incident by label <name>.

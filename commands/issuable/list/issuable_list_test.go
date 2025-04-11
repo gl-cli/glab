@@ -1,10 +1,13 @@
 package list
 
 import (
+	"bufio"
 	"fmt"
 	"net/http"
 	"os"
 	"regexp"
+	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -155,6 +158,8 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 		fakeHTTP := httpmock.New()
 		defer fakeHTTP.Verify(t)
 
+		fakeHTTP.RegisterResponder(http.MethodGet, "/users",
+			httpmock.NewStringResponse(http.StatusOK, `[{"id": 100, "username": "someuser"}]`))
 		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
 			httpmock.NewStringResponse(http.StatusOK, `[]`))
 
@@ -405,4 +410,213 @@ func TestIssueListMutualOutputFlags(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, "if any flags in the group [output output-format] are set none of the others can be; [output output-format] were all set")
+}
+
+func TestIssueList_epicIssues(t *testing.T) {
+	testdata := []*gitlab.Issue{
+		{
+			IID:   1,
+			State: "opened",
+			Assignees: []*gitlab.IssueAssignee{
+				{ID: 101},
+			},
+			Author: &gitlab.IssueAuthor{ID: 102},
+			Labels: gitlab.Labels{"label::one"},
+			Milestone: &gitlab.Milestone{
+				Title: "Milestone one",
+			},
+			Title: "This is issue one",
+			Iteration: &gitlab.GroupIteration{
+				ID: 103,
+			},
+			Confidential: false,
+		},
+		{
+			IID:   2,
+			State: "closed",
+			Assignees: []*gitlab.IssueAssignee{
+				{ID: 102},
+			},
+			Author: &gitlab.IssueAuthor{ID: 202},
+			Labels: gitlab.Labels{"label::two"},
+			Milestone: &gitlab.Milestone{
+				Title: "Milestone two",
+			},
+			Title: "That is issue two",
+			Iteration: &gitlab.GroupIteration{
+				ID: 203,
+			},
+			Confidential: true,
+		},
+	}
+
+	tests := []struct {
+		name        string
+		commandLine string
+		expectedURL string
+		user        *gitlab.User
+		wantIDs     []int
+		wantErr     string
+	}{
+		{
+			name:        "group flag",
+			commandLine: `--group testGroupID --epic 42`,
+			wantIDs:     []int{1},
+		},
+		{
+			name:        "repo flag",
+			commandLine: `--repo testGroupID/repo --epic 42`,
+			wantIDs:     []int{1},
+		},
+		{
+			name:        "all flag",
+			commandLine: `--group testGroupID --epic 42 --all`,
+			wantIDs:     []int{1, 2},
+		},
+		{
+			name:        "closed flag",
+			commandLine: `--group testGroupID --epic 42 --closed`,
+			wantIDs:     []int{2},
+		},
+		{
+			name: "assignee flag",
+			user: &gitlab.User{
+				ID:       101,
+				Username: "one-oh-one",
+			},
+			commandLine: `--group testGroupID --epic 42 --all --assignee one-oh-one`,
+			wantIDs:     []int{1},
+		},
+		{
+			name: "not-assignee flag",
+			user: &gitlab.User{
+				ID:       101,
+				Username: "one-oh-one",
+			},
+			commandLine: `--group testGroupID --epic 42 --all --not-assignee one-oh-one`,
+			wantIDs:     []int{2},
+		},
+		{
+			name: "author flag",
+			user: &gitlab.User{
+				ID:       102,
+				Username: "one-oh-two",
+			},
+			commandLine: `--group testGroupID --epic 42 --all --author one-oh-two`,
+			wantIDs:     []int{1},
+		},
+		{
+			name: "not-author flag",
+			user: &gitlab.User{
+				ID:       102,
+				Username: "one-oh-two",
+			},
+			commandLine: `--group testGroupID --epic 42 --all --not-author one-oh-two`,
+			wantIDs:     []int{2},
+		},
+		{
+			name:        "label flag",
+			commandLine: `--group testGroupID --epic 42 --all --label 'label::one'`,
+			wantIDs:     []int{1},
+		},
+		{
+			name:        "not-label flag",
+			commandLine: `--group testGroupID --epic 42 --all --not-label 'label::one'`,
+			wantIDs:     []int{2},
+		},
+		{
+			name:        "milestone flag",
+			commandLine: `--group testGroupID --epic 42 --all --milestone 'milestone one'`,
+			wantIDs:     []int{1},
+		},
+		{
+			name:        "search flag",
+			commandLine: `--group testGroupID --epic 42 --all --search 'iSsUe OnE'`,
+			wantIDs:     []int{1},
+		},
+		{
+			name:        "iteration flag",
+			commandLine: `--group testGroupID --epic 42 --all --iteration 103`,
+			wantIDs:     []int{1},
+		},
+		{
+			name:        "confidential flag",
+			commandLine: `--group testGroupID --epic 42 --all --confidential`,
+			wantIDs:     []int{2},
+		},
+		{
+			name:        "page flag",
+			commandLine: `--group testGroupID --epic 42 --all --page=2`,
+			wantErr:     "the --page flag",
+		},
+		{
+			name:        "per-page flag",
+			commandLine: `--group testGroupID --epic 42 --all --per-page=9999`,
+			// per-page is clamped to the max supported per_page value
+			expectedURL: fmt.Sprintf(`/api/v4/groups/testGroupID/epics/42/issues?page=1&per_page=%d`, api.MaxPerPage),
+			wantIDs:     []int{1, 2},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeHTTP := &httpmock.Mocker{
+				MatchURL: httpmock.PathAndQuerystring,
+			}
+			defer fakeHTTP.Verify(t)
+
+			if tt.user != nil {
+				fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/users?per_page=30&username="+tt.user.Username,
+					httpmock.NewJSONResponse(http.StatusOK, []*gitlab.User{tt.user}))
+			}
+
+			if tt.wantErr == "" {
+				expectedURL := tt.expectedURL
+				if expectedURL == "" {
+					expectedURL = `/api/v4/groups/testGroupID/epics/42/issues?page=1&per_page=30`
+				}
+				fakeHTTP.RegisterResponder(http.MethodGet, expectedURL, httpmock.NewJSONResponse(http.StatusOK, testdata))
+			}
+
+			output, err := runCommand("issue", fakeHTTP, true, tt.commandLine+` --output-format ids`, nil, "")
+			if tt.wantErr != "" {
+				assert.ErrorContains(t, err, tt.wantErr)
+			}
+			if err != nil {
+				return
+			}
+
+			cmdtest.Eq(t, output.Stderr(), "")
+
+			gotIDs, err := strToIntSlice(output.String())
+			if err != nil {
+				t.Fatalf("command %q: unexpected output:\n%s", tt.commandLine, output.String())
+			}
+
+			assert.Equal(t, tt.wantIDs, gotIDs)
+		})
+	}
+}
+
+func strToIntSlice(s string) ([]int, error) {
+	var ret []int
+
+	scanner := bufio.NewScanner(strings.NewReader(s))
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue
+		}
+
+		i, err := strconv.Atoi(line)
+		if err != nil {
+			return nil, err
+		}
+
+		ret = append(ret, i)
+	}
+
+	slices.Sort(ret)
+
+	return ret, nil
 }
