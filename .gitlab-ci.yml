@@ -71,7 +71,7 @@ check_docs_update:
       fi
 
 check_docs_markdown:
-  image: registry.gitlab.com/gitlab-org/technical-writing/docs-gitlab-com/lint-markdown:alpine-3.21-vale-3.9.3-markdownlint2-0.17.1-lychee-0.18.0
+  image: registry.gitlab.com/gitlab-org/technical-writing/docs-gitlab-com/lint-markdown:alpine-3.21-vale-3.11.2-markdownlint2-0.17.2-lychee-0.18.1
   extends: .documentation
   script:
     # Lint prose
