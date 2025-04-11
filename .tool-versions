@@ -1,5 +1,6 @@
 golang 1.24.2
 
 # For linting documentation
-markdownlint-cli2 0.17.1
-vale 3.9.3
+markdownlint-cli2 0.17.2
+lychee 0.18.1
+vale 3.11.2
