@@ -26,11 +26,11 @@ users
 ## Examples
 
 ```plaintext
-List contributors for the current repository
-- glab repo contributors
+# List contributors for the current repository
+$ glab repo contributors
 
-List contributors for a specific repository
-- glab repo contributors -R gitlab-com/www-gitlab-com
+# List contributors for a specific repository
+$ glab repo contributors -R gitlab-com/www-gitlab-com
 
 ```
 
