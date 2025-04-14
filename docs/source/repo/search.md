@@ -37,6 +37,7 @@ lookup
 ## Options
 
 ```plaintext
+  -F, --output string   Format output as: text, json. (default "text")
   -p, --page int        Page number. (default 1)
   -P, --per-page int    Number of items to list per page. (default 20)
   -s, --search string   A string contained in the project name.
