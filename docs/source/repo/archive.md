@@ -28,16 +28,16 @@ glab repo archive <command> [flags]
 ## Examples
 
 ```plaintext
-- glab repo archive profclems/glab
+$ glab repo archive profclems/glab
 
-Downloads zip file of current repository
-- glab repo archive
+# Downloads zip file of current repository
+$ glab repo archive
 
-Downloads repo zip file into mydirectory
-- glab repo archive profclems/glab mydirectory
+# Downloads repo zip file into mydirectory
+$ glab repo archive profclems/glab mydirectory
 
-Finds repo for current user and download in ZIP format
-- glab repo archive profclems/glab --format=zip
+# Finds repo for current user and download in ZIP format
+$ glab repo archive profclems/glab --format=zip
 
 ```
 
