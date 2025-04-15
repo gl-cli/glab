@@ -7,6 +7,8 @@ config:
   # Per-rule settings in alphabetical order
   code-block-style:                 # MD046
     style: "fenced"
+  # Temporarily disable MD014 until we fix problems
+  commands-show-output: false       # MD014
   emphasis-style: false             # MD049
   header-style:                     # MD003
     style: "atx"
