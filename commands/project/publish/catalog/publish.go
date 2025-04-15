@@ -94,8 +94,6 @@ func NewCmdPublishCatalog(f *cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	publishCatalogCmd.Flags().StringVarP(&opts.TagName, "tag", "t", "", "An existing tag that should be published.")
-
 	return publishCatalogCmd
 }
 
