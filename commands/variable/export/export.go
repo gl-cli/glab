@@ -52,10 +52,10 @@ func NewCmdExport(f *cmdutils.Factory, runE func(opts *ExportOpts) error) *cobra
 		Aliases: []string{"ex"},
 		Args:    cobra.ExactArgs(0),
 		Example: heredoc.Doc(`
-			- glab variable export
-			- glab variable export --per-page 1000 --page 1
-			- glab variable export --group gitlab-org
-			- glab variable export --group gitlab-org --per-page 1000 --page 1
+			$ glab variable export
+			$ glab variable export --per-page 1000 --page 1
+			$ glab variable export --group gitlab-org
+			$ glab variable export --group gitlab-org --per-page 1000 --page 1
 		`),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// Supports repo override

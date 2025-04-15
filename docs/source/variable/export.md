@@ -26,10 +26,10 @@ ex
 ## Examples
 
 ```plaintext
-- glab variable export
-- glab variable export --per-page 1000 --page 1
-- glab variable export --group gitlab-org
-- glab variable export --group gitlab-org --per-page 1000 --page 1
+$ glab variable export
+$ glab variable export --per-page 1000 --page 1
+$ glab variable export --group gitlab-org
+$ glab variable export --group gitlab-org --per-page 1000 --page 1
 
 ```
 
