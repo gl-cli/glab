@@ -39,10 +39,10 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Com
 		Aliases: []string{"ls"},
 		Args:    cobra.ExactArgs(0),
 		Example: heredoc.Doc(`
-			- glab variable list
-			- glab variable list --per-page 100 --page 1
-			- glab variable list --group gitlab-org
-			- glab variable list --group gitlab-org --per-page 100
+			$ glab variable list
+			$ glab variable list --per-page 100 --page 1
+			$ glab variable list --group gitlab-org
+			$ glab variable list --group gitlab-org --per-page 100
 		`,
 		),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
