@@ -20,7 +20,8 @@ func NewCmdGenerate(f *cmdutils.Factory) *cobra.Command {
 		Short: `Generate a changelog for the repository or project.`,
 		Long:  ``,
 		Example: heredoc.Doc(`
-			- glab changelog generate
+			# Generate a changelog
+			$ glab changelog generate
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {

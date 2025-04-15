@@ -56,17 +56,17 @@ func NewCmdSet(f *cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command
 		- Always use quotation marks when defining a command, as in the examples.
 		`),
 		Example: heredoc.Doc(`
-		- glab alias set mrv 'mr view'
-		- glab mrv -w 123
-		=> glab mr view -w 123
+		$ glab alias set mrv 'mr view'
+		$ glab mrv -w 123
+		> glab mr view -w 123
 
-		- glab alias set createissue 'glab create issue --title "$1"'
-		- glab createissue "My Issue" --description "Something is broken."
-		=> glab create issue --title "My Issue" --description "Something is broken."
+		$ glab alias set createissue 'glab create issue --title "$1"'
+		$ glab createissue "My Issue" --description "Something is broken."
+		> glab create issue --title "My Issue" --description "Something is broken."
 
-		- glab alias set --shell igrep 'glab issue list --assignee="$1" | grep $2'
-		- glab igrep user foo
-		=> glab issue list --assignee="user" | grep "foo"
+		$ glab alias set --shell igrep 'glab issue list --assignee="$1" | grep $2'
+		$ glab igrep user foo
+		> glab issue list --assignee="user" | grep "foo"
 	`),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
