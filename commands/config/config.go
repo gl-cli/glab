@@ -51,10 +51,11 @@ func NewCmdConfigGet(f *cmdutils.Factory) *cobra.Command {
 		Short: "Prints the value of a given configuration key.",
 		Long:  ``,
 		Example: heredoc.Doc(`
-  		- glab config get editor
-  		vim
-  		- glab config get glamour_style
-  		notty
+  		$ glab config get editor
+  		> vim
+
+  		$ glab config get glamour_style
+  		> notty
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
