@@ -19,7 +19,7 @@ glab mr approve {<id> | <branch>} [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab mr approve 235
 - glab mr approve 123 345
 - glab mr approve branch-1

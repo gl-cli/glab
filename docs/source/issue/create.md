@@ -25,7 +25,7 @@ new
 
 ## Examples
 
-```plaintext
+```console
 - glab issue create
 - glab issue new
 - glab issue create -m release-2.0.0 -t "we need this feature" --label important

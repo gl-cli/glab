@@ -29,7 +29,7 @@ glab stack reorder [flags]
 
 ## Examples
 
-```plaintext
+```console
 glab stack reorder
 ```
 

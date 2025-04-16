@@ -29,7 +29,7 @@ glab stack next [flags]
 
 ## Examples
 
-```plaintext
+```console
 glab stack next
 ```
 

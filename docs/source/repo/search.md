@@ -26,7 +26,7 @@ lookup
 
 ## Examples
 
-```plaintext
+```console
 - glab project search -s "title"
 - glab repo search -s "title"
 - glab project find -s "title"

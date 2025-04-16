@@ -25,7 +25,7 @@ run-trig
 
 ## Examples
 
-```plaintext
+```console
 - glab ci run-trig -t xxxx
 - glab ci run-trig -t xxxx -b main
 - glab ci run-trig -t xxxx -b main --variables key1:val1

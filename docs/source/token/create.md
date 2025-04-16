@@ -40,7 +40,7 @@ new
 
 ## Examples
 
-```plaintext
+```console
 Create project access token for current project
 - glab token create --access-level developer --scope read_repository --scope read_registry my-project-token
 

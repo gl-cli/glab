@@ -26,7 +26,7 @@ glab release upload <tag> [<files>...] [flags]
 
 ## Examples
 
-```plaintext
+```console
 Upload a release asset with a display name. 'Type' defaults to 'other'.
 - glab release upload v1.0.1 '/path/to/asset.zip#My display label'
 

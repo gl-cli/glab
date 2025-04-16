@@ -19,7 +19,7 @@ glab ci trigger <job-id> [flags]
 
 ## Examples
 
-```plaintext
+```console
 Interactively select a job to trigger
 - glab ci trigger
 

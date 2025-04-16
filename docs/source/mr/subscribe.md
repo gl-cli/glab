@@ -25,7 +25,7 @@ sub
 
 ## Examples
 
-```plaintext
+```console
 Subscribe to a merge request
 - glab mr subscribe 123
 - glab mr sub 123

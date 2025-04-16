@@ -25,7 +25,7 @@ glab ssh-key add [key-file] [flags]
 
 ## Examples
 
-```plaintext
+```console
 Read ssh key from stdin and upload.
 - glab ssh-key add -t "my title"
 

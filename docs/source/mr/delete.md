@@ -25,7 +25,7 @@ del
 
 ## Examples
 
-```plaintext
+```console
 - glab mr delete 123
 
 Delete multiple merge requests by ID and branch name

@@ -19,7 +19,7 @@ glab ci retry <job-id> [flags]
 
 ## Examples
 
-```plaintext
+```console
 # Interactively select a job to retry
 $ glab ci retry
 

@@ -25,7 +25,7 @@ ls
 
 ## Examples
 
-```plaintext
+```console
 - glab label list
 - glab label ls
 - glab label list -R owner/repository

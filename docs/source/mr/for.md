@@ -27,7 +27,7 @@ for-issue
 
 ## Examples
 
-```plaintext
+```console
 Create merge request for issue 34
 - glab mr for 34
 

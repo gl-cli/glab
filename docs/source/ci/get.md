@@ -25,7 +25,7 @@ stats
 
 ## Examples
 
-```plaintext
+```console
 $ glab ci get
 $ glab ci -R some/project -p 12345
 

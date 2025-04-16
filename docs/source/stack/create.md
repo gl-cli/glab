@@ -35,7 +35,7 @@ new
 
 ## Examples
 
-```plaintext
+```console
 - glab stack create cool-new-feature
 - glab stack new cool-new-feature
 

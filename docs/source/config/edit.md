@@ -28,7 +28,7 @@ glab config edit [flags]
 
 ## Examples
 
-```plaintext
+```console
 Open the configuration file with the default editor
 - glab config edit
 

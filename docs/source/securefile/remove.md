@@ -26,7 +26,7 @@ delete
 
 ## Examples
 
-```plaintext
+```console
 Remove a project's secure file using the file's ID.
 - glab securefile remove 1
 

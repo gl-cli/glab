@@ -19,7 +19,7 @@ glab ssh-key delete <key-id> [flags]
 
 ## Examples
 
-```plaintext
+```console
 Delete SSH key with ID as argument
 - glab ssh-key delete 7750633
 

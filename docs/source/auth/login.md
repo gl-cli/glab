@@ -26,7 +26,7 @@ glab auth login [flags]
 
 ## Examples
 
-```plaintext
+```console
 # Start interactive setup
 $ glab auth login
 

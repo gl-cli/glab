@@ -19,7 +19,7 @@ glab ci delete <id> [flags]
 
 ## Examples
 
-```plaintext
+```console
 $ glab ci delete 34
 $ glab ci delete 12,34,2
 $ glab ci delete --source=api

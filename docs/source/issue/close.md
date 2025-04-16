@@ -19,7 +19,7 @@ glab issue close [<id> | <url>] [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab issue close 123
 - glab issue close https://gitlab.com/NAMESPACE/REPO/-/issues/123
 

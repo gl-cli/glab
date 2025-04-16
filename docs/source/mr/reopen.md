@@ -25,7 +25,7 @@ open
 
 ## Examples
 
-```plaintext
+```console
 Reopen merge request 123
 - glab mr reopen 123
 

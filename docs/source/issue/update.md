@@ -19,7 +19,7 @@ glab issue update <id> [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab issue update 42 --label ui,ux
 - glab issue update 42 --unlabel working
 

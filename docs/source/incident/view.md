@@ -25,7 +25,7 @@ show
 
 ## Examples
 
-```plaintext
+```console
 - glab incident view 123
 - glab incident show 123
 - glab incident view --web 123

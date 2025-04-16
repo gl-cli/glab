@@ -25,7 +25,7 @@ ls
 
 ## Examples
 
-```plaintext
+```console
 - glab repo list
 
 ```

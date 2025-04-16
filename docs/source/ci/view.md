@@ -33,7 +33,7 @@ glab ci view [branch/tag] [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab pipeline ci view   # Uses current branch
 - glab pipeline ci view master  # Get latest pipeline on master branch
 - glab pipeline ci view -b master  # just like the second example

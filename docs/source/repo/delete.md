@@ -19,7 +19,7 @@ glab repo delete [<NAMESPACE>/]<NAME> [flags]
 
 ## Examples
 
-```plaintext
+```console
 # Delete a personal repository.
 $ glab repo delete dotfiles
 

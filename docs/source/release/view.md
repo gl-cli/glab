@@ -25,7 +25,7 @@ glab release view <tag> [flags]
 
 ## Examples
 
-```plaintext
+```console
 View the latest release of a GitLab repository
 - glab release view
 

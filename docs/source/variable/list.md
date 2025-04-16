@@ -25,7 +25,7 @@ ls
 
 ## Examples
 
-```plaintext
+```console
 $ glab variable list
 $ glab variable list --per-page 100 --page 1
 $ glab variable list --group gitlab-org

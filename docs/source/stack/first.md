@@ -29,7 +29,7 @@ glab stack first [flags]
 
 ## Examples
 
-```plaintext
+```console
 glab stack first
 ```
 

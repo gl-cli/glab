@@ -19,7 +19,7 @@ glab repo create [path] [flags]
 
 ## Examples
 
-```plaintext
+```console
 # Create a repository under your account using the current directory name.
 $ glab repo create
 

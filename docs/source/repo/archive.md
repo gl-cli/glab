@@ -27,7 +27,7 @@ glab repo archive <command> [flags]
 
 ## Examples
 
-```plaintext
+```console
 $ glab repo archive profclems/glab
 
 # Downloads zip file of current repository

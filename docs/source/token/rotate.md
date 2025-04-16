@@ -39,7 +39,7 @@ rot
 
 ## Examples
 
-```plaintext
+```console
 Rotate project access token of current project
 - glab token rotate  my-project-token
 

@@ -35,7 +35,7 @@ ls
 
 ## Examples
 
-```plaintext
+```console
 List the current project's access tokens
 - glab token list
 - glab token list --output json

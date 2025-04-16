@@ -35,7 +35,7 @@ ls
 
 ## Examples
 
-```plaintext
+```console
 glab stack list
 ```
 

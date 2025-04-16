@@ -27,7 +27,7 @@ glab release download <tag> [flags]
 
 ## Examples
 
-```plaintext
+```console
 Download all assets from the latest release
 - glab release download
 

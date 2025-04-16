@@ -19,7 +19,7 @@ glab securefile download <fileID> [flags]
 
 ## Examples
 
-```plaintext
+```console
 Download a project's secure file using the file's ID.
 - glab securefile download 1
 

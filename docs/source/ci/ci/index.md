@@ -15,7 +15,7 @@ Work with GitLab CI/CD pipelines and jobs
 
 ## Examples
 
-```plaintext
+```console
 $ glab pipeline ci trace
 
 ```

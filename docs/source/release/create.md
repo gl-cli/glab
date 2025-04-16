@@ -35,7 +35,7 @@ glab release create <tag> [<files>...] [flags]
 
 ## Examples
 
-```plaintext
+```console
 Create a release interactively
 - glab release create v1.0.1
 

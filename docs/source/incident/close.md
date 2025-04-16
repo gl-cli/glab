@@ -25,7 +25,7 @@ resolve
 
 ## Examples
 
-```plaintext
+```console
 - glab incident close 123
 - glab incident close https://gitlab.com/NAMESPACE/REPO/-/issues/incident/123
 

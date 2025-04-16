@@ -19,7 +19,7 @@ glab ci list [flags]
 
 ## Examples
 
-```plaintext
+```console
 $ glab ci list
 $ glab ci list --status=failed
 
