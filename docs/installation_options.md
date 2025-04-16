@@ -180,7 +180,7 @@ makedeb -si
 
 #### Prebuilt-MPR
 
-The above method downloads glab from source and builds it before packaging it into a `.deb` package. If you don't want to compile or just want a prebuilt package, you can also install glab from the Prebuilt-MPR:
+The above method downloads `glab` from source and builds it before packaging it into a `.deb` package. If you don't want to compile or just want a prebuilt package, you can also install `glab` from the Prebuilt-MPR:
 
 1. Set up [the Prebuilt-MPR on your system](https://docs.makedeb.org/prebuilt-mpr/getting-started/#setting-up-the-repository).
 1. Install with the command `sudo apt install glab`.
