@@ -20,14 +20,14 @@ glab ci retry <job-id> [flags]
 ## Examples
 
 ```plaintext
-Interactively select a job to retry.
-- glab ci retry
+# Interactively select a job to retry
+$ glab ci retry
 
-Retry job with ID 224356863
-- glab ci retry 224356863
+# Retry job with ID 224356863
+$ glab ci retry 224356863
 
-Retry job with the name 'lint'
-- glab ci retry lint
+# Retry job with the name 'lint'
+$ glab ci retry lint
 
 ```
 
