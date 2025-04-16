@@ -16,7 +16,7 @@ Work with GitLab incidents.
 ## Examples
 
 ```console
-- glab incident list
+$ glab incident list
 
 ```
 
