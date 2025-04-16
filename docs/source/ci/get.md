@@ -26,8 +26,8 @@ stats
 ## Examples
 
 ```plaintext
-- glab ci get
-- glab ci -R some/project -p 12345
+$ glab ci get
+$ glab ci -R some/project -p 12345
 
 ```
 

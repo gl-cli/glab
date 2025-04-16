@@ -20,10 +20,10 @@ glab ci cancel pipeline <id> [flags]
 ## Examples
 
 ```plaintext
-- glab ci cancel pipeline 1504182795
-- glab ci cancel pipeline 1504182795,1504182796
-- glab ci cancel pipeline "1504182795 1504182796"
-- glab ci cancel pipeline 1504182795,1504182796 --dry-run
+$ glab ci cancel pipeline 1504182795
+$ glab ci cancel pipeline 1504182795,1504182796
+$ glab ci cancel pipeline "1504182795 1504182796"
+$ glab ci cancel pipeline 1504182795,1504182796 --dry-run
 
 ```
 

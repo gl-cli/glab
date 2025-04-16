@@ -24,10 +24,10 @@ func NewCmdCancel(f *cmdutils.Factory) *cobra.Command {
 		Use:   "job <id> [flags]",
 		Short: `Cancel CI/CD jobs.`,
 		Example: heredoc.Doc(`
-			- glab ci cancel job 1504182795
-			- glab ci cancel job 1504182795,1504182795
-			- glab ci cancel job "1504182795 1504182795"
-			- glab ci cancel job 1504182795,1504182795 --dry-run
+			$ glab ci cancel job 1504182795
+			$ glab ci cancel job 1504182795,1504182795
+			$ glab ci cancel job "1504182795 1504182795"
+			$ glab ci cancel job 1504182795,1504182795 --dry-run
 		`),
 		Long: ``,
 		Args: func(cmd *cobra.Command, args []string) error {
