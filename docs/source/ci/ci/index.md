@@ -16,7 +16,7 @@ Work with GitLab CI/CD pipelines and jobs
 ## Examples
 
 ```plaintext
-- glab pipeline ci trace
+$ glab pipeline ci trace
 
 ```
 
