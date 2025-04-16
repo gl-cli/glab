@@ -23,9 +23,9 @@ func NewCmdAmendStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.Ge
 		Long: `Add more changes to an existing stacked diff.
 ` + text.ExperimentalString,
 		Example: heredoc.Doc(`
-			- glab stack amend modifiedfile
-			- glab stack amend . -m "fixed a function"
-			- glab stack amend newfile -d "forgot to add this"`),
+			$ glab stack amend modifiedfile
+			$ glab stack amend . -m "fixed a function"
+			$ glab stack amend newfile -d "forgot to add this"`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			output, err := amendFunc(f, args, getText, description)
 			if err != nil {
