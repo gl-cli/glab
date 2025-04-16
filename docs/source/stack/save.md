@@ -30,9 +30,9 @@ glab stack save [flags]
 ## Examples
 
 ```plaintext
-- glab stack save added_file
-- glab stack save . -m "added a function"
-- glab stack save -m "added a function"
+$ glab stack save added_file
+$ glab stack save . -m "added a function"
+$ glab stack save -m "added a function"
 ```
 
 ## Options

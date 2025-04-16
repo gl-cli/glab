@@ -20,7 +20,7 @@ func NewCmdStackSwitch(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 				"To see the list of all stacks, check the `.git/stacked/` directory.\n" +
 				text.ExperimentalString,
 		),
-		Example: "glab stack switch <stack-name>",
+		Example: "$ glab stack switch <stack-name>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := switchFunc(f, args[0]); err != nil {
 				return fmt.Errorf("switching stacks failed: %w", err)
