@@ -31,7 +31,7 @@ glab stack switch <stack-name> [flags]
 ## Examples
 
 ```plaintext
-glab stack switch <stack-name>
+$ glab stack switch <stack-name>
 ```
 
 ## Options inherited from parent commands
