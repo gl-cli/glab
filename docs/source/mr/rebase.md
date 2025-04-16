@@ -23,7 +23,7 @@ glab mr rebase [<id> | <branch>] [flags]
 
 ## Examples
 
-```plaintext
+```console
 Rebase merge request 123
 - glab mr rebase 123
 

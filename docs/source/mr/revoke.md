@@ -25,7 +25,7 @@ unapprove
 
 ## Examples
 
-```plaintext
+```console
 Revoke approval on a merge request
 - glab mr revoke 123
 - glab mr unapprove 123

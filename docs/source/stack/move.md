@@ -29,7 +29,7 @@ glab stack move [flags]
 
 ## Examples
 
-```plaintext
+```console
 glab stack move
 ```
 

@@ -26,7 +26,7 @@ create
 
 ## Examples
 
-```plaintext
+```console
 $ glab variable set WITH_ARG "some value"
 $ glab variable set WITH_DESC "some value" --description "some description"
 $ glab variable set FROM_FLAG -v "some value"

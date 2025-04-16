@@ -25,7 +25,7 @@ stats
 
 ## Examples
 
-```plaintext
+```console
 - glab ci status --live
 
 A more compact view

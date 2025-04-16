@@ -25,7 +25,7 @@ ls
 
 ## Examples
 
-```plaintext
+```console
 - glab mr list --all
 - glab mr ls -a
 - glab mr list --assignee=@me

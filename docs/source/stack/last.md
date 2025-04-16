@@ -29,7 +29,7 @@ glab stack last [flags]
 
 ## Examples
 
-```plaintext
+```console
 glab stack last
 ```
 

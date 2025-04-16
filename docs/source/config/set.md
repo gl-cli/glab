@@ -25,7 +25,7 @@ glab config set <key> <value> [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab config set editor vim
 - glab config set token xxxxx -h gitlab.com
 - glab config set check_update false --global

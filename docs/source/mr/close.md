@@ -19,7 +19,7 @@ glab mr close [<id> | <branch>] [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab mr close 1
 
 Close multiple merge requests at once

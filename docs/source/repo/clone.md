@@ -29,7 +29,7 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]
 
 ## Examples
 
-```plaintext
+```console
 # Clones repository into current directory
 $ glab repo clone gitlab-org/cli
 $ glab repo clone https://gitlab.com/gitlab-org/cli

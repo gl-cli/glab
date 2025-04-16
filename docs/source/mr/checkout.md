@@ -19,7 +19,7 @@ glab mr checkout [<id> | <branch>] [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab mr checkout 1
 - glab mr checkout branch
 - glab mr checkout 12 --branch todo-fix

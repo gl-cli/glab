@@ -25,7 +25,7 @@ new
 
 ## Examples
 
-```plaintext
+```console
 - glab label create
 - glab label new
 - glab label create -R owner/repo

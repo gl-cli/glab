@@ -224,7 +224,7 @@ func GenMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 
 	if len(cmd.Example) > 0 {
 		buf.WriteString("\n## Examples\n\n")
-		buf.WriteString(fmt.Sprintf("```plaintext\n%s\n```\n", cmd.Example))
+		buf.WriteString(fmt.Sprintf("```console\n%s\n```\n", cmd.Example))
 	}
 
 	if err := printOptions(buf, cmd, name); err != nil {

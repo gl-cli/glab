@@ -19,7 +19,7 @@ glab ssh-key get <key-id> [flags]
 
 ## Examples
 
-```plaintext
+```console
 Get ssh key with ID as argument
 - glab ssh-key get 7750633
 

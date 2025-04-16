@@ -25,7 +25,7 @@ ls
 
 ## Examples
 
-```plaintext
+```console
 - glab incident list --all
 - glab incident ls --all
 - glab incident list --assignee=@me

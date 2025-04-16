@@ -25,7 +25,7 @@ remove
 
 ## Examples
 
-```plaintext
+```console
  - glab variable delete VAR_NAME
 - glab variable delete VAR_NAME --scope=prod
 - glab variable delete VARNAME -g mygroup

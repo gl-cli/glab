@@ -19,7 +19,7 @@ glab changelog generate [flags]
 
 ## Examples
 
-```plaintext
+```console
 # Generate a changelog
 $ glab changelog generate
 

@@ -26,7 +26,7 @@ new
 
 ## Examples
 
-```plaintext
+```console
 - glab snippet create script.py --title "Title of the snippet"
 - echo "package main" | glab snippet new --title "Title of the snippet" --filename "main.go"
 - glab snippet create -t Title -f "different.go" -d Description main.go

@@ -19,7 +19,7 @@ glab mr update [<id> | <branch>] [flags]
 
 ## Examples
 
-```plaintext
+```console
 Mark a merge request as ready
 - glab mr update 23 --ready
 

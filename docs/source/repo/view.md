@@ -23,7 +23,7 @@ glab repo view [repository] [flags]
 
 ## Examples
 
-```plaintext
+```console
 View project information for the current directory.
 Must be a Git repository.
 - glab repo view

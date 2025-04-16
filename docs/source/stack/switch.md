@@ -30,7 +30,7 @@ glab stack switch <stack-name> [flags]
 
 ## Examples
 
-```plaintext
+```console
 $ glab stack switch <stack-name>
 ```
 

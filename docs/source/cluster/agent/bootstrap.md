@@ -49,7 +49,7 @@ bs
 
 ## Examples
 
-```plaintext
+```console
 Bootstrap "my-agent" to root of Git project in CWD and trigger reconciliation
 - glab cluster agent bootstrap my-agent
 

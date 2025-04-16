@@ -19,7 +19,7 @@ glab repo fork <repo> [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab repo fork
 - glab repo fork namespace/repo
 - glab repo fork namespace/repo --clone

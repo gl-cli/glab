@@ -72,7 +72,7 @@ glab api <endpoint> [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab api projects/:fullpath/releases
 
 - glab api projects/gitlab-com%2Fwww-gitlab-com/issues

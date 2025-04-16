@@ -40,7 +40,7 @@ glab repo publish catalog <tag-name> [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab repo publish catalog v1.2.3
 
 ```

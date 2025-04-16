@@ -25,7 +25,7 @@ open
 
 ## Examples
 
-```plaintext
+```console
 - glab incident reopen 123
 - glab incident open 123
 - glab incident reopen https://gitlab.com/NAMESPACE/REPO/-/issues/incident/123

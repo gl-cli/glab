@@ -44,7 +44,7 @@ glab alias set <alias name> '<command>' [flags]
 
 ## Examples
 
-```plaintext
+```console
 $ glab alias set mrv 'mr view'
 $ glab mrv -w 123
 > glab mr view -w 123

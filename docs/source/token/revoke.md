@@ -36,7 +36,7 @@ rm
 
 ## Examples
 
-```plaintext
+```console
 Revoke a project access token of current project
 - glab token revoke my-project-token
 

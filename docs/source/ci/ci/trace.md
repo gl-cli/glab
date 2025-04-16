@@ -19,7 +19,7 @@ glab ci ci trace [<job-id>] [flags]
 
 ## Examples
 
-```plaintext
+```console
 Interactively select a job to trace
 - glab ci trace
 

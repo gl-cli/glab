@@ -19,7 +19,7 @@ glab variable update <key> <value> [flags]
 
 ## Examples
 
-```plaintext
+```console
 $ glab variable update WITH_ARG "some value"
 $ glab variable update FROM_FLAG -v "some value"
 $ glab variable update FROM_ENV_WITH_ARG "${ENV_VAR}"

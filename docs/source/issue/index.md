@@ -15,7 +15,7 @@ Work with GitLab issues.
 
 ## Examples
 
-```plaintext
+```console
 - glab issue list
 - glab issue create --label --confidential
 - glab issue view --web 123

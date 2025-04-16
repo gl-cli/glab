@@ -19,7 +19,7 @@ glab schedule delete <id> [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab schedule delete 10
 
 ```

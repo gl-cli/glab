@@ -25,7 +25,7 @@ create
 
 ## Examples
 
-```plaintext
+```console
 $ glab ci run
 $ glab ci run --variables \"key1:value,with,comma\"
 $ glab ci run -b main

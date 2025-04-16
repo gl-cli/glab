@@ -19,7 +19,7 @@ glab schedule list [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab schedule list
 
 ```

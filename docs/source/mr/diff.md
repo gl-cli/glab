@@ -19,7 +19,7 @@ glab mr diff [<id> | <branch>] [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab mr diff 123
 - glab mr diff branch
 

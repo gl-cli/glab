@@ -25,7 +25,7 @@ users
 
 ## Examples
 
-```plaintext
+```console
 # List contributors for the current repository
 $ glab repo contributors
 

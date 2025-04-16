@@ -19,7 +19,7 @@ glab config get <key> [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab config get editor
 vim
 - glab config get glamour_style

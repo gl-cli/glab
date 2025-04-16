@@ -25,7 +25,7 @@ unsub
 
 ## Examples
 
-```plaintext
+```console
 Unsubscribe from a merge request
 - glab mr unsubscribe 123
 - glab mr unsub 123

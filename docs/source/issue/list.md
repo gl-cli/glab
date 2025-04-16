@@ -25,7 +25,7 @@ ls
 
 ## Examples
 
-```plaintext
+```console
 - glab issue list --all
 - glab issue ls --all
 - glab issue list --assignee=@me

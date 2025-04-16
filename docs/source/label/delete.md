@@ -19,7 +19,7 @@ glab label delete [flags]
 
 ## Examples
 
-```plaintext
+```console
 - glab label delete foo
 - glab label delete -R owner/repo foo
 

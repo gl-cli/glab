@@ -29,7 +29,7 @@ glab stack amend [flags]
 
 ## Examples
 
-```plaintext
+```console
 $ glab stack amend modifiedfile
 $ glab stack amend . -m "fixed a function"
 $ glab stack amend newfile -d "forgot to add this"

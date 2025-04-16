@@ -25,7 +25,7 @@ ls
 
 ## Examples
 
-```plaintext
+```console
 List all secure files.
 - glab securefile list
 

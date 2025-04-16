@@ -24,7 +24,7 @@ glab auth logout [flags]
 
 ## Examples
 
-```plaintext
+```console
 Logout of a specific instance
 - glab auth logout --hostname gitlab.example.com
 
