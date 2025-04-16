@@ -116,10 +116,17 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 		Supports vi style bindings and arrow keys for navigating jobs and logs.
 	`),
 		Example: heredoc.Doc(`
-			- glab pipeline ci view   # Uses current branch
-			- glab pipeline ci view master  # Get latest pipeline on master branch
-			- glab pipeline ci view -b master  # just like the second example
-			- glab pipeline ci view -b master -R profclems/glab  # Get latest pipeline on master branch of profclems/glab repo
+			# Uses current branch
+			$ glab pipeline ci view
+
+			# Get latest pipeline on master branch
+			$ glab pipeline ci view master
+
+			# just like the second example
+			$ glab pipeline ci view -b master
+
+			# Get latest pipeline on master branch of profclems/glab repo
+			$ glab pipeline ci view -b master -R profclems/glab
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

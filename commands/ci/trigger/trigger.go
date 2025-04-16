@@ -18,14 +18,14 @@ func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
 		Short:   `Trigger a manual CI/CD job.`,
 		Aliases: []string{},
 		Example: heredoc.Doc(`
-			Interactively select a job to trigger
-			- glab ci trigger
+			# Interactively select a job to trigger
+			$ glab ci trigger
 
-			Trigger manual job with id 224356863
-			- glab ci trigger 224356863
+			# Trigger manual job with id 224356863
+			$ glab ci trigger 224356863
 
-			Trigger manual job with name lint
-			- glab ci trigger lint
+			# Trigger manual job with name lint
+			$ glab ci trigger lint
 	`),
 		Long: ``,
 		RunE: func(cmd *cobra.Command, args []string) error {

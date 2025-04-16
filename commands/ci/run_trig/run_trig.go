@@ -37,11 +37,11 @@ func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
 		Short:   `Run a CI/CD pipeline trigger.`,
 		Aliases: []string{"run-trig"},
 		Example: heredoc.Doc(`
-			- glab ci run-trig -t xxxx
-			- glab ci run-trig -t xxxx -b main
-			- glab ci run-trig -t xxxx -b main --variables key1:val1
-			- glab ci run-trig -t xxxx -b main --variables key1:val1,key2:val2
-			- glab ci run-trig -t xxxx -b main --variables key1:val1 --variables key2:val2
+			$ glab ci run-trig -t xxxx
+			$ glab ci run-trig -t xxxx -b main
+			$ glab ci run-trig -t xxxx -b main --variables key1:val1
+			$ glab ci run-trig -t xxxx -b main --variables key1:val1,key2:val2
+			$ glab ci run-trig -t xxxx -b main --variables key1:val1 --variables key2:val2
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(0),

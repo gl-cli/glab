@@ -20,14 +20,14 @@ glab ci trace [<job-id>] [flags]
 ## Examples
 
 ```console
-Interactively select a job to trace
-- glab ci trace
+# Interactively select a job to trace
+$ glab ci trace
 
-Trace job with ID 224356863
-- glab ci trace 224356863
+# Trace job with ID 224356863
+$ glab ci trace 224356863
 
-Trace job with the name 'lint'
-- glab ci trace lint
+# Trace job with the name 'lint'
+$ glab ci trace lint
 
 ```
 
