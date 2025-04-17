@@ -17,8 +17,9 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(true, "")
 	factory := cmdtest.InitFactory(ios, rt)
 
-	// TODO: shouldn't be there but the stub doesn't work without it
-	_, _ = factory.HttpClient()
+	if _, err := factory.HttpClient(); err != nil {
+		return nil, fmt.Errorf("failed to initialize HTTP client: %w", err)
+	}
 
 	cmd := NewCmdRevoke(factory, nil)
 
