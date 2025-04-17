@@ -26,18 +26,18 @@ ls
 ## Examples
 
 ```console
-- glab mr list --all
-- glab mr ls -a
-- glab mr list --assignee=@me
-- glab mr list --reviewer=@me
-- glab mr list --source-branch=new-feature
-- glab mr list --target-branch=main
-- glab mr list --search "this adds feature X"
-- glab mr list --label needs-review
-- glab mr list --not-label waiting-maintainer-feedback,subsystem-x
-- glab mr list -M --per-page 10
-- glab mr list --draft
-- glab mr list --not-draft
+$ glab mr list --all
+$ glab mr ls -a
+$ glab mr list --assignee=@me
+$ glab mr list --reviewer=@me
+$ glab mr list --source-branch=new-feature
+$ glab mr list --target-branch=main
+$ glab mr list --search "this adds feature X"
+$ glab mr list --label needs-review
+$ glab mr list --not-label waiting-maintainer-feedback,subsystem-x
+$ glab mr list -M --per-page 10
+$ glab mr list --draft
+$ glab mr list --not-draft
 
 ```
 

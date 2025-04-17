@@ -23,15 +23,15 @@ func NewCmdRebase(f *cmdutils.Factory) *cobra.Command {
 		Long: heredoc.Doc(`If you don't have permission to push to the merge request's source branch, you'll get a 403 Forbidden response.
 		`),
 		Example: heredoc.Doc(`
-			Rebase merge request 123
-			- glab mr rebase 123
+			# Rebase merge request 123
+			$ glab mr rebase 123
 
-			Rebase current branch
-			- glab mr rebase
+			# Rebase current branch
+			$ glab mr rebase
 
-			Rebase merge request from branch
-			- glab mr rebase branch
-			- glab mr rebase branch --skip-ci
+			# Rebase merge request from branch
+			$ glab mr rebase branch
+			$ glab mr rebase branch --skip-ci
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
