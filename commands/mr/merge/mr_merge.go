@@ -54,12 +54,12 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"accept"},
 		Example: heredoc.Doc(`
-			Merge a merge request
-			- glab mr merge 235
-			- glab mr accept 235
+			# Merge a merge request
+			$ glab mr merge 235
+			$ glab mr accept 235
 
-			Finds open merge request from current branch
-			- glab mr merge
+			# Finds open merge request from current branch
+			$ glab mr merge
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

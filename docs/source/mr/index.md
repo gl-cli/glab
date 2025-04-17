@@ -16,9 +16,9 @@ Create, view, and manage merge requests.
 ## Examples
 
 ```console
-- glab mr create --fill --label bugfix
-- glab mr merge 123
-- glab mr note -m "needs to do X before it can be merged" branch-foo
+$ glab mr create --fill --label bugfix
+$ glab mr merge 123
+$ glab mr note -m "needs to do X before it can be merged" branch-foo
 
 ```
 
