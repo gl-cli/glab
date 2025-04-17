@@ -17,7 +17,7 @@ var CreateSnippet = func(
 	if err != nil {
 		return nil, err
 	}
-	return snippet, err
+	return snippet, nil
 }
 
 // CreateProjectSnippet inside the project
@@ -35,5 +35,5 @@ var CreateProjectSnippet = func(
 		return nil, err
 	}
 
-	return snippet, err
+	return snippet, nil
 }
