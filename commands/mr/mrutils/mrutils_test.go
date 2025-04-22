@@ -512,7 +512,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			f := *f
 
 			getMRForBranch = func(_ *gitlab.Client, mrOpts mrOptions) (*gitlab.BasicMergeRequest, error) {
-				return nil, fmt.Errorf("no merge requests from branch %q", mrOpts.arg)
+				return nil, fmt.Errorf("no merge requests from branch %q", mrOpts.branch)
 			}
 
 			gotMR, gotRepo, err := MRFromArgs(&f, []string{"foo"}, "")
