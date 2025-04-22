@@ -32,6 +32,22 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
+type noteOptions int
+
+const (
+	noteOptMyOwn noteOptions = iota
+	noteOptCommitLog
+	noteOptGitTagMessage
+	noteOptLeaveBlank
+)
+
+var noteOptionsNames = map[noteOptions]string{
+	noteOptMyOwn:         "Write my own.",
+	noteOptCommitLog:     "Write using the commit log as a template.",
+	noteOptGitTagMessage: "Write using the Git tag message as the template.",
+	noteOptLeaveBlank:    "Leave blank.",
+}
+
 type CreateOpts struct {
 	Name                        string
 	Ref                         string
@@ -316,14 +332,14 @@ func createRun(opts *CreateOpts) error {
 			}
 		}
 
-		editorOptions := []string{"Write my own."}
+		editorOptions := []string{noteOptionsNames[noteOptMyOwn]}
 		if generatedChangelog != "" {
-			editorOptions = append(editorOptions, "Write using the commit log as a template.")
+			editorOptions = append(editorOptions, noteOptionsNames[noteOptCommitLog])
 		}
 		if tagDescription != "" {
-			editorOptions = append(editorOptions, "Write using the Git tag message as the template.")
+			editorOptions = append(editorOptions, noteOptionsNames[noteOptGitTagMessage])
 		}
-		editorOptions = append(editorOptions, "Leave blank.")
+		editorOptions = append(editorOptions, noteOptionsNames[noteOptLeaveBlank])
 
 		qs := []*survey.Question{
 			{
@@ -350,15 +366,15 @@ func createRun(opts *CreateOpts) error {
 		var editorContents string
 
 		switch opts.ReleaseNotesAction {
-		case "Write my own.":
+		case noteOptionsNames[noteOptMyOwn]:
 			openEditor = true
-		case "Write using commit log as template.":
+		case noteOptionsNames[noteOptCommitLog]:
 			openEditor = true
 			editorContents = generatedChangelog
-		case "Write using git tag message as template.":
+		case noteOptionsNames[noteOptGitTagMessage]:
 			openEditor = true
 			editorContents = tagDescription
-		case "Leave blank.":
+		case noteOptionsNames[noteOptLeaveBlank]:
 			openEditor = false
 		default:
 			return fmt.Errorf("invalid action: %v", opts.ReleaseNotesAction)
