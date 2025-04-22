@@ -100,7 +100,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 				for _, v := range customPipelineVars {
 					pvar, err := extractEnvVar(v)
 					if err != nil {
-						return fmt.Errorf("parsing pipeline variable expected format KEY:VALUE: %w", err)
+						return fmt.Errorf("parsing pipeline variable. Expected format KEY:VALUE: %w", err)
 					}
 					pipelineVars = append(pipelineVars, pvar)
 				}
