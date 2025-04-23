@@ -18,7 +18,12 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 		Use:   "list [flags]",
 		Short: `Get the list of schedules.`,
 		Example: heredoc.Doc(`
-			- glab schedule list
+			# List all scheduled pipelines
+			$ glab schedule list
+			> Showing schedules for project gitlab-org/cli
+			> ID  Description                    Cron            Ref    Active
+			> 1   Daily build                   0 0 * * *       main   true
+			> 2   Weekly deployment             0 0 * * 0       main   true
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(0),

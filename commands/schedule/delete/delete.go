@@ -25,7 +25,9 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		Use:   "delete <id> [flags]",
 		Short: `Delete the schedule with the specified ID.`,
 		Example: heredoc.Doc(`
-			- glab schedule delete 10
+			# Delete a scheduled pipeline with ID 10
+			$ glab schedule delete 10
+			> Deleted schedule with ID 10
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(1),

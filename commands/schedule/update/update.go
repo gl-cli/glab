@@ -27,7 +27,9 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 		Use:   "update <id> [flags]",
 		Short: `Update a pipeline schedule.`,
 		Example: heredoc.Doc(`
-			- glab schedule update 10 --cron "0 * * * *" --description "Describe your pipeline here" --ref "main" --create-variable "foo:bar" --update-variable "baz:baz" --delete-variable "qux"
+			# Update a scheduled pipeline with ID 10
+			$ glab schedule update 10 --cron "0 * * * *" --description "Describe your pipeline here" --ref "main" --create-variable "foo:bar" --update-variable "baz:baz" --delete-variable "qux"
+			> Updated schedule with ID 10
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(1),

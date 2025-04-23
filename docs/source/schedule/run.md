@@ -20,7 +20,9 @@ glab schedule run <id> [flags]
 ## Examples
 
 ```console
-- glab schedule run 1
+# Run a scheduled pipeline with ID 1
+$ glab schedule run 1
+> Started schedule with ID 1
 
 ```
 
