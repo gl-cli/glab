@@ -20,7 +20,9 @@ glab schedule update <id> [flags]
 ## Examples
 
 ```console
-- glab schedule update 10 --cron "0 * * * *" --description "Describe your pipeline here" --ref "main" --create-variable "foo:bar" --update-variable "baz:baz" --delete-variable "qux"
+# Update a scheduled pipeline with ID 10
+$ glab schedule update 10 --cron "0 * * * *" --description "Describe your pipeline here" --ref "main" --create-variable "foo:bar" --update-variable "baz:baz" --delete-variable "qux"
+> Updated schedule with ID 10
 
 ```
 
