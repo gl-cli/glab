@@ -40,11 +40,11 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			Without an explicit tag name argument, shows the latest release in the project.
 		`),
 		Example: heredoc.Doc(`
-			View the latest release of a GitLab repository
-			- glab release view
+			# View the latest release of a GitLab repository
+			$ glab release view
 
-			View a release with specified tag name
-			- glab release view v1.0.1
+			# View a release with specified tag name
+			$ glab release view v1.0.1
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

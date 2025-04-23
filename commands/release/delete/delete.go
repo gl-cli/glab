@@ -44,14 +44,14 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		`, "`"),
 		Args: cmdutils.MinimumArgs(1, "no tag name provided"),
 		Example: heredoc.Doc(`
-			Delete a release (with a confirmation prompt)
-			- glab release delete v1.1.0'
+			# Delete a release (with a confirmation prompt)
+			$ glab release delete v1.1.0
 
-			Skip the confirmation prompt and force delete
-			- glab release delete v1.0.1 -y
+			# Skip the confirmation prompt and force delete
+			$ glab release delete v1.0.1 -y
 
-			Delete release and associated tag
-			- glab release delete v1.0.1 --with-tag
+			# Delete release and associated tag
+			$ glab release delete v1.0.1 --with-tag
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient
