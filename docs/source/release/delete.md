@@ -26,14 +26,14 @@ glab release delete <tag> [flags]
 ## Examples
 
 ```console
-Delete a release (with a confirmation prompt)
-- glab release delete v1.1.0'
+# Delete a release (with a confirmation prompt)
+$ glab release delete v1.1.0
 
-Skip the confirmation prompt and force delete
-- glab release delete v1.0.1 -y
+# Skip the confirmation prompt and force delete
+$ glab release delete v1.0.1 -y
 
-Delete release and associated tag
-- glab release delete v1.0.1 --with-tag
+# Delete release and associated tag
+$ glab release delete v1.0.1 --with-tag
 
 ```
 
