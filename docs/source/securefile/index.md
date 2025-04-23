@@ -34,6 +34,7 @@ and binary files are supported, but they must be smaller than 5 MB.
 
 ## Subcommands
 
+- [`create`](create.md)
 - [`download`](download.md)
 - [`list`](list.md)
 - [`remove`](remove.md)

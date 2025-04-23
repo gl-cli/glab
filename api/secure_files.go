@@ -6,6 +6,18 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
+var CreateSecureFile = func(client *gitlab.Client, projectID interface{}, filename string, content io.Reader) error {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+
+	opts := &gitlab.CreateSecureFileOptions{
+		Name: &filename,
+	}
+	_, _, err := client.SecureFiles.CreateSecureFile(projectID, content, opts)
+	return err
+}
+
 var DownloadSecureFile = func(client *gitlab.Client, projectID interface{}, id int) (io.Reader, error) {
 	if client == nil {
 		client = apiClient.Lab()
