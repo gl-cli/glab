@@ -16,7 +16,7 @@ Create, view and manage snippets.
 ## Examples
 
 ```console
-- glab snippet create --title "Title of the snippet" --filename "main.go"
+$ glab snippet create --title "Title of the snippet" --filename "main.go"
 
 ```
 
