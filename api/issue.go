@@ -46,6 +46,10 @@ var GetIssue = func(client *gitlab.Client, projectID interface{}, issueID int) (
 }
 
 var ProjectListIssueOptionsToGroup = func(l *gitlab.ListProjectIssuesOptions) *gitlab.ListGroupIssuesOptions {
+	var assigneeID *gitlab.AssigneeIDValue
+	if l.AssigneeID != nil {
+		assigneeID = gitlab.AssigneeID(*l.AssigneeID)
+	}
 	return &gitlab.ListGroupIssuesOptions{
 		ListOptions:        l.ListOptions,
 		State:              l.State,
@@ -57,7 +61,7 @@ var ProjectListIssueOptionsToGroup = func(l *gitlab.ListProjectIssuesOptions) *g
 		Scope:              l.Scope,
 		AuthorID:           l.AuthorID,
 		NotAuthorID:        l.NotAuthorID,
-		AssigneeID:         l.AssigneeID,
+		AssigneeID:         assigneeID,
 		NotAssigneeID:      l.NotAssigneeID,
 		AssigneeUsername:   l.AssigneeUsername,
 		MyReactionEmoji:    l.MyReactionEmoji,

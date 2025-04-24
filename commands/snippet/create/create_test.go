@@ -108,7 +108,7 @@ func TestSnippetCreate(t *testing.T) {
 		{
 			name:    "Create snippet 403 failure",
 			command: "testdata/snippet.txt -d 'Hello World snippet' -f 'snippet.txt' -t 'This is a snippet'",
-			wantErr: errors.New("failed to create snippet: POST https://gitlab.com/api/v4/projects/OWNER/REPO/snippets: 403"),
+			wantErr: errors.New("failed to create snippet: POST https://gitlab.com/api/v4/projects/OWNER%2FREPO/snippets: 403"),
 			mock: httpMock{
 				method: http.MethodPost,
 				path:   "/api/v4/projects/OWNER/REPO/snippets",
