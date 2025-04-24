@@ -60,7 +60,7 @@ func Test_SecurefileCreate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantStderr: "Error creating secure file: POST https://gitlab.com/api/v4/projects/OWNER/REPO/secure_files: 400",
+			wantStderr: "Error creating secure file: POST https://gitlab.com/api/v4/projects/OWNER%2FREPO/secure_files: 400",
 		},
 		{
 			Name:       "Get a securefile with invalid file path",

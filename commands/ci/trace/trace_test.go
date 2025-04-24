@@ -65,7 +65,7 @@ func TestCiTrace(t *testing.T) {
 		{
 			name:          "when trace for job-id is requested and getTrace throws error",
 			args:          "1122",
-			expectedError: "failed to find job: GET https://gitlab.com/api/v4/projects/OWNER/REPO/jobs/1122/trace: 403",
+			expectedError: "failed to find job: GET https://gitlab.com/api/v4/projects/OWNER%2FREPO/jobs/1122/trace: 403",
 			expectedOut:   "\nGetting job trace...\n",
 			httpMocks: []httpMock{
 				{
@@ -89,7 +89,7 @@ func TestCiTrace(t *testing.T) {
 		{
 			name:          "when trace for job-id is requested and getJob throws error",
 			args:          "1122",
-			expectedError: "failed to find job: GET https://gitlab.com/api/v4/projects/OWNER/REPO/jobs/1122: 403",
+			expectedError: "failed to find job: GET https://gitlab.com/api/v4/projects/OWNER%2FREPO/jobs/1122: 403",
 			expectedOut:   "\nGetting job trace...\n",
 			httpMocks: []httpMock{
 				{

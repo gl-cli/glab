@@ -120,7 +120,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			if !opts.BaseProject.IssuesEnabled {
+			if !opts.BaseProject.IssuesEnabled { //nolint:staticcheck
 				fmt.Fprintf(opts.IO.StdErr, "Issues are disabled for project %q or require project membership. ", opts.BaseProject.PathWithNamespace)
 				fmt.Fprintf(opts.IO.StdErr, "Make sure issues are enabled for the %q project, and if required, you are a member of the project.\n",
 					opts.BaseProject.PathWithNamespace)

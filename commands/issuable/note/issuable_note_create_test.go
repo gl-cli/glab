@@ -133,7 +133,7 @@ func Test_NewCmdNote_error(t *testing.T) {
 			// glab incident note 1 --message "Here is my note"
 			_, err := runCommand(fakeHTTP, true, `1 -m "Some message"`, cc.issueType)
 			assert.NotNil(t, err)
-			assert.Equal(t, "POST https://gitlab.com/api/v4/projects/OWNER/REPO/issues/1/notes: 401 {message: Unauthorized}", err.Error())
+			assert.Equal(t, "POST https://gitlab.com/api/v4/projects/OWNER%2FREPO/issues/1/notes: 401 {message: Unauthorized}", err.Error())
 		})
 	}
 

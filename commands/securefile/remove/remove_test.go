@@ -52,7 +52,7 @@ func Test_SecurefileRemove(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantStderr: "Error removing secure file: DELETE https://gitlab.com/api/v4/projects/OWNER/REPO/secure_files/1: 400",
+			wantStderr: "Error removing secure file: DELETE https://gitlab.com/api/v4/projects/OWNER%2FREPO/secure_files/1: 400",
 		},
 		{
 			Name:       "Remove a secure file with invalid file ID",

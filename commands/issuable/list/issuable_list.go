@@ -377,7 +377,7 @@ func listEpicIssues(client *gitlab.Client, opts *ListOptions, projListOpts *gitl
 	}
 
 	for {
-		is, req, err := client.EpicIssues.ListEpicIssues(opts.Group, opts.Epic, &listOpts)
+		is, req, err := client.EpicIssues.ListEpicIssues(opts.Group, opts.Epic, &listOpts) //nolint:staticcheck
 		if err != nil {
 			return nil, err
 		}

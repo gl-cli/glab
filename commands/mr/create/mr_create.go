@@ -270,7 +270,7 @@ func createRun(opts *CreateOpts) error {
 		}
 	}
 
-	if !opts.TargetProject.MergeRequestsEnabled {
+	if !opts.TargetProject.MergeRequestsEnabled { //nolint:staticcheck
 		fmt.Fprintf(opts.IO.StdErr, "Failed to create a merge request for project %q. Please ensure:\n", opts.TargetProject.PathWithNamespace)
 		fmt.Fprintf(opts.IO.StdErr, " - You are authenticated with the GitLab CLI.\n")
 		fmt.Fprintf(opts.IO.StdErr, " - Merge requests are enabled for this project.\n")
