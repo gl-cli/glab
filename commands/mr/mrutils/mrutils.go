@@ -45,7 +45,7 @@ type MRCheckErrOptions struct {
 
 type mrOptions struct {
 	baseRepo      glrepo.Interface
-	arg           string
+	branch        string
 	state         string
 	promptEnabled bool
 }
@@ -235,27 +235,26 @@ func MRsFromArgs(f *cmdutils.Factory, args []string, state string) ([]*gitlab.Me
 	return mrs, baseRepo, nil
 }
 
-var getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.BasicMergeRequest, error) {
-	currentBranch := mrOpts.arg // Assume the user is using only 'branch', not 'OWNER:branch'
-	var owner string
-
-	// If the string contains a ':' then it is using the OWNER:branch format, split it and
-	// assign them to the appropriate values, do note that we do not expect multiple ':' as
-	// git does not allow ':' to be used on branch names
-	if strings.Contains(mrOpts.arg, ":") {
-		t := strings.Split(mrOpts.arg, ":")
-		owner = t[0]
-		currentBranch = t[1]
+func resolveOwnerAndBranch(potentialBranch string) (string, string) {
+	split := strings.Split(potentialBranch, ":")
+	userUsedOwnerColonBranchFormat := len(split) != 1
+	if userUsedOwnerColonBranchFormat {
+		owner, branch := split[0], split[1]
+		return owner, branch
 	}
+	owner, branch := "", split[0]
+	return owner, branch
+}
+
+var getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.BasicMergeRequest, error) {
+	owner, currentBranch := resolveOwnerAndBranch(mrOpts.branch)
 
 	opts := gitlab.ListProjectMergeRequestsOptions{
 		SourceBranch: gitlab.Ptr(currentBranch),
 	}
 
-	// Set the state value if it is not empty, if it is empty then it will look at all possible
-	// values, 'any' is also a descriptive keyword used in the source code that is equivalent to
-	// passing nothing on
-	if mrOpts.state != "" && mrOpts.state != "any" {
+	userAskedForSpecificState := mrOpts.state != "" && mrOpts.state != "any"
+	if userAskedForSpecificState {
 		opts.State = gitlab.Ptr(mrOpts.state)
 	}
 
@@ -268,15 +267,15 @@ var getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.B
 		return nil, fmt.Errorf("no open merge request available for %q", currentBranch)
 	}
 
-	// The user gave us an 'OWNER:' so try to match the merge request with it
-	if owner != "" {
+	userAskedForSpecificOwner := owner != ""
+	if userAskedForSpecificOwner {
 		for i := range mrs {
-			// We found a match!
-			if mrs[i].Author.Username == owner {
-				return mrs[i], nil
+			mr := mrs[i]
+			matchFound := mr.Author.Username == owner
+			if matchFound {
+				return mr, nil
 			}
 		}
-		// No match, error out, tell the user which branch and which username we looked for
 		return nil, fmt.Errorf("no open merge request available for %q owned by @%s", currentBranch, owner)
 	}
 
