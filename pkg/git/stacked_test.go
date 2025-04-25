@@ -87,7 +87,33 @@ func Test_AddStackRefDir(t *testing.T) {
 }
 
 func Test_StackRootDir(t *testing.T) {
-	// TODO: write test
+	tests := []struct {
+		name  string
+		title string
+	}{
+		{
+			name:  "valid title",
+			title: "test-stack",
+		},
+		{
+			name:  "empty title",
+			title: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			baseDir := InitGitRepo(t)
+			defer os.RemoveAll(baseDir)
+
+			got, err := StackRootDir(tt.title)
+			require.NoError(t, err)
+
+			// Verify the path contains the expected components
+			require.Contains(t, got, StackLocation, "StackRootDir() should contain StackLocation")
+			require.Contains(t, got, tt.title, "StackRootDir() should contain title")
+		})
+	}
 }
 
 func Test_AddStackRefFile(t *testing.T) {
