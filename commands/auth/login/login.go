@@ -453,7 +453,7 @@ func loginRun(opts *LoginOptions) error {
 	return nil
 }
 
-func hostnameValidator(v interface{}) error {
+func hostnameValidator(v any) error {
 	val := fmt.Sprint(v)
 	if len(strings.TrimSpace(val)) < 1 {
 		return errors.New("a value is required.")

@@ -28,7 +28,7 @@ type RotateOptions struct {
 
 	User         string
 	Group        string
-	Name         interface{}
+	Name         any
 	Duration     time.Duration
 	ExpireAt     expirationdate.ExpirationDate
 	OutputFormat string
@@ -127,7 +127,7 @@ func rotateTokenRun(opts *RotateOptions) error {
 	}
 	expirationDate := gitlab.ISOTime(opts.ExpireAt)
 
-	var outputToken interface{}
+	var outputToken any
 	var outputTokenValue string
 
 	if opts.User != "" {

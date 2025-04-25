@@ -175,7 +175,7 @@ func Test_resolveNetwork(t *testing.T) {
 	}
 
 	// Override api.GetProject to not use the network
-	mockAPIGetProject := func(_ *gitlab.Client, ProjectID interface{}) (*gitlab.Project, error) {
+	mockAPIGetProject := func(_ *gitlab.Client, ProjectID any) (*gitlab.Project, error) {
 		proj := &gitlab.Project{
 			PathWithNamespace: fmt.Sprint(ProjectID),
 		}
@@ -201,7 +201,7 @@ func Test_resolveNetwork(t *testing.T) {
 		// Make our own copy of rem we can modify
 		rem := *rem
 
-		api.GetProject = func(_ *gitlab.Client, ProjectID interface{}) (*gitlab.Project, error) {
+		api.GetProject = func(_ *gitlab.Client, ProjectID any) (*gitlab.Project, error) {
 			return nil, assert.AnError
 		}
 
@@ -218,7 +218,7 @@ func Test_resolveNetwork(t *testing.T) {
 
 		api.GetProject = mockAPIGetProject
 
-		for i := 0; i < maxRemotesForLookup; i++ {
+		for i := range maxRemotesForLookup {
 			rem.remotes = append(rem.remotes, rem.remotes[i])
 		}
 		// Make sure we have at least one more remote than the limit set from maxRemotesForLookup
@@ -258,7 +258,7 @@ func Test_BaseRepo(t *testing.T) {
 		return *rem
 	}
 
-	mockGitlabProject := func(i interface{}) gitlab.Project {
+	mockGitlabProject := func(i any) gitlab.Project {
 		p := &gitlab.Project{
 			PathWithNamespace: fmt.Sprint(i),
 			HTTPURLToRepo:     fmt.Sprintf("https://gitlab.com/%s", i),
@@ -271,7 +271,7 @@ func Test_BaseRepo(t *testing.T) {
 		return nil
 	}
 
-	api.GetProject = func(_ *gitlab.Client, projectID interface{}) (*gitlab.Project, error) {
+	api.GetProject = func(_ *gitlab.Client, projectID any) (*gitlab.Project, error) {
 		p := mockGitlabProject(projectID)
 		return &p, nil
 	}
@@ -568,7 +568,7 @@ func Test_BaseRepo(t *testing.T) {
 	})
 
 	t.Run("Consult the network, all calls fail", func(t *testing.T) {
-		api.GetProject = func(_ *gitlab.Client, projectID interface{}) (*gitlab.Project, error) {
+		api.GetProject = func(_ *gitlab.Client, projectID any) (*gitlab.Project, error) {
 			return nil, assert.AnError
 		}
 		localRem := rem()
@@ -589,7 +589,7 @@ func Test_BaseRepo(t *testing.T) {
 	})
 
 	t.Run("Consult the network, some, but not all, calls fail", func(t *testing.T) {
-		api.GetProject = func(_ *gitlab.Client, projectID interface{}) (*gitlab.Project, error) {
+		api.GetProject = func(_ *gitlab.Client, projectID any) (*gitlab.Project, error) {
 			if projectID == "profclems/glab" {
 				return &gitlab.Project{
 					ID:                1,
@@ -639,7 +639,7 @@ func Test_HeadRepo(t *testing.T) {
 		return *rem
 	}
 
-	mockGitlabProject := func(i interface{}) gitlab.Project {
+	mockGitlabProject := func(i any) gitlab.Project {
 		p := &gitlab.Project{
 			PathWithNamespace: fmt.Sprint(i),
 			HTTPURLToRepo:     fmt.Sprintf("https://gitlab.com/%s", i),
@@ -652,7 +652,7 @@ func Test_HeadRepo(t *testing.T) {
 		return nil
 	}
 
-	api.GetProject = func(_ *gitlab.Client, projectID interface{}) (*gitlab.Project, error) {
+	api.GetProject = func(_ *gitlab.Client, projectID any) (*gitlab.Project, error) {
 		p := mockGitlabProject(projectID)
 		return &p, nil
 	}

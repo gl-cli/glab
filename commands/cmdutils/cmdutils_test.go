@@ -480,7 +480,7 @@ func Test_ParseMilestoneTitleIsID(t *testing.T) {
 	expectedMilestoneID := 1
 
 	// Override function to return an error, it should never reach this
-	api.ProjectMilestoneByTitle = func(client *gitlab.Client, projectID interface{}, name string) (*gitlab.Milestone, error) {
+	api.ProjectMilestoneByTitle = func(client *gitlab.Client, projectID any, name string) (*gitlab.Milestone, error) {
 		return nil, fmt.Errorf("We shouldn't have reached here")
 	}
 
@@ -498,7 +498,7 @@ func Test_ParseMilestoneAPIFail(t *testing.T) {
 	want := "API call failed in api.MilestoneByTitle()."
 
 	// Override function to return an error simulating an API call failure
-	api.ProjectMilestoneByTitle = func(client *gitlab.Client, projectID interface{}, name string) (*gitlab.Milestone, error) {
+	api.ProjectMilestoneByTitle = func(client *gitlab.Client, projectID any, name string) (*gitlab.Milestone, error) {
 		return nil, fmt.Errorf("API call failed in api.MilestoneByTitle().")
 	}
 
@@ -516,7 +516,7 @@ func Test_ParseMilestoneTitleToID(t *testing.T) {
 	expectedID := 3
 
 	// Override function so it returns the correct milestone
-	api.ProjectMilestoneByTitle = func(client *gitlab.Client, projectID interface{}, name string) (*gitlab.Milestone, error) {
+	api.ProjectMilestoneByTitle = func(client *gitlab.Client, projectID any, name string) (*gitlab.Milestone, error) {
 		return &gitlab.Milestone{
 				Title: "kind: testing",
 				ID:    3,
@@ -713,7 +713,7 @@ func Test_UsersPrompt(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			api.ListProjectMembers = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
+			api.ListProjectMembers = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
 				return tC.mock, nil
 			}
 
@@ -748,7 +748,7 @@ func Test_UsersPrompt(t *testing.T) {
 	t.Run("Prompt fails", func(t *testing.T) {
 		var got []string
 
-		api.ListProjectMembers = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
+		api.ListProjectMembers = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
 			return []*gitlab.ProjectMember{
 				{
 					Username:    "foo",
@@ -775,7 +775,7 @@ func Test_UsersPrompt(t *testing.T) {
 	t.Run("API Failed", func(t *testing.T) {
 		var got []string
 
-		api.ListProjectMembers = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
+		api.ListProjectMembers = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
 			return nil, errors.New("meant to fail")
 		}
 
@@ -787,7 +787,7 @@ func Test_UsersPrompt(t *testing.T) {
 	t.Run("respect-flags", func(t *testing.T) {
 		got := []string{"foo"}
 
-		api.ListProjectMembers = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
+		api.ListProjectMembers = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
 			return []*gitlab.ProjectMember{
 				{
 					Username:    "foo",
@@ -833,7 +833,7 @@ func Test_MilestonesPrompt(t *testing.T) {
 	}
 
 	// Override API.ListMilestones so it doesn't make any network calls
-	api.ListAllMilestones = func(_ *gitlab.Client, _ interface{}, _ *api.ListMilestonesOptions) ([]*api.Milestone, error) {
+	api.ListAllMilestones = func(_ *gitlab.Client, _ any, _ *api.ListMilestonesOptions) ([]*api.Milestone, error) {
 		return mockMilestones, nil
 	}
 
@@ -908,7 +908,7 @@ func Test_MilestonesPromptNoPrompts(t *testing.T) {
 	// Override api.ListMilestones so it returns an empty slice, we are testing if MilestonesPrompt()
 	// will print the correct message to `stderr` when it tries to get the list of Milestones in a
 	// project but the project has no milestones
-	api.ListAllMilestones = func(_ *gitlab.Client, _ interface{}, _ *api.ListMilestonesOptions) ([]*api.Milestone, error) {
+	api.ListAllMilestones = func(_ *gitlab.Client, _ any, _ *api.ListMilestonesOptions) ([]*api.Milestone, error) {
 		return []*api.Milestone{}, nil
 	}
 
@@ -936,7 +936,7 @@ func Test_MilestonesPromptNoPrompts(t *testing.T) {
 func TestMilestonesPromptFailures(t *testing.T) {
 	// Override api.ListMilestones so it returns an error, we are testing to see if error
 	// handling from the usage of api.ListMilestones is correct
-	api.ListAllMilestones = func(_ *gitlab.Client, _ interface{}, _ *api.ListMilestonesOptions) ([]*api.Milestone, error) {
+	api.ListAllMilestones = func(_ *gitlab.Client, _ any, _ *api.ListMilestonesOptions) ([]*api.Milestone, error) {
 		return nil, errors.New("api.ListMilestones() failed")
 	}
 
@@ -1043,7 +1043,7 @@ func Test_LabelsPromptAPIFail(t *testing.T) {
 		Repo:   repo,
 	}
 
-	api.ListLabels = func(_ *gitlab.Client, _ interface{}, _ *api.ListLabelsOptions) ([]*gitlab.Label, error) {
+	api.ListLabels = func(_ *gitlab.Client, _ any, _ *api.ListLabelsOptions) ([]*gitlab.Label, error) {
 		return nil, errors.New("API call failed")
 	}
 
@@ -1067,7 +1067,7 @@ func Test_LabelsPromptPromptsFail(t *testing.T) {
 
 	t.Run("MultiSelect", func(t *testing.T) {
 		// Return a list with at least one value so we hit the MultiSelect path
-		api.ListLabels = func(_ *gitlab.Client, _ interface{}, _ *api.ListLabelsOptions) ([]*gitlab.Label, error) {
+		api.ListLabels = func(_ *gitlab.Client, _ any, _ *api.ListLabelsOptions) ([]*gitlab.Label, error) {
 			return []*gitlab.Label{
 				{
 					Name: "foo",
@@ -1093,7 +1093,7 @@ func Test_LabelsPromptPromptsFail(t *testing.T) {
 
 	t.Run("AskQuestionWithInput", func(t *testing.T) {
 		// Return an empty list so we hit the AskQuestionWithInput prompt path
-		api.ListLabels = func(_ *gitlab.Client, _ interface{}, _ *api.ListLabelsOptions) ([]*gitlab.Label, error) {
+		api.ListLabels = func(_ *gitlab.Client, _ any, _ *api.ListLabelsOptions) ([]*gitlab.Label, error) {
 			return []*gitlab.Label{}, nil
 		}
 
@@ -1126,7 +1126,7 @@ func Test_LabelsPromptMultiSelect(t *testing.T) {
 		Repo:   repo,
 	}
 
-	api.ListLabels = func(_ *gitlab.Client, _ interface{}, _ *api.ListLabelsOptions) ([]*gitlab.Label, error) {
+	api.ListLabels = func(_ *gitlab.Client, _ any, _ *api.ListLabelsOptions) ([]*gitlab.Label, error) {
 		return []*gitlab.Label{
 			{
 				Name: "foo",
@@ -1206,7 +1206,7 @@ func Test_LabelsPromptAskQuestionWithInput(t *testing.T) {
 		Repo:   repo,
 	}
 
-	api.ListLabels = func(_ *gitlab.Client, _ interface{}, _ *api.ListLabelsOptions) ([]*gitlab.Label, error) {
+	api.ListLabels = func(_ *gitlab.Client, _ any, _ *api.ListLabelsOptions) ([]*gitlab.Label, error) {
 		return []*gitlab.Label{}, nil
 	}
 
@@ -1316,7 +1316,7 @@ func Test_ConfirmSubmission(t *testing.T) {
 	t.Run("failed", func(t *testing.T) {
 		testCases := []struct {
 			name   string
-			input  interface{}
+			input  any
 			output string
 		}{
 			{

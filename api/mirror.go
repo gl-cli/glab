@@ -19,7 +19,7 @@ type CreatePullMirrorOptions struct {
 
 var CreatePushMirror = func(
 	client *gitlab.Client,
-	projectID interface{},
+	projectID any,
 	opts *CreatePushMirrorOptions,
 ) (*gitlab.ProjectMirror, error) {
 	if client == nil {
@@ -37,7 +37,7 @@ var CreatePushMirror = func(
 
 var CreatePullMirror = func(
 	client *gitlab.Client,
-	projectID interface{},
+	projectID any,
 	opts *CreatePullMirrorOptions,
 ) error {
 	if client == nil {

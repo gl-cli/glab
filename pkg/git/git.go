@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"slices"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/run"
@@ -45,7 +46,7 @@ func RemoteBranchExists(branch string, gr GitRunner) bool {
 func ParseDefaultBranch(output []byte) (string, error) {
 	var headBranch string
 
-	for _, o := range strings.Split(string(output), "\n") {
+	for o := range strings.SplitSeq(string(output), "\n") {
 		o = strings.TrimSpace(o)
 		r, err := regexp.Compile(`(HEAD branch:)\s+`)
 		if err != nil {
@@ -561,12 +562,7 @@ func assertValidConfigKey(key string) error {
 // outputContainsLine searches through each line in the command output
 // and returns true if one matches the needle a.k.a. the search string.
 func outputContainsLine(output []byte, needle string) bool {
-	for _, line := range outputLines(output) {
-		if line == needle {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(outputLines(output), needle)
 }
 
 func RunCmd(args []string) (err error) {

@@ -32,7 +32,7 @@ type ExportOpts struct {
 	PerPage int
 }
 
-func marshalJson(variables interface{}) ([]byte, error) {
+func marshalJson(variables any) ([]byte, error) {
 	res, err := json.MarshalIndent(variables, "", "  ")
 	if err != nil {
 		return nil, err

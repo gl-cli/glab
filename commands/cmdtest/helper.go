@@ -35,7 +35,7 @@ var (
 )
 
 type fatalLogger interface {
-	Fatal(...interface{})
+	Fatal(...any)
 }
 
 func init() {
@@ -308,7 +308,7 @@ func FirstLine(output []byte) string {
 	return string(output)
 }
 
-func Eq(t *testing.T, got interface{}, expected interface{}) {
+func Eq(t *testing.T, got any, expected any) {
 	t.Helper()
 	if !reflect.DeepEqual(got, expected) {
 		t.Errorf("expected: %v, got: %v", expected, got)

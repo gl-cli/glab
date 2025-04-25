@@ -41,7 +41,7 @@ hosts:
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
 	toggle := false
 
-	api.UpdateMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.UpdateMergeRequestOptions) (*gitlab.MergeRequest, error) {
+	api.UpdateMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.UpdateMergeRequestOptions) (*gitlab.MergeRequest, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" || mrID == 0 {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -76,7 +76,7 @@ hosts:
 		return mr, nil
 	}
 
-	api.GetMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+	api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -108,7 +108,7 @@ hosts:
 		}, nil
 	}
 
-	api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+	api.ListMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 		return []*gitlab.BasicMergeRequest{}, nil
 	}
 

@@ -6,7 +6,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-var CreateSecureFile = func(client *gitlab.Client, projectID interface{}, filename string, content io.Reader) error {
+var CreateSecureFile = func(client *gitlab.Client, projectID any, filename string, content io.Reader) error {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -18,7 +18,7 @@ var CreateSecureFile = func(client *gitlab.Client, projectID interface{}, filena
 	return err
 }
 
-var DownloadSecureFile = func(client *gitlab.Client, projectID interface{}, id int) (io.Reader, error) {
+var DownloadSecureFile = func(client *gitlab.Client, projectID any, id int) (io.Reader, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -30,7 +30,7 @@ var DownloadSecureFile = func(client *gitlab.Client, projectID interface{}, id i
 	return reader, nil
 }
 
-var ListSecureFiles = func(client *gitlab.Client, l *gitlab.ListProjectSecureFilesOptions, projectID interface{}) ([]*gitlab.SecureFile, error) {
+var ListSecureFiles = func(client *gitlab.Client, l *gitlab.ListProjectSecureFilesOptions, projectID any) ([]*gitlab.SecureFile, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -56,7 +56,7 @@ var ListSecureFiles = func(client *gitlab.Client, l *gitlab.ListProjectSecureFil
 	return files, nil
 }
 
-var RemoveSecureFile = func(client *gitlab.Client, projectID interface{}, id int) error {
+var RemoveSecureFile = func(client *gitlab.Client, projectID any, id int) error {
 	if client == nil {
 		client = apiClient.Lab()
 	}

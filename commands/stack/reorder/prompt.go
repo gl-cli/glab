@@ -12,7 +12,7 @@ import (
 
 // parseReorderFile removes comments and trims space for all non-comment lines
 func parseReorderFile(input string) (branches []string, err error) {
-	for _, line := range strings.Split(input, "\n") {
+	for line := range strings.SplitSeq(input, "\n") {
 		if strings.HasPrefix(line, "#") {
 			continue
 		}

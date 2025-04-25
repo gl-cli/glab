@@ -212,7 +212,7 @@ func apiRun(opts *ApiOptions) error {
 	}
 	method := opts.RequestMethod
 	requestHeaders := opts.RequestHeaders
-	var requestBody interface{} = params
+	var requestBody any = params
 
 	if !opts.RequestMethodPassed && (len(params) > 0 || opts.RequestInputFile != "") {
 		method = http.MethodPost
@@ -432,8 +432,8 @@ func printHeaders(w io.Writer, headers http.Header, colorize bool) {
 	}
 }
 
-func parseFields(opts *ApiOptions) (map[string]interface{}, error) {
-	params := make(map[string]interface{})
+func parseFields(opts *ApiOptions) (map[string]any, error) {
+	params := make(map[string]any)
 	for _, f := range opts.RawFields {
 		key, value, err := parseField(f)
 		if err != nil {
@@ -463,7 +463,7 @@ func parseField(f string) (string, string, error) {
 	return f[0:idx], f[idx+1:], nil
 }
 
-func magicFieldValue(v string, opts *ApiOptions) (interface{}, error) {
+func magicFieldValue(v string, opts *ApiOptions) (any, error) {
 	if strings.HasPrefix(v, "@") {
 		return readUserFile(v[1:], opts.IO.In)
 	}
@@ -531,7 +531,7 @@ func parseErrorResponse(r io.Reader, statusCode int) (io.Reader, string, error) 
 	err = json.Unmarshal(b, &parsedBody)
 	if err != nil {
 		// in cases where it's an object within an object we can try to parse it as is
-		var t interface{}
+		var t any
 		err = json.Unmarshal(b, &t)
 		if err != nil {
 			return r, "", err

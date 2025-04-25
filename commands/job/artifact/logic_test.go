@@ -21,7 +21,7 @@ func createTestZipFile() (*os.File, error) {
 
 	zipWriter := zip.NewWriter(tempFile)
 
-	for i := 0; i < numTestFiles; i++ {
+	for i := range numTestFiles {
 		fileName := "file-" + strconv.Itoa(i) + ".txt"
 
 		fileWriter, err := zipWriter.Create(fileName)

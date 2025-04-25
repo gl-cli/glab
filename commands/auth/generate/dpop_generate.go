@@ -169,7 +169,7 @@ func generateDPoPProof(key crypto.PrivateKey, accessToken string) (string, error
 		return "", err
 	}
 	token := &jwt.Token{
-		Header: map[string]interface{}{
+		Header: map[string]any{
 			"typ": "dpop+jwt",
 			"alg": signingMethod.Alg(),
 			"jwk": jwk,

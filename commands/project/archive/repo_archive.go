@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -133,10 +134,5 @@ func (wc CloneWriter) progress() {
 }
 
 func contains(arr []string, str string) bool {
-	for _, a := range arr {
-		if a == str {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(arr, str)
 }

@@ -29,7 +29,7 @@ func Join(list []string, delim string) string {
 		return ""
 	}
 	var buf bytes.Buffer
-	for i := 0; i < len(list)-1; i++ {
+	for i := range len(list) - 1 {
 		buf.WriteString(list[i] + delim)
 	}
 	buf.WriteString(list[len(list)-1])
@@ -77,7 +77,7 @@ func PadRight(str string, length int, pad byte) string {
 		return str
 	}
 	buf := bytes.NewBufferString(str)
-	for i := 0; i < length-slen; i++ {
+	for range length - slen {
 		buf.WriteByte(pad)
 	}
 	return buf.String()
@@ -90,7 +90,7 @@ func PadLeft(str string, length int, pad byte) string {
 		return str
 	}
 	var buf bytes.Buffer
-	for i := 0; i < length-slen; i++ {
+	for range length - slen {
 		buf.WriteByte(pad)
 	}
 	buf.WriteString(str)

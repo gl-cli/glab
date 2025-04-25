@@ -42,7 +42,7 @@ type TablePrinter struct {
 
 type TableCell struct {
 	// Value in the cell
-	Value interface{}
+	Value any
 	// Width is the width of the cell
 	Width int
 	// Wrap when true wraps the contents of the cell when the length exceeds the width
@@ -114,7 +114,7 @@ func (t *TablePrinter) makeRow() {
 	}
 }
 
-func (t *TablePrinter) AddCell(s interface{}) {
+func (t *TablePrinter) AddCell(s any) {
 	t.makeRow()
 	rowI := len(t.Rows) - 1
 	row := t.Rows[rowI]
@@ -130,11 +130,11 @@ func (t *TablePrinter) AddCell(s interface{}) {
 }
 
 // AddCellf formats according to a format specifier and adds cell to row
-func (t *TablePrinter) AddCellf(s string, f ...interface{}) {
+func (t *TablePrinter) AddCellf(s string, f ...any) {
 	t.AddCell(fmt.Sprintf(s, f...))
 }
 
-func (t *TablePrinter) AddRow(str ...interface{}) {
+func (t *TablePrinter) AddRow(str ...any) {
 	for _, s := range str {
 		t.AddCell(s)
 	}
@@ -142,8 +142,8 @@ func (t *TablePrinter) AddRow(str ...interface{}) {
 }
 
 func (t *TablePrinter) AddRowFunc(f func(int, int) string) {
-	for ri := 0; ri < t.TotalRows; ri++ {
-		row := make([]interface{}, t.TotalRows)
+	for ri := range t.TotalRows {
+		row := make([]any, t.TotalRows)
 		for ci := range row {
 			row[ci] = f(ri, ci)
 		}
@@ -178,9 +178,9 @@ func (r *TableRow) String() string {
 
 	// allocate a two-dimensional array of cells for each line and add size them
 	cells := make([][]*TableCell, lc)
-	for x := 0; x < lc; x++ {
+	for x := range lc {
 		cells[x] = make([]*TableCell, len(r.Cells))
-		for y := 0; y < len(r.Cells); y++ {
+		for y := range r.Cells {
 			cells[x][y] = &TableCell{Width: r.Cells[y].Width}
 		}
 	}
@@ -252,7 +252,7 @@ func (t *TablePrinter) Render() string {
 // LineWidth returns the max width of all the lines in a cell
 func (c *TableCell) LineWidth() int {
 	width := 0
-	for _, s := range strings.Split(c.String(), "\n") {
+	for s := range strings.SplitSeq(c.String(), "\n") {
 		w := text.StringWidth(s)
 		if w > width {
 			width = w

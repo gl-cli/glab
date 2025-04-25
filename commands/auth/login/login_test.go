@@ -254,7 +254,7 @@ func Test_hostnameValidator(t *testing.T) {
 
 	testCases := []struct {
 		name     string
-		hostname interface{}
+		hostname any
 		expected string
 	}{
 		{

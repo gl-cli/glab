@@ -115,8 +115,8 @@ func TestRotatePersonalAccessTokenAsJSON(t *testing.T) {
 		return
 	}
 
-	var expect interface{}
-	var actual interface{}
+	var expect any
+	var actual any
 
 	if err := json.Unmarshal([]byte(personalAccessTokenResponse), &expect); err != nil {
 		t.Error(err)
@@ -181,8 +181,8 @@ func TestRotateGroupAccessTokenAsJSON(t *testing.T) {
 		return
 	}
 
-	var expect interface{}
-	var actual interface{}
+	var expect any
+	var actual any
 
 	if err := json.Unmarshal([]byte(groupAccessTokenResponse), &expect); err != nil {
 		t.Error(err)
@@ -246,8 +246,8 @@ func TestRotateProjectAccessTokenAsJSON(t *testing.T) {
 		return
 	}
 
-	var expect interface{}
-	var actual interface{}
+	var expect any
+	var actual any
 
 	if err := json.Unmarshal([]byte(projectAccessTokenResponse), &expect); err != nil {
 		t.Error(err)

@@ -80,7 +80,7 @@ type EditorTemplateData struct {
 }
 
 // EXTENDED to augment prompt text and keypress handling
-func (e *GLabEditor) prompt(initialValue string, config *survey.PromptConfig) (interface{}, error) {
+func (e *GLabEditor) prompt(initialValue string, config *survey.PromptConfig) (any, error) {
 	err := e.Render(
 		EditorQuestionTemplate,
 		// EXTENDED to support printing editor in prompt and BlankAllowed
@@ -162,7 +162,7 @@ func (e *GLabEditor) prompt(initialValue string, config *survey.PromptConfig) (i
 }
 
 // EXTENDED This is straight copypasta from survey to get our overridden prompt called.;
-func (e *GLabEditor) Prompt(config *survey.PromptConfig) (interface{}, error) {
+func (e *GLabEditor) Prompt(config *survey.PromptConfig) (any, error) {
 	initialValue := ""
 	if e.Default != "" && e.AppendDefault {
 		initialValue = e.Default

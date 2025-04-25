@@ -79,7 +79,7 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 	}
 
 	cs, restore := test.InitCmdStubber()
-	for i := 0; i < len(expectedRepoUrls); i++ {
+	for range expectedRepoUrls {
 		cs.Stub("")
 	}
 
@@ -105,7 +105,7 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 	assert.Equal(t, "", out.Stderr())
 	assert.Equal(t, len(expectedRepoUrls), cs.Count)
 
-	for i := 0; i < len(expectedRepoUrls); i++ {
+	for i := range expectedRepoUrls {
 		assert.Equal(t, fmt.Sprintf("git clone %s", expectedRepoUrls[i]), strings.Join(cs.Calls[i].Args, " "))
 	}
 }

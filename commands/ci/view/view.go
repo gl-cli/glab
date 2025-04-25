@@ -475,10 +475,7 @@ func (n *navigator) Navigate(jobs []*ViewJob, event *tcell.EventKey) *ViewJob {
 	if n.depth < 0 {
 		n.depth = 0
 	}
-	n.idx = l + n.depth
-	if n.idx > u {
-		n.idx = u
-	}
+	n.idx = min(l+n.depth, u)
 	return jobs[n.idx]
 }
 
@@ -849,7 +846,7 @@ func link(
 		if r, _, _, _ := screen.GetContent(x2+w+p-1, y1+h/2); r == '┛' {
 			screen.SetContent(x2+w+p-1, y1+h/2, '╣', nil, tcell.StyleDefault)
 		}
-		for i := 0; i < p-1; i++ {
+		for i := range p - 1 {
 			screen.SetContent(x2+w+i, y2+h/2, '═', nil, tcell.StyleDefault)
 		}
 		screen.SetContent(x2+w+p-1, y2+h/2, '╝', nil, tcell.StyleDefault)
@@ -859,13 +856,13 @@ func link(
 }
 
 func hline(screen tcell.Screen, x, y, l int) {
-	for i := 0; i < l; i++ {
+	for i := range l {
 		screen.SetContent(x+i, y, '═', nil, tcell.StyleDefault)
 	}
 }
 
 func vline(screen tcell.Screen, x, y, l int) {
-	for i := 0; i < l; i++ {
+	for i := range l {
 		screen.SetContent(x, y+i, '║', nil, tcell.StyleDefault)
 	}
 }

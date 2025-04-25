@@ -13,7 +13,7 @@ const (
 )
 
 // GetFile retrieves a file from repository. Note that file content is Base64 encoded.
-var GetFile = func(client *gitlab.Client, projectID interface{}, path string, ref string) (*gitlab.File, error) {
+var GetFile = func(client *gitlab.Client, projectID any, path string, ref string) (*gitlab.File, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -30,7 +30,7 @@ var GetFile = func(client *gitlab.Client, projectID interface{}, path string, re
 }
 
 // SyncFile syncs (add or update) a file in the repository
-var SyncFile = func(client *gitlab.Client, projectID interface{}, path string, content []byte, ref string) error {
+var SyncFile = func(client *gitlab.Client, projectID any, path string, content []byte, ref string) error {
 	_, resp, err := client.RepositoryFiles.GetFileMetaData(projectID, path, &gitlab.GetFileMetaDataOptions{
 		Ref: gitlab.Ptr(ref),
 	})
@@ -61,7 +61,7 @@ var SyncFile = func(client *gitlab.Client, projectID interface{}, path string, c
 	return err
 }
 
-var CreateFile = func(client *gitlab.Client, projectID interface{}, path string, content []byte, ref string) error {
+var CreateFile = func(client *gitlab.Client, projectID any, path string, content []byte, ref string) error {
 	_, _, err := client.RepositoryFiles.CreateFile(projectID, path, &gitlab.CreateFileOptions{
 		Branch:        gitlab.Ptr(ref),
 		Content:       gitlab.Ptr(string(content)),
@@ -72,7 +72,7 @@ var CreateFile = func(client *gitlab.Client, projectID interface{}, path string,
 	return err
 }
 
-var UpdateFile = func(client *gitlab.Client, projectID interface{}, path string, content []byte, ref string) error {
+var UpdateFile = func(client *gitlab.Client, projectID any, path string, content []byte, ref string) error {
 	_, _, err := client.RepositoryFiles.UpdateFile(projectID, path, &gitlab.UpdateFileOptions{
 		Branch:        gitlab.Ptr(ref),
 		Content:       gitlab.Ptr(string(content)),

@@ -14,7 +14,7 @@ const agentTokenLimit = 2
 
 var AgentNotFoundErr = errors.New("agent not found")
 
-var ListAgents = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListAgentsOptions) ([]*gitlab.Agent, error) {
+var ListAgents = func(client *gitlab.Client, projectID any, opts *gitlab.ListAgentsOptions) ([]*gitlab.Agent, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -27,7 +27,7 @@ var ListAgents = func(client *gitlab.Client, projectID interface{}, opts *gitlab
 	return agents, nil
 }
 
-var GetAgent = func(client *gitlab.Client, projectID interface{}, agentID int) (*gitlab.Agent, error) {
+var GetAgent = func(client *gitlab.Client, projectID any, agentID int) (*gitlab.Agent, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -40,7 +40,7 @@ var GetAgent = func(client *gitlab.Client, projectID interface{}, agentID int) (
 	return agent, nil
 }
 
-var GetAgentByName = func(client *gitlab.Client, projectID interface{}, agentName string) (*gitlab.Agent, error) {
+var GetAgentByName = func(client *gitlab.Client, projectID any, agentName string) (*gitlab.Agent, error) {
 	opts := &gitlab.ListAgentsOptions{
 		Page:    1,
 		PerPage: 100,
@@ -64,7 +64,7 @@ var GetAgentByName = func(client *gitlab.Client, projectID interface{}, agentNam
 	return nil, AgentNotFoundErr
 }
 
-var RegisterAgent = func(client *gitlab.Client, projectID interface{}, agentName string) (*gitlab.Agent, error) {
+var RegisterAgent = func(client *gitlab.Client, projectID any, agentName string) (*gitlab.Agent, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -77,7 +77,7 @@ var RegisterAgent = func(client *gitlab.Client, projectID interface{}, agentName
 	return agent, nil
 }
 
-var CreateAgentToken = func(client *gitlab.Client, projectID interface{}, agentID int, recreateOnLimit bool) (*gitlab.AgentToken, bool /* recreated */, error) {
+var CreateAgentToken = func(client *gitlab.Client, projectID any, agentID int, recreateOnLimit bool) (*gitlab.AgentToken, bool /* recreated */, error) {
 	recreated := false
 
 	if recreateOnLimit {

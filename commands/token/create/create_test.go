@@ -165,8 +165,8 @@ func TestCreateOwnPersonalAccessTokenAsJSON(t *testing.T) {
 		return
 	}
 
-	var expect interface{}
-	var actual interface{}
+	var expect any
+	var actual any
 
 	if err := json.Unmarshal([]byte(personalAccessTokenResponse), &expect); err != nil {
 		t.Error(err)
@@ -202,7 +202,7 @@ func TestCreateOtherPersonalAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP := &httpmock.Mocker{}
 	defer fakeHTTP.Verify(t)
 
-	var user []map[string]interface{}
+	var user []map[string]any
 	if err := json.Unmarshal([]byte(otherUserResponse), &user); err != nil {
 		t.Error(err)
 	}
@@ -219,8 +219,8 @@ func TestCreateOtherPersonalAccessTokenAsJSON(t *testing.T) {
 		return
 	}
 
-	var expect interface{}
-	var actual interface{}
+	var expect any
+	var actual any
 
 	if err := json.Unmarshal([]byte(personalAccessTokenResponse), &expect); err != nil {
 		t.Error(err)
@@ -285,8 +285,8 @@ func TestCreateGroupAccessTokenAsJSON(t *testing.T) {
 		return
 	}
 
-	var expect interface{}
-	var actual interface{}
+	var expect any
+	var actual any
 
 	if err := json.Unmarshal([]byte(groupAccessTokenResponse), &expect); err != nil {
 		t.Error(err)
@@ -350,8 +350,8 @@ func TestCreateProjectAccessTokenAsJSON(t *testing.T) {
 		return
 	}
 
-	var expect interface{}
-	var actual interface{}
+	var expect any
+	var actual any
 
 	if err := json.Unmarshal([]byte(projectAccessTokenResponse), &expect); err != nil {
 		t.Error(err)

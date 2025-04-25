@@ -2,7 +2,7 @@ package api
 
 import gitlab "gitlab.com/gitlab-org/api/client-go"
 
-var CreateRelease = func(client *gitlab.Client, projectID interface{}, opts *gitlab.CreateReleaseOptions) (*gitlab.Release, error) {
+var CreateRelease = func(client *gitlab.Client, projectID any, opts *gitlab.CreateReleaseOptions) (*gitlab.Release, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -15,7 +15,7 @@ var CreateRelease = func(client *gitlab.Client, projectID interface{}, opts *git
 	return release, nil
 }
 
-var GetRelease = func(client *gitlab.Client, projectID interface{}, tag string) (*gitlab.Release, error) {
+var GetRelease = func(client *gitlab.Client, projectID any, tag string) (*gitlab.Release, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -28,7 +28,7 @@ var GetRelease = func(client *gitlab.Client, projectID interface{}, tag string) 
 	return release, nil
 }
 
-var ListReleases = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListReleasesOptions) ([]*gitlab.Release, error) {
+var ListReleases = func(client *gitlab.Client, projectID any, opts *gitlab.ListReleasesOptions) ([]*gitlab.Release, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}

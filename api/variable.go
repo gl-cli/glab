@@ -6,7 +6,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-var CreateProjectVariable = func(client *gitlab.Client, projectID interface{}, opts *gitlab.CreateProjectVariableOptions) (*gitlab.ProjectVariable, error) {
+var CreateProjectVariable = func(client *gitlab.Client, projectID any, opts *gitlab.CreateProjectVariableOptions) (*gitlab.ProjectVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -18,7 +18,7 @@ var CreateProjectVariable = func(client *gitlab.Client, projectID interface{}, o
 	return vars, nil
 }
 
-var ListProjectVariables = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectVariablesOptions) ([]*gitlab.ProjectVariable, error) {
+var ListProjectVariables = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectVariablesOptions) ([]*gitlab.ProjectVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -30,7 +30,7 @@ var ListProjectVariables = func(client *gitlab.Client, projectID interface{}, op
 	return vars, nil
 }
 
-var GetProjectVariable = func(client *gitlab.Client, projectID interface{}, key string, scope string) (*gitlab.ProjectVariable, error) {
+var GetProjectVariable = func(client *gitlab.Client, projectID any, key string, scope string) (*gitlab.ProjectVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -48,7 +48,7 @@ var GetProjectVariable = func(client *gitlab.Client, projectID interface{}, key 
 	return vars, nil
 }
 
-var DeleteProjectVariable = func(client *gitlab.Client, projectID interface{}, key string, scope string) error {
+var DeleteProjectVariable = func(client *gitlab.Client, projectID any, key string, scope string) error {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -66,7 +66,7 @@ var DeleteProjectVariable = func(client *gitlab.Client, projectID interface{}, k
 	return nil
 }
 
-var UpdateProjectVariable = func(client *gitlab.Client, projectID interface{}, key string, opts *gitlab.UpdateProjectVariableOptions) (*gitlab.ProjectVariable, error) {
+var UpdateProjectVariable = func(client *gitlab.Client, projectID any, key string, opts *gitlab.UpdateProjectVariableOptions) (*gitlab.ProjectVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -88,7 +88,7 @@ var UpdateProjectVariable = func(client *gitlab.Client, projectID interface{}, k
 	return vars, nil
 }
 
-var ListGroupVariables = func(client *gitlab.Client, groupID interface{}, opts *gitlab.ListGroupVariablesOptions) ([]*gitlab.GroupVariable, error) {
+var ListGroupVariables = func(client *gitlab.Client, groupID any, opts *gitlab.ListGroupVariablesOptions) ([]*gitlab.GroupVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -100,7 +100,7 @@ var ListGroupVariables = func(client *gitlab.Client, groupID interface{}, opts *
 	return vars, nil
 }
 
-var CreateGroupVariable = func(client *gitlab.Client, groupID interface{}, opts *gitlab.CreateGroupVariableOptions) (*gitlab.GroupVariable, error) {
+var CreateGroupVariable = func(client *gitlab.Client, groupID any, opts *gitlab.CreateGroupVariableOptions) (*gitlab.GroupVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -112,7 +112,7 @@ var CreateGroupVariable = func(client *gitlab.Client, groupID interface{}, opts 
 	return vars, nil
 }
 
-var GetGroupVariable = func(client *gitlab.Client, groupID interface{}, key string, scope string) (*gitlab.GroupVariable, error) {
+var GetGroupVariable = func(client *gitlab.Client, groupID any, key string, scope string) (*gitlab.GroupVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -130,7 +130,7 @@ var GetGroupVariable = func(client *gitlab.Client, groupID interface{}, key stri
 	return vars, nil
 }
 
-var DeleteGroupVariable = func(client *gitlab.Client, groupID interface{}, key string) error {
+var DeleteGroupVariable = func(client *gitlab.Client, groupID any, key string) error {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -143,7 +143,7 @@ var DeleteGroupVariable = func(client *gitlab.Client, groupID interface{}, key s
 	return nil
 }
 
-var UpdateGroupVariable = func(client *gitlab.Client, groupID interface{}, key string, opts *gitlab.UpdateGroupVariableOptions) (*gitlab.GroupVariable, error) {
+var UpdateGroupVariable = func(client *gitlab.Client, groupID any, key string, opts *gitlab.UpdateGroupVariableOptions) (*gitlab.GroupVariable, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}

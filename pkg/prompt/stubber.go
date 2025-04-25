@@ -33,7 +33,7 @@ func InitAskStubber() (*AskStubber, func()) {
 	origAskOne := AskOne
 	as := AskStubber{}
 
-	AskOne = func(p survey.Prompt, response interface{}, opts ...survey.AskOpt) error {
+	AskOne = func(p survey.Prompt, response any, opts ...survey.AskOpt) error {
 		as.AskOnes = append(as.AskOnes, &p)
 		count := as.OneCount
 		as.OneCount += 1
@@ -63,7 +63,7 @@ func InitAskStubber() (*AskStubber, func()) {
 		return nil
 	}
 
-	Ask = func(qs []*survey.Question, response interface{}, opts ...survey.AskOpt) error {
+	Ask = func(qs []*survey.Question, response any, opts ...survey.AskOpt) error {
 		as.Asks = append(as.Asks, qs)
 		count := as.Count
 		as.Count += 1
@@ -107,17 +107,17 @@ func InitAskStubber() (*AskStubber, func()) {
 }
 
 type PromptStub struct {
-	Value   interface{}
+	Value   any
 	Default bool
 }
 
 type QuestionStub struct {
 	Name    string
-	Value   interface{}
+	Value   any
 	Default bool
 }
 
-func (as *AskStubber) StubOne(value interface{}) {
+func (as *AskStubber) StubOne(value any) {
 	as.StubOnes = append(as.StubOnes, &PromptStub{
 		Value: value,
 	})

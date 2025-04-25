@@ -4,7 +4,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-var ListProjectAccessTokens = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectAccessTokensOptions) ([]*gitlab.ProjectAccessToken, error) {
+var ListProjectAccessTokens = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectAccessTokensOptions) ([]*gitlab.ProjectAccessToken, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -29,7 +29,7 @@ var ListProjectAccessTokens = func(client *gitlab.Client, projectID interface{},
 	return tokens, nil
 }
 
-var ListGroupAccessTokens = func(client *gitlab.Client, groupID interface{}, opts *gitlab.ListGroupAccessTokensOptions) ([]*gitlab.GroupAccessToken, error) {
+var ListGroupAccessTokens = func(client *gitlab.Client, groupID any, opts *gitlab.ListGroupAccessTokensOptions) ([]*gitlab.GroupAccessToken, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -79,7 +79,7 @@ var ListPersonalAccessTokens = func(client *gitlab.Client, opts *gitlab.ListPers
 	return tokens, nil
 }
 
-var CreateProjectAccessToken = func(client *gitlab.Client, pid interface{}, opts *gitlab.CreateProjectAccessTokenOptions) (*gitlab.ProjectAccessToken, error) {
+var CreateProjectAccessToken = func(client *gitlab.Client, pid any, opts *gitlab.CreateProjectAccessTokenOptions) (*gitlab.ProjectAccessToken, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -87,7 +87,7 @@ var CreateProjectAccessToken = func(client *gitlab.Client, pid interface{}, opts
 	return token, err
 }
 
-var CreateGroupAccessToken = func(client *gitlab.Client, gid interface{}, opts *gitlab.CreateGroupAccessTokenOptions) (*gitlab.GroupAccessToken, error) {
+var CreateGroupAccessToken = func(client *gitlab.Client, gid any, opts *gitlab.CreateGroupAccessTokenOptions) (*gitlab.GroupAccessToken, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -103,7 +103,7 @@ var CreatePersonalAccessToken = func(client *gitlab.Client, uid int, opts *gitla
 	return token, err
 }
 
-var RevokeProjectAccessToken = func(client *gitlab.Client, pid interface{}, id int) error {
+var RevokeProjectAccessToken = func(client *gitlab.Client, pid any, id int) error {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -111,7 +111,7 @@ var RevokeProjectAccessToken = func(client *gitlab.Client, pid interface{}, id i
 	return err
 }
 
-var RevokeGroupAccessToken = func(client *gitlab.Client, gid interface{}, id int) error {
+var RevokeGroupAccessToken = func(client *gitlab.Client, gid any, id int) error {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -127,7 +127,7 @@ var RevokePersonalAccessToken = func(client *gitlab.Client, id int) error {
 	return err
 }
 
-var RotateProjectAccessToken = func(client *gitlab.Client, pid interface{}, id int, opts *gitlab.RotateProjectAccessTokenOptions) (*gitlab.ProjectAccessToken, error) {
+var RotateProjectAccessToken = func(client *gitlab.Client, pid any, id int, opts *gitlab.RotateProjectAccessTokenOptions) (*gitlab.ProjectAccessToken, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -135,7 +135,7 @@ var RotateProjectAccessToken = func(client *gitlab.Client, pid interface{}, id i
 	return token, err
 }
 
-var RotateGroupAccessToken = func(client *gitlab.Client, gid interface{}, id int, opts *gitlab.RotateGroupAccessTokenOptions) (*gitlab.GroupAccessToken, error) {
+var RotateGroupAccessToken = func(client *gitlab.Client, gid any, id int, opts *gitlab.RotateGroupAccessTokenOptions) (*gitlab.GroupAccessToken, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}

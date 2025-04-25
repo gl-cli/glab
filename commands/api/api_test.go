@@ -532,7 +532,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 	assert.Equal(t, "", stderr.String(), "stderr")
 
 	var requestData struct {
-		Variables map[string]interface{}
+		Variables map[string]any
 	}
 
 	bb, err := io.ReadAll(responses[0].Request.Body)
@@ -655,7 +655,7 @@ func Test_parseFields(t *testing.T) {
 		t.Fatalf("parseFields error: %v", err)
 	}
 
-	expect := map[string]interface{}{
+	expect := map[string]any{
 		"robot":     "Hubot",
 		"destroyer": "false",
 		"helper":    "true",
@@ -685,7 +685,7 @@ func Test_magicFieldValue(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    interface{}
+		want    any
 		wantErr bool
 	}{
 		{

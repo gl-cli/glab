@@ -227,7 +227,7 @@ func Test_getMRForBranchFails(t *testing.T) {
 	baseRepo := glrepo.NewWithHost("foo", "bar", "gitlab.com")
 
 	t.Run("API-call-failed", func(t *testing.T) {
-		api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+		api.ListMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 			return nil, errors.New("API call failed")
 		}
 
@@ -237,7 +237,7 @@ func Test_getMRForBranchFails(t *testing.T) {
 	})
 
 	t.Run("no-return", func(t *testing.T) {
-		api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+		api.ListMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 			return []*gitlab.BasicMergeRequest{}, nil
 		}
 
@@ -247,7 +247,7 @@ func Test_getMRForBranchFails(t *testing.T) {
 	})
 
 	t.Run("owner-no-match", func(t *testing.T) {
-		api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+		api.ListMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 			return []*gitlab.BasicMergeRequest{
 				{
 					IID: 1,
@@ -327,7 +327,7 @@ func Test_getMRForBranch(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			api.ListMRs = func(_ *gitlab.Client, _ interface{}, _ *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+			api.ListMRs = func(_ *gitlab.Client, _ any, _ *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 				return tC.mrs, nil
 			}
 
@@ -343,7 +343,7 @@ func Test_getMRForBranch(t *testing.T) {
 func Test_getMRForBranchPrompt(t *testing.T) {
 	baseRepo := glrepo.NewWithHost("foo", "bar", "gitlab.com")
 
-	api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+	api.ListMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 		return []*gitlab.BasicMergeRequest{
 			{
 				IID: 1,
@@ -408,7 +408,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Run("via-ID", func(t *testing.T) {
 			f := *f
-			api.GetMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				return &gitlab.MergeRequest{
 					BasicMergeRequest: gitlab.BasicMergeRequest{
 						IID:          2,
@@ -443,7 +443,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 				}, nil
 			}
 
-			api.GetMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				return &gitlab.MergeRequest{
 					BasicMergeRequest: gitlab.BasicMergeRequest{
 						IID:          2,
@@ -523,7 +523,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 		t.Run("api.GetMR", func(t *testing.T) {
 			f := *f
 
-			api.GetMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				return nil, errors.New("API call failed")
 			}
 

@@ -2,7 +2,7 @@ package api
 
 import gitlab "gitlab.com/gitlab-org/api/client-go"
 
-var GetCommitStatuses = func(client *gitlab.Client, pid interface{}, sha string) ([]*gitlab.CommitStatus, error) {
+var GetCommitStatuses = func(client *gitlab.Client, pid any, sha string) ([]*gitlab.CommitStatus, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}

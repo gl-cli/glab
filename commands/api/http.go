@@ -21,7 +21,7 @@ const (
 
 var strArrayRegex = regexp.MustCompile(stringArrayRegexPattern)
 
-func httpRequest(client *api.Client, config config.Config, hostname string, method string, p string, params interface{}, headers []string) (*http.Response, error) {
+func httpRequest(client *api.Client, config config.Config, hostname string, method string, p string, params any, headers []string) (*http.Response, error) {
 	var err error
 	isGraphQL := p == "graphql"
 	if client.Lab().BaseURL().Host != hostname || isGraphQL {
@@ -45,7 +45,7 @@ func httpRequest(client *api.Client, config config.Config, hostname string, meth
 	var body io.Reader
 	var bodyIsJSON bool
 	switch pp := params.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		if strings.EqualFold(method, http.MethodGet) || strings.EqualFold(method, http.MethodDelete) {
 			baseURLStr, err = parseQuery(baseURLStr, pp)
 			if err != nil {
@@ -88,9 +88,9 @@ func httpRequest(client *api.Client, config config.Config, hostname string, meth
 	return client.HTTPClient().Do(req)
 }
 
-func groupGraphQLVariables(params map[string]interface{}) map[string]interface{} {
-	topLevel := make(map[string]interface{})
-	variables := make(map[string]interface{})
+func groupGraphQLVariables(params map[string]any) map[string]any {
+	topLevel := make(map[string]any)
+	variables := make(map[string]any)
 
 	for key, val := range params {
 		switch key {
@@ -107,7 +107,7 @@ func groupGraphQLVariables(params map[string]interface{}) map[string]interface{}
 	return topLevel
 }
 
-func parseQuery(path string, params map[string]interface{}) (string, error) {
+func parseQuery(path string, params map[string]any) (string, error) {
 	if len(params) == 0 {
 		return path, nil
 	}

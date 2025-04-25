@@ -80,7 +80,7 @@ func statusRun(opts *StatusOpts) error {
 			continue
 		}
 		statusInfo[instance] = []string{}
-		addMsg := func(x string, ys ...interface{}) {
+		addMsg := func(x string, ys ...any) {
 			statusInfo[instance] = append(statusInfo[instance], fmt.Sprintf(x, ys...))
 		}
 

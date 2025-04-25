@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -90,7 +90,7 @@ func ListGitLabTemplates(tmplType string) ([]string, error) {
 		}
 		files = append(files, strings.TrimSuffix(file, ".md"))
 	}
-	sort.Slice(files, func(i, j int) bool { return files[i] < files[j] })
+	slices.Sort(files)
 	return files, nil
 }
 
