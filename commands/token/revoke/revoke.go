@@ -104,7 +104,7 @@ func revokeTokenRun(opts *RevokeOptions) error {
 		return err
 	}
 
-	var outputToken interface{}
+	var outputToken any
 	var outputTokenValue string
 
 	if opts.User != "" {

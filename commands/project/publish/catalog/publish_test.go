@@ -115,7 +115,7 @@ func TestPublishCatalog(t *testing.T) {
 
 						assert.JSONEq(t, tc.wantBody, string(body))
 
-						response := httpmock.NewJSONResponse(http.StatusOK, map[string]interface{}{
+						response := httpmock.NewJSONResponse(http.StatusOK, map[string]any{
 							"catalog_url": "https://gitlab.example.com/explore/catalog/my-namespace/my-component-project",
 						})
 
@@ -130,11 +130,11 @@ func TestPublishCatalog(t *testing.T) {
 					func(req *http.Request) (*http.Response, error) {
 						var response httpmock.Responder
 						if tc.isValidTagName {
-							response = httpmock.NewJSONResponse(http.StatusOK, map[string]interface{}{
+							response = httpmock.NewJSONResponse(http.StatusOK, map[string]any{
 								"name": tc.tagName,
 							})
 						} else {
-							response = httpmock.NewJSONResponse(http.StatusNotFound, map[string]interface{}{
+							response = httpmock.NewJSONResponse(http.StatusNotFound, map[string]any{
 								"message": "404 Tag Not Found",
 							})
 						}

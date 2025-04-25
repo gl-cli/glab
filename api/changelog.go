@@ -2,7 +2,7 @@ package api
 
 import gitlab "gitlab.com/gitlab-org/api/client-go"
 
-var GenerateChangelog = func(client *gitlab.Client, projectID interface{}, options *gitlab.GenerateChangelogDataOptions) (*gitlab.ChangelogData, error) {
+var GenerateChangelog = func(client *gitlab.Client, projectID any, options *gitlab.GenerateChangelogDataOptions) (*gitlab.ChangelogData, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}

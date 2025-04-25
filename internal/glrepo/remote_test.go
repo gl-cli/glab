@@ -10,7 +10,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
-func eq(t *testing.T, got interface{}, expected interface{}) {
+func eq(t *testing.T, got any, expected any) {
 	t.Helper()
 	if !reflect.DeepEqual(got, expected) {
 		t.Errorf("expected: %v, got: %v", expected, got)

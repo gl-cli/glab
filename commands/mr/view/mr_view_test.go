@@ -47,7 +47,7 @@ hosts:
 	stubFactory.IO.IsErrTTY = true
 
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.GetMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+	api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -129,7 +129,7 @@ func TestMRView_web_numberArg(t *testing.T) {
 func TestMRView(t *testing.T) {
 	oldListMrNotes := api.ListMRNotes
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.ListMRNotes = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
+	api.ListMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
 		if projectID == "PROJECT_MR_WITH_EMPTY_NOTE" {
 			return []*gitlab.Note{}, nil
 		}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"slices"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/api"
@@ -121,10 +122,8 @@ func FromFullName(nwo string) (Interface, error) {
 	if repo == "" {
 		return nil, fmt.Errorf(`expected the "[HOST/]OWNER/[NAMESPACE/]REPO" format, got %q`, nwo)
 	}
-	for _, p := range parts {
-		if p == "" {
-			return nil, fmt.Errorf(`expected the "[HOST/]OWNER/[NAMESPACE/]REPO" format, got %q`, nwo)
-		}
+	if slices.Contains(parts, "") {
+		return nil, fmt.Errorf(`expected the "[HOST/]OWNER/[NAMESPACE/]REPO" format, got %q`, nwo)
 	}
 	switch len(parts) {
 	case 2: // GROUP/NAMESPACE/REPO or HOST/OWNER/REPO or //HOST/GROUP/NAMESPACE/REPO
@@ -143,11 +142,8 @@ func FromFullName(nwo string) (Interface, error) {
 			cfg, err := config.Init()
 			if err == nil {
 				hosts, _ := cfg.Hosts()
-				for _, host := range hosts {
-					if host == parts[0] {
-						rI = NewWithHost(parts[1], repo, normalizeHostname(parts[0]))
-						break
-					}
+				if slices.Contains(hosts, parts[0]) {
+					rI = NewWithHost(parts[1], repo, normalizeHostname(parts[0]))
 				}
 				if rI != nil {
 					return rI, nil

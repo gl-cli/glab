@@ -23,7 +23,7 @@ var CreateSnippet = func(
 // CreateProjectSnippet inside the project
 var CreateProjectSnippet = func(
 	client *gitlab.Client,
-	projectID interface{},
+	projectID any,
 	opts *gitlab.CreateProjectSnippetOptions,
 ) (*gitlab.Snippet, error) {
 	if client == nil {

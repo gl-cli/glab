@@ -112,7 +112,7 @@ func GraphQLEndpoint(hostname, protocol string) string {
 	return "https://gitlab.com/api/graphql/"
 }
 
-func HostnameValidator(v interface{}) error {
+func HostnameValidator(v any) error {
 	hostname, valid := v.(string)
 	if !valid {
 		return errors.New("hostname is not a string")

@@ -84,7 +84,7 @@ type ProofTokenClaims struct {
 	Nonce string `json:"nonce,omitempty"`
 }
 
-func Reflect(v interface{}) (interface{}, error) {
+func Reflect(v any) (any, error) {
 	switch v := v.(type) {
 	case *ecdsa.PublicKey:
 		return &ecdsaJWK{

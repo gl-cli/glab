@@ -23,7 +23,7 @@ import (
 func TestNewCmdReleaseList(t *testing.T) {
 	oldGetRelease := api.GetRelease
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.GetRelease = func(client *gitlab.Client, projectID interface{}, tag string) (*gitlab.Release, error) {
+	api.GetRelease = func(client *gitlab.Client, projectID any, tag string) (*gitlab.Release, error) {
 		if projectID == "" || projectID == "WRONG_REPO" {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -48,7 +48,7 @@ func TestNewCmdReleaseList(t *testing.T) {
 	}
 
 	oldListReleases := api.ListReleases
-	api.ListReleases = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListReleasesOptions) ([]*gitlab.Release, error) {
+	api.ListReleases = func(client *gitlab.Client, projectID any, opts *gitlab.ListReleasesOptions) ([]*gitlab.Release, error) {
 		if projectID == "" || projectID == "WRONG_REPO" {
 			return nil, errors.New("fatal: wrong Repository")
 		}

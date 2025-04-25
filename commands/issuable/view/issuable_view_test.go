@@ -75,7 +75,7 @@ hosts:
 	stubFactory.IO.IsErrTTY = true
 
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.GetIssue = func(client *gitlab.Client, projectID interface{}, issueID int) (*gitlab.Issue, error) {
+	api.GetIssue = func(client *gitlab.Client, projectID any, issueID int) (*gitlab.Issue, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -171,7 +171,7 @@ func TestNewCmdView(t *testing.T) {
 			testIssuable := testIssuables[tt.issueID]
 			oldListIssueNotes := api.ListIssueNotes
 			timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-			api.ListIssueNotes = func(client *gitlab.Client, projectID interface{}, issueID int, opts *gitlab.ListIssueNotesOptions) ([]*gitlab.Note, error) {
+			api.ListIssueNotes = func(client *gitlab.Client, projectID any, issueID int, opts *gitlab.ListIssueNotesOptions) ([]*gitlab.Note, error) {
 				if projectID == "PROJECT_MR_WITH_EMPTY_NOTE" {
 					return []*gitlab.Note{}, nil
 				}

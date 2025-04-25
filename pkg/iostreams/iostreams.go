@@ -187,7 +187,7 @@ func (s *IOStreams) StopPager() {
 	s.pagerProcess = nil
 }
 
-func (s *IOStreams) StartSpinner(format string, a ...interface{}) {
+func (s *IOStreams) StartSpinner(format string, a ...any) {
 	if s.IsOutputTTY() {
 		s.spinner = spinner.New(spinner.CharSets[9], 100*time.Millisecond, spinner.WithWriter(s.StdErr))
 		if format != "" {
@@ -197,7 +197,7 @@ func (s *IOStreams) StartSpinner(format string, a ...interface{}) {
 	}
 }
 
-func (s *IOStreams) StopSpinner(format string, a ...interface{}) {
+func (s *IOStreams) StopSpinner(format string, a ...any) {
 	if s.spinner != nil {
 		s.spinner.Suffix = ""
 		s.spinner.FinalMSG = fmt.Sprintf(format, a...)

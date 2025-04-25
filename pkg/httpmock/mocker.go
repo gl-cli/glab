@@ -43,7 +43,7 @@ func (r *Mocker) RegisterResponderWithBody(method, path, body string, resp Respo
 }
 
 type Testing interface {
-	Errorf(string, ...interface{})
+	Errorf(string, ...any)
 	Helper()
 }
 

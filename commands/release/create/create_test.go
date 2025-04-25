@@ -406,7 +406,7 @@ func TestReleaseCreateWithPublishToCatalog(t *testing.T) {
 
 						assert.JSONEq(t, tc.wantBody, string(body))
 
-						response := httpmock.NewJSONResponse(http.StatusOK, map[string]interface{}{
+						response := httpmock.NewJSONResponse(http.StatusOK, map[string]any{
 							"catalog_url": "https://gitlab.example.com/explore/catalog/my-namespace/my-component-project",
 						})
 
@@ -648,7 +648,7 @@ func TestReleaseCreate_ExperimentalNotes(t *testing.T) {
 
 				fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/releases",
 					func(req *http.Request) (*http.Response, error) {
-						var reqBody map[string]interface{}
+						var reqBody map[string]any
 						err := json.NewDecoder(req.Body).Decode(&reqBody)
 						require.NoError(t, err)
 

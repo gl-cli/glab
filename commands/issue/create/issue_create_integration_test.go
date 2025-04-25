@@ -38,7 +38,7 @@ func Test_IssueCreate_Integration(t *testing.T) {
 
 	oldCreateIssue := api.CreateIssue
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.CreateIssue = func(client *gitlab.Client, projectID interface{}, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
+	api.CreateIssue = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -111,7 +111,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 
 	oldCreateIssue := api.CreateIssue
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.CreateIssue = func(client *gitlab.Client, projectID interface{}, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
+	api.CreateIssue = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}

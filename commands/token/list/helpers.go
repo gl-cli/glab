@@ -16,17 +16,17 @@ func createTablePrinter(tokens Tokens) *tableprinter.TablePrinter {
 	table.TTYSeparator = " "
 	val := reflect.ValueOf(Token{})
 
-	columnNames := make([]interface{}, 0, val.Type().NumField())
+	columnNames := make([]any, 0, val.Type().NumField())
 	maxColumnWidths := make([]int, val.Type().NumField())
 
-	for i := 0; i < val.Type().NumField(); i++ {
+	for i := range val.Type().NumField() {
 		field := val.Type().Field(i)
 		maxColumnWidths[i] = len(field.Name) + 1
 	}
 
 	for _, token := range tokens {
 		val := reflect.ValueOf(token)
-		for i := 0; i < val.Type().NumField(); i++ {
+		for i := range val.Type().NumField() {
 			field := val.Field(i)
 
 			length := len(field.Interface().(string))
@@ -36,7 +36,7 @@ func createTablePrinter(tokens Tokens) *tableprinter.TablePrinter {
 		}
 	}
 
-	for i := 0; i < val.Type().NumField(); i++ {
+	for i := range val.Type().NumField() {
 		field := val.Type().Field(i)
 		columnNames = append(columnNames, fmt.Sprintf("%-*s", maxColumnWidths[i], toColumnName(field.Name)))
 	}
@@ -44,8 +44,8 @@ func createTablePrinter(tokens Tokens) *tableprinter.TablePrinter {
 
 	for _, row := range tokens {
 		val := reflect.ValueOf(row)
-		values := make([]interface{}, 0, val.Type().NumField())
-		for i := 0; i < val.Type().NumField(); i++ {
+		values := make([]any, 0, val.Type().NumField())
+		for i := range val.Type().NumField() {
 			field := val.Field(i)
 			values = append(values, fmt.Sprintf("%-*s", maxColumnWidths[i], field.Interface()))
 		}

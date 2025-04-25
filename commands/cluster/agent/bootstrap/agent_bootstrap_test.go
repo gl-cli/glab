@@ -890,7 +890,7 @@ type containsBytesMatcher struct {
 	actualB []byte
 }
 
-func (m containsBytesMatcher) Matches(arg interface{}) bool {
+func (m containsBytesMatcher) Matches(arg any) bool {
 	m.actualB = arg.([]byte)
 	return bytes.Contains(m.actualB, m.b)
 }

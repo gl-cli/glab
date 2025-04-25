@@ -113,8 +113,8 @@ func TestRevokePersonalAccessTokenAsJSON(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	var actual map[string]interface{}
-	var expect map[string]interface{}
+	var actual map[string]any
+	var expect map[string]any
 	if err := json.Unmarshal([]byte(personalAccessTokenResponse), &expect); err != nil {
 		t.Error(err)
 	}
@@ -178,8 +178,8 @@ func TestRevokeGroupAccessTokenAsJSON(t *testing.T) {
 		return
 	}
 
-	var expect map[string]interface{}
-	var actual map[string]interface{}
+	var expect map[string]any
+	var actual map[string]any
 
 	if err := json.Unmarshal([]byte(groupAccessTokenResponse), &expect); err != nil {
 		t.Error(err)
@@ -243,8 +243,8 @@ func TestRevokeProjectAccessTokenAsJSON(t *testing.T) {
 		return
 	}
 
-	var expect map[string]interface{}
-	var actual map[string]interface{}
+	var expect map[string]any
+	var actual map[string]any
 
 	if err := json.Unmarshal([]byte(projectAccessTokenResponse), &expect); err != nil {
 		t.Error(err)

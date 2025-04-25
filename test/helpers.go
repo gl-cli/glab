@@ -91,7 +91,7 @@ func createStubbedPrepareCmd(cs *CmdStubber) func(*exec.Cmd) run.Runnable {
 
 type T interface {
 	Helper()
-	Errorf(string, ...interface{})
+	Errorf(string, ...any)
 }
 
 func ExpectLines(t T, output string, lines ...string) {

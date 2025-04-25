@@ -68,7 +68,7 @@ func (opts *ListMilestonesOptions) ListGroupMilestonesOptions() *gitlab.ListGrou
 	return groupOpts
 }
 
-var ListGroupMilestones = func(client *gitlab.Client, groupID interface{}, opts *gitlab.ListGroupMilestonesOptions) ([]*gitlab.GroupMilestone, error) {
+var ListGroupMilestones = func(client *gitlab.Client, groupID any, opts *gitlab.ListGroupMilestonesOptions) ([]*gitlab.GroupMilestone, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -84,7 +84,7 @@ var ListGroupMilestones = func(client *gitlab.Client, groupID interface{}, opts 
 	return milestone, nil
 }
 
-var ListProjectMilestones = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListMilestonesOptions) ([]*gitlab.Milestone, error) {
+var ListProjectMilestones = func(client *gitlab.Client, projectID any, opts *gitlab.ListMilestonesOptions) ([]*gitlab.Milestone, error) {
 	if client == nil {
 		client = apiClient.Lab()
 	}
@@ -100,7 +100,7 @@ var ListProjectMilestones = func(client *gitlab.Client, projectID interface{}, o
 	return milestone, nil
 }
 
-var ProjectMilestoneByTitle = func(client *gitlab.Client, projectID interface{}, name string) (*gitlab.Milestone, error) {
+var ProjectMilestoneByTitle = func(client *gitlab.Client, projectID any, name string) (*gitlab.Milestone, error) {
 	opts := &gitlab.ListMilestonesOptions{Title: gitlab.Ptr(name), IncludeParentMilestones: gitlab.Ptr(true)}
 
 	if client == nil {
@@ -123,7 +123,7 @@ var ProjectMilestoneByTitle = func(client *gitlab.Client, projectID interface{},
 	return milestones[0], nil
 }
 
-var ListAllMilestones = func(client *gitlab.Client, projectID interface{}, opts *ListMilestonesOptions) ([]*Milestone, error) {
+var ListAllMilestones = func(client *gitlab.Client, projectID any, opts *ListMilestonesOptions) ([]*Milestone, error) {
 	project, err := GetProject(client, projectID)
 	if err != nil {
 		return nil, err

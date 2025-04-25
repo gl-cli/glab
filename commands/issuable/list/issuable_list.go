@@ -371,10 +371,7 @@ func listEpicIssues(client *gitlab.Client, opts *ListOptions, projListOpts *gitl
 		maxIssues = api.DefaultListLimit
 	}
 
-	listOpts.PerPage = maxIssues
-	if listOpts.PerPage > api.MaxPerPage {
-		listOpts.PerPage = api.MaxPerPage
-	}
+	listOpts.PerPage = min(maxIssues, api.MaxPerPage)
 
 	for {
 		is, req, err := client.EpicIssues.ListEpicIssues(opts.Group, opts.Epic, &listOpts) //nolint:staticcheck

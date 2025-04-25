@@ -17,44 +17,44 @@ import (
 func Test_groupGraphQLVariables(t *testing.T) {
 	tests := []struct {
 		name string
-		args map[string]interface{}
-		want map[string]interface{}
+		args map[string]any
+		want map[string]any
 	}{
 		{
 			name: "empty",
-			args: map[string]interface{}{},
-			want: map[string]interface{}{},
+			args: map[string]any{},
+			want: map[string]any{},
 		},
 		{
 			name: "query only",
-			args: map[string]interface{}{
+			args: map[string]any{
 				"query": "QUERY",
 			},
-			want: map[string]interface{}{
+			want: map[string]any{
 				"query": "QUERY",
 			},
 		},
 		{
 			name: "variables only",
-			args: map[string]interface{}{
+			args: map[string]any{
 				"name": "gitlab-bot",
 			},
-			want: map[string]interface{}{
-				"variables": map[string]interface{}{
+			want: map[string]any{
+				"variables": map[string]any{
 					"name": "gitlab-bot",
 				},
 			},
 		},
 		{
 			name: "query + variables",
-			args: map[string]interface{}{
+			args: map[string]any{
 				"query": "QUERY",
 				"name":  "gitlab-bot",
 				"power": 9001,
 			},
-			want: map[string]interface{}{
+			want: map[string]any{
 				"query": "QUERY",
-				"variables": map[string]interface{}{
+				"variables": map[string]any{
 					"name":  "gitlab-bot",
 					"power": 9001,
 				},
@@ -62,15 +62,15 @@ func Test_groupGraphQLVariables(t *testing.T) {
 		},
 		{
 			name: "query + operationName + variables",
-			args: map[string]interface{}{
+			args: map[string]any{
 				"query":         "query Q1{} query Q2{}",
 				"operationName": "Q1",
 				"power":         9001,
 			},
-			want: map[string]interface{}{
+			want: map[string]any{
 				"query":         "query Q1{} query Q2{}",
 				"operationName": "Q1",
-				"variables": map[string]interface{}{
+				"variables": map[string]any{
 					"power": 9001,
 				},
 			},
@@ -117,7 +117,7 @@ hosts:
 		host    string
 		method  string
 		p       string
-		params  interface{}
+		params  any
 		headers []string
 	}
 	type expects struct {
@@ -175,7 +175,7 @@ hosts:
 				host:   "gitlab.com",
 				method: http.MethodGet,
 				p:      "projects/gitlab-com%2Fwww-gitlab-com",
-				params: map[string]interface{}{
+				params: map[string]any{
 					"a": "b",
 				},
 				headers: []string{},
@@ -195,7 +195,7 @@ hosts:
 				host:   "gitlab.com",
 				method: http.MethodPost,
 				p:      "graphql",
-				params: map[string]interface{}{
+				params: map[string]any{
 					"a": []byte("b"),
 				},
 				headers: []string{},
@@ -236,7 +236,7 @@ hosts:
 				host:   "gitlab.com",
 				method: http.MethodPost,
 				p:      "projects",
-				params: map[string]interface{}{"scopes": "[api, read_api]"},
+				params: map[string]any{"scopes": "[api, read_api]"},
 				headers: []string{
 					"content-type: application/json",
 					"accept: application/json",
@@ -298,7 +298,7 @@ hosts:
 func Test_addQuery(t *testing.T) {
 	type args struct {
 		path   string
-		params map[string]interface{}
+		params map[string]any
 	}
 	tests := []struct {
 		name string
@@ -309,7 +309,7 @@ func Test_addQuery(t *testing.T) {
 			name: "string",
 			args: args{
 				path:   "",
-				params: map[string]interface{}{"a": "hello"},
+				params: map[string]any{"a": "hello"},
 			},
 			want: "?a=hello",
 		},
@@ -317,7 +317,7 @@ func Test_addQuery(t *testing.T) {
 			name: "append",
 			args: args{
 				path:   "path",
-				params: map[string]interface{}{"a": "b"},
+				params: map[string]any{"a": "b"},
 			},
 			want: "path?a=b",
 		},
@@ -325,7 +325,7 @@ func Test_addQuery(t *testing.T) {
 			name: "append query",
 			args: args{
 				path:   "path?foo=bar",
-				params: map[string]interface{}{"a": "b"},
+				params: map[string]any{"a": "b"},
 			},
 			want: "path?foo=bar&a=b",
 		},
@@ -333,7 +333,7 @@ func Test_addQuery(t *testing.T) {
 			name: "[]byte",
 			args: args{
 				path:   "",
-				params: map[string]interface{}{"a": []byte("hello")},
+				params: map[string]any{"a": []byte("hello")},
 			},
 			want: "?a=hello",
 		},
@@ -341,7 +341,7 @@ func Test_addQuery(t *testing.T) {
 			name: "int",
 			args: args{
 				path:   "",
-				params: map[string]interface{}{"a": 123},
+				params: map[string]any{"a": 123},
 			},
 			want: "?a=123",
 		},
@@ -349,7 +349,7 @@ func Test_addQuery(t *testing.T) {
 			name: "nil",
 			args: args{
 				path:   "",
-				params: map[string]interface{}{"a": nil},
+				params: map[string]any{"a": nil},
 			},
 			want: "?a=",
 		},
@@ -357,7 +357,7 @@ func Test_addQuery(t *testing.T) {
 			name: "bool",
 			args: args{
 				path:   "",
-				params: map[string]interface{}{"a": true, "b": false},
+				params: map[string]any{"a": true, "b": false},
 			},
 			want: "?a=true&b=false",
 		},

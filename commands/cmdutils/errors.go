@@ -43,7 +43,7 @@ func WrapError(err error, log string) *ExitError {
 	return WrapErrorWithCode(err, 1, log)
 }
 
-func CancelError(log ...interface{}) error {
+func CancelError(log ...any) error {
 	if len(log) < 1 {
 		return WrapErrorWithCode(terminal.InterruptErr, 2, "action cancelled")
 	}

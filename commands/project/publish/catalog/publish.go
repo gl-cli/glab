@@ -25,8 +25,8 @@ const (
 )
 
 type publishToCatalogRequest struct {
-	Version  string                 `json:"version"`
-	Metadata map[string]interface{} `json:"metadata"`
+	Version  string         `json:"version"`
+	Metadata map[string]any `json:"metadata"`
 }
 
 type publishToCatalogResponse struct {
@@ -139,8 +139,8 @@ func publishToCatalogRequestBody(version string) (*publishToCatalogRequest, erro
 		return nil, cmdutils.WrapError(err, "failed to fetch components")
 	}
 
-	metadata := make(map[string]interface{})
-	componentsData := make([]map[string]interface{}, 0, len(components))
+	metadata := make(map[string]any)
+	componentsData := make([]map[string]any, 0, len(components))
 
 	for name, path := range components {
 		spec, err := extractSpec(path)
@@ -148,7 +148,7 @@ func publishToCatalogRequestBody(version string) (*publishToCatalogRequest, erro
 			return nil, cmdutils.WrapError(err, "failed to extract spec")
 		}
 
-		componentsData = append(componentsData, map[string]interface{}{
+		componentsData = append(componentsData, map[string]any{
 			"name":           name,
 			"spec":           spec,
 			"component_type": "template",
@@ -246,11 +246,11 @@ func extractComponentName(baseDir string, path string) (string, error) {
 }
 
 type specDef struct {
-	Spec map[string]interface{} `yaml:"spec"`
+	Spec map[string]any `yaml:"spec"`
 }
 
 // extractSpec returns the spec from the component file.
-func extractSpec(componentPath string) (map[string]interface{}, error) {
+func extractSpec(componentPath string) (map[string]any, error) {
 	content, err := os.ReadFile(componentPath)
 	if err != nil {
 		return nil, cmdutils.WrapError(err, "failed to read file")

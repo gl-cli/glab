@@ -234,7 +234,7 @@ func TestStripHostProtocol(t *testing.T) {
 func Test(t *testing.T) {
 	testCases := []struct {
 		name     string
-		hostname interface{}
+		hostname any
 		expected string
 	}{
 		{

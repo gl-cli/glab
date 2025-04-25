@@ -167,7 +167,7 @@ func (f *localFluxWrapper) reconcile() error {
 			return retry.Unrecoverable(err)
 		}
 
-		if bytes.Contains(output, []byte(fmt.Sprintf(`HelmRelease object '%s' not found in "%s" namespace`, f.helmReleaseName, f.helmReleaseNamespace))) {
+		if bytes.Contains(output, fmt.Appendf(nil, `HelmRelease object '%s' not found in "%s" namespace`, f.helmReleaseName, f.helmReleaseNamespace)) {
 			return errors.New(string(output))
 		}
 

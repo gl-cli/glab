@@ -151,7 +151,7 @@ func listRun(opts *ListOpts) error {
 		return err
 	}
 
-	var apiTokens interface{}
+	var apiTokens any
 	var outputTokens Tokens
 	switch {
 	case opts.User != "":

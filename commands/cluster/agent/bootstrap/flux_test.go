@@ -156,7 +156,7 @@ type startsWithMatcher struct {
 	actualS string
 }
 
-func (m startsWithMatcher) Matches(arg interface{}) bool {
+func (m startsWithMatcher) Matches(arg any) bool {
 	m.actualS = arg.(string)
 	return strings.HasPrefix(m.actualS, m.prefix)
 }

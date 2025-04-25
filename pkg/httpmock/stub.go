@@ -81,7 +81,7 @@ func NewStringResponse(status int, body string) Responder {
 	}
 }
 
-func NewJSONResponse(status int, body interface{}) Responder {
+func NewJSONResponse(status int, body any) Responder {
 	return func(req *http.Request) (*http.Response, error) {
 		b, _ := json.Marshal(body)
 		return httpResponse(status, req, bytes.NewBuffer(b)), nil
@@ -107,7 +107,7 @@ func httpResponse(status int, req *http.Request, body io.Reader) *http.Response 
 }
 
 func bodyEqual(expected, actual string) bool {
-	var expectedJSON, actualJSON interface{}
+	var expectedJSON, actualJSON any
 
 	_ = json.Unmarshal([]byte(expected), &expectedJSON)
 	_ = json.Unmarshal([]byte(actual), &actualJSON)

@@ -151,7 +151,7 @@ func optsFromFlags(flags *pflag.FlagSet) *gitlab.ListProjectPipelinesOptions {
 
 func parseRawPipelineIDs(rawPipelineIDs string) ([]int, error) {
 	var inputPipelineIDs []int
-	for _, stringID := range strings.Split(rawPipelineIDs, ",") {
+	for stringID := range strings.SplitSeq(rawPipelineIDs, ",") {
 		id, err := strconv.Atoi(stringID)
 		if err != nil {
 			return nil, err

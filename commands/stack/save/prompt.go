@@ -10,7 +10,7 @@ import (
 // cleanDescription removes comments and trims space for all non-comment lines
 func cleanDescription(message string) string {
 	var sb strings.Builder
-	for _, line := range strings.Split(message, "\n") {
+	for line := range strings.SplitSeq(message, "\n") {
 		if strings.HasPrefix(line, "#") {
 			continue
 		}

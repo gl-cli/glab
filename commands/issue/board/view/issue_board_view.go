@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"runtime/debug"
+	"slices"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -312,10 +313,7 @@ func mapBoardData(
 
 	// build menu entries and map metadata
 	for _, board := range projectGroupIssueBoards {
-		padding := minPadding
-		if maxNameLength-len(board.Name)+3 > minPadding {
-			padding = maxNameLength - len(board.Name) + 3
-		}
+		padding := max(maxNameLength-len(board.Name)+3, minPadding)
 
 		option := formatMenuOption(board.Name, board.Group.Name, padding, true)
 		menuOptions = append(menuOptions, option)
@@ -327,10 +325,7 @@ func mapBoardData(
 	}
 
 	for _, board := range projectIssueBoards {
-		padding := minPadding
-		if maxNameLength-len(board.Name)+3 > minPadding {
-			padding = maxNameLength - len(board.Name) + 3
-		}
+		padding := max(maxNameLength-len(board.Name)+3, minPadding)
 
 		option := formatMenuOption(board.Name, board.Project.Name, padding, false)
 		menuOptions = append(menuOptions, option)
@@ -465,11 +460,8 @@ next:
 		// filter labeled issues into board lists with corresponding labels
 		default:
 			var hasListLabel bool
-			for _, issueLabel := range issue.Labels {
-				if issueLabel == targetList.Label.Name {
-					hasListLabel = true
-					break
-				}
+			if slices.Contains(issue.Labels, targetList.Label.Name) {
+				hasListLabel = true
 			}
 			if !hasListLabel || issue.State == closed {
 				continue next

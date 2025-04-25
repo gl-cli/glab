@@ -21,13 +21,13 @@ func TestNewCmdDelete(t *testing.T) {
 	t.Parallel()
 	oldDeleteMR := api.DeleteMR
 
-	api.DeleteIssue = func(client *gitlab.Client, projectID interface{}, issueID int) error {
+	api.DeleteIssue = func(client *gitlab.Client, projectID any, issueID int) error {
 		if projectID == "" || projectID == "NAMESPACE/WRONG_REPO" || projectID == "expected_err" || issueID == 0 {
 			return fmt.Errorf("error expected")
 		}
 		return nil
 	}
-	api.GetIssue = func(client *gitlab.Client, projectID interface{}, issueID int) (*gitlab.Issue, error) {
+	api.GetIssue = func(client *gitlab.Client, projectID any, issueID int) (*gitlab.Issue, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}

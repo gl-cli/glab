@@ -4,7 +4,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 )
 
-func AskQuestionWithInput(response interface{}, name, question, defaultVal string, isRequired bool) error {
+func AskQuestionWithInput(response any, name, question, defaultVal string, isRequired bool) error {
 	prompt := []*survey.Question{
 		{
 			Name: name,
@@ -26,7 +26,7 @@ func AskQuestionWithInput(response interface{}, name, question, defaultVal strin
 	return nil
 }
 
-func MultiSelect(response interface{}, name, question string, options []string, opts ...survey.AskOpt) error {
+func MultiSelect(response any, name, question string, options []string, opts ...survey.AskOpt) error {
 	prompt := []*survey.Question{
 		{
 			Name: name,
@@ -43,7 +43,7 @@ func MultiSelect(response interface{}, name, question string, options []string, 
 	return nil
 }
 
-func AskMultiline(response interface{}, name, question string, defaultVal string) error {
+func AskMultiline(response any, name, question string, defaultVal string) error {
 	prompt := []*survey.Question{
 		{
 			Name: name,
@@ -60,7 +60,7 @@ func AskMultiline(response interface{}, name, question string, defaultVal string
 	return nil
 }
 
-func Select(response interface{}, name string, question string, options []string, opts ...survey.AskOpt) error {
+func Select(response any, name string, question string, options []string, opts ...survey.AskOpt) error {
 	prompt := []*survey.Question{
 		{
 			Name: name,

@@ -37,14 +37,14 @@ hosts:
 	stubFactory.IO.IsErrTTY = true
 	oldDeleteMR := api.DeleteMR
 
-	api.DeleteMR = func(client *gitlab.Client, projectID interface{}, mrID int) error {
+	api.DeleteMR = func(client *gitlab.Client, projectID any, mrID int) error {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" || mrID == 0 {
 			return fmt.Errorf("error expected")
 		}
 		return nil
 	}
 
-	api.GetMR = func(client *gitlab.Client, projectID interface{}, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+	api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -70,7 +70,7 @@ hosts:
 		}, nil
 	}
 
-	api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+	api.ListMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 		return []*gitlab.BasicMergeRequest{}, nil
 	}
 

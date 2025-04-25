@@ -141,7 +141,7 @@ func createTokenRun(opts *CreateOptions) error {
 	if err != nil {
 		return err
 	}
-	var outputToken interface{}
+	var outputToken any
 	var outputTokenValue string
 	expirationDate := gitlab.ISOTime(opts.ExpireAt)
 
