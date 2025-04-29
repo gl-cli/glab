@@ -19,6 +19,7 @@ import (
 type MockWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockWriterMockRecorder
+	isgomock struct{}
 }
 
 // MockWriterMockRecorder is the mock recorder for MockWriter.
@@ -39,18 +40,18 @@ func (m *MockWriter) EXPECT() *MockWriterMockRecorder {
 }
 
 // Write mocks base method.
-func (m *MockWriter) Write(arg0 []byte) (int, error) {
+func (m *MockWriter) Write(p []byte) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Write", arg0)
+	ret := m.ctrl.Call(m, "Write", p)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Write indicates an expected call of Write.
-func (mr *MockWriterMockRecorder) Write(arg0 any) *MockWriterWriteCall {
+func (mr *MockWriterMockRecorder) Write(p any) *MockWriterWriteCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockWriter)(nil).Write), arg0)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockWriter)(nil).Write), p)
 	return &MockWriterWriteCall{Call: call}
 }
 
@@ -60,8 +61,8 @@ type MockWriterWriteCall struct {
 }
 
 // Return rewrite *gomock.Call.Return
-func (c *MockWriterWriteCall) Return(arg0 int, arg1 error) *MockWriterWriteCall {
-	c.Call = c.Call.Return(arg0, arg1)
+func (c *MockWriterWriteCall) Return(n int, err error) *MockWriterWriteCall {
+	c.Call = c.Call.Return(n, err)
 	return c
 }
 

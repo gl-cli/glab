@@ -20,6 +20,7 @@ import (
 type MockAPI struct {
 	ctrl     *gomock.Controller
 	recorder *MockAPIMockRecorder
+	isgomock struct{}
 }
 
 // MockAPIMockRecorder is the mock recorder for MockAPI.
@@ -40,17 +41,17 @@ func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 }
 
 // ConfigureAgent mocks base method.
-func (m *MockAPI) ConfigureAgent(arg0 *gitlab.Agent, arg1 string) error {
+func (m *MockAPI) ConfigureAgent(agent *gitlab.Agent, branch string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfigureAgent", arg0, arg1)
+	ret := m.ctrl.Call(m, "ConfigureAgent", agent, branch)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConfigureAgent indicates an expected call of ConfigureAgent.
-func (mr *MockAPIMockRecorder) ConfigureAgent(arg0, arg1 any) *MockAPIConfigureAgentCall {
+func (mr *MockAPIMockRecorder) ConfigureAgent(agent, branch any) *MockAPIConfigureAgentCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureAgent", reflect.TypeOf((*MockAPI)(nil).ConfigureAgent), arg0, arg1)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureAgent", reflect.TypeOf((*MockAPI)(nil).ConfigureAgent), agent, branch)
 	return &MockAPIConfigureAgentCall{Call: call}
 }
 
@@ -78,17 +79,17 @@ func (c *MockAPIConfigureAgentCall) DoAndReturn(f func(*gitlab.Agent, string) er
 }
 
 // ConfigureEnvironment mocks base method.
-func (m *MockAPI) ConfigureEnvironment(arg0 int, arg1, arg2, arg3 string) error {
+func (m *MockAPI) ConfigureEnvironment(agentID int, name, kubernetesNamespace, fluxResourcePath string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfigureEnvironment", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "ConfigureEnvironment", agentID, name, kubernetesNamespace, fluxResourcePath)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConfigureEnvironment indicates an expected call of ConfigureEnvironment.
-func (mr *MockAPIMockRecorder) ConfigureEnvironment(arg0, arg1, arg2, arg3 any) *MockAPIConfigureEnvironmentCall {
+func (mr *MockAPIMockRecorder) ConfigureEnvironment(agentID, name, kubernetesNamespace, fluxResourcePath any) *MockAPIConfigureEnvironmentCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureEnvironment", reflect.TypeOf((*MockAPI)(nil).ConfigureEnvironment), arg0, arg1, arg2, arg3)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureEnvironment", reflect.TypeOf((*MockAPI)(nil).ConfigureEnvironment), agentID, name, kubernetesNamespace, fluxResourcePath)
 	return &MockAPIConfigureEnvironmentCall{Call: call}
 }
 
@@ -116,18 +117,18 @@ func (c *MockAPIConfigureEnvironmentCall) DoAndReturn(f func(int, string, string
 }
 
 // CreateAgentToken mocks base method.
-func (m *MockAPI) CreateAgentToken(arg0 int) (*gitlab.AgentToken, error) {
+func (m *MockAPI) CreateAgentToken(agentID int) (*gitlab.AgentToken, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAgentToken", arg0)
+	ret := m.ctrl.Call(m, "CreateAgentToken", agentID)
 	ret0, _ := ret[0].(*gitlab.AgentToken)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateAgentToken indicates an expected call of CreateAgentToken.
-func (mr *MockAPIMockRecorder) CreateAgentToken(arg0 any) *MockAPICreateAgentTokenCall {
+func (mr *MockAPIMockRecorder) CreateAgentToken(agentID any) *MockAPICreateAgentTokenCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAgentToken", reflect.TypeOf((*MockAPI)(nil).CreateAgentToken), arg0)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAgentToken", reflect.TypeOf((*MockAPI)(nil).CreateAgentToken), agentID)
 	return &MockAPICreateAgentTokenCall{Call: call}
 }
 
@@ -155,18 +156,18 @@ func (c *MockAPICreateAgentTokenCall) DoAndReturn(f func(int) (*gitlab.AgentToke
 }
 
 // GetAgentByName mocks base method.
-func (m *MockAPI) GetAgentByName(arg0 string) (*gitlab.Agent, error) {
+func (m *MockAPI) GetAgentByName(name string) (*gitlab.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentByName", arg0)
+	ret := m.ctrl.Call(m, "GetAgentByName", name)
 	ret0, _ := ret[0].(*gitlab.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAgentByName indicates an expected call of GetAgentByName.
-func (mr *MockAPIMockRecorder) GetAgentByName(arg0 any) *MockAPIGetAgentByNameCall {
+func (mr *MockAPIMockRecorder) GetAgentByName(name any) *MockAPIGetAgentByNameCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentByName", reflect.TypeOf((*MockAPI)(nil).GetAgentByName), arg0)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentByName", reflect.TypeOf((*MockAPI)(nil).GetAgentByName), name)
 	return &MockAPIGetAgentByNameCall{Call: call}
 }
 
@@ -272,18 +273,18 @@ func (c *MockAPIGetKASAddressCall) DoAndReturn(f func() (string, error)) *MockAP
 }
 
 // RegisterAgent mocks base method.
-func (m *MockAPI) RegisterAgent(arg0 string) (*gitlab.Agent, error) {
+func (m *MockAPI) RegisterAgent(name string) (*gitlab.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterAgent", arg0)
+	ret := m.ctrl.Call(m, "RegisterAgent", name)
 	ret0, _ := ret[0].(*gitlab.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RegisterAgent indicates an expected call of RegisterAgent.
-func (mr *MockAPIMockRecorder) RegisterAgent(arg0 any) *MockAPIRegisterAgentCall {
+func (mr *MockAPIMockRecorder) RegisterAgent(name any) *MockAPIRegisterAgentCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterAgent", reflect.TypeOf((*MockAPI)(nil).RegisterAgent), arg0)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterAgent", reflect.TypeOf((*MockAPI)(nil).RegisterAgent), name)
 	return &MockAPIRegisterAgentCall{Call: call}
 }
 
@@ -311,17 +312,17 @@ func (c *MockAPIRegisterAgentCall) DoAndReturn(f func(string) (*gitlab.Agent, er
 }
 
 // SyncFile mocks base method.
-func (m *MockAPI) SyncFile(arg0 file, arg1 string) error {
+func (m *MockAPI) SyncFile(f file, branch string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncFile", arg0, arg1)
+	ret := m.ctrl.Call(m, "SyncFile", f, branch)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SyncFile indicates an expected call of SyncFile.
-func (mr *MockAPIMockRecorder) SyncFile(arg0, arg1 any) *MockAPISyncFileCall {
+func (mr *MockAPIMockRecorder) SyncFile(f, branch any) *MockAPISyncFileCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncFile", reflect.TypeOf((*MockAPI)(nil).SyncFile), arg0, arg1)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncFile", reflect.TypeOf((*MockAPI)(nil).SyncFile), f, branch)
 	return &MockAPISyncFileCall{Call: call}
 }
 
@@ -352,6 +353,7 @@ func (c *MockAPISyncFileCall) DoAndReturn(f func(file, string) error) *MockAPISy
 type MockFluxWrapper struct {
 	ctrl     *gomock.Controller
 	recorder *MockFluxWrapperMockRecorder
+	isgomock struct{}
 }
 
 // MockFluxWrapperMockRecorder is the mock recorder for MockFluxWrapper.
@@ -372,18 +374,18 @@ func (m *MockFluxWrapper) EXPECT() *MockFluxWrapperMockRecorder {
 }
 
 // createHelmReleaseManifest mocks base method.
-func (m *MockFluxWrapper) createHelmReleaseManifest(arg0 string) (file, error) {
+func (m *MockFluxWrapper) createHelmReleaseManifest(kasAddress string) (file, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "createHelmReleaseManifest", arg0)
+	ret := m.ctrl.Call(m, "createHelmReleaseManifest", kasAddress)
 	ret0, _ := ret[0].(file)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // createHelmReleaseManifest indicates an expected call of createHelmReleaseManifest.
-func (mr *MockFluxWrapperMockRecorder) createHelmReleaseManifest(arg0 any) *MockFluxWrappercreateHelmReleaseManifestCall {
+func (mr *MockFluxWrapperMockRecorder) createHelmReleaseManifest(kasAddress any) *MockFluxWrappercreateHelmReleaseManifestCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createHelmReleaseManifest", reflect.TypeOf((*MockFluxWrapper)(nil).createHelmReleaseManifest), arg0)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createHelmReleaseManifest", reflect.TypeOf((*MockFluxWrapper)(nil).createHelmReleaseManifest), kasAddress)
 	return &MockFluxWrappercreateHelmReleaseManifestCall{Call: call}
 }
 
@@ -491,6 +493,7 @@ func (c *MockFluxWrapperreconcileCall) DoAndReturn(f func() error) *MockFluxWrap
 type MockKubectlWrapper struct {
 	ctrl     *gomock.Controller
 	recorder *MockKubectlWrapperMockRecorder
+	isgomock struct{}
 }
 
 // MockKubectlWrapperMockRecorder is the mock recorder for MockKubectlWrapper.
@@ -511,17 +514,17 @@ func (m *MockKubectlWrapper) EXPECT() *MockKubectlWrapperMockRecorder {
 }
 
 // createAgentTokenSecret mocks base method.
-func (m *MockKubectlWrapper) createAgentTokenSecret(arg0 int, arg1 string) error {
+func (m *MockKubectlWrapper) createAgentTokenSecret(tokenID int, token string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "createAgentTokenSecret", arg0, arg1)
+	ret := m.ctrl.Call(m, "createAgentTokenSecret", tokenID, token)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // createAgentTokenSecret indicates an expected call of createAgentTokenSecret.
-func (mr *MockKubectlWrapperMockRecorder) createAgentTokenSecret(arg0, arg1 any) *MockKubectlWrappercreateAgentTokenSecretCall {
+func (mr *MockKubectlWrapperMockRecorder) createAgentTokenSecret(tokenID, token any) *MockKubectlWrappercreateAgentTokenSecretCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createAgentTokenSecret", reflect.TypeOf((*MockKubectlWrapper)(nil).createAgentTokenSecret), arg0, arg1)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createAgentTokenSecret", reflect.TypeOf((*MockKubectlWrapper)(nil).createAgentTokenSecret), tokenID, token)
 	return &MockKubectlWrappercreateAgentTokenSecretCall{Call: call}
 }
 
@@ -552,6 +555,7 @@ func (c *MockKubectlWrappercreateAgentTokenSecretCall) DoAndReturn(f func(int, s
 type MockCmd struct {
 	ctrl     *gomock.Controller
 	recorder *MockCmdMockRecorder
+	isgomock struct{}
 }
 
 // MockCmdMockRecorder is the mock recorder for MockCmd.
@@ -572,10 +576,10 @@ func (m *MockCmd) EXPECT() *MockCmdMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockCmd) Run(arg0 string, arg1 ...string) error {
+func (m *MockCmd) Run(name string, arg ...string) error {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0}
-	for _, a := range arg1 {
+	varargs := []any{name}
+	for _, a := range arg {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Run", varargs...)
@@ -584,9 +588,9 @@ func (m *MockCmd) Run(arg0 string, arg1 ...string) error {
 }
 
 // Run indicates an expected call of Run.
-func (mr *MockCmdMockRecorder) Run(arg0 any, arg1 ...any) *MockCmdRunCall {
+func (mr *MockCmdMockRecorder) Run(name any, arg ...any) *MockCmdRunCall {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0}, arg1...)
+	varargs := append([]any{name}, arg...)
 	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockCmd)(nil).Run), varargs...)
 	return &MockCmdRunCall{Call: call}
 }
@@ -615,10 +619,10 @@ func (c *MockCmdRunCall) DoAndReturn(f func(string, ...string) error) *MockCmdRu
 }
 
 // RunWithOutput mocks base method.
-func (m *MockCmd) RunWithOutput(arg0 string, arg1 ...string) ([]byte, error) {
+func (m *MockCmd) RunWithOutput(name string, arg ...string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0}
-	for _, a := range arg1 {
+	varargs := []any{name}
+	for _, a := range arg {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "RunWithOutput", varargs...)
@@ -628,9 +632,9 @@ func (m *MockCmd) RunWithOutput(arg0 string, arg1 ...string) ([]byte, error) {
 }
 
 // RunWithOutput indicates an expected call of RunWithOutput.
-func (mr *MockCmdMockRecorder) RunWithOutput(arg0 any, arg1 ...any) *MockCmdRunWithOutputCall {
+func (mr *MockCmdMockRecorder) RunWithOutput(name any, arg ...any) *MockCmdRunWithOutputCall {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0}, arg1...)
+	varargs := append([]any{name}, arg...)
 	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunWithOutput", reflect.TypeOf((*MockCmd)(nil).RunWithOutput), varargs...)
 	return &MockCmdRunWithOutputCall{Call: call}
 }
