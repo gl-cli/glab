@@ -19,6 +19,7 @@ import (
 type MockGitRunner struct {
 	ctrl     *gomock.Controller
 	recorder *MockGitRunnerMockRecorder
+	isgomock struct{}
 }
 
 // MockGitRunnerMockRecorder is the mock recorder for MockGitRunner.
@@ -39,10 +40,10 @@ func (m *MockGitRunner) EXPECT() *MockGitRunnerMockRecorder {
 }
 
 // Git mocks base method.
-func (m *MockGitRunner) Git(arg0 ...string) (string, error) {
+func (m *MockGitRunner) Git(args ...string) (string, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{}
-	for _, a := range arg0 {
+	for _, a := range args {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Git", varargs...)
@@ -52,9 +53,9 @@ func (m *MockGitRunner) Git(arg0 ...string) (string, error) {
 }
 
 // Git indicates an expected call of Git.
-func (mr *MockGitRunnerMockRecorder) Git(arg0 ...any) *MockGitRunnerGitCall {
+func (mr *MockGitRunnerMockRecorder) Git(args ...any) *MockGitRunnerGitCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Git", reflect.TypeOf((*MockGitRunner)(nil).Git), arg0...)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Git", reflect.TypeOf((*MockGitRunner)(nil).Git), args...)
 	return &MockGitRunnerGitCall{Call: call}
 }
 
