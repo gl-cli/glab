@@ -41,7 +41,7 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 		Use:   "list",
 		Short: `Get list of repositories.`,
 		Example: heredoc.Doc(`
-			- glab repo list
+			$ glab repo list
 		`),
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"ls"},
