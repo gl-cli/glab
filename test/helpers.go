@@ -119,14 +119,16 @@ func ClearEnvironmentVariables(t *testing.T) {
 func GetHostOrSkip(t testing.TB) string {
 	t.Helper()
 	glTestHost := os.Getenv("GITLAB_TEST_HOST")
-	if glTestHost == "" || os.Getenv("GITLAB_TOKEN") == "" {
+	if glTestHost == "" || os.Getenv("GITLAB_TOKEN_TEST") == "" {
 		// since token requires `api` privileges we only run integration tests in the canonical project
-		if os.Getenv("CI") == "true" && os.Getenv("CI_PROJECT_NAMESPACE") == "gitlab-org/cli" {
-			t.Log("Expected GITLAB_TEST_HOST and GITLAB_TOKEN to be set in CI. Marking as failed.")
+		ciNamespace := os.Getenv("CI_PROJECT_NAMESPACE")
+		if os.Getenv("CI") == "true" && (ciNamespace == "gitlab-org/cli" || ciNamespace == "gitlab-org/security/cli") {
+			t.Log("Expected GITLAB_TEST_HOST and GITLAB_TOKEN_TEST to be set in CI. Marking as failed.")
 			t.Fail()
 		}
-		t.Skip("Set GITLAB_TEST_HOST and GITLAB_TOKEN to run this integration test")
+		t.Skip("Set GITLAB_TEST_HOST and GITLAB_TOKEN_TEST to run this integration test")
 	}
+	t.Setenv("GITLAB_TOKEN", os.Getenv("GITLAB_TOKEN_TEST"))
 	return glTestHost
 }
 

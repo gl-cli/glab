@@ -23,8 +23,6 @@ import (
 func TestNewCmdUpdate_Integration(t *testing.T) {
 	glTestHost := test.GetHostOrSkip(t)
 
-	t.Parallel()
-
 	oldUpdateIssue := api.UpdateIssue
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
 	testIssue := &gitlab.Issue{
