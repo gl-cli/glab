@@ -72,6 +72,14 @@ func TestSaveNewStack(t *testing.T) {
 		},
 
 		{
+			desc:     "adding files with no argument",
+			args:     []string{""},
+			files:    []string{"testfile", "randomfile"},
+			message:  "this is a commit message",
+			expected: "• cool-test-feature: Saved with message: \"this is a commit message\".\n",
+		},
+
+		{
 			desc:          "omitting a message",
 			args:          []string{"."},
 			files:         []string{"testfile"},
