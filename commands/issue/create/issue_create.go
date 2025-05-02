@@ -458,7 +458,7 @@ func generateIssueWebURL(opts *CreateOpts) (string, error) {
 
 	if len(opts.Labels) > 0 {
 		// this uses the slash commands to add labels to the description
-		// See https://docs.gitlab.com/ee/user/project/quick_actions.html
+		// See https://docs.gitlab.com/user/project/quick_actions/
 		// See also https://gitlab.com/gitlab-org/gitlab-foss/-/issues/19731#note_32550046
 		description += "\n/label"
 		for _, label := range opts.Labels {

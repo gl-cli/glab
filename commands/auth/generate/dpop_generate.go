@@ -196,7 +196,7 @@ func getSigningMethod(key crypto.PrivateKey) (jwt.SigningMethod, error) {
 				// Minimum should be 2048 as per https://www.rfc-editor.org/rfc/rfc7518.html#section-3.3
 				return nil, fmt.Errorf("RSA key size must be greater than 2048 bits")
 			} else if key.N.BitLen() > 8192 {
-				// Maximum should be 8192 as per https://docs.gitlab.com/ee/user/ssh.html#rsa-ssh-keys
+				// Maximum should be 8192 as per https://docs.gitlab.com/user/ssh/#rsa-ssh-keys
 				return nil, fmt.Errorf("RSA key size must be less than 8192 bits")
 			}
 			signingMethod = jwt.SigningMethodRS512

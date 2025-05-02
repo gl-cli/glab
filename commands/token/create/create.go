@@ -130,7 +130,7 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOptions) error) *co
 	cmd.Flags().StringVarP(&opts.Description, "description", "", "description", "Sets the token's description.")
 	cmd.Flags().DurationVarP(&opts.Duration, "duration", "D", time.Duration(30*24*time.Hour), "Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h.")
 	cmd.Flags().VarP(&opts.ExpireAt, "expires-at", "E", "Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used.")
-	cmd.Flags().StringSliceVarP(&opts.Scopes, "scope", "S", []string{"read_repository"}, "Scopes for the token. For a list, see https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#personal-access-token-scopes.")
+	cmd.Flags().StringSliceVarP(&opts.Scopes, "scope", "S", []string{"read_repository"}, "Scopes for the token. For a list, see https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes.")
 	cmd.Flags().VarP(&opts.AccessLevel, "access-level", "A", "Access level of the token: one of 'guest', 'reporter', 'developer', 'maintainer', 'owner'.")
 	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as 'text' for the token value, 'json' for the actual API token structure.")
 	return cmd

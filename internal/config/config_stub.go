@@ -129,7 +129,7 @@ func rootConfig() *yaml.Node {
 										Value: "gitlab.com",
 									},
 									{
-										HeadComment: "# Your GitLab access token. To get one, read https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html",
+										HeadComment: "# Your GitLab access token. To get one, read https://docs.gitlab.com/user/profile/personal_access_tokens/",
 										Kind:        yaml.ScalarNode,
 										Value:       "token",
 									},

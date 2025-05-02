@@ -2,7 +2,7 @@
 
 ## Developer Certificate of Origin + License
 
-Contributions to this repository are subject to the [Developer Certificate of Origin](https://docs.gitlab.com/ee/legal/developer_certificate_of_origin.html#developer-certificate-of-origin-version-11).
+Contributions to this repository are subject to the [Developer Certificate of Origin](https://docs.gitlab.com/legal/developer_certificate_of_origin/#developer-certificate-of-origin-version-11).
 
 All Documentation content that resides under the [docs/ directory](/docs) of this
 repository is licensed under Creative Commons:
@@ -81,7 +81,7 @@ Integration tests use the `_Integration` test suffix and use the `_integration_t
 `GITLAB_TEST_HOST` is set to `https://gitlab.com` in CI.
 
 `GITLAB_TOKEN` must be a
-[personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) and requires the `api` scope.
+[personal access token](https://docs.gitlab.com/user/profile/personal_access_tokens/) and requires the `api` scope.
 To ensure the `glab duo` feature is functioning correctly, the token's user must have a GitLab Duo seat.
 
 ### Proposing Features
@@ -104,7 +104,7 @@ expected behavior as a result:
 
 - `create` - Used when creating a singular object. For example, `glab mr create`
   creates a new merge request.
-- `list` - Used by commands that output more than one object at a time. For example, 
+- `list` - Used by commands that output more than one object at a time. For example,
   `glab ci list` returns a list of all running pipelines.
 - `get` - Used by commands that output a singular object at a time. For example,
   `glab ci get --pipeline-id 1` returns the pipeline with the specified ID.

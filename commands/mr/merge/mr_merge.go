@@ -197,7 +197,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 				var resp *gitlab.Response
 				mr, resp, err = api.MergeMR(apiClient, repo.FullName(), mrIID, mergeOpts)
 				if err != nil {
-					// https://docs.gitlab.com/ee/api/merge_requests.html#accept-mr
+					// https://docs.gitlab.com/api/merge_requests/#merge-a-merge-request
 					// `406` is the documented status code we will receive if the
 					// branch cannot be merged, this will catch situations where
 					// there are actually conflicts in the branch instead of just

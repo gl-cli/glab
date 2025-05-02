@@ -165,7 +165,7 @@ Prerequisites:
 
 - You've created an OAuth application at the user, group, or instance level, and you
   have its application ID. For instructions, see how to configure GitLab
-  [as an OAuth 2.0 authentication identity provider](https://docs.gitlab.com/ee/integration/oauth_provider.html)
+  [as an OAuth 2.0 authentication identity provider](https://docs.gitlab.com/integration/oauth_provider/)
   in the GitLab documentation.
 - Your OAuth application is configured with these parameters:
   - **Redirect URI** is `http://localhost:7171/auth/redirect`.
@@ -217,7 +217,7 @@ GITLAB_HOST=$CI_SERVER_URL glab release list -R $CI_PROJECT_PATH
 ```
 
 Endpoints allowing the use of the CI job token are listed in the
-[GitLab documentation](https://docs.gitlab.com/ee/ci/jobs/ci_job_token.html#job-token-feature-access).
+[GitLab documentation](https://docs.gitlab.com/ci/jobs/ci_job_token/#job-token-access).
 
 ## Configuration
 

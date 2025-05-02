@@ -8,7 +8,7 @@ import (
 )
 
 // Describe namespace kinds which is either group or user
-// See docs: https://docs.gitlab.com/ee/api/namespaces.html
+// See docs: https://docs.gitlab.com/api/namespaces/
 const (
 	NamespaceKindUser  = "user"
 	NamespaceKindGroup = "group"
