@@ -33,7 +33,7 @@ const (
 
 // LoadGitLabTemplate finds and loads the GitLab template from the working git directory
 // Follows the format officially supported by GitLab
-// https://docs.gitlab.com/ee/user/project/description_templates.html#setting-a-default-template-for-issues-and-merge-requests.
+// https://docs.gitlab.com/user/project/description_templates/#set-a-default-template-for-merge-requests-and-issues.
 //
 // TODO: load from remote repository if repo is overridden by -R flag
 func LoadGitLabTemplate(tmplType, tmplName string) (string, error) {

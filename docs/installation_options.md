@@ -203,7 +203,7 @@ docker pull gitlab/glab
 
 To use `glab` in a CI/CD pipeline, you must set the `entrypoint` of the image to
 the `glab` executable itself. For more information, see the GitLab documentation
-for [Override the entrypoint of an image](https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#override-the-entrypoint-of-an-image). An example `.gitlab-ci.yml`:
+for [Override the entrypoint of an image](https://docs.gitlab.com/ci/docker/using_docker_images/#override-the-entrypoint-of-an-image). An example `.gitlab-ci.yml`:
 
 Example `.gitlab-ci.yml`:
 

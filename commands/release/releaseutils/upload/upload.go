@@ -153,7 +153,7 @@ func aliasFilePathToDirectAssetPath(asset *ReleaseAsset) (bool /* aliased */, er
 }
 
 // CreateReleaseAssetFromProjectFile creates a ReleaseAsset from a ProjectFile and the metadata from a ReleaseFile.
-// See https://docs.gitlab.com/ee/api/projects.html#upload-a-file
+// See [https://docs.gitlab.com/api/projects/#upload-a-file](https://docs.gitlab.com/api/project_markdown_uploads/)
 func (c *Context) CreateReleaseAssetFromProjectFile(releaseFile *ReleaseFile, projectFile *gitlab.ProjectFile) *ReleaseAsset {
 	baseURL := c.Client.BaseURL()
 	// projectFile.FullPath contains the absolute path of the file within the
@@ -166,7 +166,7 @@ func (c *Context) CreateReleaseAssetFromProjectFile(releaseFile *ReleaseFile, pr
 	//
 	// Thus, we append it to the base URL to get a usable link.
 	//
-	// See for context https://docs.gitlab.com/ee/api/projects.html#upload-a-file
+	// See for context [https://docs.gitlab.com/ee/api/projects.html#upload-a-file](https://docs.gitlab.com/api/project_markdown_uploads/)
 	baseURL.Path = projectFile.FullPath
 
 	linkURL := baseURL.String()

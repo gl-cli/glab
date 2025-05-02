@@ -239,7 +239,7 @@ func resolveNotesFile(opts *CreateOpts) (string, error) {
 }
 
 func resolveNotesFileOrText(opts *CreateOpts) (string, error) {
-	// Rules from: https://docs.gitlab.com/ee/ci/yaml/index.html#releasedescription
+	// Rules from: https://docs.gitlab.com/ci/yaml/#releasedescription
 
 	// Rule 1: A file path can't have spaces
 	if strings.Contains(strings.TrimSpace(opts.ExperimentalNotesTextOrFile), " ") {

@@ -14,7 +14,7 @@ default:
   image: ${GITLAB_DEPENDENCY_PROXY}golang:${GO_VERSION}
   tags:
     # NOTE: largest linux-based hosted runner available in Free tier.
-    # see https://docs.gitlab.com/ee/ci/runners/hosted_runners/linux.html#machine-types-available-for-linux---x86-64
+    # see https://docs.gitlab.com/ci/runners/hosted_runners/linux/#machine-types-available-for-linux---x86-64
     - 'saas-linux-medium-amd64'
 
 stages:
@@ -36,7 +36,7 @@ include:
       golang_version: ${GO_VERSION}
 
 
-# From: https://docs.gitlab.com/ee/ci/caching/#cache-go-dependencies
+# From: https://docs.gitlab.com/ci/caching/#cache-go-dependencies
 .go-cache:
   variables:
     GOPATH: $CI_PROJECT_DIR/.go

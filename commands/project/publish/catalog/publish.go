@@ -50,7 +50,7 @@ func NewCmdPublishCatalog(f *cmdutils.Factory) *cobra.Command {
 		Use:   "catalog <tag-name>",
 		Short: `[EXPERIMENTAL] Publishes CI/CD components to the catalog.`,
 		Long: heredoc.Docf(`[EXPERIMENTAL] Publishes CI/CD components in the project to the CI/CD catalog using the provided tag name.
-    
+
     Requires the feature flag %[1]sci_release_cli_catalog_publish_option%[1]s to be enabled
     for this project in your GitLab instance.
 
@@ -170,7 +170,7 @@ func publishToCatalogRequestBody(version string) (*publishToCatalogRequest, erro
 // fetchTemplates returns a map of component names to their paths.
 // The component name is either the name of the file without the extension in the "templates" directory of the project
 // or the name of the directory containing a "template.yml" file in the "templates" directory.
-// More information: https://docs.gitlab.com/ee/ci/components/index.html#directory-structure
+// More information: https://docs.gitlab.com/ci/components/#directory-structure
 func fetchTemplates(baseDir string) (map[string]string, error) {
 	templates := make(map[string]string)
 

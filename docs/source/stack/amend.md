@@ -19,7 +19,7 @@ Add more changes to an existing stacked diff.
 
 This feature is experimental. It might be broken or removed without any prior notice.
 Read more about what experimental features mean at
-<https://docs.gitlab.com/ee/policy/experiment-beta-support.html>
+<https://docs.gitlab.com/policy/development_stages_support/>
 
 Use experimental features at your own risk.
 

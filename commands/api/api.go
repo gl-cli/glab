@@ -65,8 +65,8 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 		The endpoint argument should either be a path of a GitLab API v4 endpoint, or
 		"graphql" to access the GitLab GraphQL API.
 
-		- [GitLab REST API documentation](https://docs.gitlab.com/ee/api/index.html)
-		- [GitLab GraphQL documentation](https://docs.gitlab.com/ee/api/graphql/)
+		- [GitLab REST API documentation](https://docs.gitlab.com/api/)
+		- [GitLab GraphQL documentation](https://docs.gitlab.com/api/graphql/)
 
 		If the current directory is a Git directory, uses the GitLab authenticated host in the current
 		directory. Otherwise, %[1]sgitlab.com%[1]s will be used.

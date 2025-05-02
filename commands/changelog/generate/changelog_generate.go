@@ -105,7 +105,7 @@ func NewCmdGenerate(f *cmdutils.Factory) *cobra.Command {
 	}
 
 	// The options mimic the ones from the REST API.
-	// https://docs.gitlab.com/ee/api/repositories.html#generate-changelog-data
+	// https://docs.gitlab.com/api/repositories/#generate-changelog-data
 	changelogGenerateCmd.Flags().StringP("version", "v", "", "Version to generate the changelog for. Must follow semantic versioning. Defaults to the version of the local checkout, like using 'git describe'.")
 	changelogGenerateCmd.Flags().StringP("config-file", "", "", "Path of the changelog configuration file in the project's Git repository. Defaults to '.gitlab/changelog_config.yml'.")
 	changelogGenerateCmd.Flags().StringP("date", "", "", "Date and time of the release. Uses ISO 8601 (`2016-03-11T03:45:40Z`) format. Defaults to the current time.")

@@ -173,7 +173,7 @@ loop:
 		skipFirstCheck = false
 		// check import status of Fork
 		// Import status should be one of {none, failed, scheduled, started, finished}
-		// https://docs.gitlab.com/ee/api/project_import_export.html#import-status
+		// https://docs.gitlab.com/api/project_import_export/#import-status
 		switch forkedProject.ImportStatus {
 		case "none": // no import initiated
 			break loop

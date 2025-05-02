@@ -106,7 +106,7 @@ nfpms:
 
     vendor: GitLab
     homepage: https://gitlab.com/gitlab-org/cli
-    # using service-desk email https://docs.gitlab.com/ee/user/project/service_desk.html
+    # using service-desk email https://docs.gitlab.com/user/project/service_desk/
     maintainer: GitLab<contact-project+gitlab-org-cli-34675721-issue-@incoming.gitlab.com>
     description: An open source GitLab CLI tool
     license: MIT
