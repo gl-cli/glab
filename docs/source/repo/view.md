@@ -24,19 +24,19 @@ glab repo view [repository] [flags]
 ## Examples
 
 ```console
-View project information for the current directory.
-Must be a Git repository.
-- glab repo view
+# View project information for the current directory.
+# Must be a Git repository.
+$ glab repo view
 
-View project information of specified name.
-- glab repo view my-project
-- glab repo view user/repo
-- glab repo view group/namespace/repo
+# View project information of specified name.
+# glab repo view my-project
+$ glab repo view user/repo
+$ glab repo view group/namespace/repo
 
-Specify repository by full [Git] URL.
-- glab repo view git@gitlab.com:user/repo.git
-- glab repo view https://gitlab.company.org/user/repo
-- glab repo view https://gitlab.company.org/user/repo.git
+# Specify repository by full [Git] URL.
+$ glab repo view git@gitlab.com:user/repo.git
+$ glab repo view https://gitlab.company.org/user/repo
+$ glab repo view https://gitlab.company.org/user/repo.git
 
 ```
 
