@@ -34,6 +34,9 @@ $ glab ci run -b main --variables-env key1:val1,key2:val2
 $ glab ci run -b main --variables-env key1:val1 --variables-env key2:val2
 $ glab ci run -b main --variables-file MYKEY:file1 --variables KEY2:some_value
 
+// For an example of 'glab ci run -f' with a variables file, see
+// [Run a CI/CD pipeline with variables from a file](https://docs.gitlab.com/editor_extensions/gitlab_cli/#run-a-cicd-pipeline-with-variables-from-a-file)
+// in the GitLab documentation.
 ```
 
 ## Options
@@ -43,7 +46,7 @@ $ glab ci run -b main --variables-file MYKEY:file1 --variables KEY2:some_value
       --variables strings        Pass variables to pipeline in format <key>:<value>.
       --variables-env strings    Pass variables to pipeline in format <key>:<value>.
       --variables-file strings   Pass file contents as a file variable to pipeline in format <key>:<filename>.
-  -f, --variables-from string    JSON file containing variables for pipeline execution.
+  -f, --variables-from string    JSON file with variables for pipeline execution. Expects array of hashes, each with at least 'key' and 'value'.
   -w, --web                      Open pipeline in a browser. Uses default browser, or browser specified in BROWSER environment variable.
 ```
 
