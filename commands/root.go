@@ -19,6 +19,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/help"
 	incidentCmd "gitlab.com/gitlab-org/cli/commands/incident"
 	issueCmd "gitlab.com/gitlab-org/cli/commands/issue"
+	iterationCmd "gitlab.com/gitlab-org/cli/commands/iteration"
 	jobCmd "gitlab.com/gitlab-org/cli/commands/job"
 	labelCmd "gitlab.com/gitlab-org/cli/commands/label"
 	mrCmd "gitlab.com/gitlab-org/cli/commands/mr"
@@ -126,6 +127,7 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 	rootCmd.AddCommand(changelogCmd.NewCmdChangelog(f))
 	rootCmd.AddCommand(clusterCmd.NewCmdCluster(f))
 	rootCmd.AddCommand(issueCmd.NewCmdIssue(f))
+	rootCmd.AddCommand(iterationCmd.NewCmdIteration(f))
 	rootCmd.AddCommand(incidentCmd.NewCmdIncident(f))
 	rootCmd.AddCommand(jobCmd.NewCmdJob(f))
 	rootCmd.AddCommand(labelCmd.NewCmdLabel(f))
