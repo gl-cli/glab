@@ -16,6 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/auth"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/text"
@@ -97,10 +98,11 @@ func reorderFunc(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostr
 		return fmt.Errorf("no updates needed")
 	}
 
-	_, err = authWithGitlab(f, opts)
+	client, err := auth.GetAuthenticatedClient(f)
 	if err != nil {
 		return fmt.Errorf("error authorizing with GitLab: %v", err)
 	}
+	opts.LabClient = client
 
 	err = updateMRs(f, updatedStack, stack)
 	if err != nil {
@@ -220,26 +222,4 @@ func updateMRs(f *cmdutils.Factory, newStack git.Stack, oldStack git.Stack) erro
 	}
 
 	return nil
-}
-
-func authWithGitlab(f *cmdutils.Factory, opts *Options) (*gitlab.Client, error) {
-	glConfig, err := f.Config()
-	if err != nil {
-		return nil, err
-	}
-
-	instances, err := glConfig.Hosts()
-	if len(instances) == 0 || err != nil {
-		return nil, fmt.Errorf(
-			"no GitLab instances have been authenticated with glab. Run `%s` to authenticate",
-			f.IO.Color().Bold("glab auth login"),
-		)
-	}
-
-	opts.LabClient, err = f.HttpClient()
-	if err != nil {
-		return nil, fmt.Errorf("error using API client: %v", err)
-	}
-
-	return opts.LabClient, nil
 }
