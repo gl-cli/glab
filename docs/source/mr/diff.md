@@ -20,13 +20,13 @@ glab mr diff [<id> | <branch>] [flags]
 ## Examples
 
 ```console
-- glab mr diff 123
-- glab mr diff branch
+$ glab mr diff 123
+$ glab mr diff branch
 
 # Get merge request from current branch
-- glab mr diff
+$ glab mr diff
 
-- glab mr diff 123 --color=never
+$ glab mr diff 123 --color=never
 
 ```
 

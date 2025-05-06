@@ -18,16 +18,16 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"del"},
 		Example: heredoc.Doc(`
-			- glab mr delete 123
+			$ glab mr delete 123
 
-			Delete multiple merge requests by ID and branch name
-			- glab mr delete 123 branch-name 789
+			# Delete multiple merge requests by ID and branch name
+			$ glab mr delete 123 branch-name 789
 
-			Delete merge requests !1, !2, !3, !4, !5
-			- glab mr delete 1,2,branch-related-to-mr-3,4,5
+			# Delete merge requests !1, !2, !3, !4, !5
+			$ glab mr delete 1,2,branch-related-to-mr-3,4,5
 
-			- glab mr del 123
-			- glab mr delete branch
+			$ glab mr del 123
+			$ glab mr delete branch
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO.Color()
