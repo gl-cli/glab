@@ -90,7 +90,11 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 
 			fetchRefSpec := fmt.Sprintf("%s:%s", mrRef, mrCheckoutCfg.branch)
 			if err := git.RunCmd([]string{"fetch", mrProject.SSHURLToRepo, fetchRefSpec}); err != nil {
-				return err
+				// the remote may have diverged from local after git operations
+				// try fetching without updating the branch ref before giving up
+				if err := git.RunCmd([]string{"fetch", mrProject.SSHURLToRepo, mrRef}); err != nil {
+					return err
+				}
 			}
 
 			// .remote is needed for `git pull` to work
