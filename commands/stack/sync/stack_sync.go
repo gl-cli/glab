@@ -16,6 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/auth"
 	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -89,10 +90,11 @@ func NewCmdSyncStack(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 }
 
 func stackSync(f *cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options, gr git.GitRunner) error {
-	client, err := authWithGitlab(f, opts)
+	client, err := auth.GetAuthenticatedClient(f)
 	if err != nil {
 		return fmt.Errorf("error authorizing with GitLab: %v", err)
 	}
+	opts.LabClient = client
 
 	iostream.StopSpinner("")
 
@@ -346,25 +348,6 @@ func removeOldMrs(ref *git.StackRef, mr *gitlab.MergeRequest, stack *git.Stack, 
 		fmt.Println(progressString(progress))
 	}
 	return nil
-}
-
-func authWithGitlab(f *cmdutils.Factory, opts *Options) (*gitlab.Client, error) {
-	glConfig, err := f.Config()
-	if err != nil {
-		return nil, err
-	}
-
-	instances, err := glConfig.Hosts()
-	if len(instances) == 0 || err != nil {
-		return nil, fmt.Errorf("no GitLab instances have been authenticated with glab. Run `%s` to authenticate.", f.IO.Color().Bold("glab auth login"))
-	}
-
-	opts.LabClient, err = f.HttpClient()
-	if err != nil {
-		return nil, fmt.Errorf("error using API client: %v", err)
-	}
-
-	return opts.LabClient, nil
 }
 
 func errorString(lines ...string) string {
