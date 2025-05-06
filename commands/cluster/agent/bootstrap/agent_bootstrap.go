@@ -78,16 +78,17 @@ This command consists of multiple idempotent steps:
 1. Register the agent with the project.
 2. Configure the agent.
 3. Configure an environment with dashboard for the agent.
-4. Create a token for the agent.
+4. Configure an environment with dashboard for FluxCD (if --create-flux-environment).
+5. Create a token for the agent.
    - If the agent has reached the maximum amount of tokens,
      the one that has not been used the longest is revoked
      and a new one is created.
    - If the agent has not reached the maximum amount of tokens,
      a new one is created.
-5. Push the Kubernetes Secret that contains the token to the cluster.
-6. Create Flux HelmRepository and HelmRelease resource.
-7. Commit and Push the created Flux Helm resources to the manifest path.
-8. Trigger Flux reconciliation of GitLab Agent HelmRelease.
+6. Push the Kubernetes Secret that contains the token to the cluster.
+7. Create Flux HelmRepository and HelmRelease resources.
+8. Commit and Push the created Flux Helm resources to the manifest path.
+9. Trigger Flux reconciliation of GitLab Agent HelmRelease (unless --no-reconcile).
 `,
 		Example: heredoc.Doc(`
 			# Bootstrap "my-agent" to root of Git project in CWD and trigger reconciliation
@@ -105,8 +106,14 @@ This command consists of multiple idempotent steps:
 			# Bootstrap "my-agent" without configuring an environment
 			$ glab cluster agent bootstrap my-agent --create-environment=false
 
-			# Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
-			$ glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
+			Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
+			- glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
+
+			Bootstrap "my-agent" without configuring a FluxCD environment
+			- glab cluster agent bootstrap my-agent --create-flux-environment=false
+
+			Bootstrap "my-agent" and configure a FluxCD environment with custom name and Kubernetes namespace
+			- glab cluster agent bootstrap my-agent --flux-environment-name production-flux --flux-environment-namespace flux-system
 
 			# Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a local file
 			$ glab cluster agent bootstrap my-agent --helm-release-values values.yaml
@@ -217,6 +224,11 @@ This command consists of multiple idempotent steps:
 				return err
 			}
 
+			createFluxEnvironment, err := cmd.Flags().GetBool("create-flux-environment")
+			if err != nil {
+				return err
+			}
+
 			var environmentCfg *environmentConfiguration
 			if createEnvironment {
 				environmentCfg = &environmentConfiguration{
@@ -250,24 +262,60 @@ This command consists of multiple idempotent steps:
 				}
 			}
 
+			var fluxEnvironmentCfg *environmentConfiguration
+			if createFluxEnvironment {
+				fluxEnvironmentCfg = &environmentConfiguration{
+					name:                fmt.Sprintf("%s/%s", fluxSourceNamespace, fluxSourceName),
+					kubernetesNamespace: fluxSourceNamespace,
+					fluxResourcePath:    "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system",
+				}
+
+				if cmd.Flags().Changed("flux-environment-name") {
+					environmentName, err := cmd.Flags().GetString("flux-environment-name")
+					if err != nil {
+						return err
+					}
+					fluxEnvironmentCfg.name = environmentName
+				}
+
+				if cmd.Flags().Changed("flux-environment-namespace") {
+					environmentNamespace, err := cmd.Flags().GetString("flux-environment-namespace")
+					if err != nil {
+						return err
+					}
+					fluxEnvironmentCfg.kubernetesNamespace = environmentNamespace
+				}
+
+				if cmd.Flags().Changed("flux-environment-flux-resource-path") {
+					environmentFluxResourcePath, err := cmd.Flags().GetString("flux-environment-flux-resource-path")
+					if err != nil {
+						return err
+					}
+					fluxEnvironmentCfg.fluxResourcePath = environmentFluxResourcePath
+				}
+			}
+
 			c := cf(stdout, stderr, os.Environ())
 
+			fluxWrapper := fwf(
+				c, fluxBinaryName, manifestPath,
+				helmRepositoryName, helmRepositoryNamespace, helmRepositoryFilepath,
+				helmReleaseName, helmReleaseNamespace, helmReleaseFilepath, helmReleaseTargetNamespace,
+				helmReleaseValues, helmReleaseValuesFrom,
+				fluxSourceType, fluxSourceNamespace, fluxSourceName,
+			)
+
 			return (&bootstrapCmd{
-				api:            api,
-				stdout:         stdout,
-				stderr:         stderr,
-				agentName:      args[0],
-				manifestBranch: manifestBranch,
-				kubectl:        kwf(c, kubectlBinaryName, helmReleaseTargetNamespace, gitlabAgentTokenSecretName),
-				flux: fwf(
-					c, fluxBinaryName, manifestPath,
-					helmRepositoryName, helmRepositoryNamespace, helmRepositoryFilepath,
-					helmReleaseName, helmReleaseNamespace, helmReleaseFilepath, helmReleaseTargetNamespace,
-					helmReleaseValues, helmReleaseValuesFrom,
-					fluxSourceType, fluxSourceNamespace, fluxSourceName,
-				),
-				noReconcile:    noReconcile,
-				environmentCfg: environmentCfg,
+				api:                 api,
+				stdout:              stdout,
+				stderr:              stderr,
+				agentName:           args[0],
+				manifestBranch:      manifestBranch,
+				kubectl:             kwf(c, kubectlBinaryName, helmReleaseTargetNamespace, gitlabAgentTokenSecretName),
+				flux:                fluxWrapper,
+				noReconcile:         noReconcile,
+				agentEnvironmentCfg: environmentCfg,
+				fluxEnvironmentCfg:  fluxEnvironmentCfg,
 			}).run()
 		},
 	}
@@ -298,19 +346,25 @@ This command consists of multiple idempotent steps:
 	agentBootstrapCmd.Flags().String("environment-namespace", "<helm-release-namespace>", "Kubernetes namespace of the Environment for the GitLab Agent.")
 	agentBootstrapCmd.Flags().String("environment-flux-resource-path", "helm.toolkit.fluxcd.io/v2beta1/namespaces/<helm-release-namespace>/helmreleases/<helm-release-name>", "Flux Resource Path of the Environment for the GitLab Agent.")
 
+	agentBootstrapCmd.Flags().Bool("create-flux-environment", true, "Create an Environment for FluxCD. This only affects the environment creation, not the use of Flux itself which is always required for the bootstrap process.")
+	agentBootstrapCmd.Flags().String("flux-environment-name", "<flux-source-namespace>/<flux-source-name>", "Name of the Environment for FluxCD.")
+	agentBootstrapCmd.Flags().String("flux-environment-namespace", "<flux-source-namespace>", "Kubernetes namespace of the Environment for FluxCD.")
+	agentBootstrapCmd.Flags().String("flux-environment-flux-resource-path", "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system", "Flux Resource Path of the Environment for FluxCD.")
+
 	return agentBootstrapCmd
 }
 
 type bootstrapCmd struct {
-	api            API
-	stdout         io.Writer
-	stderr         io.Writer
-	agentName      string
-	manifestBranch string
-	kubectl        KubectlWrapper
-	flux           FluxWrapper
-	noReconcile    bool
-	environmentCfg *environmentConfiguration
+	api                 API
+	stdout              io.Writer
+	stderr              io.Writer
+	agentName           string
+	manifestBranch      string
+	kubectl             KubectlWrapper
+	flux                FluxWrapper
+	noReconcile         bool
+	agentEnvironmentCfg *environmentConfiguration
+	fluxEnvironmentCfg  *environmentConfiguration
 }
 
 type file struct {
@@ -345,9 +399,8 @@ func (c *bootstrapCmd) run() error {
 
 	// 3. Configure Environment for Agent
 	fmt.Fprintf(c.stderr, "Configuring Environment with Dashboard for Agent ... ")
-
-	if c.environmentCfg != nil {
-		err = c.configureEnvironment(agent)
+	if c.agentEnvironmentCfg != nil {
+		err = c.configureEnvironment(agent, c.agentEnvironmentCfg)
 		if err != nil {
 			fmt.Fprintf(c.stderr, "[FAILED]\n")
 			return err
@@ -357,25 +410,38 @@ func (c *bootstrapCmd) run() error {
 		fmt.Fprintf(c.stderr, "[SKIPPED]\n")
 	}
 
-	// 4. Create a token for the registered agent
+	// 4. Configure Environment for FluxCD
+	fmt.Fprintf(c.stderr, "Configuring Environment with Dashboard for FluxCD ... ")
+	if c.fluxEnvironmentCfg != nil {
+		err = c.configureEnvironment(agent, c.fluxEnvironmentCfg)
+		if err != nil {
+			fmt.Fprintf(c.stderr, "[FAILED]\n")
+			return err
+		}
+		fmt.Fprintf(c.stderr, "[OK]\n")
+	} else {
+		fmt.Fprintf(c.stderr, "[SKIPPED]\n")
+	}
+
+	// 5. Create a token for the registered agent
 	fmt.Fprintf(c.stderr, "Creating Agent Token ... ")
-	token, err := c.createAgentToken(agent)
+	agentToken, err := c.createAgentToken(agent)
 	if err != nil {
 		fmt.Fprintf(c.stderr, "[FAILED]\n")
 		return err
 	}
 	fmt.Fprintf(c.stderr, "[OK]\n")
 
-	// 5. Push token in Kubernetes secret to cluster
+	// 6. Push token in Kubernetes secret to cluster
 	fmt.Fprintf(c.stderr, "Creating Kubernetes Secret with Agent Token ... ")
-	err = c.createAgentTokenKubernetesSecret(token)
+	err = c.createAgentTokenKubernetesSecret(agentToken)
 	if err != nil {
 		fmt.Fprintf(c.stderr, "[FAILED]\n")
 		return err
 	}
 	fmt.Fprintf(c.stderr, "[OK]\n")
 
-	// 6. Create Flux HelmRepository and HelmRelease resource.
+	// 7. Create Flux Helm Resources
 	fmt.Fprintf(c.stderr, "Creating Flux Helm Resources ... ")
 	helmResourceFiles, err := c.createFluxHelmResources()
 	if err != nil {
@@ -384,7 +450,7 @@ func (c *bootstrapCmd) run() error {
 	}
 	fmt.Fprintf(c.stderr, "[OK]\n")
 
-	// 7. Commit and Push the created Flux Helm resources to the manifest path.
+	// 8. Sync Flux Helm Resources
 	fmt.Fprintf(c.stderr, "Syncing Flux Helm Resources ... ")
 	err = c.syncFluxHelmResourceFiles(helmResourceFiles)
 	if err != nil {
@@ -393,7 +459,7 @@ func (c *bootstrapCmd) run() error {
 	}
 	fmt.Fprintf(c.stderr, "[OK]\n")
 
-	// 6. Trigger Flux reconciliation of GitLab Agent HelmRelease.
+	// 9. Flux Reconcile
 	fmt.Fprintf(c.stderr, "Reconciling Flux Helm Resources ... ")
 	if !c.noReconcile {
 		fmt.Fprintln(c.stderr, "Output from flux command:")
@@ -429,8 +495,8 @@ func (c *bootstrapCmd) configureAgent(agent *gitlab.Agent) error {
 	return c.api.ConfigureAgent(agent, c.manifestBranch)
 }
 
-func (c *bootstrapCmd) configureEnvironment(agent *gitlab.Agent) error {
-	return c.api.ConfigureEnvironment(agent.ID, c.environmentCfg.name, c.environmentCfg.kubernetesNamespace, c.environmentCfg.fluxResourcePath)
+func (c *bootstrapCmd) configureEnvironment(agent *gitlab.Agent, cfg *environmentConfiguration) error {
+	return c.api.ConfigureEnvironment(agent.ID, cfg.name, cfg.kubernetesNamespace, cfg.fluxResourcePath)
 }
 
 func (c *bootstrapCmd) createAgentToken(agent *gitlab.Agent) (*gitlab.AgentToken, error) {

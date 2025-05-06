@@ -26,16 +26,17 @@ This command consists of multiple idempotent steps:
 1. Register the agent with the project.
 2. Configure the agent.
 3. Configure an environment with dashboard for the agent.
-4. Create a token for the agent.
+4. Configure an environment with dashboard for FluxCD (if --create-flux-environment).
+5. Create a token for the agent.
    - If the agent has reached the maximum amount of tokens,
      the one that has not been used the longest is revoked
      and a new one is created.
    - If the agent has not reached the maximum amount of tokens,
      a new one is created.
-5. Push the Kubernetes Secret that contains the token to the cluster.
-6. Create Flux HelmRepository and HelmRelease resource.
-7. Commit and Push the created Flux Helm resources to the manifest path.
-8. Trigger Flux reconciliation of GitLab Agent HelmRelease.
+6. Push the Kubernetes Secret that contains the token to the cluster.
+7. Create Flux HelmRepository and HelmRelease resources.
+8. Commit and Push the created Flux Helm resources to the manifest path.
+9. Trigger Flux reconciliation of GitLab Agent HelmRelease (unless --no-reconcile).
 
 ```plaintext
 glab cluster agent bootstrap agent-name [flags]
@@ -65,8 +66,14 @@ $ glab cluster agent bootstrap my-agent --manifest-path manifests/ --no-reconcil
 # Bootstrap "my-agent" without configuring an environment
 $ glab cluster agent bootstrap my-agent --create-environment=false
 
-# Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
-$ glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
+Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
+- glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
+
+Bootstrap "my-agent" without configuring a FluxCD environment
+- glab cluster agent bootstrap my-agent --create-flux-environment=false
+
+Bootstrap "my-agent" and configure a FluxCD environment with custom name and Kubernetes namespace
+- glab cluster agent bootstrap my-agent --flux-environment-name production-flux --flux-environment-namespace flux-system
 
 # Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a local file
 $ glab cluster agent bootstrap my-agent --helm-release-values values.yaml
@@ -79,26 +86,30 @@ $ glab cluster agent bootstrap my-agent --helm-release-values-from ConfigMap/age
 ## Options
 
 ```plaintext
-      --create-environment                      Create an Environment for the GitLab Agent. (default true)
-      --environment-flux-resource-path string   Flux Resource Path of the Environment for the GitLab Agent. (default "helm.toolkit.fluxcd.io/v2beta1/namespaces/<helm-release-namespace>/helmreleases/<helm-release-name>")
-      --environment-name string                 Name of the Environment for the GitLab Agent. (default "<helm-release-namespace>/<helm-release-name>")
-      --environment-namespace string            Kubernetes namespace of the Environment for the GitLab Agent. (default "<helm-release-namespace>")
-      --flux-source-name string                 Flux source name. (default "flux-system")
-      --flux-source-namespace string            Flux source namespace. (default "flux-system")
-      --flux-source-type string                 Source type of the flux-system, e.g. git, oci, helm, ... (default "git")
-      --gitlab-agent-token-secret-name string   Name of the Secret where the token for the GitLab Agent is stored. The helm-release-target-namespace is implied for the namespace of the Secret. (default "gitlab-agent-token")
-      --helm-release-filepath string            Filepath within the GitLab Agent project to commit the Flux HelmRelease to. (default "gitlab-agent-helm-release.yaml")
-      --helm-release-name string                Name of the Flux HelmRelease manifest. (default "gitlab-agent")
-      --helm-release-namespace string           Namespace of the Flux HelmRelease manifest. (default "flux-system")
-      --helm-release-target-namespace string    Namespace of the GitLab Agent deployment. (default "gitlab-agent")
-      --helm-release-values strings             Local path to values.yaml files
-      --helm-release-values-from strings        Kubernetes object reference that contains the values.yaml data key in the format '<kind>/<name>', where kind must be one of: (Secret,ConfigMap)
-      --helm-repository-filepath string         Filepath within the GitLab Agent project to commit the Flux HelmRepository to. (default "gitlab-helm-repository.yaml")
-      --helm-repository-name string             Name of the Flux HelmRepository manifest. (default "gitlab")
-      --helm-repository-namespace string        Namespace of the Flux HelmRepository manifest. (default "flux-system")
-  -b, --manifest-branch string                  Branch to commit the Flux Manifests to. (default to the project default branch)
-  -p, --manifest-path string                    Location of directory in Git repository for storing the GitLab Agent for Kubernetes Helm resources.
-      --no-reconcile                            Do not trigger Flux reconciliation for GitLab Agent for Kubernetes Flux resource.
+      --create-environment                           Create an Environment for the GitLab Agent. (default true)
+      --create-flux-environment                      Create an Environment for FluxCD. This only affects the environment creation, not the use of Flux itself which is always required for the bootstrap process. (default true)
+      --environment-flux-resource-path string        Flux Resource Path of the Environment for the GitLab Agent. (default "helm.toolkit.fluxcd.io/v2beta1/namespaces/<helm-release-namespace>/helmreleases/<helm-release-name>")
+      --environment-name string                      Name of the Environment for the GitLab Agent. (default "<helm-release-namespace>/<helm-release-name>")
+      --environment-namespace string                 Kubernetes namespace of the Environment for the GitLab Agent. (default "<helm-release-namespace>")
+      --flux-environment-flux-resource-path string   Flux Resource Path of the Environment for FluxCD. (default "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system")
+      --flux-environment-name string                 Name of the Environment for FluxCD. (default "<flux-source-namespace>/<flux-source-name>")
+      --flux-environment-namespace string            Kubernetes namespace of the Environment for FluxCD. (default "<flux-source-namespace>")
+      --flux-source-name string                      Flux source name. (default "flux-system")
+      --flux-source-namespace string                 Flux source namespace. (default "flux-system")
+      --flux-source-type string                      Source type of the flux-system, e.g. git, oci, helm, ... (default "git")
+      --gitlab-agent-token-secret-name string        Name of the Secret where the token for the GitLab Agent is stored. The helm-release-target-namespace is implied for the namespace of the Secret. (default "gitlab-agent-token")
+      --helm-release-filepath string                 Filepath within the GitLab Agent project to commit the Flux HelmRelease to. (default "gitlab-agent-helm-release.yaml")
+      --helm-release-name string                     Name of the Flux HelmRelease manifest. (default "gitlab-agent")
+      --helm-release-namespace string                Namespace of the Flux HelmRelease manifest. (default "flux-system")
+      --helm-release-target-namespace string         Namespace of the GitLab Agent deployment. (default "gitlab-agent")
+      --helm-release-values strings                  Local path to values.yaml files
+      --helm-release-values-from strings             Kubernetes object reference that contains the values.yaml data key in the format '<kind>/<name>', where kind must be one of: (Secret,ConfigMap)
+      --helm-repository-filepath string              Filepath within the GitLab Agent project to commit the Flux HelmRepository to. (default "gitlab-helm-repository.yaml")
+      --helm-repository-name string                  Name of the Flux HelmRepository manifest. (default "gitlab")
+      --helm-repository-namespace string             Namespace of the Flux HelmRepository manifest. (default "flux-system")
+  -b, --manifest-branch string                       Branch to commit the Flux Manifests to. (default to the project default branch)
+  -p, --manifest-path string                         Location of directory in Git repository for storing the GitLab Agent for Kubernetes Helm resources.
+      --no-reconcile                                 Do not trigger Flux reconciliation for GitLab Agent for Kubernetes Flux resource.
 ```
 
 ## Options inherited from parent commands

@@ -46,9 +46,16 @@ func TestAgentBootstrap_HappyPath_AgentNotRegisteredYet(t *testing.T) {
 	agentToken := &gitlab.AgentToken{ID: 42, Token: agentTokenValue}
 	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
 	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
+
+	// Agent environment configuration
 	defaultEnvironmentName := "flux-system/gitlab-agent"
 	defaultKubernetesNamespace := "gitlab-agent"
 	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
+
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
 
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
@@ -61,6 +68,9 @@ func TestAgentBootstrap_HappyPath_AgentNotRegisteredYet(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
@@ -102,9 +112,16 @@ func TestAgentBootstrap_HappyPath_AgentAlreadyRegistered(t *testing.T) {
 	agentToken := &gitlab.AgentToken{ID: 42, Token: agentTokenValue}
 	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
 	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
+
+	// Agent environment configuration
 	defaultEnvironmentName := "flux-system/gitlab-agent"
 	defaultKubernetesNamespace := "gitlab-agent"
 	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
+
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
 
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
@@ -116,6 +133,9 @@ func TestAgentBootstrap_HappyPath_AgentAlreadyRegistered(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
@@ -158,6 +178,11 @@ func TestAgentBootstrap_HappyPath_NoEnvironmentCreation(t *testing.T) {
 	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
 	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
 
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
+
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
 		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
@@ -169,6 +194,9 @@ func TestAgentBootstrap_HappyPath_NoEnvironmentCreation(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		stderr.EXPECT().Write([]byte("[SKIPPED]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
@@ -213,6 +241,11 @@ func TestAgentBootstrap_HappyPath_CustomEnvironmentValues(t *testing.T) {
 	customKubernetesNamespace := "custom-namespace"
 	customFluxResourcePath := "custom-flux-resource-path"
 
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
+
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
 		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
@@ -224,6 +257,9 @@ func TestAgentBootstrap_HappyPath_CustomEnvironmentValues(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, customEnvironmentName, customKubernetesNamespace, customFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
@@ -275,6 +311,11 @@ func TestAgentBootstrap_HappyPath_NoReconcile(t *testing.T) {
 	defaultKubernetesNamespace := "gitlab-agent"
 	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
 
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
+
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
 		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
@@ -286,6 +327,9 @@ func TestAgentBootstrap_HappyPath_NoReconcile(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
@@ -330,6 +374,11 @@ func TestAgentBootstrap_HappyPath_CustomFluxHelmManifestFileNames(t *testing.T) 
 	defaultKubernetesNamespace := "gitlab-agent"
 	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
 
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
+
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
 		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
@@ -341,6 +390,9 @@ func TestAgentBootstrap_HappyPath_CustomFluxHelmManifestFileNames(t *testing.T) 
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
@@ -497,6 +549,11 @@ func TestAgentBootstrap_Error_CreateAgentToken(t *testing.T) {
 	defaultKubernetesNamespace := "gitlab-agent"
 	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
 
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
+
 	actualErr := errors.New("dummy error")
 
 	gomock.InOrder(
@@ -509,6 +566,9 @@ func TestAgentBootstrap_Error_CreateAgentToken(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(nil, actualErr),
@@ -536,6 +596,11 @@ func TestAgentBootstrap_Error_createAgentTokenSecret(t *testing.T) {
 	defaultKubernetesNamespace := "gitlab-agent"
 	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
 
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
+
 	actualErr := errors.New("dummy error")
 
 	gomock.InOrder(
@@ -548,6 +613,9 @@ func TestAgentBootstrap_Error_createAgentTokenSecret(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
@@ -578,6 +646,11 @@ func TestAgentBootstrap_Error_createHelmRepositoryManifest(t *testing.T) {
 	defaultKubernetesNamespace := "gitlab-agent"
 	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
 
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
+
 	actualErr := errors.New("dummy error")
 
 	gomock.InOrder(
@@ -590,6 +663,9 @@ func TestAgentBootstrap_Error_createHelmRepositoryManifest(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
@@ -599,56 +675,6 @@ func TestAgentBootstrap_Error_createHelmRepositoryManifest(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
 		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(file{}, actualErr),
-		stderr.EXPECT().Write([]byte("[FAILED]\n")),
-		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
-	)
-
-	// WHEN
-	err := exec(agentName)
-
-	// THEN
-	assert.ErrorIs(t, err, actualErr)
-}
-
-func TestAgentBootstrap_Error_createHelmReleaseManifest(t *testing.T) {
-	// GIVEN
-	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
-
-	defaultKASAddress := "wss://kas.gitlab.example.com"
-	defaultBranch := "main"
-	agentName := "test-agent-name"
-	agentTokenValue := "glagent-test-token"
-	agent := &gitlab.Agent{ID: 1, Name: agentName}
-	agentToken := &gitlab.AgentToken{ID: 42, Token: agentTokenValue}
-	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
-	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
-	defaultEnvironmentName := "flux-system/gitlab-agent"
-	defaultKubernetesNamespace := "gitlab-agent"
-	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
-
-	actualErr := errors.New("dummy error")
-
-	gomock.InOrder(
-		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
-		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
-		api.EXPECT().GetAgentByName(agentName).Return(agent, nil),
-		stderr.EXPECT().Write([]byte("[OK]\n")),
-		stderr.EXPECT().Write([]byte("Configuring Agent ... ")),
-		api.EXPECT().ConfigureAgent(agent, defaultBranch).Return(nil),
-		stderr.EXPECT().Write([]byte("[OK]\n")),
-		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
-		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
-		stderr.EXPECT().Write([]byte("[OK]\n")),
-		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
-		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
-		stderr.EXPECT().Write([]byte("[OK]\n")),
-		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
-		kubectlWrapper.EXPECT().createAgentTokenSecret(42, agentTokenValue).Return(nil),
-		stderr.EXPECT().Write([]byte("[OK]\n")),
-		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
-		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
-		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
-		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, actualErr),
 		stderr.EXPECT().Write([]byte("[FAILED]\n")),
 		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
 	)
@@ -676,6 +702,11 @@ func TestAgentBootstrap_Error_SyncFile_HelmRepositoryFile(t *testing.T) {
 	defaultKubernetesNamespace := "gitlab-agent"
 	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
 
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
+
 	actualErr := errors.New("dummy error")
 
 	gomock.InOrder(
@@ -688,6 +719,9 @@ func TestAgentBootstrap_Error_SyncFile_HelmRepositoryFile(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
@@ -729,6 +763,11 @@ func TestAgentBootstrap_Error_SyncFile_HelmReleaseFile(t *testing.T) {
 	defaultKubernetesNamespace := "gitlab-agent"
 	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
 
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
+
 	actualErr := errors.New("dummy error")
 
 	gomock.InOrder(
@@ -741,6 +780,9 @@ func TestAgentBootstrap_Error_SyncFile_HelmReleaseFile(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
@@ -783,6 +825,11 @@ func TestAgentBootstrap_Error_reconcile(t *testing.T) {
 	defaultKubernetesNamespace := "gitlab-agent"
 	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
 
+	// Flux environment configuration
+	fluxEnvironmentName := "flux-system/flux-system"
+	fluxKubernetesNamespace := "flux-system"
+	fluxFluxResourcePath := "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system"
+
 	actualErr := errors.New("dummy error")
 
 	gomock.InOrder(
@@ -795,6 +842,9 @@ func TestAgentBootstrap_Error_reconcile(t *testing.T) {
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
 		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, fluxEnvironmentName, fluxKubernetesNamespace, fluxFluxResourcePath).Return(nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
 		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
@@ -814,14 +864,71 @@ func TestAgentBootstrap_Error_reconcile(t *testing.T) {
 		stderr.EXPECT().Write([]byte("Reconciling Flux Helm Resources ... ")),
 		stderr.EXPECT().Write([]byte("Output from flux command:\n")),
 		fluxWrapper.EXPECT().reconcile().Return(actualErr),
-		stderr.EXPECT().Write(ContainsBytes([]byte(reconcileErr.Error()))),
+		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),
 	)
 
 	// WHEN
 	err := exec(agentName)
 
 	// THEN
-	assert.ErrorIs(t, err, reconcileErr)
+	assert.ErrorIs(t, err, actualErr)
+}
+
+func TestAgentBootstrap_HappyPath_WithoutFlux(t *testing.T) {
+	// GIVEN
+	exec, api, _, stderr, kubectlWrapper, fluxWrapper := setupCmdExec(t)
+
+	defaultKASAddress := "wss://kas.gitlab.example.com"
+	defaultBranch := "main"
+	agentName := "test-agent-name"
+	agentTokenValue := "glagent-test-token"
+	agent := &gitlab.Agent{ID: 1, Name: agentName}
+	agentToken := &gitlab.AgentToken{ID: 42, Token: agentTokenValue}
+	helmRepositoryFile := file{path: "gitlab-helm-repository.yaml", content: []byte("any")}
+	helmReleaseFile := file{path: "gitlab-agent-helm-release.yaml", content: []byte("any")}
+	defaultEnvironmentName := "flux-system/gitlab-agent"
+	defaultKubernetesNamespace := "gitlab-agent"
+	defaultFluxResourcePath := "helm.toolkit.fluxcd.io/v2beta1/namespaces/flux-system/helmreleases/gitlab-agent"
+
+	gomock.InOrder(
+		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
+		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
+		api.EXPECT().GetAgentByName(agentName).Return(agent, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Agent ... ")),
+		api.EXPECT().ConfigureAgent(agent, defaultBranch).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for Agent ... ")),
+		api.EXPECT().ConfigureEnvironment(agent.ID, defaultEnvironmentName, defaultKubernetesNamespace, defaultFluxResourcePath).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Configuring Environment with Dashboard for FluxCD ... ")),
+		stderr.EXPECT().Write([]byte("[SKIPPED]\n")),
+		stderr.EXPECT().Write([]byte("Creating Agent Token ... ")),
+		api.EXPECT().CreateAgentToken(agent.ID).Return(agentToken, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Kubernetes Secret with Agent Token ... ")),
+		kubectlWrapper.EXPECT().createAgentTokenSecret(42, agentTokenValue).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Creating Flux Helm Resources ... ")),
+		fluxWrapper.EXPECT().createHelmRepositoryManifest().Return(helmRepositoryFile, nil),
+		api.EXPECT().GetKASAddress().Return(defaultKASAddress, nil),
+		fluxWrapper.EXPECT().createHelmReleaseManifest(defaultKASAddress).Return(helmReleaseFile, nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Syncing Flux Helm Resources ... ")),
+		api.EXPECT().SyncFile(helmRepositoryFile, defaultBranch).Return(nil),
+		api.EXPECT().SyncFile(helmReleaseFile, defaultBranch).Return(nil),
+		stderr.EXPECT().Write([]byte("[OK]\n")),
+		stderr.EXPECT().Write([]byte("Reconciling Flux Helm Resources ... ")),
+		stderr.EXPECT().Write([]byte("Output from flux command:\n")),
+		fluxWrapper.EXPECT().reconcile().Return(nil),
+		stderr.EXPECT().Write([]byte("Successfully bootstrapped the GitLab Agent\n")),
+	)
+
+	// WHEN
+	err := exec(agentName + " --create-flux-environment=false")
+
+	// THEN
+	assert.NoError(t, err)
 }
 
 type execFunc func(cli string) error
@@ -890,7 +997,7 @@ type containsBytesMatcher struct {
 	actualB []byte
 }
 
-func (m containsBytesMatcher) Matches(arg any) bool {
+func (m containsBytesMatcher) Matches(arg interface{}) bool {
 	m.actualB = arg.([]byte)
 	return bytes.Contains(m.actualB, m.b)
 }
