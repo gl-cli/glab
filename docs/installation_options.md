@@ -15,7 +15,7 @@ are maintained by the community.
 - [Windows](#windows)
 - [Linux](#linux)
   - [Homebrew](#homebrew)
-  - [mise](#mise-en-place)
+  - [mise-en-place](#mise-en-place)
   - [ASDF](#asdf)
   - [Snapcraft (currently out of date)](#snapcraft)
   - [Arch Linux](#arch-linux)
