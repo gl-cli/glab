@@ -92,7 +92,6 @@ Add to the `[tools]` section of one of mise's configuration files:
 
 Then run `mise install` to install it.
 
-
 ### ASDF
 
 To install with the [ASDF tool version manager](https://asdf-vm.com/guide/introduction.html), run these commands:
