@@ -15,6 +15,7 @@ are maintained by the community.
 - [Windows](#windows)
 - [Linux](#linux)
   - [Homebrew](#homebrew)
+  - [mise](#mise)
   - [ASDF](#asdf)
   - [Snapcraft (currently out of date)](#snapcraft)
   - [Arch Linux](#arch-linux)
@@ -38,6 +39,9 @@ are maintained by the community.
 - [MacPorts](https://ports.macports.org/port/glab/details/):
   - Install with: `sudo port install glab`
   - Update with: `sudo port selfupdate && sudo port upgrade glab`
+- [mise-en-place](https://mise.jdx.dev/)
+  - Add to the `[tools]` section of one of mise's configuration files: `"ubi:gitlab-org/cli" = { version = "latest", exe = "glab", provider = "gitlab" }`.
+  - Install with `mise install`
 - [ASDF tool version manager](https://asdf-vm.com/guide/introduction.html):
   - Install with: `asdf plugin add glab; asdf install glab latest; asdf global glab latest`
 - Install into `usr/bin` with a shell script:
@@ -59,6 +63,9 @@ are maintained by the community.
 - [scoop](https://scoop.sh)
   - Install with: `scoop install glab`
   - Update with: `scoop update glab`
+- [mise-en-place](https://mise.jdx.dev/)
+  - Add `"ubi:gitlab-org/cli" = { version = "latest", exe = "glab", provider = "gitlab" }` to one of mise's configuration files.
+  - Install with `mise install`
 - [ASDF tool version manager](https://asdf-vm.com/guide/introduction.html):
   - Requires [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install).
   - Install with: `asdf plugin add glab; asdf install glab latest; asdf global glab latest`
@@ -74,6 +81,17 @@ Installing from Homebrew is the officially supported installation method for Lin
 
 - Install with: `brew install glab`
 - Update with: `brew upgrade glab`
+
+### mise-en-place
+
+Add to the `[tools]` section of one of mise's configuration files:
+
+```
+"ubi:gitlab-org/cli" = { version = "latest", exe = "glab", provider = "gitlab" }
+```
+
+Then run `mise install` to install it.
+
 
 ### ASDF
 
