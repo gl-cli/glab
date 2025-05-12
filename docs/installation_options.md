@@ -86,7 +86,7 @@ Installing from Homebrew is the officially supported installation method for Lin
 
 Add to the `[tools]` section of one of mise's configuration files:
 
-```
+```toml
 "ubi:gitlab-org/cli" = { version = "latest", exe = "glab", provider = "gitlab" }
 ```
 
