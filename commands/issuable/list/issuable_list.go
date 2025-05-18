@@ -77,10 +77,10 @@ func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueTy
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Example: heredoc.Doc(fmt.Sprintf(`
-			- glab %[1]s list --all
-			- glab %[1]s ls --all
-			- glab %[1]s list --assignee=@me
-			- glab %[1]s list --milestone release-2.0.0 --opened
+			$ glab %[1]s list --all
+			$ glab %[1]s ls --all
+			$ glab %[1]s list --assignee=@me
+			$ glab %[1]s list --milestone release-2.0.0 --opened
 		`, issueType)),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {

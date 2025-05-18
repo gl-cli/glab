@@ -26,10 +26,10 @@ ls
 ## Examples
 
 ```console
-- glab incident list --all
-- glab incident ls --all
-- glab incident list --assignee=@me
-- glab incident list --milestone release-2.0.0 --opened
+$ glab incident list --all
+$ glab incident ls --all
+$ glab incident list --assignee=@me
+$ glab incident list --milestone release-2.0.0 --opened
 
 ```
 
