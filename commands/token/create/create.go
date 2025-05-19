@@ -59,7 +59,11 @@ func NewCmdCreate(f *cmdutils.Factory, runE func(opts *CreateOptions) error) *co
 		The name of the token must be unique. The token is printed to stdout.
 
 		Administrators can create full-featured personal access tokens for themselves and for other users.
-		Non-administrators can create personal access tokens only for themselves (@me) with the scope 'k8s_proxy'.
+
+		Non-administrators can create personal access tokens only for
+		themselves (@me). These tokens must use the scope 'k8s_proxy'. For more
+		information, see the GitLab documentation for the
+		[User tokens API](https://docs.gitlab.com/api/user_tokens/#create-a-personal-access-token).
 		`),
 		Example: heredoc.Doc(`
 		Create project access token for current project
