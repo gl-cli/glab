@@ -30,6 +30,15 @@ var DownloadSecureFile = func(client *gitlab.Client, projectID any, id int) (io.
 	return reader, nil
 }
 
+var GetSecureFile = func(client *gitlab.Client, projectID any, id int) (*gitlab.SecureFile, error) {
+	if client == nil {
+		client = apiClient.Lab()
+	}
+
+	file, _, err := client.SecureFiles.ShowSecureFileDetails(projectID, id)
+	return file, err
+}
+
 var ListSecureFiles = func(client *gitlab.Client, l *gitlab.ListProjectSecureFilesOptions, projectID any) ([]*gitlab.SecureFile, error) {
 	if client == nil {
 		client = apiClient.Lab()
