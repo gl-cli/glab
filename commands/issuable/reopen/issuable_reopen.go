@@ -43,9 +43,9 @@ func NewCmdReopen(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comm
 		Long:    ``,
 		Aliases: []string{"open"},
 		Example: heredoc.Doc(fmt.Sprintf(`
-			- glab %[1]s reopen 123
-			- glab %[1]s open 123
-			- glab %[1]s reopen https://gitlab.com/NAMESPACE/REPO/-/%s
+			$ glab %[1]s reopen 123
+			$ glab %[1]s open 123
+			$ glab %[1]s reopen https://gitlab.com/NAMESPACE/REPO/-/%s
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
