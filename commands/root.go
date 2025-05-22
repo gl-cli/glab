@@ -70,6 +70,10 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 			GLAB_CHECK_UPDATE: Set to 1 or true to force an update check. By default the cli tool
 			checks for updates once a day.
 
+			GLAB_SEND_TELEMETRY: Set to 0 or false to disable telemetry being sent to your GitLab instance.
+			Can be set in the config with 'glab config set telemetry false'.
+			See https://docs.gitlab.com/administration/settings/usage_statistics/ for more information
+
 			GLAB_CONFIG_DIR: Set to a directory path to override the global configuration location.
 
 			GLAMOUR_STYLE: The environment variable to set your desired Markdown renderer style.
