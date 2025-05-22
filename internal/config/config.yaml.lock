@@ -16,6 +16,10 @@ display_hyperlinks: false
 host: gitlab.com
 # Set to true (1) to disable prompts, or false (0) to enable them.
 no_prompt: false
+# Set to false (0) to disable sending usage data to your GitLab instance or true (1) to enable.
+# See https://docs.gitlab.com/administration/settings/usage_statistics/
+# for more information
+telemetry: true
 # Configuration specific for GitLab instances.
 hosts:
     gitlab.com:

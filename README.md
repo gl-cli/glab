@@ -298,6 +298,7 @@ self-signed certificate authorities by making either of these changes:
 | `GLAB_CONFIG_DIR`  | -            | `~/.config/glab-cli/`                      | Directory where the `glab` global configuration file is located. Can be set in the config with `glab config set remote_alias origin`. |
 | `BROWSER`          | `browser`       | system default                                        | The web browser to use for opening links. Can be set in the configuration with `glab config set browser mybrowser`. |
 | `FORCE_HYPERLINKS` | `display_hyperlinks`             | `false`                                        | Set to `1` to force hyperlinks to be output, even when not outputting to a TTY. |
+| `GLAB_SEND_TELEMETRY` | `telemetry`             | `true`                                        | Set to `0` to prevent command usage data from being sent to your GitLab instance. |
 | `GLAMOUR_STYLE`    | `glamour_style` | `dark`                                       | Environment variable to set your desired Markdown renderer style. Available options are (`dark`, `light`, `notty`) or set a [custom style](https://github.com/charmbracelet/glamour#styles). |
 | `NO_COLOR`         | -            | `true`                                        | Set to any value to avoid printing ANSI escape sequences for color output. |
 | `VISUAL`, `EDITOR` | `editor`        | `nano`                                        | (in order of precedence) The editor tool to use for authoring text. Can be set in the config with `glab config set editor vim`. |
