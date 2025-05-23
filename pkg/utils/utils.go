@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
 	"net/url"
 	"path/filepath"
@@ -220,4 +221,11 @@ func Map[T1, T2 any](elems []T1, fn func(T1) T2) []T2 {
 // Ptr takes any value and returns a pointer to that value
 func Ptr[T any](v T) *T {
 	return &v
+}
+
+func FirstLine(output []byte) string {
+	if i := bytes.IndexAny(output, "\n"); i >= 0 {
+		return string(output)[0:i]
+	}
+	return string(output)
 }
