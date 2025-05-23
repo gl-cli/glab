@@ -89,11 +89,12 @@ func remotesFunc() (glrepo.Remotes, error) {
 	return fn()
 }
 
+// FIXME remove usage of global variables
 func configFunc() (config.Config, error) {
 	if CachedConfig != nil || ConfigError != nil {
 		return CachedConfig, ConfigError
 	}
-	CachedConfig, ConfigError = initConfig()
+	CachedConfig, ConfigError = config.Init()
 	return CachedConfig, ConfigError
 }
 
@@ -145,8 +146,4 @@ func NewFactory() *Factory {
 		},
 		IO: iostreams.Init(),
 	}
-}
-
-func initConfig() (config.Config, error) {
-	return config.Init()
 }
