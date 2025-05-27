@@ -180,12 +180,13 @@ func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 
 }
 
 // NewClientWithCustomCA initializes the global api client with a self-signed certificate
-func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 bool) (*Client, error) {
+func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 bool, isJobToken bool) (*Client, error) {
 	apiClient.host = host
 	apiClient.token = token
 	apiClient.caFile = caFile
 	apiClient.isGraphQL = isGraphQL
 	apiClient.isOauth2 = isOAuth2
+	apiClient.isJobToken = isJobToken
 
 	if apiClient.httpClientOverride == nil {
 		caCert, err := os.ReadFile(apiClient.caFile)
@@ -224,12 +225,13 @@ func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 
 }
 
 // NewClientWithCustomCAClientCert initializes the global api client with a self-signed certificate and client certificates
-func NewClientWithCustomCAClientCert(host, token, caFile string, certFile string, keyFile string, isGraphQL bool, isOAuth2 bool) (*Client, error) {
+func NewClientWithCustomCAClientCert(host, token, caFile string, certFile string, keyFile string, isGraphQL bool, isOAuth2 bool, isJobToken bool) (*Client, error) {
 	apiClient.host = host
 	apiClient.token = token
 	apiClient.caFile = caFile
 	apiClient.isGraphQL = isGraphQL
 	apiClient.isOauth2 = isOAuth2
+	apiClient.isJobToken = isJobToken
 
 	if apiClient.httpClientOverride == nil {
 		caCert, err := os.ReadFile(apiClient.caFile)
@@ -309,14 +311,19 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (clien
 	clientCert, _ := cfg.Get(repoHost, "client_cert")
 	keyFile, _ := cfg.Get(repoHost, "client_key")
 
+	authToken := token
+	isJobToken := false
+	if jobToken != "" {
+		authToken = jobToken
+		isJobToken = true
+	}
+
 	if caCert != "" && clientCert != "" && keyFile != "" {
-		client, err = NewClientWithCustomCAClientCert(apiHost, token, caCert, clientCert, keyFile, isGraphQL, isOAuth2)
+		client, err = NewClientWithCustomCAClientCert(apiHost, authToken, caCert, clientCert, keyFile, isGraphQL, isOAuth2, isJobToken)
 	} else if caCert != "" {
-		client, err = NewClientWithCustomCA(apiHost, token, caCert, isGraphQL, isOAuth2)
-	} else if jobToken != "" {
-		client, err = NewClient(apiHost, jobToken, skipTlsVerify, isGraphQL, isOAuth2, true)
+		client, err = NewClientWithCustomCA(apiHost, authToken, caCert, isGraphQL, isOAuth2, isJobToken)
 	} else {
-		client, err = NewClient(apiHost, token, skipTlsVerify, isGraphQL, isOAuth2, false)
+		client, err = NewClient(apiHost, authToken, skipTlsVerify, isGraphQL, isOAuth2, isJobToken)
 	}
 	return
 }
