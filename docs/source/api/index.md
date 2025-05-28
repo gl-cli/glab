@@ -79,6 +79,8 @@ glab api <endpoint> [flags]
 
 - glab api issues --paginate
 
+$ glab api graphql -f query="query { currentUser { username } }"
+
 $ glab api graphql -f query='
   query {
     project(fullPath: "gitlab-org/gitlab-docs") {

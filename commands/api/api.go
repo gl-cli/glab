@@ -119,6 +119,8 @@ func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command
 
 			- glab api issues --paginate
 
+			$ glab api graphql -f query="query { currentUser { username } }"
+
 			$ glab api graphql -f query='
 			  query {
 			    project(fullPath: "gitlab-org/gitlab-docs") {
