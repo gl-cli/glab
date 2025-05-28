@@ -15,6 +15,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	completionCmd "gitlab.com/gitlab-org/cli/commands/completion"
 	configCmd "gitlab.com/gitlab-org/cli/commands/config"
+	deployKeyCmd "gitlab.com/gitlab-org/cli/commands/deploy-key"
 	duoCmd "gitlab.com/gitlab-org/cli/commands/duo"
 	"gitlab.com/gitlab-org/cli/commands/help"
 	incidentCmd "gitlab.com/gitlab-org/cli/commands/incident"
@@ -149,6 +150,7 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 	rootCmd.AddCommand(duoCmd.NewCmdDuo(f))
 	rootCmd.AddCommand(tokenCmd.NewTokenCmd(f))
 	rootCmd.AddCommand(stackCmd.NewCmdStack(f))
+	rootCmd.AddCommand(deployKeyCmd.NewCmdDeployKey(f))
 
 	rootCmd.Flags().BoolP("version", "v", false, "show glab version information")
 	return rootCmd
