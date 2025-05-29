@@ -16,10 +16,11 @@ import (
 
 func TestGetJobId(t *testing.T) {
 	type httpMock struct {
-		method string
-		path   string
-		status int
-		body   string
+		method         string
+		path           string
+		status         int
+		body           string
+		responseHeader http.Header
 	}
 
 	tests := []struct {
@@ -44,7 +45,7 @@ func TestGetJobId(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?page=1&per_page=20",
 					http.StatusOK,
 					`[{
 							"id": 1122,
@@ -55,6 +56,46 @@ func TestGetJobId(t *testing.T) {
 							"name": "publish",
 							"status": "failed"
 						}]`,
+					http.Header{},
+				},
+			},
+		}, {
+			name:        "when getJobId with name and pipelineId is requested and job is found on page 2",
+			jobName:     "deploy",
+			pipelineId:  123,
+			expectedOut: 1144,
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?page=1&per_page=20",
+					http.StatusOK,
+					`[{
+							"id": 1122,
+							"name": "lint",
+							"status": "failed"
+						}, {
+							"id": 1124,
+							"name": "publish",
+							"status": "failed"
+						}]`,
+					http.Header{
+						"X-Next-Page": []string{"2"}, // is the indicator that there is a next page. And 2 is the id of the next page
+					},
+				},
+				{
+					http.MethodGet,
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?page=2&per_page=20",
+					http.StatusOK,
+					`[{
+							"id": 1133,
+							"name": "test",
+							"status": "failed"
+						}, {
+							"id": 1144,
+							"name": "deploy",
+							"status": "failed"
+						}]`,
+					http.Header{},
 				},
 			},
 		}, {
@@ -66,9 +107,10 @@ func TestGetJobId(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?page=1&per_page=20",
 					http.StatusForbidden,
 					`{}`,
+					http.Header{},
 				},
 			},
 		}, {
@@ -83,10 +125,11 @@ func TestGetJobId(t *testing.T) {
 					`{
 						"id": 123
 					}`,
+					http.Header{},
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?page=1&per_page=20",
 					http.StatusOK,
 					`[{
 							"id": 1122,
@@ -97,6 +140,7 @@ func TestGetJobId(t *testing.T) {
 							"name": "publish",
 							"status": "failed"
 						}]`,
+					http.Header{},
 				},
 			},
 			expectedOut: 1122,
@@ -112,6 +156,7 @@ func TestGetJobId(t *testing.T) {
 					"/api/v4/projects/OWNER%2FREPO/pipelines/latest?ref=main",
 					http.StatusForbidden,
 					`{}`,
+					http.Header{},
 				},
 			},
 		}, {
@@ -128,12 +173,14 @@ func TestGetJobId(t *testing.T) {
 					`{
 						"id": 123
 					}`,
+					http.Header{},
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?page=1&per_page=20",
 					http.StatusForbidden,
 					`{}`,
+					http.Header{},
 				},
 			},
 		}, {
@@ -156,6 +203,7 @@ func TestGetJobId(t *testing.T) {
 							"name": "publish",
 							"status": "failed"
 						}]`,
+					http.Header{},
 				},
 			},
 		}, {
@@ -178,6 +226,7 @@ func TestGetJobId(t *testing.T) {
 							"name": "publish",
 							"status": "failed"
 						}]`,
+					http.Header{},
 				},
 			},
 		},
@@ -203,7 +252,7 @@ func TestGetJobId(t *testing.T) {
 				fakeHTTP.RegisterResponder(
 					mock.method,
 					mock.path,
-					httpmock.NewStringResponse(mock.status, mock.body),
+					httpmock.NewStringResponseWithHeader(mock.status, mock.body, mock.responseHeader),
 				)
 			}
 

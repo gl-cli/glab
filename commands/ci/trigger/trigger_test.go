@@ -102,7 +102,7 @@ func TestCiTrigger(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?page=1&per_page=20",
 					http.StatusOK,
 					`[{
 							"id": 1122,
@@ -124,7 +124,7 @@ func TestCiTrigger(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?page=1&per_page=20",
 					http.StatusForbidden,
 					`{}`,
 				},
@@ -162,7 +162,7 @@ func TestCiTrigger(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs",
+					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?page=1&per_page=20",
 					http.StatusOK,
 					`[{
 							"id": 1122,
