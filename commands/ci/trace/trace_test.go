@@ -123,7 +123,7 @@ func TestCiTrace(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO/pipelines/123/jobs",
+					"/api/v4/projects/OWNER/REPO/pipelines/123/jobs?page=1&per_page=20",
 					http.StatusOK,
 					`[{
 							"id": 1122,
@@ -168,7 +168,7 @@ func TestCiTrace(t *testing.T) {
 				},
 				{
 					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO/pipelines/123/jobs",
+					"/api/v4/projects/OWNER/REPO/pipelines/123/jobs?page=1&per_page=20",
 					http.StatusOK,
 					`[{
 							"id": 1122,

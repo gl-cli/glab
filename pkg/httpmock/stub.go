@@ -77,14 +77,20 @@ func newRequestWithBody(method, path, body string) Matcher {
 
 func NewStringResponse(status int, body string) Responder {
 	return func(req *http.Request) (*http.Response, error) {
-		return httpResponse(status, req, bytes.NewBufferString(body)), nil
+		return httpResponse(status, req, bytes.NewBufferString(body), nil), nil
+	}
+}
+
+func NewStringResponseWithHeader(status int, body string, header http.Header) Responder {
+	return func(req *http.Request) (*http.Response, error) {
+		return httpResponse(status, req, bytes.NewBufferString(body), header), nil
 	}
 }
 
 func NewJSONResponse(status int, body any) Responder {
 	return func(req *http.Request) (*http.Response, error) {
 		b, _ := json.Marshal(body)
-		return httpResponse(status, req, bytes.NewBuffer(b)), nil
+		return httpResponse(status, req, bytes.NewBuffer(b), nil), nil
 	}
 }
 
@@ -94,15 +100,16 @@ func NewFileResponse(status int, filename string) Responder {
 		if err != nil {
 			return nil, err
 		}
-		return httpResponse(status, req, f), nil
+		return httpResponse(status, req, f, nil), nil
 	}
 }
 
-func httpResponse(status int, req *http.Request, body io.Reader) *http.Response {
+func httpResponse(status int, req *http.Request, body io.Reader, header http.Header) *http.Response {
 	return &http.Response{
 		StatusCode: status,
 		Request:    req,
 		Body:       io.NopCloser(body),
+		Header:     header,
 	}
 }
 

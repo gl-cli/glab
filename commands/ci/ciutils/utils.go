@@ -150,9 +150,32 @@ func GetJobId(inputs *JobInputs, opts *JobOptions) (int, error) {
 		return 0, fmt.Errorf("get pipeline: %w", err)
 	}
 
-	jobs, _, err := opts.ApiClient.Jobs.ListPipelineJobs(opts.Repo.FullName(), pipelineId, nil)
-	if err != nil {
-		return 0, fmt.Errorf("list pipeline jobs: %w", err)
+	// This is also the default
+	jobs := make([]*gitlab.Job, 0)
+	options := &gitlab.ListJobsOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: 20,
+			Page:    1,
+		},
+	}
+
+	for {
+		jobsPerPage, response, err := opts.ApiClient.Jobs.ListPipelineJobs(opts.Repo.FullName(), pipelineId, options)
+		if err != nil {
+			return 0, fmt.Errorf("list pipeline jobs: %w", err)
+		}
+		jobs = append(jobs, jobsPerPage...)
+
+		// indicate that we have reached the last page
+		if response.NextPage == 0 {
+			break
+		}
+
+		options.Page = response.NextPage
+	}
+
+	if len(jobs) == 0 {
+		return 0, fmt.Errorf("pipeline %d contains no jobs at all", pipelineId)
 	}
 
 	for _, job := range jobs {
@@ -161,7 +184,7 @@ func GetJobId(inputs *JobInputs, opts *JobOptions) (int, error) {
 		}
 	}
 
-	return 0, fmt.Errorf("pipeline %d contains no jobs.", pipelineId)
+	return 0, fmt.Errorf("pipeline %d contains no jobs with the name %s", pipelineId, inputs.JobName)
 }
 
 func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
