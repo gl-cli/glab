@@ -30,7 +30,8 @@ glab stack next [flags]
 ## Examples
 
 ```console
-glab stack next
+$ glab stack next
+
 ```
 
 ## Options inherited from parent commands

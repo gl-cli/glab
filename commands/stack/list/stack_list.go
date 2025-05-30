@@ -3,6 +3,7 @@ package list
 import (
 	"fmt"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/pkg/git"
@@ -16,7 +17,9 @@ func NewCmdStackList(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "Lists all entries in the stack. (EXPERIMENTAL.)",
 		Long:    "Lists all entries in the stack. To select a different revision, use a command like 'stack move'.\n" + text.ExperimentalString,
-		Example: "glab stack list",
+		Example: heredoc.Doc(`
+			$ glab stack list
+		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			title, err := git.GetCurrentStackTitle()
 			if err != nil {

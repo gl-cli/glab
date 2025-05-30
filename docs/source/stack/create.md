@@ -36,8 +36,8 @@ new
 ## Examples
 
 ```console
-- glab stack create cool-new-feature
-- glab stack new cool-new-feature
+$ glab stack create cool-new-feature
+$ glab stack new cool-new-feature
 
 ```
 

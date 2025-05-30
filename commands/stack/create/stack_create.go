@@ -22,12 +22,12 @@ var longString = `Create a new stacked diff. Adds metadata to your "./.git/stack
 func NewCmdCreateStack(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	stackCreateCmd := &cobra.Command{
 		Use:     "create",
-		Short:   `Create a new stacked diff. (EXPERIMENTAL.)`,
+		Short:   "Create a new stacked diff. (EXPERIMENTAL.)",
 		Long:    strings.Replace(longString, "\"./.git/stacked\"", "`./.git/stacked`", 1),
 		Aliases: []string{"new"},
 		Example: heredoc.Doc(`
-			- glab stack create cool-new-feature
-			- glab stack new cool-new-feature
+			$ glab stack create cool-new-feature
+			$ glab stack new cool-new-feature
 		`),
 		Args: cobra.MaximumNArgs(10),
 		RunE: func(cmd *cobra.Command, args []string) error {

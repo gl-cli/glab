@@ -30,7 +30,8 @@ glab stack first [flags]
 ## Examples
 
 ```console
-glab stack first
+$ glab stack first
+
 ```
 
 ## Options inherited from parent commands
