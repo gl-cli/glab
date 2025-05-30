@@ -30,7 +30,8 @@ glab stack prev [flags]
 ## Examples
 
 ```console
-glab stack prev
+$ glab stack prev
+
 ```
 
 ## Options inherited from parent commands

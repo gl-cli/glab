@@ -30,7 +30,8 @@ glab stack move [flags]
 ## Examples
 
 ```console
-glab stack move
+$ glab stack move
+
 ```
 
 ## Options inherited from parent commands
