@@ -3,7 +3,10 @@ package config
 import (
 	"errors"
 	"fmt"
+	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -13,10 +16,57 @@ type LocalConfig struct {
 	Parent Config
 }
 
+// for later use we might prefer relative paths
+// GitDir will find a directory or just return ".git"
+func GitDir(preferRelative bool) []string {
+	var err error
+	var out strings.Builder
+
+	// `git rev-parse --git-dir` since git v1.2.2
+	cmd := exec.Command("git", "rev-parse", "--git-dir")
+
+	cmd.Stdout = &out
+	err = cmd.Run()
+	if err != nil {
+		// should fail
+		return []string{".git"}
+	}
+
+	gitDir := strings.TrimSpace(out.String())
+
+	if !filepath.IsAbs(gitDir) {
+		// gitDir is relative
+		if !preferRelative {
+			// but we prefer absolute
+			workDir, err := os.Getwd()
+			if err == nil {
+				return []string{workDir, gitDir}
+			}
+		}
+		// relative should work
+		return []string{gitDir}
+	} else {
+		// gitDir is absolute
+		if preferRelative {
+			// but we prefer relative
+			var relativeDir string
+			workDir, err := os.Getwd()
+			if err == nil {
+				relativeDir, err = filepath.Rel(workDir, gitDir)
+			}
+			if err == nil {
+				return []string{relativeDir}
+			}
+		}
+		// absolute should work
+		return []string{gitDir}
+	}
+}
+
 // LocalConfigDir returns the local config path in map
 // which must be joined for complete path
 var LocalConfigDir = func() []string {
-	return []string{".git", "glab-cli"}
+	return append(GitDir(true), "glab-cli")
 }
 
 // LocalConfigFile returns the config file name with full path
@@ -58,7 +108,7 @@ func (a *LocalConfig) Delete(key string) error {
 
 func (a *LocalConfig) Write() error {
 	// Check if it's a Git repository
-	if !CheckPathExists(".git") {
+	if !CheckPathExists(filepath.Join(GitDir(true)...)) {
 		return errors.New("not a Git repository")
 	}
 
