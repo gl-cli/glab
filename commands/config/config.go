@@ -167,7 +167,7 @@ The command uses the following order when choosing the editor to use:
 			var configPath string
 
 			if isLocal {
-				configPath = ".git/glab-cli/config.yml"
+				configPath = config.LocalConfigFile()
 			} else {
 				configPath = fmt.Sprintf("%s/config.yml", config.ConfigDir())
 			}

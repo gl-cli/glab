@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 )
@@ -213,7 +214,8 @@ func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) er
 }
 
 func initGit(defaultBranch string) error {
-	if stat, err := os.Stat(".git"); err == nil && stat.IsDir() {
+	gitDir := path.Join(config.GitDir(false)...)
+	if stat, err := os.Stat(gitDir); err == nil && stat.Mode().IsDir() {
 		return nil
 	}
 	var doInit bool
