@@ -20,6 +20,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/alias/expand"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/help"
+	"gitlab.com/gitlab-org/cli/commands/hooks"
 	"gitlab.com/gitlab-org/cli/commands/update"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
@@ -109,6 +110,9 @@ func main() {
 	}
 
 	cmd, _, err := rootCmd.Traverse(expandedArgs)
+
+	checkForTelemetryHook(cfg, cmdFactory, cmd)
+
 	if err != nil || cmd == rootCmd {
 		originalArgs := expandedArgs
 		isShell := false
@@ -246,5 +250,11 @@ func maybeOverrideDefaultHost(f *cmdutils.Factory, cfg config.Config) {
 			glinstance.OverrideDefaultProtocol(protocol)
 		}
 		glinstance.OverrideDefault(customGLHost)
+	}
+}
+
+func checkForTelemetryHook(cfg config.Config, f *cmdutils.Factory, cmd *cobra.Command) {
+	if hooks.IsTelemetryEnabled(cfg) {
+		cobra.OnFinalize(hooks.AddTelemetryHook(f, cmd))
 	}
 }
