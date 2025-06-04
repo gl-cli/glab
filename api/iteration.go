@@ -25,8 +25,6 @@ func (opts *ListProjectIterationsOptions) ListGroupIterationsOptions() *gitlab.L
 }
 
 var ListProjectIterations = func(client *gitlab.Client, projectID interface{}, opts *ListProjectIterationsOptions) ([]*gitlab.ProjectIteration, error) {
-	client = getClient(client)
-
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -39,8 +37,6 @@ var ListProjectIterations = func(client *gitlab.Client, projectID interface{}, o
 }
 
 var ListGroupIterations = func(client *gitlab.Client, groupID interface{}, opts *ListProjectIterationsOptions) ([]*gitlab.GroupIteration, error) {
-	client = getClient(client)
-
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}

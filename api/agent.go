@@ -15,10 +15,6 @@ const agentTokenLimit = 2
 var AgentNotFoundErr = errors.New("agent not found")
 
 var ListAgents = func(client *gitlab.Client, projectID any, opts *gitlab.ListAgentsOptions) ([]*gitlab.Agent, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	agents, _, err := client.ClusterAgents.ListAgents(projectID, opts)
 	if err != nil {
 		return nil, err
@@ -28,10 +24,6 @@ var ListAgents = func(client *gitlab.Client, projectID any, opts *gitlab.ListAge
 }
 
 var GetAgent = func(client *gitlab.Client, projectID any, agentID int) (*gitlab.Agent, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	agent, _, err := client.ClusterAgents.GetAgent(projectID, agentID)
 	if err != nil {
 		return nil, err
@@ -65,10 +57,6 @@ var GetAgentByName = func(client *gitlab.Client, projectID any, agentName string
 }
 
 var RegisterAgent = func(client *gitlab.Client, projectID any, agentName string) (*gitlab.Agent, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	agent, _, err := client.ClusterAgents.RegisterAgent(projectID, &gitlab.RegisterAgentOptions{Name: gitlab.Ptr(agentName)})
 	if err != nil {
 		return nil, err

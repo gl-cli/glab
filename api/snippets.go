@@ -9,10 +9,6 @@ var CreateSnippet = func(
 	client *gitlab.Client,
 	opts *gitlab.CreateSnippetOptions,
 ) (*gitlab.Snippet, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	snippet, _, err := client.Snippets.CreateSnippet(opts)
 	if err != nil {
 		return nil, err
@@ -26,10 +22,6 @@ var CreateProjectSnippet = func(
 	projectID any,
 	opts *gitlab.CreateProjectSnippetOptions,
 ) (*gitlab.Snippet, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	snippet, _, err := client.ProjectSnippets.CreateSnippet(projectID, opts)
 	if err != nil {
 		return nil, err

@@ -5,10 +5,6 @@ import (
 )
 
 var CurrentUserEvents = func(client *gitlab.Client, opts *gitlab.ListContributionEventsOptions) ([]*gitlab.ContributionEvent, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}

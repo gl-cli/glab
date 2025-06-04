@@ -8,9 +8,6 @@ import (
 )
 
 var CurrentUser = func(client *gitlab.Client) (*gitlab.User, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	u, _, err := client.Users.CurrentUser()
 	if err != nil {
 		return nil, err
@@ -20,10 +17,6 @@ var CurrentUser = func(client *gitlab.Client) (*gitlab.User, error) {
 
 var UserByName = func(client *gitlab.Client, name string) (*gitlab.User, error) {
 	opts := &gitlab.ListUsersOptions{Username: gitlab.Ptr(name)}
-
-	if client == nil {
-		client = apiClient.Lab()
-	}
 
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
@@ -60,9 +53,6 @@ var UsersByNames = func(client *gitlab.Client, names []string) ([]*gitlab.User, 
 }
 
 var CreatePersonalAccessTokenForCurrentUser = func(client *gitlab.Client, name string, scopes []string, expiresAt time.Time) (*gitlab.PersonalAccessToken, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	expiresAtISO := gitlab.ISOTime(expiresAt)
 	options := &gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
 		Name:      gitlab.Ptr(name),
