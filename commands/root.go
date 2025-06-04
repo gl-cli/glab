@@ -127,7 +127,6 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 
 	// the commands below require apiClient and resolved repos
 	f.BaseRepo = resolvedBaseRepo(f)
-	f.HttpClient = cmdutils.HTTPClientFunc // Set HTTP Client
 
 	rootCmd.AddCommand(changelogCmd.NewCmdChangelog(f))
 	rootCmd.AddCommand(clusterCmd.NewCmdCluster(f))
