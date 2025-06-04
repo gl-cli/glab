@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 const (
@@ -21,15 +20,9 @@ const (
 
 var strArrayRegex = regexp.MustCompile(stringArrayRegexPattern)
 
-func httpRequest(client *api.Client, config config.Config, hostname string, method string, p string, params any, headers []string) (*http.Response, error) {
+func httpRequest(client *api.Client, method, p string, params any, headers []string) (*http.Response, error) {
 	var err error
 	isGraphQL := p == "graphql"
-	if client.Lab().BaseURL().Host != hostname || isGraphQL {
-		client, err = api.NewClientWithCfg(hostname, config, isGraphQL)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	baseURL := client.Lab().BaseURL()
 	baseURLStr := baseURL.String()

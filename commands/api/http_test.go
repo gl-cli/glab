@@ -110,8 +110,6 @@ hosts:
 			Request:    req,
 		}, nil
 	})
-	configs, err := config.ParseConfig("config.yml")
-	assert.Nil(t, err)
 
 	type args struct {
 		host    string
@@ -253,10 +251,10 @@ hosts:
 		},
 	}
 	for _, tt := range tests {
-		httpClient, err := api.TestClient(client, "OTOKEN", "gitlab.com", tt.isGraphQL)
+		httpClient, err := api.TestClient(client, "OTOKEN", tt.args.host, tt.isGraphQL)
 		assert.Nil(t, err)
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := httpRequest(httpClient, configs, tt.args.host, tt.args.method, tt.args.p, tt.args.params, tt.args.headers)
+			got, err := httpRequest(httpClient, tt.args.method, tt.args.p, tt.args.params, tt.args.headers)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("httpRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
