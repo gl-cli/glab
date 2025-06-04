@@ -3,9 +3,6 @@ package api
 import gitlab "gitlab.com/gitlab-org/api/client-go"
 
 var CreateIssueBoard = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueBoardOptions) (*gitlab.IssueBoard, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	board, _, err := client.Boards.CreateIssueBoard(projectID, opts)
 	if err != nil {
 		return nil, err
@@ -15,9 +12,6 @@ var CreateIssueBoard = func(client *gitlab.Client, projectID any, opts *gitlab.C
 }
 
 var ListIssueBoards = func(client *gitlab.Client, projectID any, opts *gitlab.ListIssueBoardsOptions) ([]*gitlab.IssueBoard, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	boards, _, err := client.Boards.ListIssueBoards(projectID, opts)
 	if err != nil {
 		return nil, err
@@ -27,9 +21,6 @@ var ListIssueBoards = func(client *gitlab.Client, projectID any, opts *gitlab.Li
 }
 
 var ListGroupIssueBoards = func(client *gitlab.Client, groupID any, opts *gitlab.ListGroupIssueBoardsOptions) ([]*gitlab.GroupIssueBoard, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	boards, _, err := client.GroupIssueBoards.ListGroupIssueBoards(groupID, opts)
 	if err != nil {
 		return nil, err
@@ -39,9 +30,6 @@ var ListGroupIssueBoards = func(client *gitlab.Client, groupID any, opts *gitlab
 }
 
 var GetIssueBoardLists = func(client *gitlab.Client, projectID any, boardID int, opts *gitlab.GetIssueBoardListsOptions) ([]*gitlab.BoardList, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	boardLists, _, err := client.Boards.GetIssueBoardLists(projectID, boardID, opts)
 	if err != nil {
 		return nil, err
@@ -51,9 +39,6 @@ var GetIssueBoardLists = func(client *gitlab.Client, projectID any, boardID int,
 }
 
 var GetGroupIssueBoardLists = func(client *gitlab.Client, groupID any, boardID int, opts *gitlab.ListGroupIssueBoardListsOptions) ([]*gitlab.BoardList, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	boardLists, _, err := client.GroupIssueBoards.ListGroupIssueBoardLists(groupID, boardID, opts)
 	if err != nil {
 		return nil, err

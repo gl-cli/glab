@@ -261,9 +261,14 @@ func apiRun(opts *ApiOptions) error {
 		host = opts.Hostname
 	}
 
+	client, err := api.NewClientWithCfg(host, opts.Config, isGraphQL)
+	if err != nil {
+		return err
+	}
+
 	hasNextPage := true
 	for hasNextPage {
-		resp, err := httpRequest(api.GetClient(), opts.Config, host, method, requestPath, requestBody, requestHeaders)
+		resp, err := httpRequest(client, method, requestPath, requestBody, requestHeaders)
 		if err != nil {
 			return err
 		}

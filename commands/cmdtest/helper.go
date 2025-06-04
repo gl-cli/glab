@@ -322,7 +322,6 @@ func StubFactory(repo string) *cmdutils.Factory {
 	cmdutils.CachedConfig = config.NewBlankConfig()
 
 	CachedTestFactory = cmdutils.NewFactory()
-	CachedTestFactory.HttpClient = cmdutils.HTTPClientFunc
 	if repo != "" {
 		_ = CachedTestFactory.RepoOverride(repo)
 	}
@@ -339,7 +338,6 @@ func StubFactoryWithConfig(repo string) (*cmdutils.Factory, error) {
 		return nil, cmdutils.ConfigError
 	}
 	CachedTestFactory = cmdutils.NewFactory()
-	CachedTestFactory.HttpClient = cmdutils.HTTPClientFunc
 	if repo != "" {
 		_ = CachedTestFactory.RepoOverride(repo)
 	}

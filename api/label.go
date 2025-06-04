@@ -24,16 +24,7 @@ func (opts *ListLabelsOptions) ListGroupLabelsOptions() *gitlab.ListGroupLabelsO
 	return groupOpts
 }
 
-func getClient(client *gitlab.Client) *gitlab.Client {
-	if client == nil {
-		return apiClient.Lab()
-	}
-	return client
-}
-
 var CreateLabel = func(client *gitlab.Client, projectID any, opts *gitlab.CreateLabelOptions) (*gitlab.Label, error) {
-	client = getClient(client)
-
 	label, _, err := client.Labels.CreateLabel(projectID, opts)
 	if err != nil {
 		return nil, err
@@ -42,8 +33,6 @@ var CreateLabel = func(client *gitlab.Client, projectID any, opts *gitlab.Create
 }
 
 var DeleteLabel = func(client *gitlab.Client, projectID any, label string, opts *gitlab.DeleteLabelOptions) error {
-	client = getClient(client)
-
 	_, err := client.Labels.DeleteLabel(projectID, label, opts)
 	if err != nil {
 		return err
@@ -52,8 +41,6 @@ var DeleteLabel = func(client *gitlab.Client, projectID any, label string, opts 
 }
 
 var ListLabels = func(client *gitlab.Client, projectID any, opts *ListLabelsOptions) ([]*gitlab.Label, error) {
-	client = getClient(client)
-
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -66,8 +53,6 @@ var ListLabels = func(client *gitlab.Client, projectID any, opts *ListLabelsOpti
 }
 
 var ListGroupLabels = func(client *gitlab.Client, groupID any, opts *ListLabelsOptions) ([]*gitlab.GroupLabel, error) {
-	client = getClient(client)
-
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}

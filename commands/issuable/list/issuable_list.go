@@ -342,7 +342,7 @@ func listRun(opts *ListOptions) error {
 
 func userID(client *gitlab.Client, username string) (int, error) {
 	if username == "@me" {
-		me, err := api.CurrentUser(nil)
+		me, err := api.CurrentUser(client)
 		if err != nil {
 			return 0, err
 		}

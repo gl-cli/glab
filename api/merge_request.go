@@ -11,9 +11,6 @@ import (
 var ErrTodoExists = errors.New("To-do already exists.")
 
 var ApproveMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ApproveMergeRequestOptions) (*gitlab.MergeRequestApprovals, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	mr, _, err := client.MergeRequestApprovals.ApproveMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return nil, err
@@ -23,9 +20,6 @@ var ApproveMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitla
 }
 
 var GetMRApprovalState = func(client *gitlab.Client, projectID any, mrID int, opts ...gitlab.RequestOptionFunc) (*gitlab.MergeRequestApprovalState, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	mrApprovals, _, err := client.MergeRequestApprovals.GetApprovalState(projectID, mrID, opts...)
 	if err != nil {
 		return nil, err
@@ -35,9 +29,6 @@ var GetMRApprovalState = func(client *gitlab.Client, projectID any, mrID int, op
 }
 
 var GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	mr, _, err := client.MergeRequests.GetMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return nil, err
@@ -75,9 +66,6 @@ var ListGroupMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListG
 }
 
 var listGroupMRsBase = func(client *gitlab.Client, groupID any, opts *gitlab.ListGroupMergeRequestsOptions) ([]*gitlab.BasicMergeRequest, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -90,9 +78,6 @@ var listGroupMRsBase = func(client *gitlab.Client, groupID any, opts *gitlab.Lis
 }
 
 var listGroupMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID any, opts *gitlab.ListGroupMergeRequestsOptions, assigneeIds []int, reviewerIds []int) ([]*gitlab.BasicMergeRequest, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -190,9 +175,6 @@ var ListMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjec
 }
 
 var listMRsBase = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions) ([]*gitlab.BasicMergeRequest, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -205,9 +187,6 @@ var listMRsBase = func(client *gitlab.Client, projectID any, opts *gitlab.ListPr
 }
 
 var listMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions, assigneeIds []int, reviewerIds []int) ([]*gitlab.BasicMergeRequest, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -248,9 +227,6 @@ var listMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID any,
 }
 
 var UpdateMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.UpdateMergeRequestOptions) (*gitlab.MergeRequest, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	mr, _, err := client.MergeRequests.UpdateMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return nil, err
@@ -260,9 +236,6 @@ var UpdateMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab
 }
 
 var DeleteMR = func(client *gitlab.Client, projectID any, mrID int) error {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	_, err := client.MergeRequests.DeleteMergeRequest(projectID, mrID)
 	if err != nil {
 		return err
@@ -272,9 +245,6 @@ var DeleteMR = func(client *gitlab.Client, projectID any, mrID int) error {
 }
 
 var MergeMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.AcceptMergeRequestOptions) (*gitlab.MergeRequest, *gitlab.Response, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	mrs, resp, err := client.MergeRequests.AcceptMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return nil, resp, err
@@ -284,9 +254,6 @@ var MergeMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.
 }
 
 var CreateMR = func(client *gitlab.Client, projectID any, opts *gitlab.CreateMergeRequestOptions) (*gitlab.MergeRequest, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	mr, _, err := client.MergeRequests.CreateMergeRequest(projectID, opts)
 	if err != nil {
 		return nil, err
@@ -296,9 +263,6 @@ var CreateMR = func(client *gitlab.Client, projectID any, opts *gitlab.CreateMer
 }
 
 var GetMRLinkedIssues = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetIssuesClosedOnMergeOptions) ([]*gitlab.Issue, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	mrIssues, _, err := client.MergeRequests.GetIssuesClosedOnMerge(projectID, mrID, opts)
 	if err != nil {
 		return nil, err
@@ -308,10 +272,6 @@ var GetMRLinkedIssues = func(client *gitlab.Client, projectID any, mrID int, opt
 }
 
 var CreateMRNote = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.CreateMergeRequestNoteOptions) (*gitlab.Note, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	note, _, err := client.Notes.CreateMergeRequestNote(projectID, mrID, opts)
 	if err != nil {
 		return note, err
@@ -321,10 +281,6 @@ var CreateMRNote = func(client *gitlab.Client, projectID any, mrID int, opts *gi
 }
 
 var ListMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -338,10 +294,6 @@ var ListMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *git
 }
 
 var RebaseMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.RebaseMergeRequestOptions) error {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	_, err := client.MergeRequests.RebaseMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return err
@@ -351,10 +303,6 @@ var RebaseMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab
 }
 
 var UnapproveMR = func(client *gitlab.Client, projectID any, mrID int) error {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	_, err := client.MergeRequestApprovals.UnapproveMergeRequest(projectID, mrID)
 	if err != nil {
 		return err
@@ -364,10 +312,6 @@ var UnapproveMR = func(client *gitlab.Client, projectID any, mrID int) error {
 }
 
 var SubscribeToMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	mr, _, err := client.MergeRequests.SubscribeToMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return nil, err
@@ -377,10 +321,6 @@ var SubscribeToMR = func(client *gitlab.Client, projectID any, mrID int, opts gi
 }
 
 var UnsubscribeFromMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	mr, _, err := client.MergeRequests.UnsubscribeFromMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return nil, err
@@ -390,10 +330,6 @@ var UnsubscribeFromMR = func(client *gitlab.Client, projectID any, mrID int, opt
 }
 
 var MRTodo = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.Todo, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	mr, resp, err := client.MergeRequests.CreateTodo(projectID, mrID, opts)
 
 	if resp.StatusCode == http.StatusNotModified {

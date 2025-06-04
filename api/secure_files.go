@@ -7,10 +7,6 @@ import (
 )
 
 var CreateSecureFile = func(client *gitlab.Client, projectID any, filename string, content io.Reader) error {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	opts := &gitlab.CreateSecureFileOptions{
 		Name: &filename,
 	}
@@ -19,10 +15,6 @@ var CreateSecureFile = func(client *gitlab.Client, projectID any, filename strin
 }
 
 var DownloadSecureFile = func(client *gitlab.Client, projectID any, id int) (io.Reader, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	reader, _, err := client.SecureFiles.DownloadSecureFile(projectID, id)
 	if err != nil {
 		return nil, err
@@ -31,19 +23,11 @@ var DownloadSecureFile = func(client *gitlab.Client, projectID any, id int) (io.
 }
 
 var GetSecureFile = func(client *gitlab.Client, projectID any, id int) (*gitlab.SecureFile, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	file, _, err := client.SecureFiles.ShowSecureFileDetails(projectID, id)
 	return file, err
 }
 
 var ListSecureFiles = func(client *gitlab.Client, l *gitlab.ListProjectSecureFilesOptions, projectID any) ([]*gitlab.SecureFile, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	if l == nil {
 		l = &gitlab.ListProjectSecureFilesOptions{
 			Page:    1,
@@ -66,10 +50,6 @@ var ListSecureFiles = func(client *gitlab.Client, l *gitlab.ListProjectSecureFil
 }
 
 var RemoveSecureFile = func(client *gitlab.Client, projectID any, id int) error {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	_, err := client.SecureFiles.RemoveSecureFile(projectID, id)
 	return err
 }

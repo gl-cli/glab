@@ -112,7 +112,7 @@ func OverrideAPIProtocol(cfg config.Config, repo glrepo.Interface) {
 	api.SetProtocol(protocol)
 }
 
-func HTTPClientFunc() (*gitlab.Client, error) {
+func httpClientFunc() (*gitlab.Client, error) {
 	cfg, err := configFunc()
 	if err != nil {
 		return nil, err
@@ -128,15 +128,10 @@ func HTTPClientFunc() (*gitlab.Client, error) {
 
 func NewFactory() *Factory {
 	return &Factory{
-		Config:  configFunc,
-		Remotes: remotesFunc,
-		HttpClient: func() (*gitlab.Client, error) {
-			// do not initialize httpclient since it may not be required by
-			// some commands like version, help, etc...
-			// It should be explicitly set to HTTPClientFunc
-			return nil, nil
-		},
-		BaseRepo: baseRepoFunc,
+		Config:     configFunc,
+		Remotes:    remotesFunc,
+		HttpClient: httpClientFunc,
+		BaseRepo:   baseRepoFunc,
 		Branch: func() (string, error) {
 			currentBranch, err := git.CurrentBranch()
 			if err != nil {

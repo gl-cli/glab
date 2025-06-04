@@ -69,10 +69,6 @@ func (opts *ListMilestonesOptions) ListGroupMilestonesOptions() *gitlab.ListGrou
 }
 
 var ListGroupMilestones = func(client *gitlab.Client, groupID any, opts *gitlab.ListGroupMilestonesOptions) ([]*gitlab.GroupMilestone, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -85,10 +81,6 @@ var ListGroupMilestones = func(client *gitlab.Client, groupID any, opts *gitlab.
 }
 
 var ListProjectMilestones = func(client *gitlab.Client, projectID any, opts *gitlab.ListMilestonesOptions) ([]*gitlab.Milestone, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -102,10 +94,6 @@ var ListProjectMilestones = func(client *gitlab.Client, projectID any, opts *git
 
 var ProjectMilestoneByTitle = func(client *gitlab.Client, projectID any, name string) (*gitlab.Milestone, error) {
 	opts := &gitlab.ListMilestonesOptions{Title: gitlab.Ptr(name), IncludeParentMilestones: gitlab.Ptr(true)}
-
-	if client == nil {
-		client = apiClient.Lab()
-	}
 
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit

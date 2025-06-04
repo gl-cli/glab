@@ -22,9 +22,6 @@ var CreatePushMirror = func(
 	projectID any,
 	opts *CreatePushMirrorOptions,
 ) (*gitlab.ProjectMirror, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	opt := &gitlab.AddProjectMirrorOptions{
 		URL:                   &opts.Url,
 		Enabled:               &opts.Enabled,
@@ -40,9 +37,6 @@ var CreatePullMirror = func(
 	projectID any,
 	opts *CreatePullMirrorOptions,
 ) error {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	opt := &gitlab.EditProjectOptions{
 		ImportURL:                   &opts.Url,
 		Mirror:                      &opts.Enabled,

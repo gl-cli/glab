@@ -8,9 +8,6 @@ import (
 )
 
 var ListIssueNotes = func(client *gitlab.Client, projectID any, issueID int, opts *gitlab.ListIssueNotesOptions) ([]*gitlab.Note, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -22,9 +19,6 @@ var ListIssueNotes = func(client *gitlab.Client, projectID any, issueID int, opt
 }
 
 var UpdateIssue = func(client *gitlab.Client, projectID any, issueID int, opts *gitlab.UpdateIssueOptions) (*gitlab.Issue, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	issue, _, err := client.Issues.UpdateIssue(projectID, issueID, opts)
 	if err != nil {
 		return nil, err
@@ -34,9 +28,6 @@ var UpdateIssue = func(client *gitlab.Client, projectID any, issueID int, opts *
 }
 
 var GetIssue = func(client *gitlab.Client, projectID any, issueID int) (*gitlab.Issue, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	issue, _, err := client.Issues.GetIssue(projectID, issueID)
 	if err != nil {
 		return nil, err
@@ -79,9 +70,6 @@ var ProjectListIssueOptionsToGroup = func(l *gitlab.ListProjectIssuesOptions) *g
 }
 
 var ListGroupIssues = func(client *gitlab.Client, groupID any, opts *gitlab.ListGroupIssuesOptions) ([]*gitlab.Issue, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -94,9 +82,6 @@ var ListGroupIssues = func(client *gitlab.Client, groupID any, opts *gitlab.List
 }
 
 var ListProjectIssues = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectIssuesOptions) ([]*gitlab.Issue, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -109,9 +94,6 @@ var ListProjectIssues = func(client *gitlab.Client, projectID any, opts *gitlab.
 }
 
 var CreateIssue = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	issue, _, err := client.Issues.CreateIssue(projectID, opts)
 	if err != nil {
 		return nil, err
@@ -121,10 +103,6 @@ var CreateIssue = func(client *gitlab.Client, projectID any, opts *gitlab.Create
 }
 
 var DeleteIssue = func(client *gitlab.Client, projectID any, issueID int) error {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	_, err := client.Issues.DeleteIssue(projectID, issueID)
 	if err != nil {
 		return err
@@ -134,10 +112,6 @@ var DeleteIssue = func(client *gitlab.Client, projectID any, issueID int) error 
 }
 
 var CreateIssueNote = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.CreateIssueNoteOptions) (*gitlab.Note, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	note, _, err := client.Notes.CreateIssueNote(projectID, mrID, opts)
 	if err != nil {
 		return note, err
@@ -147,10 +121,6 @@ var CreateIssueNote = func(client *gitlab.Client, projectID any, mrID int, opts 
 }
 
 var SubscribeToIssue = func(client *gitlab.Client, projectID any, issueID int, opts gitlab.RequestOptionFunc) (*gitlab.Issue, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	issue, resp, err := client.Issues.SubscribeToIssue(projectID, issueID, opts)
 	if err != nil {
 		if resp != nil {
@@ -166,10 +136,6 @@ var SubscribeToIssue = func(client *gitlab.Client, projectID any, issueID int, o
 }
 
 var UnsubscribeFromIssue = func(client *gitlab.Client, projectID any, issueID int, opts gitlab.RequestOptionFunc) (*gitlab.Issue, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	issue, resp, err := client.Issues.UnsubscribeFromIssue(projectID, issueID, opts)
 	if err != nil {
 		if resp != nil {
@@ -185,10 +151,6 @@ var UnsubscribeFromIssue = func(client *gitlab.Client, projectID any, issueID in
 }
 
 var LinkIssues = func(client *gitlab.Client, projectID any, issueIDD int, opts *gitlab.CreateIssueLinkOptions) (*gitlab.Issue, *gitlab.Issue, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	issueLink, _, err := client.IssueLinks.CreateIssueLink(projectID, issueIDD, opts)
 	if err != nil {
 		return nil, nil, err
@@ -198,10 +160,6 @@ var LinkIssues = func(client *gitlab.Client, projectID any, issueIDD int, opts *
 }
 
 var SetIssueTimeEstimate = func(client *gitlab.Client, projectID any, issueIDD int, opts *gitlab.SetTimeEstimateOptions) (*gitlab.TimeStats, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	timeStats, _, err := client.Issues.SetTimeEstimate(projectID, issueIDD, opts)
 	if err != nil {
 		return nil, err
@@ -211,10 +169,6 @@ var SetIssueTimeEstimate = func(client *gitlab.Client, projectID any, issueIDD i
 }
 
 var AddIssueTimeSpent = func(client *gitlab.Client, projectID any, issueIDD int, opts *gitlab.AddSpentTimeOptions) (*gitlab.TimeStats, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	timeStats, _, err := client.Issues.AddSpentTime(projectID, issueIDD, opts)
 	if err != nil {
 		return nil, err

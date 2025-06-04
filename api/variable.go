@@ -7,9 +7,6 @@ import (
 )
 
 var CreateProjectVariable = func(client *gitlab.Client, projectID any, opts *gitlab.CreateProjectVariableOptions) (*gitlab.ProjectVariable, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	vars, _, err := client.ProjectVariables.CreateVariable(projectID, opts)
 	if err != nil {
 		return nil, err
@@ -19,9 +16,6 @@ var CreateProjectVariable = func(client *gitlab.Client, projectID any, opts *git
 }
 
 var ListProjectVariables = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectVariablesOptions) ([]*gitlab.ProjectVariable, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	vars, _, err := client.ProjectVariables.ListVariables(projectID, opts)
 	if err != nil {
 		return nil, err
@@ -31,10 +25,6 @@ var ListProjectVariables = func(client *gitlab.Client, projectID any, opts *gitl
 }
 
 var GetProjectVariable = func(client *gitlab.Client, projectID any, key string, scope string) (*gitlab.ProjectVariable, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	reqOpts := &gitlab.GetProjectVariableOptions{
 		Filter: &gitlab.VariableFilter{
 			EnvironmentScope: scope,
@@ -49,10 +39,6 @@ var GetProjectVariable = func(client *gitlab.Client, projectID any, key string, 
 }
 
 var DeleteProjectVariable = func(client *gitlab.Client, projectID any, key string, scope string) error {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	reqOpts := &gitlab.RemoveProjectVariableOptions{
 		Filter: &gitlab.VariableFilter{
 			EnvironmentScope: scope,
@@ -67,10 +53,6 @@ var DeleteProjectVariable = func(client *gitlab.Client, projectID any, key strin
 }
 
 var UpdateProjectVariable = func(client *gitlab.Client, projectID any, key string, opts *gitlab.UpdateProjectVariableOptions) (*gitlab.ProjectVariable, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	filter := func(request *retryablehttp.Request) error {
 		q := request.URL.Query()
 		q.Add("filter[environment_scope]", *opts.EnvironmentScope)
@@ -89,9 +71,6 @@ var UpdateProjectVariable = func(client *gitlab.Client, projectID any, key strin
 }
 
 var ListGroupVariables = func(client *gitlab.Client, groupID any, opts *gitlab.ListGroupVariablesOptions) ([]*gitlab.GroupVariable, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	vars, _, err := client.GroupVariables.ListVariables(groupID, opts)
 	if err != nil {
 		return nil, err
@@ -101,9 +80,6 @@ var ListGroupVariables = func(client *gitlab.Client, groupID any, opts *gitlab.L
 }
 
 var CreateGroupVariable = func(client *gitlab.Client, groupID any, opts *gitlab.CreateGroupVariableOptions) (*gitlab.GroupVariable, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	vars, _, err := client.GroupVariables.CreateVariable(groupID, opts)
 	if err != nil {
 		return nil, err
@@ -113,10 +89,6 @@ var CreateGroupVariable = func(client *gitlab.Client, groupID any, opts *gitlab.
 }
 
 var GetGroupVariable = func(client *gitlab.Client, groupID any, key string, scope string) (*gitlab.GroupVariable, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	reqOpts := &gitlab.GetGroupVariableOptions{
 		Filter: &gitlab.VariableFilter{
 			EnvironmentScope: scope,
@@ -131,10 +103,6 @@ var GetGroupVariable = func(client *gitlab.Client, groupID any, key string, scop
 }
 
 var DeleteGroupVariable = func(client *gitlab.Client, groupID any, key string) error {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	_, err := client.GroupVariables.RemoveVariable(groupID, key, nil)
 	if err != nil {
 		return err
@@ -144,10 +112,6 @@ var DeleteGroupVariable = func(client *gitlab.Client, groupID any, key string) e
 }
 
 var UpdateGroupVariable = func(client *gitlab.Client, groupID any, key string, opts *gitlab.UpdateGroupVariableOptions) (*gitlab.GroupVariable, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	vars, _, err := client.GroupVariables.UpdateVariable(groupID, key, opts)
 	if err != nil {
 		return nil, err

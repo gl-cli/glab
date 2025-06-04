@@ -3,10 +3,6 @@ package api
 import gitlab "gitlab.com/gitlab-org/api/client-go"
 
 var CreateRelease = func(client *gitlab.Client, projectID any, opts *gitlab.CreateReleaseOptions) (*gitlab.Release, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	release, _, err := client.Releases.CreateRelease(projectID, opts)
 	if err != nil {
 		return nil, err
@@ -16,10 +12,6 @@ var CreateRelease = func(client *gitlab.Client, projectID any, opts *gitlab.Crea
 }
 
 var GetRelease = func(client *gitlab.Client, projectID any, tag string) (*gitlab.Release, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	release, _, err := client.Releases.GetRelease(projectID, tag)
 	if err != nil {
 		return nil, err
@@ -29,10 +21,6 @@ var GetRelease = func(client *gitlab.Client, projectID any, tag string) (*gitlab
 }
 
 var ListReleases = func(client *gitlab.Client, projectID any, opts *gitlab.ListReleasesOptions) ([]*gitlab.Release, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
-
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
