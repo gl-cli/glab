@@ -7,11 +7,24 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
 func AddTelemetryHook(f *cmdutils.Factory, cmd *cobra.Command) func() {
+	client, err := f.HttpClient()
+	if err != nil {
+		return func() {}
+	}
+
+	repo, err := f.BaseRepo()
+	if err != nil {
+		return func() {}
+	}
+
+	commandPath := cmd.CommandPath()
+
 	return func() {
-		go sendTelemetryData(f, cmd)
+		go sendTelemetryData(client, repo, commandPath)
 	}
 }
 
@@ -45,16 +58,13 @@ func parseCommand(parts []string) (command, subcommand, fullCommand string) {
 	return command, subcommand, fullCommand
 }
 
-func sendTelemetryData(f *cmdutils.Factory, cmd *cobra.Command) {
+func sendTelemetryData(client *gitlab.Client, repo glrepo.Interface, commandPath string) {
 	var projectID int
 	var namespaceID int
-	unparsedCommand := strings.Split(cmd.CommandPath(), " ")
+
+	unparsedCommand := strings.Split(commandPath, " ")
 
 	command, subcommand, fullCommand := parseCommand(unparsedCommand)
-
-	client, _ := f.HttpClient()
-
-	repo, _ := f.BaseRepo()
 
 	project, err := repo.Project(client)
 	if err == nil {
