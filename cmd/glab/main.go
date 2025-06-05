@@ -197,8 +197,6 @@ func main() {
 			printError(cmdFactory.IO, err, rootCmd, debug)
 		}
 	}
-
-	api.GetClient().HTTPClient().CloseIdleConnections()
 }
 
 func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, debug bool) {

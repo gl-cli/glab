@@ -111,10 +111,10 @@ func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) er
 		}
 	} else {
 		projectPath, err = git.ToplevelDir()
-		projectPath = path.Base(projectPath)
 		if err != nil {
 			return err
 		}
+		projectPath = path.Base(projectPath)
 		isPath = true
 	}
 

@@ -24,7 +24,6 @@ import (
 
 type DownloadOpts struct {
 	TagName    string
-	Asset      string
 	AssetNames []string
 	Dir        string
 
@@ -34,7 +33,7 @@ type DownloadOpts struct {
 	Config     func() (config.Config, error)
 }
 
-func NewCmdDownload(f *cmdutils.Factory, runE func(opts *DownloadOpts) error) *cobra.Command {
+func NewCmdDownload(f *cmdutils.Factory) *cobra.Command {
 	opts := &DownloadOpts{
 		IO:     f.IO,
 		Config: f.Config,
@@ -61,15 +60,13 @@ func NewCmdDownload(f *cmdutils.Factory, runE func(opts *DownloadOpts) error) *c
 			$ glab release download v1.10.1 --asset-name="*.tar.gz"
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.IO = f.IO
 			opts.HTTPClient = f.HttpClient
 			opts.BaseRepo = f.BaseRepo
+			opts.Config = f.Config
 
 			if len(args) == 1 {
 				opts.TagName = args[0]
-			}
-
-			if runE != nil {
-				return runE(opts)
 			}
 
 			return downloadRun(opts)
@@ -87,7 +84,10 @@ func downloadRun(opts *DownloadOpts) error {
 	if err != nil {
 		return err
 	}
-
+	cfg, err := opts.Config()
+	if err != nil {
+		return err
+	}
 	repo, err := opts.BaseRepo()
 	if err != nil {
 		return err
@@ -158,7 +158,11 @@ func downloadRun(opts *DownloadOpts) error {
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), opts.TagName)
 
-	err = downloadAssets(api.GetClient(), opts.IO, downloadableAssets, opts.Dir)
+	c, err := api.NewClientWithCfg(repo.RepoHost(), cfg, false)
+	if err != nil {
+		return err
+	}
+	err = downloadAssets(c, opts.IO, downloadableAssets, opts.Dir)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to download release.")
 	}

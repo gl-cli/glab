@@ -90,14 +90,6 @@ func RefreshClient() {
 	}
 }
 
-// GetClient returns the global Client instance.
-func GetClient() *Client {
-	return apiClient
-}
-
-// HTTPClient returns the httpClient instance used to initialise the gitlab api client
-func HTTPClient() *http.Client { return apiClient.HTTPClient() }
-
 func (c *Client) HTTPClient() *http.Client {
 	if c.httpClientOverride != nil {
 		return c.httpClientOverride
@@ -108,15 +100,9 @@ func (c *Client) HTTPClient() *http.Client {
 	return &http.Client{}
 }
 
-// OverrideHTTPClient overrides the default http client
-func OverrideHTTPClient(client *http.Client) { apiClient.OverrideHTTPClient(client) }
-
 func (c *Client) OverrideHTTPClient(client *http.Client) {
 	c.httpClientOverride = client
 }
-
-// Token returns the authentication token
-func Token() string { return apiClient.Token() }
 
 func (c *Client) Token() string {
 	return c.token
@@ -159,8 +145,7 @@ func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 
 	if apiClient.httpClientOverride == nil {
 		apiClient.httpClient = &http.Client{
 			Transport: &http.Transport{
-				DisableKeepAlives: DisableHTTPKeepAlives,
-				Proxy:             http.ProxyFromEnvironment,
+				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
 					Timeout:   5 * time.Second,
 					KeepAlive: 5 * time.Second,
@@ -202,8 +187,7 @@ func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 
 
 		apiClient.httpClient = &http.Client{
 			Transport: &http.Transport{
-				DisableKeepAlives: DisableHTTPKeepAlives,
-				Proxy:             http.ProxyFromEnvironment,
+				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
 					Timeout:   30 * time.Second,
 					KeepAlive: 30 * time.Second,
@@ -254,8 +238,7 @@ func NewClientWithCustomCAClientCert(host, token, caFile string, certFile string
 
 		apiClient.httpClient = &http.Client{
 			Transport: &http.Transport{
-				DisableKeepAlives: DisableHTTPKeepAlives,
-				Proxy:             http.ProxyFromEnvironment,
+				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
 					Timeout:   30 * time.Second,
 					KeepAlive: 30 * time.Second,
