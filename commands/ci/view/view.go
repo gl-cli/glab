@@ -98,7 +98,7 @@ func ViewJobFromJob(job *gitlab.Job) *ViewJob {
 	return vj
 }
 
-func NewCmdView(f *cmdutils.Factory) *cobra.Command {
+func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := ViewOpts{}
 	pipelineCIView := &cobra.Command{
 		Use:   "view [branch/tag]",

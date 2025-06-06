@@ -31,7 +31,7 @@ type UploadOpts struct {
 	Config     func() (config.Config, error)
 }
 
-func NewCmdUpload(f *cmdutils.Factory) *cobra.Command {
+func NewCmdUpload(f cmdutils.Factory) *cobra.Command {
 	opts := &UploadOpts{
 		IO:     f.IO,
 		Config: f.Config,

@@ -7,7 +7,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdCancel(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cancel <command>",
 		Short: "Cancel a running pipeline or job.",

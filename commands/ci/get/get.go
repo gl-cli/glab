@@ -25,7 +25,7 @@ type PipelineMergedResponse struct {
 	Variables []*gitlab.PipelineVariable `json:"variables"`
 }
 
-func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
+func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	pipelineGetCmd := &cobra.Command{
 		Use:     "get [flags]",
 		Short:   `Get JSON of a running CI/CD pipeline on the current or other specified branch.`,

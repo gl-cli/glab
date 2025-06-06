@@ -14,7 +14,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdIssues(f *cmdutils.Factory) *cobra.Command {
+func NewCmdIssues(f cmdutils.Factory) *cobra.Command {
 	mrIssuesCmd := &cobra.Command{
 		Use:     "issues [<id> | <branch>]",
 		Short:   `Get issues related to a particular merge request.`,

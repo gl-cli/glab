@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 )
 
-func NewCmdApprove(f *cmdutils.Factory) *cobra.Command {
+func NewCmdApprove(f cmdutils.Factory) *cobra.Command {
 	mrApproveCmd := &cobra.Command{
 		Use:   "approve {<id> | <branch>}",
 		Short: `Approve merge requests.`,

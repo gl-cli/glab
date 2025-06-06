@@ -14,7 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
-func NewCmdGenerate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 	changelogGenerateCmd := &cobra.Command{
 		Use:   "generate [flags]",
 		Short: `Generate a changelog for the repository or project.`,

@@ -14,7 +14,7 @@ import (
 
 var variableList []string
 
-func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	scheduleCreateCmd := &cobra.Command{
 		Use:   "create [flags]",
 		Short: `Schedule a new pipeline.`,

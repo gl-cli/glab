@@ -21,7 +21,7 @@ import (
 
 var description string
 
-func NewCmdSaveStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
+func NewCmdSaveStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
 	stackSaveCmd := &cobra.Command{
 		Use:   "save",
 		Short: `Save your progress within a stacked diff. (EXPERIMENTAL.)`,
@@ -211,7 +211,7 @@ func generateStackSha(message string, title string, author string, timestamp tim
 	return hex.EncodeToString(hashData), nil
 }
 
-func createShaBranch(f *cmdutils.Factory, sha string, title string) (string, error) {
+func createShaBranch(f cmdutils.Factory, sha string, title string) (string, error) {
 	cfg, err := f.Config()
 	if err != nil {
 		return "", fmt.Errorf("could not retrieve config file: %v", err)

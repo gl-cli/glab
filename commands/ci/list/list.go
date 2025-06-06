@@ -15,7 +15,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	pipelineListCmd := &cobra.Command{
 		Use:   "list [flags]",
 		Short: `Get the list of CI/CD pipelines.`,

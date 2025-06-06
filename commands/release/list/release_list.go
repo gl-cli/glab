@@ -13,7 +13,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdReleaseList(f cmdutils.Factory) *cobra.Command {
 	releaseListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List releases in a repository.`,
@@ -39,7 +39,7 @@ func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
 	return releaseListCmd
 }
 
-func listReleases(factory *cmdutils.Factory, cmd *cobra.Command) error {
+func listReleases(factory cmdutils.Factory, cmd *cobra.Command) error {
 	l := &gitlab.ListReleasesOptions{}
 
 	page, _ := cmd.Flags().GetInt("page")

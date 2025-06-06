@@ -135,13 +135,13 @@ func DisplayAllMRs(streams *iostreams.IOStreams, mrs []*gitlab.BasicMergeRequest
 }
 
 // MRFromArgs is wrapper around MRFromArgsWithOpts without any custom options
-func MRFromArgs(f *cmdutils.Factory, args []string, state string) (*gitlab.MergeRequest, glrepo.Interface, error) {
+func MRFromArgs(f cmdutils.Factory, args []string, state string) (*gitlab.MergeRequest, glrepo.Interface, error) {
 	return MRFromArgsWithOpts(f, args, &gitlab.GetMergeRequestsOptions{}, state)
 }
 
 // MRFromArgsWithOpts gets MR with custom request options passed down to it
 func MRFromArgsWithOpts(
-	f *cmdutils.Factory,
+	f cmdutils.Factory,
 	args []string,
 	opts *gitlab.GetMergeRequestsOptions,
 	state string,
@@ -192,7 +192,7 @@ func MRFromArgsWithOpts(
 	return mr, baseRepo, nil
 }
 
-func MRsFromArgs(f *cmdutils.Factory, args []string, state string) ([]*gitlab.MergeRequest, glrepo.Interface, error) {
+func MRsFromArgs(f cmdutils.Factory, args []string, state string) ([]*gitlab.MergeRequest, glrepo.Interface, error) {
 	if len(args) <= 1 {
 		var arrIDs []string
 		if len(args) == 1 {

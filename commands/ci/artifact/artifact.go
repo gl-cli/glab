@@ -7,7 +7,7 @@ import (
 	jobArtifact "gitlab.com/gitlab-org/cli/commands/job/artifact"
 )
 
-func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 	jobArtifactCmd := &cobra.Command{
 		Use:     "artifact <refName> <jobName> [flags]",
 		Short:   `Download all artifacts from the last pipeline.`,

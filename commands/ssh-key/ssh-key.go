@@ -9,7 +9,7 @@ import (
 	cmdList "gitlab.com/gitlab-org/cli/commands/ssh-key/list"
 )
 
-func NewCmdSSHKey(f *cmdutils.Factory) *cobra.Command {
+func NewCmdSSHKey(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ssh-key <command>",
 		Short: "Manage SSH keys registered with your GitLab account.",

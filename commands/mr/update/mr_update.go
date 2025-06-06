@@ -15,7 +15,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	mrUpdateCmd := &cobra.Command{
 		Use:   "update [<id> | <branch>]",
 		Short: `Update a merge request.`,

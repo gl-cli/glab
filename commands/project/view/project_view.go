@@ -30,7 +30,7 @@ type ViewOptions struct {
 	Repo glrepo.Interface
 }
 
-func NewCmdView(f *cmdutils.Factory) *cobra.Command {
+func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := ViewOptions{
 		IO: f.IO,
 	}

@@ -25,7 +25,7 @@ type Options struct {
 	IO         *iostreams.IOStreams
 }
 
-func NewCmdContributors(f *cmdutils.Factory) *cobra.Command {
+func NewCmdContributors(f cmdutils.Factory) *cobra.Command {
 	opts := &Options{
 		IO: f.IO,
 	}

@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
+func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 	pipelineStatusCmd := &cobra.Command{
 		Use:     "status [flags]",
 		Short:   `View a running CI/CD pipeline on current or other branch specified.`,

@@ -58,7 +58,7 @@ func createZipFile(t *testing.T, filename string) (string, string) {
 	return tempPath, archive.Name()
 }
 
-func makeTestFactory() (factory *cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
+func makeTestFactory() (factory cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
 	fakeHTTP = &httpmock.Mocker{
 		MatchURL: httpmock.PathAndQuerystring,
 	}

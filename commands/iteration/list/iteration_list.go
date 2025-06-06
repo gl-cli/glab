@@ -21,7 +21,7 @@ type IterationListOptions struct {
 	OutputFormat string
 }
 
-func NewCmdList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &IterationListOptions{}
 
 	iterationListCmd := &cobra.Command{

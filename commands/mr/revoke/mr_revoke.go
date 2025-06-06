@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdRevoke(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRevoke(f cmdutils.Factory) *cobra.Command {
 	mrRevokeCmd := &cobra.Command{
 		Use:     "revoke [<id> | <branch>]",
 		Short:   `Revoke approval on a merge request.`,

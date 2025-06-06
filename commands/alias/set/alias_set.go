@@ -23,7 +23,7 @@ type SetOptions struct {
 	IO        *iostreams.IOStreams
 }
 
-func NewCmdSet(f *cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command {
+func NewCmdSet(f cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command {
 	opts := &SetOptions{
 		Config: f.Config,
 	}

@@ -16,7 +16,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdFor(f *cmdutils.Factory) *cobra.Command {
+func NewCmdFor(f cmdutils.Factory) *cobra.Command {
 	mrForCmd := &cobra.Command{
 		Use:     "for",
 		Short:   `Create a new merge request for an issue.`,

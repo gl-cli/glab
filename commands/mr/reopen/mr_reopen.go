@@ -12,7 +12,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
+func NewCmdReopen(f cmdutils.Factory) *cobra.Command {
 	mrReopenCmd := &cobra.Command{
 		Use:   "reopen [<id>... | <branch>...]",
 		Short: `Reopen a merge request.`,

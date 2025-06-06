@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdConfigCompile(f *cmdutils.Factory) *cobra.Command {
+func NewCmdConfigCompile(f cmdutils.Factory) *cobra.Command {
 	configCompileCmd := &cobra.Command{
 		Use:   "compile",
 		Short: "View the fully expanded CI/CD configuration.",
@@ -42,7 +42,7 @@ func NewCmdConfigCompile(f *cmdutils.Factory) *cobra.Command {
 	return configCompileCmd
 }
 
-func compileRun(f *cmdutils.Factory, path string) error {
+func compileRun(f cmdutils.Factory, path string) error {
 	var err error
 
 	apiClient, err := f.HttpClient()

@@ -21,7 +21,7 @@ type LabelListOptions struct {
 	OutputFormat string
 }
 
-func NewCmdList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &LabelListOptions{}
 
 	labelListCmd := &cobra.Command{

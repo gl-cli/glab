@@ -8,7 +8,7 @@ import (
 	labelListCmd "gitlab.com/gitlab-org/cli/commands/label/list"
 )
 
-func NewCmdLabel(f *cmdutils.Factory) *cobra.Command {
+func NewCmdLabel(f cmdutils.Factory) *cobra.Command {
 	labelCmd := &cobra.Command{
 		Use:   "label <command> [flags]",
 		Short: `Manage labels on remote.`,

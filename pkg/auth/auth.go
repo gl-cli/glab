@@ -7,7 +7,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func GetAuthenticatedClient(f *cmdutils.Factory) (*gitlab.Client, error) {
+func GetAuthenticatedClient(f cmdutils.Factory) (*gitlab.Client, error) {
 	glConfig, err := f.Config()
 	if err != nil {
 		return nil, fmt.Errorf("error getting glab configuration: %v", err)

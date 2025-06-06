@@ -27,7 +27,7 @@ type MirrorOptions struct {
 	httpClient *gitlab.Client
 }
 
-func NewCmdMirror(f *cmdutils.Factory) *cobra.Command {
+func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 	opts := MirrorOptions{
 		IO: f.IO,
 	}

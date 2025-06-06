@@ -9,7 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdTransfer(f *cmdutils.Factory) *cobra.Command {
+func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 	repoTransferCmd := &cobra.Command{
 		Use:   "transfer [repo] [flags]",
 		Short: `Transfer a repository to a new namespace.`,

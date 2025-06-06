@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	issueDeleteCmd := &cobra.Command{
 		Use:     "delete <id>",
 		Short:   `Delete an issue.`,

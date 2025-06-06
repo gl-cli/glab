@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdSubscribe(f *cmdutils.Factory) *cobra.Command {
+func NewCmdSubscribe(f cmdutils.Factory) *cobra.Command {
 	mrSubscribeCmd := &cobra.Command{
 		Use:     "subscribe [<id> | <branch>]",
 		Short:   `Subscribe to a merge request.`,

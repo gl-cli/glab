@@ -29,7 +29,7 @@ type options struct {
 	readQueryFromStdIn    bool
 }
 
-func NewCmdGraph(f *cmdutils.Factory) *cobra.Command {
+func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	opts := options{
 		listenNet:  "tcp",
 		listenAddr: "localhost:0",

@@ -33,7 +33,7 @@ type DownloadOpts struct {
 	Config     func() (config.Config, error)
 }
 
-func NewCmdDownload(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 	opts := &DownloadOpts{
 		IO:     f.IO,
 		Config: f.Config,

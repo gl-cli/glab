@@ -21,7 +21,7 @@ type mrCheckoutConfig struct {
 
 var mrCheckoutCfg mrCheckoutConfig
 
-func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCheckout(f cmdutils.Factory) *cobra.Command {
 	mrCheckoutCmd := &cobra.Command{
 		Use:   "checkout [<id> | <branch>]",
 		Short: "Check out an open merge request.",

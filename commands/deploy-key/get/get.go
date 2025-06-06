@@ -20,7 +20,7 @@ type GetOpts struct {
 	KeyID int
 }
 
-func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
+func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	opts := &GetOpts{
 		IO: f.IO,
 	}

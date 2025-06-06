@@ -12,7 +12,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
+func NewCmdClose(f cmdutils.Factory) *cobra.Command {
 	mrCloseCmd := &cobra.Command{
 		Use:   "close [<id> | <branch>]",
 		Short: `Close a merge request.`,

@@ -24,7 +24,7 @@ const (
 
 var commandAliases = []string{"update"}
 
-func NewCheckUpdateCmd(f *cmdutils.Factory, version string) *cobra.Command {
+func NewCheckUpdateCmd(f cmdutils.Factory, version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   commandUse,
 		Short: "Check for latest glab releases.",
@@ -44,7 +44,7 @@ func NewCheckUpdateCmd(f *cmdutils.Factory, version string) *cobra.Command {
 	return cmd
 }
 
-func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previousCommand string) error {
+func CheckUpdate(f cmdutils.Factory, version string, silentSuccess bool, previousCommand string) error {
 	if shouldSkipUpdate(previousCommand) {
 		return nil
 	}
@@ -129,7 +129,7 @@ func isOlderVersion(latestVersion, appVersion string) bool {
 // returns false if we should skip the update check
 //
 // We only want to check for updates once every 24 hours
-func checkLastUpdate(f *cmdutils.Factory) (bool, error) {
+func checkLastUpdate(f cmdutils.Factory) (bool, error) {
 	const updateCheckInterval = 24 * time.Hour
 	cfg, err := f.Config()
 	if err != nil {

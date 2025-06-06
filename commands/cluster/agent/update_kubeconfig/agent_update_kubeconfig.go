@@ -37,7 +37,7 @@ type options struct {
 	agentID    int64
 }
 
-func NewCmdAgentUpdateKubeconfig(f *cmdutils.Factory) *cobra.Command {
+func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 	pathOptions := clientcmd.NewDefaultPathOptions()
 	if len(pathOptions.ExplicitFileFlag) == 0 {
 		pathOptions.ExplicitFileFlag = clientcmd.RecommendedConfigPathFlag

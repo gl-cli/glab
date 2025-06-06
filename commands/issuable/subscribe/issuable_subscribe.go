@@ -17,7 +17,7 @@ var subscribingMessage = map[issuable.IssueType]string{
 	issuable.TypeIncident: "Subscribing to incident",
 }
 
-func NewCmdSubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
 	examplePath := "issues/123"
 
 	if issueType == issuable.TypeIncident {

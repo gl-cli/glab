@@ -31,7 +31,7 @@ type SetOpts struct {
 	Description string
 }
 
-func NewCmdSet(f *cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Command {
+func NewCmdSet(f cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Command {
 	opts := &SetOpts{
 		IO: f.IO,
 	}

@@ -30,7 +30,7 @@ var (
 	}
 )
 
-func NewCmdReopen(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+func NewCmdReopen(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
 	examplePath := "issues/123"
 
 	if issueType == issuable.TypeIncident {

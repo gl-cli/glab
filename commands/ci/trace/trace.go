@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdTrace(f *cmdutils.Factory) *cobra.Command {
+func NewCmdTrace(f cmdutils.Factory) *cobra.Command {
 	pipelineCITraceCmd := &cobra.Command{
 		Use:   "trace [<job-id>] [flags]",
 		Short: `Trace a CI/CD job log in real time.`,

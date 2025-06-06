@@ -31,7 +31,7 @@ func parseVarArg(s string) (key string, val string, err error) {
 	return v[0], v[1], nil
 }
 
-func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 	pipelineRunCmd := &cobra.Command{
 		Use:     "run-trig [flags]",
 		Short:   `Run a CI/CD pipeline trigger.`,

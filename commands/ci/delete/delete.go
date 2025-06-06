@@ -39,7 +39,7 @@ var (
 	}
 )
 
-func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	pipelineDeleteCmd := &cobra.Command{
 		Use:   "delete <id> [flags]",
 		Short: `Delete CI/CD pipelines.`,

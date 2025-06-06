@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdSchedule(f *cmdutils.Factory) *cobra.Command {
+func NewCmdSchedule(f cmdutils.Factory) *cobra.Command {
 	scheduleCmd := &cobra.Command{
 		Use:     "schedule <command> [flags]",
 		Short:   `Work with GitLab CI/CD schedules.`,

@@ -22,7 +22,7 @@ import (
 )
 
 type DiffOptions struct {
-	factory *cmdutils.Factory
+	factory cmdutils.Factory
 	IO      *iostreams.IOStreams
 
 	Args     []string
@@ -30,7 +30,7 @@ type DiffOptions struct {
 	RawDiff  bool
 }
 
-func NewCmdDiff(f *cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Command {
+func NewCmdDiff(f cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Command {
 	opts := &DiffOptions{
 		factory: f,
 		IO:      f.IO,

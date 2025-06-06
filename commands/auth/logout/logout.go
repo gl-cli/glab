@@ -21,7 +21,7 @@ type LogoutOptions struct {
 
 var opts *LogoutOptions
 
-func NewCmdLogout(f *cmdutils.Factory) *cobra.Command {
+func NewCmdLogout(f cmdutils.Factory) *cobra.Command {
 	opts = &LogoutOptions{
 		IO:       f.IO,
 		Config:   f.Config,

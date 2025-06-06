@@ -19,7 +19,7 @@ const (
 	FlagDryRun = "dry-run"
 )
 
-func NewCmdCancel(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
 	jobCancelCmd := &cobra.Command{
 		Use:   "job <id> [flags]",
 		Short: `Cancel CI/CD jobs.`,

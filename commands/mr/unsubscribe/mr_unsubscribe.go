@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdUnsubscribe(f *cmdutils.Factory) *cobra.Command {
+func NewCmdUnsubscribe(f cmdutils.Factory) *cobra.Command {
 	mrUnsubscribeCmd := &cobra.Command{
 		Use:     "unsubscribe [<id> | <branch>]",
 		Short:   `Unsubscribe from a merge request.`,

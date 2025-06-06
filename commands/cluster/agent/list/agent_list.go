@@ -20,9 +20,8 @@ type options struct {
 	page, perPage uint
 }
 
-func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdAgentList(f cmdutils.Factory) *cobra.Command {
 	var opts options
-
 	agentListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List GitLab Agents for Kubernetes in a project.`,

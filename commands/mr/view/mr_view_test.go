@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	stubFactory *cmdutils.Factory
+	stubFactory cmdutils.Factory
 	stdout      *bytes.Buffer
 	stderr      *bytes.Buffer
 )

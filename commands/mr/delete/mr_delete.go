@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	mrDeleteCmd := &cobra.Command{
 		Use:     "delete [<id> | <branch>]",
 		Short:   `Delete a merge request.`,

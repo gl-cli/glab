@@ -9,6 +9,6 @@ import (
 	issuableReopenCmd "gitlab.com/gitlab-org/cli/commands/issuable/reopen"
 )
 
-func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
+func NewCmdReopen(f cmdutils.Factory) *cobra.Command {
 	return issuableReopenCmd.NewCmdReopen(f, issuable.TypeIncident)
 }

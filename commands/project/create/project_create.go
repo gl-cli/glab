@@ -21,7 +21,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
-func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	projectCreateCmd := &cobra.Command{
 		Use:   "create [path] [flags]",
 		Short: `Create a new GitLab project/repository.`,
@@ -60,7 +60,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	return projectCreateCmd
 }
 
-func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) error {
+func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) error {
 	var (
 		projectPath string
 		visiblity   gitlab.VisibilityValue

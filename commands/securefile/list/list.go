@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	securefileListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List secure files for a project.`,

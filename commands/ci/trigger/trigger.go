@@ -12,7 +12,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
+func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 	pipelineTriggerCmd := &cobra.Command{
 		Use:     "trigger <job-id>",
 		Short:   `Trigger a manual CI/CD job.`,

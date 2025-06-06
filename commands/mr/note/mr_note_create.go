@@ -13,7 +13,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdNote(f *cmdutils.Factory) *cobra.Command {
+func NewCmdNote(f cmdutils.Factory) *cobra.Command {
 	mrCreateNoteCmd := &cobra.Command{
 		Use:     "note [<id> | <branch>]",
 		Aliases: []string{"comment"},

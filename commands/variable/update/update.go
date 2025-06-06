@@ -31,7 +31,7 @@ type UpdateOpts struct {
 	Description string
 }
 
-func NewCmdUpdate(f *cmdutils.Factory, runE func(opts *UpdateOpts) error) *cobra.Command {
+func NewCmdUpdate(f cmdutils.Factory, runE func(opts *UpdateOpts) error) *cobra.Command {
 	opts := &UpdateOpts{
 		IO: f.IO,
 	}

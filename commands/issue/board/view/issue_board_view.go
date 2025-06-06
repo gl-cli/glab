@@ -45,7 +45,7 @@ type boardMeta struct {
 	project *gitlab.Project
 }
 
-func NewCmdView(f *cmdutils.Factory) *cobra.Command {
+func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := &issueBoardViewOptions{}
 	viewCmd := &cobra.Command{
 		Use:   "view [flags]",

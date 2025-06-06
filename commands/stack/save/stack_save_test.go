@@ -23,7 +23,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStreams, stdout *bytes.Buffer, stderr *bytes.Buffer, factory *cmdutils.Factory) {
+func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStreams, stdout *bytes.Buffer, stderr *bytes.Buffer, factory cmdutils.Factory) {
 	ios, _, stdout, stderr = cmdtest.InitIOStreams(isTTY, "")
 
 	factory = cmdtest.InitFactory(ios, rt)
@@ -354,7 +354,7 @@ func createTemporaryFiles(t *testing.T, dir string, files []string) {
 	}
 }
 
-func createFactoryWithConfig(key string, value string) *cmdutils.Factory {
+func createFactoryWithConfig(key string, value string) cmdutils.Factory {
 	strconfig := heredoc.Doc(`
 				` + key + `: ` + value + `
 			`)

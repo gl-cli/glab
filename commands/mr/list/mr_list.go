@@ -60,7 +60,7 @@ type ListOptions struct {
 	HTTPClient func() (*gitlab.Client, error)
 }
 
-func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.Command {
+func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.Command {
 	opts := &ListOptions{
 		IO: f.IO,
 	}

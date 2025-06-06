@@ -139,7 +139,7 @@ func Test_parseReorderFile(t *testing.T) {
 	}
 }
 
-func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStreams, f *cmdutils.Factory) {
+func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStreams, f cmdutils.Factory) {
 	ios, _, _, _ = cmdtest.InitIOStreams(isTTY, "")
 
 	f = cmdtest.InitFactory(ios, rt)

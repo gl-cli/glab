@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	labelCreateCmd := &cobra.Command{
 		Use:     "create [flags]",
 		Short:   `Create labels for a repository or project.`,

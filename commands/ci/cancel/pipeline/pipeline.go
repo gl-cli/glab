@@ -19,7 +19,7 @@ const (
 	FlagDryRun = "dry-run"
 )
 
-func NewCmdCancel(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
 	pipelineCancelCmd := &cobra.Command{
 		Use:   "pipeline <id> [flags]",
 		Short: `Cancel CI/CD pipelines.`,

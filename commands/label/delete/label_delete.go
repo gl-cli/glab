@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	labelDeleteCmd := &cobra.Command{
 		Use:   "delete [flags]",
 		Short: `Delete labels for a repository or project.`,

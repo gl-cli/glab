@@ -16,7 +16,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdNote(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
 	issueNoteCreateCmd := &cobra.Command{
 		Use:     fmt.Sprintf("note <%s-id>", issueType),
 		Aliases: []string{"comment"},

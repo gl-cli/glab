@@ -9,7 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 )
 
-func NewCmdApprovers(f *cmdutils.Factory) *cobra.Command {
+func NewCmdApprovers(f cmdutils.Factory) *cobra.Command {
 	mrApproversCmd := &cobra.Command{
 		Use:     "approvers [<id> | <branch>] [flags]",
 		Short:   `List eligible approvers for merge requests in any state.`,

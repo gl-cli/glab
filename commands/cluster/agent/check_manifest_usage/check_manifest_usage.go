@@ -30,7 +30,7 @@ type AgentConfig struct {
 	} `yaml:"gitops,omitempty"`
 }
 
-func NewCmdCheckManifestUsage(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCheckManifestUsage(f cmdutils.Factory) *cobra.Command {
 	opts := &Options{
 		IO: f.IO,
 	}

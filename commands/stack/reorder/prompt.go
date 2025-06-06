@@ -34,7 +34,7 @@ func parseReorderFile(input string) (branches []string, err error) {
 	return
 }
 
-func promptForOrder(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor, stack git.Stack, branch string) ([]string, error) {
+func promptForOrder(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, stack git.Stack, branch string) ([]string, error) {
 	var message string
 	var buffer bytes.Buffer
 

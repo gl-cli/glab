@@ -18,7 +18,7 @@ var unsubscribingMessage = map[issuable.IssueType]string{
 	issuable.TypeIncident: "Unsubscribing from incident",
 }
 
-func NewCmdUnsubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
 	examplePath := "issues/123"
 
 	if issueType == issuable.TypeIncident {

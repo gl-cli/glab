@@ -17,7 +17,7 @@ type RunOpts struct {
 	IO         *iostreams.IOStreams
 }
 
-func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 	opts := &RunOpts{
 		IO: f.IO,
 	}

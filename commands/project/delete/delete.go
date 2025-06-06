@@ -26,7 +26,7 @@ type DeleteOpts struct {
 	BaseRepo func() (glrepo.Interface, error)
 }
 
-func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &DeleteOpts{
 		IO:       f.IO,
 		Lab:      f.HttpClient,

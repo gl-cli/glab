@@ -16,7 +16,7 @@ type ListOptions struct {
 	BaseRepo func() (glrepo.Interface, error)
 }
 
-func NewDummyCmd(f *cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.Command {
+func NewDummyCmd(f cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.Command {
 	opts := &ListOptions{}
 
 	cmd := &cobra.Command{

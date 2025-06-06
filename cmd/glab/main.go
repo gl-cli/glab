@@ -233,7 +233,7 @@ func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, deb
 	}
 }
 
-func maybeOverrideDefaultHost(f *cmdutils.Factory, cfg config.Config) {
+func maybeOverrideDefaultHost(f cmdutils.Factory, cfg config.Config) {
 	baseRepo, err := f.BaseRepo()
 	if err == nil {
 		glinstance.OverrideDefault(baseRepo.RepoHost())
@@ -251,7 +251,7 @@ func maybeOverrideDefaultHost(f *cmdutils.Factory, cfg config.Config) {
 	}
 }
 
-func checkForTelemetryHook(cfg config.Config, f *cmdutils.Factory, cmd *cobra.Command) {
+func checkForTelemetryHook(cfg config.Config, f cmdutils.Factory, cmd *cobra.Command) {
 	if hooks.IsTelemetryEnabled(cfg) {
 		cobra.OnFinalize(hooks.AddTelemetryHook(f, cmd))
 	}

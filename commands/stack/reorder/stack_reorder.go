@@ -30,7 +30,7 @@ type Options struct {
 	Config      func() (config.Config, error)
 }
 
-func NewCmdReorderStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
+func NewCmdReorderStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
 	opts := &Options{
 		Remotes:  f.Remotes,
 		Config:   f.Config,
@@ -60,7 +60,7 @@ func NewCmdReorderStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.
 	return stackSaveCmd
 }
 
-func reorderFunc(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostream *iostreams.IOStreams, opts *Options) error {
+func reorderFunc(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostream *iostreams.IOStreams, opts *Options) error {
 	iostream.StartSpinner("Reordering\n")
 	defer iostream.StopSpinner("")
 
@@ -185,7 +185,7 @@ func matchBranchesToStack(stack git.Stack, branches []string) (git.Stack, error)
 	return newStack, nil
 }
 
-func updateMRs(f *cmdutils.Factory, newStack git.Stack, oldStack git.Stack) error {
+func updateMRs(f cmdutils.Factory, newStack git.Stack, oldStack git.Stack) error {
 	for _, ref := range newStack.Iter2() {
 		// if there is already an MR and the order has been adjusted
 		if ref.MR != "" &&

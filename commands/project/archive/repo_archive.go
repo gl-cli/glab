@@ -16,7 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
+func NewCmdArchive(f cmdutils.Factory) *cobra.Command {
 	repoArchiveCmd := &cobra.Command{
 		Use:   "archive <command> [flags]",
 		Short: `Get an archive of the repository.`,

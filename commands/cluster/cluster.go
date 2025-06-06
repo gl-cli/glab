@@ -7,7 +7,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdCluster(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCluster(f cmdutils.Factory) *cobra.Command {
 	clusterCmd := &cobra.Command{
 		Use:   "cluster <command> [flags]",
 		Short: `Manage GitLab Agents for Kubernetes and their clusters.`,

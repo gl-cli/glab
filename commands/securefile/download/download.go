@@ -16,7 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
-func NewCmdDownload(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 	securefileDownloadCmd := &cobra.Command{
 		Use:   "download <fileID> [flags]",
 		Short: `Download a secure file for a project.`,

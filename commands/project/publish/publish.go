@@ -7,7 +7,7 @@ import (
 	publishCatalogCmd "gitlab.com/gitlab-org/cli/commands/project/publish/catalog"
 )
 
-func NewCmdPublish(f *cmdutils.Factory) *cobra.Command {
+func NewCmdPublish(f cmdutils.Factory) *cobra.Command {
 	publishCmd := &cobra.Command{
 		Use:   "publish <command> [flags]",
 		Short: `Publishes resources in the project.`,

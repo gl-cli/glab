@@ -14,7 +14,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	issueUpdateCmd := &cobra.Command{
 		Use:   "update <id>",
 		Short: `Update issue`,

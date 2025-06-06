@@ -43,7 +43,7 @@ type LoginOptions struct {
 
 var opts *LoginOptions
 
-func NewCmdLogin(f *cmdutils.Factory) *cobra.Command {
+func NewCmdLogin(f cmdutils.Factory) *cobra.Command {
 	opts = &LoginOptions{
 		IO:     f.IO,
 		Config: f.Config,

@@ -9,6 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdUnsubscribe(f *cmdutils.Factory) *cobra.Command {
+func NewCmdUnsubscribe(f cmdutils.Factory) *cobra.Command {
 	return issuableUnsubscribeCmd.NewCmdUnsubscribe(f, issuable.TypeIncident)
 }

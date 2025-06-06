@@ -14,7 +14,7 @@ type MRRebaseOptions struct {
 	SkipCI bool
 }
 
-func NewCmdRebase(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRebase(f cmdutils.Factory) *cobra.Command {
 	opts := &MRRebaseOptions{}
 
 	mrRebaseCmd := &cobra.Command{

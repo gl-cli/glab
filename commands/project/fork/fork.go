@@ -43,7 +43,7 @@ type ForkOptions struct {
 	Config      func() (config.Config, error)
 }
 
-func NewCmdFork(f *cmdutils.Factory, runE func(*cmdutils.Factory) error) *cobra.Command {
+func NewCmdFork(f cmdutils.Factory, runE func(cmdutils.Factory) error) *cobra.Command {
 	opts := &ForkOptions{
 		IO:                 f.IO,
 		BaseRepo:           f.BaseRepo,

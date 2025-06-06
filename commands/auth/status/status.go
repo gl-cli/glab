@@ -23,7 +23,7 @@ type StatusOpts struct {
 	Config             func() (config.Config, error)
 }
 
-func NewCmdStatus(f *cmdutils.Factory, runE func(*StatusOpts) error) *cobra.Command {
+func NewCmdStatus(f cmdutils.Factory, runE func(*StatusOpts) error) *cobra.Command {
 	opts := &StatusOpts{
 		IO:     f.IO,
 		Config: f.Config,

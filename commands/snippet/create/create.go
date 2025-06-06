@@ -46,7 +46,7 @@ func hasStdIn() bool {
 	return fi.Size() > 0
 }
 
-func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{}
 	snippetCreateCmd := &cobra.Command{
 		Use: `create [flags] -t <title> <file1> [<file2>...]

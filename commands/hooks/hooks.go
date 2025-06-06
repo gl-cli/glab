@@ -13,7 +13,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/dbg"
 )
 
-func AddTelemetryHook(f *cmdutils.Factory, cmd *cobra.Command) func() {
+func AddTelemetryHook(f cmdutils.Factory, cmd *cobra.Command) func() {
 	return func() {
 		go sendTelemetryData(f, cmd)
 	}
@@ -51,7 +51,7 @@ func parseCommand(parts []string) (command, subcommand, fullCommand string) {
 	return command, subcommand, fullCommand
 }
 
-func sendTelemetryData(f *cmdutils.Factory, cmd *cobra.Command) {
+func sendTelemetryData(f cmdutils.Factory, cmd *cobra.Command) {
 	var projectID int
 	var namespaceID int
 

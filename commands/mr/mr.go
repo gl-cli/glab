@@ -27,7 +27,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdMR(f *cmdutils.Factory) *cobra.Command {
+func NewCmdMR(f cmdutils.Factory) *cobra.Command {
 	mrCmd := &cobra.Command{
 		Use:   "mr <command> [flags]",
 		Short: `Create, view, and manage merge requests.`,

@@ -19,7 +19,7 @@ type ListOptions struct {
 	IO     *iostreams.IOStreams
 }
 
-func NewCmdList(f *cmdutils.Factory, runF func(*ListOptions) error) *cobra.Command {
+func NewCmdList(f cmdutils.Factory, runF func(*ListOptions) error) *cobra.Command {
 	opts := &ListOptions{
 		Config: f.Config,
 		IO:     f.IO,

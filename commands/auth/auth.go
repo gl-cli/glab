@@ -9,7 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdAuth(f *cmdutils.Factory) *cobra.Command {
+func NewCmdAuth(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth <command>",
 		Short: "Manage glab's authentication state.",

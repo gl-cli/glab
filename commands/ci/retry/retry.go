@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdRetry(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRetry(f cmdutils.Factory) *cobra.Command {
 	pipelineRetryCmd := &cobra.Command{
 		Use:     "retry <job-id>",
 		Short:   `Retry a CI/CD job.`,

@@ -76,7 +76,7 @@ type CreateOpts struct {
 	Config     func() (config.Config, error)
 }
 
-func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{
 		IO:     f.IO,
 		Config: f.Config,

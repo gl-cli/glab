@@ -9,7 +9,7 @@ import (
 	cmdList "gitlab.com/gitlab-org/cli/commands/deploy-key/list"
 )
 
-func NewCmdDeployKey(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDeployKey(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "deploy-key <command>",
 		Short: "Manage deploy keys.",

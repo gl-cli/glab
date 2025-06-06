@@ -23,7 +23,7 @@ var closedMessage = map[issuable.IssueType]string{
 	issuable.TypeIncident: "Resolved incident",
 }
 
-func NewCmdClose(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+func NewCmdClose(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
 	examplePath := "issues/123"
 	aliases := []string{}
 

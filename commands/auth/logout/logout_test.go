@@ -15,7 +15,7 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(f *cmdutils.Factory, args string) (*test.CmdOut, error) {
+func runCommand(f cmdutils.Factory, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(true, "")
 	factory := cmdtest.InitFactory(ios, nil)
 	_, _ = factory.HttpClient()

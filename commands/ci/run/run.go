@@ -63,7 +63,7 @@ func extractFileVar(s string) (*gitlab.PipelineVariableOptions, error) {
 	return pvar, nil
 }
 
-func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 	openInBrowser := false
 
 	pipelineRunCmd := &cobra.Command{

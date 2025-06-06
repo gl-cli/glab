@@ -41,7 +41,7 @@ func marshalJson(variables any) ([]byte, error) {
 	return res, nil
 }
 
-func NewCmdExport(f *cmdutils.Factory, runE func(opts *ExportOpts) error) *cobra.Command {
+func NewCmdExport(f cmdutils.Factory, runE func(opts *ExportOpts) error) *cobra.Command {
 	opts := &ExportOpts{
 		IO: f.IO,
 	}

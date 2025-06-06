@@ -13,7 +13,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
-func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
+func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "events",
 		Short: "View user events.",

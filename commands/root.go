@@ -39,7 +39,7 @@ import (
 )
 
 // NewCmdRoot is the main root/parent command
-func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
+func NewCmdRoot(f cmdutils.Factory, version, commit string) *cobra.Command {
 	c := f.IO.Color()
 	rootCmd := &cobra.Command{
 		Use:           "glab <command> <subcommand> [flags]",

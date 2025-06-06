@@ -65,7 +65,7 @@ type ListOptions struct {
 	JSONOutput bool
 }
 
-func NewCmdList(f *cmdutils.Factory, runE func(opts *ListOptions) error, issueType issuable.IssueType) *cobra.Command {
+func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error, issueType issuable.IssueType) *cobra.Command {
 	opts := &ListOptions{
 		IO:        f.IO,
 		IssueType: string(issueType),

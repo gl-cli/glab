@@ -34,7 +34,7 @@ type RotateOptions struct {
 	OutputFormat string
 }
 
-func NewCmdRotate(f *cmdutils.Factory, runE func(opts *RotateOptions) error) *cobra.Command {
+func NewCmdRotate(f cmdutils.Factory, runE func(opts *RotateOptions) error) *cobra.Command {
 	opts := &RotateOptions{
 		IO: f.IO,
 	}

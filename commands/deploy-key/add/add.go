@@ -26,7 +26,7 @@ type AddOpts struct {
 	KeyFile string
 }
 
-func NewCmdAdd(f *cmdutils.Factory) *cobra.Command {
+func NewCmdAdd(f cmdutils.Factory) *cobra.Command {
 	opts := &AddOpts{
 		IO: f.IO,
 	}

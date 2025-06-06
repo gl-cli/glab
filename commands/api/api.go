@@ -49,7 +49,7 @@ type ApiOptions struct {
 	Silent              bool
 }
 
-func NewCmdApi(f *cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command {
+func NewCmdApi(f cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command {
 	opts := ApiOptions{
 		IO:         f.IO,
 		HttpClient: f.HttpClient,

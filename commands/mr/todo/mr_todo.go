@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdTodo(f *cmdutils.Factory) *cobra.Command {
+func NewCmdTodo(f cmdutils.Factory) *cobra.Command {
 	mrToDoCmd := &cobra.Command{
 		Use:     "todo [<id> | <branch>]",
 		Aliases: []string{"add-todo"},

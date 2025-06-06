@@ -43,7 +43,7 @@ type MergeOpts struct {
 	MergeMethod MRMergeMethod
 }
 
-func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
+func NewCmdMerge(f cmdutils.Factory) *cobra.Command {
 	opts := &MergeOpts{
 		MergeMethod: MRMergeMethodMerge,
 	}
