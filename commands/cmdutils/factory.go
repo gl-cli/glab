@@ -14,68 +14,141 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-var (
-	CachedConfig config.Config
-	ConfigError  error
-)
-
-type Factory struct {
-	HttpClient func() (*gitlab.Client, error)
-	BaseRepo   func() (glrepo.Interface, error)
-	Remotes    func() (glrepo.Remotes, error)
-	Config     func() (config.Config, error)
-	Branch     func() (string, error)
-	IO         *iostreams.IOStreams
-
-	clientOnce sync.Once
-	client     *gitlab.Client
-	clientErr  error
+// Factory is a way to obtain core tools for the commands.
+// Safe for concurrent use.
+type Factory interface {
+	RepoOverride(repo string)
+	HttpClient() (*gitlab.Client, error)
+	BaseRepo() (glrepo.Interface, error)
+	Remotes() (glrepo.Remotes, error)
+	Config() (config.Config, error)
+	Branch() (string, error)
+	IO() *iostreams.IOStreams
 }
 
-// MIT License
-//
-// Copyright (c) 2019 GitHub Inc.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+type DefaultFactory struct {
+	io           *iostreams.IOStreams
+	resolveRepos bool
 
-func (f *Factory) RepoOverride(repo string) error {
-	f.BaseRepo = func() (glrepo.Interface, error) {
-		return glrepo.FromFullName(repo)
+	mu           sync.Mutex // protects the fields below
+	repoOverride string
+	cachedConfig config.Config
+	configError  error
+}
+
+func NewFactory(io *iostreams.IOStreams, resolveRepos bool) *DefaultFactory {
+	return &DefaultFactory{
+		io:           io,
+		resolveRepos: resolveRepos,
 	}
-	newRepo, err := f.BaseRepo()
-	if err != nil {
-		return err
+}
+
+func NewFactoryWithConfig(io *iostreams.IOStreams, resolveRepos bool, cfg config.Config) *DefaultFactory {
+	return &DefaultFactory{
+		io:           io,
+		resolveRepos: resolveRepos,
+		cachedConfig: cfg,
 	}
-	// Initialise new http client for new repo host
+}
+
+func (f *DefaultFactory) RepoOverride(repo string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.repoOverride = repo
+}
+
+func (f *DefaultFactory) HttpClient() (*gitlab.Client, error) {
 	cfg, err := f.Config()
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	f.client = nil
-	f.clientErr = nil
-	f.clientOnce = sync.Once{}
-
-	f.HttpClient = func() (*gitlab.Client, error) {
-		return LabClientFunc(newRepo.RepoHost(), cfg, false)
+	f.mu.Lock()
+	override := f.repoOverride
+	f.mu.Unlock()
+	var repo glrepo.Interface
+	if override != "" {
+		repo, err = glrepo.FromFullName(override)
+		if err != nil {
+			return nil, err // return the error if repo was overridden.
+		}
+	} else {
+		remotes, err := f.Remotes()
+		if err != nil {
+			// use default hostname if remote resolver fails
+			repo = glrepo.NewWithHost("", "", glinstance.OverridableDefault())
+		} else {
+			repo = remotes[0]
+		}
 	}
-	return nil
+	return LabClientFunc(repo.RepoHost(), cfg, false)
+}
+
+func (f *DefaultFactory) BaseRepo() (glrepo.Interface, error) {
+	f.mu.Lock()
+	override := f.repoOverride
+	f.mu.Unlock()
+	if override != "" {
+		return glrepo.FromFullName(override)
+	}
+	remotes, err := f.Remotes()
+	if err != nil {
+		return nil, err
+	}
+	if !f.resolveRepos {
+		return remotes[0], nil
+	}
+	cfg, err := f.Config()
+	if err != nil {
+		return nil, err
+	}
+	httpClient, err := LabClientFunc(remotes[0].RepoHost(), cfg, false)
+	if err != nil {
+		return nil, err
+	}
+	repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, "")
+	if err != nil {
+		return nil, err
+	}
+	baseRepo, err := repoContext.BaseRepo(f.io.PromptEnabled())
+	if err != nil {
+		return nil, err
+	}
+	return baseRepo, nil
+}
+
+func (f *DefaultFactory) Remotes() (glrepo.Remotes, error) {
+	hostOverride := ""
+	if !strings.EqualFold(glinstance.Default(), glinstance.OverridableDefault()) {
+		hostOverride = glinstance.OverridableDefault()
+	}
+	rr := &remoteResolver{
+		readRemotes: git.Remotes,
+		getConfig:   f.Config,
+	}
+	fn := rr.Resolver(hostOverride)
+	return fn()
+}
+
+func (f *DefaultFactory) Config() (config.Config, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.cachedConfig != nil || f.configError != nil {
+		return f.cachedConfig, f.configError
+	}
+	f.cachedConfig, f.configError = config.Init()
+	return f.cachedConfig, f.configError
+}
+
+func (f *DefaultFactory) Branch() (string, error) {
+	currentBranch, err := git.CurrentBranch()
+	if err != nil {
+		return "", fmt.Errorf("could not determine current branch: %w", err)
+	}
+	return currentBranch, nil
+}
+
+func (f *DefaultFactory) IO() *iostreams.IOStreams {
+	return f.io
 }
 
 func LabClientFunc(repoHost string, cfg config.Config, isGraphQL bool) (*gitlab.Client, error) {
@@ -84,78 +157,4 @@ func LabClientFunc(repoHost string, cfg config.Config, isGraphQL bool) (*gitlab.
 		return nil, err
 	}
 	return c.Lab(), nil
-}
-
-func remotesFunc() (glrepo.Remotes, error) {
-	hostOverride := ""
-	if !strings.EqualFold(glinstance.Default(), glinstance.OverridableDefault()) {
-		hostOverride = glinstance.OverridableDefault()
-	}
-	rr := &remoteResolver{
-		readRemotes: git.Remotes,
-		getConfig:   configFunc,
-	}
-	fn := rr.Resolver(hostOverride)
-	return fn()
-}
-
-// FIXME remove usage of global variables
-func configFunc() (config.Config, error) {
-	if CachedConfig != nil || ConfigError != nil {
-		return CachedConfig, ConfigError
-	}
-	CachedConfig, ConfigError = config.Init()
-	return CachedConfig, ConfigError
-}
-
-func baseRepoFunc() (glrepo.Interface, error) {
-	remotes, err := remotesFunc()
-	if err != nil {
-		return nil, err
-	}
-	return remotes[0], nil
-}
-
-func httpClientFunc() (*gitlab.Client, error) {
-	cfg, err := configFunc()
-	if err != nil {
-		return nil, err
-	}
-	repo, err := baseRepoFunc()
-	if err != nil {
-		// use default hostname if remote resolver fails
-		repo = glrepo.NewWithHost("", "", glinstance.OverridableDefault())
-	}
-	return LabClientFunc(repo.RepoHost(), cfg, false)
-}
-
-// safeHttpClientFunc returns a function that ensures thread-safe initialization of the HTTP client
-// to prevent race conditions when multiple goroutines attempt to create a client simultaneously
-func (f *Factory) safeHttpClientFunc() func() (*gitlab.Client, error) {
-	return func() (*gitlab.Client, error) {
-		f.clientOnce.Do(func() {
-			f.client, f.clientErr = httpClientFunc()
-		})
-		return f.client, f.clientErr
-	}
-}
-
-func NewFactory() *Factory {
-	f := &Factory{
-		Config:     configFunc,
-		Remotes:    remotesFunc,
-		HttpClient: httpClientFunc,
-		BaseRepo:   baseRepoFunc,
-		Branch: func() (string, error) {
-			currentBranch, err := git.CurrentBranch()
-			if err != nil {
-				return "", fmt.Errorf("could not determine current branch: %w", err)
-			}
-			return currentBranch, nil
-		},
-		IO: iostreams.Init(),
-	}
-
-	f.HttpClient = f.safeHttpClientFunc()
-	return f
 }

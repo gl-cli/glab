@@ -36,7 +36,6 @@ import (
 	userCmd "gitlab.com/gitlab-org/cli/commands/user"
 	variableCmd "gitlab.com/gitlab-org/cli/commands/variable"
 	versionCmd "gitlab.com/gitlab-org/cli/commands/version"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
 // NewCmdRoot is the main root/parent command
@@ -125,9 +124,6 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 	rootCmd.AddCommand(updateCmd.NewCheckUpdateCmd(f, version))
 	rootCmd.AddCommand(authCmd.NewCmdAuth(f))
 
-	// the commands below require apiClient and resolved repos
-	f.BaseRepo = resolvedBaseRepo(f)
-
 	rootCmd.AddCommand(changelogCmd.NewCmdChangelog(f))
 	rootCmd.AddCommand(clusterCmd.NewCmdCluster(f))
 	rootCmd.AddCommand(issueCmd.NewCmdIssue(f))
@@ -158,27 +154,4 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 
 	rootCmd.Flags().BoolP("version", "v", false, "show glab version information")
 	return rootCmd
-}
-
-func resolvedBaseRepo(f *cmdutils.Factory) func() (glrepo.Interface, error) {
-	return func() (glrepo.Interface, error) {
-		httpClient, err := f.HttpClient()
-		if err != nil {
-			return nil, err
-		}
-		remotes, err := f.Remotes()
-		if err != nil {
-			return nil, err
-		}
-		repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, "")
-		if err != nil {
-			return nil, err
-		}
-		baseRepo, err := repoContext.BaseRepo(f.IO.PromptEnabled())
-		if err != nil {
-			return nil, err
-		}
-
-		return baseRepo, nil
-	}
 }
