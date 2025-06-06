@@ -33,7 +33,7 @@ type DiffOptions struct {
 func NewCmdDiff(f cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Command {
 	opts := &DiffOptions{
 		factory: f,
-		IO:      f.IO,
+		IO:      f.IO(),
 	}
 
 	cmd := &cobra.Command{

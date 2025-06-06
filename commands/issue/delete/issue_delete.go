@@ -25,7 +25,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 
 			apiClient, err := f.HttpClient()
 			if err != nil {
@@ -38,8 +38,8 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			}
 
 			for _, issue := range issues {
-				if f.IO.IsErrTTY && f.IO.IsaTTY {
-					fmt.Fprintf(f.IO.StdErr, "- Deleting issue #%d.\n", issue.IID)
+				if f.IO().IsErrTTY && f.IO().IsaTTY {
+					fmt.Fprintf(f.IO().StdErr, "- Deleting issue #%d.\n", issue.IID)
 				}
 
 				err := api.DeleteIssue(apiClient, repo.FullName(), issue.IID)
@@ -47,7 +47,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintln(f.IO.StdErr, c.GreenCheck(), "Issue deleted.")
+				fmt.Fprintln(f.IO().StdErr, c.GreenCheck(), "Issue deleted.")
 			}
 			return nil
 		},

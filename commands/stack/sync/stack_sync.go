@@ -55,7 +55,7 @@ func NewCmdSyncStack(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 		BaseRepo: f.BaseRepo,
 	}
 
-	iostream = f.IO
+	iostream = f.IO()
 
 	stackSaveCmd := &cobra.Command{
 		Use:   "sync",

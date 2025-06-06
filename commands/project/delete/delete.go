@@ -28,7 +28,7 @@ type DeleteOpts struct {
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &DeleteOpts{
-		IO:       f.IO,
+		IO:       f.IO(),
 		Lab:      f.HttpClient,
 		BaseRepo: f.BaseRepo,
 	}

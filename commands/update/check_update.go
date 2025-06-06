@@ -84,9 +84,9 @@ func CheckUpdate(f cmdutils.Factory, version string, silentSuccess bool, previou
 	latestRelease := releases[0]
 	releaseURL := fmt.Sprintf("%s/-/releases/%s", defaultProjectURL, latestRelease.TagName)
 
-	c := f.IO.Color()
+	c := f.IO().Color()
 	if isOlderVersion(latestRelease.Name, version) {
-		fmt.Fprintf(f.IO.StdErr, "%s %s -> %s\n%s\n",
+		fmt.Fprintf(f.IO().StdErr, "%s %s -> %s\n%s\n",
 			c.Yellow("A new version of glab has been released:"),
 			c.Red(version), c.Green(latestRelease.TagName),
 			releaseURL)
@@ -94,7 +94,7 @@ func CheckUpdate(f cmdutils.Factory, version string, silentSuccess bool, previou
 		if silentSuccess {
 			return nil
 		}
-		fmt.Fprintf(f.IO.StdErr, "%v",
+		fmt.Fprintf(f.IO().StdErr, "%v",
 			c.Green("You are already using the latest version of glab!\n"))
 	}
 	return nil

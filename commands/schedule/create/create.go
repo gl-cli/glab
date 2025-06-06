@@ -70,7 +70,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			fmt.Fprintln(f.IO.StdOut, "Created schedule")
+			fmt.Fprintln(f.IO().StdOut, "Created schedule")
 
 			return nil
 		},

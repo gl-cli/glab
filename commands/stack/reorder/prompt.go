@@ -59,7 +59,7 @@ func promptForOrder(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, sta
 
 	var branches []string
 
-	if !f.IO.IsOutputTTY() {
+	if !f.IO().IsOutputTTY() {
 		return []string{}, errors.New("No TTY available")
 	}
 

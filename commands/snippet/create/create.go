@@ -62,7 +62,7 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 			$ glab snippet create --personal --title "Personal snippet" script.py
 		`),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			opts.IO = f.IO
+			opts.IO = f.IO()
 			opts.BaseRepo = f.BaseRepo
 			if opts.Title == "" {
 				return &cmdutils.FlagError{
@@ -73,12 +73,12 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 				if opts.DisplayFilename == "" {
 					return &cmdutils.FlagError{Err: errors.New("if 'path' is not provided, 'filename' and stdin are required")}
 				} else {
-					if !f.IO.IsInTTY && !hasStdIn() {
+					if !opts.IO.IsInTTY && !hasStdIn() {
 						return errors.New("stdin required if no 'path' is provided")
 					}
 				}
-				fmt.Fprintln(f.IO.StdOut, "reading from stdin (Ctrl+D to finish, Ctrl+C to abort):")
-				content, err := readFromSTDIN(f.IO)
+				fmt.Fprintln(opts.IO.StdOut, "reading from stdin (Ctrl+D to finish, Ctrl+C to abort):")
+				content, err := readFromSTDIN(opts.IO)
 				if err != nil {
 					return err
 				}

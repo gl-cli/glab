@@ -26,7 +26,7 @@ type Options struct {
 
 func NewCmdSearch(f cmdutils.Factory) *cobra.Command {
 	opts := &Options{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 
 	projectSearchCmd := &cobra.Command{
@@ -87,7 +87,7 @@ func NewCmdSearch(f cmdutils.Factory) *cobra.Command {
 				table.EndRow()
 			}
 
-			fmt.Fprintf(f.IO.StdOut, "%s\n%s\n", title, table.Render())
+			fmt.Fprintf(f.IO().StdOut, "%s\n%s\n", title, table.Render())
 			return nil
 		},
 	}

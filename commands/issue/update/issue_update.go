@@ -28,8 +28,8 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			var err error
 			var actions []string
 			var ua *cmdutils.UserAssignments
-			out := f.IO.StdOut
-			c := f.IO.Color()
+			out := f.IO().StdOut
+			c := f.IO().Color()
 
 			if cmd.Flags().Changed("unassign") && cmd.Flags().Changed("assignee") {
 				return &cmdutils.FlagError{Err: fmt.Errorf("--assignee and --unassign are mutually exclusive.")}
@@ -182,7 +182,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				fmt.Fprintln(out, c.GreenCheck(), s)
 			}
 
-			fmt.Fprintln(out, issueutils.DisplayIssue(c, issue, f.IO.IsaTTY))
+			fmt.Fprintln(out, issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
 			return nil
 		},
 	}

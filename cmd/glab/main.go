@@ -55,14 +55,14 @@ func main() {
 
 	cfg, err := cmdFactory.Config()
 	if err != nil {
-		cmdFactory.IO.Logf("failed to read configuration:  %s\n", err)
+		cmdFactory.IO().Logf("failed to read configuration:  %s\n", err)
 		os.Exit(2)
 	}
 
 	api.SetUserAgent(version, platform, runtime.GOARCH)
 	maybeOverrideDefaultHost(cmdFactory, cfg)
 
-	if !cmdFactory.IO.ColorEnabled() {
+	if !cmdFactory.IO().ColorEnabled() {
 		surveyCore.DisableColor = true
 	} else {
 		// Override survey's choice of color for default values
@@ -72,7 +72,7 @@ func main() {
 		surveyCore.TemplateFuncsWithColor["color"] = func(style string) string {
 			switch style {
 			case "white":
-				if cmdFactory.IO.Is256ColorSupported() {
+				if cmdFactory.IO().Is256ColorSupported() {
 					return fmt.Sprintf("\x1b[%d;5;%dm", 38, 242)
 				}
 				return ansi.ColorCode("default")
@@ -91,17 +91,17 @@ func main() {
 	}
 
 	if pager, _ := cfg.Get("", "glab_pager"); pager != "" {
-		cmdFactory.IO.SetPager(pager)
+		cmdFactory.IO().SetPager(pager)
 	}
 
 	if promptDisabled, _ := cfg.Get("", "no_prompt"); promptDisabled != "" {
-		cmdFactory.IO.SetPrompt(promptDisabled)
+		cmdFactory.IO().SetPrompt(promptDisabled)
 	}
 
 	if forceHyperlinks := os.Getenv("FORCE_HYPERLINKS"); forceHyperlinks != "" && forceHyperlinks != "0" {
-		cmdFactory.IO.SetDisplayHyperlinks("always")
+		cmdFactory.IO().SetDisplayHyperlinks("always")
 	} else if displayHyperlinks, _ := cfg.Get("", "display_hyperlinks"); displayHyperlinks == "true" {
-		cmdFactory.IO.SetDisplayHyperlinks("auto")
+		cmdFactory.IO().SetDisplayHyperlinks("auto")
 	}
 
 	var expandedArgs []string
@@ -118,7 +118,7 @@ func main() {
 		isShell := false
 		expandedArgs, isShell, err = expand.ExpandAlias(cfg, os.Args, nil)
 		if err != nil {
-			cmdFactory.IO.Logf("Failed to process alias: %s\n", err)
+			cmdFactory.IO().Logf("Failed to process alias: %s\n", err)
 			os.Exit(2)
 		}
 
@@ -139,7 +139,7 @@ func main() {
 					os.Exit(ee.ExitCode())
 				}
 
-				cmdFactory.IO.Logf("failed to run external command: %s\n", err)
+				cmdFactory.IO().Logf("failed to run external command: %s\n", err)
 				os.Exit(3)
 			}
 
@@ -150,15 +150,15 @@ func main() {
 	// Override the default column separator of tableprinter to double spaces
 	tableprinter.SetTTYSeparator("  ")
 	// Override the default terminal width of tableprinter
-	tableprinter.SetTerminalWidth(cmdFactory.IO.TerminalWidth())
+	tableprinter.SetTerminalWidth(cmdFactory.IO().TerminalWidth())
 	// set whether terminal is a TTY or non-TTY
-	tableprinter.SetIsTTY(cmdFactory.IO.IsOutputTTY())
+	tableprinter.SetIsTTY(cmdFactory.IO().IsOutputTTY())
 
 	rootCmd.SetArgs(expandedArgs)
 
 	if cmd, err := rootCmd.ExecuteC(); err != nil {
 		if !errors.Is(err, cmdutils.SilentError) {
-			printError(cmdFactory.IO, err, cmd, debug)
+			printError(cmdFactory.IO(), err, cmd, debug)
 		}
 
 		var exitError *cmdutils.ExitError
@@ -198,7 +198,7 @@ func main() {
 
 	if shouldCheck {
 		if err := update.CheckUpdate(cmdFactory, version, true, argCommand); err != nil {
-			printError(cmdFactory.IO, err, rootCmd, debug)
+			printError(cmdFactory.IO(), err, rootCmd, debug)
 		}
 	}
 }

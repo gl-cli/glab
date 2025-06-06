@@ -62,6 +62,6 @@ func switchFunc(f cmdutils.Factory, name string) error {
 		return fmt.Errorf("error setting local Git config: %w", err)
 	}
 
-	fmt.Fprintf(f.IO.StdOut, "Switched to stack %s.\n", name)
+	fmt.Fprintf(f.IO().StdOut, "Switched to stack %s.\n", name)
 	return nil
 }

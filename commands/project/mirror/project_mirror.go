@@ -29,7 +29,7 @@ type MirrorOptions struct {
 
 func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 	opts := MirrorOptions{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 
 	projectMirrorCmd := &cobra.Command{
@@ -80,7 +80,7 @@ func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 
 			if opts.Direction == "pull" && opts.AllowDivergence {
 				fmt.Fprintf(
-					f.IO.StdOut,
+					f.IO().StdOut,
 					"[Warning] the 'allow-divergence' flag has no effect for pull mirroring, and is ignored.\n",
 				)
 			}

@@ -28,7 +28,7 @@ type GetOps struct {
 
 func NewCmdGet(f cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Command {
 	opts := &GetOps{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 
 	cmd := &cobra.Command{

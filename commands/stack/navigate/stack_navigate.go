@@ -211,7 +211,7 @@ func NewCmdStackMove(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 }
 
 func switchMessage(f cmdutils.Factory, ref *git.StackRef) {
-	color := f.IO.Color()
+	color := f.IO().Color()
 	fmt.Printf(
 		"%v Switched to branch: %v - %v\n",
 		color.ProgressIcon(),

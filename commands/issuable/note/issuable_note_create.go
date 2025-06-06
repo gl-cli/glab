@@ -25,7 +25,7 @@ func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			out := f.IO.StdOut
+			out := f.IO().StdOut
 
 			apiClient, err := f.HttpClient()
 			if err != nil {
@@ -39,7 +39,7 @@ func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 
 			valid, msg := issuable.ValidateIncidentCmd(issueType, "comment", issue)
 			if !valid {
-				fmt.Fprintln(f.IO.StdOut, msg)
+				fmt.Fprintln(f.IO().StdOut, msg)
 				return nil
 			}
 

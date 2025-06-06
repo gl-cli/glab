@@ -44,7 +44,7 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			c := f.IO.Color()
+			c := f.IO().Color()
 			fmt.Printf(heredoc.Doc(`
 				🔴 WARNING: This operation can be irreversible! 🔴
 
@@ -74,7 +74,7 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(f.IO.StdOut, "%s Successfully transferred repository %s to %s.\n",
+			fmt.Fprintf(f.IO().StdOut, "%s Successfully transferred repository %s to %s.\n",
 				c.GreenCheck(), c.Yellow(repo.FullName()), c.Yellow(project.PathWithNamespace))
 
 			return nil

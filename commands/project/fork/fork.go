@@ -45,7 +45,7 @@ type ForkOptions struct {
 
 func NewCmdFork(f cmdutils.Factory, runE func(cmdutils.Factory) error) *cobra.Command {
 	opts := &ForkOptions{
-		IO:                 f.IO,
+		IO:                 f.IO(),
 		BaseRepo:           f.BaseRepo,
 		Remotes:            f.Remotes,
 		Config:             f.Config,

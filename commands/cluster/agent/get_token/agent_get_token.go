@@ -45,7 +45,7 @@ You might receive an email from your GitLab instance that a new personal access 
 			// We cannot copy these above - repo override doesn't work then.
 			// Let's hack around until some future refactoring :facepalm:
 			opts.httpClient = f.HttpClient
-			opts.io = f.IO // TODO move into the struct literal after factory refactoring
+			opts.io = f.IO() // TODO move into the struct literal after factory refactoring
 			return opts.run()
 		},
 	}

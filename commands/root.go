@@ -40,7 +40,7 @@ import (
 
 // NewCmdRoot is the main root/parent command
 func NewCmdRoot(f cmdutils.Factory, version, commit string) *cobra.Command {
-	c := f.IO.Color()
+	c := f.IO().Color()
 	rootCmd := &cobra.Command{
 		Use:           "glab <command> <subcommand> [flags]",
 		Short:         "A GitLab CLI tool.",
@@ -97,12 +97,12 @@ func NewCmdRoot(f cmdutils.Factory, version, commit string) *cobra.Command {
 		},
 	}
 
-	rootCmd.SetOut(f.IO.StdOut)
-	rootCmd.SetErr(f.IO.StdErr)
+	rootCmd.SetOut(f.IO().StdOut)
+	rootCmd.SetErr(f.IO().StdErr)
 
 	rootCmd.PersistentFlags().Bool("help", false, "Show help for this command.")
 	rootCmd.SetHelpFunc(func(command *cobra.Command, args []string) {
-		help.RootHelpFunc(f.IO.Color(), command, args)
+		help.RootHelpFunc(f.IO().Color(), command, args)
 	})
 	rootCmd.SetUsageFunc(help.RootUsageFunc)
 	rootCmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
@@ -119,8 +119,8 @@ func NewCmdRoot(f cmdutils.Factory, version, commit string) *cobra.Command {
 	// Child commands
 	rootCmd.AddCommand(aliasCmd.NewCmdAlias(f))
 	rootCmd.AddCommand(configCmd.NewCmdConfig(f))
-	rootCmd.AddCommand(completionCmd.NewCmdCompletion(f.IO))
-	rootCmd.AddCommand(versionCmd.NewCmdVersion(f.IO, version, commit))
+	rootCmd.AddCommand(completionCmd.NewCmdCompletion(f.IO()))
+	rootCmd.AddCommand(versionCmd.NewCmdVersion(f.IO(), version, commit))
 	rootCmd.AddCommand(updateCmd.NewCheckUpdateCmd(f, version))
 	rootCmd.AddCommand(authCmd.NewCmdAuth(f))
 

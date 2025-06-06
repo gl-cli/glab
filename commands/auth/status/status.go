@@ -25,7 +25,7 @@ type StatusOpts struct {
 
 func NewCmdStatus(f cmdutils.Factory, runE func(*StatusOpts) error) *cobra.Command {
 	opts := &StatusOpts{
-		IO:     f.IO,
+		IO:     f.IO(),
 		Config: f.Config,
 	}
 

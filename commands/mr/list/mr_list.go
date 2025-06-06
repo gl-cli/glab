@@ -62,7 +62,7 @@ type ListOptions struct {
 
 func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.Command {
 	opts := &ListOptions{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 
 	mrListCmd := &cobra.Command{

@@ -27,7 +27,7 @@ type Options struct {
 
 func NewCmdContributors(f cmdutils.Factory) *cobra.Command {
 	opts := &Options{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	repoContributorsCmd := &cobra.Command{
 		Use:   "contributors",

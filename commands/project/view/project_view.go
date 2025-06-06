@@ -32,7 +32,7 @@ type ViewOptions struct {
 
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := ViewOptions{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 
 	projectViewCmd := &cobra.Command{

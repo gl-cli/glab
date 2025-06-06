@@ -47,7 +47,7 @@ func NewCmdRebase(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			if err = mrutils.RebaseMR(f.IO, apiClient, repo, mr,
+			if err = mrutils.RebaseMR(f.IO(), apiClient, repo, mr,
 				&gitlab.RebaseMergeRequestOptions{
 					SkipCI: gitlab.Ptr(opts.SkipCI),
 				}); err != nil {

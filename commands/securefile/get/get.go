@@ -47,7 +47,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 			}
 
 			fileJSON, _ := json.Marshal(file)
-			fmt.Fprintln(f.IO.StdOut, string(fileJSON))
+			fmt.Fprintln(f.IO().StdOut, string(fileJSON))
 			return nil
 		},
 	}

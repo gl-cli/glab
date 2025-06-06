@@ -45,11 +45,11 @@ func NewCmdCreateStack(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 			}
 
 			s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
-			color := f.IO.Color()
+			color := f.IO().Color()
 
 			title := utils.ReplaceNonAlphaNumericChars(titleString, "-")
 			if title != titleString {
-				fmt.Fprintf(f.IO.StdErr, "%s warning: invalid characters have been replaced with dashes: %s\n",
+				fmt.Fprintf(f.IO().StdErr, "%s warning: invalid characters have been replaced with dashes: %s\n",
 					color.WarnIcon(),
 					color.Blue(title))
 			}
@@ -74,8 +74,8 @@ func NewCmdCreateStack(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 				return fmt.Errorf("error adding current branch to metadata: %w", err)
 			}
 
-			if f.IO.IsOutputTTY() {
-				fmt.Fprintf(f.IO.StdOut, "New stack created with title \"%s\".\n", title)
+			if f.IO().IsOutputTTY() {
+				fmt.Fprintf(f.IO().StdOut, "New stack created with title \"%s\".\n", title)
 			}
 
 			s.Stop()

@@ -43,7 +43,7 @@ type Options struct {
 
 func NewCmdPublishCatalog(f cmdutils.Factory) *cobra.Command {
 	opts := &Options{
-		IO:       f.IO,
+		IO:       f.IO(),
 		BaseRepo: f.BaseRepo,
 	}
 	publishCatalogCmd := &cobra.Command{

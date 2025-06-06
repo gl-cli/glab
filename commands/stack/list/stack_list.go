@@ -36,7 +36,7 @@ func NewCmdStackList(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 				return err
 			}
 
-			run(f.IO, stack, currentBranch)
+			run(f.IO(), stack, currentBranch)
 			return nil
 		},
 	}

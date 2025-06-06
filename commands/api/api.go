@@ -51,7 +51,7 @@ type ApiOptions struct {
 
 func NewCmdApi(f cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command {
 	opts := ApiOptions{
-		IO:         f.IO,
+		IO:         f.IO(),
 		HttpClient: f.HttpClient,
 		BaseRepo:   f.BaseRepo,
 		Branch:     f.Branch,

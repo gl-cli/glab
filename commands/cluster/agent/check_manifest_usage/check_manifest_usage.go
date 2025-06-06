@@ -32,7 +32,7 @@ type AgentConfig struct {
 
 func NewCmdCheckManifestUsage(f cmdutils.Factory) *cobra.Command {
 	opts := &Options{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	checkManifestUsageCmd := &cobra.Command{
 		Use:   "check_manifest_usage [flags]",

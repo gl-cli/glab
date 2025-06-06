@@ -45,14 +45,14 @@ func NewCmdReorderStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.G
 			$ glab stack reorder
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f.IO.StartSpinner("Reordering\n")
+			f.IO().StartSpinner("Reordering\n")
 
-			err := reorderFunc(f, getText, f.IO, opts)
+			err := reorderFunc(f, getText, f.IO(), opts)
 			if err != nil {
 				return fmt.Errorf("could not run stack reorder: %v", err)
 			}
 
-			f.IO.StopSpinner("%s Reordering complete\n", f.IO.Color().GreenCheck())
+			f.IO().StopSpinner("%s Reordering complete\n", f.IO().Color().GreenCheck())
 
 			return nil
 		},
@@ -110,7 +110,7 @@ func reorderFunc(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostre
 		return fmt.Errorf("error updating merge requests: %v", err)
 	}
 
-	iostream.StopSpinner("%s Reordering complete\n", f.IO.Color().GreenCheck())
+	iostream.StopSpinner("%s Reordering complete\n", f.IO().Color().GreenCheck())
 
 	return nil
 }

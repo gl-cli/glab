@@ -78,7 +78,7 @@ func TestNewCmdList(t *testing.T) {
 		}, issuable.TypeIssue).Execute()
 
 		assert.Nil(t, err)
-		assert.Equal(t, factory.IO, gotOpts.IO)
+		assert.Equal(t, factory.IO(), gotOpts.IO)
 
 		gotBaseRepo, _ := gotOpts.BaseRepo()
 		expectedBaseRepo, _ := factory.BaseRepo()

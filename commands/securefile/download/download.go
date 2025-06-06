@@ -55,7 +55,7 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintln(f.IO.StdOut, "Downloaded secure file with ID", fileID)
+			fmt.Fprintln(f.IO().StdOut, "Downloaded secure file with ID", fileID)
 			return nil
 		},
 	}

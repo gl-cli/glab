@@ -62,7 +62,7 @@ type CreateOpts struct {
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{
-		IO:      f.IO,
+		IO:      f.IO(),
 		Remotes: f.Remotes,
 		Config:  f.Config,
 	}

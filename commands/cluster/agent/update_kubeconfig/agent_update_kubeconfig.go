@@ -44,7 +44,7 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 	}
 
 	opts := options{
-		io:           f.IO,
+		io:           f.IO(),
 		configAccess: pathOptions,
 	}
 

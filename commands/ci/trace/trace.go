@@ -45,7 +45,7 @@ func NewCmdTrace(f cmdutils.Factory) *cobra.Command {
 				PipelineId: pipelineId,
 			}, &ciutils.JobOptions{
 				ApiClient: apiClient,
-				IO:        f.IO,
+				IO:        f.IO(),
 				Repo:      repo,
 			})
 		},

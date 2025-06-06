@@ -70,7 +70,7 @@ func NewCmdConfigGet(f cmdutils.Factory) *cobra.Command {
 			}
 
 			if val != "" {
-				fmt.Fprintf(f.IO.StdOut, "%s\n", val)
+				fmt.Fprintf(f.IO().StdOut, "%s\n", val)
 			}
 			return nil
 		},

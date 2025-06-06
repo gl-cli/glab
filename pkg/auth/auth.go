@@ -15,7 +15,7 @@ func GetAuthenticatedClient(f cmdutils.Factory) (*gitlab.Client, error) {
 
 	instances, err := glConfig.Hosts()
 	if err != nil || len(instances) == 0 {
-		return nil, fmt.Errorf("no GitLab instances have been authenticated with glab. Run `%s` to authenticate.", f.IO.Color().Bold("glab auth login"))
+		return nil, fmt.Errorf("no GitLab instances have been authenticated with glab. Run `%s` to authenticate.", f.IO().Color().Bold("glab auth login"))
 	}
 
 	labClient, err := f.HttpClient()

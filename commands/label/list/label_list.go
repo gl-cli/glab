@@ -68,9 +68,9 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 				}
 				if opts.OutputFormat == "json" {
 					labelListJSON, _ := json.Marshal(labels)
-					fmt.Fprintln(f.IO.StdOut, string(labelListJSON))
+					fmt.Fprintln(f.IO().StdOut, string(labelListJSON))
 				} else {
-					fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d for group %s.\n\n", len(labels), len(labels), opts.Group)
+					fmt.Fprintf(f.IO().StdOut, "Showing label %d of %d for group %s.\n\n", len(labels), len(labels), opts.Group)
 					for _, label := range labels {
 						labelBuilder.WriteString(formatLabelInfo(label.Description, label.Name, label.Color))
 					}
@@ -82,16 +82,16 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 				}
 				if opts.OutputFormat == "json" {
 					labelListJSON, _ := json.Marshal(labels)
-					fmt.Fprintln(f.IO.StdOut, string(labelListJSON))
+					fmt.Fprintln(f.IO().StdOut, string(labelListJSON))
 				} else {
-					fmt.Fprintf(f.IO.StdOut, "Showing label %d of %d on %s.\n\n", len(labels), len(labels), repo.FullName())
+					fmt.Fprintf(f.IO().StdOut, "Showing label %d of %d on %s.\n\n", len(labels), len(labels), repo.FullName())
 					for _, label := range labels {
 						labelBuilder.WriteString(formatLabelInfo(label.Description, label.Name, label.Color))
 					}
 				}
 
 			}
-			fmt.Fprintln(f.IO.StdOut, utils.Indent(labelBuilder.String(), " "))
+			fmt.Fprintln(f.IO().StdOut, utils.Indent(labelBuilder.String(), " "))
 			return nil
 		},
 	}

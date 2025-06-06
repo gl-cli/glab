@@ -27,7 +27,7 @@ type CreateOpts struct {
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{
-		IO:     f.IO,
+		IO:     f.IO(),
 		Config: f.Config,
 	}
 	securefileCreateCmd := &cobra.Command{

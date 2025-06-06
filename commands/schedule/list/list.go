@@ -54,7 +54,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			title.Page = l.Page
 			title.CurrentPageTotal = len(schedules)
 
-			fmt.Fprintf(f.IO.StdOut, "%s\n%s\n", title.Describe(), ciutils.DisplaySchedules(f.IO, schedules, repo.FullName()))
+			fmt.Fprintf(f.IO().StdOut, "%s\n%s\n", title.Describe(), ciutils.DisplaySchedules(f.IO(), schedules, repo.FullName()))
 			return nil
 		},
 	}

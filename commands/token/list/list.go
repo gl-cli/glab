@@ -33,7 +33,7 @@ type ListOpts struct {
 
 func NewCmdList(f cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Command {
 	opts := &ListOpts{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 
 	cmd := &cobra.Command{

@@ -35,7 +35,7 @@ type Options struct {
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &Options{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	repoListCmd := &cobra.Command{
 		Use:   "list",

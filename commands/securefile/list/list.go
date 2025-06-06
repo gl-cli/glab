@@ -61,7 +61,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			}
 
 			fileListJSON, _ := json.Marshal(files)
-			fmt.Fprintln(f.IO.StdOut, string(fileListJSON))
+			fmt.Fprintln(f.IO().StdOut, string(fileListJSON))
 			return nil
 		},
 	}

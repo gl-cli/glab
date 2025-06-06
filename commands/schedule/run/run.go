@@ -19,7 +19,7 @@ type RunOpts struct {
 
 func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 	opts := &RunOpts{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	scheduleRunCmd := &cobra.Command{
 		Use:   "run <id>",

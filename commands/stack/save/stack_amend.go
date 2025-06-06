@@ -32,8 +32,8 @@ func NewCmdAmendStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.Get
 				return fmt.Errorf("could not run stack amend: %v", err)
 			}
 
-			if f.IO.IsOutputTTY() {
-				fmt.Fprint(f.IO.StdOut, output)
+			if f.IO().IsOutputTTY() {
+				fmt.Fprint(f.IO().StdOut, output)
 			}
 
 			return nil
@@ -91,7 +91,7 @@ func amendFunc(f cmdutils.Factory, args []string, getText cmdutils.GetTextUsingE
 	}
 
 	var output string
-	if f.IO.IsOutputTTY() {
+	if f.IO().IsOutputTTY() {
 		output = fmt.Sprintf("Amended stack item with description: %q.\n", description)
 	}
 

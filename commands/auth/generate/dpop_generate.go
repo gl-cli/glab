@@ -46,7 +46,7 @@ func (pr ConsolePasswordReader) Read() ([]byte, error) {
 
 func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 	opts := &GenerateOpts{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	cmd := &cobra.Command{
 		Use:   "dpop-gen [flags]",

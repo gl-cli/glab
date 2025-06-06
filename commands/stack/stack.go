@@ -19,7 +19,7 @@ import (
 
 func wrappedEdit(f cmdutils.Factory) cmdutils.GetTextUsingEditor {
 	return func(editor, tmpFileName, content string) (string, error) {
-		return surveyext.Edit(editor, tmpFileName, content, f.IO.In, f.IO.StdOut, f.IO.StdErr, nil)
+		return surveyext.Edit(editor, tmpFileName, content, f.IO().In, f.IO().StdOut, f.IO().StdErr, nil)
 	}
 }
 

@@ -27,7 +27,7 @@ func NewCmdApprove(f cmdutils.Factory) *cobra.Command {
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 
 			apiClient, err := f.HttpClient()
 			if err != nil {
@@ -53,12 +53,12 @@ func NewCmdApprove(f cmdutils.Factory) *cobra.Command {
 					opts.SHA = gitlab.Ptr(s)
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "- Approving merge request !%d\n", mr.IID)
+				fmt.Fprintf(f.IO().StdOut, "- Approving merge request !%d\n", mr.IID)
 				_, err = api.ApproveMR(apiClient, repo.FullName(), mr.IID, opts)
 				if err != nil {
 					return err
 				}
-				fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Approved")
+				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Approved")
 			}
 
 			return nil

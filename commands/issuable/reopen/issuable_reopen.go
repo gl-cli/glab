@@ -50,8 +50,8 @@ func NewCmdReopen(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			out := f.IO.StdOut
-			c := f.IO.Color()
+			out := f.IO().StdOut
+			c := f.IO().Color()
 
 			apiClient, err := f.HttpClient()
 			if err != nil {
@@ -69,7 +69,7 @@ func NewCmdReopen(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 			for _, issue := range issues {
 				valid, msg := issuable.ValidateIncidentCmd(issueType, "reopen", issue)
 				if !valid {
-					fmt.Fprintln(f.IO.StdOut, msg)
+					fmt.Fprintln(f.IO().StdOut, msg)
 					continue
 				}
 
@@ -80,7 +80,7 @@ func NewCmdReopen(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 				}
 
 				fmt.Fprintf(out, "%s %s #%d.\n", c.GreenCheck(), reopenedMessage[issueType], issue.IID)
-				fmt.Fprintln(out, issueutils.DisplayIssue(c, issue, f.IO.IsaTTY))
+				fmt.Fprintln(out, issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
 			}
 			return nil
 		},

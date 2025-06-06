@@ -32,7 +32,7 @@ func promptForCommit(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, de
 	}
 
 	var cleanedDescription string
-	if !f.IO.IsOutputTTY() {
+	if !f.IO().IsOutputTTY() {
 		if defaultValue == "" {
 			return "", errors.New("No commit message provided and no TTY. Please provide a commit message with the --message flag.")
 		}

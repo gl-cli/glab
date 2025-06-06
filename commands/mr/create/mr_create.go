@@ -81,7 +81,7 @@ type CreateOpts struct {
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{
-		IO:       f.IO,
+		IO:       f.IO(),
 		Branch:   f.Branch,
 		Remotes:  f.Remotes,
 		Config:   f.Config,
@@ -807,7 +807,7 @@ func ResolvedHeadRepo(f cmdutils.Factory) func() (glrepo.Interface, error) {
 		if err != nil {
 			return nil, err
 		}
-		headRepo, err := repoContext.HeadRepo(f.IO.PromptEnabled())
+		headRepo, err := repoContext.HeadRepo(f.IO().PromptEnabled())
 		if err != nil {
 			return nil, err
 		}

@@ -98,7 +98,7 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(f.IO.StdOut, "%s", changelog.Notes)
+			fmt.Fprintf(f.IO().StdOut, "%s", changelog.Notes)
 
 			return nil
 		},

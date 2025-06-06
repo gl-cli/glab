@@ -40,7 +40,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(f.IO.StdOut, "Label deleted")
+			fmt.Fprintf(f.IO().StdOut, "Label deleted")
 
 			return nil
 		},

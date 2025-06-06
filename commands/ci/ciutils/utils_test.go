@@ -269,7 +269,7 @@ func TestGetJobId(t *testing.T) {
 				PipelineId: tc.pipelineId,
 				Branch:     "main",
 			}, &JobOptions{
-				IO:        f.IO,
+				IO:        f.IO(),
 				Repo:      repo,
 				ApiClient: apiClient,
 			})
@@ -431,7 +431,7 @@ func TestTraceJob(t *testing.T) {
 				PipelineId: tc.pipelineId,
 				Branch:     "main",
 			}, &JobOptions{
-				IO:        f.IO,
+				IO:        f.IO(),
 				Repo:      repo,
 				ApiClient: apiClient,
 			})

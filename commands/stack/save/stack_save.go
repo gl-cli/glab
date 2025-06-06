@@ -125,11 +125,11 @@ func NewCmdSaveStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetT
 				return fmt.Errorf("error creating stack file: %v", err)
 			}
 
-			if f.IO.IsOutputTTY() {
-				color := f.IO.Color()
+			if f.IO().IsOutputTTY() {
+				color := f.IO().Color()
 
 				fmt.Fprintf(
-					f.IO.StdOut,
+					f.IO().StdOut,
 					"%s %s: Saved with message: \"%s\".\n",
 					color.ProgressIcon(),
 					color.Blue(title),

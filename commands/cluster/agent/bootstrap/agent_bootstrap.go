@@ -163,7 +163,7 @@ This command consists of multiple idempotent steps:
 			return ensureRequirements()
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			stdout, stderr := f.IO.StdOut, f.IO.StdErr
+			stdout, stderr := f.IO().StdOut, f.IO().StdErr
 
 			apiClient, err := f.HttpClient()
 			if err != nil {

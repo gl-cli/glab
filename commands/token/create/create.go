@@ -40,7 +40,7 @@ type CreateOptions struct {
 
 func NewCmdCreate(f cmdutils.Factory, runE func(opts *CreateOptions) error) *cobra.Command {
 	opts := &CreateOptions{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 
 	cmd := &cobra.Command{

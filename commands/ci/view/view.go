@@ -130,7 +130,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.Output = f.IO.StdOut
+			opts.Output = f.IO().StdOut
 
 			var err error
 			opts.ApiClient, err = f.HttpClient()
@@ -171,8 +171,8 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 			if opts.OpenInBrowser { // open in browser if --web flag is specified
 				webURL := opts.Commit.LastPipeline.WebURL
 
-				if f.IO.IsOutputTTY() {
-					fmt.Fprintf(f.IO.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
+				if f.IO().IsOutputTTY() {
+					fmt.Fprintf(f.IO().StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
 				}
 
 				browser, _ := cfg.Get(repo.RepoHost(), "browser")

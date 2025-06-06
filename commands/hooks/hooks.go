@@ -65,7 +65,7 @@ func sendTelemetryData(f cmdutils.Factory, cmd *cobra.Command) {
 
 	client, err := f.HttpClient()
 	if err != nil {
-		f.IO.Logf("Could not get API Client in telemetry hook: %s", err.Error())
+		f.IO().Logf("Could not get API Client in telemetry hook: %s", err.Error())
 	}
 
 	repo, err := f.BaseRepo()

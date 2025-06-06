@@ -53,11 +53,11 @@ func NewCmdRetry(f cmdutils.Factory) *cobra.Command {
 				SelectionPrompt: "Select pipeline job to retry:",
 			}, &ciutils.JobOptions{
 				ApiClient: apiClient,
-				IO:        f.IO,
+				IO:        f.IO(),
 				Repo:      repo,
 			})
 			if err != nil {
-				fmt.Fprintln(f.IO.StdErr, "invalid job ID:", args[0])
+				fmt.Fprintln(f.IO().StdErr, "invalid job ID:", args[0])
 				return err
 			}
 
@@ -70,7 +70,7 @@ func NewCmdRetry(f cmdutils.Factory) *cobra.Command {
 				return cmdutils.WrapError(err, fmt.Sprintf("Could not retry job with ID: %d", jobID))
 			}
 			output := fmt.Sprintf("Retried job (ID: %d), status: %s, ref: %s, weburl: %s", job.ID, job.Status, job.Ref, job.WebURL)
-			fmt.Fprintln(f.IO.StdOut, output)
+			fmt.Fprintln(f.IO().StdOut, output)
 
 			return nil
 		},

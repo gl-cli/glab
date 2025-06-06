@@ -97,12 +97,12 @@ func NewCmdArchive(f cmdutils.Factory) *cobra.Command {
 				return fmt.Errorf("failed to write repositories: %v", err)
 			}
 
-			fmt.Fprint(f.IO.StdOut, "\n")
+			fmt.Fprint(f.IO().StdOut, "\n")
 			_ = out.Close()
 			if err = os.Rename(archiveName+".tmp", archiveName); err != nil {
 				return fmt.Errorf("failed to rename tmp repos: %v", err)
 			}
-			fmt.Fprintln(f.IO.StdOut, "Complete...", archiveName)
+			fmt.Fprintln(f.IO().StdOut, "Complete...", archiveName)
 			return nil
 		},
 	}

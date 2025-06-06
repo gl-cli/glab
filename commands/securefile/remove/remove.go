@@ -27,7 +27,7 @@ type DeleteOpts struct {
 
 func NewCmdRemove(f cmdutils.Factory) *cobra.Command {
 	opts := &DeleteOpts{
-		IO:     f.IO,
+		IO:     f.IO(),
 		Config: f.Config,
 	}
 	securefileRemoveCmd := &cobra.Command{

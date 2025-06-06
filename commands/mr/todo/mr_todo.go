@@ -20,7 +20,7 @@ func NewCmdTodo(f cmdutils.Factory) *cobra.Command {
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 
 			apiClient, err := f.HttpClient()
 			if err != nil {
@@ -37,7 +37,7 @@ func NewCmdTodo(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Done!!")
+			fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Done!!")
 
 			return nil
 		},

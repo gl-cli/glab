@@ -47,7 +47,7 @@ This command only supports personal and project access tokens for authentication
 			text.ExperimentalString),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.io = f.IO // TODO move into the struct literal after factory refactoring
+			opts.io = f.IO() // TODO move into the struct literal after factory refactoring
 			opts.baseRepo = f.BaseRepo
 			opts.config = f.Config
 			return opts.run(cmd.Context())

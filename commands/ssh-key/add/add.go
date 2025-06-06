@@ -28,7 +28,7 @@ type AddOpts struct {
 
 func NewCmdAdd(f cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
 	opts := &AddOpts{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	cmd := &cobra.Command{
 		Use:   "add [key-file]",

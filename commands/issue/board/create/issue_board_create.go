@@ -25,8 +25,8 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				boardName = args[0]
 			}
 			var err error
-			out := f.IO.StdOut
-			c := f.IO.Color()
+			out := f.IO().StdOut
+			c := f.IO().Color()
 
 			apiClient, err := f.HttpClient()
 			if err != nil {

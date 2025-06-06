@@ -178,7 +178,7 @@ func MRFromArgsWithOpts(
 	}
 
 	if mrID == 0 {
-		basicMR, err := getMRForBranch(apiClient, mrOptions{baseRepo, branch, state, f.IO.PromptEnabled()})
+		basicMR, err := getMRForBranch(apiClient, mrOptions{baseRepo, branch, state, f.IO().PromptEnabled()})
 		if err != nil {
 			return nil, nil, err
 		}

@@ -60,7 +60,7 @@ func NewCmdNote(f cmdutils.Factory) *cobra.Command {
 				}
 				for _, noteInfo := range notes {
 					if noteInfo.Body == body {
-						fmt.Fprintf(f.IO.StdOut, "%s#note_%d\n", mr.WebURL, noteInfo.ID)
+						fmt.Fprintf(f.IO().StdOut, "%s#note_%d\n", mr.WebURL, noteInfo.ID)
 						return nil
 					}
 				}
@@ -73,7 +73,7 @@ func NewCmdNote(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(f.IO.StdOut, "%s#note_%d\n", mr.WebURL, noteInfo.ID)
+			fmt.Fprintf(f.IO().StdOut, "%s#note_%d\n", mr.WebURL, noteInfo.ID)
 			return nil
 		},
 	}
