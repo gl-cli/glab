@@ -51,7 +51,7 @@ var debug bool
 func main() {
 	debug = debugMode == "true" || debugMode == "1"
 
-	cmdFactory := cmdutils.NewFactory()
+	cmdFactory := cmdutils.NewFactory(iostreams.Init(), true)
 
 	cfg, err := cmdFactory.Config()
 	if err != nil {
