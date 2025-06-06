@@ -45,10 +45,7 @@ func NewCmdArchive(f cmdutils.Factory) *cobra.Command {
 			var err error
 
 			if len(args) != 0 {
-				err = f.RepoOverride(args[0])
-				if err != nil {
-					return err
-				}
+				f.RepoOverride(args[0])
 				if len(args) > 1 {
 					name = args[1]
 				}

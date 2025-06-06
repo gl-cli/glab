@@ -375,7 +375,7 @@ func StubFactory(repo string) *cmdutils.Factory {
 
 	f := cmdutils.NewFactory()
 	if repo != "" {
-		_ = f.RepoOverride(repo)
+		f.RepoOverride(repo)
 	}
 
 	return f
@@ -388,7 +388,7 @@ func StubFactoryWithConfig(repo string) (*cmdutils.Factory, error) {
 	}
 	f := cmdutils.NewFactory()
 	if repo != "" {
-		_ = f.RepoOverride(repo)
+		f.RepoOverride(repo)
 	}
 
 	return f, nil

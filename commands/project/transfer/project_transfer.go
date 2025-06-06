@@ -21,10 +21,7 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 			var err error
 
 			if len(args) != 0 {
-				err = f.RepoOverride(args[0])
-				if err != nil {
-					return err
-				}
+				f.RepoOverride(args[0])
 			}
 
 			apiClient, err := f.HttpClient()

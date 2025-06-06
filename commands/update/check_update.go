@@ -59,10 +59,7 @@ func CheckUpdate(f cmdutils.Factory, version string, silentSuccess bool, previou
 	}
 
 	// We set the project to the `glab` project to check for `glab` updates
-	err = f.RepoOverride(defaultProjectURL)
-	if err != nil {
-		return err
-	}
+	f.RepoOverride(defaultProjectURL)
 	repo, err := f.BaseRepo()
 	if err != nil {
 		return err
