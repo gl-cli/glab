@@ -29,9 +29,8 @@ import (
 )
 
 var (
-	ProjectPath       string
-	GlabBinaryPath    string
-	CachedTestFactory *cmdutils.Factory
+	ProjectPath    string
+	GlabBinaryPath string
 )
 
 type fatalLogger interface {
@@ -316,31 +315,25 @@ func Eq(t *testing.T, got any, expected any) {
 }
 
 func StubFactory(repo string) *cmdutils.Factory {
-	if CachedTestFactory != nil {
-		return CachedTestFactory
-	}
 	cmdutils.CachedConfig = config.NewBlankConfig()
 
-	CachedTestFactory = cmdutils.NewFactory()
+	f := cmdutils.NewFactory()
 	if repo != "" {
-		_ = CachedTestFactory.RepoOverride(repo)
+		_ = f.RepoOverride(repo)
 	}
 
-	return CachedTestFactory
+	return f
 }
 
 func StubFactoryWithConfig(repo string) (*cmdutils.Factory, error) {
-	if CachedTestFactory != nil {
-		return CachedTestFactory, nil
-	}
 	cmdutils.CachedConfig, cmdutils.ConfigError = config.ParseConfig("config.yml")
 	if cmdutils.ConfigError != nil {
 		return nil, cmdutils.ConfigError
 	}
-	CachedTestFactory = cmdutils.NewFactory()
+	f := cmdutils.NewFactory()
 	if repo != "" {
-		_ = CachedTestFactory.RepoOverride(repo)
+		_ = f.RepoOverride(repo)
 	}
 
-	return CachedTestFactory, nil
+	return f, nil
 }
