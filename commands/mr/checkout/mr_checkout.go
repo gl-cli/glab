@@ -27,13 +27,13 @@ func NewCmdCheckout(f *cmdutils.Factory) *cobra.Command {
 		Short: "Check out an open merge request.",
 		Long:  ``,
 		Example: heredoc.Doc(`
-			- glab mr checkout 1
-			- glab mr checkout branch
-			- glab mr checkout 12 --branch todo-fix
-			- glab mr checkout new-feature --set-upstream-to=upstream/main
+			$ glab mr checkout 1
+			$ glab mr checkout branch
+			$ glab mr checkout 12 --branch todo-fix
+			$ glab mr checkout new-feature --set-upstream-to=upstream/main
 
-			Uses the checked-out branch
-			- glab mr checkout
+			# Uses the checked-out branch
+			$ glab mr checkout
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
