@@ -135,7 +135,7 @@ func main() {
 					os.Exit(ee.ExitCode())
 				}
 
-				cmdFactory.IO.LogInfof("failed to run external command: %s", err)
+				cmdFactory.IO.LogInfof("failed to run external command: %s\n", err)
 				os.Exit(3)
 			}
 
