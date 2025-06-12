@@ -58,6 +58,22 @@ If your merge request is trivial (fixing typos, fixing a bug with 20 lines of co
 
 If your merge request is large, create an issue first. See [Reporting Issues](#reporting-issues) and [Proposing Features](#proposing-features). In the issue, the project maintainers can help you scope the work and make you more efficient.
 
+### Developing with Workspaces
+
+[GitLab Workspaces](https://docs.gitlab.com/user/workspace/) are fully enabled for the CLI project, 
+providing a complete development environment in your browser.
+
+Benefits of using Workspaces:
+
+- Zero setup: No requirement to install Go, dependencies, or clone the repository locally.
+- Pre-configured environment: All development tools and dependencies are ready to use.
+- Immediate development: Start coding, running tests, or making edits right away.
+- New contributor onboarding: A great way for new contributors to start without local machine setup.
+- MR-based development: Open a Workspace directly from a merge request for testing and reviews.
+- No context switching: Make changes during code reviews without switching to your local machine.
+
+For more information see, [Creating a workspace](#creating-a-workspace). 
+
 ### Building the project
 
 Prerequisites:
@@ -262,3 +278,39 @@ A --yes--> C
 C{Is MR set to be squashed?} --no--> D[Every commit must be valid]
 C --yes--> E[MR title must be valid]
 ```
+
+### Creating a Workspace
+
+To create a workspace:
+
+1. Go to the CLI project or any merge request.
+1. In the upper-right corner, select **Code**.
+1. Select **Open in Workspace**.
+1. Complete the form. The form is pre-filled with cluster agent configuration, project reference, 
+   and Devfile.
+1. Select **Create workspace**.
+
+Wait until the workspace status is **Running**, then select **Open workspace** to launch your 
+development environment.
+
+After your workspace is running, you can start developing:
+
+```bash
+# Build the CLI binary
+make
+
+# Run the CLI
+./bin/glab
+
+# Run unit tests
+make test
+
+# Format and lint code
+make lint
+```
+
+For workspace-specific issues:
+
+- See the [GitLab Workspaces documentation](https://docs.gitlab.com/user/workspace/).
+- Reach out in the Slack `#f_workspaces` channel.
+- Create an issue in the [Workspace User Feedback Epic](https://gitlab.com/groups/gitlab-org/-/epics/12601).
