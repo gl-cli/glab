@@ -184,6 +184,7 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 				return fmt.Errorf("Can't get pipeline #%d info: %s", opts.Commit.LastPipeline.ID, err)
 			}
 			opts.PipelineUser = p.User
+
 			pipelines = make([]gitlab.PipelineInfo, 0, 10)
 
 			return drawView(opts)
@@ -733,9 +734,13 @@ func updateJobs(
 			pipeline.ProjectID,
 			pipeline.ID,
 		)
-		if (len(jobs) == 0 && len(bridges) == 0) || err != nil {
+		if err != nil {
 			app.Stop()
 			log.Fatal(errors.Wrap(err, "failed to find CI jobs."))
+		}
+		if len(jobs) == 0 && len(bridges) == 0 {
+			app.Stop()
+			log.Fatal("No jobs found in the pipeline. Your '.gitlab-ci.yml' file might be invalid, or the pipeline triggered no jobs.")
 		}
 		viewJobs := make([]*ViewJob, 0, len(jobs)+len(bridges))
 		for _, j := range jobs {

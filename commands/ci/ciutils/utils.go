@@ -316,6 +316,8 @@ func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
 		fmt.Fprintf(opts.IO.StdOut, "(%s) %s\nURL: %s\n\n", s, c.Bold(status.Name), c.Gray(status.TargetURL))
 	}
 
+	fmt.Fprintln(opts.IO.StdErr, "Pipeline has no jobs or external statuses. "+
+		"Check for errors in your '.gitlab-ci.yml' and your pipeline configuration.")
 	return 0, nil
 }
 
