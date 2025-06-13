@@ -114,7 +114,7 @@ func main() {
 		isShell := false
 		expandedArgs, isShell, err = expand.ExpandAlias(cfg, os.Args, nil)
 		if err != nil {
-			cmdFactory.IO.LogInfof("Failed to process alias: %s\n", err)
+			cmdFactory.IO.Logf("Failed to process alias: %s\n", err)
 			os.Exit(2)
 		}
 
@@ -135,7 +135,7 @@ func main() {
 					os.Exit(ee.ExitCode())
 				}
 
-				cmdFactory.IO.LogInfof("failed to run external command: %s\n", err)
+				cmdFactory.IO.Logf("failed to run external command: %s\n", err)
 				os.Exit(3)
 			}
 
