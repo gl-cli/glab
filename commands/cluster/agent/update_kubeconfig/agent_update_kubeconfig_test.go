@@ -17,6 +17,7 @@ func TestAgent_UpdateKubeConfig_GlabExec(t *testing.T) {
 		startingConfig: *startingConfig,
 		glabExecutable: "glab",
 		glHost:         "gitlab.example.com",
+		glRepoFullName: "gitlab-user/repo",
 		glUser:         "gitlab-user",
 		kasK8sProxyURL: "https://kas.gitlab.example.com/k8s-proxy",
 		agent:          &gitlab.Agent{ID: 42, Name: "test-agent", ConfigProject: gitlab.ConfigProject{PathWithNamespace: "foo/bar"}},
@@ -33,7 +34,8 @@ func TestAgent_UpdateKubeConfig_GlabExec(t *testing.T) {
 	actualExec := modifiedConfig.AuthInfos["gitlab_example_com-42"].Exec
 	assert.Equal(t, k8sAuthInfoExecApiVersion, actualExec.APIVersion)
 	assert.Equal(t, "glab", actualExec.Command)
-	assert.Equal(t, []string{"cluster", "agent", "get-token", "--agent", "42"}, actualExec.Args)
+	assert.Equal(t, []string{"cluster", "agent", "get-token", "--agent", "42", "--repo", "gitlab-user/repo"}, actualExec.Args)
+	assert.Equal(t, []clientcmdapi.ExecEnvVar{{Name: "GITLAB_HOST", Value: "gitlab.example.com"}}, actualExec.Env)
 	assert.Equal(t, clientcmdapi.NeverExecInteractiveMode, actualExec.InteractiveMode)
 	assert.Empty(t, modifiedConfig.AuthInfos["gitlab_example_com-42"].Token)
 	assert.Empty(t, modifiedConfig.AuthInfos["gitlab_example_com-42"].TokenFile)

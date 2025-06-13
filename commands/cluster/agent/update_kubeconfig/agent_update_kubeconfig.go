@@ -44,8 +44,6 @@ func NewCmdAgentUpdateKubeconfig(f *cmdutils.Factory) *cobra.Command {
 	}
 
 	opts := options{
-		httpClient:   f.HttpClient,
-		baseRepo:     f.BaseRepo,
 		io:           f.IO,
 		configAccess: pathOptions,
 	}
@@ -56,6 +54,10 @@ func NewCmdAgentUpdateKubeconfig(f *cmdutils.Factory) *cobra.Command {
 		Long: heredoc.Doc(`Update selected kubeconfig for use with a GitLab agent for Kubernetes.
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// We cannot copy these above - repo override doesn't work then.
+			// Let's hack around until some future refactoring :facepalm:
+			opts.httpClient = f.HttpClient
+			opts.baseRepo = f.BaseRepo
 			return opts.runUpdateKubeconfig()
 		},
 	}
@@ -93,7 +95,8 @@ func (o *options) runUpdateKubeconfig() error {
 	}
 
 	// Retrieve agent information, most importantly its name to use it as context name.
-	agent, err := api.GetAgent(apiClient, repo.FullName(), o.agentID)
+	repoFullName := repo.FullName()
+	agent, err := api.GetAgent(apiClient, repoFullName, o.agentID)
 	if err != nil {
 		return err
 	}
@@ -119,6 +122,7 @@ func (o *options) runUpdateKubeconfig() error {
 		startingConfig: *startingConfig,
 		glabExecutable: glabExecutable,
 		glHost:         repo.RepoHost(),
+		glRepoFullName: repoFullName,
 		glUser:         user.Username,
 		kasK8sProxyURL: kasK8SProxyURL,
 		agent:          agent,
@@ -145,6 +149,7 @@ type updateKubeconfigParams struct {
 	startingConfig clientcmdapi.Config
 	glabExecutable string
 	glHost         string
+	glRepoFullName string
 	glUser         string
 	kasK8sProxyURL string
 	agent          *gitlab.Agent
@@ -167,7 +172,7 @@ func updateKubeconfig(params updateKubeconfigParams) (clientcmdapi.Config, strin
 	if !exists {
 		startingAuthInfo = clientcmdapi.NewAuthInfo()
 	}
-	config.AuthInfos[authInfoName] = modifyAuthInfo(*startingAuthInfo, params.glabExecutable, int64(params.agent.ID)) // FIXME remove cast
+	config.AuthInfos[authInfoName] = modifyAuthInfo(*startingAuthInfo, params.glabExecutable, params.glHost, params.glRepoFullName, int64(params.agent.ID)) // FIXME remove cast
 
 	// Updating `contexts` entry: `kubectl config set-context ...`
 	contextName := fmt.Sprintf("%s-%s-%s", clusterName, sanitizeForKubeconfig(params.agent.ConfigProject.PathWithNamespace), params.agent.Name)
@@ -185,14 +190,30 @@ func modifyCluster(cluster clientcmdapi.Cluster, server string) *clientcmdapi.Cl
 	return &cluster
 }
 
-func modifyAuthInfo(authInfo clientcmdapi.AuthInfo, glabExecutable string, agentID int64) *clientcmdapi.AuthInfo {
+func modifyAuthInfo(authInfo clientcmdapi.AuthInfo, glabExecutable string, glabHost string, glRepoFullName string, agentID int64) *clientcmdapi.AuthInfo {
 	// Clear existing auth info
 	authInfo.Token = ""
 	authInfo.TokenFile = ""
 
+	// Two reasons to set --repo and GITLAB_HOST:
+	// - Propagate the host and repo if it's not the default one.
+	// - Isolate from the variable(s) that might be set to a different value when kubectl calls this command to get a token.
+	//   This requires ALWAYS setting this variable, even it has the default value as the caller might have
+	//   a custom value set, but it must be ignored.
+
 	authInfo.Exec = &clientcmdapi.ExecConfig{
-		Command:    glabExecutable,
-		Args:       []string{"cluster", "agent", "get-token", "--agent", strconv.FormatInt(agentID, 10)},
+		Command: glabExecutable,
+		Args: []string{
+			"cluster", "agent", "get-token",
+			"--agent", strconv.FormatInt(agentID, 10),
+			"--repo", glRepoFullName,
+		},
+		Env: []clientcmdapi.ExecEnvVar{
+			{
+				Name:  "GITLAB_HOST",
+				Value: glabHost,
+			},
+		},
 		APIVersion: k8sAuthInfoExecApiVersion,
 		InstallHint: heredoc.Doc(`
 			To authenticate to the current cluster, glab is required.
