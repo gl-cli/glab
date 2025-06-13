@@ -117,7 +117,7 @@ hosts:
 		},
 	}
 
-	cmd := NewCmdDelete(cmdtest.StubFactory(""))
+	cmd := NewCmdDelete(stubFactory)
 
 	cmd.Flags().StringP("repo", "R", "", "")
 
