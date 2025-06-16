@@ -1,41 +1,33 @@
 package get_token
 
 import (
-	"net/http"
 	"testing"
+	"time"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlab_testing "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/pkg/httpmock"
-	"gitlab.com/gitlab-org/cli/test"
+	"go.uber.org/mock/gomock"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string, doHyperlinks string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, doHyperlinks)
-	f := cmdtest.InitFactory(ios, rt)
-
-	// Note: This sets the RoundTripper, which is necessary for stubs to work.
-	_, _ = f.HttpClient()
-
-	cmd := NewCmdAgentGetToken(f)
-
-	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
-}
-
 func TestAgentGetToken(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	defer fakeHTTP.Verify(t)
+	// GIVEN
+	tc := gitlab_testing.NewTestClient(t)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentGetToken, cmdtest.WithGitLabClient(tc.Client))
 
-	fakeHTTP.RegisterResponder(http.MethodPost, "/user/personal_access_tokens",
-		httpmock.NewStringResponse(http.StatusOK, `
-		  {
-			"token": "glpat-XTESTX",
-			"expires_at": "2023-01-02"
-		  }
-		`))
+	tc.MockUsers.EXPECT().
+		CreatePersonalAccessTokenForCurrentUser(gomock.Any()).
+		Return(&gitlab.PersonalAccessToken{
+			Token:     "glpat-XTESTX",
+			ExpiresAt: gitlab.Ptr(mustParse(t, "2023-01-02")),
+		}, &gitlab.Response{}, nil).
+		Times(1)
 
-	output, err := runCommand(fakeHTTP, true, "--agent 42", "")
+	// WHEN
+	output, err := exec("--agent 42")
 	if err != nil {
 		t.Errorf("error running command `cluster agent get-token --agent 42`: %v", err)
 	}
@@ -54,4 +46,10 @@ func TestAgentGetToken(t *testing.T) {
 		}
 	`), output.String())
 	assert.Equal(t, ``, output.Stderr())
+}
+
+func mustParse(t *testing.T, dt string) gitlab.ISOTime {
+	x, err := time.Parse(time.DateOnly, dt)
+	require.NoError(t, err)
+	return gitlab.ISOTime(x)
 }
