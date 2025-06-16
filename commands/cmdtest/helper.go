@@ -201,6 +201,33 @@ func WithConfigError(err error) FactoryOption {
 	}
 }
 
+// WithHttpClientError configures the Factory to return an error when creating HTTP client
+func WithHttpClientError(err error) FactoryOption {
+	return func(f *cmdutils.Factory) {
+		f.HttpClient = func() (*gitlab.Client, error) {
+			return nil, err
+		}
+	}
+}
+
+// WithBaseRepoError configures the Factory to return an error when getting base repo
+func WithBaseRepoError(err error) FactoryOption {
+	return func(f *cmdutils.Factory) {
+		f.BaseRepo = func() (glrepo.Interface, error) {
+			return nil, err
+		}
+	}
+}
+
+// WithBranchError configures the Factory to return an error when getting branch
+func WithBranchError(err error) FactoryOption {
+	return func(f *cmdutils.Factory) {
+		f.Branch = func() (string, error) {
+			return "", err
+		}
+	}
+}
+
 // WithBaseRepo configures the Factory with a specific base repository
 func WithBaseRepo(owner, repo string) FactoryOption {
 	return func(f *cmdutils.Factory) {
@@ -217,6 +244,35 @@ func WithBranch(branch string) FactoryOption {
 			return branch, nil
 		}
 	}
+}
+
+// NewTestFactory creates a Factory configured for testing with the given options
+func NewTestFactory(t *testing.T, ios *iostreams.IOStreams, opts ...FactoryOption) *cmdutils.Factory {
+	t.Helper()
+
+	// Create a default factory
+	f := &cmdutils.Factory{
+		IO: ios,
+		HttpClient: func() (*gitlab.Client, error) {
+			return &gitlab.Client{}, nil
+		},
+		Config: func() (config.Config, error) {
+			return config.NewBlankConfig(), nil
+		},
+		BaseRepo: func() (glrepo.Interface, error) {
+			return glrepo.New("OWNER", "REPO"), nil
+		},
+		Branch: func() (string, error) {
+			return "main", nil
+		},
+	}
+
+	// Apply all options
+	for _, opt := range opts {
+		opt(f)
+	}
+
+	return f
 }
 
 // SetupCmdForTest creates a test environment with a configured Factory
