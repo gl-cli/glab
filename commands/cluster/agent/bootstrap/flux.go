@@ -18,6 +18,7 @@ func NewLocalFluxWrapper(
 	cmd Cmd,
 	binary string,
 	manifestPath string,
+	helmRepositoryAddress string,
 	helmRepositoryName string,
 	helmRepositoryNamespace string,
 	helmRepositoryFilepath string,
@@ -35,6 +36,7 @@ func NewLocalFluxWrapper(
 		cmd:                        cmd,
 		binary:                     binary,
 		manifestPath:               manifestPath,
+		helmRepositoryAddress:      helmRepositoryAddress,
 		helmRepositoryName:         helmRepositoryName,
 		helmRepositoryNamespace:    helmRepositoryNamespace,
 		helmRepositoryFilepath:     helmRepositoryFilepath,
@@ -56,6 +58,7 @@ type localFluxWrapper struct {
 	cmd                        Cmd
 	binary                     string
 	manifestPath               string
+	helmRepositoryAddress      string
 	helmRepositoryName         string
 	helmRepositoryNamespace    string
 	helmRepositoryFilepath     string
@@ -80,7 +83,7 @@ func (f *localFluxWrapper) createHelmRepositoryManifest() (file, error) {
 		f.helmRepositoryName,
 		"--export",
 		fmt.Sprintf("-n=%s", f.helmRepositoryNamespace),
-		"--url=https://charts.gitlab.io",
+		fmt.Sprintf("--url=%s", f.helmRepositoryAddress),
 	)
 	if err != nil {
 		return file{}, err

@@ -42,7 +42,7 @@ type KubectlWrapper interface {
 type (
 	APIFactory            func(*gitlab.Client, any) API
 	KubectlWrapperFactory func(Cmd, string, string, string) KubectlWrapper
-	FluxWrapperFactory    func(Cmd, string, string, string, string, string, string, string, string, string, []string, []string, string, string, string) FluxWrapper
+	FluxWrapperFactory    func(Cmd, string, string, string, string, string, string, string, string, string, string, []string, []string, string, string, string) FluxWrapper
 	CmdFactory            func(io.Writer, io.Writer, []string) Cmd
 )
 
@@ -162,6 +162,10 @@ This command consists of multiple idempotent steps:
 				return err
 			}
 
+			helmRepositoryAddress, err := cmd.Flags().GetString("helm-repository-address")
+			if err != nil {
+				return err
+			}
 			helmRepositoryName, err := cmd.Flags().GetString("helm-repository-name")
 			if err != nil {
 				return err
@@ -299,6 +303,7 @@ This command consists of multiple idempotent steps:
 
 			fluxWrapper := fwf(
 				c, fluxBinaryName, manifestPath,
+				helmRepositoryAddress,
 				helmRepositoryName, helmRepositoryNamespace, helmRepositoryFilepath,
 				helmReleaseName, helmReleaseNamespace, helmReleaseFilepath, helmReleaseTargetNamespace,
 				helmReleaseValues, helmReleaseValuesFrom,
@@ -324,6 +329,8 @@ This command consists of multiple idempotent steps:
 
 	agentBootstrapCmd.Flags().Bool("no-reconcile", false, "Do not trigger Flux reconciliation for GitLab Agent for Kubernetes Flux resource.")
 
+	// https://charts.gitlab.io is the GitLab’s official Helm charts repository address
+	agentBootstrapCmd.Flags().String("helm-repository-address", "https://charts.gitlab.io", "Address of the HelmRepository.")
 	agentBootstrapCmd.Flags().String("helm-repository-name", "gitlab", "Name of the Flux HelmRepository manifest.")
 	agentBootstrapCmd.Flags().String("helm-repository-namespace", "flux-system", "Namespace of the Flux HelmRepository manifest.")
 	agentBootstrapCmd.Flags().String("helm-repository-filepath", "gitlab-helm-repository.yaml", "Filepath within the GitLab Agent project to commit the Flux HelmRepository to.")
