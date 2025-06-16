@@ -23,8 +23,8 @@ var ListAgents = func(client *gitlab.Client, projectID any, opts *gitlab.ListAge
 	return agents, nil
 }
 
-var GetAgent = func(client *gitlab.Client, projectID any, agentID int) (*gitlab.Agent, error) {
-	agent, _, err := client.ClusterAgents.GetAgent(projectID, agentID)
+var GetAgent = func(client *gitlab.Client, projectID any, agentID int64) (*gitlab.Agent, error) {
+	agent, _, err := client.ClusterAgents.GetAgent(projectID, int(agentID)) // FIXME remove cast
 	if err != nil {
 		return nil, err
 	}
