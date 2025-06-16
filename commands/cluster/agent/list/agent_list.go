@@ -1,18 +1,28 @@
 package list
 
 import (
-	"fmt"
-
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cluster/agent/agentutils"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
+
+	page, perPage uint
+}
+
 func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
+	var opts options
+
 	agentListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List GitLab Agents for Kubernetes in a project.`,
@@ -20,37 +30,34 @@ func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"ls"},
 		Args:    cobra.MaximumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			page, err := cmd.Flags().GetUint("page")
-			if err != nil {
-				return err
-			}
-			perPage, err := cmd.Flags().GetUint("per-page")
-			if err != nil {
-				return err
-			}
-			return listAgents(f, int(page), int(perPage))
+			// We cannot copy these above - repo override doesn't work then.
+			// Let's hack around until some future refactoring :facepalm:
+			opts.httpClient = f.HttpClient
+			opts.baseRepo = f.BaseRepo
+			opts.io = f.IO // TODO move into the struct literal after factory refactoring
+			return opts.run()
 		},
 	}
-	agentListCmd.Flags().UintP("page", "p", 1, "Page number.")
-	agentListCmd.Flags().UintP("per-page", "P", uint(api.DefaultListLimit), "Number of items to list per page.")
+	agentListCmd.Flags().UintVarP(&opts.page, "page", "p", 1, "Page number.")
+	agentListCmd.Flags().UintVarP(&opts.perPage, "per-page", "P", uint(api.DefaultListLimit), "Number of items to list per page.")
 
 	return agentListCmd
 }
 
-func listAgents(factory *cmdutils.Factory, page, perPage int) error {
-	apiClient, err := factory.HttpClient()
+func (o *options) run() error {
+	apiClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	repo, err := factory.BaseRepo()
+	repo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
 
 	agents, err := api.ListAgents(apiClient, repo.FullName(), &gitlab.ListAgentsOptions{
-		Page:    page,
-		PerPage: perPage,
+		Page:    int(o.page),
+		PerPage: int(o.perPage),
 	})
 	if err != nil {
 		return err
@@ -58,14 +65,14 @@ func listAgents(factory *cmdutils.Factory, page, perPage int) error {
 
 	title := utils.NewListTitle("agent")
 	title.RepoName = repo.FullName()
-	title.Page = page
+	title.Page = int(o.page)
 	title.CurrentPageTotal = len(agents)
-	err = factory.IO.StartPager()
+	err = o.io.StartPager()
 	if err != nil {
 		return err
 	}
-	defer factory.IO.StopPager()
+	defer o.io.StopPager()
 
-	fmt.Fprintf(factory.IO.StdOut, "%s\n%s\n", title.Describe(), agentutils.DisplayAllAgents(factory.IO, agents))
+	o.io.LogInfof("%s\n%s\n", title.Describe(), agentutils.DisplayAllAgents(o.io, agents))
 	return nil
 }
