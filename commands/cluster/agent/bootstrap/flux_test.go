@@ -136,6 +136,7 @@ func setupFlux(t *testing.T) (*MockCmd, FluxWrapper) {
 	f := NewLocalFluxWrapper(
 		mockCmd,
 		"flux", "manifest-path",
+		"https://charts.gitlab.io",
 		"helm-repository-name", "helm-repository-namespace", "helm-repository-filepath",
 		"helm-release-name", "helm-release-namespace", "helm-release-filepath", "helm-release-target-namespace",
 		[]string{"helm-release-values-1", "helm-release-values-2"}, []string{"helm-release-values-from-1"},
