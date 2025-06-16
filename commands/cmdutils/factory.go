@@ -3,6 +3,7 @@ package cmdutils
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
@@ -25,6 +26,10 @@ type Factory struct {
 	Config     func() (config.Config, error)
 	Branch     func() (string, error)
 	IO         *iostreams.IOStreams
+
+	clientOnce sync.Once
+	client     *gitlab.Client
+	clientErr  error
 }
 
 // MIT License
@@ -62,6 +67,11 @@ func (f *Factory) RepoOverride(repo string) error {
 	if err == nil {
 		OverrideAPIProtocol(cfg, newRepo)
 	}
+
+	f.client = nil
+	f.clientErr = nil
+	f.clientOnce = sync.Once{}
+
 	f.HttpClient = func() (*gitlab.Client, error) {
 		return LabClientFunc(newRepo.RepoHost(), cfg, false)
 	}
@@ -126,8 +136,19 @@ func httpClientFunc() (*gitlab.Client, error) {
 	return LabClientFunc(repo.RepoHost(), cfg, false)
 }
 
+// safeHttpClientFunc returns a function that ensures thread-safe initialization of the HTTP client
+// to prevent race conditions when multiple goroutines attempt to create a client simultaneously
+func (f *Factory) safeHttpClientFunc() func() (*gitlab.Client, error) {
+	return func() (*gitlab.Client, error) {
+		f.clientOnce.Do(func() {
+			f.client, f.clientErr = httpClientFunc()
+		})
+		return f.client, f.clientErr
+	}
+}
+
 func NewFactory() *Factory {
-	return &Factory{
+	f := &Factory{
 		Config:     configFunc,
 		Remotes:    remotesFunc,
 		HttpClient: httpClientFunc,
@@ -141,4 +162,7 @@ func NewFactory() *Factory {
 		},
 		IO: iostreams.Init(),
 	}
+
+	f.HttpClient = f.safeHttpClientFunc()
+	return f
 }
