@@ -151,6 +151,11 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 	rootCmd.AddCommand(stackCmd.NewCmdStack(f))
 	rootCmd.AddCommand(deployKeyCmd.NewCmdDeployKey(f))
 
+	// TODO: This can probably be removed by GitLab 18.3
+	// See: https://gitlab.com/gitlab-org/cli/-/issues/7885
+	// Add global repo override flag but keep it hidden
+	cmdutils.AddGlobalRepoOverride(rootCmd, f)
+
 	rootCmd.Flags().BoolP("version", "v", false, "show glab version information")
 	return rootCmd
 }
