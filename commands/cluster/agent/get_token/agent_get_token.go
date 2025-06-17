@@ -59,7 +59,7 @@ func runGetToken(factory *cmdutils.Factory, agentID int64) error {
 	}
 
 	patName := fmt.Sprintf("glab-k8s-proxy-%x", randomBytes)
-	patExpiresAt := time.Now().Add(24 * time.Hour)
+	patExpiresAt := time.Now().Add(24 * time.Hour).UTC()
 	pat, err := api.CreatePersonalAccessTokenForCurrentUser(apiClient, patName, patScopes, patExpiresAt)
 	if err != nil {
 		return err
