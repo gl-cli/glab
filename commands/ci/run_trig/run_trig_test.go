@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
@@ -74,9 +73,7 @@ func TestCIRun(t *testing.T) {
 			}
 			defer fakeHTTP.Verify(t)
 
-			initialEnvValue := os.Getenv("CI_JOB_TOKEN")
-			os.Setenv("CI_JOB_TOKEN", tc.ciJobToken)
-			defer os.Setenv("CI_JOB_TOKEN", initialEnvValue)
+			t.Setenv("CI_JOB_TOKEN", tc.ciJobToken)
 
 			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/trigger/pipeline",
 				func(req *http.Request) (*http.Response, error) {

@@ -26,7 +26,7 @@ func Test_HelperFunctions(t *testing.T) {
 
 	t.Run("InitIOStream()", func(t *testing.T) {
 		t.Run("PAGER=", func(t *testing.T) {
-			os.Unsetenv("PAGER")
+			t.Setenv("PAGER", "")
 
 			got := Init()
 
@@ -35,7 +35,7 @@ func Test_HelperFunctions(t *testing.T) {
 			assert.Equal(t, ios.IsErrTTY, got.IsErrTTY)
 			assert.Equal(t, ios.IsInTTY, got.IsInTTY)
 			assert.Equal(t, ios.promptDisabled, got.promptDisabled)
-			assert.Equal(t, ios.pagerCommand, got.pagerCommand)
+			assert.Equal(t, "", got.pagerCommand)
 		})
 		t.Run("GLAB_PAGER=", func(t *testing.T) {
 			t.Setenv("GLAB_PAGER", "more")
