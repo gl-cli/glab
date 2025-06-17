@@ -112,7 +112,7 @@ func TestLookPath(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			os.Setenv("PATHEXT", tC.pathext)
+			t.Setenv("PATHEXT", tC.pathext)
 			got, err := LookPath(tC.arg)
 
 			if tC.wantErr != (err != nil) {

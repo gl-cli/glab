@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 
@@ -238,16 +237,10 @@ func Test_isEnvForcingUpdate(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		if tt.envVarKey != "" {
-			t.Setenv(tt.envVarKey, tt.envVarVal)
-		}
-
 		t.Run(tt.name, func(t *testing.T) {
-			t.Cleanup(func() {
-				if tt.envVarKey != "" {
-					os.Unsetenv(tt.envVarKey)
-				}
-			})
+			if tt.envVarKey != "" {
+				t.Setenv(tt.envVarKey, tt.envVarVal)
+			}
 
 			assert.Equal(t, tt.forceUpdate, isEnvForcingUpdate())
 		})
@@ -322,16 +315,10 @@ func Test_checkLastUpdate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if tt.envVarKey != "" {
-			t.Setenv(tt.envVarKey, tt.envVarVal)
-		}
-
 		t.Run(tt.name, func(t *testing.T) {
-			t.Cleanup(func() {
-				if tt.envVarKey != "" {
-					os.Unsetenv(tt.envVarKey)
-				}
-			})
+			if tt.envVarKey != "" {
+				t.Setenv(tt.envVarKey, tt.envVarVal)
+			}
 
 			mainBuf := bytes.Buffer{}
 			defer config.StubWriteConfig(&mainBuf, io.Discard)()
