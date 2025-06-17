@@ -110,7 +110,6 @@ func (c *Client) Token() string {
 	return c.token
 }
 
-func SetProtocol(protocol string) { apiClient.SetProtocol(protocol) }
 func (c *Client) SetProtocol(protocol string) {
 	c.Protocol = protocol
 }

@@ -116,12 +116,6 @@ func baseRepoFunc() (glrepo.Interface, error) {
 	return remotes[0], nil
 }
 
-// OverrideAPIProtocol sets api protocol for host to initialize http client
-func OverrideAPIProtocol(cfg config.Config, repo glrepo.Interface) {
-	protocol, _ := cfg.Get(repo.RepoHost(), "api_protocol")
-	api.SetProtocol(protocol)
-}
-
 func httpClientFunc() (*gitlab.Client, error) {
 	cfg, err := configFunc()
 	if err != nil {
