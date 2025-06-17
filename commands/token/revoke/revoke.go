@@ -141,7 +141,7 @@ func revokeTokenRun(opts *RevokeOptions) error {
 		outputTokenValue = fmt.Sprintf("revoked %s %s %d", opts.User, token.Name, token.ID)
 	} else {
 		if opts.Group != "" {
-			options := &gitlab.ListGroupAccessTokensOptions{PerPage: 100}
+			options := &gitlab.ListGroupAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
 			tokens, err := api.ListGroupAccessTokens(httpClient, opts.Group, options)
 			if err != nil {
 				return err

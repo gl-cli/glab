@@ -193,7 +193,7 @@ func createTokenRun(opts *CreateOptions) error {
 		}
 	} else {
 		if opts.Group != "" {
-			listOptions := &gitlab.ListGroupAccessTokensOptions{PerPage: 100}
+			listOptions := &gitlab.ListGroupAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
 			tokens, err := api.ListGroupAccessTokens(httpClient, opts.Group, listOptions)
 			if err != nil {
 				return err
