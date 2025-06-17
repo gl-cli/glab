@@ -83,7 +83,7 @@ func (c *Context) UploadFiles(projectID, tagName string) error {
 		}
 		// Ignoring SA1019 - not sure what to do yet, see https://gitlab.com/gitlab-org/cli/-/merge_requests/1895#note_2331674215.
 		//nolint:staticcheck
-		projectFile, _, err := c.Client.Projects.UploadFile(
+		projectFile, _, err := c.Client.ProjectMarkdownUploads.UploadProjectMarkdown(
 			projectID,
 			r,
 			file.Name,
@@ -154,7 +154,7 @@ func aliasFilePathToDirectAssetPath(asset *ReleaseAsset) (bool /* aliased */, er
 
 // CreateReleaseAssetFromProjectFile creates a ReleaseAsset from a ProjectFile and the metadata from a ReleaseFile.
 // See [https://docs.gitlab.com/api/projects/#upload-a-file](https://docs.gitlab.com/api/project_markdown_uploads/)
-func (c *Context) CreateReleaseAssetFromProjectFile(releaseFile *ReleaseFile, projectFile *gitlab.ProjectFile) *ReleaseAsset {
+func (c *Context) CreateReleaseAssetFromProjectFile(releaseFile *ReleaseFile, projectFile *gitlab.ProjectMarkdownUploadedFile) *ReleaseAsset {
 	baseURL := c.Client.BaseURL()
 	// projectFile.FullPath contains the absolute path of the file within the
 	// context of the client's baseURL.

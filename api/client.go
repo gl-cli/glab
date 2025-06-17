@@ -17,6 +17,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/oauth2"
+
+	oauthz "golang.org/x/oauth2"
 )
 
 // AuthType represents an authentication type within GitLab.
@@ -331,7 +333,8 @@ func (c *Client) NewLab() error {
 		}
 
 		if c.isOauth2 {
-			c.LabClient, err = gitlab.NewOAuthClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+			ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: c.token})
+			c.LabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
 		} else if c.isJobToken {
 			c.LabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
 		} else {

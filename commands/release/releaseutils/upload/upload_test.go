@@ -74,7 +74,7 @@ func TestContext_CreateReleaseAssetFromProjectFile(t *testing.T) {
 		Path:  "/test_file.txt",
 		Type:  gitlab.Ptr(gitlab.OtherLinkType),
 	}
-	projectFile := &gitlab.ProjectFile{
+	projectFile := &gitlab.MarkdownUploadedFile{
 		FullPath: "/-/project/42/uploads/66dbcd21ec5d24ed6ea225176098d52b/test_file.txt",
 	}
 
