@@ -110,7 +110,6 @@ func (c *Client) Token() string {
 	return c.token
 }
 
-func SetProtocol(protocol string) { apiClient.SetProtocol(protocol) }
 func (c *Client) SetProtocol(protocol string) {
 	c.Protocol = protocol
 }
@@ -263,7 +262,7 @@ func NewClientWithCustomCAClientCert(host, token, caFile string, certFile string
 }
 
 // NewClientWithCfg initializes the global api with the config data
-func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (client *Client, err error) {
+func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (*Client, error) {
 	if repoHost == "" {
 		repoHost = glinstance.OverridableDefault()
 	}
@@ -274,15 +273,12 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (clien
 	}
 
 	apiProtocol, _ := cfg.Get(repoHost, "api_protocol")
-	if apiProtocol != "" {
-		SetProtocol(apiProtocol)
-	}
 
 	isOAuth2Cfg, _ := cfg.Get(repoHost, "is_oauth2")
 	isOAuth2 := false
 	if isOAuth2Cfg == "true" {
 		isOAuth2 = true
-		err = oauth2.RefreshToken(repoHost, cfg, "https")
+		err := oauth2.RefreshToken(repoHost, cfg, "https")
 		if err != nil {
 			return nil, err
 		}
@@ -303,6 +299,9 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (clien
 		isJobToken = true
 	}
 
+	var client *Client
+	var err error
+
 	if caCert != "" && clientCert != "" && keyFile != "" {
 		client, err = NewClientWithCustomCAClientCert(apiHost, authToken, caCert, clientCert, keyFile, isGraphQL, isOAuth2, isJobToken)
 	} else if caCert != "" {
@@ -310,7 +309,14 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (clien
 	} else {
 		client, err = NewClient(apiHost, authToken, skipTlsVerify, isGraphQL, isOAuth2, isJobToken)
 	}
-	return
+	if err != nil {
+		return nil, err
+	}
+	if apiProtocol != "" {
+		client.SetProtocol(apiProtocol)
+	}
+
+	return client, nil
 }
 
 // NewLab initializes the GitLab Client
