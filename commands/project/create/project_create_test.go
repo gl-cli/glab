@@ -30,11 +30,8 @@ no_prompt: true
 `, "")()
 
 	io, _, stdout, stderr := iostreams.Test()
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("")
+	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 	// to skip creation of local project directory, set prompt to false
-	stubFactory.IO = io
-	stubFactory.IO.IsaTTY = false
-	stubFactory.IO.IsErrTTY = false
 
 	api.CreateProject = func(client *gitlab.Client, opts *gitlab.CreateProjectOptions) (*gitlab.Project, error) {
 		return &gitlab.Project{

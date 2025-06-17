@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
@@ -78,7 +79,8 @@ func TestContext_CreateReleaseAssetFromProjectFile(t *testing.T) {
 		FullPath: "/-/project/42/uploads/66dbcd21ec5d24ed6ea225176098d52b/test_file.txt",
 	}
 
-	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test")
+	io, _, _, _ := iostreams.Test()
+	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test", io)
 	client, _ := f.HttpClient()
 	context := &Context{
 		Client: client,

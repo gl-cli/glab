@@ -22,10 +22,9 @@ hosts:
 `, "")()
 
 	io, _, stdout, stderr := iostreams.Test()
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("")
-	stubFactory.IO = io
-	stubFactory.IO.IsaTTY = true
-	stubFactory.IO.IsErrTTY = true
+	io.IsaTTY = true
+	io.IsErrTTY = true
+	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 
 	api.GetSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {
 		_, err := stubFactory.BaseRepo()
@@ -72,10 +71,9 @@ hosts:
 `, "")()
 
 	io, _, stdout, stderr := iostreams.Test()
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("")
-	stubFactory.IO = io
-	stubFactory.IO.IsaTTY = true
-	stubFactory.IO.IsErrTTY = true
+	io.IsaTTY = true
+	io.IsErrTTY = true
+	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 
 	api.GetSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {
 		_, err := stubFactory.BaseRepo()

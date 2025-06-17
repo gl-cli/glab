@@ -53,11 +53,10 @@ func TestNewCmdCreate(t *testing.T) {
 		},
 	}
 	io, _, stdout, stderr := iostreams.Test()
+	io.IsaTTY = true
+	io.IsErrTTY = true
 
-	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test")
-	f.IO = io
-	f.IO.IsaTTY = true
-	f.IO.IsErrTTY = true
+	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test", io)
 
 	cmd := NewCmdCreate(f)
 	cmdutils.EnableRepoOverride(cmd, f)
