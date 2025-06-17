@@ -50,7 +50,7 @@ This command only supports personal and project access tokens for authentication
 			opts.io = f.IO // TODO move into the struct literal after factory refactoring
 			opts.baseRepo = f.BaseRepo
 			opts.config = f.Config
-			return opts.Run(cmd.Context())
+			return opts.run(cmd.Context())
 		},
 	}
 	fl := graphCmd.Flags()
@@ -63,7 +63,7 @@ This command only supports personal and project access tokens for authentication
 	return graphCmd
 }
 
-func (o *options) Run(ctx context.Context) error {
+func (o *options) run(ctx context.Context) error {
 	// 1. Plumbing setup
 	repo, err := o.baseRepo()
 	if err != nil {

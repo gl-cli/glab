@@ -53,6 +53,41 @@ const (
 	fluxBinaryName    = "flux"
 )
 
+type options struct {
+	manifestPath   string
+	manifestBranch string
+
+	noReconcile bool
+
+	helmRepositoryAddress   string
+	helmRepositoryName      string
+	helmRepositoryNamespace string
+	helmRepositoryFilepath  string
+
+	helmReleaseName            string
+	helmReleaseNamespace       string
+	helmReleaseFilepath        string
+	helmReleaseTargetNamespace string
+	helmReleaseValues          []string
+	helmReleaseValuesFrom      []string
+
+	gitlabAgentTokenSecretName string
+
+	fluxSourceType      string
+	fluxSourceNamespace string
+	fluxSourceName      string
+
+	createEnvironment           bool
+	environmentName             string
+	environmentNamespace        string
+	environmentFluxResourcePath string
+
+	createFluxEnvironment           bool
+	fluxEnvironmentName             string
+	fluxEnvironmentNamespace        string
+	fluxEnvironmentFluxResourcePath string
+}
+
 func EnsureRequirements() error {
 	if _, err := exec.LookPath(kubectlBinaryName); err != nil {
 		return fmt.Errorf("unable to find %s binary in PATH", kubectlBinaryName)
@@ -64,6 +99,8 @@ func EnsureRequirements() error {
 }
 
 func NewCmdAgentBootstrap(f *cmdutils.Factory, ensureRequirements func() error, af APIFactory, kwf KubectlWrapperFactory, fwf FluxWrapperFactory, cf CmdFactory) *cobra.Command {
+	var opts options
+
 	agentBootstrapCmd := &cobra.Command{
 		Use:   "bootstrap agent-name [flags]",
 		Short: `Bootstrap a GitLab Agent for Kubernetes in a project.`,
@@ -141,173 +178,64 @@ This command consists of multiple idempotent steps:
 
 			api := af(apiClient, repo.FullName())
 
-			manifestPath, err := cmd.Flags().GetString("manifest-path")
-			if err != nil {
-				return err
-			}
-			manifestBranch, err := cmd.Flags().GetString("manifest-branch")
-			if err != nil {
-				return err
-			}
-
-			if manifestBranch == "" {
-				manifestBranch, err = api.GetDefaultBranch()
+			if opts.manifestBranch == "" {
+				opts.manifestBranch, err = api.GetDefaultBranch()
 				if err != nil {
 					return err
 				}
 			}
 
-			noReconcile, err := cmd.Flags().GetBool("no-reconcile")
-			if err != nil {
-				return err
-			}
-
-			helmRepositoryAddress, err := cmd.Flags().GetString("helm-repository-address")
-			if err != nil {
-				return err
-			}
-			helmRepositoryName, err := cmd.Flags().GetString("helm-repository-name")
-			if err != nil {
-				return err
-			}
-			helmRepositoryNamespace, err := cmd.Flags().GetString("helm-repository-namespace")
-			if err != nil {
-				return err
-			}
-			helmRepositoryFilepath, err := cmd.Flags().GetString("helm-repository-filepath")
-			if err != nil {
-				return err
-			}
-			helmReleaseName, err := cmd.Flags().GetString("helm-release-name")
-			if err != nil {
-				return err
-			}
-			helmReleaseNamespace, err := cmd.Flags().GetString("helm-release-namespace")
-			if err != nil {
-				return err
-			}
-			helmReleaseFilepath, err := cmd.Flags().GetString("helm-release-filepath")
-			if err != nil {
-				return err
-			}
-			helmReleaseTargetNamespace, err := cmd.Flags().GetString("helm-release-target-namespace")
-			if err != nil {
-				return err
-			}
-			helmReleaseValues, err := cmd.Flags().GetStringSlice("helm-release-values")
-			if err != nil {
-				return err
-			}
-			helmReleaseValuesFrom, err := cmd.Flags().GetStringSlice("helm-release-values-from")
-			if err != nil {
-				return err
-			}
-
-			gitlabAgentTokenSecretName, err := cmd.Flags().GetString("gitlab-agent-token-secret-name")
-			if err != nil {
-				return err
-			}
-
-			fluxSourceType, err := cmd.Flags().GetString("flux-source-type")
-			if err != nil {
-				return err
-			}
-
-			fluxSourceNamespace, err := cmd.Flags().GetString("flux-source-namespace")
-			if err != nil {
-				return err
-			}
-
-			fluxSourceName, err := cmd.Flags().GetString("flux-source-name")
-			if err != nil {
-				return err
-			}
-
-			createEnvironment, err := cmd.Flags().GetBool("create-environment")
-			if err != nil {
-				return err
-			}
-
-			createFluxEnvironment, err := cmd.Flags().GetBool("create-flux-environment")
-			if err != nil {
-				return err
-			}
-
-			var environmentCfg *environmentConfiguration
-			if createEnvironment {
-				environmentCfg = &environmentConfiguration{
-					name:                fmt.Sprintf("%s/%s", helmReleaseNamespace, helmReleaseName),
-					kubernetesNamespace: helmReleaseTargetNamespace,
-					fluxResourcePath:    fmt.Sprintf("helm.toolkit.fluxcd.io/v2beta1/namespaces/%s/helmreleases/%s", helmReleaseNamespace, helmReleaseName),
+			var agentEnvironmentCfg *environmentConfiguration
+			if opts.createEnvironment {
+				agentEnvironmentCfg = &environmentConfiguration{
+					name:                fmt.Sprintf("%s/%s", opts.helmReleaseNamespace, opts.helmReleaseName),
+					kubernetesNamespace: opts.helmReleaseTargetNamespace,
+					fluxResourcePath:    fmt.Sprintf("helm.toolkit.fluxcd.io/v2beta1/namespaces/%s/helmreleases/%s", opts.helmReleaseNamespace, opts.helmReleaseName),
 				}
 
 				if cmd.Flags().Changed("environment-name") {
-					environmentName, err := cmd.Flags().GetString("environment-name")
-					if err != nil {
-						return err
-					}
-					environmentCfg.name = environmentName
+					agentEnvironmentCfg.name = opts.environmentName
 				}
 
 				if cmd.Flags().Changed("environment-namespace") {
-					environmentNamespace, err := cmd.Flags().GetString("environment-namespace")
-					if err != nil {
-						return err
-					}
-					environmentCfg.kubernetesNamespace = environmentNamespace
+					agentEnvironmentCfg.kubernetesNamespace = opts.environmentNamespace
 				}
 
 				if cmd.Flags().Changed("environment-flux-resource-path") {
-					environmentFluxResourcePath, err := cmd.Flags().GetString("environment-flux-resource-path")
-					if err != nil {
-						return err
-					}
-					environmentCfg.fluxResourcePath = environmentFluxResourcePath
+					agentEnvironmentCfg.fluxResourcePath = opts.environmentFluxResourcePath
 				}
 			}
 
 			var fluxEnvironmentCfg *environmentConfiguration
-			if createFluxEnvironment {
+			if opts.createFluxEnvironment {
 				fluxEnvironmentCfg = &environmentConfiguration{
-					name:                fmt.Sprintf("%s/%s", fluxSourceNamespace, fluxSourceName),
-					kubernetesNamespace: fluxSourceNamespace,
+					name:                fmt.Sprintf("%s/%s", opts.fluxSourceNamespace, opts.fluxSourceName),
+					kubernetesNamespace: opts.fluxSourceNamespace,
 					fluxResourcePath:    "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system",
 				}
 
 				if cmd.Flags().Changed("flux-environment-name") {
-					environmentName, err := cmd.Flags().GetString("flux-environment-name")
-					if err != nil {
-						return err
-					}
-					fluxEnvironmentCfg.name = environmentName
+					fluxEnvironmentCfg.name = opts.fluxEnvironmentName
 				}
 
 				if cmd.Flags().Changed("flux-environment-namespace") {
-					environmentNamespace, err := cmd.Flags().GetString("flux-environment-namespace")
-					if err != nil {
-						return err
-					}
-					fluxEnvironmentCfg.kubernetesNamespace = environmentNamespace
+					fluxEnvironmentCfg.kubernetesNamespace = opts.fluxEnvironmentNamespace
 				}
 
 				if cmd.Flags().Changed("flux-environment-flux-resource-path") {
-					environmentFluxResourcePath, err := cmd.Flags().GetString("flux-environment-flux-resource-path")
-					if err != nil {
-						return err
-					}
-					fluxEnvironmentCfg.fluxResourcePath = environmentFluxResourcePath
+					fluxEnvironmentCfg.fluxResourcePath = opts.fluxEnvironmentFluxResourcePath
 				}
 			}
 
 			c := cf(stdout, stderr, os.Environ())
 
 			fluxWrapper := fwf(
-				c, fluxBinaryName, manifestPath,
-				helmRepositoryAddress,
-				helmRepositoryName, helmRepositoryNamespace, helmRepositoryFilepath,
-				helmReleaseName, helmReleaseNamespace, helmReleaseFilepath, helmReleaseTargetNamespace,
-				helmReleaseValues, helmReleaseValuesFrom,
-				fluxSourceType, fluxSourceNamespace, fluxSourceName,
+				c, fluxBinaryName, opts.manifestPath,
+				opts.helmRepositoryAddress,
+				opts.helmRepositoryName, opts.helmRepositoryNamespace, opts.helmRepositoryFilepath,
+				opts.helmReleaseName, opts.helmReleaseNamespace, opts.helmReleaseFilepath, opts.helmReleaseTargetNamespace,
+				opts.helmReleaseValues, opts.helmReleaseValuesFrom,
+				opts.fluxSourceType, opts.fluxSourceNamespace, opts.fluxSourceName,
 			)
 
 			return (&bootstrapCmd{
@@ -315,48 +243,48 @@ This command consists of multiple idempotent steps:
 				stdout:              stdout,
 				stderr:              stderr,
 				agentName:           args[0],
-				manifestBranch:      manifestBranch,
-				kubectl:             kwf(c, kubectlBinaryName, helmReleaseTargetNamespace, gitlabAgentTokenSecretName),
+				manifestBranch:      opts.manifestBranch,
+				kubectl:             kwf(c, kubectlBinaryName, opts.helmReleaseTargetNamespace, opts.gitlabAgentTokenSecretName),
 				flux:                fluxWrapper,
-				noReconcile:         noReconcile,
-				agentEnvironmentCfg: environmentCfg,
+				noReconcile:         opts.noReconcile,
+				agentEnvironmentCfg: agentEnvironmentCfg,
 				fluxEnvironmentCfg:  fluxEnvironmentCfg,
 			}).run()
 		},
 	}
-	agentBootstrapCmd.Flags().StringP("manifest-path", "p", "", "Location of directory in Git repository for storing the GitLab Agent for Kubernetes Helm resources.")
-	agentBootstrapCmd.Flags().StringP("manifest-branch", "b", "", "Branch to commit the Flux Manifests to. (default to the project default branch)")
+	agentBootstrapCmd.Flags().StringVarP(&opts.manifestPath, "manifest-path", "p", "", "Location of directory in Git repository for storing the GitLab Agent for Kubernetes Helm resources.")
+	agentBootstrapCmd.Flags().StringVarP(&opts.manifestBranch, "manifest-branch", "b", "", "Branch to commit the Flux Manifests to. (default to the project default branch)")
 
-	agentBootstrapCmd.Flags().Bool("no-reconcile", false, "Do not trigger Flux reconciliation for GitLab Agent for Kubernetes Flux resource.")
+	agentBootstrapCmd.Flags().BoolVar(&opts.noReconcile, "no-reconcile", false, "Do not trigger Flux reconciliation for GitLab Agent for Kubernetes Flux resource.")
 
 	// https://charts.gitlab.io is the GitLab’s official Helm charts repository address
-	agentBootstrapCmd.Flags().String("helm-repository-address", "https://charts.gitlab.io", "Address of the HelmRepository.")
-	agentBootstrapCmd.Flags().String("helm-repository-name", "gitlab", "Name of the Flux HelmRepository manifest.")
-	agentBootstrapCmd.Flags().String("helm-repository-namespace", "flux-system", "Namespace of the Flux HelmRepository manifest.")
-	agentBootstrapCmd.Flags().String("helm-repository-filepath", "gitlab-helm-repository.yaml", "Filepath within the GitLab Agent project to commit the Flux HelmRepository to.")
+	agentBootstrapCmd.Flags().StringVar(&opts.helmRepositoryAddress, "helm-repository-address", "https://charts.gitlab.io", "Address of the HelmRepository.")
+	agentBootstrapCmd.Flags().StringVar(&opts.helmRepositoryName, "helm-repository-name", "gitlab", "Name of the Flux HelmRepository manifest.")
+	agentBootstrapCmd.Flags().StringVar(&opts.helmRepositoryNamespace, "helm-repository-namespace", "flux-system", "Namespace of the Flux HelmRepository manifest.")
+	agentBootstrapCmd.Flags().StringVar(&opts.helmRepositoryFilepath, "helm-repository-filepath", "gitlab-helm-repository.yaml", "Filepath within the GitLab Agent project to commit the Flux HelmRepository to.")
 
-	agentBootstrapCmd.Flags().String("helm-release-name", "gitlab-agent", "Name of the Flux HelmRelease manifest.")
-	agentBootstrapCmd.Flags().String("helm-release-namespace", "flux-system", "Namespace of the Flux HelmRelease manifest.")
-	agentBootstrapCmd.Flags().String("helm-release-filepath", "gitlab-agent-helm-release.yaml", "Filepath within the GitLab Agent project to commit the Flux HelmRelease to.")
-	agentBootstrapCmd.Flags().String("helm-release-target-namespace", "gitlab-agent", "Namespace of the GitLab Agent deployment.")
-	agentBootstrapCmd.Flags().StringSlice("helm-release-values", nil, "Local path to values.yaml files")
-	agentBootstrapCmd.Flags().StringSlice("helm-release-values-from", nil, "Kubernetes object reference that contains the values.yaml data key in the format '<kind>/<name>', where kind must be one of: (Secret,ConfigMap)")
+	agentBootstrapCmd.Flags().StringVar(&opts.helmReleaseName, "helm-release-name", "gitlab-agent", "Name of the Flux HelmRelease manifest.")
+	agentBootstrapCmd.Flags().StringVar(&opts.helmReleaseNamespace, "helm-release-namespace", "flux-system", "Namespace of the Flux HelmRelease manifest.")
+	agentBootstrapCmd.Flags().StringVar(&opts.helmReleaseFilepath, "helm-release-filepath", "gitlab-agent-helm-release.yaml", "Filepath within the GitLab Agent project to commit the Flux HelmRelease to.")
+	agentBootstrapCmd.Flags().StringVar(&opts.helmReleaseTargetNamespace, "helm-release-target-namespace", "gitlab-agent", "Namespace of the GitLab Agent deployment.")
+	agentBootstrapCmd.Flags().StringSliceVar(&opts.helmReleaseValues, "helm-release-values", nil, "Local path to values.yaml files")
+	agentBootstrapCmd.Flags().StringSliceVar(&opts.helmReleaseValuesFrom, "helm-release-values-from", nil, "Kubernetes object reference that contains the values.yaml data key in the format '<kind>/<name>', where kind must be one of: (Secret,ConfigMap)")
 
-	agentBootstrapCmd.Flags().String("gitlab-agent-token-secret-name", "gitlab-agent-token", "Name of the Secret where the token for the GitLab Agent is stored. The helm-release-target-namespace is implied for the namespace of the Secret.")
+	agentBootstrapCmd.Flags().StringVar(&opts.gitlabAgentTokenSecretName, "gitlab-agent-token-secret-name", "gitlab-agent-token", "Name of the Secret where the token for the GitLab Agent is stored. The helm-release-target-namespace is implied for the namespace of the Secret.")
 
-	agentBootstrapCmd.Flags().String("flux-source-type", "git", "Source type of the flux-system, e.g. git, oci, helm, ...")
-	agentBootstrapCmd.Flags().String("flux-source-namespace", "flux-system", "Flux source namespace.")
-	agentBootstrapCmd.Flags().String("flux-source-name", "flux-system", "Flux source name.")
+	agentBootstrapCmd.Flags().StringVar(&opts.fluxSourceType, "flux-source-type", "git", "Source type of the flux-system, e.g. git, oci, helm, ...")
+	agentBootstrapCmd.Flags().StringVar(&opts.fluxSourceNamespace, "flux-source-namespace", "flux-system", "Flux source namespace.")
+	agentBootstrapCmd.Flags().StringVar(&opts.fluxSourceName, "flux-source-name", "flux-system", "Flux source name.")
 
-	agentBootstrapCmd.Flags().Bool("create-environment", true, "Create an Environment for the GitLab Agent.")
-	agentBootstrapCmd.Flags().String("environment-name", "<helm-release-namespace>/<helm-release-name>", "Name of the Environment for the GitLab Agent.")
-	agentBootstrapCmd.Flags().String("environment-namespace", "<helm-release-namespace>", "Kubernetes namespace of the Environment for the GitLab Agent.")
-	agentBootstrapCmd.Flags().String("environment-flux-resource-path", "helm.toolkit.fluxcd.io/v2beta1/namespaces/<helm-release-namespace>/helmreleases/<helm-release-name>", "Flux Resource Path of the Environment for the GitLab Agent.")
+	agentBootstrapCmd.Flags().BoolVar(&opts.createEnvironment, "create-environment", true, "Create an Environment for the GitLab Agent.")
+	agentBootstrapCmd.Flags().StringVar(&opts.environmentName, "environment-name", "<helm-release-namespace>/<helm-release-name>", "Name of the Environment for the GitLab Agent.")
+	agentBootstrapCmd.Flags().StringVar(&opts.environmentNamespace, "environment-namespace", "<helm-release-namespace>", "Kubernetes namespace of the Environment for the GitLab Agent.")
+	agentBootstrapCmd.Flags().StringVar(&opts.environmentFluxResourcePath, "environment-flux-resource-path", "helm.toolkit.fluxcd.io/v2beta1/namespaces/<helm-release-namespace>/helmreleases/<helm-release-name>", "Flux Resource Path of the Environment for the GitLab Agent.")
 
-	agentBootstrapCmd.Flags().Bool("create-flux-environment", true, "Create an Environment for FluxCD. This only affects the environment creation, not the use of Flux itself which is always required for the bootstrap process.")
-	agentBootstrapCmd.Flags().String("flux-environment-name", "<flux-source-namespace>/<flux-source-name>", "Name of the Environment for FluxCD.")
-	agentBootstrapCmd.Flags().String("flux-environment-namespace", "<flux-source-namespace>", "Kubernetes namespace of the Environment for FluxCD.")
-	agentBootstrapCmd.Flags().String("flux-environment-flux-resource-path", "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system", "Flux Resource Path of the Environment for FluxCD.")
+	agentBootstrapCmd.Flags().BoolVar(&opts.createFluxEnvironment, "create-flux-environment", true, "Create an Environment for FluxCD. This only affects the environment creation, not the use of Flux itself which is always required for the bootstrap process.")
+	agentBootstrapCmd.Flags().StringVar(&opts.fluxEnvironmentName, "flux-environment-name", "<flux-source-namespace>/<flux-source-name>", "Name of the Environment for FluxCD.")
+	agentBootstrapCmd.Flags().StringVar(&opts.fluxEnvironmentNamespace, "flux-environment-namespace", "<flux-source-namespace>", "Kubernetes namespace of the Environment for FluxCD.")
+	agentBootstrapCmd.Flags().StringVar(&opts.fluxEnvironmentFluxResourcePath, "flux-environment-flux-resource-path", "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system", "Flux Resource Path of the Environment for FluxCD.")
 
 	return agentBootstrapCmd
 }
