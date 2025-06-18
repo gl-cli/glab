@@ -273,6 +273,9 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (*Clie
 	}
 
 	apiProtocol, _ := cfg.Get(repoHost, "api_protocol")
+	if apiProtocol != "" {
+		apiClient.SetProtocol(apiProtocol) // TODO remove this together with global apiClient.
+	}
 
 	isOAuth2Cfg, _ := cfg.Get(repoHost, "is_oauth2")
 	isOAuth2 := false
