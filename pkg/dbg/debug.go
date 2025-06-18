@@ -10,3 +10,9 @@ func Debug(output ...string) {
 		log.Print(output)
 	}
 }
+
+func Debugf(format string, v ...any) {
+	if os.Getenv("DEBUG") != "" {
+		log.Printf(format, v...)
+	}
+}

@@ -1,7 +1,6 @@
 package hooks
 
 import (
-	"log"
 	"strconv"
 	"strings"
 
@@ -24,7 +23,7 @@ func IsTelemetryEnabled(cfg config.Config) bool {
 	telemetryEnabled, _ := cfg.Get("", "telemetry")
 	enabled, err := strconv.ParseBool(telemetryEnabled)
 	if err != nil {
-		log.Printf("Could not parse telemetry config value %s - defaulting to 'true'", telemetryEnabled)
+		dbg.Debugf("Could not parse telemetry config value %s - defaulting to 'true'", telemetryEnabled)
 		return true
 	}
 
