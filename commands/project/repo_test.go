@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
@@ -14,7 +14,7 @@ func Test_Repo(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	assert.Nil(t, NewCmdRepo(&cmdutils.Factory{}).Execute())
+	assert.Nil(t, NewCmdRepo(&cmdtest.Factory{}).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/text"
 	"gitlab.com/gitlab-org/cli/test"
 )
@@ -15,7 +15,7 @@ func TestStackCmd(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	assert.Nil(t, NewCmdStack(&cmdutils.Factory{}).Execute())
+	assert.Nil(t, NewCmdStack(&cmdtest.Factory{}).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

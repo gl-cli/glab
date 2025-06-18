@@ -86,7 +86,7 @@ func Test_ScheduleRunNoID(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stderr = w
 
-	assert.Error(t, NewCmdRun(&cmdutils.Factory{}).Execute())
+	assert.Error(t, NewCmdRun(&cmdtest.Factory{}).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 
