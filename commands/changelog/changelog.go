@@ -6,7 +6,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdChangelog(f *cmdutils.Factory) *cobra.Command {
+func NewCmdChangelog(f cmdutils.Factory) *cobra.Command {
 	changelogCmd := &cobra.Command{
 		Use:   "changelog <command> [flags]",
 		Short: `Interact with the changelog API.`,

@@ -25,8 +25,8 @@ import (
 )
 
 func Test_NewCmdApi(t *testing.T) {
-	f := cmdtest.StubFactory("")
-	f.IO, _, _, _ = iostreams.Test()
+	ios, _, _, _ := iostreams.Test()
+	f := cmdtest.StubFactory("", ios)
 
 	tests := []struct {
 		name     string

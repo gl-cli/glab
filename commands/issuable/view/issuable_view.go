@@ -40,7 +40,7 @@ type ViewOpts struct {
 	IO *iostreams.IOStreams
 }
 
-func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+func NewCmdView(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
 	examplePath := "issues/123"
 
 	if issueType == issuable.TypeIncident {
@@ -48,7 +48,7 @@ func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 	}
 
 	opts := &ViewOpts{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	issueViewCmd := &cobra.Command{
 		Use:     "view <id>",
@@ -85,7 +85,7 @@ func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 
 			// open in browser if --web flag is specified
 			if opts.Web {
-				if f.IO.IsaTTY && f.IO.IsErrTTY {
+				if f.IO().IsaTTY && f.IO().IsErrTTY {
 					fmt.Fprintf(opts.IO.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(opts.Issue.WebURL))
 				}
 
@@ -110,16 +110,16 @@ func NewCmdView(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 			}
 
 			glamourStyle, _ := cfg.Get(baseRepo.RepoHost(), "glamour_style")
-			f.IO.ResolveBackgroundColor(glamourStyle)
-			err = f.IO.StartPager()
+			f.IO().ResolveBackgroundColor(glamourStyle)
+			err = f.IO().StartPager()
 			if err != nil {
 				return err
 			}
-			defer f.IO.StopPager()
+			defer f.IO().StopPager()
 			if opts.OutputFormat == "json" {
 				return printJSONIssue(opts)
 			}
-			if f.IO.IsErrTTY && f.IO.IsaTTY {
+			if f.IO().IsErrTTY && f.IO().IsaTTY {
 				return printTTYIssuePreview(opts)
 			}
 			return printRawIssuePreview(opts)

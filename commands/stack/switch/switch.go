@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/text"
 )
 
-func NewCmdStackSwitch(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
+func NewCmdStackSwitch(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	stackSwitchCmd := &cobra.Command{
 		Use:   "switch <stack-name>",
 		Short: "Switch between stacks. (EXPERIMENTAL.)",
@@ -32,7 +32,7 @@ func NewCmdStackSwitch(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return stackSwitchCmd
 }
 
-func switchFunc(f *cmdutils.Factory, name string) error {
+func switchFunc(f cmdutils.Factory, name string) error {
 	currentStackTitle, err := git.GetCurrentStackTitle()
 	if err != nil {
 		return fmt.Errorf("error getting current stack: %v", err)
@@ -62,6 +62,6 @@ func switchFunc(f *cmdutils.Factory, name string) error {
 		return fmt.Errorf("error setting local Git config: %w", err)
 	}
 
-	fmt.Fprintf(f.IO.StdOut, "Switched to stack %s.\n", name)
+	fmt.Fprintf(f.IO().StdOut, "Switched to stack %s.\n", name)
 	return nil
 }

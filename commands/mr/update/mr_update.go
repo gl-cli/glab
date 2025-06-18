@@ -15,7 +15,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	mrUpdateCmd := &cobra.Command{
 		Use:   "update [<id> | <branch>]",
 		Short: `Update a merge request.`,
@@ -36,7 +36,7 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 			var actions []string
 			var ua *cmdutils.UserAssignments // assignees
 			var ur *cmdutils.UserAssignments // reviewers
-			c := f.IO.Color()
+			c := f.IO().Color()
 
 			if cmd.Flags().Changed("unassign") && cmd.Flags().Changed("assignee") {
 				return &cmdutils.FlagError{Err: fmt.Errorf("--assignee and --unassign are mutually exclusive.")}
@@ -241,7 +241,7 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 				l.Squash = gitlab.Ptr(!mr.Squash)
 			}
 
-			fmt.Fprintf(f.IO.StdOut, "- Updating merge request !%d\n", mr.IID)
+			fmt.Fprintf(f.IO().StdOut, "- Updating merge request !%d\n", mr.IID)
 
 			mr, err = api.UpdateMR(apiClient, repo.FullName(), mr.IID, l)
 			if err != nil {
@@ -249,10 +249,10 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			for _, s := range actions {
-				fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), s)
+				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), s)
 			}
 
-			fmt.Fprintln(f.IO.StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO.IsaTTY))
+			fmt.Fprintln(f.IO().StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
 			return nil
 		},
 	}

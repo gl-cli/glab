@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -84,16 +84,16 @@ func mockAllResponses(t *testing.T, fakeHTTP *httpmock.Mocker) {
 func runCommand(rt http.RoundTripper, issuableID string, issueType issuable.IssueType) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := iostreams.Test()
 
-	factory := &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
+	factory := &cmdtest.Factory{
+		IOStub: ios,
+		HttpClientStub: func() (*gitlab.Client, error) {
 			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
 			if err != nil {
 				return nil, err
 			}
 			return a.Lab(), err
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
 		},
 	}

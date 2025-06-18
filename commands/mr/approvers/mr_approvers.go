@@ -9,7 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
 )
 
-func NewCmdApprovers(f *cmdutils.Factory) *cobra.Command {
+func NewCmdApprovers(f cmdutils.Factory) *cobra.Command {
 	mrApproversCmd := &cobra.Command{
 		Use:     "approvers [<id> | <branch>] [flags]",
 		Short:   `List eligible approvers for merge requests in any state.`,
@@ -29,14 +29,14 @@ func NewCmdApprovers(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(f.IO.StdOut, "\nListing merge request !%d eligible approvers:\n", mr.IID)
+			fmt.Fprintf(f.IO().StdOut, "\nListing merge request !%d eligible approvers:\n", mr.IID)
 
 			mrApprovals, err := api.GetMRApprovalState(apiClient, repo.FullName(), mr.IID)
 			if err != nil {
 				return err
 			}
 
-			mrutils.PrintMRApprovalState(f.IO, mrApprovals)
+			mrutils.PrintMRApprovalState(f.IO(), mrApprovals)
 
 			return nil
 		},

@@ -13,7 +13,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdReleaseList(f cmdutils.Factory) *cobra.Command {
 	releaseListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List releases in a repository.`,
@@ -39,7 +39,7 @@ func NewCmdReleaseList(f *cmdutils.Factory) *cobra.Command {
 	return releaseListCmd
 }
 
-func listReleases(factory *cmdutils.Factory, cmd *cobra.Command) error {
+func listReleases(factory cmdutils.Factory, cmd *cobra.Command) error {
 	l := &gitlab.ListReleasesOptions{}
 
 	page, _ := cmd.Flags().GetInt("page")
@@ -70,15 +70,15 @@ func listReleases(factory *cmdutils.Factory, cmd *cobra.Command) error {
 
 		cfg, _ := factory.Config()
 		glamourStyle, _ := cfg.Get(repo.RepoHost(), "glamour_style")
-		factory.IO.ResolveBackgroundColor(glamourStyle)
+		factory.IO().ResolveBackgroundColor(glamourStyle)
 
-		err = factory.IO.StartPager()
+		err = factory.IO().StartPager()
 		if err != nil {
 			return err
 		}
-		defer factory.IO.StopPager()
+		defer factory.IO().StopPager()
 
-		fmt.Fprintln(factory.IO.StdOut, releaseutils.DisplayRelease(factory.IO, release, repo))
+		fmt.Fprintln(factory.IO().StdOut, releaseutils.DisplayRelease(factory.IO(), release, repo))
 	} else {
 
 		releases, err := api.ListReleases(apiClient, repo.FullName(), l)
@@ -90,13 +90,13 @@ func listReleases(factory *cmdutils.Factory, cmd *cobra.Command) error {
 		title.RepoName = repo.FullName()
 		title.Page = 0
 		title.CurrentPageTotal = len(releases)
-		err = factory.IO.StartPager()
+		err = factory.IO().StartPager()
 		if err != nil {
 			return err
 		}
-		defer factory.IO.StopPager()
+		defer factory.IO().StopPager()
 
-		fmt.Fprintf(factory.IO.StdOut, "%s\n%s\n", title.Describe(), releaseutils.DisplayAllReleases(factory.IO, releases, repo.FullName()))
+		fmt.Fprintf(factory.IO().StdOut, "%s\n%s\n", title.Describe(), releaseutils.DisplayAllReleases(factory.IO(), releases, repo.FullName()))
 	}
 	return nil
 }

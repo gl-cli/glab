@@ -16,7 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
+func NewCmdArchive(f cmdutils.Factory) *cobra.Command {
 	repoArchiveCmd := &cobra.Command{
 		Use:   "archive <command> [flags]",
 		Short: `Get an archive of the repository.`,
@@ -45,10 +45,7 @@ func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
 			var err error
 
 			if len(args) != 0 {
-				err = f.RepoOverride(args[0])
-				if err != nil {
-					return err
-				}
+				f.RepoOverride(args[0])
 				if len(args) > 1 {
 					name = args[1]
 				}
@@ -100,12 +97,12 @@ func NewCmdArchive(f *cmdutils.Factory) *cobra.Command {
 				return fmt.Errorf("failed to write repositories: %v", err)
 			}
 
-			fmt.Fprint(f.IO.StdOut, "\n")
+			fmt.Fprint(f.IO().StdOut, "\n")
 			_ = out.Close()
 			if err = os.Rename(archiveName+".tmp", archiveName); err != nil {
 				return fmt.Errorf("failed to rename tmp repos: %v", err)
 			}
-			fmt.Fprintln(f.IO.StdOut, "Complete...", archiveName)
+			fmt.Fprintln(f.IO().StdOut, "Complete...", archiveName)
 			return nil
 		},
 	}

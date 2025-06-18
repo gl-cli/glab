@@ -33,9 +33,9 @@ type DownloadOpts struct {
 	Config     func() (config.Config, error)
 }
 
-func NewCmdDownload(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 	opts := &DownloadOpts{
-		IO:     f.IO,
+		IO:     f.IO(),
 		Config: f.Config,
 	}
 
@@ -60,7 +60,7 @@ func NewCmdDownload(f *cmdutils.Factory) *cobra.Command {
 			$ glab release download v1.10.1 --asset-name="*.tar.gz"
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.IO = f.IO
+			opts.IO = f.IO()
 			opts.HTTPClient = f.HttpClient
 			opts.BaseRepo = f.BaseRepo
 			opts.Config = f.Config

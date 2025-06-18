@@ -16,7 +16,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -44,19 +43,19 @@ func TestNewCmdList(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	factory := &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
+	factory := &cmdtest.Factory{
+		IOStub: ios,
+		HttpClientStub: func() (*gitlab.Client, error) {
 			a, err := api.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
 			if err != nil {
 				return nil, err
 			}
 			return a.Lab(), err
 		},
-		Config: func() (config.Config, error) {
+		ConfigStub: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
 		},
 	}
@@ -68,7 +67,7 @@ func TestNewCmdList(t *testing.T) {
 		}).Execute()
 
 		assert.Nil(t, err)
-		assert.Equal(t, factory.IO, gotOpts.IO)
+		assert.Equal(t, factory.IO(), gotOpts.IO)
 
 		gotBaseRepo, _ := gotOpts.BaseRepo()
 		expectedBaseRepo, _ := factory.BaseRepo()

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -59,8 +59,8 @@ func Test_NewCmdExport(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			io, _, _, _ := iostreams.Test()
-			f := &cmdutils.Factory{
-				IO: io,
+			f := &cmdtest.Factory{
+				IOStub: io,
 			}
 
 			argv, err := shlex.Split(test.cli)

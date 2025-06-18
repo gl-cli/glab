@@ -21,7 +21,7 @@ import (
 
 var description string
 
-func NewCmdSaveStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
+func NewCmdSaveStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
 	stackSaveCmd := &cobra.Command{
 		Use:   "save",
 		Short: `Save your progress within a stacked diff. (EXPERIMENTAL.)`,
@@ -125,11 +125,11 @@ func NewCmdSaveStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.Get
 				return fmt.Errorf("error creating stack file: %v", err)
 			}
 
-			if f.IO.IsOutputTTY() {
-				color := f.IO.Color()
+			if f.IO().IsOutputTTY() {
+				color := f.IO().Color()
 
 				fmt.Fprintf(
-					f.IO.StdOut,
+					f.IO().StdOut,
 					"%s %s: Saved with message: \"%s\".\n",
 					color.ProgressIcon(),
 					color.Blue(title),
@@ -211,7 +211,7 @@ func generateStackSha(message string, title string, author string, timestamp tim
 	return hex.EncodeToString(hashData), nil
 }
 
-func createShaBranch(f *cmdutils.Factory, sha string, title string) (string, error) {
+func createShaBranch(f cmdutils.Factory, sha string, title string) (string, error) {
 	cfg, err := f.Config()
 	if err != nil {
 		return "", fmt.Errorf("could not retrieve config file: %v", err)

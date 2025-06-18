@@ -7,7 +7,7 @@ import (
 	boardViewCmd "gitlab.com/gitlab-org/cli/commands/issue/board/view"
 )
 
-func NewCmdBoard(f *cmdutils.Factory) *cobra.Command {
+func NewCmdBoard(f cmdutils.Factory) *cobra.Command {
 	issueCmd := &cobra.Command{
 		Use:   "board [command] [flags]",
 		Short: `Work with GitLab Issue Boards in the given project.`,

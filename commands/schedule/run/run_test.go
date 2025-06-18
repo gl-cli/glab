@@ -26,10 +26,9 @@ hosts:
 `, "")()
 
 	io, _, Stderr, stderr := iostreams.Test()
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("")
-	stubFactory.IO = io
-	stubFactory.IO.IsaTTY = true
-	stubFactory.IO.IsErrTTY = true
+	io.IsaTTY = true
+	io.IsErrTTY = true
+	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 
 	api.RunSchedule = func(client *gitlab.Client, repo string, schedule int, opts ...gitlab.RequestOptionFunc) error {
 		_, err := stubFactory.BaseRepo()
@@ -87,7 +86,7 @@ func Test_ScheduleRunNoID(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stderr = w
 
-	assert.Error(t, NewCmdRun(&cmdutils.Factory{}).Execute())
+	assert.Error(t, NewCmdRun(&cmdtest.Factory{}).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

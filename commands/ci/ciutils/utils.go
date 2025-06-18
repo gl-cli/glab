@@ -204,7 +204,7 @@ func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
 	return pipeline.ID, err
 }
 
-func GetDefaultBranch(f *cmdutils.Factory) string {
+func GetDefaultBranch(f cmdutils.Factory) string {
 	repo, err := f.BaseRepo()
 	if err != nil {
 		return "master"

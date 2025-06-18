@@ -9,7 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdTransfer(f *cmdutils.Factory) *cobra.Command {
+func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 	repoTransferCmd := &cobra.Command{
 		Use:   "transfer [repo] [flags]",
 		Short: `Transfer a repository to a new namespace.`,
@@ -21,10 +21,7 @@ func NewCmdTransfer(f *cmdutils.Factory) *cobra.Command {
 			var err error
 
 			if len(args) != 0 {
-				err = f.RepoOverride(args[0])
-				if err != nil {
-					return err
-				}
+				f.RepoOverride(args[0])
 			}
 
 			apiClient, err := f.HttpClient()
@@ -47,7 +44,7 @@ func NewCmdTransfer(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			c := f.IO.Color()
+			c := f.IO().Color()
 			fmt.Printf(heredoc.Doc(`
 				🔴 WARNING: This operation can be irreversible! 🔴
 
@@ -77,7 +74,7 @@ func NewCmdTransfer(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(f.IO.StdOut, "%s Successfully transferred repository %s to %s.\n",
+			fmt.Fprintf(f.IO().StdOut, "%s Successfully transferred repository %s to %s.\n",
 				c.GreenCheck(), c.Yellow(repo.FullName()), c.Yellow(project.PathWithNamespace))
 
 			return nil

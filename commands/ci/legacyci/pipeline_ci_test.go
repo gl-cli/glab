@@ -6,17 +6,17 @@ package legacyci
 import (
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func TestNewCmdCI(t *testing.T) {
 	ioStrm, stdin, stdout, stderr := iostreams.Test()
 
-	cmd := NewCmdCI(&cmdutils.Factory{
-		IO: ioStrm,
+	cmd := NewCmdCI(&cmdtest.Factory{
+		IOStub: ioStrm,
 	})
 
 	cmd.SetIn(stdin)

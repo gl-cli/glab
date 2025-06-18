@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
@@ -14,7 +14,7 @@ func TestNewCmdLabel(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	assert.Nil(t, NewCmdLabel(&cmdutils.Factory{}).Execute())
+	assert.Nil(t, NewCmdLabel(&cmdtest.Factory{}).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

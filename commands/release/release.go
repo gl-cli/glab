@@ -11,7 +11,7 @@ import (
 	releaseViewCmd "gitlab.com/gitlab-org/cli/commands/release/view"
 )
 
-func NewCmdRelease(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRelease(f cmdutils.Factory) *cobra.Command {
 	releaseCmd := &cobra.Command{
 		Use:   "release <command> [flags]",
 		Short: `Manage GitLab releases.`,

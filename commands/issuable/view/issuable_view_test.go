@@ -26,9 +26,10 @@ import (
 )
 
 var (
-	stubFactory *cmdutils.Factory
+	stubFactory cmdutils.Factory
 	stdout      *bytes.Buffer
 	stderr      *bytes.Buffer
+	io          *iostreams.IOStreams
 )
 
 type issuableData struct {
@@ -67,12 +68,10 @@ hosts:
     token: OTOKEN
 `, "")()
 
-	var io *iostreams.IOStreams
 	io, _, stdout, stderr = iostreams.Test()
-	stubFactory, _ = cmdtest.StubFactoryWithConfig("")
-	stubFactory.IO = io
-	stubFactory.IO.IsaTTY = true
-	stubFactory.IO.IsErrTTY = true
+	io.IsaTTY = true
+	io.IsErrTTY = true
+	stubFactory, _ = cmdtest.StubFactoryWithConfig("", io)
 
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
 	api.GetIssue = func(client *gitlab.Client, projectID any, issueID int) (*gitlab.Issue, error) {
@@ -205,8 +204,8 @@ func TestNewCmdView(t *testing.T) {
 				}, nil
 			}
 
-			stubFactory.IO.IsaTTY = tt.isTTY
-			stubFactory.IO.IsErrTTY = tt.isTTY
+			io.IsaTTY = tt.isTTY
+			io.IsErrTTY = tt.isTTY
 			cmd := NewCmdView(stubFactory, tt.viewIssueType)
 			cmdutils.EnableRepoOverride(cmd, stubFactory)
 			_, err := cmdtest.RunCommand(cmd, fmt.Sprintf("%d -c -s -R cli-automated-testing/test", tt.issueID))

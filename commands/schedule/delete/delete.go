@@ -17,9 +17,9 @@ type RunOpts struct {
 	IO         *iostreams.IOStreams
 }
 
-func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &RunOpts{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	scheduleDeleteCmd := &cobra.Command{
 		Use:   "delete <id> [flags]",

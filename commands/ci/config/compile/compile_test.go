@@ -117,7 +117,7 @@ func runCommand(t *testing.T, rt http.RoundTripper, isTTY bool, cli string, show
 	factory := cmdtest.InitFactory(ios, rt)
 
 	if !showHaveBaseRepo {
-		factory.BaseRepo = func() (glrepo.Interface, error) {
+		factory.BaseRepoStub = func() (glrepo.Interface, error) {
 			return nil, fmt.Errorf("no base repository present")
 		}
 	}

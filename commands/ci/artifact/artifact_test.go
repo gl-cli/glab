@@ -11,6 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -58,7 +59,7 @@ func createZipFile(t *testing.T, filename string) (string, string) {
 	return tempPath, archive.Name()
 }
 
-func makeTestFactory() (factory *cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
+func makeTestFactory() (factory cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
 	fakeHTTP = &httpmock.Mocker{
 		MatchURL: httpmock.PathAndQuerystring,
 	}
@@ -79,22 +80,22 @@ func makeTestFactory() (factory *cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
 		return nil, nil
 	}
 
-	factory = &cmdutils.Factory{
-		IO: io,
-		Config: func() (config.Config, error) {
+	factory = &cmdtest.Factory{
+		IOStub: io,
+		ConfigStub: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
 		},
-		HttpClient: func() (*gitlab.Client, error) {
+		HttpClientStub: func() (*gitlab.Client, error) {
 			a, err := client("xxxx", "gitlab.com")
 			if err != nil {
 				return nil, err
 			}
 			return a.Lab(), err
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
 		},
-		Remotes: func() (glrepo.Remotes, error) {
+		RemotesStub: func() (glrepo.Remotes, error) {
 			return glrepo.Remotes{
 				{
 					Remote: &git.Remote{Name: "origin"},
@@ -102,7 +103,7 @@ func makeTestFactory() (factory *cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
 				},
 			}, nil
 		},
-		Branch: func() (string, error) {
+		BranchStub: func() (string, error) {
 			return "feature", nil
 		},
 	}

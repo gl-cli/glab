@@ -12,7 +12,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
+func NewCmdReopen(f cmdutils.Factory) *cobra.Command {
 	mrReopenCmd := &cobra.Command{
 		Use:   "reopen [<id>... | <branch>...]",
 		Short: `Reopen a merge request.`,
@@ -28,7 +28,7 @@ func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
 		`),
 		Aliases: []string{"open"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c := f.IO.Color()
+			c := f.IO().Color()
 			apiClient, err := f.HttpClient()
 			if err != nil {
 				return err
@@ -49,14 +49,14 @@ func NewCmdReopen(f *cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "- Reopening merge request !%d...\n", mr.IID)
+				fmt.Fprintf(f.IO().StdOut, "- Reopening merge request !%d...\n", mr.IID)
 				mr, err = api.UpdateMR(apiClient, repo.FullName(), mr.IID, l)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "%s Reopened merge request !%d.\n", c.GreenCheck(), mr.IID)
-				fmt.Fprintln(f.IO.StdOut, mrutils.DisplayMR(f.IO.Color(), &mr.BasicMergeRequest, f.IO.IsaTTY))
+				fmt.Fprintf(f.IO().StdOut, "%s Reopened merge request !%d.\n", c.GreenCheck(), mr.IID)
+				fmt.Fprintln(f.IO().StdOut, mrutils.DisplayMR(f.IO().Color(), &mr.BasicMergeRequest, f.IO().IsaTTY))
 			}
 
 			return nil

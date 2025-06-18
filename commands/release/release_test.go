@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
@@ -14,7 +14,7 @@ func Test_Release(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	cmd := NewCmdRelease(&cmdutils.Factory{})
+	cmd := NewCmdRelease(&cmdtest.Factory{})
 	assert.NotNil(t, cmd.Root())
 	assert.Nil(t, cmd.Execute())
 

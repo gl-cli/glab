@@ -19,7 +19,7 @@ const (
 	FlagDryRun = "dry-run"
 )
 
-func NewCmdCancel(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
 	jobCancelCmd := &cobra.Command{
 		Use:   "job <id> [flags]",
 		Short: `Cancel CI/CD jobs.`,
@@ -39,7 +39,7 @@ func NewCmdCancel(f *cmdutils.Factory) *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 			apiClient, err := f.HttpClient()
 			if err != nil {
 				return err
@@ -57,7 +57,7 @@ func NewCmdCancel(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return runCancelation(jobIDs, dryRunMode, f.IO.StdOut, c, apiClient, repo)
+			return runCancelation(jobIDs, dryRunMode, f.IO().StdOut, c, apiClient, repo)
 		},
 	}
 

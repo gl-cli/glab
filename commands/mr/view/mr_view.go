@@ -35,9 +35,9 @@ type MRWithNotes struct {
 	Notes []*gitlab.Note
 }
 
-func NewCmdView(f *cmdutils.Factory) *cobra.Command {
+func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := &ViewOpts{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	mrViewCmd := &cobra.Command{
 		Use:     "view {<id> | <branch>}",
@@ -73,8 +73,8 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			cfg, _ := f.Config()
 
 			if opts.OpenInBrowser { // open in browser if --web flag is specified
-				if f.IO.IsOutputTTY() {
-					fmt.Fprintf(f.IO.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(mr.WebURL))
+				if f.IO().IsOutputTTY() {
+					fmt.Fprintf(f.IO().StdErr, "Opening %s in your browser.\n", utils.DisplayURL(mr.WebURL))
 				}
 
 				browser, _ := cfg.Get(baseRepo.RepoHost(), "browser")
@@ -99,16 +99,16 @@ func NewCmdView(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			glamourStyle, _ := cfg.Get(baseRepo.RepoHost(), "glamour_style")
-			f.IO.ResolveBackgroundColor(glamourStyle)
-			if err := f.IO.StartPager(); err != nil {
+			f.IO().ResolveBackgroundColor(glamourStyle)
+			if err := f.IO().StartPager(); err != nil {
 				return err
 			}
-			defer f.IO.StopPager()
+			defer f.IO().StopPager()
 
 			if opts.OutputFormat == "json" {
 				return printJSONMR(opts, mr, notes)
 			}
-			if f.IO.IsOutputTTY() {
+			if f.IO().IsOutputTTY() {
 				return printTTYMRPreview(opts, mr, mrApprovals, notes)
 			}
 			return printRawMRPreview(opts, mr, notes)

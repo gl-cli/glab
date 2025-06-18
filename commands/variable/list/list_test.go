@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
@@ -67,8 +67,8 @@ func Test_NewCmdList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			io, _, _, _ := iostreams.Test()
-			f := &cmdutils.Factory{
-				IO: io,
+			f := &cmdtest.Factory{
+				IOStub: io,
 			}
 
 			io.IsInTTY = tt.stdinTTY

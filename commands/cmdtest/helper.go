@@ -145,23 +145,65 @@ func InitIOStreams(isTTY bool, doHyperlinks string) (*iostreams.IOStreams, *byte
 	return ios, stdin, stdout, stderr
 }
 
-func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *cmdutils.Factory {
-	return &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
+type Factory struct {
+	HttpClientStub func() (*gitlab.Client, error)
+	BaseRepoStub   func() (glrepo.Interface, error)
+	RemotesStub    func() (glrepo.Remotes, error)
+	ConfigStub     func() (config.Config, error)
+	BranchStub     func() (string, error)
+	IOStub         *iostreams.IOStreams
+
+	repoOverride string
+}
+
+func (f *Factory) RepoOverride(repo string) {
+	f.repoOverride = repo
+}
+
+func (f *Factory) HttpClient() (*gitlab.Client, error) {
+	return f.HttpClientStub()
+}
+
+func (f *Factory) BaseRepo() (glrepo.Interface, error) {
+	if f.repoOverride != "" {
+		return glrepo.FromFullName(f.repoOverride)
+	}
+	return f.BaseRepoStub()
+}
+
+func (f *Factory) Remotes() (glrepo.Remotes, error) {
+	return f.RemotesStub()
+}
+
+func (f *Factory) Config() (config.Config, error) {
+	return f.ConfigStub()
+}
+
+func (f *Factory) Branch() (string, error) {
+	return f.BranchStub()
+}
+
+func (f *Factory) IO() *iostreams.IOStreams {
+	return f.IOStub
+}
+
+func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *Factory {
+	return &Factory{
+		IOStub: ios,
+		HttpClientStub: func() (*gitlab.Client, error) {
 			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
 			if err != nil {
 				return nil, err
 			}
 			return a.Lab(), err
 		},
-		Config: func() (config.Config, error) {
+		ConfigStub: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
 		},
-		Branch: func() (string, error) {
+		BranchStub: func() (string, error) {
 			return "main", nil
 		},
 	}
@@ -169,15 +211,15 @@ func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *cmdutils.Facto
 
 type CmdExecFunc func(cli string) (*test.CmdOut, error)
 
-type CmdFunc func(f *cmdutils.Factory) *cobra.Command
+type CmdFunc func(cmdutils.Factory) *cobra.Command
 
 // FactoryOption is a function that configures a Factory
-type FactoryOption func(f *cmdutils.Factory)
+type FactoryOption func(f *Factory)
 
 // WithGitLabClient configures the Factory with a specific GitLab client
 func WithGitLabClient(client *gitlab.Client) FactoryOption {
-	return func(f *cmdutils.Factory) {
-		f.HttpClient = func() (*gitlab.Client, error) {
+	return func(f *Factory) {
+		f.HttpClientStub = func() (*gitlab.Client, error) {
 			return client, nil
 		}
 	}
@@ -185,16 +227,16 @@ func WithGitLabClient(client *gitlab.Client) FactoryOption {
 
 // WithConfig configures the Factory with a specific config
 func WithConfig(cfg config.Config) FactoryOption {
-	return func(f *cmdutils.Factory) {
-		f.Config = func() (config.Config, error) {
+	return func(f *Factory) {
+		f.ConfigStub = func() (config.Config, error) {
 			return cfg, nil
 		}
 	}
 }
 
 func WithConfigError(err error) FactoryOption {
-	return func(f *cmdutils.Factory) {
-		f.Config = func() (config.Config, error) {
+	return func(f *Factory) {
+		f.ConfigStub = func() (config.Config, error) {
 			return nil, err
 		}
 	}
@@ -202,8 +244,8 @@ func WithConfigError(err error) FactoryOption {
 
 // WithHttpClientError configures the Factory to return an error when creating HTTP client
 func WithHttpClientError(err error) FactoryOption {
-	return func(f *cmdutils.Factory) {
-		f.HttpClient = func() (*gitlab.Client, error) {
+	return func(f *Factory) {
+		f.HttpClientStub = func() (*gitlab.Client, error) {
 			return nil, err
 		}
 	}
@@ -211,8 +253,8 @@ func WithHttpClientError(err error) FactoryOption {
 
 // WithBaseRepoError configures the Factory to return an error when getting base repo
 func WithBaseRepoError(err error) FactoryOption {
-	return func(f *cmdutils.Factory) {
-		f.BaseRepo = func() (glrepo.Interface, error) {
+	return func(f *Factory) {
+		f.BaseRepoStub = func() (glrepo.Interface, error) {
 			return nil, err
 		}
 	}
@@ -220,8 +262,8 @@ func WithBaseRepoError(err error) FactoryOption {
 
 // WithBranchError configures the Factory to return an error when getting branch
 func WithBranchError(err error) FactoryOption {
-	return func(f *cmdutils.Factory) {
-		f.Branch = func() (string, error) {
+	return func(f *Factory) {
+		f.BranchStub = func() (string, error) {
 			return "", err
 		}
 	}
@@ -229,8 +271,8 @@ func WithBranchError(err error) FactoryOption {
 
 // WithBaseRepo configures the Factory with a specific base repository
 func WithBaseRepo(owner, repo string) FactoryOption {
-	return func(f *cmdutils.Factory) {
-		f.BaseRepo = func() (glrepo.Interface, error) {
+	return func(f *Factory) {
+		f.BaseRepoStub = func() (glrepo.Interface, error) {
 			return glrepo.New(owner, repo), nil
 		}
 	}
@@ -238,30 +280,30 @@ func WithBaseRepo(owner, repo string) FactoryOption {
 
 // WithBranch configures the Factory with a specific branch
 func WithBranch(branch string) FactoryOption {
-	return func(f *cmdutils.Factory) {
-		f.Branch = func() (string, error) {
+	return func(f *Factory) {
+		f.BranchStub = func() (string, error) {
 			return branch, nil
 		}
 	}
 }
 
 // NewTestFactory creates a Factory configured for testing with the given options
-func NewTestFactory(t *testing.T, ios *iostreams.IOStreams, opts ...FactoryOption) *cmdutils.Factory {
+func NewTestFactory(t *testing.T, ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 	t.Helper()
 
 	// Create a default factory
-	f := &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
+	f := &Factory{
+		IOStub: ios,
+		HttpClientStub: func() (*gitlab.Client, error) {
 			return &gitlab.Client{}, nil
 		},
-		Config: func() (config.Config, error) {
+		ConfigStub: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
 		},
-		Branch: func() (string, error) {
+		BranchStub: func() (string, error) {
 			return "main", nil
 		},
 	}
@@ -281,19 +323,19 @@ func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdEx
 	ios, _, stdout, stderr := InitIOStreams(true, "")
 
 	// Create a default factory
-	f := &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
+	f := &Factory{
+		IOStub: ios,
+		HttpClientStub: func() (*gitlab.Client, error) {
 			t.Errorf("You must configure a GitLab Test client in your tests. Use the WithGitLabClient option function")
 			return nil, nil
 		},
-		Config: func() (config.Config, error) {
+		ConfigStub: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
 		},
-		Branch: func() (string, error) {
+		BranchStub: func() (string, error) {
 			return "main", nil
 		},
 	}
@@ -370,25 +412,23 @@ func Eq(t *testing.T, got any, expected any) {
 	}
 }
 
-func StubFactory(repo string) *cmdutils.Factory {
-	cmdutils.CachedConfig = config.NewBlankConfig()
-
-	f := cmdutils.NewFactory()
+func StubFactory(repo string, io *iostreams.IOStreams) cmdutils.Factory {
+	f := cmdutils.NewFactory(io, false)
 	if repo != "" {
-		_ = f.RepoOverride(repo)
+		f.RepoOverride(repo)
 	}
 
 	return f
 }
 
-func StubFactoryWithConfig(repo string) (*cmdutils.Factory, error) {
-	cmdutils.CachedConfig, cmdutils.ConfigError = config.ParseConfig("config.yml")
-	if cmdutils.ConfigError != nil {
-		return nil, cmdutils.ConfigError
+func StubFactoryWithConfig(repo string, io *iostreams.IOStreams) (cmdutils.Factory, error) {
+	cfg, err := config.ParseConfig("config.yml")
+	if err != nil {
+		return nil, err
 	}
-	f := cmdutils.NewFactory()
+	f := cmdutils.NewFactoryWithConfig(io, false, cfg)
 	if repo != "" {
-		_ = f.RepoOverride(repo)
+		f.RepoOverride(repo)
 	}
 
 	return f, nil

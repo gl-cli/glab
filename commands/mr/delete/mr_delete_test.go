@@ -31,10 +31,9 @@ hosts:
     token: OTOKEN
 `, "")()
 	io, _, stdout, stderr := iostreams.Test()
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("")
-	stubFactory.IO = io
-	stubFactory.IO.IsaTTY = true
-	stubFactory.IO.IsErrTTY = true
+	io.IsaTTY = true
+	io.IsErrTTY = true
+	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 	oldDeleteMR := api.DeleteMR
 
 	api.DeleteMR = func(client *gitlab.Client, projectID any, mrID int) error {

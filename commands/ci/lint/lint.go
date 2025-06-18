@@ -21,7 +21,7 @@ var (
 	includeJobs bool
 )
 
-func NewCmdLint(f *cmdutils.Factory) *cobra.Command {
+func NewCmdLint(f cmdutils.Factory) *cobra.Command {
 	pipelineCILintCmd := &cobra.Command{
 		Use:   "lint",
 		Short: "Checks if your `.gitlab-ci.yml` file is valid.",
@@ -48,10 +48,10 @@ func NewCmdLint(f *cmdutils.Factory) *cobra.Command {
 	return pipelineCILintCmd
 }
 
-func lintRun(f *cmdutils.Factory, path string) error {
+func lintRun(f cmdutils.Factory, path string) error {
 	var err error
-	out := f.IO.StdOut
-	c := f.IO.Color()
+	out := f.IO().StdOut
+	c := f.IO().Color()
 
 	apiClient, err := f.HttpClient()
 	if err != nil {
@@ -93,7 +93,7 @@ func lintRun(f *cmdutils.Factory, path string) error {
 		}
 	}
 
-	fmt.Fprintln(f.IO.StdOut, "Validating...")
+	fmt.Fprintln(f.IO().StdOut, "Validating...")
 
 	lint, err := api.ProjectNamespaceLint(apiClient, projectID, string(content), ref, dryRun, includeJobs)
 	if err != nil {

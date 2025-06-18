@@ -23,9 +23,9 @@ type ListOpts struct {
 	ShowKeyIDs bool
 }
 
-func NewCmdList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &ListOpts{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	cmd := &cobra.Command{
 		Use:   "list",

@@ -22,11 +22,11 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string, stub bool, repoHos
 
 	factory := cmdtest.InitFactory(ios, rt)
 
-	factory.Branch = func() (string, error) {
+	factory.BranchStub = func() (string, error) {
 		return "#current-branch", nil
 	}
 
-	factory.BaseRepo = func() (glrepo.Interface, error) {
+	factory.BaseRepoStub = func() (glrepo.Interface, error) {
 		if repoHost == "" {
 			return glrepo.New("OWNER", "REPO"), nil
 		} else {

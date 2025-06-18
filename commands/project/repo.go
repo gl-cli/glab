@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdRepo(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRepo(f cmdutils.Factory) *cobra.Command {
 	repoCmd := &cobra.Command{
 		Use:     "repo <command> [flags]",
 		Short:   `Work with GitLab repositories and projects.`,

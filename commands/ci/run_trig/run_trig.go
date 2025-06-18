@@ -31,7 +31,7 @@ func parseVarArg(s string) (key string, val string, err error) {
 	return v[0], v[1], nil
 }
 
-func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 	pipelineRunCmd := &cobra.Command{
 		Use:     "run-trig [flags]",
 		Short:   `Run a CI/CD pipeline trigger.`,
@@ -82,7 +82,7 @@ func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
 				c.Ref = gitlab.Ptr(currentBranch)
 			} else {
 				// `ci run-trig` is running out of a git repo
-				fmt.Fprintln(f.IO.StdOut, "not in a Git repository. Using repository argument.")
+				fmt.Fprintln(f.IO().StdOut, "not in a Git repository. Using repository argument.")
 				c.Ref = gitlab.Ptr(ciutils.GetDefaultBranch(f))
 			}
 
@@ -104,7 +104,7 @@ func NewCmdRunTrig(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			output := fmt.Sprintf("Created pipeline (ID: %d), status: %s, ref: %s, weburl: %s", pipe.ID, pipe.Status, pipe.Ref, pipe.WebURL)
-			fmt.Fprintln(f.IO.StdOut, output)
+			fmt.Fprintln(f.IO().StdOut, output)
 
 			return nil
 		},

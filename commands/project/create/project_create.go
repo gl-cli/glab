@@ -21,7 +21,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/git"
 )
 
-func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	projectCreateCmd := &cobra.Command{
 		Use:   "create [path] [flags]",
 		Short: `Create a new GitLab project/repository.`,
@@ -60,7 +60,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 	return projectCreateCmd
 }
 
-func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) error {
+func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) error {
 	var (
 		projectPath string
 		visiblity   gitlab.VisibilityValue
@@ -69,7 +69,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) er
 		namespaceID int
 		namespace   string
 	)
-	c := f.IO.Color()
+	c := f.IO().Color()
 
 	defaultBranch, err := cmd.Flags().GetString("defaultBranch")
 	if err != nil {
@@ -80,7 +80,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) er
 		return err
 	}
 	skipGitInit, _ := cmd.Flags().GetBool("skipGitInit")
-	if !skipGitInit && f.IO.PromptEnabled() {
+	if !skipGitInit && f.IO().PromptEnabled() {
 		err = initGit(defaultBranch)
 		if err != nil {
 			return err
@@ -178,7 +178,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) er
 	greenCheck := c.Green("✓")
 
 	if err == nil {
-		fmt.Fprintf(f.IO.StdOut, "%s Created repository %s on GitLab: %s\n", greenCheck, project.NameWithNamespace, project.WebURL)
+		fmt.Fprintf(f.IO().StdOut, "%s Created repository %s on GitLab: %s\n", greenCheck, project.NameWithNamespace, project.WebURL)
 		if isPath {
 			cfg, _ := f.Config()
 			webURL, _ := url.Parse(project.WebURL)
@@ -189,9 +189,9 @@ func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) er
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(f.IO.StdOut, "%s Added remote %s\n", greenCheck, remote)
+			fmt.Fprintf(f.IO().StdOut, "%s Added remote %s\n", greenCheck, remote)
 
-		} else if f.IO.PromptEnabled() {
+		} else if f.IO().PromptEnabled() {
 			var doSetup bool
 			err := prompt.Confirm(&doSetup, fmt.Sprintf("Create a local project directory for %s?", project.NameWithNamespace), true)
 			if err != nil {
@@ -204,7 +204,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f *cmdutils.Factory) er
 				if err != nil {
 					return err
 				}
-				fmt.Fprintf(f.IO.StdOut, "%s Initialized repository in './%s/'\n", greenCheck, projectPath)
+				fmt.Fprintf(f.IO().StdOut, "%s Initialized repository in './%s/'\n", greenCheck, projectPath)
 			}
 		}
 	} else {

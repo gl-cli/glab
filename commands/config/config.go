@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/browser"
 )
 
-func NewCmdConfig(f *cmdutils.Factory) *cobra.Command {
+func NewCmdConfig(f cmdutils.Factory) *cobra.Command {
 	var isGlobal bool
 
 	configCmd := &cobra.Command{
@@ -43,7 +43,7 @@ Current respected settings:
 	return configCmd
 }
 
-func NewCmdConfigGet(f *cmdutils.Factory) *cobra.Command {
+func NewCmdConfigGet(f cmdutils.Factory) *cobra.Command {
 	var hostname string
 
 	cmd := &cobra.Command{
@@ -70,7 +70,7 @@ func NewCmdConfigGet(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if val != "" {
-				fmt.Fprintf(f.IO.StdOut, "%s\n", val)
+				fmt.Fprintf(f.IO().StdOut, "%s\n", val)
 			}
 			return nil
 		},
@@ -82,7 +82,7 @@ func NewCmdConfigGet(f *cmdutils.Factory) *cobra.Command {
 	return cmd
 }
 
-func NewCmdConfigSet(f *cmdutils.Factory) *cobra.Command {
+func NewCmdConfigSet(f cmdutils.Factory) *cobra.Command {
 	var hostname string
 	var isGlobal bool
 
@@ -135,7 +135,7 @@ Specifying the '--hostname' flag also saves in the global configuration file.
 	return cmd
 }
 
-func NewCmdConfigEdit(f *cmdutils.Factory) *cobra.Command {
+func NewCmdConfigEdit(f cmdutils.Factory) *cobra.Command {
 	var isLocal bool
 
 	cmd := &cobra.Command{

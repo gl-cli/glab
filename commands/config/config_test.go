@@ -4,11 +4,10 @@ import (
 	"errors"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
@@ -101,11 +100,11 @@ func TestConfigGet(t *testing.T) {
 			io.IsaTTY = tt.isTTY
 			io.IsErrTTY = tt.isTTY
 
-			f := &cmdutils.Factory{
-				Config: func() (config.Config, error) {
+			f := &cmdtest.Factory{
+				ConfigStub: func() (config.Config, error) {
 					return tt.config, nil
 				},
-				IO: io,
+				IOStub: io,
 			}
 
 			cmd := NewCmdConfigGet(f)
@@ -159,11 +158,11 @@ func TestConfigSet(t *testing.T) {
 			io.IsaTTY = tt.isTTY
 			io.IsErrTTY = tt.isTTY
 
-			f := &cmdutils.Factory{
-				Config: func() (config.Config, error) {
+			f := &cmdtest.Factory{
+				ConfigStub: func() (config.Config, error) {
 					return tt.config, nil
 				},
-				IO: io,
+				IOStub: io,
 			}
 
 			cmd := NewCmdConfigSet(f)

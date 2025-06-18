@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 )
@@ -152,8 +152,8 @@ func Test_NewCmdSet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			io, _, _, _ := iostreams.Test()
-			f := &cmdutils.Factory{
-				IO: io,
+			f := &cmdtest.Factory{
+				IOStub: io,
 			}
 
 			io.IsInTTY = tt.stdinTTY

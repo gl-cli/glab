@@ -17,7 +17,7 @@ var subscribingMessage = map[issuable.IssueType]string{
 	issuable.TypeIncident: "Subscribing to incident",
 }
 
-func NewCmdSubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
 	examplePath := "issues/123"
 
 	if issueType == issuable.TypeIncident {
@@ -36,7 +36,7 @@ func NewCmdSubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.C
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c := f.IO.Color()
+			c := f.IO().Color()
 			apiClient, err := f.HttpClient()
 			if err != nil {
 				return err
@@ -50,13 +50,13 @@ func NewCmdSubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.C
 			for _, issue := range issues {
 				valid, msg := issuable.ValidateIncidentCmd(issueType, "subscribe", issue)
 				if !valid {
-					fmt.Fprintln(f.IO.StdOut, msg)
+					fmt.Fprintln(f.IO().StdOut, msg)
 					continue
 				}
 
-				if f.IO.IsaTTY && f.IO.IsErrTTY {
+				if f.IO().IsaTTY && f.IO().IsErrTTY {
 					fmt.Fprintf(
-						f.IO.StdOut,
+						f.IO().StdOut,
 						"- %s #%d in %s\n",
 						subscribingMessage[issueType],
 						issue.IID,
@@ -68,7 +68,7 @@ func NewCmdSubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.C
 				if err != nil {
 					if errors.Is(err, api.ErrIssuableUserAlreadySubscribed) {
 						fmt.Fprintf(
-							f.IO.StdOut,
+							f.IO().StdOut,
 							"%s You are already subscribed to this %s.\n\n",
 							c.FailedIcon(),
 							issueType,
@@ -78,8 +78,8 @@ func NewCmdSubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.C
 					return err
 				}
 
-				fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Subscribed")
-				fmt.Fprintln(f.IO.StdOut, issueutils.DisplayIssue(c, issue, f.IO.IsaTTY))
+				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Subscribed")
+				fmt.Fprintln(f.IO().StdOut, issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
 			}
 			return nil
 		},

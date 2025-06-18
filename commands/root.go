@@ -36,12 +36,11 @@ import (
 	userCmd "gitlab.com/gitlab-org/cli/commands/user"
 	variableCmd "gitlab.com/gitlab-org/cli/commands/variable"
 	versionCmd "gitlab.com/gitlab-org/cli/commands/version"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
 // NewCmdRoot is the main root/parent command
-func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
-	c := f.IO.Color()
+func NewCmdRoot(f cmdutils.Factory, version, commit string) *cobra.Command {
+	c := f.IO().Color()
 	rootCmd := &cobra.Command{
 		Use:           "glab <command> <subcommand> [flags]",
 		Short:         "A GitLab CLI tool.",
@@ -98,12 +97,12 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 		},
 	}
 
-	rootCmd.SetOut(f.IO.StdOut)
-	rootCmd.SetErr(f.IO.StdErr)
+	rootCmd.SetOut(f.IO().StdOut)
+	rootCmd.SetErr(f.IO().StdErr)
 
 	rootCmd.PersistentFlags().Bool("help", false, "Show help for this command.")
 	rootCmd.SetHelpFunc(func(command *cobra.Command, args []string) {
-		help.RootHelpFunc(f.IO.Color(), command, args)
+		help.RootHelpFunc(f.IO().Color(), command, args)
 	})
 	rootCmd.SetUsageFunc(help.RootUsageFunc)
 	rootCmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
@@ -120,13 +119,10 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 	// Child commands
 	rootCmd.AddCommand(aliasCmd.NewCmdAlias(f))
 	rootCmd.AddCommand(configCmd.NewCmdConfig(f))
-	rootCmd.AddCommand(completionCmd.NewCmdCompletion(f.IO))
-	rootCmd.AddCommand(versionCmd.NewCmdVersion(f.IO, version, commit))
+	rootCmd.AddCommand(completionCmd.NewCmdCompletion(f.IO()))
+	rootCmd.AddCommand(versionCmd.NewCmdVersion(f.IO(), version, commit))
 	rootCmd.AddCommand(updateCmd.NewCheckUpdateCmd(f, version))
 	rootCmd.AddCommand(authCmd.NewCmdAuth(f))
-
-	// the commands below require apiClient and resolved repos
-	f.BaseRepo = resolvedBaseRepo(f)
 
 	rootCmd.AddCommand(changelogCmd.NewCmdChangelog(f))
 	rootCmd.AddCommand(clusterCmd.NewCmdCluster(f))
@@ -158,27 +154,4 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 
 	rootCmd.Flags().BoolP("version", "v", false, "show glab version information")
 	return rootCmd
-}
-
-func resolvedBaseRepo(f *cmdutils.Factory) func() (glrepo.Interface, error) {
-	return func() (glrepo.Interface, error) {
-		httpClient, err := f.HttpClient()
-		if err != nil {
-			return nil, err
-		}
-		remotes, err := f.Remotes()
-		if err != nil {
-			return nil, err
-		}
-		repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, "")
-		if err != nil {
-			return nil, err
-		}
-		baseRepo, err := repoContext.BaseRepo(f.IO.PromptEnabled())
-		if err != nil {
-			return nil, err
-		}
-
-		return baseRepo, nil
-	}
 }

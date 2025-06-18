@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 var tests = []struct {
@@ -53,7 +53,7 @@ func TestPipelineCmd(t *testing.T) {
 				errC <- buf.String()
 			}()
 
-			err := NewCmdCI(&cmdutils.Factory{}).Execute()
+			err := NewCmdCI(&cmdtest.Factory{}).Execute()
 
 			// Rollbacking Stdout & Stderr
 			wOut.Close()

@@ -18,7 +18,7 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, err
 
 	_, _ = factory.HttpClient()
 
-	factory.Branch = func() (string, error) {
+	factory.BranchStub = func() (string, error) {
 		return "current-branch", nil
 	}
 

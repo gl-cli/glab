@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 
@@ -19,9 +19,9 @@ func Test_repoClone_Integration(t *testing.T) {
 	t.Setenv("GITLAB_HOST", glTestHost)
 
 	io, stdin, stdout, stderr := iostreams.Test()
-	fac := &cmdutils.Factory{
-		IO: io,
-		Config: func() (config.Config, error) {
+	fac := &cmdtest.Factory{
+		IOStub: io,
+		ConfigStub: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
 		},
 	}
@@ -71,9 +71,9 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 	t.Setenv("GITLAB_HOST", glTestHost)
 
 	io, stdin, stdout, stderr := iostreams.Test()
-	fac := &cmdutils.Factory{
-		IO: io,
-		Config: func() (config.Config, error) {
+	fac := &cmdtest.Factory{
+		IOStub: io,
+		ConfigStub: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
 		},
 	}

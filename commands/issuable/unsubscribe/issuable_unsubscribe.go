@@ -18,7 +18,7 @@ var unsubscribingMessage = map[issuable.IssueType]string{
 	issuable.TypeIncident: "Unsubscribing from incident",
 }
 
-func NewCmdUnsubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
 	examplePath := "issues/123"
 
 	if issueType == issuable.TypeIncident {
@@ -37,7 +37,7 @@ func NewCmdUnsubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c := f.IO.Color()
+			c := f.IO().Color()
 			apiClient, err := f.HttpClient()
 			if err != nil {
 				return err
@@ -51,13 +51,13 @@ func NewCmdUnsubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra
 			for _, issue := range issues {
 				valid, msg := issuable.ValidateIncidentCmd(issueType, "unsubscribe", issue)
 				if !valid {
-					fmt.Fprintln(f.IO.StdOut, msg)
+					fmt.Fprintln(f.IO().StdOut, msg)
 					continue
 				}
 
-				if f.IO.IsaTTY && f.IO.IsErrTTY {
+				if f.IO().IsaTTY && f.IO().IsErrTTY {
 					fmt.Fprintf(
-						f.IO.StdOut,
+						f.IO().StdOut,
 						"- %s #%d in %s\n",
 						unsubscribingMessage[issueType],
 						issue.IID,
@@ -69,7 +69,7 @@ func NewCmdUnsubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra
 				if err != nil {
 					if errors.Is(err, api.ErrIssuableUserNotSubscribed) {
 						fmt.Fprintf(
-							f.IO.StdOut,
+							f.IO().StdOut,
 							"%s You are not subscribed to this %s.\n\n",
 							c.FailedIcon(),
 							issueType,
@@ -79,8 +79,8 @@ func NewCmdUnsubscribe(f *cmdutils.Factory, issueType issuable.IssueType) *cobra
 					return err
 				}
 
-				fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Unsubscribed")
-				fmt.Fprintln(f.IO.StdOut, issueutils.DisplayIssue(c, issue, f.IO.IsaTTY))
+				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Unsubscribed")
+				fmt.Fprintln(f.IO().StdOut, issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
 			}
 			return nil
 		},

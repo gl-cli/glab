@@ -79,9 +79,9 @@ type CreateOpts struct {
 	TargetProject *gitlab.Project `json:"target_project,omitempty"`
 }
 
-func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &CreateOpts{
-		IO:       f.IO,
+		IO:       f.IO(),
 		Branch:   f.Branch,
 		Remotes:  f.Remotes,
 		Config:   f.Config,
@@ -793,7 +793,7 @@ func generateMRCompareURL(opts *CreateOpts) (string, error) {
 	return u.String(), nil
 }
 
-func ResolvedHeadRepo(f *cmdutils.Factory) func() (glrepo.Interface, error) {
+func ResolvedHeadRepo(f cmdutils.Factory) func() (glrepo.Interface, error) {
 	return func() (glrepo.Interface, error) {
 		httpClient, err := f.HttpClient()
 		if err != nil {
@@ -807,7 +807,7 @@ func ResolvedHeadRepo(f *cmdutils.Factory) func() (glrepo.Interface, error) {
 		if err != nil {
 			return nil, err
 		}
-		headRepo, err := repoContext.HeadRepo(f.IO.PromptEnabled())
+		headRepo, err := repoContext.HeadRepo(f.IO().PromptEnabled())
 		if err != nil {
 			return nil, err
 		}

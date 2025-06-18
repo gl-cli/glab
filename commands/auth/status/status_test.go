@@ -6,16 +6,13 @@ import (
 	"net/http"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
-	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/pkg/httpmock"
-
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
-
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/pkg/httpmock"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 func Test_NewCmdStatus(t *testing.T) {
@@ -47,7 +44,7 @@ func Test_NewCmdStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			f := &cmdutils.Factory{}
+			f := &cmdtest.Factory{}
 
 			argv, err := shlex.Split(tt.cli)
 			assert.NoError(t, err)

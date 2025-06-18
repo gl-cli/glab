@@ -31,9 +31,9 @@ type RevokeOptions struct {
 	OutputFormat string
 }
 
-func NewCmdRevoke(f *cmdutils.Factory, runE func(opts *RevokeOptions) error) *cobra.Command {
+func NewCmdRevoke(f cmdutils.Factory, runE func(opts *RevokeOptions) error) *cobra.Command {
 	opts := &RevokeOptions{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 
 	cmd := &cobra.Command{

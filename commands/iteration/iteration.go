@@ -6,7 +6,7 @@ import (
 	iterationListCmd "gitlab.com/gitlab-org/cli/commands/iteration/list"
 )
 
-func NewCmdIteration(f *cmdutils.Factory) *cobra.Command {
+func NewCmdIteration(f cmdutils.Factory) *cobra.Command {
 	iterationCmd := &cobra.Command{
 		Use:   "iteration <command> [flags]",
 		Short: `Retrieve iteration information.`,

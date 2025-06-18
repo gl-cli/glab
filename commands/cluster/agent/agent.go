@@ -10,7 +10,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdAgent(f *cmdutils.Factory) *cobra.Command {
+func NewCmdAgent(f cmdutils.Factory) *cobra.Command {
 	agentCmd := &cobra.Command{
 		Use:   "agent <command> [flags]",
 		Short: `Manage GitLab Agents for Kubernetes.`,

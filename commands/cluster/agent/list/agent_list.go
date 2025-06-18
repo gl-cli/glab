@@ -20,9 +20,8 @@ type options struct {
 	page, perPage uint
 }
 
-func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdAgentList(f cmdutils.Factory) *cobra.Command {
 	var opts options
-
 	agentListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List GitLab Agents for Kubernetes in a project.`,
@@ -34,7 +33,7 @@ func NewCmdAgentList(f *cmdutils.Factory) *cobra.Command {
 			// Let's hack around until some future refactoring :facepalm:
 			opts.httpClient = f.HttpClient
 			opts.baseRepo = f.BaseRepo
-			opts.io = f.IO // TODO move into the struct literal after factory refactoring
+			opts.io = f.IO() // TODO move into the struct literal after factory refactoring
 			return opts.run()
 		},
 	}

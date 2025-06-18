@@ -17,10 +17,10 @@ type DeleteOptions struct {
 	IO     *iostreams.IOStreams
 }
 
-func NewCmdDelete(f *cmdutils.Factory, runF func(*DeleteOptions) error) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory, runF func(*DeleteOptions) error) *cobra.Command {
 	opts := &DeleteOptions{
 		Config: f.Config,
-		IO:     f.IO,
+		IO:     f.IO(),
 	}
 
 	aliasDeleteCmd := &cobra.Command{

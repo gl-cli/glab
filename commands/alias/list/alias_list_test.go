@@ -5,9 +5,9 @@ import (
 	"io"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -54,11 +54,11 @@ func TestAliasList(t *testing.T) {
 			ios.IsaTTY = tt.isaTTy
 			ios.IsErrTTY = tt.isaTTy
 
-			factoryConf := &cmdutils.Factory{
-				Config: func() (config.Config, error) {
+			factoryConf := &cmdtest.Factory{
+				ConfigStub: func() (config.Config, error) {
 					return cfg, nil
 				},
-				IO: ios,
+				IOStub: ios,
 			}
 
 			cmd := NewCmdList(factoryConf, nil)

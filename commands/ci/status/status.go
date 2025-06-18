@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
+func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 	pipelineStatusCmd := &cobra.Command{
 		Use:     "status [flags]",
 		Short:   `View a running CI/CD pipeline on current or other branch specified.`,
@@ -39,7 +39,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 
 			apiClient, err := f.HttpClient()
 			if err != nil {
@@ -73,7 +73,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 				repo, err = remotes.FindByName(branchConfig.RemoteName)
 				if err != nil {
 					redCheck := c.Red("x")
-					fmt.Fprintf(f.IO.StdOut, "%s Remote '%s' for branch '%s' is gone.\n", redCheck, branchConfig.RemoteName, branch)
+					fmt.Fprintf(f.IO().StdOut, "%s Remote '%s' for branch '%s' is gone.\n", redCheck, branchConfig.RemoteName, branch)
 					return err
 				}
 			}
@@ -83,7 +83,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 			runningPipeline, err := api.GetLatestPipeline(apiClient, repoName, branch)
 			if err != nil {
 				redCheck := c.Red("✘")
-				fmt.Fprintf(f.IO.StdOut, "%s No pipelines running or available on branch: %s\n", redCheck, branch)
+				fmt.Fprintf(f.IO().StdOut, "%s No pipelines running or available on branch: %s\n", redCheck, branch)
 				return err
 			}
 
@@ -140,7 +140,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 					if err != nil {
 						return err
 					}
-				} else if f.IO.IsInputTTY() && f.IO.PromptEnabled() {
+				} else if f.IO().IsInputTTY() && f.IO().PromptEnabled() {
 					prompt := &survey.Select{
 						Message: "Choose an action:",
 						Options: []string{"View logs", "Retry", "Exit"},
@@ -154,7 +154,7 @@ func NewCmdStatus(f *cmdutils.Factory) *cobra.Command {
 						}, &ciutils.JobOptions{
 							Repo:      repo,
 							ApiClient: apiClient,
-							IO:        f.IO,
+							IO:        f.IO(),
 						})
 					} else if answer == "Retry" {
 						_, err = api.RetryPipeline(apiClient, runningPipeline.ID, repoName)

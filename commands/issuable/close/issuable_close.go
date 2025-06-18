@@ -23,7 +23,7 @@ var closedMessage = map[issuable.IssueType]string{
 	issuable.TypeIncident: "Resolved incident",
 }
 
-func NewCmdClose(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
+func NewCmdClose(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
 	examplePath := "issues/123"
 	aliases := []string{}
 
@@ -56,22 +56,22 @@ func NewCmdClose(f *cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 			l := &gitlab.UpdateIssueOptions{}
 			l.StateEvent = gitlab.Ptr("close")
 
-			c := f.IO.Color()
+			c := f.IO().Color()
 
 			for _, issue := range issues {
 				valid, msg := issuable.ValidateIncidentCmd(issueType, "close", issue)
 				if !valid {
-					fmt.Fprintln(f.IO.StdOut, msg)
+					fmt.Fprintln(f.IO().StdOut, msg)
 					continue
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "- %s...\n", closingMessage[issueType])
+				fmt.Fprintf(f.IO().StdOut, "- %s...\n", closingMessage[issueType])
 				issue, err := api.UpdateIssue(apiClient, repo.FullName(), issue.IID, l)
 				if err != nil {
 					return err
 				}
-				fmt.Fprintf(f.IO.StdOut, "%s %s #%d\n", c.RedCheck(), closedMessage[issueType], issue.IID)
-				fmt.Fprintln(f.IO.StdOut, issueutils.DisplayIssue(c, issue, f.IO.IsaTTY))
+				fmt.Fprintf(f.IO().StdOut, "%s %s #%d\n", c.RedCheck(), closedMessage[issueType], issue.IID)
+				fmt.Fprintln(f.IO().StdOut, issueutils.DisplayIssue(c, issue, f.IO().IsaTTY))
 			}
 			return nil
 		},

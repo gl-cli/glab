@@ -34,7 +34,7 @@ func parseReorderFile(input string) (branches []string, err error) {
 	return
 }
 
-func promptForOrder(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor, stack git.Stack, branch string) ([]string, error) {
+func promptForOrder(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, stack git.Stack, branch string) ([]string, error) {
 	var message string
 	var buffer bytes.Buffer
 
@@ -59,7 +59,7 @@ func promptForOrder(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor, st
 
 	var branches []string
 
-	if !f.IO.IsOutputTTY() {
+	if !f.IO().IsOutputTTY() {
 		return []string{}, errors.New("No TTY available")
 	}
 

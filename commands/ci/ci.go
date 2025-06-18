@@ -24,7 +24,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdCI(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCI(f cmdutils.Factory) *cobra.Command {
 	ciCmd := &cobra.Command{
 		Use:     "ci <command> [flags]",
 		Short:   `Work with GitLab CI/CD pipelines and jobs.`,

@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdConfig(f *cmdutils.Factory) *cobra.Command {
+func NewCmdConfig(f cmdutils.Factory) *cobra.Command {
 	ConfigCmd := &cobra.Command{
 		Use:   "config <command> [flags]",
 		Short: `Work with GitLab CI/CD configuration.`,

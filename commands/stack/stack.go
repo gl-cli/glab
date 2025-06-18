@@ -17,13 +17,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func wrappedEdit(f *cmdutils.Factory) cmdutils.GetTextUsingEditor {
+func wrappedEdit(f cmdutils.Factory) cmdutils.GetTextUsingEditor {
 	return func(editor, tmpFileName, content string) (string, error) {
-		return surveyext.Edit(editor, tmpFileName, content, f.IO.In, f.IO.StdOut, f.IO.StdErr, nil)
+		return surveyext.Edit(editor, tmpFileName, content, f.IO().In, f.IO().StdOut, f.IO().StdErr, nil)
 	}
 }
 
-func NewCmdStack(f *cmdutils.Factory) *cobra.Command {
+func NewCmdStack(f cmdutils.Factory) *cobra.Command {
 	stackCmd := &cobra.Command{
 		Use:   "stack <command> [flags]",
 		Short: `Create, manage, and work with stacked diffs. (EXPERIMENTAL.)`,

@@ -21,9 +21,9 @@ type LogoutOptions struct {
 
 var opts *LogoutOptions
 
-func NewCmdLogout(f *cmdutils.Factory) *cobra.Command {
+func NewCmdLogout(f cmdutils.Factory) *cobra.Command {
 	opts = &LogoutOptions{
-		IO:       f.IO,
+		IO:       f.IO(),
 		Config:   f.Config,
 		Hostname: "",
 	}
@@ -57,7 +57,7 @@ func NewCmdLogout(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(f.IO.StdOut, "Successfully logged out of %s\n", opts.Hostname)
+			fmt.Fprintf(f.IO().StdOut, "Successfully logged out of %s\n", opts.Hostname)
 			return nil
 		},
 	}

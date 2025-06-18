@@ -26,9 +26,9 @@ type AddOpts struct {
 	KeyFile string
 }
 
-func NewCmdAdd(f *cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
+func NewCmdAdd(f cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
 	opts := &AddOpts{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	cmd := &cobra.Command{
 		Use:   "add [key-file]",

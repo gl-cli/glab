@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
@@ -15,7 +15,7 @@ func Test_Securefile(t *testing.T) {
 	os.Stdout = w
 	defer func() { os.Stdout = old }()
 
-	assert.Nil(t, NewCmdSecurefile(&cmdutils.Factory{}).Execute())
+	assert.Nil(t, NewCmdSecurefile(&cmdtest.Factory{}).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

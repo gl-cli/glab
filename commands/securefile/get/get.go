@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
+func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	securefileGetCmd := &cobra.Command{
 		Use:     "get <fileID>",
 		Short:   `Get details of a project secure file. (GitLab 18.0 and later)`,
@@ -47,7 +47,7 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			fileJSON, _ := json.Marshal(file)
-			fmt.Fprintln(f.IO.StdOut, string(fileJSON))
+			fmt.Fprintln(f.IO().StdOut, string(fileJSON))
 			return nil
 		},
 	}

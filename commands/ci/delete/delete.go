@@ -39,7 +39,7 @@ var (
 	}
 )
 
-func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	pipelineDeleteCmd := &cobra.Command{
 		Use:   "delete <id> [flags]",
 		Short: `Delete CI/CD pipelines.`,
@@ -69,7 +69,7 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 			apiClient, err := f.HttpClient()
 			if err != nil {
 				return err
@@ -89,7 +89,7 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				return runDeletion(pipelineIDs, dryRunMode, f.IO.StdOut, c, apiClient, repo)
+				return runDeletion(pipelineIDs, dryRunMode, f.IO().StdOut, c, apiClient, repo)
 			}
 
 			paginate, _ := cmd.Flags().GetBool(FlagPaginate)
@@ -99,7 +99,7 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			return runDeletion(pipelineIDs, dryRunMode, f.IO.StdOut, c, apiClient, repo)
+			return runDeletion(pipelineIDs, dryRunMode, f.IO().StdOut, c, apiClient, repo)
 		},
 	}
 

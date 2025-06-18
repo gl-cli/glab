@@ -26,9 +26,9 @@ type GetOpts struct {
 	Page    int
 }
 
-func NewCmdGet(f *cmdutils.Factory, runE func(*GetOpts) error) *cobra.Command {
+func NewCmdGet(f cmdutils.Factory, runE func(*GetOpts) error) *cobra.Command {
 	opts := &GetOpts{
-		IO: f.IO,
+		IO: f.IO(),
 	}
 	cmd := &cobra.Command{
 		Use:   "get <key-id>",

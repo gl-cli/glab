@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	mrDeleteCmd := &cobra.Command{
 		Use:     "delete [<id> | <branch>]",
 		Short:   `Delete a merge request.`,
@@ -30,7 +30,7 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 			$ glab mr delete branch
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c := f.IO.Color()
+			c := f.IO().Color()
 			apiClient, err := f.HttpClient()
 			if err != nil {
 				return err
@@ -42,11 +42,11 @@ func NewCmdDelete(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			for _, mr := range mrs {
-				fmt.Fprintf(f.IO.StdOut, "- Deleting merge request !%d.\n", mr.IID)
+				fmt.Fprintf(f.IO().StdOut, "- Deleting merge request !%d.\n", mr.IID)
 				if err = api.DeleteMR(apiClient, repo.FullName(), mr.IID); err != nil {
 					return err
 				}
-				fmt.Fprintf(f.IO.StdOut, "%s Merge request !%d deleted.\n", c.RedCheck(), mr.IID)
+				fmt.Fprintf(f.IO().StdOut, "%s Merge request !%d deleted.\n", c.RedCheck(), mr.IID)
 			}
 
 			return nil

@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/text"
 )
 
-func NewCmdStackList(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
+func NewCmdStackList(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
@@ -36,7 +36,7 @@ func NewCmdStackList(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 				return err
 			}
 
-			run(f.IO, stack, currentBranch)
+			run(f.IO(), stack, currentBranch)
 			return nil
 		},
 	}

@@ -30,7 +30,7 @@ type Options struct {
 	Config      func() (config.Config, error)
 }
 
-func NewCmdReorderStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
+func NewCmdReorderStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
 	opts := &Options{
 		Remotes:  f.Remotes,
 		Config:   f.Config,
@@ -45,14 +45,14 @@ func NewCmdReorderStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.
 			$ glab stack reorder
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f.IO.StartSpinner("Reordering\n")
+			f.IO().StartSpinner("Reordering\n")
 
-			err := reorderFunc(f, getText, f.IO, opts)
+			err := reorderFunc(f, getText, f.IO(), opts)
 			if err != nil {
 				return fmt.Errorf("could not run stack reorder: %v", err)
 			}
 
-			f.IO.StopSpinner("%s Reordering complete\n", f.IO.Color().GreenCheck())
+			f.IO().StopSpinner("%s Reordering complete\n", f.IO().Color().GreenCheck())
 
 			return nil
 		},
@@ -60,7 +60,7 @@ func NewCmdReorderStack(f *cmdutils.Factory, gr git.GitRunner, getText cmdutils.
 	return stackSaveCmd
 }
 
-func reorderFunc(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostream *iostreams.IOStreams, opts *Options) error {
+func reorderFunc(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostream *iostreams.IOStreams, opts *Options) error {
 	iostream.StartSpinner("Reordering\n")
 	defer iostream.StopSpinner("")
 
@@ -110,7 +110,7 @@ func reorderFunc(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostr
 		return fmt.Errorf("error updating merge requests: %v", err)
 	}
 
-	iostream.StopSpinner("%s Reordering complete\n", f.IO.Color().GreenCheck())
+	iostream.StopSpinner("%s Reordering complete\n", f.IO().Color().GreenCheck())
 
 	return nil
 }
@@ -185,7 +185,7 @@ func matchBranchesToStack(stack git.Stack, branches []string) (git.Stack, error)
 	return newStack, nil
 }
 
-func updateMRs(f *cmdutils.Factory, newStack git.Stack, oldStack git.Stack) error {
+func updateMRs(f cmdutils.Factory, newStack git.Stack, oldStack git.Stack) error {
 	for _, ref := range newStack.Iter2() {
 		// if there is already an MR and the order has been adjusted
 		if ref.MR != "" &&

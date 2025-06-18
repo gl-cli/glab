@@ -25,9 +25,9 @@ type CredentialOptions struct {
 	Operation string
 }
 
-func NewCmdCredential(f *cmdutils.Factory, runF func(*CredentialOptions) error) *cobra.Command {
+func NewCmdCredential(f cmdutils.Factory, runF func(*CredentialOptions) error) *cobra.Command {
 	opts := &CredentialOptions{
-		IO: f.IO,
+		IO: f.IO(),
 		Config: func() (configExt, error) {
 			return f.Config()
 		},

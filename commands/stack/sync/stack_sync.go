@@ -48,14 +48,14 @@ const (
 	closedStatus      = "closed"
 )
 
-func NewCmdSyncStack(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
+func NewCmdSyncStack(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	opts := &Options{
 		Remotes:  f.Remotes,
 		Config:   f.Config,
 		BaseRepo: f.BaseRepo,
 	}
 
-	iostream = f.IO
+	iostream = f.IO()
 
 	stackSaveCmd := &cobra.Command{
 		Use:   "sync",
@@ -89,7 +89,7 @@ func NewCmdSyncStack(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return stackSaveCmd
 }
 
-func stackSync(f *cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options, gr git.GitRunner) error {
+func stackSync(f cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options, gr git.GitRunner) error {
 	client, err := auth.GetAuthenticatedClient(f)
 	if err != nil {
 		return fmt.Errorf("error authorizing with GitLab: %v", err)

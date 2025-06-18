@@ -11,7 +11,7 @@ import (
 	updateCmd "gitlab.com/gitlab-org/cli/commands/variable/update"
 )
 
-func NewVariableCmd(f *cmdutils.Factory) *cobra.Command {
+func NewVariableCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "variable",
 		Short:   "Manage variables for a GitLab project or group.",

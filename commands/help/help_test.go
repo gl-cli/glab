@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/alias"
 	"gitlab.com/gitlab-org/cli/commands/alias/set"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
@@ -68,7 +68,7 @@ func TestRootHelpFunc(t *testing.T) {
 		{
 			name: "alias",
 			args: args{
-				command: alias.NewCmdAlias(&cmdutils.Factory{}),
+				command: alias.NewCmdAlias(&cmdtest.Factory{}),
 			},
 			wantOut: `Create, list, and delete aliases.
 
@@ -79,7 +79,7 @@ USAGE
 		{
 			name: "test nested alias cmd",
 			args: args{
-				command: set.NewCmdSet(&cmdutils.Factory{}, nil),
+				command: set.NewCmdSet(&cmdtest.Factory{}, nil),
 				args:    []string{"set", "-h"},
 			},
 			wantOut: "USAGE\n  alias set <alias name> '<command>' [flags]\n\nFLAGS\n  -s, --shell ",
@@ -94,7 +94,7 @@ USAGE
 			cmd := tt.args.command
 			if len(tt.args.args) > 0 {
 				// falsify a parent command
-				alias.NewCmdAlias(&cmdutils.Factory{}).AddCommand(cmd)
+				alias.NewCmdAlias(&cmdtest.Factory{}).AddCommand(cmd)
 			}
 			RootHelpFunc(streams.Color(), cmd, tt.args.args)
 
@@ -116,7 +116,7 @@ func TestRootUsageFunc(t *testing.T) {
 	}{
 		{
 			args: args{
-				command: alias.NewCmdAlias(&cmdutils.Factory{}),
+				command: alias.NewCmdAlias(&cmdtest.Factory{}),
 			},
 			wantErr: false,
 		},

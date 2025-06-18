@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
-func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	labelCreateCmd := &cobra.Command{
 		Use:     "create [flags]",
 		Short:   `Create labels for a repository or project.`,
@@ -52,7 +52,7 @@ func NewCmdCreate(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(f.IO.StdOut, "Created label: %s\nWith color: %s\n", label.Name, label.Color)
+			fmt.Fprintf(f.IO().StdOut, "Created label: %s\nWith color: %s\n", label.Name, label.Color)
 
 			return nil
 		},

@@ -20,7 +20,7 @@ func cleanDescription(message string) string {
 	return strings.TrimSpace(sb.String())
 }
 
-func promptForCommit(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor, defaultValue string) (string, error) {
+func promptForCommit(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, defaultValue string) (string, error) {
 	message := "\n# Please enter the commit message for this change. Lines starting\n# with '#' will be ignored. A message is required.\n#\n"
 	editor, err := cmdutils.GetEditor(f.Config)
 	if err != nil {
@@ -32,7 +32,7 @@ func promptForCommit(f *cmdutils.Factory, getText cmdutils.GetTextUsingEditor, d
 	}
 
 	var cleanedDescription string
-	if !f.IO.IsOutputTTY() {
+	if !f.IO().IsOutputTTY() {
 		if defaultValue == "" {
 			return "", errors.New("No commit message provided and no TTY. Please provide a commit message with the --message flag.")
 		}

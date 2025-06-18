@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdRevoke(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRevoke(f cmdutils.Factory) *cobra.Command {
 	mrRevokeCmd := &cobra.Command{
 		Use:     "revoke [<id> | <branch>]",
 		Short:   `Revoke approval on a merge request.`,
@@ -30,7 +30,7 @@ func NewCmdRevoke(f *cmdutils.Factory) *cobra.Command {
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 
 			apiClient, err := f.HttpClient()
 			if err != nil {
@@ -51,14 +51,14 @@ func NewCmdRevoke(f *cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "- Revoking approval for merge request !%d...\n", mr.IID)
+				fmt.Fprintf(f.IO().StdOut, "- Revoking approval for merge request !%d...\n", mr.IID)
 
 				err = api.UnapproveMR(apiClient, repo.FullName(), mr.IID)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Merge request approval revoked.")
+				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Merge request approval revoked.")
 			}
 
 			return nil

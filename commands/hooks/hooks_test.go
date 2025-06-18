@@ -10,7 +10,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
@@ -65,12 +64,12 @@ func Test_sendTelemetryData(t *testing.T) {
 			tc := gitlab_testing.NewTestClient(t)
 			ios, _, _, _ := cmdtest.InitIOStreams(true, "")
 
-			f := &cmdutils.Factory{
-				IO: ios,
-				HttpClient: func() (*gitlab.Client, error) {
+			f := &cmdtest.Factory{
+				IOStub: ios,
+				HttpClientStub: func() (*gitlab.Client, error) {
 					return tc.Client, nil
 				},
-				BaseRepo: func() (glrepo.Interface, error) {
+				BaseRepoStub: func() (glrepo.Interface, error) {
 					return glrepo.New("OWNER", "REPO"), nil
 				},
 			}

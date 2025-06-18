@@ -12,7 +12,7 @@ import (
 	securefileRemoveCmd "gitlab.com/gitlab-org/cli/commands/securefile/remove"
 )
 
-func NewCmdSecurefile(f *cmdutils.Factory) *cobra.Command {
+func NewCmdSecurefile(f cmdutils.Factory) *cobra.Command {
 	securefileCmd := &cobra.Command{
 		Use:   "securefile <command> [flags]",
 		Short: `Manage secure files for a project.`,

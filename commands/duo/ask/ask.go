@@ -59,9 +59,9 @@ const (
 	apiUnreachableErr = "Error: API is unreachable."
 )
 
-func NewCmdAsk(f *cmdutils.Factory) *cobra.Command {
+func NewCmdAsk(f cmdutils.Factory) *cobra.Command {
 	opts := &opts{
-		IO:         f.IO,
+		IO:         f.IO(),
 		HttpClient: f.HttpClient,
 	}
 

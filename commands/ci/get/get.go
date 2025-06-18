@@ -25,7 +25,7 @@ type PipelineMergedResponse struct {
 	Variables []*gitlab.PipelineVariable `json:"variables"`
 }
 
-func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
+func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	pipelineGetCmd := &cobra.Command{
 		Use:     "get [flags]",
 		Short:   `Get JSON of a running CI/CD pipeline on the current or other specified branch.`,
@@ -38,7 +38,7 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 
 			apiClient, err := f.HttpClient()
 			if err != nil {
@@ -96,7 +96,7 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 			pipeline, err := api.GetPipeline(apiClient, pipelineId, nil, repo.FullName())
 			if err != nil {
 				redCheck := c.Red("✘")
-				fmt.Fprintf(f.IO.StdOut, "%s %s\n", redCheck, msgNotFound)
+				fmt.Fprintf(f.IO().StdOut, "%s %s\n", redCheck, msgNotFound)
 				return err
 			}
 
@@ -124,10 +124,10 @@ func NewCmdGet(f *cmdutils.Factory) *cobra.Command {
 			outputFormat, _ := cmd.Flags().GetString("output-format")
 			output, _ := cmd.Flags().GetString("output")
 			if output == "json" || outputFormat == "json" {
-				printJSON(*mergedPipelineObject, f.IO.StdOut)
+				printJSON(*mergedPipelineObject, f.IO().StdOut)
 			} else {
 				showJobDetails, _ := cmd.Flags().GetBool("with-job-details")
-				printTable(*mergedPipelineObject, f.IO.StdOut, showJobDetails)
+				printTable(*mergedPipelineObject, f.IO().StdOut, showJobDetails)
 			}
 
 			return nil

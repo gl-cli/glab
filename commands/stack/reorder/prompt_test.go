@@ -139,18 +139,17 @@ func Test_parseReorderFile(t *testing.T) {
 	}
 }
 
-func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStreams, f *cmdutils.Factory) {
-	ios, _, _, _ = cmdtest.InitIOStreams(isTTY, "")
+func setupTestFactory(rt http.RoundTripper, isTTY bool) (*iostreams.IOStreams, cmdutils.Factory) {
+	ios, _, _, _ := cmdtest.InitIOStreams(isTTY, "")
 
-	f = cmdtest.InitFactory(ios, rt)
+	f := cmdtest.InitFactory(ios, rt)
 
-	f.BaseRepo = func() (glrepo.Interface, error) {
+	f.BaseRepoStub = func() (glrepo.Interface, error) {
 		return glrepo.TestProject("stack_guy", "stackproject"), nil
 	}
 
 	_, _ = f.HttpClient()
-
-	return
+	return ios, f
 }
 
 func getMockEditor(input string, prompts *[]string) cmdutils.GetTextUsingEditor {

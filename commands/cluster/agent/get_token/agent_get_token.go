@@ -30,9 +30,8 @@ type options struct {
 	agentID int64
 }
 
-func NewCmdAgentGetToken(f *cmdutils.Factory) *cobra.Command {
+func NewCmdAgentGetToken(f cmdutils.Factory) *cobra.Command {
 	var opts options
-
 	desc := "Create and return a k8s_proxy-scoped personal access token to authenticate with a GitLab Agents for Kubernetes."
 	agentGetTokenCmd := &cobra.Command{
 		Use:   "get-token [flags]",
@@ -46,7 +45,7 @@ You might receive an email from your GitLab instance that a new personal access 
 			// We cannot copy these above - repo override doesn't work then.
 			// Let's hack around until some future refactoring :facepalm:
 			opts.httpClient = f.HttpClient
-			opts.io = f.IO // TODO move into the struct literal after factory refactoring
+			opts.io = f.IO() // TODO move into the struct literal after factory refactoring
 			return opts.run()
 		},
 	}

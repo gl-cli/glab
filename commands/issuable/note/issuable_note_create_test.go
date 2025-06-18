@@ -20,8 +20,8 @@ import (
 func runCommand(rt http.RoundTripper, isTTY bool, cli string, issueType issuable.IssueType) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 	factory := cmdtest.InitFactory(ios, rt)
-	factory.Branch = git.CurrentBranch
-	factory.Config = func() (config.Config, error) {
+	factory.BranchStub = git.CurrentBranch
+	factory.ConfigStub = func() (config.Config, error) {
 		return config.NewFromString("editor: vi"), nil
 	}
 

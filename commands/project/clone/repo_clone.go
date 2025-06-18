@@ -53,10 +53,10 @@ type ContextOpts struct {
 	Repo    string
 }
 
-func NewCmdClone(f *cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) error) *cobra.Command {
+func NewCmdClone(f cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) error) *cobra.Command {
 	opts := &CloneOptions{
 		GitFlags: []string{},
-		IO:       f.IO,
+		IO:       f.IO(),
 		Config:   f.Config,
 	}
 

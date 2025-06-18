@@ -26,7 +26,7 @@ func baseCommand() (git.Stack, error) {
 	return stack, nil
 }
 
-func NewCmdStackFirst(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
+func NewCmdStackFirst(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:   "first",
 		Short: "Moves to the first diff in the stack. (EXPERIMENTAL.)",
@@ -57,7 +57,7 @@ func NewCmdStackFirst(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	}
 }
 
-func NewCmdStackNext(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
+func NewCmdStackNext(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:   "next",
 		Short: "Moves to the next diff in the stack. (EXPERIMENTAL.)",
@@ -93,7 +93,7 @@ func NewCmdStackNext(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	}
 }
 
-func NewCmdStackPrev(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
+func NewCmdStackPrev(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:   "prev",
 		Short: "Moves to the previous diff in the stack. (EXPERIMENTAL.)",
@@ -129,7 +129,7 @@ func NewCmdStackPrev(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	}
 }
 
-func NewCmdStackLast(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
+func NewCmdStackLast(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:   "last",
 		Short: "Moves to the last diff in the stack. (EXPERIMENTAL.)",
@@ -161,7 +161,7 @@ func NewCmdStackLast(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	}
 }
 
-func NewCmdStackMove(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
+func NewCmdStackMove(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:   "move",
 		Short: "Moves to any selected entry in the stack. (EXPERIMENTAL.)",
@@ -210,8 +210,8 @@ func NewCmdStackMove(f *cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	}
 }
 
-func switchMessage(f *cmdutils.Factory, ref *git.StackRef) {
-	color := f.IO.Color()
+func switchMessage(f cmdutils.Factory, ref *git.StackRef) {
+	color := f.IO().Color()
 	fmt.Printf(
 		"%v Switched to branch: %v - %v\n",
 		color.ProgressIcon(),

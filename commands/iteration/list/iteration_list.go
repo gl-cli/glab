@@ -21,7 +21,7 @@ type IterationListOptions struct {
 	OutputFormat string
 }
 
-func NewCmdList(f *cmdutils.Factory) *cobra.Command {
+func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &IterationListOptions{}
 
 	iterationListCmd := &cobra.Command{
@@ -66,9 +66,9 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 				}
 				if opts.OutputFormat == "json" {
 					iterationListJSON, _ := json.Marshal(iterations)
-					fmt.Fprintln(f.IO.StdOut, string(iterationListJSON))
+					fmt.Fprintln(f.IO().StdOut, string(iterationListJSON))
 				} else {
-					fmt.Fprintf(f.IO.StdOut, "Showing iteration %d of %d for group %s.\n\n", len(iterations), len(iterations), opts.Group)
+					fmt.Fprintf(f.IO().StdOut, "Showing iteration %d of %d for group %s.\n\n", len(iterations), len(iterations), opts.Group)
 					for _, iteration := range iterations {
 						iterationBuilder.WriteString(formatIterationInfo(iteration.Description, iteration.Title, iteration.WebURL))
 					}
@@ -80,15 +80,15 @@ func NewCmdList(f *cmdutils.Factory) *cobra.Command {
 				}
 				if opts.OutputFormat == "json" {
 					iterationListJSON, _ := json.Marshal(iterations)
-					fmt.Fprintln(f.IO.StdOut, string(iterationListJSON))
+					fmt.Fprintln(f.IO().StdOut, string(iterationListJSON))
 				} else {
-					fmt.Fprintf(f.IO.StdOut, "Showing iteration %d of %d on %s.\n\n", len(iterations), len(iterations), repo.FullName())
+					fmt.Fprintf(f.IO().StdOut, "Showing iteration %d of %d on %s.\n\n", len(iterations), len(iterations), repo.FullName())
 					for _, iteration := range iterations {
 						iterationBuilder.WriteString(formatIterationInfo(iteration.Description, iteration.Title, iteration.WebURL))
 					}
 				}
 			}
-			fmt.Fprintln(f.IO.StdOut, utils.Indent(iterationBuilder.String(), " "))
+			fmt.Fprintln(f.IO().StdOut, utils.Indent(iterationBuilder.String(), " "))
 			return nil
 		},
 	}

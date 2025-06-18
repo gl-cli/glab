@@ -24,7 +24,7 @@ const (
 
 var commandAliases = []string{"update"}
 
-func NewCheckUpdateCmd(f *cmdutils.Factory, version string) *cobra.Command {
+func NewCheckUpdateCmd(f cmdutils.Factory, version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   commandUse,
 		Short: "Check for latest glab releases.",
@@ -44,7 +44,7 @@ func NewCheckUpdateCmd(f *cmdutils.Factory, version string) *cobra.Command {
 	return cmd
 }
 
-func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previousCommand string) error {
+func CheckUpdate(f cmdutils.Factory, version string, silentSuccess bool, previousCommand string) error {
 	if shouldSkipUpdate(previousCommand) {
 		return nil
 	}
@@ -59,10 +59,7 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previo
 	}
 
 	// We set the project to the `glab` project to check for `glab` updates
-	err = f.RepoOverride(defaultProjectURL)
-	if err != nil {
-		return err
-	}
+	f.RepoOverride(defaultProjectURL)
 	repo, err := f.BaseRepo()
 	if err != nil {
 		return err
@@ -87,9 +84,9 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previo
 	latestRelease := releases[0]
 	releaseURL := fmt.Sprintf("%s/-/releases/%s", defaultProjectURL, latestRelease.TagName)
 
-	c := f.IO.Color()
+	c := f.IO().Color()
 	if isOlderVersion(latestRelease.Name, version) {
-		fmt.Fprintf(f.IO.StdErr, "%s %s -> %s\n%s\n",
+		fmt.Fprintf(f.IO().StdErr, "%s %s -> %s\n%s\n",
 			c.Yellow("A new version of glab has been released:"),
 			c.Red(version), c.Green(latestRelease.TagName),
 			releaseURL)
@@ -97,7 +94,7 @@ func CheckUpdate(f *cmdutils.Factory, version string, silentSuccess bool, previo
 		if silentSuccess {
 			return nil
 		}
-		fmt.Fprintf(f.IO.StdErr, "%v",
+		fmt.Fprintf(f.IO().StdErr, "%v",
 			c.Green("You are already using the latest version of glab!\n"))
 	}
 	return nil
@@ -129,7 +126,7 @@ func isOlderVersion(latestVersion, appVersion string) bool {
 // returns false if we should skip the update check
 //
 // We only want to check for updates once every 24 hours
-func checkLastUpdate(f *cmdutils.Factory) (bool, error) {
+func checkLastUpdate(f cmdutils.Factory) (bool, error) {
 	const updateCheckInterval = 24 * time.Hour
 	cfg, err := f.Config()
 	if err != nil {

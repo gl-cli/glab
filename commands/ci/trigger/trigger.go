@@ -12,7 +12,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
+func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 	pipelineTriggerCmd := &cobra.Command{
 		Use:     "trigger <job-id>",
 		Short:   `Trigger a manual CI/CD job.`,
@@ -56,11 +56,11 @@ func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
 				},
 			}, &ciutils.JobOptions{
 				ApiClient: apiClient,
-				IO:        f.IO,
+				IO:        f.IO(),
 				Repo:      repo,
 			})
 			if err != nil {
-				fmt.Fprintln(f.IO.StdErr, "invalid job ID:", jobName)
+				fmt.Fprintln(f.IO().StdErr, "invalid job ID:", jobName)
 				return err
 			}
 
@@ -73,7 +73,7 @@ func NewCmdTrigger(f *cmdutils.Factory) *cobra.Command {
 				return cmdutils.WrapError(err, fmt.Sprintf("Could not trigger job with ID: %d", jobID))
 			}
 			output := fmt.Sprintf("Triggered job (ID: %d), status: %s, ref: %s, weburl: %s", job.ID, job.Status, job.Ref, job.WebURL)
-			fmt.Fprintln(f.IO.StdOut, output)
+			fmt.Fprintln(f.IO().StdOut, output)
 
 			return nil
 		},

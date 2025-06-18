@@ -22,7 +22,7 @@ var (
 	variablePairsToUpdate [][2]string
 )
 
-func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
+func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	scheduleUpdateCmd := &cobra.Command{
 		Use:   "update <id> [flags]",
 		Short: `Update a pipeline schedule.`,
@@ -144,7 +144,7 @@ func NewCmdUpdate(f *cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			fmt.Fprintln(f.IO.StdOut, "Updated schedule with ID", scheduleId)
+			fmt.Fprintln(f.IO().StdOut, "Updated schedule with ID", scheduleId)
 
 			return nil
 		},

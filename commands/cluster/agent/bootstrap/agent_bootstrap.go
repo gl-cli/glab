@@ -98,9 +98,8 @@ func EnsureRequirements() error {
 	return nil
 }
 
-func NewCmdAgentBootstrap(f *cmdutils.Factory, ensureRequirements func() error, af APIFactory, kwf KubectlWrapperFactory, fwf FluxWrapperFactory, cf CmdFactory) *cobra.Command {
+func NewCmdAgentBootstrap(f cmdutils.Factory, ensureRequirements func() error, af APIFactory, kwf KubectlWrapperFactory, fwf FluxWrapperFactory, cf CmdFactory) *cobra.Command {
 	var opts options
-
 	agentBootstrapCmd := &cobra.Command{
 		Use:   "bootstrap agent-name [flags]",
 		Short: `Bootstrap a GitLab Agent for Kubernetes in a project.`,
@@ -164,7 +163,7 @@ This command consists of multiple idempotent steps:
 			return ensureRequirements()
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			stdout, stderr := f.IO.StdOut, f.IO.StdErr
+			stdout, stderr := f.IO().StdOut, f.IO().StdErr
 
 			apiClient, err := f.HttpClient()
 			if err != nil {

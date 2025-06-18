@@ -7,7 +7,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/snippet/create"
 )
 
-func NewCmdSnippet(f *cmdutils.Factory) *cobra.Command {
+func NewCmdSnippet(f cmdutils.Factory) *cobra.Command {
 	snippetCmd := &cobra.Command{
 		Use:   "snippet <command> [flags]",
 		Short: `Create, view and manage snippets.`,

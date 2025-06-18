@@ -32,10 +32,9 @@ hosts:
 `, "")()
 
 	io, _, stdout, stderr := iostreams.Test()
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("")
-	stubFactory.IO = io
-	stubFactory.IO.IsaTTY = true
-	stubFactory.IO.IsErrTTY = true
+	io.IsaTTY = true
+	io.IsErrTTY = true
+	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 
 	oldUnsubscribeMR := api.UnsubscribeFromMR
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")

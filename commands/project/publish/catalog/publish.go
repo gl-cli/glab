@@ -41,9 +41,9 @@ type Options struct {
 	IO         *iostreams.IOStreams
 }
 
-func NewCmdPublishCatalog(f *cmdutils.Factory) *cobra.Command {
+func NewCmdPublishCatalog(f cmdutils.Factory) *cobra.Command {
 	opts := &Options{
-		IO:       f.IO,
+		IO:       f.IO(),
 		BaseRepo: f.BaseRepo,
 	}
 	publishCatalogCmd := &cobra.Command{

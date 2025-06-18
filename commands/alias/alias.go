@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdAlias(f *cmdutils.Factory) *cobra.Command {
+func NewCmdAlias(f cmdutils.Factory) *cobra.Command {
 	aliasCmd := &cobra.Command{
 		Use:   "alias [command] [flags]",
 		Short: `Create, list, and delete aliases.`,

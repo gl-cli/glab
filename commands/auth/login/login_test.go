@@ -205,12 +205,10 @@ func Test_NewCmdLogin(t *testing.T) {
 			t.Setenv("GLAB_CONFIG_DIR", d)
 
 			io, stdin, _, _ := iostreams.Test()
-			f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test")
-
-			f.IO = io
 			io.IsaTTY = true
 			io.IsErrTTY = true
 			io.IsInTTY = tt.stdinTTY
+			f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test", io)
 
 			if tt.stdin != "" {
 				stdin.WriteString(tt.stdin)
@@ -341,7 +339,8 @@ func Test_keyringLogin(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "", token)
 
-	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test")
+	io, _, _, _ := iostreams.Test()
+	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test", io)
 	cmd := NewCmdLogin(f)
 	cmd.Flags().BoolP("help", "x", false, "")
 

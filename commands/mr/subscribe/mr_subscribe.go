@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdSubscribe(f *cmdutils.Factory) *cobra.Command {
+func NewCmdSubscribe(f cmdutils.Factory) *cobra.Command {
 	mrSubscribeCmd := &cobra.Command{
 		Use:     "subscribe [<id> | <branch>]",
 		Short:   `Subscribe to a merge request.`,
@@ -28,7 +28,7 @@ func NewCmdSubscribe(f *cmdutils.Factory) *cobra.Command {
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 
 			apiClient, err := f.HttpClient()
 			if err != nil {
@@ -47,15 +47,15 @@ func NewCmdSubscribe(f *cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "- Subscribing to merge request !%d.\n", mr.IID)
+				fmt.Fprintf(f.IO().StdOut, "- Subscribing to merge request !%d.\n", mr.IID)
 
 				mr, err = api.SubscribeToMR(apiClient, repo.FullName(), mr.IID, nil)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintf(f.IO.StdOut, "%s You have successfully subscribed to merge request !%d.\n", c.GreenCheck(), mr.IID)
-				fmt.Fprintln(f.IO.StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO.IsaTTY))
+				fmt.Fprintf(f.IO().StdOut, "%s You have successfully subscribed to merge request !%d.\n", c.GreenCheck(), mr.IID)
+				fmt.Fprintln(f.IO().StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
 			}
 
 			return nil

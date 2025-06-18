@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdIncident(f *cmdutils.Factory) *cobra.Command {
+func NewCmdIncident(f cmdutils.Factory) *cobra.Command {
 	incidentCmd := &cobra.Command{
 		Use:   "incident [command] [flags]",
 		Short: `Work with GitLab incidents.`,

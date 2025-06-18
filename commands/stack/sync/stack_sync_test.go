@@ -26,16 +26,16 @@ type TestRef struct {
 	state string
 }
 
-func setupTestFactory(rt http.RoundTripper) (*iostreams.IOStreams, *cmdutils.Factory, *Options) {
+func setupTestFactory(rt http.RoundTripper) (*iostreams.IOStreams, cmdutils.Factory, *Options) {
 	ios, _, _, _ := cmdtest.InitIOStreams(false, "")
 
 	f := cmdtest.InitFactory(ios, rt)
 
-	f.BaseRepo = func() (glrepo.Interface, error) {
+	f.BaseRepoStub = func() (glrepo.Interface, error) {
 		return glrepo.TestProject("stack_guy", "stackproject"), nil
 	}
 
-	f.Remotes = func() (glrepo.Remotes, error) {
+	f.RemotesStub = func() (glrepo.Remotes, error) {
 		r := glrepo.Remotes{
 			&glrepo.Remote{
 				Remote: &git.Remote{

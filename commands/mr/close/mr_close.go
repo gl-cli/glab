@@ -12,7 +12,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
+func NewCmdClose(f cmdutils.Factory) *cobra.Command {
 	mrCloseCmd := &cobra.Command{
 		Use:   "close [<id> | <branch>]",
 		Short: `Close a merge request.`,
@@ -32,7 +32,7 @@ func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 			apiClient, err := f.HttpClient()
 			if err != nil {
 				return err
@@ -52,7 +52,7 @@ func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
 				}); err != nil {
 					return err
 				}
-				fmt.Fprintf(f.IO.StdOut, "- Closing merge request...\n")
+				fmt.Fprintf(f.IO().StdOut, "- Closing merge request...\n")
 				_, err := api.UpdateMR(apiClient, repo.FullName(), mr.IID, l)
 				if err != nil {
 					return err
@@ -61,8 +61,8 @@ func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
 				// prints it as red
 				mr.State = "closed"
 
-				fmt.Fprintf(f.IO.StdOut, "%s Closed merge request !%d.\n", c.RedCheck(), mr.IID)
-				fmt.Fprintln(f.IO.StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO.IsaTTY))
+				fmt.Fprintf(f.IO().StdOut, "%s Closed merge request !%d.\n", c.RedCheck(), mr.IID)
+				fmt.Fprintln(f.IO().StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
 			}
 
 			return nil

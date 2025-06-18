@@ -43,7 +43,7 @@ type MergeOpts struct {
 	MergeMethod MRMergeMethod
 }
 
-func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
+func NewCmdMerge(f cmdutils.Factory) *cobra.Command {
 	opts := &MergeOpts{
 		MergeMethod: MRMergeMethodMerge,
 	}
@@ -64,7 +64,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			c := f.IO.Color()
+			c := f.IO().Color()
 
 			if opts.SquashBeforeMerge && opts.RebaseBeforeMerge {
 				return &cmdutils.FlagError{Err: errors.New("only one of --rebase or --squash can be enabled")}
@@ -98,14 +98,14 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 
 			if !cmd.Flags().Changed("when-pipeline-succeeds") &&
 				!cmd.Flags().Changed("auto-merge") &&
-				f.IO.IsOutputTTY() &&
+				f.IO().IsOutputTTY() &&
 				mr.Pipeline != nil &&
-				f.IO.PromptEnabled() &&
+				f.IO().PromptEnabled() &&
 				!opts.SkipPrompts {
 				_ = prompt.Confirm(&opts.SetAutoMerge, "Set auto-merge?", true)
 			}
 
-			if f.IO.IsOutputTTY() && !opts.SkipPrompts {
+			if f.IO().IsOutputTTY() && !opts.SkipPrompts {
 				if !opts.SquashBeforeMerge && !opts.RebaseBeforeMerge && opts.MergeCommitMessage == "" {
 					opts.MergeMethod, err = mergeMethodSurvey()
 					if err != nil {
@@ -131,7 +131,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 						if err != nil {
 							return err
 						}
-						mergeMessage, err = surveyext.Edit(editor, "*.md", mr.Title, f.IO.In, f.IO.StdOut, f.IO.StdErr, nil)
+						mergeMessage, err = surveyext.Edit(editor, "*.md", mr.Title, f.IO().In, f.IO().StdOut, f.IO().StdErr, nil)
 						if err != nil {
 							return err
 						}
@@ -148,7 +148,7 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 						}
 					}
 					if action == cmdutils.CancelAction {
-						fmt.Fprintln(f.IO.StdErr, "Cancelled.")
+						fmt.Fprintln(f.IO().StdErr, "Cancelled.")
 						return cmdutils.SilentError
 					}
 				}
@@ -169,8 +169,8 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 			}
 			if opts.SetAutoMerge && mr.Pipeline != nil {
 				if mr.Pipeline.Status == "canceled" || mr.Pipeline.Status == "failed" {
-					fmt.Fprintln(f.IO.StdOut, c.FailedIcon(), "Pipeline status:", mr.Pipeline.Status)
-					fmt.Fprintln(f.IO.StdOut, c.FailedIcon(), "Cannot perform merge action")
+					fmt.Fprintln(f.IO().StdOut, c.FailedIcon(), "Pipeline status:", mr.Pipeline.Status)
+					fmt.Fprintln(f.IO().StdOut, c.FailedIcon(), "Cannot perform merge action")
 					return cmdutils.SilentError
 				}
 				mergeOpts.MergeWhenPipelineSucceeds = gitlab.Ptr(true)
@@ -180,13 +180,13 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if opts.RebaseBeforeMerge {
-				err := mrutils.RebaseMR(f.IO, apiClient, repo, mr, nil)
+				err := mrutils.RebaseMR(f.IO(), apiClient, repo, mr, nil)
 				if err != nil {
 					return err
 				}
 			}
 
-			f.IO.StartSpinner("Merging merge request !%d.", mr.IID)
+			f.IO().StartSpinner("Merging merge request !%d.", mr.IID)
 
 			// Store the IID of the merge request here before overriding the `mr` variable
 			// inside the retry function, if the function fails at first the `mr` is replaced
@@ -219,19 +219,19 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			f.IO.StopSpinner("")
+			f.IO().StopSpinner("")
 			isMerged := true
 			if opts.SetAutoMerge {
 				if mr.Pipeline == nil {
-					fmt.Fprintln(f.IO.StdOut, c.WarnIcon(), "No pipeline running on", mr.SourceBranch)
+					fmt.Fprintln(f.IO().StdOut, c.WarnIcon(), "No pipeline running on", mr.SourceBranch)
 				} else {
 					switch mr.Pipeline.Status {
 					case "success":
-						fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Pipeline succeeded.")
+						fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Pipeline succeeded.")
 					default:
-						fmt.Fprintln(f.IO.StdOut, c.WarnIcon(), "Pipeline status:", mr.Pipeline.Status)
+						fmt.Fprintln(f.IO().StdOut, c.WarnIcon(), "Pipeline status:", mr.Pipeline.Status)
 						if mr.State != "merged" {
-							fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), "Will auto-merge")
+							fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Will auto-merge")
 							isMerged = false
 						}
 					}
@@ -245,9 +245,9 @@ func NewCmdMerge(f *cmdutils.Factory) *cobra.Command {
 				case MRMergeMethodSquash:
 					action = "Squashed and merged!"
 				}
-				fmt.Fprintln(f.IO.StdOut, c.GreenCheck(), action)
+				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), action)
 			}
-			fmt.Fprintln(f.IO.StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO.IsaTTY))
+			fmt.Fprintln(f.IO().StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
 			return nil
 		},
 	}

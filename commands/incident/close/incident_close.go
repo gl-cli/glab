@@ -8,6 +8,6 @@ import (
 	issuableCloseCmd "gitlab.com/gitlab-org/cli/commands/issuable/close"
 )
 
-func NewCmdClose(f *cmdutils.Factory) *cobra.Command {
+func NewCmdClose(f cmdutils.Factory) *cobra.Command {
 	return issuableCloseCmd.NewCmdClose(f, issuable.TypeIncident)
 }

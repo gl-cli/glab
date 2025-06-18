@@ -63,7 +63,7 @@ func extractFileVar(s string) (*gitlab.PipelineVariableOptions, error) {
 	return pvar, nil
 }
 
-func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
+func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 	openInBrowser := false
 
 	pipelineRunCmd := &cobra.Command{
@@ -151,7 +151,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 				c.Ref = gitlab.Ptr(currentBranch)
 			} else {
 				// `ci run` is running out of a git repo
-				fmt.Fprintln(f.IO.StdOut, "not in a Git repository. Using repository argument.")
+				fmt.Fprintln(f.IO().StdOut, "not in a Git repository. Using repository argument.")
 				c.Ref = gitlab.Ptr(ciutils.GetDefaultBranch(f))
 			}
 
@@ -163,8 +163,8 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			if openInBrowser { // open in browser if --web flag is specified
 				webURL := pipe.WebURL
 
-				if f.IO.IsOutputTTY() {
-					fmt.Fprintf(f.IO.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
+				if f.IO().IsOutputTTY() {
+					fmt.Fprintf(f.IO().StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
 				}
 
 				cfg, err := f.Config()
@@ -177,7 +177,7 @@ func NewCmdRun(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			output := fmt.Sprintf("Created pipeline (id: %d), status: %s, ref: %s, weburl: %s", pipe.ID, pipe.Status, pipe.Ref, pipe.WebURL)
-			fmt.Fprintln(f.IO.StdOut, output)
+			fmt.Fprintln(f.IO().StdOut, output)
 			return nil
 		},
 	}

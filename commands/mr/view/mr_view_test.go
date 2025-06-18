@@ -26,9 +26,10 @@ import (
 )
 
 var (
-	stubFactory *cmdutils.Factory
+	stubFactory cmdutils.Factory
 	stdout      *bytes.Buffer
 	stderr      *bytes.Buffer
+	io          *iostreams.IOStreams
 )
 
 func TestMain(m *testing.M) {
@@ -39,12 +40,10 @@ hosts:
     token: OTOKEN
 `, "")()
 
-	var io *iostreams.IOStreams
 	io, _, stdout, stderr = iostreams.Test()
-	stubFactory, _ = cmdtest.StubFactoryWithConfig("")
-	stubFactory.IO = io
-	stubFactory.IO.IsaTTY = true
-	stubFactory.IO.IsErrTTY = true
+	io.IsaTTY = true
+	io.IsErrTTY = true
+	stubFactory, _ = cmdtest.StubFactoryWithConfig("", io)
 
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
 	api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
@@ -185,8 +184,8 @@ func TestMRView(t *testing.T) {
 	})
 
 	t.Run("no_tty", func(t *testing.T) {
-		stubFactory.IO.IsaTTY = false
-		stubFactory.IO.IsErrTTY = false
+		io.IsaTTY = false
+		io.IsErrTTY = false
 
 		cmd := NewCmdView(stubFactory)
 		cmdutils.EnableRepoOverride(cmd, stubFactory)

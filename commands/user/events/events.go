@@ -13,7 +13,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
-func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
+func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "events",
 		Short: "View user events.",
@@ -43,10 +43,10 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			if err = f.IO.StartPager(); err != nil {
+			if err = f.IO().StartPager(); err != nil {
 				return err
 			}
-			defer f.IO.StopPager()
+			defer f.IO().StopPager()
 
 			outputFormat, err := cmd.Flags().GetString("output")
 			if err != nil {
@@ -58,7 +58,7 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 			}
 
 			if outputFormat == "json" {
-				return writeJSON(f.IO.StdOut, events)
+				return writeJSON(f.IO().StdOut, events)
 			}
 
 			if lb, _ := cmd.Flags().GetBool("all"); lb {
@@ -74,7 +74,7 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 				title := utils.NewListTitle("User events")
 				title.CurrentPageTotal = len(events)
 
-				DisplayAllEvents(f.IO.StdOut, events, projects)
+				DisplayAllEvents(f.IO().StdOut, events, projects)
 				return nil
 			}
 
@@ -83,7 +83,7 @@ func NewCmdEvents(f *cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			DisplayProjectEvents(f.IO.StdOut, events, project)
+			DisplayProjectEvents(f.IO().StdOut, events, project)
 			return nil
 		},
 	}

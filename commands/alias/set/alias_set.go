@@ -23,9 +23,10 @@ type SetOptions struct {
 	IO        *iostreams.IOStreams
 }
 
-func NewCmdSet(f *cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command {
+func NewCmdSet(f cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command {
 	opts := &SetOptions{
 		Config: f.Config,
+		IO:     f.IO(),
 	}
 
 	aliasSetCmd := &cobra.Command{
@@ -73,7 +74,6 @@ func NewCmdSet(f *cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command
 			opts.RootCmd = cmd.Root()
 			opts.Name = args[0]
 			opts.Expansion = args[1]
-			opts.IO = f.IO
 
 			if runF != nil {
 				return runF(opts)
