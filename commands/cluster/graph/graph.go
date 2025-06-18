@@ -161,6 +161,5 @@ func (o *options) defaultWatchRequest() ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("JSON marshal: %w", err)
 	}
-	fmt.Println(string(req))
 	return req, nil
 }
