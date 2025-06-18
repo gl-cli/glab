@@ -119,7 +119,16 @@ func (o *options) constructWatchRequest() ([]byte, error) {
 		return o.readWatchRequestFromStdin()
 	}
 
-	return o.defaultWatchRequest()
+	req, err := json.Marshal(&watchGraphWebSocketRequest{
+		Queries: o.defaultWatchQueries(),
+		Namespaces: &namespaces{
+			ObjectSelectorExpression: "name != 'kube-system'",
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("JSON marshal: %w", err)
+	}
+	return req, nil
 }
 
 func (o *options) readWatchRequestFromStdin() ([]byte, error) {
@@ -130,36 +139,27 @@ func (o *options) readWatchRequestFromStdin() ([]byte, error) {
 	return req, nil
 }
 
-func (o *options) defaultWatchRequest() ([]byte, error) {
-	req, err := json.Marshal(&watchGraphWebSocketRequest{
-		Queries: []query{
-			{
-				Include: &queryInclude{
-					ResourceSelectorExpression: "group == '' && version == 'v1' && (resource in ['pods', 'secrets', 'configmaps', 'serviceaccounts'])",
-				},
-			},
-			{
-				Include: &queryInclude{
-					ResourceSelectorExpression: "group == 'apps' && version == 'v1' && (resource in ['deployments', 'replicasets', 'daemonsets', 'statefulsets'])",
-				},
-			},
-			{
-				Include: &queryInclude{
-					ResourceSelectorExpression: "group == 'batch' && version == 'v1' && (resource in ['jobs', 'cronjobs'])",
-				},
-			},
-			{
-				Include: &queryInclude{
-					ResourceSelectorExpression: "group == 'rbac.authorization.k8s.io' && version == 'v1' && !(resource in ['clusterrolebindings', 'clusterroles'])",
-				},
+func (o *options) defaultWatchQueries() []query {
+	return []query{
+		{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == '' && version == 'v1' && (resource in ['pods', 'secrets', 'configmaps', 'serviceaccounts'])",
 			},
 		},
-		Namespaces: &namespaces{
-			ObjectSelectorExpression: "name != 'kube-system'",
+		{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'apps' && version == 'v1' && (resource in ['deployments', 'replicasets', 'daemonsets', 'statefulsets'])",
+			},
 		},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("JSON marshal: %w", err)
+		{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'batch' && version == 'v1' && (resource in ['jobs', 'cronjobs'])",
+			},
+		},
+		{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'rbac.authorization.k8s.io' && version == 'v1' && !(resource in ['clusterrolebindings', 'clusterroles'])",
+			},
+		},
 	}
-	return req, nil
 }
