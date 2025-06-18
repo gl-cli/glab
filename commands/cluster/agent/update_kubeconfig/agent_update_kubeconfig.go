@@ -45,6 +45,8 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 
 	opts := options{
 		io:           f.IO(),
+		httpClient:   f.HttpClient,
+		baseRepo:     f.BaseRepo,
 		configAccess: pathOptions,
 	}
 
@@ -54,11 +56,7 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 		Long: heredoc.Doc(`Update selected kubeconfig for use with a GitLab agent for Kubernetes.
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// We cannot copy these above - repo override doesn't work then.
-			// Let's hack around until some future refactoring :facepalm:
-			opts.httpClient = f.HttpClient
-			opts.baseRepo = f.BaseRepo
-			return opts.runUpdateKubeconfig()
+			return opts.run()
 		},
 	}
 	agentUpdateKubeconfigCmd.Flags().Int64VarP(&opts.agentID, flagAgent, "a", opts.agentID, "The numeric agent ID to create the kubeconfig entry for.")
@@ -70,7 +68,7 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 	return agentUpdateKubeconfigCmd
 }
 
-func (o *options) runUpdateKubeconfig() error {
+func (o *options) run() error {
 	apiClient, err := o.httpClient()
 	if err != nil {
 		return err

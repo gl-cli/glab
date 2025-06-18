@@ -18,17 +18,17 @@ type configExt interface {
 	Get(string, string) (string, error)
 }
 
-type CredentialOptions struct {
-	IO     *iostreams.IOStreams
-	Config func() (configExt, error)
+type options struct {
+	io     *iostreams.IOStreams
+	config func() (configExt, error)
 
-	Operation string
+	operation string
 }
 
-func NewCmdCredential(f cmdutils.Factory, runF func(*CredentialOptions) error) *cobra.Command {
-	opts := &CredentialOptions{
-		IO: f.IO(),
-		Config: func() (configExt, error) {
+func NewCmdCredential(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
+	opts := &options{
+		io: f.IO(),
+		config: func() (configExt, error) {
 			return f.Config()
 		},
 	}
@@ -39,31 +39,44 @@ func NewCmdCredential(f cmdutils.Factory, runF func(*CredentialOptions) error) *
 		Short:  "Implements Git credential helper manager.",
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.Operation = args[0]
+			opts.complete(args)
 
 			if runF != nil {
 				return runF(opts)
 			}
-			return helperRun(opts)
+
+			if err := opts.validate(); err != nil {
+				return err
+			}
+
+			return opts.run()
 		},
 	}
 
 	return cmd
 }
 
-func helperRun(opts *CredentialOptions) error {
-	if opts.Operation == "store" {
+func (o *options) complete(args []string) {
+	o.operation = args[0]
+}
+
+func (o *options) validate() error {
+	if o.operation == "store" {
 		// We pretend to implement the "store" operation, but do nothing since we already have a cached token.
 		return cmdutils.SilentError
 	}
 
-	if opts.Operation != "get" {
-		return fmt.Errorf("glab auth git-credential: %q is an invalid operation.", opts.Operation)
+	if o.operation != "get" {
+		return fmt.Errorf("glab auth git-credential: %q is an invalid operation.", o.operation)
 	}
 
+	return nil
+}
+
+func (o *options) run() error {
 	expectedParams := map[string]string{}
 
-	s := bufio.NewScanner(opts.IO.In)
+	s := bufio.NewScanner(o.io.In)
 	for s.Scan() {
 		line := s.Text()
 		if line == "" {
@@ -96,7 +109,7 @@ func helperRun(opts *CredentialOptions) error {
 		return cmdutils.SilentError
 	}
 
-	cfg, err := opts.Config()
+	cfg, err := o.config()
 	if err != nil {
 		return err
 	}
@@ -107,10 +120,10 @@ func helperRun(opts *CredentialOptions) error {
 		return cmdutils.SilentError
 	}
 
-	fmt.Fprintf(opts.IO.StdOut, "protocol=%s\n", expectedParams["protocol"])
-	fmt.Fprintf(opts.IO.StdOut, "host=%s\n", expectedParams["host"])
-	fmt.Fprintf(opts.IO.StdOut, "username=%s\n", tokenUser)
-	fmt.Fprintf(opts.IO.StdOut, "password=%s\n", gotToken)
+	fmt.Fprintf(o.io.StdOut, "protocol=%s\n", expectedParams["protocol"])
+	fmt.Fprintf(o.io.StdOut, "host=%s\n", expectedParams["host"])
+	fmt.Fprintf(o.io.StdOut, "username=%s\n", tokenUser)
+	fmt.Fprintf(o.io.StdOut, "password=%s\n", gotToken)
 
 	return nil
 }

@@ -28,33 +28,33 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
-type ApiOptions struct {
-	IO *iostreams.IOStreams
+type options struct {
+	io *iostreams.IOStreams
 
-	HttpClient func() (*gitlab.Client, error)
-	BaseRepo   func() (glrepo.Interface, error)
-	Branch     func() (string, error)
-	Config     config.Config
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
+	branch     func() (string, error)
+	config     config.Config
 
-	Hostname            string
-	RequestMethod       string
-	RequestMethodPassed bool
-	RequestPath         string
-	RequestInputFile    string
-	MagicFields         []string
-	RawFields           []string
-	RequestHeaders      []string
-	ShowResponseHeaders bool
-	Paginate            bool
-	Silent              bool
+	hostname            string
+	requestMethod       string
+	requestMethodPassed bool
+	requestPath         string
+	requestInputFile    string
+	magicFields         []string
+	rawFields           []string
+	requestHeaders      []string
+	showResponseHeaders bool
+	paginate            bool
+	silent              bool
 }
 
-func NewCmdApi(f cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command {
-	opts := ApiOptions{
-		IO:         f.IO(),
-		HttpClient: f.HttpClient,
-		BaseRepo:   f.BaseRepo,
-		Branch:     f.Branch,
+func NewCmdApi(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
+	opts := options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+		branch:     f.Branch,
 	}
 
 	cmd := &cobra.Command{
@@ -165,67 +165,78 @@ func NewCmdApi(f cmdutils.Factory, runF func(*ApiOptions) error) *cobra.Command 
 			`),
 		},
 		Args: cobra.ExactArgs(1),
-		RunE: func(c *cobra.Command, args []string) error {
-			opts.RequestPath = args[0]
-			opts.RequestMethodPassed = c.Flags().Changed("method")
-			opts.Config, _ = f.Config()
+		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.config, _ = f.Config()
 
-			if c.Flags().Changed("hostname") {
-				if err := glinstance.HostnameValidator(opts.Hostname); err != nil {
-					return &cmdutils.FlagError{Err: fmt.Errorf("error parsing --hostname: %w.", err)}
-				}
-			}
+			opts.complete(cmd, args)
 
-			if opts.Paginate && !strings.EqualFold(opts.RequestMethod, http.MethodGet) && opts.RequestPath != "graphql" {
-				return &cmdutils.FlagError{Err: errors.New(`the '--paginate' option is not supported for non-GET requests.`)}
-			}
-			if opts.Paginate && opts.RequestInputFile != "" {
-				return &cmdutils.FlagError{Err: errors.New(`the '--paginate' option is not supported with '--input'.`)}
+			if err := opts.validate(cmd); err != nil {
+				return err
 			}
 
 			if runF != nil {
 				return runF(&opts)
 			}
-			return apiRun(&opts)
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.Hostname, "hostname", "", "The GitLab hostname for the request. Defaults to \"gitlab.com\", or the authenticated host in the current Git directory.")
-	cmd.Flags().StringVarP(&opts.RequestMethod, "method", "X", "GET", "The HTTP method for the request.")
-	cmd.Flags().StringArrayVarP(&opts.MagicFields, "field", "F", nil, "Add a parameter of inferred type. Changes the default HTTP method to \"POST\".")
-	cmd.Flags().StringArrayVarP(&opts.RawFields, "raw-field", "f", nil, "Add a string parameter.")
-	cmd.Flags().StringArrayVarP(&opts.RequestHeaders, "header", "H", nil, "Add an additional HTTP request header.")
-	cmd.Flags().BoolVarP(&opts.ShowResponseHeaders, "include", "i", false, "Include HTTP response headers in the output.")
-	cmd.Flags().BoolVar(&opts.Paginate, "paginate", false, "Make additional HTTP requests to fetch all pages of results.")
-	cmd.Flags().StringVar(&opts.RequestInputFile, "input", "", "The file to use as the body for the HTTP request.")
-	cmd.Flags().BoolVar(&opts.Silent, "silent", false, "Do not print the response body.")
+	cmd.Flags().StringVar(&opts.hostname, "hostname", "", "The GitLab hostname for the request. Defaults to \"gitlab.com\", or the authenticated host in the current Git directory.")
+	cmd.Flags().StringVarP(&opts.requestMethod, "method", "X", "GET", "The HTTP method for the request.")
+	cmd.Flags().StringArrayVarP(&opts.magicFields, "field", "F", nil, "Add a parameter of inferred type. Changes the default HTTP method to \"POST\".")
+	cmd.Flags().StringArrayVarP(&opts.rawFields, "raw-field", "f", nil, "Add a string parameter.")
+	cmd.Flags().StringArrayVarP(&opts.requestHeaders, "header", "H", nil, "Add an additional HTTP request header.")
+	cmd.Flags().BoolVarP(&opts.showResponseHeaders, "include", "i", false, "Include HTTP response headers in the output.")
+	cmd.Flags().BoolVar(&opts.paginate, "paginate", false, "Make additional HTTP requests to fetch all pages of results.")
+	cmd.Flags().StringVar(&opts.requestInputFile, "input", "", "The file to use as the body for the HTTP request.")
+	cmd.Flags().BoolVar(&opts.silent, "silent", false, "Do not print the response body.")
+	cmd.MarkFlagsMutuallyExclusive("paginate", "input")
 	return cmd
 }
 
-func apiRun(opts *ApiOptions) error {
-	params, err := parseFields(opts)
+func (o *options) complete(cmd *cobra.Command, args []string) {
+	o.requestPath = args[0]
+	o.requestMethodPassed = cmd.Flags().Changed("method")
+}
+
+func (o *options) validate(cmd *cobra.Command) error {
+	if cmd.Flags().Changed("hostname") {
+		if err := glinstance.HostnameValidator(o.hostname); err != nil {
+			return &cmdutils.FlagError{Err: fmt.Errorf("error parsing --hostname: %w.", err)}
+		}
+	}
+
+	if o.paginate && !strings.EqualFold(o.requestMethod, http.MethodGet) && o.requestPath != "graphql" {
+		return &cmdutils.FlagError{Err: errors.New(`the '--paginate' option is not supported for non-GET requests.`)}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	params, err := parseFields(o)
 	if err != nil {
 		return err
 	}
-	isGraphQL := opts.RequestPath == "graphql"
-	requestPath, err := fillPlaceholders(opts.RequestPath, opts)
+	isGraphQL := o.requestPath == "graphql"
+	requestPath, err := fillPlaceholders(o.requestPath, o)
 	if err != nil {
 		return fmt.Errorf("unable to expand placeholder in path: %w", err)
 	}
-	method := opts.RequestMethod
-	requestHeaders := opts.RequestHeaders
+	method := o.requestMethod
+	requestHeaders := o.requestHeaders
 	var requestBody any = params
 
-	if !opts.RequestMethodPassed && (len(params) > 0 || opts.RequestInputFile != "") {
+	if !o.requestMethodPassed && (len(params) > 0 || o.requestInputFile != "") {
 		method = http.MethodPost
 	}
 
-	if opts.Paginate && !isGraphQL {
+	if o.paginate && !isGraphQL {
 		requestPath = addPerPage(requestPath, 100, params)
 	}
 
-	if opts.RequestInputFile != "" {
-		file, size, err := openUserFile(opts.RequestInputFile, opts.IO.In)
+	if o.requestInputFile != "" {
+		file, size, err := openUserFile(o.requestInputFile, o.io.In)
 		if err != nil {
 			return err
 		}
@@ -240,28 +251,28 @@ func apiRun(opts *ApiOptions) error {
 		}
 	}
 
-	httpClient, err := opts.HttpClient()
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	headersOutputStream := opts.IO.StdOut
-	if opts.Silent {
-		opts.IO.StdOut = io.Discard
+	headersOutputStream := o.io.StdOut
+	if o.silent {
+		o.io.StdOut = io.Discard
 	} else {
-		err := opts.IO.StartPager()
+		err := o.io.StartPager()
 		if err != nil {
 			return err
 		}
-		defer opts.IO.StopPager()
+		defer o.io.StopPager()
 	}
 
 	host := httpClient.BaseURL().Host
-	if opts.Hostname != "" {
-		host = opts.Hostname
+	if o.hostname != "" {
+		host = o.hostname
 	}
 
-	client, err := api.NewClientWithCfg(host, opts.Config, isGraphQL)
+	client, err := api.NewClientWithCfg(host, o.config, isGraphQL)
 	if err != nil {
 		return err
 	}
@@ -273,12 +284,12 @@ func apiRun(opts *ApiOptions) error {
 			return err
 		}
 
-		endCursor, err := processResponse(resp, opts, headersOutputStream)
+		endCursor, err := processResponse(resp, o, headersOutputStream)
 		if err != nil {
 			return err
 		}
 
-		if !opts.Paginate {
+		if !o.paginate {
 			break
 		}
 
@@ -291,18 +302,18 @@ func apiRun(opts *ApiOptions) error {
 			requestPath, hasNextPage = findNextPage(resp)
 		}
 
-		if hasNextPage && opts.ShowResponseHeaders {
-			fmt.Fprint(opts.IO.StdOut, "\n")
+		if hasNextPage && o.showResponseHeaders {
+			fmt.Fprint(o.io.StdOut, "\n")
 		}
 	}
 
 	return nil
 }
 
-func processResponse(resp *http.Response, opts *ApiOptions, headersOutputStream io.Writer) (endCursor string, err error) {
-	if opts.ShowResponseHeaders {
+func processResponse(resp *http.Response, opts *options, headersOutputStream io.Writer) (endCursor string, err error) {
+	if opts.showResponseHeaders {
 		fmt.Fprintln(headersOutputStream, resp.Proto, resp.Status)
-		printHeaders(headersOutputStream, resp.Header, opts.IO.ColorEnabled())
+		printHeaders(headersOutputStream, resp.Header, opts.io.ColorEnabled())
 		fmt.Fprint(headersOutputStream, "\r\n")
 	}
 
@@ -314,7 +325,7 @@ func processResponse(resp *http.Response, opts *ApiOptions, headersOutputStream 
 	isJSON, _ := regexp.MatchString(`[/+]json(;|$)`, resp.Header.Get("Content-Type"))
 
 	var serverError string
-	if isJSON && (opts.RequestPath == "graphql" || resp.StatusCode >= http.StatusBadRequest) {
+	if isJSON && (opts.requestPath == "graphql" || resp.StatusCode >= http.StatusBadRequest) {
 		responseBody, serverError, err = parseErrorResponse(responseBody, resp.StatusCode)
 		if err != nil {
 			return
@@ -322,32 +333,32 @@ func processResponse(resp *http.Response, opts *ApiOptions, headersOutputStream 
 	}
 
 	var bodyCopy *bytes.Buffer
-	isGraphQLPaginate := isJSON && resp.StatusCode == http.StatusOK && opts.Paginate && opts.RequestPath == "graphql"
+	isGraphQLPaginate := isJSON && resp.StatusCode == http.StatusOK && opts.paginate && opts.requestPath == "graphql"
 	if isGraphQLPaginate {
 		bodyCopy = &bytes.Buffer{}
 		responseBody = io.TeeReader(responseBody, bodyCopy)
 	}
 
-	if isJSON && opts.IO.ColorEnabled() {
+	if isJSON && opts.io.ColorEnabled() {
 		out := &bytes.Buffer{}
 		_, err = io.Copy(out, responseBody)
 		if err == nil {
 			result := jsonPretty.Color(jsonPretty.Pretty(out.Bytes()), nil)
-			_, err = fmt.Fprintln(opts.IO.StdOut, string(result))
+			_, err = fmt.Fprintln(opts.io.StdOut, string(result))
 		}
 	} else {
-		_, err = io.Copy(opts.IO.StdOut, responseBody)
+		_, err = io.Copy(opts.io.StdOut, responseBody)
 	}
 	if err != nil {
 		return
 	}
 
 	if serverError != "" {
-		fmt.Fprintf(opts.IO.StdErr, "glab: %s\n", serverError)
+		fmt.Fprintf(opts.io.StdErr, "glab: %s\n", serverError)
 		err = cmdutils.SilentError
 		return
 	} else if resp.StatusCode > 299 {
-		fmt.Fprintf(opts.IO.StdErr, "glab: HTTP %d\n", resp.StatusCode)
+		fmt.Fprintf(opts.io.StdErr, "glab: HTTP %d\n", resp.StatusCode)
 		err = cmdutils.SilentError
 		return
 	}
@@ -362,12 +373,12 @@ func processResponse(resp *http.Response, opts *ApiOptions, headersOutputStream 
 var placeholderRE = regexp.MustCompile(`:(group/:namespace/:repo|namespace/:repo|fullpath|id|user|username|group|namespace|repo|branch)\b`)
 
 // fillPlaceholders populates `:namespace` and `:repo` placeholders with values from the current repository
-func fillPlaceholders(value string, opts *ApiOptions) (string, error) {
+func fillPlaceholders(value string, opts *options) (string, error) {
 	if !placeholderRE.MatchString(value) {
 		return value, nil
 	}
 
-	baseRepo, err := opts.BaseRepo()
+	baseRepo, err := opts.baseRepo()
 	if err != nil {
 		return value, err
 	}
@@ -375,7 +386,7 @@ func fillPlaceholders(value string, opts *ApiOptions) (string, error) {
 	filled := placeholderRE.ReplaceAllStringFunc(value, func(m string) string {
 		switch m {
 		case ":id":
-			h, _ := opts.HttpClient()
+			h, _ := opts.httpClient()
 			project, e := baseRepo.Project(h)
 			if e == nil && project != nil {
 				return strconv.Itoa(project.ID)
@@ -389,7 +400,7 @@ func fillPlaceholders(value string, opts *ApiOptions) (string, error) {
 		case ":group":
 			return baseRepo.RepoGroup()
 		case ":user", ":username":
-			h, _ := opts.HttpClient()
+			h, _ := opts.httpClient()
 			u, e := api.CurrentUser(h)
 			if e == nil && u != nil {
 				return u.Username
@@ -401,7 +412,7 @@ func fillPlaceholders(value string, opts *ApiOptions) (string, error) {
 		case ":repo":
 			return baseRepo.RepoName()
 		case ":branch":
-			branch, e := opts.Branch()
+			branch, e := opts.branch()
 			if e != nil {
 				err = e
 			}
@@ -439,16 +450,16 @@ func printHeaders(w io.Writer, headers http.Header, colorize bool) {
 	}
 }
 
-func parseFields(opts *ApiOptions) (map[string]any, error) {
+func parseFields(opts *options) (map[string]any, error) {
 	params := make(map[string]any)
-	for _, f := range opts.RawFields {
+	for _, f := range opts.rawFields {
 		key, value, err := parseField(f)
 		if err != nil {
 			return params, err
 		}
 		params[key] = value
 	}
-	for _, f := range opts.MagicFields {
+	for _, f := range opts.magicFields {
 		key, strValue, err := parseField(f)
 		if err != nil {
 			return params, err
@@ -470,9 +481,9 @@ func parseField(f string) (string, string, error) {
 	return f[0:idx], f[idx+1:], nil
 }
 
-func magicFieldValue(v string, opts *ApiOptions) (any, error) {
+func magicFieldValue(v string, opts *options) (any, error) {
 	if strings.HasPrefix(v, "@") {
-		return readUserFile(v[1:], opts.IO.In)
+		return readUserFile(v[1:], opts.io.In)
 	}
 
 	if n, err := strconv.Atoi(v); err == nil {

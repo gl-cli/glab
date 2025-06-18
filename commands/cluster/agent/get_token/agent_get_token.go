@@ -31,7 +31,10 @@ type options struct {
 }
 
 func NewCmdAgentGetToken(f cmdutils.Factory) *cobra.Command {
-	var opts options
+	opts := options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+	}
 	desc := "Create and return a k8s_proxy-scoped personal access token to authenticate with a GitLab Agents for Kubernetes."
 	agentGetTokenCmd := &cobra.Command{
 		Use:   "get-token [flags]",
@@ -42,10 +45,6 @@ This command creates a personal access token that is valid until the end of the 
 You might receive an email from your GitLab instance that a new personal access token has been created.
 `, desc),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// We cannot copy these above - repo override doesn't work then.
-			// Let's hack around until some future refactoring :facepalm:
-			opts.httpClient = f.HttpClient
-			opts.io = f.IO() // TODO move into the struct literal after factory refactoring
 			return opts.run()
 		},
 	}

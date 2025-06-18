@@ -33,18 +33,19 @@ type publishToCatalogResponse struct {
 	CatalogUrl string `json:"catalog_url"`
 }
 
-type Options struct {
-	TagName string
+type options struct {
+	tagName string
 
-	HTTPClient func() (*gitlab.Client, error)
-	BaseRepo   func() (glrepo.Interface, error)
-	IO         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
+	io         *iostreams.IOStreams
 }
 
 func NewCmdPublishCatalog(f cmdutils.Factory) *cobra.Command {
-	opts := &Options{
-		IO:       f.IO(),
-		BaseRepo: f.BaseRepo,
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 	publishCatalogCmd := &cobra.Command{
 		Use:   "catalog <tag-name>",
@@ -73,44 +74,52 @@ func NewCmdPublishCatalog(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
+			opts.complete(args)
 
-			repo, err := opts.BaseRepo()
-			if err != nil {
-				return err
-			}
-			apiClient, err := opts.HTTPClient()
-			if err != nil {
-				return err
-			}
-			opts.TagName = args[0]
-			_, _, err = apiClient.Tags.GetTag(repo.FullName(), opts.TagName)
-			if err != nil {
-				return &cmdutils.FlagError{Err: fmt.Errorf("Invalid tag %s.", opts.TagName)}
-			}
-
-			return Publish(opts.IO, apiClient, repo.FullName(), opts.TagName)
+			return opts.run()
 		},
 	}
 
 	return publishCatalogCmd
 }
 
-func Publish(io *iostreams.IOStreams, client *gitlab.Client, repoName string, tagName string) error {
+func (o *options) complete(args []string) {
+	o.tagName = args[0]
+}
+
+func (o *options) run() error {
+	repo, err := o.baseRepo()
+	if err != nil {
+		return err
+	}
+
+	client, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+
+	_, _, err = client.Tags.GetTag(repo.FullName(), o.tagName)
+	if err != nil {
+		return &cmdutils.FlagError{Err: fmt.Errorf("Invalid tag %s.", o.tagName)}
+	}
+
+	return Publish(o.io, client, repo.FullName(), o.tagName)
+}
+
+func Publish(io *iostreams.IOStreams, client *gitlab.Client, repoFullName string, tagName string) error {
 	color := io.Color()
 
 	io.Logf("%s Publishing release %s=%s to the GitLab CI/CD catalog for %s=%s...\n",
 		color.ProgressIcon(),
 		color.Blue("tag"), tagName,
-		color.Blue("repo"), repoName)
+		color.Blue("repo"), repoFullName)
 
 	body, err := publishToCatalogRequestBody(tagName)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to create a request body.")
 	}
 
-	path := fmt.Sprintf(publishToCatalogApiPath, url.PathEscape(repoName))
+	path := fmt.Sprintf(publishToCatalogApiPath, url.PathEscape(repoFullName))
 	request, err := client.NewRequest(http.MethodPost, path, body, nil)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to create a request.")

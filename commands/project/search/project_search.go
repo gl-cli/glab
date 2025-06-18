@@ -15,18 +15,19 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-type Options struct {
-	PerPage      int
-	Page         int
-	Search       string
-	OutputFormat string
-	HTTPClient   func() (*gitlab.Client, error)
-	IO           *iostreams.IOStreams
+type options struct {
+	perPage      int
+	page         int
+	search       string
+	outputFormat string
+	httpClient   func() (*gitlab.Client, error)
+	io           *iostreams.IOStreams
 }
 
 func NewCmdSearch(f cmdutils.Factory) *cobra.Command {
-	opts := &Options{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
 	}
 
 	projectSearchCmd := &cobra.Command{
@@ -42,61 +43,62 @@ func NewCmdSearch(f cmdutils.Factory) *cobra.Command {
 			$ glab project lookup -s "title"
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-			apiClient, err := opts.HTTPClient()
-			if err != nil {
-				return err
-			}
-			search := opts.Search
-			page := opts.Page
-			perPage := opts.PerPage
+			opts.httpClient = f.HttpClient
 
-			listOpts := gitlab.ListOptions{
-				Page:    page,
-				PerPage: perPage,
-			}
-			projects, _, err := apiClient.Search.Projects(search, &gitlab.SearchOptions{ListOptions: listOpts})
-			if err != nil {
-				return err
-			}
-			if opts.OutputFormat == "json" {
-				projectListJSON, err := json.Marshal(projects)
-				if err != nil {
-					return err
-				}
-				fmt.Fprintln(opts.IO.StdOut, string(projectListJSON))
-				return nil
-			}
-			title := fmt.Sprintf("Showing results for \"%s\"", search)
-			if len(projects) == 0 {
-				title = fmt.Sprintf("No results found for \"%s\"", search)
-			}
-			table := tableprinter.NewTablePrinter()
-			table.Wrap = true
-			for _, p := range projects {
-				table.AddCell(opts.IO.Color().Green(fmt.Sprintf("%d", p.ID)))
-
-				var description string
-				if p.Description != "" {
-					description = fmt.Sprintf("\n%s", opts.IO.Color().Cyan(p.Description))
-				}
-
-				table.AddCellf("%s%s\n%s", p.PathWithNamespace, description, opts.IO.Color().Gray(p.WebURL))
-				table.AddCellf("%d stars %d forks %d issues", p.StarCount, p.ForksCount, p.OpenIssuesCount)
-				table.AddCellf("updated %s", utils.TimeToPrettyTimeAgo(*p.LastActivityAt))
-				table.EndRow()
-			}
-
-			fmt.Fprintf(f.IO().StdOut, "%s\n%s\n", title, table.Render())
-			return nil
+			return opts.run()
 		},
 	}
 
-	projectSearchCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
-	projectSearchCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 20, "Number of items to list per page.")
-	projectSearchCmd.Flags().StringVarP(&opts.Search, "search", "s", "", "A string contained in the project name.")
-	projectSearchCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
-	_ = projectSearchCmd.MarkFlagRequired("Search.")
+	projectSearchCmd.Flags().IntVarP(&opts.page, "page", "p", 1, "Page number.")
+	projectSearchCmd.Flags().IntVarP(&opts.perPage, "per-page", "P", 20, "Number of items to list per page.")
+	projectSearchCmd.Flags().StringVarP(&opts.search, "search", "s", "", "A string contained in the project name.")
+	projectSearchCmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json.")
+	cobra.CheckErr(projectSearchCmd.MarkFlagRequired("search"))
 
 	return projectSearchCmd
+}
+
+func (o *options) run() error {
+	apiClient, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+	listOpts := gitlab.ListOptions{
+		Page:    o.page,
+		PerPage: o.perPage,
+	}
+	projects, _, err := apiClient.Search.Projects(o.search, &gitlab.SearchOptions{ListOptions: listOpts})
+	if err != nil {
+		return err
+	}
+	if o.outputFormat == "json" {
+		projectListJSON, err := json.Marshal(projects)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(o.io.StdOut, string(projectListJSON))
+		return nil
+	}
+	title := fmt.Sprintf("Showing results for \"%s\"", o.search)
+	if len(projects) == 0 {
+		title = fmt.Sprintf("No results found for \"%s\"", o.search)
+	}
+	table := tableprinter.NewTablePrinter()
+	table.Wrap = true
+	for _, p := range projects {
+		table.AddCell(o.io.Color().Green(fmt.Sprintf("%d", p.ID)))
+
+		var description string
+		if p.Description != "" {
+			description = fmt.Sprintf("\n%s", o.io.Color().Cyan(p.Description))
+		}
+
+		table.AddCellf("%s%s\n%s", p.PathWithNamespace, description, o.io.Color().Gray(p.WebURL))
+		table.AddCellf("%d stars %d forks %d issues", p.StarCount, p.ForksCount, p.OpenIssuesCount)
+		table.AddCellf("updated %s", utils.TimeToPrettyTimeAgo(*p.LastActivityAt))
+		table.EndRow()
+	}
+
+	fmt.Fprintf(o.io.StdOut, "%s\n%s\n", title, table.Render())
+	return nil
 }

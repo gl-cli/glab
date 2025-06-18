@@ -21,7 +21,11 @@ type options struct {
 }
 
 func NewCmdAgentList(f cmdutils.Factory) *cobra.Command {
-	var opts options
+	opts := options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+	}
 	agentListCmd := &cobra.Command{
 		Use:     "list [flags]",
 		Short:   `List GitLab Agents for Kubernetes in a project.`,
@@ -29,11 +33,6 @@ func NewCmdAgentList(f cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"ls"},
 		Args:    cobra.MaximumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// We cannot copy these above - repo override doesn't work then.
-			// Let's hack around until some future refactoring :facepalm:
-			opts.httpClient = f.HttpClient
-			opts.baseRepo = f.BaseRepo
-			opts.io = f.IO() // TODO move into the struct literal after factory refactoring
 			return opts.run()
 		},
 	}

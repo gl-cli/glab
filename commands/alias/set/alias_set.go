@@ -14,19 +14,20 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
-type SetOptions struct {
-	Config    func() (config.Config, error)
-	Name      string
-	Expansion string
-	IsShell   bool
-	RootCmd   *cobra.Command
-	IO        *iostreams.IOStreams
+type options struct {
+	io     *iostreams.IOStreams
+	config func() (config.Config, error)
+
+	name      string
+	expansion string
+	isShell   bool
+	rootCmd   *cobra.Command
 }
 
-func NewCmdSet(f cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command {
-	opts := &SetOptions{
-		Config: f.Config,
-		IO:     f.IO(),
+func NewCmdSet(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
+	opts := &options{
+		config: f.Config,
+		io:     f.IO(),
 	}
 
 	aliasSetCmd := &cobra.Command{
@@ -71,23 +72,27 @@ func NewCmdSet(f cmdutils.Factory, runF func(*SetOptions) error) *cobra.Command 
 	`),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.RootCmd = cmd.Root()
-			opts.Name = args[0]
-			opts.Expansion = args[1]
+			opts.complete(cmd, args)
 
 			if runF != nil {
 				return runF(opts)
 			}
-			return setRun(cmd, opts)
+			return opts.run()
 		},
 	}
-	aliasSetCmd.Flags().BoolVarP(&opts.IsShell, "shell", "s", false, "Declare an alias to be passed through a shell interpreter.")
+	aliasSetCmd.Flags().BoolVarP(&opts.isShell, "shell", "s", false, "Declare an alias to be passed through a shell interpreter.")
 	return aliasSetCmd
 }
 
-func setRun(cmd *cobra.Command, opts *SetOptions) error {
-	c := opts.IO.Color()
-	cfg, err := opts.Config()
+func (o *options) complete(cmd *cobra.Command, args []string) {
+	o.rootCmd = cmd.Root()
+	o.name = args[0]
+	o.expansion = args[1]
+}
+
+func (o *options) run() error {
+	c := o.io.Color()
+	cfg, err := o.config()
 	if err != nil {
 		return err
 	}
@@ -97,41 +102,41 @@ func setRun(cmd *cobra.Command, opts *SetOptions) error {
 		return err
 	}
 
-	if opts.IO.IsaTTY && opts.IO.IsErrTTY {
-		fmt.Fprintf(opts.IO.StdErr, "- Adding alias for %s: %s.\n", c.Bold(opts.Name), c.Bold(opts.Expansion))
+	if o.io.IsaTTY && o.io.IsErrTTY {
+		fmt.Fprintf(o.io.StdErr, "- Adding alias for %s: %s.\n", c.Bold(o.name), c.Bold(o.expansion))
 	}
 
-	expansion := opts.Expansion
-	isShell := opts.IsShell
+	expansion := o.expansion
+	isShell := o.isShell
 	if isShell && !strings.HasPrefix(expansion, "!") {
 		expansion = "!" + expansion
 	}
 	isShell = strings.HasPrefix(expansion, "!")
 
-	if validCommand(opts.RootCmd, opts.Name) {
-		return fmt.Errorf("could not create alias: %q is already a glab command.", opts.Name)
+	if validCommand(o.rootCmd, o.name) {
+		return fmt.Errorf("could not create alias: %q is already a glab command.", o.name)
 	}
 
-	if !isShell && !validCommand(opts.RootCmd, expansion) {
+	if !isShell && !validCommand(o.rootCmd, expansion) {
 		return fmt.Errorf("could not create alias: %s does not correspond to a glab command.", expansion)
 	}
 
 	successMsg := fmt.Sprintf("%s Added alias.", c.Green("✓"))
-	if oldExpansion, ok := aliasCfg.Get(opts.Name); ok {
+	if oldExpansion, ok := aliasCfg.Get(o.name); ok {
 		successMsg = fmt.Sprintf("%s Changed alias %s from %s to %s.",
 			c.Green("✓"),
-			c.Bold(opts.Name),
+			c.Bold(o.name),
 			c.Bold(oldExpansion),
 			c.Bold(expansion),
 		)
 	}
 
-	err = aliasCfg.Set(opts.Name, expansion)
+	err = aliasCfg.Set(o.name, expansion)
 	if err != nil {
 		return fmt.Errorf("could not create alias: %s", err)
 	}
 
-	fmt.Fprintln(opts.IO.StdErr, successMsg)
+	fmt.Fprintln(o.io.StdErr, successMsg)
 	return nil
 }
 

@@ -21,31 +21,31 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
-type CloneOptions struct {
-	GroupName         string
-	IncludeSubgroups  bool
-	PreserveNamespace bool
-	WithMREnabled     bool
-	WithIssuesEnabled bool
-	WithShared        bool
-	Archived          bool
-	ArchivedSet       bool
-	Visibility        string
-	Owned             bool
-	GitFlags          []string
-	Dir               string
-	Host              string
-	Protocol          string
+type options struct {
+	groupName         string
+	includeSubgroups  bool
+	preserveNamespace bool
+	withMREnabled     bool
+	withIssuesEnabled bool
+	withShared        bool
+	archived          bool
+	archivedSet       bool
+	visibility        string
+	owned             bool
+	gitFlags          []string
+	dir               string
+	host              string
+	protocol          string
 
-	Page     int
-	PerPage  int
-	Paginate bool
+	page     int
+	perPage  int
+	paginate bool
 
-	IO        *iostreams.IOStreams
-	APIClient *api.Client
-	Config    func() (config.Config, error)
+	io        *iostreams.IOStreams
+	apiClient *api.Client
+	config    func() (config.Config, error)
 
-	CurrentUser *gitlab.User
+	currentUser *gitlab.User
 }
 
 type ContextOpts struct {
@@ -53,11 +53,11 @@ type ContextOpts struct {
 	Repo    string
 }
 
-func NewCmdClone(f cmdutils.Factory, runE func(*CloneOptions, *ContextOpts) error) *cobra.Command {
-	opts := &CloneOptions{
-		GitFlags: []string{},
-		IO:       f.IO(),
-		Config:   f.Config,
+func NewCmdClone(f cmdutils.Factory, runE func(*options, *ContextOpts) error) *cobra.Command {
+	opts := &options{
+		gitFlags: []string{},
+		io:       f.IO(),
+		config:   f.Config,
 	}
 
 	ctxOpts := &ContextOpts{}
@@ -100,20 +100,20 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Move arguments after "--" to gitFlags
 			if dashPos := cmd.ArgsLenAtDash(); dashPos != -1 {
-				opts.GitFlags = args[dashPos:]
+				opts.gitFlags = args[dashPos:]
 				args = args[:dashPos]
 			}
 			dbg.Debug("Args:", strings.Join(args, " "))
-			dbg.Debug("GitFlags:", strings.Join(opts.GitFlags, " "))
+			dbg.Debug("GitFlags:", strings.Join(opts.gitFlags, " "))
 			if nArgs := len(args); nArgs > 0 {
 				ctxOpts.Repo = args[0]
-				if nArgs > 1 && !opts.PreserveNamespace {
-					opts.Dir = args[1]
+				if nArgs > 1 && !opts.preserveNamespace {
+					opts.dir = args[1]
 				}
 			}
-			dbg.Debug("Dir:", opts.Dir)
+			dbg.Debug("Dir:", opts.dir)
 
-			if ctxOpts.Repo == "" && opts.GroupName == "" {
+			if ctxOpts.Repo == "" && opts.groupName == "" {
 				return &cmdutils.FlagError{Err: fmt.Errorf("Specify repository argument, or use the --group flag to specify a group to clone all repos from the group.")}
 			}
 
@@ -121,26 +121,26 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 				return runE(opts, ctxOpts)
 			}
 
-			opts.Host = glinstance.OverridableDefault()
-			opts.ArchivedSet = cmd.Flags().Changed("archived")
+			opts.host = glinstance.OverridableDefault()
+			opts.archivedSet = cmd.Flags().Changed("archived")
 
-			cfg, err := opts.Config()
+			cfg, err := opts.config()
 			if err != nil {
 				return err
 			}
-			opts.APIClient, err = api.NewClientWithCfg(opts.Host, cfg, false)
-			if err != nil {
-				return err
-			}
-
-			opts.CurrentUser, err = api.CurrentUser(opts.APIClient.Lab())
+			opts.apiClient, err = api.NewClientWithCfg(opts.host, cfg, false)
 			if err != nil {
 				return err
 			}
 
-			opts.Protocol, _ = cfg.Get(opts.Host, "git_protocol")
+			opts.currentUser, err = api.CurrentUser(opts.apiClient.Lab())
+			if err != nil {
+				return err
+			}
 
-			if opts.GroupName != "" {
+			opts.protocol, _ = cfg.Get(opts.host, "git_protocol")
+
+			if opts.groupName != "" {
 				return groupClone(opts, ctxOpts)
 			}
 
@@ -148,18 +148,18 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 		},
 	}
 
-	repoCloneCmd.Flags().StringVarP(&opts.GroupName, "group", "g", "", "Specify the group to clone repositories from.")
-	repoCloneCmd.Flags().BoolVarP(&opts.PreserveNamespace, "preserve-namespace", "p", false, "Clone the repository in a subdirectory based on namespace.")
-	repoCloneCmd.Flags().BoolVarP(&opts.Archived, "archived", "a", false, "Limit by archived status. Use with '-a=false' to exclude archived repositories. Used with the --group flag.")
-	repoCloneCmd.Flags().BoolVarP(&opts.IncludeSubgroups, "include-subgroups", "G", true, "Include projects in subgroups of this group. Default is true. Used with the --group flag.")
-	repoCloneCmd.Flags().BoolVarP(&opts.Owned, "mine", "m", false, "Limit by projects in the group owned by the current authenticated user. Used with the --group flag.")
-	repoCloneCmd.Flags().StringVarP(&opts.Visibility, "visibility", "v", "", "Limit by visibility: public, internal, private. Used with the --group flag.")
-	repoCloneCmd.Flags().BoolVarP(&opts.WithIssuesEnabled, "with-issues-enabled", "I", false, "Limit by projects with the issues feature enabled. Default is false. Used with the --group flag.")
-	repoCloneCmd.Flags().BoolVarP(&opts.WithMREnabled, "with-mr-enabled", "M", false, "Limit by projects with the merge request feature enabled. Default is false. Used with the --group flag.")
-	repoCloneCmd.Flags().BoolVarP(&opts.WithShared, "with-shared", "S", true, "Include projects shared to this group. Default is true. Used with the --group flag.")
-	repoCloneCmd.Flags().BoolVarP(&opts.Paginate, "paginate", "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects --per-page.")
-	repoCloneCmd.Flags().IntVarP(&opts.Page, "page", "", 1, "Page number.")
-	repoCloneCmd.Flags().IntVarP(&opts.PerPage, "per-page", "", 30, "Number of items to list per page.")
+	repoCloneCmd.Flags().StringVarP(&opts.groupName, "group", "g", "", "Specify the group to clone repositories from.")
+	repoCloneCmd.Flags().BoolVarP(&opts.preserveNamespace, "preserve-namespace", "p", false, "Clone the repository in a subdirectory based on namespace.")
+	repoCloneCmd.Flags().BoolVarP(&opts.archived, "archived", "a", false, "Limit by archived status. Use with '-a=false' to exclude archived repositories. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.includeSubgroups, "include-subgroups", "G", true, "Include projects in subgroups of this group. Default is true. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.owned, "mine", "m", false, "Limit by projects in the group owned by the current authenticated user. Used with the --group flag.")
+	repoCloneCmd.Flags().StringVarP(&opts.visibility, "visibility", "v", "", "Limit by visibility: public, internal, private. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.withIssuesEnabled, "with-issues-enabled", "I", false, "Limit by projects with the issues feature enabled. Default is false. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.withMREnabled, "with-mr-enabled", "M", false, "Limit by projects with the merge request feature enabled. Default is false. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.withShared, "with-shared", "S", true, "Include projects shared to this group. Default is true. Used with the --group flag.")
+	repoCloneCmd.Flags().BoolVarP(&opts.paginate, "paginate", "", false, "Make additional HTTP requests to fetch all pages of projects before cloning. Respects --per-page.")
+	repoCloneCmd.Flags().IntVarP(&opts.page, "page", "", 1, "Page number.")
+	repoCloneCmd.Flags().IntVarP(&opts.perPage, "per-page", "", 30, "Number of items to list per page.")
 
 	repoCloneCmd.Flags().SortFlags = false
 	repoCloneCmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
@@ -172,64 +172,64 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 	return repoCloneCmd
 }
 
-func listProjects(opts *CloneOptions, ListGroupProjectOpts *gitlab.ListGroupProjectsOptions) ([]*gitlab.Project, error) {
+func listProjects(opts *options, ListGroupProjectOpts *gitlab.ListGroupProjectsOptions) ([]*gitlab.Project, error) {
 	var projects []*gitlab.Project
 	hasRemaining := true
 
 	for hasRemaining {
-		currentPage, resp, err := api.ListGroupProjects(opts.APIClient.Lab(), opts.GroupName, ListGroupProjectOpts)
+		currentPage, resp, err := api.ListGroupProjects(opts.apiClient.Lab(), opts.groupName, ListGroupProjectOpts)
 		if err != nil {
 			return nil, err
 		}
 		if len(currentPage) == 0 {
-			fmt.Fprintf(opts.IO.StdErr, "Group %q does not have any projects.\n", opts.GroupName)
+			fmt.Fprintf(opts.io.StdErr, "Group %q does not have any projects.\n", opts.groupName)
 			return nil, cmdutils.SilentError
 		}
 
 		projects = append(projects, currentPage...)
 
 		ListGroupProjectOpts.Page = resp.NextPage
-		hasRemaining = opts.Paginate && resp.CurrentPage != resp.TotalPages
+		hasRemaining = opts.paginate && resp.CurrentPage != resp.TotalPages
 	}
 
 	return projects, nil
 }
 
-func groupClone(opts *CloneOptions, ctxOpts *ContextOpts) error {
-	c := opts.IO.Color()
+func groupClone(opts *options, ctxOpts *ContextOpts) error {
+	c := opts.io.Color()
 	ListGroupProjectOpts := &gitlab.ListGroupProjectsOptions{}
-	if !opts.WithShared {
+	if !opts.withShared {
 		ListGroupProjectOpts.WithShared = gitlab.Ptr(false)
 	}
-	if opts.WithMREnabled {
+	if opts.withMREnabled {
 		ListGroupProjectOpts.WithMergeRequestsEnabled = gitlab.Ptr(true)
 	}
-	if opts.WithIssuesEnabled {
+	if opts.withIssuesEnabled {
 		ListGroupProjectOpts.WithIssuesEnabled = gitlab.Ptr(true)
 	}
-	if opts.Owned {
+	if opts.owned {
 		ListGroupProjectOpts.Owned = gitlab.Ptr(true)
 	}
-	if opts.ArchivedSet {
-		ListGroupProjectOpts.Archived = gitlab.Ptr(opts.Archived)
+	if opts.archivedSet {
+		ListGroupProjectOpts.Archived = gitlab.Ptr(opts.archived)
 	}
-	if opts.IncludeSubgroups {
+	if opts.includeSubgroups {
 		includeSubGroups := true
 		ListGroupProjectOpts.IncludeSubGroups = &includeSubGroups
 	}
-	if opts.Visibility != "" {
-		ListGroupProjectOpts.Visibility = gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility))
+	if opts.visibility != "" {
+		ListGroupProjectOpts.Visibility = gitlab.Ptr(gitlab.VisibilityValue(opts.visibility))
 	}
 
 	ListGroupProjectOpts.PerPage = 100
-	if opts.Paginate {
+	if opts.paginate {
 		ListGroupProjectOpts.PerPage = 30
 	}
-	if opts.PerPage != 0 {
-		ListGroupProjectOpts.PerPage = opts.PerPage
+	if opts.perPage != 0 {
+		ListGroupProjectOpts.PerPage = opts.perPage
 	}
-	if opts.Page != 0 {
-		ListGroupProjectOpts.Page = opts.Page
+	if opts.page != 0 {
+		ListGroupProjectOpts.Page = opts.page
 	}
 
 	projects, err := listProjects(opts, ListGroupProjectOpts)
@@ -248,7 +248,7 @@ func groupClone(opts *CloneOptions, ctxOpts *ContextOpts) error {
 
 	// Print error/success msgs in human-readable formats
 	for _, out := range finalOutput {
-		fmt.Fprintln(opts.IO.StdOut, out)
+		fmt.Fprintln(opts.io.StdOut, out)
 	}
 	if err != nil { // if any error came up
 		return cmdutils.SilentError
@@ -256,31 +256,31 @@ func groupClone(opts *CloneOptions, ctxOpts *ContextOpts) error {
 	return nil
 }
 
-func cloneRun(opts *CloneOptions, ctxOpts *ContextOpts) (err error) {
+func cloneRun(opts *options, ctxOpts *ContextOpts) (err error) {
 	if !git.IsValidURL(ctxOpts.Repo) {
 		// Assuming that repo is a project ID if it is an integer
 		if _, err := strconv.ParseInt(ctxOpts.Repo, 10, 64); err != nil {
 			// Assuming that "/" in the project name means its owned by an organisation
 			if !strings.Contains(ctxOpts.Repo, "/") {
-				ctxOpts.Repo = fmt.Sprintf("%s/%s", opts.CurrentUser.Username, ctxOpts.Repo)
+				ctxOpts.Repo = fmt.Sprintf("%s/%s", opts.currentUser.Username, ctxOpts.Repo)
 			}
 		}
 		if ctxOpts.Project == nil {
-			ctxOpts.Project, err = api.GetProject(opts.APIClient.Lab(), ctxOpts.Repo)
+			ctxOpts.Project, err = api.GetProject(opts.apiClient.Lab(), ctxOpts.Repo)
 			if err != nil {
 				return
 			}
 		}
-		ctxOpts.Repo = glrepo.RemoteURL(ctxOpts.Project, opts.Protocol)
+		ctxOpts.Repo = glrepo.RemoteURL(ctxOpts.Project, opts.protocol)
 	} else if !strings.HasSuffix(ctxOpts.Repo, ".git") {
 		ctxOpts.Repo += ".git"
 	}
 	// To preserve namespaces, we deep copy gitFlags for group clones
-	if opts.PreserveNamespace {
+	if opts.preserveNamespace {
 		namespacedDir := ctxOpts.Project.PathWithNamespace
-		opts.Dir = namespacedDir
+		opts.dir = namespacedDir
 	}
-	_, err = git.RunClone(ctxOpts.Repo, opts.Dir, opts.GitFlags)
+	_, err = git.RunClone(ctxOpts.Repo, opts.dir, opts.gitFlags)
 	if err != nil {
 		return
 	}
@@ -288,16 +288,16 @@ func cloneRun(opts *CloneOptions, ctxOpts *ContextOpts) (err error) {
 	// treating fork's ssh/https url as origin. Add upstream as remote pointing
 	// to forked repo's ssh/https url depending on the users preferred protocol
 	if ctxOpts.Project != nil {
-		if ctxOpts.Project.ForkedFromProject != nil && strings.Contains(ctxOpts.Project.PathWithNamespace, opts.CurrentUser.Username) {
-			if opts.Dir == "" {
-				opts.Dir = "./" + ctxOpts.Project.Path
+		if ctxOpts.Project.ForkedFromProject != nil && strings.Contains(ctxOpts.Project.PathWithNamespace, opts.currentUser.Username) {
+			if opts.dir == "" {
+				opts.dir = "./" + ctxOpts.Project.Path
 			}
-			fProject, err := api.GetProject(opts.APIClient.Lab(), ctxOpts.Project.ForkedFromProject.PathWithNamespace)
+			fProject, err := api.GetProject(opts.apiClient.Lab(), ctxOpts.Project.ForkedFromProject.PathWithNamespace)
 			if err != nil {
 				return err
 			}
-			repoURL := glrepo.RemoteURL(fProject, opts.Protocol)
-			err = git.AddUpstreamRemote(repoURL, opts.Dir)
+			repoURL := glrepo.RemoteURL(fProject, opts.protocol)
+			err = git.AddUpstreamRemote(repoURL, opts.dir)
 			if err != nil {
 				return err
 			}

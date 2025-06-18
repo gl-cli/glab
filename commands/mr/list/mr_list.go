@@ -2,7 +2,6 @@ package list
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -20,49 +19,51 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-type ListOptions struct {
+type options struct {
 	// metadata
-	Assignee     []string
-	Reviewer     []string
-	Author       string
-	Labels       []string
-	NotLabels    []string
-	Milestone    string
-	SourceBranch string
-	TargetBranch string
-	Search       string
-	Mine         bool
-	Group        string
+	assignee     []string
+	reviewer     []string
+	author       string
+	labels       []string
+	notLabels    []string
+	milestone    string
+	sourceBranch string
+	targetBranch string
+	search       string
+	mine         bool
+	group        string
 
 	// issue states
-	State    string
-	Closed   bool
-	Merged   bool
-	All      bool
-	Draft    bool
-	NotDraft bool
+	state    string
+	closed   bool
+	merged   bool
+	all      bool
+	draft    bool
+	notDraft bool
 
 	// Pagination
-	Page         int
-	PerPage      int
-	OutputFormat string
+	page         int
+	perPage      int
+	outputFormat string
 
 	// display opts
-	ListType       string
-	TitleQualifier string
+	listType       string
+	titleQualifier string
 
 	// sort options
-	Sort    string
-	OrderBy string
+	sort    string
+	orderBy string
 
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
-	HTTPClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
+	httpClient func() (*gitlab.Client, error)
 }
 
-func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.Command {
-	opts := &ListOptions{
-		IO: f.IO(),
+func NewCmdList(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+	opts := &options{
+		io:         f.IO(),
+		baseRepo:   f.BaseRepo,
+		httpClient: f.HttpClient,
 	}
 
 	mrListCmd := &cobra.Command{
@@ -86,173 +87,167 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.C
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// supports repo override
-			opts.BaseRepo = f.BaseRepo
-			opts.HTTPClient = f.HttpClient
-
-			if len(opts.Labels) != 0 && len(opts.NotLabels) != 0 {
-				return cmdutils.FlagError{
-					Err: errors.New("flags --label and --not-label are mutually exclusive."),
-				}
-			}
-
-			// check if any of the two or all of states flag are specified
-			if opts.Closed && opts.Merged {
-				return cmdutils.FlagError{
-					Err: errors.New("specify either --closed or --merged. Use --all issues in all states."),
-				}
-			}
-			if opts.All {
-				opts.State = "all"
-			} else if opts.Closed {
-				opts.State = "closed"
-				opts.TitleQualifier = opts.State
-			} else if opts.Merged {
-				opts.State = "merged"
-				opts.TitleQualifier = opts.State
-			} else {
-				opts.State = "opened"
-				opts.TitleQualifier = "open"
-			}
-
-			group, err := flag.GroupOverride(cmd)
-			if err != nil {
+			if err := opts.complete(cmd); err != nil {
 				return err
 			}
-			opts.Group = group
 
 			if runE != nil {
 				return runE(opts)
 			}
 
-			return listRun(opts)
+			return opts.run()
 		},
 	}
 
 	cmdutils.EnableRepoOverride(mrListCmd, f)
-	mrListCmd.Flags().StringSliceVarP(&opts.Labels, "label", "l", []string{}, "Filter merge request by label <name>.")
-	mrListCmd.Flags().StringSliceVar(&opts.NotLabels, "not-label", []string{}, "Filter merge requests by not having label <name>.")
-	mrListCmd.Flags().StringVar(&opts.Author, "author", "", "Filter merge request by author <username>.")
-	mrListCmd.Flags().StringVarP(&opts.Milestone, "milestone", "m", "", "Filter merge request by milestone <id>.")
-	mrListCmd.Flags().StringVarP(&opts.SourceBranch, "source-branch", "s", "", "Filter by source branch <name>.")
-	mrListCmd.Flags().StringVarP(&opts.TargetBranch, "target-branch", "t", "", "Filter by target branch <name>.")
-	mrListCmd.Flags().StringVar(&opts.Search, "search", "", "Filter by <string> in title and description.")
-	mrListCmd.Flags().BoolVarP(&opts.All, "all", "A", false, "Get all merge requests.")
-	mrListCmd.Flags().BoolVarP(&opts.Closed, "closed", "c", false, "Get only closed merge requests.")
-	mrListCmd.Flags().BoolVarP(&opts.Merged, "merged", "M", false, "Get only merged merge requests.")
-	mrListCmd.Flags().BoolVarP(&opts.Draft, "draft", "d", false, "Filter by draft merge requests.")
-	mrListCmd.Flags().BoolVarP(&opts.NotDraft, "not-draft", "", false, "Filter by non-draft merge requests.")
-	mrListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
-	mrListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
-	mrListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
-	mrListCmd.Flags().StringSliceVarP(&opts.Assignee, "assignee", "a", []string{}, "Get only merge requests assigned to users.")
-	mrListCmd.Flags().StringSliceVarP(&opts.Reviewer, "reviewer", "r", []string{}, "Get only merge requests with users as reviewer.")
-	mrListCmd.Flags().StringVarP(&opts.Sort, "sort", "S", "", "Sort merge requests by <field>. Sort options: asc, desc.")
-	mrListCmd.Flags().StringVarP(&opts.OrderBy, "order", "o", "", "Order merge requests by <field>. Order options: created_at, title, merged_at or updated_at.")
+	mrListCmd.Flags().StringSliceVarP(&opts.labels, "label", "l", []string{}, "Filter merge request by label <name>.")
+	mrListCmd.Flags().StringSliceVar(&opts.notLabels, "not-label", []string{}, "Filter merge requests by not having label <name>.")
+	mrListCmd.Flags().StringVar(&opts.author, "author", "", "Filter merge request by author <username>.")
+	mrListCmd.Flags().StringVarP(&opts.milestone, "milestone", "m", "", "Filter merge request by milestone <id>.")
+	mrListCmd.Flags().StringVarP(&opts.sourceBranch, "source-branch", "s", "", "Filter by source branch <name>.")
+	mrListCmd.Flags().StringVarP(&opts.targetBranch, "target-branch", "t", "", "Filter by target branch <name>.")
+	mrListCmd.Flags().StringVar(&opts.search, "search", "", "Filter by <string> in title and description.")
+	mrListCmd.Flags().BoolVarP(&opts.all, "all", "A", false, "Get all merge requests.")
+	mrListCmd.Flags().BoolVarP(&opts.closed, "closed", "c", false, "Get only closed merge requests.")
+	mrListCmd.Flags().BoolVarP(&opts.merged, "merged", "M", false, "Get only merged merge requests.")
+	mrListCmd.Flags().BoolVarP(&opts.draft, "draft", "d", false, "Filter by draft merge requests.")
+	mrListCmd.Flags().BoolVarP(&opts.notDraft, "not-draft", "", false, "Filter by non-draft merge requests.")
+	mrListCmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json.")
+	mrListCmd.Flags().IntVarP(&opts.page, "page", "p", 1, "Page number.")
+	mrListCmd.Flags().IntVarP(&opts.perPage, "per-page", "P", 30, "Number of items to list per page.")
+	mrListCmd.Flags().StringSliceVarP(&opts.assignee, "assignee", "a", []string{}, "Get only merge requests assigned to users.")
+	mrListCmd.Flags().StringSliceVarP(&opts.reviewer, "reviewer", "r", []string{}, "Get only merge requests with users as reviewer.")
+	mrListCmd.Flags().StringVarP(&opts.sort, "sort", "S", "", "Sort merge requests by <field>. Sort options: asc, desc.")
+	mrListCmd.Flags().StringVarP(&opts.orderBy, "order", "o", "", "Order merge requests by <field>. Order options: created_at, title, merged_at or updated_at.")
 
 	mrListCmd.Flags().BoolP("opened", "O", false, "Get only open merge requests.")
 	_ = mrListCmd.Flags().MarkHidden("opened")
 	_ = mrListCmd.Flags().MarkDeprecated("opened", "default value if neither --closed, --locked or --merged is used.")
 
-	mrListCmd.Flags().BoolVarP(&opts.Mine, "mine", "", false, "Get only merge requests assigned to me.")
+	mrListCmd.Flags().BoolVarP(&opts.mine, "mine", "", false, "Get only merge requests assigned to me.")
 	_ = mrListCmd.Flags().MarkHidden("mine")
 	_ = mrListCmd.Flags().MarkDeprecated("mine", "use --assignee=@me.")
 	mrListCmd.PersistentFlags().StringP("group", "g", "", "Select a group/subgroup. This option is ignored if a repo argument is set.")
 	mrListCmd.MarkFlagsMutuallyExclusive("draft", "not-draft")
+	mrListCmd.MarkFlagsMutuallyExclusive("label", "not-label")
+	mrListCmd.MarkFlagsMutuallyExclusive("closed", "merged")
 
 	return mrListCmd
 }
 
-func listRun(opts *ListOptions) error {
+func (o *options) complete(cmd *cobra.Command) error {
+	if o.all {
+		o.state = "all"
+	} else if o.closed {
+		o.state = "closed"
+		o.titleQualifier = o.state
+	} else if o.merged {
+		o.state = "merged"
+		o.titleQualifier = o.state
+	} else {
+		o.state = "opened"
+		o.titleQualifier = "open"
+	}
+
+	group, err := flag.GroupOverride(cmd)
+	if err != nil {
+		return err
+	}
+	o.group = group
+
+	return nil
+}
+
+func (o *options) run() error {
 	var mergeRequests []*gitlab.BasicMergeRequest
 
-	apiClient, err := opts.HTTPClient()
+	apiClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	repo, err := opts.BaseRepo()
+	repo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
 
 	l := &gitlab.ListProjectMergeRequestsOptions{
-		State: gitlab.Ptr(opts.State),
+		State: gitlab.Ptr(o.state),
 		ListOptions: gitlab.ListOptions{
 			Page:    1,
 			PerPage: 30,
 		},
 	}
-	jsonOutput := opts.OutputFormat == "json"
+	jsonOutput := o.outputFormat == "json"
 	if jsonOutput {
 		l.Page = 0
 		l.PerPage = 0
 	}
 
-	if opts.Author != "" {
-		u, err := api.UserByName(apiClient, opts.Author)
+	if o.author != "" {
+		u, err := api.UserByName(apiClient, o.author)
 		if err != nil {
 			return err
 		}
 		l.AuthorID = gitlab.Ptr(u.ID)
-		opts.ListType = "search"
+		o.listType = "search"
 	}
-	if opts.SourceBranch != "" {
-		l.SourceBranch = gitlab.Ptr(opts.SourceBranch)
-		opts.ListType = "search"
+	if o.sourceBranch != "" {
+		l.SourceBranch = gitlab.Ptr(o.sourceBranch)
+		o.listType = "search"
 	}
-	if opts.TargetBranch != "" {
-		l.TargetBranch = gitlab.Ptr(opts.TargetBranch)
-		opts.ListType = "search"
+	if o.targetBranch != "" {
+		l.TargetBranch = gitlab.Ptr(o.targetBranch)
+		o.listType = "search"
 	}
-	if opts.Search != "" {
-		l.Search = gitlab.Ptr(opts.Search)
-		opts.ListType = "search"
+	if o.search != "" {
+		l.Search = gitlab.Ptr(o.search)
+		o.listType = "search"
 	}
-	if len(opts.Labels) > 0 {
-		l.Labels = (*gitlab.LabelOptions)(&opts.Labels)
-		opts.ListType = "search"
+	if len(o.labels) > 0 {
+		l.Labels = (*gitlab.LabelOptions)(&o.labels)
+		o.listType = "search"
 	}
-	if len(opts.NotLabels) > 0 {
-		l.NotLabels = (*gitlab.LabelOptions)(&opts.NotLabels)
-		opts.ListType = "search"
+	if len(o.notLabels) > 0 {
+		l.NotLabels = (*gitlab.LabelOptions)(&o.notLabels)
+		o.listType = "search"
 	}
-	if opts.Milestone != "" {
-		l.Milestone = gitlab.Ptr(opts.Milestone)
-		opts.ListType = "search"
+	if o.milestone != "" {
+		l.Milestone = gitlab.Ptr(o.milestone)
+		o.listType = "search"
 	}
-	if opts.Page != 0 {
-		l.Page = opts.Page
+	if o.page != 0 {
+		l.Page = o.page
 	}
-	if opts.PerPage != 0 {
-		l.PerPage = opts.PerPage
+	if o.perPage != 0 {
+		l.PerPage = o.perPage
 	}
-	if opts.Draft {
+	if o.draft {
 		l.WIP = gitlab.Ptr("yes")
-		opts.ListType = "search"
+		o.listType = "search"
 	}
-	if opts.NotDraft {
+	if o.notDraft {
 		l.WIP = gitlab.Ptr("no")
-		opts.ListType = "search"
+		o.listType = "search"
 	}
 
-	if opts.Mine {
+	if o.mine {
 		l.Scope = gitlab.Ptr("assigned_to_me")
-		opts.ListType = "search"
+		o.listType = "search"
 	}
 
-	if opts.OrderBy != "" {
-		l.OrderBy = gitlab.Ptr(opts.OrderBy)
-		opts.ListType = "search"
+	if o.orderBy != "" {
+		l.OrderBy = gitlab.Ptr(o.orderBy)
+		o.listType = "search"
 	}
 
-	if opts.Sort != "" {
-		l.Sort = gitlab.Ptr(opts.Sort)
+	if o.sort != "" {
+		l.Sort = gitlab.Ptr(o.sort)
 	}
 
 	assigneeIds := make([]int, 0)
-	if len(opts.Assignee) > 0 {
-		users, err := api.UsersByNames(apiClient, opts.Assignee)
+	if len(o.assignee) > 0 {
+		users, err := api.UsersByNames(apiClient, o.assignee)
 		if err != nil {
 			return err
 		}
@@ -262,8 +257,8 @@ func listRun(opts *ListOptions) error {
 	}
 
 	reviewerIds := make([]int, 0)
-	if len(opts.Reviewer) > 0 {
-		users, err := api.UsersByNames(apiClient, opts.Reviewer)
+	if len(o.reviewer) > 0 {
+		users, err := api.UsersByNames(apiClient, o.reviewer)
 		if err != nil {
 			return err
 		}
@@ -271,12 +266,12 @@ func listRun(opts *ListOptions) error {
 			reviewerIds = append(reviewerIds, user.ID)
 		}
 	}
-	title := utils.NewListTitle(opts.TitleQualifier + " merge request")
+	title := utils.NewListTitle(o.titleQualifier + " merge request")
 	title.RepoName = repo.FullName()
 
-	if opts.Group != "" {
-		mergeRequests, err = api.ListGroupMRs(apiClient, opts.Group, api.ProjectListMROptionsToGroup(l), api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
-		title.RepoName = opts.Group
+	if o.group != "" {
+		mergeRequests, err = api.ListGroupMRs(apiClient, o.group, api.ProjectListMROptionsToGroup(l), api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
+		title.RepoName = o.group
 	} else {
 		mergeRequests, err = api.ListMRs(apiClient, repo.FullName(), l, api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
 	}
@@ -285,18 +280,18 @@ func listRun(opts *ListOptions) error {
 	}
 
 	title.Page = l.Page
-	title.ListActionType = opts.ListType
+	title.ListActionType = o.listType
 	title.CurrentPageTotal = len(mergeRequests)
 
 	if jsonOutput {
 		mrListJSON, _ := json.Marshal(mergeRequests)
-		fmt.Fprintln(opts.IO.StdOut, string(mrListJSON))
+		fmt.Fprintln(o.io.StdOut, string(mrListJSON))
 	} else {
-		if err = opts.IO.StartPager(); err != nil {
+		if err = o.io.StartPager(); err != nil {
 			return err
 		}
-		defer opts.IO.StopPager()
-		fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title.Describe(), mrutils.DisplayAllMRs(opts.IO, mergeRequests))
+		defer o.io.StopPager()
+		fmt.Fprintf(o.io.StdOut, "%s\n%s\n", title.Describe(), mrutils.DisplayAllMRs(o.io, mergeRequests))
 	}
 	return nil
 }

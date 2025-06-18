@@ -13,29 +13,30 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 )
 
-type Options struct {
-	OrderBy          string
-	Sort             string
-	Group            string
-	IncludeSubgroups bool
-	PerPage          int
-	Page             int
-	OutputFormat     string
-	FilterAll        bool
-	FilterOwned      bool
-	FilterMember     bool
-	FilterStarred    bool
-	Archived         bool
-	ArchivedSet      bool
-	User             string
+type options struct {
+	orderBy          string
+	sort             string
+	group            string
+	includeSubgroups bool
+	perPage          int
+	page             int
+	outputFormat     string
+	filterAll        bool
+	filterOwner      bool
+	filterMember     bool
+	filterStarred    bool
+	archived         bool
+	archivedSet      bool
+	user             string
 
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
 }
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
-	opts := &Options{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
 	}
 	repoListCmd := &cobra.Command{
 		Use:   "list",
@@ -46,57 +47,60 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"ls"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-			opts.ArchivedSet = cmd.Flags().Changed("archived")
+			opts.complete(cmd)
 
-			return runE(opts)
+			return opts.run()
 		},
 	}
 
-	repoListCmd.Flags().StringVarP(&opts.OrderBy, "order", "o", "last_activity_at", "Return repositories ordered by id, created_at, or other fields.")
-	repoListCmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Return repositories sorted in asc or desc order.")
-	repoListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Return repositories in only the given group.")
-	repoListCmd.Flags().BoolVarP(&opts.IncludeSubgroups, "include-subgroups", "G", false, "Include projects in subgroups of this group. Default is false. Used with the '--group' flag.")
-	repoListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
-	repoListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
-	repoListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
-	repoListCmd.Flags().BoolVarP(&opts.FilterAll, "all", "a", false, "List all projects on the instance.")
-	repoListCmd.Flags().BoolVarP(&opts.FilterOwned, "mine", "m", false, "List only projects you own. Default if no filters are provided.")
-	repoListCmd.Flags().StringVarP(&opts.User, "user", "u", "", "List user projects.")
-	repoListCmd.Flags().BoolVar(&opts.FilterMember, "member", false, "List only projects of which you are a member.")
-	repoListCmd.Flags().BoolVar(&opts.FilterStarred, "starred", false, "List only starred projects.")
-	repoListCmd.Flags().BoolVar(&opts.Archived, "archived", false, "Limit by archived status. Use 'false' to exclude archived repositories. Used with the '--group' flag.")
+	repoListCmd.Flags().StringVarP(&opts.orderBy, "order", "o", "last_activity_at", "Return repositories ordered by id, created_at, or other fields.")
+	repoListCmd.Flags().StringVarP(&opts.sort, "sort", "s", "", "Return repositories sorted in asc or desc order.")
+	repoListCmd.Flags().StringVarP(&opts.group, "group", "g", "", "Return repositories in only the given group.")
+	repoListCmd.Flags().BoolVarP(&opts.includeSubgroups, "include-subgroups", "G", false, "Include projects in subgroups of this group. Default is false. Used with the '--group' flag.")
+	repoListCmd.Flags().IntVarP(&opts.page, "page", "p", 1, "Page number.")
+	repoListCmd.Flags().IntVarP(&opts.perPage, "per-page", "P", 30, "Number of items to list per page.")
+	repoListCmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json.")
+	repoListCmd.Flags().BoolVarP(&opts.filterAll, "all", "a", false, "List all projects on the instance.")
+	repoListCmd.Flags().BoolVarP(&opts.filterOwner, "mine", "m", false, "List only projects you own. Default if no filters are provided.")
+	repoListCmd.Flags().StringVarP(&opts.user, "user", "u", "", "List user projects.")
+	repoListCmd.Flags().BoolVar(&opts.filterMember, "member", false, "List only projects of which you are a member.")
+	repoListCmd.Flags().BoolVar(&opts.filterStarred, "starred", false, "List only starred projects.")
+	repoListCmd.Flags().BoolVar(&opts.archived, "archived", false, "Limit by archived status. Use 'false' to exclude archived repositories. Used with the '--group' flag.")
 
 	repoListCmd.MarkFlagsMutuallyExclusive("user", "group")
 	return repoListCmd
 }
 
-func runE(opts *Options) error {
-	var err error
-	c := opts.IO.Color()
+func (o *options) complete(cmd *cobra.Command) {
+	o.archivedSet = cmd.Flags().Changed("archived")
+}
 
-	apiClient, err := opts.HTTPClient()
+func (o *options) run() error {
+	var err error
+	c := o.io.Color()
+
+	apiClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
 	var projects []*gitlab.Project
 	var resp *gitlab.Response
-	if len(opts.Group) > 0 {
-		projects, resp, err = listAllProjectsForGroup(apiClient, *opts)
-	} else if opts.User != "" {
-		projects, resp, err = listAllProjectsForUser(apiClient, *opts)
+	if len(o.group) > 0 {
+		projects, resp, err = listAllProjectsForGroup(apiClient, *o)
+	} else if o.user != "" {
+		projects, resp, err = listAllProjectsForUser(apiClient, *o)
 	} else {
-		projects, resp, err = listAllProjects(apiClient, *opts)
+		projects, resp, err = listAllProjects(apiClient, *o)
 	}
 
 	if err != nil {
 		return err
 	}
 
-	if opts.OutputFormat == "json" {
+	if o.outputFormat == "json" {
 		projectListJSON, _ := json.Marshal(projects)
-		fmt.Fprintln(opts.IO.StdOut, string(projectListJSON))
+		fmt.Fprintln(o.io.StdOut, string(projectListJSON))
 	} else {
 		// Title
 		title := fmt.Sprintf("Showing %d of %d projects (Page %d of %d).\n", len(projects), resp.TotalItems, resp.CurrentPage, resp.TotalPages)
@@ -110,128 +114,128 @@ func runE(opts *Options) error {
 			table.EndRow()
 		}
 
-		fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title, table.String())
+		fmt.Fprintf(o.io.StdOut, "%s\n%s\n", title, table.String())
 	}
 
 	return err
 }
 
-func listAllProjects(apiClient *gitlab.Client, opts Options) ([]*gitlab.Project, *gitlab.Response, error) {
+func listAllProjects(apiClient *gitlab.Client, opts options) ([]*gitlab.Project, *gitlab.Response, error) {
 	l := &gitlab.ListProjectsOptions{
 		ListOptions: gitlab.ListOptions{
-			PerPage: opts.PerPage,
-			Page:    opts.Page,
+			PerPage: opts.perPage,
+			Page:    opts.page,
 		},
-		OrderBy: gitlab.Ptr(opts.OrderBy),
+		OrderBy: gitlab.Ptr(opts.orderBy),
 	}
 
 	// Other filters only valid if FilterAll not true
-	if !opts.FilterAll {
-		if !opts.FilterStarred && !opts.FilterMember {
+	if !opts.filterAll {
+		if !opts.filterStarred && !opts.filterMember {
 			// if no other filters are passed, default to Owned filter
 			l.Owned = gitlab.Ptr(true)
 		}
 
-		if opts.FilterOwned {
-			l.Owned = gitlab.Ptr(opts.FilterOwned)
+		if opts.filterOwner {
+			l.Owned = gitlab.Ptr(opts.filterOwner)
 		}
 
-		if opts.FilterStarred {
-			l.Starred = gitlab.Ptr(opts.FilterStarred)
+		if opts.filterStarred {
+			l.Starred = gitlab.Ptr(opts.filterStarred)
 		}
 
-		if opts.FilterMember {
-			l.Membership = gitlab.Ptr(opts.FilterMember)
+		if opts.filterMember {
+			l.Membership = gitlab.Ptr(opts.filterMember)
 		}
 	}
 
-	if opts.ArchivedSet {
-		l.Archived = gitlab.Ptr(opts.Archived)
+	if opts.archivedSet {
+		l.Archived = gitlab.Ptr(opts.archived)
 	}
 
-	if opts.Sort != "" {
-		l.Sort = gitlab.Ptr(opts.Sort)
+	if opts.sort != "" {
+		l.Sort = gitlab.Ptr(opts.sort)
 	}
 
 	return apiClient.Projects.ListProjects(l)
 }
 
-func listAllProjectsForGroup(apiClient *gitlab.Client, opts Options) ([]*gitlab.Project, *gitlab.Response, error) {
-	groups, resp, err := apiClient.Groups.SearchGroup(opts.Group)
+func listAllProjectsForGroup(apiClient *gitlab.Client, opts options) ([]*gitlab.Project, *gitlab.Response, error) {
+	groups, resp, err := apiClient.Groups.SearchGroup(opts.group)
 	if err != nil {
 		return nil, resp, err
 	}
 
 	var group *gitlab.Group = nil
 	for _, g := range groups {
-		if g.FullPath == opts.Group {
+		if g.FullPath == opts.group {
 			group = g
 			break
 		}
 	}
 	if group == nil {
-		return nil, nil, fmt.Errorf("No group matching path %s", opts.Group)
+		return nil, nil, fmt.Errorf("No group matching path %s", opts.group)
 	}
 
 	l := &gitlab.ListGroupProjectsOptions{
 		ListOptions: gitlab.ListOptions{
-			PerPage: opts.PerPage,
-			Page:    opts.Page,
+			PerPage: opts.perPage,
+			Page:    opts.page,
 		},
-		OrderBy: gitlab.Ptr(opts.OrderBy),
+		OrderBy: gitlab.Ptr(opts.orderBy),
 	}
 
 	// Other filters only valid if FilterAll not true
-	if !opts.FilterAll {
-		if !opts.FilterStarred && !opts.FilterMember {
+	if !opts.filterAll {
+		if !opts.filterStarred && !opts.filterMember {
 			// if no other filters are passed, default to Owned filter
 			l.Owned = gitlab.Ptr(true)
 		}
 
-		if opts.FilterOwned {
-			l.Owned = gitlab.Ptr(opts.FilterOwned)
+		if opts.filterOwner {
+			l.Owned = gitlab.Ptr(opts.filterOwner)
 		}
 
-		if opts.FilterStarred {
-			l.Starred = gitlab.Ptr(opts.FilterStarred)
+		if opts.filterStarred {
+			l.Starred = gitlab.Ptr(opts.filterStarred)
 		}
 
-		if opts.IncludeSubgroups {
+		if opts.includeSubgroups {
 			l.IncludeSubGroups = gitlab.Ptr(true)
 		}
 	}
 
-	if opts.ArchivedSet {
-		l.Archived = gitlab.Ptr(opts.Archived)
+	if opts.archivedSet {
+		l.Archived = gitlab.Ptr(opts.archived)
 	}
 
-	if opts.Sort != "" {
-		l.Sort = gitlab.Ptr(opts.Sort)
+	if opts.sort != "" {
+		l.Sort = gitlab.Ptr(opts.sort)
 	}
 
 	return apiClient.Groups.ListGroupProjects(group.ID, l)
 }
 
-func listAllProjectsForUser(apiClient *gitlab.Client, opts Options) ([]*gitlab.Project, *gitlab.Response, error) {
+func listAllProjectsForUser(apiClient *gitlab.Client, opts options) ([]*gitlab.Project, *gitlab.Response, error) {
 	l := &gitlab.ListProjectsOptions{
-		OrderBy: gitlab.Ptr(opts.OrderBy),
+		OrderBy: gitlab.Ptr(opts.orderBy),
 		ListOptions: gitlab.ListOptions{
-			PerPage: opts.PerPage,
-			Page:    opts.Page,
+			PerPage: opts.perPage,
+			Page:    opts.page,
 		},
 	}
 
-	if opts.ArchivedSet {
-		l.Archived = gitlab.Ptr(opts.Archived)
+	if opts.archivedSet {
+		l.Archived = gitlab.Ptr(opts.archived)
 	}
 
-	if opts.FilterStarred {
-		l.Starred = gitlab.Ptr(opts.FilterStarred)
+	if opts.filterStarred {
+		l.Starred = gitlab.Ptr(opts.filterStarred)
 	}
 
-	if opts.Sort != "" {
-		l.Sort = gitlab.Ptr(opts.Sort)
+	if opts.sort != "" {
+		l.Sort = gitlab.Ptr(opts.sort)
 	}
 
-	return apiClient.Projects.ListUserProjects(opts.User, l)
+	return apiClient.Projects.ListUserProjects(opts.user, l)
 }

@@ -9,27 +9,32 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type MirrorOptions struct {
-	URL                   string
-	Direction             string
-	Enabled               bool
-	ProtectedBranchesOnly bool
-	AllowDivergence       bool
-	ProjectID             int
+type options struct {
+	url                   string
+	direction             string
+	enabled               bool
+	protectedBranchesOnly bool
+	allowDivergence       bool
+	projectID             int
 
-	IO         *iostreams.IOStreams
-	BaseRepo   glrepo.Interface
-	APIClient  func() (*gitlab.Client, error)
-	httpClient *gitlab.Client
+	io              *iostreams.IOStreams
+	baseRepo        glrepo.Interface
+	apiClient       func() (*gitlab.Client, error)
+	httpClient      *gitlab.Client
+	config          func() (config.Config, error)
+	baseRepoFactory func() (glrepo.Interface, error)
 }
 
 func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
-	opts := MirrorOptions{
-		IO: f.IO(),
+	opts := options{
+		io:        f.IO(),
+		apiClient: f.HttpClient,
+		config:    f.Config,
 	}
 
 	projectMirrorCmd := &cobra.Command{
@@ -38,73 +43,21 @@ func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 		Long:  ``,
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			opts.APIClient = f.HttpClient
-
-			if len(args) > 0 {
-				opts.BaseRepo, err = glrepo.FromFullName(args[0])
-				if err != nil {
-					return err
-				}
-
-				opts.APIClient = func() (*gitlab.Client, error) {
-					if opts.httpClient != nil {
-						return opts.httpClient, nil
-					}
-					cfg, err := f.Config()
-					if err != nil {
-						return nil, err
-					}
-					c, err := api.NewClientWithCfg(opts.BaseRepo.RepoHost(), cfg, false)
-					if err != nil {
-						return nil, err
-					}
-					opts.httpClient = c.Lab()
-					return opts.httpClient, nil
-				}
-
-			} else {
-				opts.BaseRepo, err = f.BaseRepo()
-				if err != nil {
-					return err
-				}
+			if err := opts.complete(args); err != nil {
+				return err
 			}
-
-			if opts.Direction != "pull" && opts.Direction != "push" {
-				return cmdutils.WrapError(
-					errors.New("invalid choice for --direction"),
-					"the argument direction value should be 'pull' or 'push'.",
-				)
-			}
-
-			if opts.Direction == "pull" && opts.AllowDivergence {
-				fmt.Fprintf(
-					f.IO().StdOut,
-					"[Warning] the 'allow-divergence' flag has no effect for pull mirroring, and is ignored.\n",
-				)
-			}
-
-			opts.URL = strings.TrimSpace(opts.URL)
-
-			opts.httpClient, err = opts.APIClient()
-			if err != nil {
+			if err := opts.validate(); err != nil {
 				return err
 			}
 
-			project, err := opts.BaseRepo.Project(opts.httpClient)
-			if err != nil {
-				return err
-			}
-			opts.ProjectID = project.ID
-			return runProjectMirror(&opts)
+			return opts.run()
 		},
 	}
-	projectMirrorCmd.Flags().StringVar(&opts.URL, "url", "", "The target URL to which the repository is mirrored.")
-	projectMirrorCmd.Flags().StringVar(&opts.Direction, "direction", "pull", "Mirror direction. Options: pull, push.")
-	projectMirrorCmd.Flags().BoolVar(&opts.Enabled, "enabled", true, "Determines if the mirror is enabled.")
-	projectMirrorCmd.Flags().BoolVar(&opts.ProtectedBranchesOnly, "protected-branches-only", false, "Determines if only protected branches are mirrored.")
-	projectMirrorCmd.Flags().BoolVar(&opts.AllowDivergence, "allow-divergence", false, "Determines if divergent refs are skipped.")
+	projectMirrorCmd.Flags().StringVar(&opts.url, "url", "", "The target URL to which the repository is mirrored.")
+	projectMirrorCmd.Flags().StringVar(&opts.direction, "direction", "pull", "Mirror direction. Options: pull, push.")
+	projectMirrorCmd.Flags().BoolVar(&opts.enabled, "enabled", true, "Determines if the mirror is enabled.")
+	projectMirrorCmd.Flags().BoolVar(&opts.protectedBranchesOnly, "protected-branches-only", false, "Determines if only protected branches are mirrored.")
+	projectMirrorCmd.Flags().BoolVar(&opts.allowDivergence, "allow-divergence", false, "Determines if divergent refs are skipped.")
 
 	_ = projectMirrorCmd.MarkFlagRequired("url")
 	_ = projectMirrorCmd.MarkFlagRequired("direction")
@@ -112,59 +65,126 @@ func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 	return projectMirrorCmd
 }
 
-func runProjectMirror(opts *MirrorOptions) error {
-	if opts.Direction == "push" {
-		return createPushMirror(opts)
+func (o *options) complete(args []string) error {
+	if len(args) > 0 {
+		baseRepo, err := glrepo.FromFullName(args[0])
+		if err != nil {
+			return err
+		}
+		o.baseRepo = baseRepo
+
+		o.apiClient = func() (*gitlab.Client, error) {
+			if o.httpClient != nil {
+				return o.httpClient, nil
+			}
+			cfg, err := o.config()
+			if err != nil {
+				return nil, err
+			}
+			c, err := api.NewClientWithCfg(o.baseRepo.RepoHost(), cfg, false)
+			if err != nil {
+				return nil, err
+			}
+			o.httpClient = c.Lab()
+			return o.httpClient, nil
+		}
+
 	} else {
-		return createPullMirror(opts)
+		baseRepo, err := o.baseRepoFactory()
+		if err != nil {
+			return err
+		}
+		o.baseRepo = baseRepo
+	}
+
+	o.url = strings.TrimSpace(o.url)
+
+	httpClient, err := o.apiClient()
+	if err != nil {
+		return err
+	}
+	o.httpClient = httpClient
+
+	project, err := o.baseRepo.Project(o.httpClient)
+	if err != nil {
+		return err
+	}
+	o.projectID = project.ID
+
+	return nil
+}
+
+func (o *options) validate() error {
+	if o.direction != "pull" && o.direction != "push" {
+		return cmdutils.WrapError(
+			errors.New("invalid choice for --direction"),
+			"the argument direction value should be 'pull' or 'push'.",
+		)
+	}
+
+	if o.direction == "pull" && o.allowDivergence {
+		fmt.Fprintf(
+			o.io.StdOut,
+			"[Warning] the 'allow-divergence' flag has no effect for pull mirroring, and is ignored.\n",
+		)
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	if o.direction == "push" {
+		return o.createPushMirror()
+	} else {
+		return o.createPullMirror()
 	}
 }
 
-func createPushMirror(opts *MirrorOptions) error {
+func (o *options) createPushMirror() error {
 	var pm *gitlab.ProjectMirror
 	var err error
 	pushOptions := api.CreatePushMirrorOptions{
-		Url:                   opts.URL,
-		Enabled:               opts.Enabled,
-		OnlyProtectedBranches: opts.ProtectedBranchesOnly,
-		KeepDivergentRefs:     opts.AllowDivergence,
+		Url:                   o.url,
+		Enabled:               o.enabled,
+		OnlyProtectedBranches: o.protectedBranchesOnly,
+		KeepDivergentRefs:     o.allowDivergence,
 	}
 	pm, err = api.CreatePushMirror(
-		opts.httpClient,
-		opts.ProjectID,
+		o.httpClient,
+		o.projectID,
 		&pushOptions,
 	)
 	if err != nil {
 		return cmdutils.WrapError(err, "Failed to create push mirror.")
 	}
-	greenCheck := opts.IO.Color().Green("✓")
+	greenCheck := o.io.Color().Green("✓")
 	fmt.Fprintf(
-		opts.IO.StdOut,
+		o.io.StdOut,
 		"%s Created push mirror for %s (%d) on GitLab at %s (%d).\n",
-		greenCheck, pm.URL, pm.ID, opts.BaseRepo.FullName(), opts.ProjectID,
+		greenCheck, pm.URL, pm.ID, o.baseRepo.FullName(), o.projectID,
 	)
 	return err
 }
 
-func createPullMirror(opts *MirrorOptions) error {
+func (o *options) createPullMirror() error {
 	pullOptions := api.CreatePullMirrorOptions{
-		Url:                   opts.URL,
-		Enabled:               opts.Enabled,
-		OnlyProtectedBranches: opts.ProtectedBranchesOnly,
+		Url:                   o.url,
+		Enabled:               o.enabled,
+		OnlyProtectedBranches: o.protectedBranchesOnly,
 	}
 	err := api.CreatePullMirror(
-		opts.httpClient,
-		opts.ProjectID,
+		o.httpClient,
+		o.projectID,
 		&pullOptions,
 	)
 	if err != nil {
 		return cmdutils.WrapError(err, "Failed to create pull mirror.")
 	}
-	greenCheck := opts.IO.Color().Green("✓")
+	greenCheck := o.io.Color().Green("✓")
 	fmt.Fprintf(
-		opts.IO.StdOut,
+		o.io.StdOut,
 		"%s Created pull mirror for %s on GitLab at %s (%d).\n",
-		greenCheck, opts.URL, opts.BaseRepo.FullName(), opts.ProjectID,
+		greenCheck, o.url, o.baseRepo.FullName(), o.projectID,
 	)
 	return err
 }

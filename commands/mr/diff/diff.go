@@ -21,19 +21,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type DiffOptions struct {
+type options struct {
 	factory cmdutils.Factory
-	IO      *iostreams.IOStreams
+	io      *iostreams.IOStreams
 
-	Args     []string
-	UseColor string
-	RawDiff  bool
+	args     []string
+	useColor string
+	rawDiff  bool
 }
 
-func NewCmdDiff(f cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Command {
-	opts := &DiffOptions{
+func NewCmdDiff(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
+	opts := &options{
 		factory: f,
-		IO:      f.IO(),
+		io:      f.IO(),
 	}
 
 	cmd := &cobra.Command{
@@ -50,48 +50,60 @@ func NewCmdDiff(f cmdutils.Factory, runF func(*DiffOptions) error) *cobra.Comman
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if repoOverride, _ := cmd.Flags().GetString("repo"); repoOverride != "" && len(args) == 0 {
-				return &cmdutils.FlagError{Err: errors.New("argument required when using the --repo flag.")}
-			}
+			opts.complete(args)
 
-			if len(args) > 0 {
-				opts.Args = args
-			}
-
-			if !validColorFlag(opts.UseColor) {
-				return &cmdutils.FlagError{Err: fmt.Errorf("did not understand color: %q. Expected one of 'always', 'never', or 'auto'.", opts.UseColor)}
-			}
-
-			if opts.UseColor == "auto" && !opts.IO.IsaTTY {
-				opts.UseColor = "never"
+			if err := opts.validate(cmd); err != nil {
+				return err
 			}
 
 			if runF != nil {
 				return runF(opts)
 			}
-			return diffRun(opts)
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.UseColor, "color", "auto", "Use color in diff output: always, never, auto.")
-	cmd.Flags().BoolVar(&opts.RawDiff, "raw", false, "Use raw diff format that can be piped to commands")
+	cmd.Flags().StringVar(&opts.useColor, "color", "auto", "Use color in diff output: always, never, auto.")
+	cmd.Flags().BoolVar(&opts.rawDiff, "raw", false, "Use raw diff format that can be piped to commands")
 
 	return cmd
 }
 
-func diffRun(opts *DiffOptions) error {
-	apiClient, err := opts.factory.HttpClient()
+func (o *options) complete(args []string) {
+	if len(args) > 0 {
+		o.args = args
+	}
+
+	if o.useColor == "auto" && !o.io.IsaTTY {
+		o.useColor = "never"
+	}
+}
+
+func (o *options) validate(cmd *cobra.Command) error {
+	if repoOverride, _ := cmd.Flags().GetString("repo"); repoOverride != "" && len(o.args) == 0 {
+		return &cmdutils.FlagError{Err: errors.New("argument required when using the --repo flag.")}
+	}
+
+	if !validColorFlag(o.useColor) {
+		return &cmdutils.FlagError{Err: fmt.Errorf("did not understand color: %q. Expected one of 'always', 'never', or 'auto'.", o.useColor)}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	apiClient, err := o.factory.HttpClient()
 	if err != nil {
 		return err
 	}
-	mr, baseRepo, err := mrutils.MRFromArgs(opts.factory, opts.Args, "any")
+	mr, baseRepo, err := mrutils.MRFromArgs(o.factory, o.args, "any")
 	if err != nil {
 		return err
 	}
 
 	diffOut := &bytes.Buffer{}
 
-	if opts.RawDiff {
+	if o.rawDiff {
 		rawDiff, _, err := apiClient.MergeRequests.ShowMergeRequestRawDiffs(baseRepo.FullName(), mr.IID, nil)
 		if err != nil {
 			return fmt.Errorf("could not obtain raw diff: %w", err)
@@ -126,14 +138,14 @@ func diffRun(opts *DiffOptions) error {
 		defer diffOut.Reset()
 	}
 
-	err = opts.IO.StartPager()
+	err = o.io.StartPager()
 	if err != nil {
 		return err
 	}
-	defer opts.IO.StopPager()
+	defer o.io.StopPager()
 
-	if opts.UseColor == "never" {
-		_, err = io.Copy(opts.IO.StdOut, diffOut)
+	if o.useColor == "never" {
+		_, err = io.Copy(o.io.StdOut, diffOut)
 		if errors.Is(err, syscall.EPIPE) {
 			return nil
 		}
@@ -145,13 +157,13 @@ func diffRun(opts *DiffOptions) error {
 		diffLine := diffLines.Text()
 		switch {
 		case isHeaderLine(diffLine):
-			fmt.Fprintf(opts.IO.StdOut, "\x1b[1;38m%s\x1b[m\n", diffLine)
+			fmt.Fprintf(o.io.StdOut, "\x1b[1;38m%s\x1b[m\n", diffLine)
 		case isAdditionLine(diffLine):
-			fmt.Fprintf(opts.IO.StdOut, "\x1b[32m%s\x1b[m\n", diffLine)
+			fmt.Fprintf(o.io.StdOut, "\x1b[32m%s\x1b[m\n", diffLine)
 		case isRemovalLine(diffLine):
-			fmt.Fprintf(opts.IO.StdOut, "\x1b[31m%s\x1b[m\n", diffLine)
+			fmt.Fprintf(o.io.StdOut, "\x1b[31m%s\x1b[m\n", diffLine)
 		default:
-			fmt.Fprintln(opts.IO.StdOut, diffLine)
+			fmt.Fprintln(o.io.StdOut, diffLine)
 		}
 	}
 

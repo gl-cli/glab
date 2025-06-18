@@ -19,37 +19,37 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-type ForkOptions struct {
-	Clone     bool
-	AddRemote bool
-	Repo      string
-	Name      string
-	Path      string
+type options struct {
+	clone     bool
+	addRemote bool
+	repo      string
+	name      string
+	path      string
 
-	CloneSet     bool
-	AddRemoteSet bool
-	IsTerminal   bool
+	cloneSet     bool
+	addRemoteSet bool
+	isTerminal   bool
 
 	// whether the user specified the repo to clone
 	// if false current git repo will be cloned
-	CurrentDirIsParent bool
+	currentDirIsParent bool
 
-	RepoToFork  glrepo.Interface
-	IO          *iostreams.IOStreams
-	LabClient   *gitlab.Client
-	CurrentUser *gitlab.User
-	BaseRepo    func() (glrepo.Interface, error)
-	Remotes     func() (glrepo.Remotes, error)
-	Config      func() (config.Config, error)
+	repoToFork glrepo.Interface
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
+	remotes    func() (glrepo.Remotes, error)
+	config     func() (config.Config, error)
+	httpClient func() (*gitlab.Client, error)
 }
 
 func NewCmdFork(f cmdutils.Factory, runE func(cmdutils.Factory) error) *cobra.Command {
-	opts := &ForkOptions{
-		IO:                 f.IO(),
-		BaseRepo:           f.BaseRepo,
-		Remotes:            f.Remotes,
-		Config:             f.Config,
-		CurrentDirIsParent: true,
+	opts := &options{
+		io:                 f.IO(),
+		baseRepo:           f.BaseRepo,
+		remotes:            f.Remotes,
+		config:             f.Config,
+		httpClient:         f.HttpClient,
+		currentDirIsParent: true,
 	}
 	forkCmd := &cobra.Command{
 		Use:   "fork <repo>",
@@ -61,89 +61,86 @@ func NewCmdFork(f cmdutils.Factory, runE func(cmdutils.Factory) error) *cobra.Co
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			if len(args) > 0 {
-				opts.Repo = args[0]
-				opts.CurrentDirIsParent = false
-			}
-
-			opts.CloneSet = cmd.Flags().Changed("clone")
-			opts.AddRemoteSet = cmd.Flags().Changed("remote")
-			opts.IsTerminal = opts.IO.IsaTTY && opts.IO.IsErrTTY && opts.IO.IsInTTY
+			opts.complete(cmd, args)
 
 			if runE != nil {
 				return runE(f)
 			}
 
-			opts.LabClient, err = f.HttpClient()
-			if err != nil {
-				return err
-			}
-			opts.CurrentUser, err = api.CurrentUser(opts.LabClient)
-			if err != nil {
-				return err
-			}
-			return forkRun(opts)
+			return opts.run()
 		},
 	}
 
-	forkCmd.Flags().StringVarP(&opts.Name, "name", "n", "", "The name assigned to the new project after forking.")
-	forkCmd.Flags().StringVarP(&opts.Path, "path", "p", "", "The path assigned to the new project after forking.")
-	forkCmd.Flags().BoolVarP(&opts.Clone, "clone", "c", false, "Clone the fork. Options: true, false.")
-	forkCmd.Flags().BoolVar(&opts.AddRemote, "remote", false, "Add a remote for the fork. Options: true, false.")
+	forkCmd.Flags().StringVarP(&opts.name, "name", "n", "", "The name assigned to the new project after forking.")
+	forkCmd.Flags().StringVarP(&opts.path, "path", "p", "", "The path assigned to the new project after forking.")
+	forkCmd.Flags().BoolVarP(&opts.clone, "clone", "c", false, "Clone the fork. Options: true, false.")
+	forkCmd.Flags().BoolVar(&opts.addRemote, "remote", false, "Add a remote for the fork. Options: true, false.")
 
 	return forkCmd
 }
 
-func forkRun(opts *ForkOptions) error {
+func (o *options) complete(cmd *cobra.Command, args []string) {
+	if len(args) > 0 {
+		o.repo = args[0]
+		o.currentDirIsParent = false
+	}
+
+	o.cloneSet = cmd.Flags().Changed("clone")
+	o.addRemoteSet = cmd.Flags().Changed("remote")
+	o.isTerminal = o.io.IsaTTY && o.io.IsErrTTY && o.io.IsInTTY
+}
+
+func (o *options) run() error {
 	var err error
-	c := opts.IO.Color()
-	if opts.Repo != "" {
-		if git.IsValidURL(opts.Repo) {
-			u, err := url.Parse(opts.Repo)
+
+	c := o.io.Color()
+	if o.repo != "" {
+		if git.IsValidURL(o.repo) {
+			u, err := url.Parse(o.repo)
 			if err != nil {
 				return fmt.Errorf("invalid argument: %w", err)
 			}
-			opts.RepoToFork, err = glrepo.FromURL(u)
+			o.repoToFork, err = glrepo.FromURL(u)
 			if err != nil {
 				return fmt.Errorf("invalid argument: %w", err)
 			}
 		} else {
-			opts.RepoToFork, err = glrepo.FromFullName(opts.Repo)
+			o.repoToFork, err = glrepo.FromFullName(o.repo)
 			if err != nil {
 				return fmt.Errorf("argument error: %w", err)
 			}
 		}
 	} else {
-		opts.RepoToFork, err = opts.BaseRepo()
+		o.repoToFork, err = o.baseRepo()
 		if err != nil {
 			return fmt.Errorf("unable to determine source repository: %w", err)
 		}
 	}
 
-	cfg, err := opts.Config()
+	cfg, err := o.config()
 	if err != nil {
 		return err
 	}
 
-	apiClient, err := api.NewClientWithCfg(opts.RepoToFork.RepoHost(), cfg, false)
+	apiClient, err := api.NewClientWithCfg(o.repoToFork.RepoHost(), cfg, false)
 	if err != nil {
 		return err
 	}
-	opts.LabClient = apiClient.LabClient
+	labClient := apiClient.LabClient
 
-	if opts.IsTerminal {
-		fmt.Fprintf(opts.IO.StdErr, "- Forking %s\n", c.Bold(opts.RepoToFork.FullName()))
+	if o.isTerminal {
+		fmt.Fprintf(o.io.StdErr, "- Forking %s\n", c.Bold(o.repoToFork.FullName()))
 	}
 
 	forkOpts := &gitlab.ForkProjectOptions{}
-	if opts.Name != "" {
-		forkOpts.Name = gitlab.Ptr(opts.Name)
+	if o.name != "" {
+		forkOpts.Name = gitlab.Ptr(o.name)
 	}
-	if opts.Path != "" {
-		forkOpts.Path = gitlab.Ptr(opts.Path)
+	if o.path != "" {
+		forkOpts.Path = gitlab.Ptr(o.path)
 	}
 
-	forkedProject, err := api.ForkProject(opts.LabClient, opts.RepoToFork.FullName(), forkOpts)
+	forkedProject, err := api.ForkProject(labClient, o.repoToFork.FullName(), forkOpts)
 	if err != nil {
 		return err
 	}
@@ -159,13 +156,13 @@ loop:
 	for {
 		if !skipFirstCheck {
 			// get the forked project
-			forkedProject, err = api.GetProject(opts.LabClient, forkedProject.ID)
+			forkedProject, err = api.GetProject(labClient, forkedProject.ID)
 			if err != nil {
-				fmt.Fprintf(opts.IO.StdErr, "error checking fork status: %q", err.Error())
+				fmt.Fprintf(o.io.StdErr, "error checking fork status: %q", err.Error())
 				if retries == maximumRetries {
 					break loop
 				}
-				fmt.Fprintln(opts.IO.StdErr, "- Retrying...")
+				fmt.Fprintln(o.io.StdErr, "- Retrying...")
 				retries++
 				continue
 			}
@@ -181,11 +178,11 @@ loop:
 			continue
 		case "scheduled", "started": // import scheduled or started
 			if importStatus != forkedProject.ImportStatus { // avoid printing the same message again
-				fmt.Fprintln(opts.IO.StdErr, "- "+forkedProject.ImportStatus)
+				fmt.Fprintln(o.io.StdErr, "- "+forkedProject.ImportStatus)
 				importStatus = forkedProject.ImportStatus
 			}
 		case "finished": // import completed
-			fmt.Fprintln(opts.IO.StdErr, "- "+forkedProject.ImportStatus)
+			fmt.Fprintln(o.io.StdErr, "- "+forkedProject.ImportStatus)
 			break loop
 		case "failed": // import failed
 			importError = errors.New(forkedProject.ImportError) // return the import error
@@ -196,28 +193,28 @@ loop:
 	}
 
 	if importError != nil {
-		fmt.Fprintf(opts.IO.StdErr, "%s: %q", c.Red("Fork failed"), importError.Error())
+		fmt.Fprintf(o.io.StdErr, "%s: %q", c.Red("Fork failed"), importError.Error())
 		return nil
 	}
 
-	fmt.Fprintf(opts.IO.StdErr, "%s Created fork %s.\n", c.GreenCheck(), forkedProject.PathWithNamespace)
+	fmt.Fprintf(o.io.StdErr, "%s Created fork %s.\n", c.GreenCheck(), forkedProject.PathWithNamespace)
 
-	if (!opts.IsTerminal && opts.CurrentDirIsParent && (!opts.AddRemote && opts.AddRemoteSet)) ||
-		(!opts.CurrentDirIsParent && (!opts.Clone && opts.AddRemoteSet)) {
+	if (!o.isTerminal && o.currentDirIsParent && (!o.addRemote && o.addRemoteSet)) ||
+		(!o.currentDirIsParent && (!o.clone && o.addRemoteSet)) {
 		return nil
 	}
 
-	protocol, err := cfg.Get(opts.RepoToFork.RepoHost(), "git_protocol")
+	protocol, err := cfg.Get(o.repoToFork.RepoHost(), "git_protocol")
 	if err != nil {
 		return err
 	}
-	if opts.CurrentDirIsParent {
-		remotes, err := opts.Remotes()
+	if o.currentDirIsParent {
+		remotes, err := o.remotes()
 		if err != nil {
 			return err
 		}
 
-		if remote, err := remotes.FindByRepo(opts.RepoToFork.RepoOwner(), opts.RepoToFork.RepoName()); err == nil {
+		if remote, err := remotes.FindByRepo(o.repoToFork.RepoOwner(), o.repoToFork.RepoName()); err == nil {
 
 			scheme := ""
 			if remote.FetchURL != nil {
@@ -232,14 +229,14 @@ loop:
 		}
 
 		if remote, err := remotes.FindByRepo(forkedProject.Namespace.FullPath, forkedProject.Path); err == nil {
-			if opts.IsTerminal {
-				fmt.Fprintf(opts.IO.StdErr, "%s Using existing remote %s.\n", c.GreenCheck(), c.Bold(remote.Name))
+			if o.isTerminal {
+				fmt.Fprintf(o.io.StdErr, "%s Using existing remote %s.\n", c.GreenCheck(), c.Bold(remote.Name))
 			}
 			return nil
 		}
 
-		remoteDesired := opts.AddRemote
-		if !opts.AddRemoteSet {
+		remoteDesired := o.addRemote
+		if !o.addRemoteSet {
 			err = prompt.Confirm(&remoteDesired, "Would you like to add a remote for the fork?", true)
 			if err != nil {
 				return fmt.Errorf("failed to prompt: %w", err)
@@ -248,7 +245,7 @@ loop:
 		if remoteDesired {
 			remoteName := "origin"
 
-			remotes, err := opts.Remotes()
+			remotes, err := o.remotes()
 			if err != nil {
 				return err
 			}
@@ -259,8 +256,8 @@ loop:
 				if err != nil {
 					return err
 				}
-				if opts.IsTerminal {
-					fmt.Fprintf(opts.IO.StdErr, "%s Renamed %s remote to %s\n", c.GreenCheck(), c.Bold(remoteName), c.Bold(renameTarget))
+				if o.isTerminal {
+					fmt.Fprintf(o.io.StdErr, "%s Renamed %s remote to %s\n", c.GreenCheck(), c.Bold(remoteName), c.Bold(renameTarget))
 				}
 			}
 
@@ -271,15 +268,15 @@ loop:
 				return fmt.Errorf("failed to add remote: %w", err)
 			}
 
-			if opts.IsTerminal {
-				fmt.Fprintf(opts.IO.StdErr, "%s Added remote %s.\n", c.GreenCheck(), c.Bold(remoteName))
+			if o.isTerminal {
+				fmt.Fprintf(o.io.StdErr, "%s Added remote %s.\n", c.GreenCheck(), c.Bold(remoteName))
 			}
 		}
 	} else {
-		cloneDesired := opts.Clone
+		cloneDesired := o.clone
 		if !cloneDesired {
 			// If clone is explicitly set to false exit
-			if opts.CloneSet {
+			if o.cloneSet {
 				return nil
 			}
 
@@ -289,7 +286,7 @@ loop:
 			}
 		}
 		if cloneDesired {
-			repoToFork, err := api.GetProject(opts.LabClient, opts.RepoToFork.FullName())
+			repoToFork, err := api.GetProject(labClient, o.repoToFork.FullName())
 			if err != nil {
 				return err
 			}
@@ -308,8 +305,8 @@ loop:
 				return err
 			}
 
-			if opts.IsTerminal {
-				fmt.Fprintf(opts.IO.StdErr, "%s Cloned fork.\n", c.GreenCheck())
+			if o.isTerminal {
+				fmt.Fprintf(o.io.StdErr, "%s Cloned fork.\n", c.GreenCheck())
 			}
 		}
 	}

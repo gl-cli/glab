@@ -11,16 +11,16 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
-type DeleteOptions struct {
-	Config func() (config.Config, error)
-	Name   string
-	IO     *iostreams.IOStreams
+type options struct {
+	config func() (config.Config, error)
+	name   string
+	io     *iostreams.IOStreams
 }
 
-func NewCmdDelete(f cmdutils.Factory, runF func(*DeleteOptions) error) *cobra.Command {
-	opts := &DeleteOptions{
-		Config: f.Config,
-		IO:     f.IO(),
+func NewCmdDelete(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
+	opts := &options{
+		config: f.Config,
+		io:     f.IO(),
 	}
 
 	aliasDeleteCmd := &cobra.Command{
@@ -29,19 +29,25 @@ func NewCmdDelete(f cmdutils.Factory, runF func(*DeleteOptions) error) *cobra.Co
 		Long:  ``,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.Name = args[0]
+			opts.complete(args)
+
 			if runF != nil {
 				return runF(opts)
 			}
-			return deleteRun(cmd, opts)
+
+			return opts.run()
 		},
 	}
 	return aliasDeleteCmd
 }
 
-func deleteRun(cmd *cobra.Command, opts *DeleteOptions) error {
-	c := opts.IO.Color()
-	cfg, err := opts.Config()
+func (o *options) complete(args []string) {
+	o.name = args[0]
+}
+
+func (o *options) run() error {
+	c := o.io.Color()
+	cfg, err := o.config()
 	if err != nil {
 		return err
 	}
@@ -51,15 +57,15 @@ func deleteRun(cmd *cobra.Command, opts *DeleteOptions) error {
 		return fmt.Errorf("couldn't read aliases config: %w", err)
 	}
 
-	expansion, ok := aliasCfg.Get(opts.Name)
+	expansion, ok := aliasCfg.Get(o.name)
 	if !ok {
-		return fmt.Errorf("no such alias '%s'.", opts.Name)
+		return fmt.Errorf("no such alias '%s'.", o.name)
 	}
-	err = aliasCfg.Delete(opts.Name)
+	err = aliasCfg.Delete(o.name)
 	if err != nil {
-		return fmt.Errorf("failed to delete alias '%s': %w", opts.Name, err)
+		return fmt.Errorf("failed to delete alias '%s': %w", o.name, err)
 	}
 	redCheck := c.Red("✓")
-	fmt.Fprintf(opts.IO.StdErr, "%s Deleted alias '%s'; was '%s'.\n", redCheck, opts.Name, expansion)
+	fmt.Fprintf(o.io.StdErr, "%s Deleted alias '%s'; was '%s'.\n", redCheck, o.name, expansion)
 	return nil
 }

@@ -10,7 +10,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	git_testing "gitlab.com/gitlab-org/cli/pkg/git/testing"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"go.uber.org/mock/gomock"
 )
 
@@ -26,7 +25,7 @@ type TestRef struct {
 	state string
 }
 
-func setupTestFactory(rt http.RoundTripper) (*iostreams.IOStreams, cmdutils.Factory, *Options) {
+func setupTestFactory(rt http.RoundTripper) (cmdutils.Factory, *options) {
 	ios, _, _, _ := cmdtest.InitIOStreams(false, "")
 
 	f := cmdtest.InitFactory(ios, rt)
@@ -50,14 +49,13 @@ func setupTestFactory(rt http.RoundTripper) (*iostreams.IOStreams, cmdutils.Fact
 
 	client, _ := f.HttpClient()
 
-	opts := &Options{
-		Remotes:   f.Remotes,
-		LabClient: client,
-		Config:    f.Config,
-		BaseRepo:  f.BaseRepo,
+	return f, &options{
+		io:        ios,
+		remotes:   f.Remotes,
+		labClient: client,
+		config:    f.Config,
+		baseRepo:  f.BaseRepo,
 	}
-
-	return ios, f, opts
 }
 
 func Test_stackSync(t *testing.T) {
@@ -211,7 +209,7 @@ func Test_stackSync(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockCmd := git_testing.NewMockGitRunner(ctrl)
 
-			ios, f, opts := setupTestFactory(fakeHTTP)
+			f, opts := setupTestFactory(fakeHTTP)
 
 			err := git.SetConfig("glab.currentstack", tc.args.stack.title)
 			require.NoError(t, err)
@@ -262,7 +260,7 @@ func Test_stackSync(t *testing.T) {
 				mockCmd.EXPECT().Git(command)
 			}
 
-			err = stackSync(f, ios, opts, mockCmd)
+			err = opts.run(f, mockCmd)
 
 			if tc.wantErr {
 				require.Error(t, err)
