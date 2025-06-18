@@ -2,21 +2,21 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
+	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
-
-	"github.com/spf13/cobra"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 func main() {
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	ioStream, _, _, _ := iostreams.Test()
-	glabCli := commands.NewCmdRoot(&cmdutils.Factory{IO: ioStream}, "", "")
+	glabCli := commands.NewCmdRoot(&factory{io: ioStream}, "", "")
 	glabCli.DisableAutoGenTag = true
 	if *manpage {
 		if err := genManPage(glabCli, *path); err != nil {
@@ -255,4 +255,35 @@ func printOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
 		buf.WriteString("```\n")
 	}
 	return nil
+}
+
+type factory struct {
+	io *iostreams.IOStreams
+}
+
+func (f *factory) RepoOverride(repo string) {
+}
+
+func (f *factory) HttpClient() (*gitlab.Client, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (f *factory) BaseRepo() (glrepo.Interface, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (f *factory) Remotes() (glrepo.Remotes, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (f *factory) Config() (config.Config, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (f *factory) Branch() (string, error) {
+	return "", errors.New("not implemented")
+}
+
+func (f *factory) IO() *iostreams.IOStreams {
+	return f.io
 }
