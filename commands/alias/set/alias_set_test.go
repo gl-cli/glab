@@ -7,8 +7,6 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 
@@ -20,11 +18,11 @@ import (
 func runCommand(cfg config.Config, isTTY bool, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 
-	factoryConf := &cmdutils.Factory{
-		Config: func() (config.Config, error) {
+	factoryConf := &cmdtest.Factory{
+		ConfigStub: func() (config.Config, error) {
 			return cfg, nil
 		},
-		IO: ios,
+		IOStub: ios,
 	}
 
 	cmd := NewCmdSet(factoryConf, nil)

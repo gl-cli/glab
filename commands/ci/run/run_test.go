@@ -25,7 +25,7 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error, func()) 
 
 	factory := cmdtest.InitFactory(ios, rt)
 
-	factory.Branch = func() (string, error) {
+	factory.BranchStub = func() (string, error) {
 		return "custom-branch-123", nil
 	}
 

@@ -16,7 +16,7 @@ import (
 func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 	factory := cmdtest.InitFactory(ios, rt)
-	factory.Branch = func() (string, error) { return "current_branch", nil }
+	factory.BranchStub = func() (string, error) { return "current_branch", nil }
 
 	// TODO: shouldn't be there but the stub doesn't work without it
 	_, _ = factory.HttpClient()

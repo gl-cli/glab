@@ -23,7 +23,7 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string) (*t
 
 	factory := cmdtest.InitFactory(ios, rt)
 
-	factory.Remotes = func() (glrepo.Remotes, error) {
+	factory.RemotesStub = func() (glrepo.Remotes, error) {
 		return glrepo.Remotes{
 			{
 				Remote: &git.Remote{
@@ -44,7 +44,7 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string) (*t
 		}, nil
 	}
 
-	factory.Branch = func() (string, error) {
+	factory.BranchStub = func() (string, error) {
 		return branch, nil
 	}
 

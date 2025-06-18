@@ -10,7 +10,7 @@ import (
 	"github.com/google/shlex"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	glab_api "gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"go.uber.org/mock/gomock"
@@ -945,8 +945,8 @@ func setupCmdExec(t *testing.T) (execFunc, *MockAPI, *MockWriter, *MockWriter, *
 	mockCmd := NewMockCmd(ctrl)
 
 	cmd := NewCmdAgentBootstrap(
-		&cmdutils.Factory{
-			IO: &iostreams.IOStreams{
+		&cmdtest.Factory{
+			IOStub: &iostreams.IOStreams{
 				In:       io.NopCloser(&bytes.Buffer{}),
 				StdOut:   mockStdout,
 				StdErr:   mockStderr,
@@ -954,8 +954,8 @@ func setupCmdExec(t *testing.T) (execFunc, *MockAPI, *MockWriter, *MockWriter, *
 				IsInTTY:  true,
 				IsErrTTY: true,
 			},
-			HttpClient: func() (*gitlab.Client, error) { return nil /* unused */, nil },
-			BaseRepo:   func() (glrepo.Interface, error) { return glrepo.New("OWNER", "REPO"), nil },
+			HttpClientStub: func() (*gitlab.Client, error) { return nil /* unused */, nil },
+			BaseRepoStub:   func() (glrepo.Interface, error) { return glrepo.New("OWNER", "REPO"), nil },
 		},
 		func() error { return nil },
 		func(*gitlab.Client, any) API { return mockAPI },

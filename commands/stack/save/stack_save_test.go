@@ -363,9 +363,9 @@ func createFactoryWithConfig(key string, value string) cmdutils.Factory {
 
 	ios, _, _, _ := iostreams.Test()
 
-	return &cmdutils.Factory{
-		IO: ios,
-		Config: func() (config.Config, error) {
+	return &cmdtest.Factory{
+		IOStub: ios,
+		ConfigStub: func() (config.Config, error) {
 			return cfg, nil
 		},
 	}

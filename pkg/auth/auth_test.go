@@ -53,16 +53,16 @@ func Test_GetAuthenticatedClient(t *testing.T) {
 			ios, _, _, _ := cmdtest.InitIOStreams(false, "")
 			tc := gitlab_testing.NewTestClient(t)
 			f := cmdtest.InitFactory(ios, nil)
-			f.HttpClient = func() (*gitlab.Client, error) {
+			f.HttpClientStub = func() (*gitlab.Client, error) {
 				return tc.Client, nil
 			}
 
 			if tt.Config != nil {
-				f.Config = tt.Config
+				f.ConfigStub = tt.Config
 			}
 
 			if tt.HttpClient != nil {
-				f.HttpClient = tt.HttpClient
+				f.HttpClientStub = tt.HttpClient
 			}
 
 			_, err := GetAuthenticatedClient(f)

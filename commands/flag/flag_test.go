@@ -48,11 +48,11 @@ func NewDummyCmd(f cmdutils.Factory, runE func(opts *ListOptions) error) *cobra.
 }
 
 func runCommand(cli string, runE func(opts *ListOptions) error, doHyperlinks string) error {
-	factory := &cmdutils.Factory{
-		Config: func() (config.Config, error) {
+	factory := &cmdtest.Factory{
+		ConfigStub: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
 		},
 	}

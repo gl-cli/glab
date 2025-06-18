@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 
@@ -323,8 +322,8 @@ func Test_checkLastUpdate(t *testing.T) {
 			mainBuf := bytes.Buffer{}
 			defer config.StubWriteConfig(&mainBuf, io.Discard)()
 
-			f := &cmdutils.Factory{
-				Config: func() (config.Config, error) {
+			f := &cmdtest.Factory{
+				ConfigStub: func() (config.Config, error) {
 					if tt.lastUpdate != "" {
 						return config.NewFromString(fmt.Sprintf("last_update_check_timestamp: %s", tt.lastUpdate)), nil
 					}

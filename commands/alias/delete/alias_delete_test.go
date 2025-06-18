@@ -5,10 +5,10 @@ import (
 	"io"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 
 	"github.com/google/shlex"
@@ -58,9 +58,9 @@ func TestAliasDelete(t *testing.T) {
 			ios.IsaTTY = tt.isTTY
 			ios.IsErrTTY = tt.isTTY
 
-			factoryConf := &cmdutils.Factory{
-				IO: ios,
-				Config: func() (config.Config, error) {
+			factoryConf := &cmdtest.Factory{
+				IOStub: ios,
+				ConfigStub: func() (config.Config, error) {
 					return cfg, nil
 				},
 			}

@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 	factory := cmdtest.InitFactory(ios, rt)
-	factory.Branch = git.CurrentBranch
+	factory.BranchStub = git.CurrentBranch
 
 	// TODO: shouldn't be there but the stub doesn't work without it
 	_, _ = factory.HttpClient()

@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -74,8 +73,8 @@ func Test_NewCmdDiff(t *testing.T) {
 			ios.IsInTTY = tt.isTTY
 			ios.IsErrTTY = tt.isTTY
 
-			f := &cmdutils.Factory{
-				IO: ios,
+			f := &cmdtest.Factory{
+				IOStub: ios,
 			}
 
 			var opts *DiffOptions
@@ -113,7 +112,7 @@ func runCommand(rt http.RoundTripper, remotes glrepo.Remotes, isTTY bool, cli st
 	factory := cmdtest.InitFactory(ios, rt)
 	_, _ = factory.HttpClient()
 
-	factory.Remotes = func() (glrepo.Remotes, error) {
+	factory.RemotesStub = func() (glrepo.Remotes, error) {
 		if remotes == nil {
 			return glrepo.Remotes{
 				{
@@ -124,7 +123,7 @@ func runCommand(rt http.RoundTripper, remotes glrepo.Remotes, isTTY bool, cli st
 		}
 		return remotes, nil
 	}
-	factory.Branch = func() (string, error) {
+	factory.BranchStub = func() (string, error) {
 		return "feature", nil
 	}
 

@@ -19,7 +19,7 @@ func runCommand(f cmdutils.Factory, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(true, "")
 	factory := cmdtest.InitFactory(ios, nil)
 	_, _ = factory.HttpClient()
-	factory.Config = f.Config
+	factory.ConfigStub = f.Config
 
 	cmd := NewCmdLogout(factory)
 	// workaround for CI
@@ -56,8 +56,8 @@ func Test_NewCmdLogout(t *testing.T) {
 
 			token := "xxxxxxxx"
 
-			f := &cmdutils.Factory{
-				Config: func() (config.Config, error) {
+			f := &cmdtest.Factory{
+				ConfigStub: func() (config.Config, error) {
 					return config.NewFromString(heredoc.Docf(`
 					hosts:
 					  gitlab.something.com:

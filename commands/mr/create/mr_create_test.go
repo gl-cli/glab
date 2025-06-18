@@ -27,7 +27,7 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string, let
 	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 
 	factory := cmdtest.InitFactory(ios, rt)
-	factory.Remotes = func() (glrepo.Remotes, error) {
+	factory.RemotesStub = func() (glrepo.Remotes, error) {
 		return glrepo.Remotes{
 			{
 				Remote: &git.Remote{
@@ -47,7 +47,7 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string, let
 			},
 		}, nil
 	}
-	factory.Branch = func() (string, error) {
+	factory.BranchStub = func() (string, error) {
 		return branch, nil
 	}
 
@@ -55,7 +55,7 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string, let
 	_, _ = factory.HttpClient()
 
 	if letItFail {
-		factory.HttpClient = func() (*gitlab.Client, error) {
+		factory.HttpClientStub = func() (*gitlab.Client, error) {
 			return nil, errors.New("fail on purpose")
 		}
 	}

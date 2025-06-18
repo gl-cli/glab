@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/shlex"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
@@ -22,16 +22,16 @@ import (
 func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := iostreams.Test()
 
-	factory := &cmdutils.Factory{
-		IO: ios,
-		HttpClient: func() (*gitlab.Client, error) {
+	factory := &cmdtest.Factory{
+		IOStub: ios,
+		HttpClientStub: func() (*gitlab.Client, error) {
 			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
 			if err != nil {
 				return nil, err
 			}
 			return a.Lab(), err
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
 		},
 	}

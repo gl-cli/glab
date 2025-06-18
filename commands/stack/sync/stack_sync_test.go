@@ -31,11 +31,11 @@ func setupTestFactory(rt http.RoundTripper) (*iostreams.IOStreams, cmdutils.Fact
 
 	f := cmdtest.InitFactory(ios, rt)
 
-	f.BaseRepo = func() (glrepo.Interface, error) {
+	f.BaseRepoStub = func() (glrepo.Interface, error) {
 		return glrepo.TestProject("stack_guy", "stackproject"), nil
 	}
 
-	f.Remotes = func() (glrepo.Remotes, error) {
+	f.RemotesStub = func() (glrepo.Remotes, error) {
 		r := glrepo.Remotes{
 			&glrepo.Remote{
 				Remote: &git.Remote{
