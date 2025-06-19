@@ -48,7 +48,7 @@ require (
 	golang.org/x/term v0.32.0
 	golang.org/x/text v0.26.0
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/apimachinery v0.33.1
+	k8s.io/apimachinery v0.33.2
 	k8s.io/client-go v0.33.1
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738
 	oss.terrastruct.com/d2 v0.7.0
