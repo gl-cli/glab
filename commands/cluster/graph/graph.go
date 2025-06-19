@@ -44,14 +44,43 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	graphCmd := &cobra.Command{
 		Use:   "graph [flags]",
 		Short: `Query Kubernetes object graph using GitLab Agent for Kubernetes. (EXPERIMENTAL)`,
-		Long: heredoc.Doc(`
-This commands starts a web server that shows a live view of Kubernetes objects graph in a browser.
-It works via the GitLab Agent for Kubernetes running in the cluster.
-The minimum required GitLab and GitLab Agent version is v18.1.
+		Long: heredoc.Docf(`
+		This commands starts a web server that shows a live view of Kubernetes objects graph in a browser.
+		It works via the GitLab Agent for Kubernetes running in the cluster.
+		The minimum required GitLab and GitLab Agent version is v18.1.
 
-This command only supports personal and project access tokens for authentication.
-` + "The token should have at least the `Developer` role and the `read_api` and `k8s_proxy` scopes.\n" +
-			text.ExperimentalString),
+		Please leave feedback in [this issue](https://gitlab.com/gitlab-org/cli/-/issues/7900).
+
+		### Advanced usage
+
+		Apart from high level ways to construct the query, this command allows you to construct and send
+		the query using all the underlying API capabilities.
+		Please see the
+		[technical design doc](https://gitlab.com/gitlab-org/cluster-integration/gitlab-agent/-/blob/master/doc/graph_api.md)
+		to understand what is possible and how to do it.
+
+		This command only supports personal and project access tokens for authentication.
+		`+"The token should have at least the `Developer` role in the agent project and the `read_api` and `k8s_proxy` scopes."+`
+		%s`, text.ExperimentalString),
+		Example: heredoc.Doc(`
+		# Run the default query for agent 123
+		$ glab cluster graph -R user/project -a 123
+
+		# Show common resources from the core and RBAC groups
+		$ glab cluster graph -R user/project -a 123 --core --rbac
+
+		# Show certain resources
+		$ glab cluster graph -R user/project -a 123 --resources=pods --resources=configmaps
+
+		# Same as above, but more compact
+		$ glab cluster graph -R user/project -a 123 --r={pods,configmaps}
+
+		# Advanced usage - pass the full query directly via stdin.
+		# The query below watches serviceaccounts in all namespaces except for the kube-system.
+		$ Q='{"queries":[{"include":{"resource_selector_expression":"resource == \"serviceaccounts\""}}],"namespaces":{"object_selector_expression":"name != \"kube-system\""}}'
+
+		$ echo -n "$Q" | glab cluster graph -R user/project -a 123 --stdin
+		`),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.io = f.IO() // TODO move into the struct literal after factory refactoring
