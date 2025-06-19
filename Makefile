@@ -46,7 +46,7 @@ BUILDLOC ?= ./bin/glab
 
 # Dependency versions
 GOTESTSUM_VERSION = 0.6.0
-GOLANGCI_VERSION = 1.64.5
+GOLANGCI_LINT_VERSION = 2.1.6
 
 # Add the ability to override some variables
 # Use with care
@@ -135,13 +135,13 @@ ifdef HASGOCILINT
 bin/golangci-lint:
 	@echo "Skip this"
 else
-bin/golangci-lint: bin/golangci-lint-${GOLANGCI_VERSION}
-	@ln -sf golangci-lint-${GOLANGCI_VERSION} bin/golangci-lint
+bin/golangci-lint: bin/golangci-lint-${GOLANGCI_LINT_VERSION}
+	@ln -sf golangci-lint-${GOLANGCI_LINT_VERSION} bin/golangci-lint
 endif
 
-bin/golangci-lint-${GOLANGCI_VERSION}:
+bin/golangci-lint-${GOLANGCI_LINT_VERSION}:
 	@mkdir -p bin
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | bash -s -- -b ./bin v${GOLANGCI_VERSION}
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | bash -s -- -b ./bin v${GOLANGCI_LINT_VERSION}
 	@mv bin/golangci-lint $@
 
 .PHONY: coverage
