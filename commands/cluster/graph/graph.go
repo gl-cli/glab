@@ -27,6 +27,12 @@ type options struct {
 	listenNet, listenAddr string
 	agentID               int64
 	readQueryFromStdIn    bool
+	groupCore             bool
+	groupBatch            bool
+	groupApps             bool
+	groupRBAC             bool
+	groupClusterRBAC      bool
+	groupCRD              bool
 }
 
 func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
@@ -57,8 +63,22 @@ This command only supports personal and project access tokens for authentication
 	fl.Int64VarP(&opts.agentID, "agent", "a", opts.agentID, "The numerical Agent ID to connect to.")
 	fl.StringVar(&opts.listenNet, "listen-net", opts.listenNet, "Network on which to listen for connections.")
 	fl.StringVar(&opts.listenAddr, "listen-addr", opts.listenAddr, "Address to listen on.")
+
+	fl.BoolVar(&opts.groupCore, "core", opts.groupCore, "Watch pods, secrets, configmaps, and serviceaccounts in core/v1 group")
+	fl.BoolVar(&opts.groupBatch, "batch", opts.groupBatch, "Watch jobs, and cronjobs in batch/v1 group.")
+	fl.BoolVar(&opts.groupApps, "apps", opts.groupApps, "Watch deployments, replicasets, daemonsets, and statefulsets in apps/v1 group.")
+	fl.BoolVar(&opts.groupRBAC, "rbac", opts.groupRBAC, "Watch roles, and rolebindings in rbac.authorization.k8s.io/v1 group.")
+	fl.BoolVar(&opts.groupClusterRBAC, "cluster-rbac", opts.groupClusterRBAC, "Watch clusterroles, and clusterrolebindings in rbac.authorization.k8s.io/v1 group.")
+	fl.BoolVar(&opts.groupCRD, "crd", opts.groupCRD, "Watch customresourcedefinitions in apiextensions.k8s.io/v1 group.")
 	fl.BoolVar(&opts.readQueryFromStdIn, "stdin", opts.readQueryFromStdIn, "Read watch request from standard input.")
+
 	cobra.CheckErr(graphCmd.MarkFlagRequired("agent"))
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "core")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "batch")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "apps")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "rbac")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "cluster-rbac")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "crd")
 
 	return graphCmd
 }
@@ -119,8 +139,13 @@ func (o *options) constructWatchRequest() ([]byte, error) {
 		return o.readWatchRequestFromStdin()
 	}
 
+	q := o.maybeConstructWatchQueriesForGroups()
+	if len(q) == 0 {
+		q = o.defaultWatchQueries()
+	}
+
 	req, err := json.Marshal(&watchGraphWebSocketRequest{
-		Queries: o.defaultWatchQueries(),
+		Queries: q,
 		Namespaces: &namespaces{
 			ObjectSelectorExpression: "name != 'kube-system'",
 		},
@@ -162,4 +187,52 @@ func (o *options) defaultWatchQueries() []query {
 			},
 		},
 	}
+}
+
+func (o *options) maybeConstructWatchQueriesForGroups() []query {
+	var q []query
+
+	if o.groupCore {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == '' && version == 'v1' && (resource in ['pods', 'secrets', 'configmaps', 'serviceaccounts'])",
+			},
+		})
+	}
+	if o.groupBatch {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'batch' && version == 'v1' && (resource in ['jobs', 'cronjobs'])",
+			},
+		})
+	}
+	if o.groupApps {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'apps' && version == 'v1' && (resource in ['deployments', 'replicasets', 'daemonsets', 'statefulsets'])",
+			},
+		})
+	}
+	if o.groupRBAC {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'rbac.authorization.k8s.io' && version == 'v1' && (resource in ['roles', 'rolebindings'])",
+			},
+		})
+	}
+	if o.groupClusterRBAC {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'rbac.authorization.k8s.io' && version == 'v1' && (resource in ['clusterroles', 'clusterrolebindings'])",
+			},
+		})
+	}
+	if o.groupCRD {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'apiextensions.k8s.io' && version == 'v1' && resource == 'customresourcedefinitions'",
+			},
+		})
+	}
+	return q
 }
