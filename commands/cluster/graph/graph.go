@@ -26,6 +26,7 @@ type options struct {
 	config                func() (config.Config, error)
 	listenNet, listenAddr string
 	agentID               int64
+	resources             []string
 	readQueryFromStdIn    bool
 	groupCore             bool
 	groupBatch            bool
@@ -64,6 +65,7 @@ This command only supports personal and project access tokens for authentication
 	fl.StringVar(&opts.listenNet, "listen-net", opts.listenNet, "Network on which to listen for connections.")
 	fl.StringVar(&opts.listenAddr, "listen-addr", opts.listenAddr, "Address to listen on.")
 
+	fl.StringArrayVarP(&opts.resources, "resources", "r", opts.resources, "A list of resources to watch. You can see the list of resources your cluster supports by running kubectl api-resources.")
 	fl.BoolVar(&opts.groupCore, "core", opts.groupCore, "Watch pods, secrets, configmaps, and serviceaccounts in core/v1 group")
 	fl.BoolVar(&opts.groupBatch, "batch", opts.groupBatch, "Watch jobs, and cronjobs in batch/v1 group.")
 	fl.BoolVar(&opts.groupApps, "apps", opts.groupApps, "Watch deployments, replicasets, daemonsets, and statefulsets in apps/v1 group.")
@@ -73,6 +75,7 @@ This command only supports personal and project access tokens for authentication
 	fl.BoolVar(&opts.readQueryFromStdIn, "stdin", opts.readQueryFromStdIn, "Read watch request from standard input.")
 
 	cobra.CheckErr(graphCmd.MarkFlagRequired("agent"))
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "resources")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "core")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "batch")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "apps")
@@ -140,6 +143,7 @@ func (o *options) constructWatchRequest() ([]byte, error) {
 	}
 
 	q := o.maybeConstructWatchQueriesForGroups()
+	q = append(q, o.maybeConstructWatchQueriesForResources()...)
 	if len(q) == 0 {
 		q = o.defaultWatchQueries()
 	}
@@ -184,6 +188,32 @@ func (o *options) defaultWatchQueries() []query {
 		{
 			Include: &queryInclude{
 				ResourceSelectorExpression: "group == 'rbac.authorization.k8s.io' && version == 'v1' && !(resource in ['clusterrolebindings', 'clusterroles'])",
+			},
+		},
+	}
+}
+
+func (o *options) maybeConstructWatchQueriesForResources() []query {
+	if len(o.resources) == 0 {
+		return nil
+	}
+	var sb strings.Builder
+	sb.WriteString("resource in [")
+	for i, resource := range o.resources {
+		if i == 0 {
+			sb.WriteByte('\'')
+		} else {
+			sb.WriteString(",'")
+		}
+		sb.WriteString(resource)
+		sb.WriteByte('\'')
+	}
+	sb.WriteByte(']')
+
+	return []query{
+		{
+			Include: &queryInclude{
+				ResourceSelectorExpression: sb.String(),
 			},
 		},
 	}
