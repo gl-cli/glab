@@ -19,8 +19,18 @@ This commands starts a web server that shows a live view of Kubernetes objects g
 It works via the GitLab Agent for Kubernetes running in the cluster.
 The minimum required GitLab and GitLab Agent version is v18.1.
 
+Please leave feedback in [this issue](https://gitlab.com/gitlab-org/cli/-/issues/7900).
+
+### Advanced usage
+
+Apart from high level ways to construct the query, this command allows you to construct and send
+the query using all the underlying API capabilities.
+Please see the
+[technical design doc](https://gitlab.com/gitlab-org/cluster-integration/gitlab-agent/-/blob/master/doc/graph_api.md)
+to understand what is possible and how to do it.
+
 This command only supports personal and project access tokens for authentication.
-The token should have at least the `Developer` role and the `read_api` and `k8s_proxy` scopes.
+The token should have at least the `Developer` role in the agent project and the `read_api` and `k8s_proxy` scopes.
 
 This feature is experimental. It might be broken or removed without any prior notice.
 Read more about what experimental features mean at
@@ -32,13 +42,43 @@ Use experimental features at your own risk.
 glab cluster graph [flags]
 ```
 
+## Examples
+
+```console
+# Run the default query for agent 123
+$ glab cluster graph -R user/project -a 123
+
+# Show common resources from the core and RBAC groups
+$ glab cluster graph -R user/project -a 123 --core --rbac
+
+# Show certain resources
+$ glab cluster graph -R user/project -a 123 --resources=pods --resources=configmaps
+
+# Same as above, but more compact
+$ glab cluster graph -R user/project -a 123 --r={pods,configmaps}
+
+# Advanced usage - pass the full query directly via stdin.
+# The query below watches serviceaccounts in all namespaces except for the kube-system.
+$ Q='{"queries":[{"include":{"resource_selector_expression":"resource == \"serviceaccounts\""}}],"namespaces":{"object_selector_expression":"name != \"kube-system\""}}'
+
+$ echo -n "$Q" | glab cluster graph -R user/project -a 123 --stdin
+
+```
+
 ## Options
 
 ```plaintext
-  -a, --agent int            The numerical Agent ID to connect to.
-      --listen-addr string   Address to listen on. (default "localhost:0")
-      --listen-net string    Network on which to listen for connections. (default "tcp")
-      --stdin                Read watch request from standard input.
+  -a, --agent int               The numerical Agent ID to connect to.
+      --apps                    Watch deployments, replicasets, daemonsets, and statefulsets in apps/v1 group.
+      --batch                   Watch jobs, and cronjobs in batch/v1 group.
+      --cluster-rbac            Watch clusterroles, and clusterrolebindings in rbac.authorization.k8s.io/v1 group.
+      --core                    Watch pods, secrets, configmaps, and serviceaccounts in core/v1 group
+      --crd                     Watch customresourcedefinitions in apiextensions.k8s.io/v1 group.
+      --listen-addr string      Address to listen on. (default "localhost:0")
+      --listen-net string       Network on which to listen for connections. (default "tcp")
+      --rbac                    Watch roles, and rolebindings in rbac.authorization.k8s.io/v1 group.
+  -r, --resources stringArray   A list of resources to watch. You can see the list of resources your cluster supports by running kubectl api-resources.
+      --stdin                   Read watch request from standard input.
 ```
 
 ## Options inherited from parent commands

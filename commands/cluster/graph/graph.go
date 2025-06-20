@@ -26,7 +26,14 @@ type options struct {
 	config                func() (config.Config, error)
 	listenNet, listenAddr string
 	agentID               int64
+	resources             []string
 	readQueryFromStdIn    bool
+	groupCore             bool
+	groupBatch            bool
+	groupApps             bool
+	groupRBAC             bool
+	groupClusterRBAC      bool
+	groupCRD              bool
 }
 
 func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
@@ -37,14 +44,43 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	graphCmd := &cobra.Command{
 		Use:   "graph [flags]",
 		Short: `Query Kubernetes object graph using GitLab Agent for Kubernetes. (EXPERIMENTAL)`,
-		Long: heredoc.Doc(`
-This commands starts a web server that shows a live view of Kubernetes objects graph in a browser.
-It works via the GitLab Agent for Kubernetes running in the cluster.
-The minimum required GitLab and GitLab Agent version is v18.1.
+		Long: heredoc.Docf(`
+		This commands starts a web server that shows a live view of Kubernetes objects graph in a browser.
+		It works via the GitLab Agent for Kubernetes running in the cluster.
+		The minimum required GitLab and GitLab Agent version is v18.1.
 
-This command only supports personal and project access tokens for authentication.
-` + "The token should have at least the `Developer` role and the `read_api` and `k8s_proxy` scopes.\n" +
-			text.ExperimentalString),
+		Please leave feedback in [this issue](https://gitlab.com/gitlab-org/cli/-/issues/7900).
+
+		### Advanced usage
+
+		Apart from high level ways to construct the query, this command allows you to construct and send
+		the query using all the underlying API capabilities.
+		Please see the
+		[technical design doc](https://gitlab.com/gitlab-org/cluster-integration/gitlab-agent/-/blob/master/doc/graph_api.md)
+		to understand what is possible and how to do it.
+
+		This command only supports personal and project access tokens for authentication.
+		`+"The token should have at least the `Developer` role in the agent project and the `read_api` and `k8s_proxy` scopes."+`
+		%s`, text.ExperimentalString),
+		Example: heredoc.Doc(`
+		# Run the default query for agent 123
+		$ glab cluster graph -R user/project -a 123
+
+		# Show common resources from the core and RBAC groups
+		$ glab cluster graph -R user/project -a 123 --core --rbac
+
+		# Show certain resources
+		$ glab cluster graph -R user/project -a 123 --resources=pods --resources=configmaps
+
+		# Same as above, but more compact
+		$ glab cluster graph -R user/project -a 123 --r={pods,configmaps}
+
+		# Advanced usage - pass the full query directly via stdin.
+		# The query below watches serviceaccounts in all namespaces except for the kube-system.
+		$ Q='{"queries":[{"include":{"resource_selector_expression":"resource == \"serviceaccounts\""}}],"namespaces":{"object_selector_expression":"name != \"kube-system\""}}'
+
+		$ echo -n "$Q" | glab cluster graph -R user/project -a 123 --stdin
+		`),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.io = f.IO() // TODO move into the struct literal after factory refactoring
@@ -57,8 +93,24 @@ This command only supports personal and project access tokens for authentication
 	fl.Int64VarP(&opts.agentID, "agent", "a", opts.agentID, "The numerical Agent ID to connect to.")
 	fl.StringVar(&opts.listenNet, "listen-net", opts.listenNet, "Network on which to listen for connections.")
 	fl.StringVar(&opts.listenAddr, "listen-addr", opts.listenAddr, "Address to listen on.")
+
+	fl.StringArrayVarP(&opts.resources, "resources", "r", opts.resources, "A list of resources to watch. You can see the list of resources your cluster supports by running kubectl api-resources.")
+	fl.BoolVar(&opts.groupCore, "core", opts.groupCore, "Watch pods, secrets, configmaps, and serviceaccounts in core/v1 group")
+	fl.BoolVar(&opts.groupBatch, "batch", opts.groupBatch, "Watch jobs, and cronjobs in batch/v1 group.")
+	fl.BoolVar(&opts.groupApps, "apps", opts.groupApps, "Watch deployments, replicasets, daemonsets, and statefulsets in apps/v1 group.")
+	fl.BoolVar(&opts.groupRBAC, "rbac", opts.groupRBAC, "Watch roles, and rolebindings in rbac.authorization.k8s.io/v1 group.")
+	fl.BoolVar(&opts.groupClusterRBAC, "cluster-rbac", opts.groupClusterRBAC, "Watch clusterroles, and clusterrolebindings in rbac.authorization.k8s.io/v1 group.")
+	fl.BoolVar(&opts.groupCRD, "crd", opts.groupCRD, "Watch customresourcedefinitions in apiextensions.k8s.io/v1 group.")
 	fl.BoolVar(&opts.readQueryFromStdIn, "stdin", opts.readQueryFromStdIn, "Read watch request from standard input.")
+
 	cobra.CheckErr(graphCmd.MarkFlagRequired("agent"))
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "resources")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "core")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "batch")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "apps")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "rbac")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "cluster-rbac")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "crd")
 
 	return graphCmd
 }
@@ -119,7 +171,22 @@ func (o *options) constructWatchRequest() ([]byte, error) {
 		return o.readWatchRequestFromStdin()
 	}
 
-	return o.defaultWatchRequest()
+	q := o.maybeConstructWatchQueriesForGroups()
+	q = append(q, o.maybeConstructWatchQueriesForResources()...)
+	if len(q) == 0 {
+		q = o.defaultWatchQueries()
+	}
+
+	req, err := json.Marshal(&watchGraphWebSocketRequest{
+		Queries: q,
+		Namespaces: &namespaces{
+			ObjectSelectorExpression: "name != 'kube-system'",
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("JSON marshal: %w", err)
+	}
+	return req, nil
 }
 
 func (o *options) readWatchRequestFromStdin() ([]byte, error) {
@@ -130,37 +197,101 @@ func (o *options) readWatchRequestFromStdin() ([]byte, error) {
 	return req, nil
 }
 
-func (o *options) defaultWatchRequest() ([]byte, error) {
-	req, err := json.Marshal(&watchGraphWebSocketRequest{
-		Queries: []query{
-			{
-				Include: &queryInclude{
-					ResourceSelectorExpression: "group == '' && version == 'v1' && (resource in ['pods', 'secrets', 'configmaps', 'serviceaccounts'])",
-				},
-			},
-			{
-				Include: &queryInclude{
-					ResourceSelectorExpression: "group == 'apps' && version == 'v1' && (resource in ['deployments', 'replicasets', 'daemonsets', 'statefulsets'])",
-				},
-			},
-			{
-				Include: &queryInclude{
-					ResourceSelectorExpression: "group == 'batch' && version == 'v1' && (resource in ['jobs', 'cronjobs'])",
-				},
-			},
-			{
-				Include: &queryInclude{
-					ResourceSelectorExpression: "group == 'rbac.authorization.k8s.io' && version == 'v1' && !(resource in ['clusterrolebindings', 'clusterroles'])",
-				},
+func (o *options) defaultWatchQueries() []query {
+	return []query{
+		{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == '' && version == 'v1' && (resource in ['pods', 'secrets', 'configmaps', 'serviceaccounts'])",
 			},
 		},
-		Namespaces: &namespaces{
-			ObjectSelectorExpression: "name != 'kube-system'",
+		{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'apps' && version == 'v1' && (resource in ['deployments', 'replicasets', 'daemonsets', 'statefulsets'])",
+			},
 		},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("JSON marshal: %w", err)
+		{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'batch' && version == 'v1' && (resource in ['jobs', 'cronjobs'])",
+			},
+		},
+		{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'rbac.authorization.k8s.io' && version == 'v1' && !(resource in ['clusterrolebindings', 'clusterroles'])",
+			},
+		},
 	}
-	fmt.Println(string(req))
-	return req, nil
+}
+
+func (o *options) maybeConstructWatchQueriesForResources() []query {
+	if len(o.resources) == 0 {
+		return nil
+	}
+	var sb strings.Builder
+	sb.WriteString("resource in [")
+	for i, resource := range o.resources {
+		if i == 0 {
+			sb.WriteByte('\'')
+		} else {
+			sb.WriteString(",'")
+		}
+		sb.WriteString(resource)
+		sb.WriteByte('\'')
+	}
+	sb.WriteByte(']')
+
+	return []query{
+		{
+			Include: &queryInclude{
+				ResourceSelectorExpression: sb.String(),
+			},
+		},
+	}
+}
+
+func (o *options) maybeConstructWatchQueriesForGroups() []query {
+	var q []query
+
+	if o.groupCore {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == '' && version == 'v1' && (resource in ['pods', 'secrets', 'configmaps', 'serviceaccounts'])",
+			},
+		})
+	}
+	if o.groupBatch {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'batch' && version == 'v1' && (resource in ['jobs', 'cronjobs'])",
+			},
+		})
+	}
+	if o.groupApps {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'apps' && version == 'v1' && (resource in ['deployments', 'replicasets', 'daemonsets', 'statefulsets'])",
+			},
+		})
+	}
+	if o.groupRBAC {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'rbac.authorization.k8s.io' && version == 'v1' && (resource in ['roles', 'rolebindings'])",
+			},
+		})
+	}
+	if o.groupClusterRBAC {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'rbac.authorization.k8s.io' && version == 'v1' && (resource in ['clusterroles', 'clusterrolebindings'])",
+			},
+		})
+	}
+	if o.groupCRD {
+		q = append(q, query{
+			Include: &queryInclude{
+				ResourceSelectorExpression: "group == 'apiextensions.k8s.io' && version == 'v1' && resource == 'customresourcedefinitions'",
+			},
+		})
+	}
+	return q
 }
