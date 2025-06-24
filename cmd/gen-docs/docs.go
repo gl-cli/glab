@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -262,6 +263,10 @@ type factory struct {
 }
 
 func (f *factory) RepoOverride(repo string) {
+}
+
+func (f *factory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {
+	return nil, errors.New("not implemented")
 }
 
 func (f *factory) HttpClient() (*gitlab.Client, error) {
