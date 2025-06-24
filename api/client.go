@@ -121,10 +121,10 @@ var secureCipherSuites = []uint16{
 	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 }
 
-func tlsConfig(host string) *tls.Config {
+func tlsConfig(host string, allowInsecure bool) *tls.Config {
 	config := &tls.Config{
 		MinVersion:         tls.VersionTLS12,
-		InsecureSkipVerify: apiClient.allowInsecure,
+		InsecureSkipVerify: allowInsecure,
 	}
 
 	if host == "gitlab.com" {
@@ -156,7 +156,7 @@ func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 
 				IdleConnTimeout:       30 * time.Second,
 				TLSHandshakeTimeout:   10 * time.Second,
 				ExpectContinueTimeout: 1 * time.Second,
-				TLSClientConfig:       tlsConfig(host),
+				TLSClientConfig:       tlsConfig(host, apiClient.allowInsecure),
 			},
 		}
 	}
