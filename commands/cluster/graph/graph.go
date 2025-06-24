@@ -50,6 +50,22 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 		listenNet:  "tcp",
 		listenAddr: "localhost:0",
 	}
+	objSelExprHelp := strings.Join([]string{
+		"- `obj` is the Kubernetes object being evaluated.",
+		"- `group` group of the object.",
+		"- `version` version of the object.",
+		"- `resource` resource name of the object. E.g. pods for the Pod kind.",
+		"- `namespace` namespace of the object.",
+		"- `name` name of the object.",
+		"- `labels` labels of the object.",
+		"- `annotations` annotations of the object.",
+	}, "\n")
+	resSelExprHelp := strings.Join([]string{
+		"- `group` group of the object.",
+		"- `version` version of the object.",
+		"- `resource` resource name of the object. E.g. pods for the Pod kind.",
+		"- `namespaced` scope of group+version+resource. Can be `bool` `true` or `false`.",
+	}, "\n")
 	graphCmd := &cobra.Command{
 		Use:   "graph [flags]",
 		Short: `Query Kubernetes object graph using GitLab Agent for Kubernetes. (EXPERIMENTAL)`,
@@ -59,6 +75,19 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 		The minimum required GitLab and GitLab Agent version is v18.1.
 
 		Please leave feedback in [this issue](https://gitlab.com/gitlab-org/cli/-/issues/7900).
+
+		### Resource filtering
+
+		Resources and namespaces can be filterer using [CEL expressions](https://cel.dev/).
+
+		%s can be used to filter objects. The expression must return a boolean. The following variables are available:
+
+		%s
+
+		%s can be used to filter Kubernetes discovery information to include/exclude resources
+		from the watch request. The expression must return a boolean. The following variables are available:
+
+		%s
 
 		### Advanced usage
 
@@ -70,7 +99,7 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 
 		This command only supports personal and project access tokens for authentication.
 		`+"The token should have at least the `Developer` role in the agent project and the `read_api` and `k8s_proxy` scopes."+`
-		%s`, text.ExperimentalString),
+		%s`, "`object_selector_expression`", objSelExprHelp, "`resource_selector_expression`", resSelExprHelp, text.ExperimentalString),
 		Example: heredoc.Doc(`
 		# Run the default query for agent 123
 		$ glab cluster graph -R user/project -a 123
@@ -110,7 +139,7 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	fl.StringArrayVarP(&opts.nsNames, "namespace", "n", opts.nsNames, "Namespaces to watch. If not specified, all namespaces are watched with label and field selectors filtering.")
 	fl.StringVarP(&opts.nsLabels, "ns-label-selector", "", opts.nsLabels, "Label selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors.")
 	fl.StringVarP(&opts.nsSelector, "ns-field-selector", "", opts.nsSelector, "Field selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/.")
-	fl.StringVarP(&opts.nsCEL, "ns-expression", "", opts.nsCEL, "CEL expression to select namespaces. Always evaluated before a namespace is watched.")
+	fl.StringVarP(&opts.nsCEL, "ns-expression", "", opts.nsCEL, "CEL expression to select namespaces. Evaluated before a namespace is watched and on any updates for the namespace object.")
 
 	fl.StringArrayVarP(&opts.resources, "resources", "r", opts.resources, "A list of resources to watch. You can see the list of resources your cluster supports by running kubectl api-resources.")
 	fl.BoolVar(&opts.groupCore, "core", opts.groupCore, "Watch pods, secrets, configmaps, and serviceaccounts in core/v1 group")

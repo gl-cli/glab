@@ -21,6 +21,29 @@ The minimum required GitLab and GitLab Agent version is v18.1.
 
 Please leave feedback in [this issue](https://gitlab.com/gitlab-org/cli/-/issues/7900).
 
+### Resource filtering
+
+Resources and namespaces can be filterer using [CEL expressions](https://cel.dev/).
+
+`object_selector_expression` can be used to filter objects. The expression must return a boolean. The following variables are available:
+
+- `obj` is the Kubernetes object being evaluated.
+- `group` group of the object.
+- `version` version of the object.
+- `resource` resource name of the object. E.g. pods for the Pod kind.
+- `namespace` namespace of the object.
+- `name` name of the object.
+- `labels` labels of the object.
+- `annotations` annotations of the object.
+
+`resource_selector_expression` can be used to filter Kubernetes discovery information to include/exclude resources
+from the watch request. The expression must return a boolean. The following variables are available:
+
+- `group` group of the object.
+- `version` version of the object.
+- `resource` resource name of the object. E.g. pods for the Pod kind.
+- `namespaced` scope of group+version+resource. Can be `bool` `true` or `false`.
+
 ### Advanced usage
 
 Apart from high level ways to construct the query, this command allows you to construct and send
@@ -84,7 +107,7 @@ $ echo -n "$Q" | glab cluster graph -R user/project -a 123 --stdin
       --listen-net string          Network on which to listen for connections. (default "tcp")
       --log-watch-request          Log watch request to stdout. Can be useful for debugging.
   -n, --namespace stringArray      Namespaces to watch. If not specified, all namespaces are watched with label and field selectors filtering.
-      --ns-expression string       CEL expression to select namespaces. Always evaluated before a namespace is watched.
+      --ns-expression string       CEL expression to select namespaces. Evaluated before a namespace is watched and on any updates for the namespace object.
       --ns-field-selector string   Field selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/.
       --ns-label-selector string   Label selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors.
       --rbac                       Watch roles, and rolebindings in rbac.authorization.k8s.io/v1 group.
