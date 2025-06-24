@@ -165,8 +165,8 @@ func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 
 	return apiClient, err
 }
 
-// NewClientWithCustomCA initializes the global api client with a self-signed certificate
-func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 bool, isJobToken bool) (*Client, error) {
+// newClientWithCustomCA initializes the global api client with a self-signed certificate
+func newClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 bool, isJobToken bool) (*Client, error) {
 	apiClient.host = host
 	apiClient.token = token
 	apiClient.caFile = caFile
@@ -209,8 +209,8 @@ func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 
 	return apiClient, err
 }
 
-// NewClientWithCustomCAClientCert initializes the global api client with a self-signed certificate and client certificates
-func NewClientWithCustomCAClientCert(host, token, caFile string, certFile string, keyFile string, isGraphQL bool, isOAuth2 bool, isJobToken bool) (*Client, error) {
+// newClientWithCustomCAClientCert initializes the global api client with a self-signed certificate and client certificates
+func newClientWithCustomCAClientCert(host, token, caFile string, certFile string, keyFile string, isGraphQL bool, isOAuth2 bool, isJobToken bool) (*Client, error) {
 	apiClient.host = host
 	apiClient.token = token
 	apiClient.caFile = caFile
@@ -306,9 +306,9 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (*Clie
 	var err error
 
 	if caCert != "" && clientCert != "" && keyFile != "" {
-		client, err = NewClientWithCustomCAClientCert(apiHost, authToken, caCert, clientCert, keyFile, isGraphQL, isOAuth2, isJobToken)
+		client, err = newClientWithCustomCAClientCert(apiHost, authToken, caCert, clientCert, keyFile, isGraphQL, isOAuth2, isJobToken)
 	} else if caCert != "" {
-		client, err = NewClientWithCustomCA(apiHost, authToken, caCert, isGraphQL, isOAuth2, isJobToken)
+		client, err = newClientWithCustomCA(apiHost, authToken, caCert, isGraphQL, isOAuth2, isJobToken)
 	} else {
 		client, err = NewClient(apiHost, authToken, skipTlsVerify, isGraphQL, isOAuth2, isJobToken)
 	}
