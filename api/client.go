@@ -62,7 +62,7 @@ type Client struct {
 	isOauth2           bool
 	isJobToken         bool
 	allowInsecure      bool
-	refreshLabInstance bool
+	RefreshLabInstance bool
 }
 
 func (i glabInstall) UserAgent() string {
@@ -88,7 +88,7 @@ func RefreshClient() {
 		Protocol:           "https",
 		AuthType:           NoToken,
 		httpClient:         &http.Client{},
-		refreshLabInstance: true,
+		RefreshLabInstance: true,
 	}
 }
 
@@ -160,7 +160,7 @@ func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 
 			},
 		}
 	}
-	apiClient.refreshLabInstance = true
+	apiClient.RefreshLabInstance = true
 	err := apiClient.NewLab()
 	return apiClient, err
 }
@@ -204,7 +204,7 @@ func NewClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 
 			},
 		}
 	}
-	apiClient.refreshLabInstance = true
+	apiClient.RefreshLabInstance = true
 	err := apiClient.NewLab()
 	return apiClient, err
 }
@@ -256,7 +256,7 @@ func NewClientWithCustomCAClientCert(host, token, caFile string, certFile string
 			},
 		}
 	}
-	apiClient.refreshLabInstance = true
+	apiClient.RefreshLabInstance = true
 	err := apiClient.NewLab()
 	return apiClient, err
 }
@@ -331,7 +331,7 @@ func (c *Client) NewLab() error {
 	if c.httpClientOverride != nil {
 		httpClient = c.httpClientOverride
 	}
-	if apiClient.refreshLabInstance {
+	if apiClient.RefreshLabInstance {
 		if c.host == "" {
 			c.host = glinstance.OverridableDefault()
 		}
@@ -424,20 +424,6 @@ func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, 
 	}
 
 	return req, nil
-}
-
-func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*Client, error) {
-	testClient, err := NewClient(host, token, true, isGraphQL, false, false)
-	if err != nil {
-		return nil, err
-	}
-	testClient.SetProtocol("https")
-	testClient.OverrideHTTPClient(httpClient)
-	testClient.refreshLabInstance = true
-	if token != "" {
-		testClient.AuthType = PrivateToken
-	}
-	return testClient, nil
 }
 
 // Is404 checks if the error represents a 404 response

@@ -10,7 +10,6 @@ import (
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -87,7 +86,7 @@ func runCommand(rt http.RoundTripper, issuableID string, issueType issuable.Issu
 	factory := &cmdtest.Factory{
 		IOStub: ios,
 		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
+			a, err := cmdtest.TestClient(&http.Client{Transport: rt}, "", "", false)
 			if err != nil {
 				return nil, err
 			}

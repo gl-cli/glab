@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -26,7 +26,7 @@ func Test_downloadAssets(t *testing.T) {
 		MatchURL: httpmock.HostAndPath,
 	}
 
-	client, _ := api.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
+	client, _ := cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
 
 	tests := []struct {
 		name     string

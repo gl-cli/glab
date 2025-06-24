@@ -191,7 +191,7 @@ func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *Factory {
 	return &Factory{
 		IOStub: ios,
 		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
+			a, err := TestClient(&http.Client{Transport: rt}, "", "", false)
 			if err != nil {
 				return nil, err
 			}
@@ -432,4 +432,18 @@ func StubFactoryWithConfig(repo string, io *iostreams.IOStreams) (cmdutils.Facto
 	}
 
 	return f, nil
+}
+
+func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {
+	testClient, err := api.NewClient(host, token, true, isGraphQL, false, false)
+	if err != nil {
+		return nil, err
+	}
+	testClient.SetProtocol("https")
+	testClient.OverrideHTTPClient(httpClient)
+	testClient.RefreshLabInstance = true
+	if token != "" {
+		testClient.AuthType = api.PrivateToken
+	}
+	return testClient, nil
 }

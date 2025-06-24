@@ -13,7 +13,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
@@ -25,7 +24,7 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	factory := &cmdtest.Factory{
 		IOStub: ios,
 		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{Transport: rt}, "", "", false)
+			a, err := cmdtest.TestClient(&http.Client{Transport: rt}, "", "", false)
 			if err != nil {
 				return nil, err
 			}

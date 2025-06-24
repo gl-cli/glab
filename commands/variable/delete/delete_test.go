@@ -7,7 +7,6 @@ import (
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
-	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -114,7 +113,7 @@ func Test_deleteRun(t *testing.T) {
 	)
 
 	httpClient := func() (*gitlab.Client, error) {
-		a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
+		a, _ := cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 		return a.Lab(), nil
 	}
 	baseRepo := func() (glrepo.Interface, error) {

@@ -12,7 +12,6 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -389,7 +388,7 @@ func Test_apiRun(t *testing.T) {
 					resp.Request = req
 					return resp, nil
 				}
-				a, err := api.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+				a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
 				if err != nil {
 					return nil, err
 				}
@@ -447,7 +446,7 @@ func Test_apiRun_paginationREST(t *testing.T) {
 				requestCount++
 				return resp, nil
 			}
-			a, err := api.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+			a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
 			if err != nil {
 				return nil, err
 			}
@@ -512,7 +511,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 				requestCount++
 				return resp, nil
 			}
-			a, err := api.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+			a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
 			if err != nil {
 				return nil, err
 			}
@@ -609,7 +608,7 @@ func Test_apiRun_inputFile(t *testing.T) {
 						resp.Request = req
 						return resp, nil
 					}
-					a, err := api.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+					a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
 					if err != nil {
 						return nil, err
 					}
