@@ -48,8 +48,6 @@ type Client struct {
 	gitlabClient *gitlab.Client
 	// internal http client
 	httpClient *http.Client
-	// internal http client overrider
-	httpClientOverride *http.Client
 	// Token type used to make authenticated API calls.
 	AuthType authType
 	// custom certificate
@@ -98,9 +96,6 @@ func RefreshClient() {
 }
 
 func (c *Client) HTTPClient() *http.Client {
-	if c.httpClientOverride != nil {
-		return c.httpClientOverride
-	}
 	if c.httpClient != nil {
 		return c.httpClient
 	}
@@ -150,7 +145,7 @@ func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken boo
 		}
 	}
 
-	if apiClient.httpClientOverride == nil {
+	if apiClient.httpClient == nil {
 		// Create TLS configuration based on client settings
 		tlsConfig := &tls.Config{
 			MinVersion:         tls.VersionTLS12,
@@ -253,7 +248,7 @@ func WithProtocol(protocol string) ClientOption {
 // WithHTTPClient configures the HTTP client
 func WithHTTPClient(httpClient *http.Client) ClientOption {
 	return func(c *Client) error {
-		c.httpClientOverride = httpClient
+		c.httpClient = httpClient
 		return nil
 	}
 }
@@ -330,11 +325,6 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (*Clie
 func (c *Client) NewLab() error {
 	var err error
 	var baseURL string
-	httpClient := c.httpClient
-
-	if c.httpClientOverride != nil {
-		httpClient = c.httpClientOverride
-	}
 	if apiClient.RefreshLabInstance {
 		if c.host == "" {
 			c.host = glinstance.OverridableDefault()
@@ -347,11 +337,11 @@ func (c *Client) NewLab() error {
 
 		if c.isOauth2 {
 			ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: c.token})
-			c.gitlabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+			c.gitlabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
 		} else if c.isJobToken {
-			c.gitlabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+			c.gitlabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
 		} else {
-			c.gitlabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+			c.gitlabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
 		}
 
 		if err != nil {
