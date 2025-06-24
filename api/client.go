@@ -58,8 +58,8 @@ type Client struct {
 	// client certificate files
 	clientCertFile string
 	clientKeyFile  string
-	// Protocol: host url protocol to make requests. Default is https
-	Protocol string
+	// protocol: host url protocol to make requests. Default is https
+	protocol string
 
 	host  string
 	token string
@@ -91,7 +91,7 @@ func init() {
 // RefreshClient re-initializes the api client
 func RefreshClient() {
 	apiClient = &Client{
-		Protocol:           "https",
+		protocol:           "https",
 		AuthType:           NoToken,
 		httpClient:         &http.Client{},
 		RefreshLabInstance: true,
@@ -117,7 +117,7 @@ func (c *Client) Token() string {
 }
 
 func (c *Client) SetProtocol(protocol string) {
-	c.Protocol = protocol
+	c.protocol = protocol
 }
 
 var secureCipherSuites = []uint16{
@@ -251,7 +251,7 @@ func WithInsecureSkipVerify(skip bool) ClientOption {
 // WithProtocol configures the client protocol
 func WithProtocol(protocol string) ClientOption {
 	return func(c *Client) error {
-		c.Protocol = protocol
+		c.protocol = protocol
 		return nil
 	}
 }
@@ -338,9 +338,9 @@ func (c *Client) NewLab() error {
 			c.host = glinstance.OverridableDefault()
 		}
 		if c.isGraphQL {
-			baseURL = glinstance.GraphQLEndpoint(c.host, c.Protocol)
+			baseURL = glinstance.GraphQLEndpoint(c.host, c.protocol)
 		} else {
-			baseURL = glinstance.APIEndpoint(c.host, c.Protocol, "")
+			baseURL = glinstance.APIEndpoint(c.host, c.protocol, "")
 		}
 
 		if c.isOauth2 {
