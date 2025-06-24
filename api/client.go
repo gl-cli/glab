@@ -21,6 +21,9 @@ import (
 	oauthz "golang.org/x/oauth2"
 )
 
+// ClientOption represents a function that configures a Client
+type ClientOption func(*Client) error
+
 // AuthType represents an authentication type within GitLab.
 type authType int
 
@@ -52,6 +55,9 @@ type Client struct {
 	AuthType authType
 	// custom certificate
 	caFile string
+	// client certificate files
+	clientCertFile string
+	clientKeyFile  string
 	// Protocol: host url protocol to make requests. Default is https
 	Protocol string
 
@@ -135,28 +141,79 @@ func tlsConfig(host string, allowInsecure bool) *tls.Config {
 }
 
 // NewClient initializes a api client for use throughout glab.
-func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 bool, isJobToken bool) (*Client, error) {
+func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken bool, options ...ClientOption) (*Client, error) {
 	apiClient.host = host
 	apiClient.token = token
-	apiClient.allowInsecure = allowInsecure
 	apiClient.isGraphQL = isGraphQL
 	apiClient.isOauth2 = isOAuth2
 	apiClient.isJobToken = isJobToken
 
+	// Apply options
+	for _, option := range options {
+		if err := option(apiClient); err != nil {
+			return nil, fmt.Errorf("failed to apply client option: %w", err)
+		}
+	}
+
 	if apiClient.httpClientOverride == nil {
+		// Create TLS configuration based on client settings
+		tlsConfig := &tls.Config{
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: apiClient.allowInsecure,
+		}
+
+		// Set secure cipher suites for gitlab.com
+		if host == "gitlab.com" {
+			tlsConfig.CipherSuites = secureCipherSuites
+		}
+
+		// Configure custom CA if provided
+		if apiClient.caFile != "" {
+			caCert, err := os.ReadFile(apiClient.caFile)
+			if err != nil {
+				return nil, fmt.Errorf("error reading cert file: %w", err)
+			}
+			// use system cert pool as a baseline
+			caCertPool, err := x509.SystemCertPool()
+			if err != nil {
+				return nil, err
+			}
+			caCertPool.AppendCertsFromPEM(caCert)
+			tlsConfig.RootCAs = caCertPool
+		}
+
+		// Configure client certificates if provided
+		if apiClient.clientCertFile != "" && apiClient.clientKeyFile != "" {
+			clientCert, err := tls.LoadX509KeyPair(apiClient.clientCertFile, apiClient.clientKeyFile)
+			if err != nil {
+				return nil, err
+			}
+			tlsConfig.Certificates = []tls.Certificate{clientCert}
+		}
+
+		// Set appropriate timeouts based on whether custom CA is used
+		dialTimeout := 5 * time.Second
+		keepAlive := 5 * time.Second
+		idleTimeout := 30 * time.Second
+		if apiClient.caFile != "" {
+			dialTimeout = 30 * time.Second
+			keepAlive = 30 * time.Second
+			idleTimeout = 90 * time.Second
+		}
+
 		apiClient.httpClient = &http.Client{
 			Transport: &http.Transport{
 				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
-					Timeout:   5 * time.Second,
-					KeepAlive: 5 * time.Second,
+					Timeout:   dialTimeout,
+					KeepAlive: keepAlive,
 				}).DialContext,
 				ForceAttemptHTTP2:     true,
 				MaxIdleConns:          100,
-				IdleConnTimeout:       30 * time.Second,
+				IdleConnTimeout:       idleTimeout,
 				TLSHandshakeTimeout:   10 * time.Second,
 				ExpectContinueTimeout: 1 * time.Second,
-				TLSClientConfig:       tlsConfig(host, apiClient.allowInsecure),
+				TLSClientConfig:       tlsConfig,
 			},
 		}
 	}
@@ -165,100 +222,38 @@ func NewClient(host, token string, allowInsecure bool, isGraphQL bool, isOAuth2 
 	return apiClient, err
 }
 
-// newClientWithCustomCA initializes the global api client with a self-signed certificate
-func newClientWithCustomCA(host, token, caFile string, isGraphQL bool, isOAuth2 bool, isJobToken bool) (*Client, error) {
-	apiClient.host = host
-	apiClient.token = token
-	apiClient.caFile = caFile
-	apiClient.isGraphQL = isGraphQL
-	apiClient.isOauth2 = isOAuth2
-	apiClient.isJobToken = isJobToken
 
-	if apiClient.httpClientOverride == nil {
-		caCert, err := os.ReadFile(apiClient.caFile)
-		if err != nil {
-			return nil, fmt.Errorf("error reading cert file: %w", err)
-		}
-		// use system cert pool as a baseline
-		caCertPool, err := x509.SystemCertPool()
-		if err != nil {
-			return nil, err
-		}
-		caCertPool.AppendCertsFromPEM(caCert)
-
-		apiClient.httpClient = &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-				DialContext: (&net.Dialer{
-					Timeout:   30 * time.Second,
-					KeepAlive: 30 * time.Second,
-				}).DialContext,
-				ForceAttemptHTTP2:     true,
-				MaxIdleConns:          100,
-				IdleConnTimeout:       90 * time.Second,
-				TLSHandshakeTimeout:   10 * time.Second,
-				ExpectContinueTimeout: 1 * time.Second,
-				TLSClientConfig: &tls.Config{
-					RootCAs: caCertPool,
-				},
-			},
-		}
+// WithCustomCA configures the client to use a custom CA certificate
+func WithCustomCA(caFile string) ClientOption {
+	return func(c *Client) error {
+		c.caFile = caFile
+		return nil
 	}
-	apiClient.RefreshLabInstance = true
-	err := apiClient.NewLab()
-	return apiClient, err
 }
 
-// newClientWithCustomCAClientCert initializes the global api client with a self-signed certificate and client certificates
-func newClientWithCustomCAClientCert(host, token, caFile string, certFile string, keyFile string, isGraphQL bool, isOAuth2 bool, isJobToken bool) (*Client, error) {
-	apiClient.host = host
-	apiClient.token = token
-	apiClient.caFile = caFile
-	apiClient.isGraphQL = isGraphQL
-	apiClient.isOauth2 = isOAuth2
-	apiClient.isJobToken = isJobToken
-
-	if apiClient.httpClientOverride == nil {
-		caCert, err := os.ReadFile(apiClient.caFile)
-		if err != nil {
-			return nil, fmt.Errorf("error reading cert file: %w", err)
-		}
-		// use system cert pool as a baseline
-		caCertPool, err := x509.SystemCertPool()
-		if err != nil {
-			return nil, err
-		}
-		caCertPool.AppendCertsFromPEM(caCert)
-
-		clientCert, err := tls.LoadX509KeyPair(certFile, keyFile)
-		if err != nil {
-			return nil, err
-		}
-
-		clientCerts := []tls.Certificate{clientCert}
-
-		apiClient.httpClient = &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-				DialContext: (&net.Dialer{
-					Timeout:   30 * time.Second,
-					KeepAlive: 30 * time.Second,
-				}).DialContext,
-				ForceAttemptHTTP2:     true,
-				MaxIdleConns:          100,
-				IdleConnTimeout:       90 * time.Second,
-				TLSHandshakeTimeout:   10 * time.Second,
-				ExpectContinueTimeout: 1 * time.Second,
-				TLSClientConfig: &tls.Config{
-					RootCAs:      caCertPool,
-					Certificates: clientCerts,
-				},
-			},
-		}
+// WithClientCertificate configures the client to use client certificates for mTLS
+func WithClientCertificate(certFile, keyFile string) ClientOption {
+	return func(c *Client) error {
+		c.clientCertFile = certFile
+		c.clientKeyFile = keyFile
+		return nil
 	}
-	apiClient.RefreshLabInstance = true
-	err := apiClient.NewLab()
-	return apiClient, err
+}
+
+// WithInsecureSkipVerify configures the client to skip TLS verification
+func WithInsecureSkipVerify(skip bool) ClientOption {
+	return func(c *Client) error {
+		c.allowInsecure = skip
+		return nil
+	}
+}
+
+// WithProtocol configures the client protocol
+func WithProtocol(protocol string) ClientOption {
+	return func(c *Client) error {
+		c.Protocol = protocol
+		return nil
+	}
 }
 
 // NewClientWithCfg initializes the global api with the config data
@@ -302,21 +297,28 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (*Clie
 		isJobToken = true
 	}
 
-	var client *Client
-	var err error
+	// Build options based on configuration
+	var options []ClientOption
 
-	if caCert != "" && clientCert != "" && keyFile != "" {
-		client, err = newClientWithCustomCAClientCert(apiHost, authToken, caCert, clientCert, keyFile, isGraphQL, isOAuth2, isJobToken)
-	} else if caCert != "" {
-		client, err = newClientWithCustomCA(apiHost, authToken, caCert, isGraphQL, isOAuth2, isJobToken)
-	} else {
-		client, err = NewClient(apiHost, authToken, skipTlsVerify, isGraphQL, isOAuth2, isJobToken)
+	if caCert != "" {
+		options = append(options, WithCustomCA(caCert))
 	}
+
+	if clientCert != "" && keyFile != "" {
+		options = append(options, WithClientCertificate(clientCert, keyFile))
+	}
+
+	if skipTlsVerify {
+		options = append(options, WithInsecureSkipVerify(skipTlsVerify))
+	}
+
+	if apiProtocol != "" {
+		options = append(options, WithProtocol(apiProtocol))
+	}
+
+	client, err := NewClient(apiHost, authToken, isGraphQL, isOAuth2, isJobToken, options...)
 	if err != nil {
 		return nil, err
-	}
-	if apiProtocol != "" {
-		client.SetProtocol(apiProtocol)
 	}
 
 	return client, nil

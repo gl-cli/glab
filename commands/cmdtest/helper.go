@@ -435,7 +435,7 @@ func StubFactoryWithConfig(repo string, io *iostreams.IOStreams) (cmdutils.Facto
 }
 
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {
-	testClient, err := api.NewClient(host, token, true, isGraphQL, false, false)
+	testClient, err := api.NewClient(host, token, isGraphQL, false, false, api.WithInsecureSkipVerify(true))
 	if err != nil {
 		return nil, err
 	}
