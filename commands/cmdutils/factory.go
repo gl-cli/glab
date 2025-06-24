@@ -117,10 +117,11 @@ func (f *DefaultFactory) BaseRepo() (glrepo.Interface, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpClient, err := LabClientFunc(remotes[0].RepoHost(), cfg, false)
+	ac, err := api.NewClientWithCfg(remotes[0].RepoHost(), cfg, false)
 	if err != nil {
 		return nil, err
 	}
+	httpClient := ac.Lab()
 	repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, "")
 	if err != nil {
 		return nil, err
@@ -165,12 +166,4 @@ func (f *DefaultFactory) Branch() (string, error) {
 
 func (f *DefaultFactory) IO() *iostreams.IOStreams {
 	return f.io
-}
-
-func LabClientFunc(repoHost string, cfg config.Config, isGraphQL bool) (*gitlab.Client, error) {
-	c, err := api.NewClientWithCfg(repoHost, cfg, isGraphQL)
-	if err != nil {
-		return nil, err
-	}
-	return c.Lab(), nil
 }

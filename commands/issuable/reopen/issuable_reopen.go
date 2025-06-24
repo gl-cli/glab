@@ -53,12 +53,12 @@ func NewCmdReopen(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 			out := f.IO().StdOut
 			c := f.IO().Color()
 
-			apiClient, err := f.HttpClient()
+			gitlabClient, err := f.HttpClient()
 			if err != nil {
 				return err
 			}
 
-			issues, repo, err := issueutils.IssuesFromArgs(apiClient, f.BaseRepo, args)
+			issues, repo, err := issueutils.IssuesFromArgs(f.ApiClient, gitlabClient, f.BaseRepo, args)
 			if err != nil {
 				return err
 			}
@@ -74,7 +74,7 @@ func NewCmdReopen(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 				}
 
 				fmt.Fprintf(out, "- %s...\n", reopeningMessage[issueType])
-				issue, err := api.UpdateIssue(apiClient, repo.FullName(), issue.IID, l)
+				issue, err := api.UpdateIssue(gitlabClient, repo.FullName(), issue.IID, l)
 				if err != nil {
 					return err
 				}

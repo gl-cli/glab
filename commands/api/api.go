@@ -31,6 +31,7 @@ import (
 type options struct {
 	io *iostreams.IOStreams
 
+	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
 	httpClient func() (*gitlab.Client, error)
 	baseRepo   func() (glrepo.Interface, error)
 	branch     func() (string, error)
@@ -52,6 +53,7 @@ type options struct {
 func NewCmdApi(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 	opts := options{
 		io:         f.IO(),
+		apiClient:  f.ApiClient,
 		httpClient: f.HttpClient,
 		baseRepo:   f.BaseRepo,
 		branch:     f.Branch,
@@ -272,7 +274,7 @@ func (o *options) run() error {
 		host = o.hostname
 	}
 
-	client, err := api.NewClientWithCfg(host, o.config, isGraphQL)
+	client, err := o.apiClient(host, o.config)
 	if err != nil {
 		return err
 	}

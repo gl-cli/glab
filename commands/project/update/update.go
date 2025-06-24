@@ -57,7 +57,7 @@ func runUpdateProject(cmd *cobra.Command, f cmdutils.Factory, args []string) err
 		return err
 	}
 
-	client, err := api.NewClientWithCfg(repo.RepoHost(), cfg, false)
+	client, err := f.ApiClient(repo.RepoHost(), cfg)
 	if err != nil {
 		return err
 	}

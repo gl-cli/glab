@@ -22,19 +22,21 @@ type options struct {
 	allowDivergence       bool
 	projectID             int
 
-	io              *iostreams.IOStreams
-	baseRepo        glrepo.Interface
-	apiClient       func() (*gitlab.Client, error)
-	httpClient      *gitlab.Client
-	config          func() (config.Config, error)
-	baseRepoFactory func() (glrepo.Interface, error)
+	io               *iostreams.IOStreams
+	baseRepo         glrepo.Interface
+	apiClient        func(repoHost string, cfg config.Config) (*api.Client, error)
+	gitlabClientFunc func() (*gitlab.Client, error)
+	httpClient       *gitlab.Client
+	config           func() (config.Config, error)
+	baseRepoFactory  func() (glrepo.Interface, error)
 }
 
 func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 	opts := options{
-		io:        f.IO(),
-		apiClient: f.HttpClient,
-		config:    f.Config,
+		io:               f.IO(),
+		apiClient:        f.ApiClient,
+		gitlabClientFunc: f.HttpClient,
+		config:           f.Config,
 	}
 
 	projectMirrorCmd := &cobra.Command{
@@ -73,7 +75,7 @@ func (o *options) complete(args []string) error {
 		}
 		o.baseRepo = baseRepo
 
-		o.apiClient = func() (*gitlab.Client, error) {
+		o.gitlabClientFunc = func() (*gitlab.Client, error) {
 			if o.httpClient != nil {
 				return o.httpClient, nil
 			}
@@ -81,7 +83,7 @@ func (o *options) complete(args []string) error {
 			if err != nil {
 				return nil, err
 			}
-			c, err := api.NewClientWithCfg(o.baseRepo.RepoHost(), cfg, false)
+			c, err := o.apiClient(o.baseRepo.RepoHost(), cfg)
 			if err != nil {
 				return nil, err
 			}
@@ -99,7 +101,7 @@ func (o *options) complete(args []string) error {
 
 	o.url = strings.TrimSpace(o.url)
 
-	httpClient, err := o.apiClient()
+	httpClient, err := o.gitlabClientFunc()
 	if err != nil {
 		return err
 	}

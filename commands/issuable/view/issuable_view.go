@@ -39,6 +39,7 @@ type options struct {
 	issue *gitlab.Issue
 
 	io         *iostreams.IOStreams
+	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
 	httpClient func() (*gitlab.Client, error)
 	config     func() (config.Config, error)
 	baseRepo   func() (glrepo.Interface, error)
@@ -53,6 +54,7 @@ func NewCmdView(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 
 	opts := &options{
 		io:         f.IO(),
+		apiClient:  f.ApiClient,
 		httpClient: f.HttpClient,
 		config:     f.Config,
 		baseRepo:   f.BaseRepo,
@@ -86,13 +88,13 @@ func NewCmdView(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 }
 
 func (o *options) run(issueType issuable.IssueType, args []string) error {
-	apiClient, err := o.httpClient()
+	gitlabClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 	cfg, _ := o.config()
 
-	issue, baseRepo, err := issueutils.IssueFromArg(apiClient, o.baseRepo, args[0])
+	issue, baseRepo, err := issueutils.IssueFromArg(o.apiClient, gitlabClient, o.baseRepo, args[0])
 	if err != nil {
 		return err
 	}
@@ -125,7 +127,7 @@ func (o *options) run(issueType issuable.IssueType, args []string) error {
 		if o.commentLimit != 0 {
 			l.PerPage = o.commentLimit
 		}
-		o.notes, err = api.ListIssueNotes(apiClient, baseRepo.FullName(), o.issue.IID, l)
+		o.notes, err = api.ListIssueNotes(gitlabClient, baseRepo.FullName(), o.issue.IID, l)
 		if err != nil {
 			return err
 		}

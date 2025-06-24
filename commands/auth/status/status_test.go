@@ -195,6 +195,9 @@ hosts:
 		}
 		tt.opts.io = io
 		tt.opts.httpClientOverride = client
+		tt.opts.apiClient = func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return client("", repoHost)
+		}
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.envVar {
 				t.Setenv("GITLAB_TOKEN", "foo")
@@ -297,6 +300,9 @@ gl.io
 		config: func() (config.Config, error) {
 			return configs, nil
 		},
+		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return client("", repoHost)
+		},
 		httpClientOverride: client,
 		io:                 io,
 	}
@@ -319,6 +325,9 @@ git_protocol: ssh
 	opts := &options{
 		config: func() (config.Config, error) {
 			return configs, nil
+		},
+		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return nil, nil
 		},
 		io: io,
 	}

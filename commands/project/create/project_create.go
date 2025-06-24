@@ -96,7 +96,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 		host, namespace, projectPath = projectPathFromArgs(args)
 		if host != "" {
 			cfg, _ := f.Config()
-			client, err := api.NewClientWithCfg(host, cfg, false)
+			client, err := f.ApiClient(host, cfg)
 			if err != nil {
 				return err
 			}

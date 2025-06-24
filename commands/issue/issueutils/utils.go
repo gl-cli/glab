@@ -67,7 +67,7 @@ func IssueState(c *iostreams.ColorPalette, i *gitlab.Issue) (issueID string) {
 	return
 }
 
-func IssuesFromArgs(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), args []string) ([]*gitlab.Issue, glrepo.Interface, error) {
+func IssuesFromArgs(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), gitlabClient *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), args []string) ([]*gitlab.Issue, glrepo.Interface, error) {
 	var baseRepo glrepo.Interface
 
 	if len(args) <= 1 {
@@ -75,7 +75,7 @@ func IssuesFromArgs(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interfac
 			args = strings.Split(args[0], ",")
 		}
 		if len(args) <= 1 {
-			issue, repo, err := IssueFromArg(apiClient, baseRepoFn, args[0])
+			issue, repo, err := IssueFromArg(apiClientFunc, gitlabClient, baseRepoFn, args[0])
 			if err != nil {
 				return nil, nil, err
 			}
@@ -89,7 +89,7 @@ func IssuesFromArgs(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interfac
 	for i, arg := range args {
 		i, arg := i, arg
 		errGroup.Go(func() error {
-			issue, repo, err := IssueFromArg(apiClient, baseRepoFn, arg)
+			issue, repo, err := IssueFromArg(apiClientFunc, gitlabClient, baseRepoFn, arg)
 			if err != nil {
 				return err
 			}
@@ -104,7 +104,7 @@ func IssuesFromArgs(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interfac
 	return issues, baseRepo, nil
 }
 
-func IssueFromArg(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), arg string) (*gitlab.Issue, glrepo.Interface, error) {
+func IssueFromArg(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), client *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), arg string) (*gitlab.Issue, glrepo.Interface, error) {
 	issueIID, baseRepo := issueMetadataFromURL(arg)
 	if issueIID == 0 {
 		var err error
@@ -125,14 +125,14 @@ func IssueFromArg(apiClient *gitlab.Client, baseRepoFn func() (glrepo.Interface,
 		// TODO: avoid reinitializing the config, get the config as a parameter
 
 		cfg, _ := config.Init()
-		a, err := api.NewClientWithCfg(baseRepo.RepoHost(), cfg, false)
+		a, err := apiClientFunc(baseRepo.RepoHost(), cfg)
 		if err != nil {
 			return nil, nil, err
 		}
-		apiClient = a.Lab()
+		client = a.Lab()
 	}
 
-	issue, err := issueFromIID(apiClient, baseRepo, issueIID)
+	issue, err := issueFromIID(client, baseRepo, issueIID)
 	return issue, baseRepo, err
 }
 

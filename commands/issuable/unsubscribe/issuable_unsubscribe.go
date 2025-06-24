@@ -38,12 +38,12 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO().Color()
-			apiClient, err := f.HttpClient()
+			gitlabClient, err := f.HttpClient()
 			if err != nil {
 				return err
 			}
 
-			issues, repo, err := issueutils.IssuesFromArgs(apiClient, f.BaseRepo, args)
+			issues, repo, err := issueutils.IssuesFromArgs(f.ApiClient, gitlabClient, f.BaseRepo, args)
 			if err != nil {
 				return err
 			}
@@ -65,7 +65,7 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 					)
 				}
 
-				issue, err := api.UnsubscribeFromIssue(apiClient, repo.FullName(), issue.IID, nil)
+				issue, err := api.UnsubscribeFromIssue(gitlabClient, repo.FullName(), issue.IID, nil)
 				if err != nil {
 					if errors.Is(err, api.ErrIssuableUserNotSubscribed) {
 						fmt.Fprintf(

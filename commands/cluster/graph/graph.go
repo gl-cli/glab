@@ -22,6 +22,7 @@ import (
 
 type options struct {
 	io                    *iostreams.IOStreams
+	apiClient             func(repoHost string, cfg config.Config) (*api.Client, error)
 	baseRepo              func() (glrepo.Interface, error)
 	config                func() (config.Config, error)
 	listenNet, listenAddr string
@@ -43,9 +44,10 @@ type options struct {
 
 func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	opts := options{
-		io:       f.IO(),
-		baseRepo: f.BaseRepo,
-		config:   f.Config,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		baseRepo:  f.BaseRepo,
+		config:    f.Config,
 
 		listenNet:  "tcp",
 		listenAddr: "localhost:0",
@@ -176,7 +178,7 @@ func (o *options) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	client, err := api.NewClientWithCfg(repo.RepoHost(), cfg, false)
+	client, err := o.apiClient(repo.RepoHost(), cfg)
 	if err != nil {
 		return err
 	}

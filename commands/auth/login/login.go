@@ -25,8 +25,9 @@ import (
 )
 
 type LoginOptions struct {
-	IO     *iostreams.IOStreams
-	Config func() (config.Config, error)
+	IO        *iostreams.IOStreams
+	Config    func() (config.Config, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
 
 	Interactive bool
 
@@ -45,8 +46,9 @@ var opts *LoginOptions
 
 func NewCmdLogin(f cmdutils.Factory) *cobra.Command {
 	opts = &LoginOptions{
-		IO:     f.IO(),
-		Config: f.Config,
+		IO:        f.IO(),
+		Config:    f.Config,
+		apiClient: f.ApiClient,
 	}
 
 	var tokenStdin bool
@@ -282,12 +284,12 @@ func loginRun(opts *LoginOptions) error {
 	existingToken, _, _ := cfg.GetWithSource(hostname, "token", false)
 
 	if existingToken != "" && opts.Interactive {
-		apiClient, err := cmdutils.LabClientFunc(hostname, cfg, false)
+		apiClient, err := opts.apiClient(hostname, cfg)
 		if err != nil {
 			return err
 		}
 
-		user, err := api.CurrentUser(apiClient)
+		user, err := api.CurrentUser(apiClient.Lab())
 		if err == nil {
 			username := user.Username
 			var keepGoing bool
@@ -419,12 +421,12 @@ func loginRun(opts *LoginOptions) error {
 
 		fmt.Fprintf(opts.IO.StdErr, "%s Configured API protocol.\n", c.GreenCheck())
 	}
-	apiClient, err := cmdutils.LabClientFunc(hostname, cfg, false)
+	apiClient, err := opts.apiClient(hostname, cfg)
 	if err != nil {
 		return err
 	}
 
-	user, err := api.CurrentUser(apiClient)
+	user, err := api.CurrentUser(apiClient.Lab())
 	if err != nil {
 		return fmt.Errorf("error using API: %w", err)
 	}

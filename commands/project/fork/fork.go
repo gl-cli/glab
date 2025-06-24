@@ -39,6 +39,7 @@ type options struct {
 	baseRepo   func() (glrepo.Interface, error)
 	remotes    func() (glrepo.Remotes, error)
 	config     func() (config.Config, error)
+	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
 	httpClient func() (*gitlab.Client, error)
 }
 
@@ -48,6 +49,7 @@ func NewCmdFork(f cmdutils.Factory) *cobra.Command {
 		baseRepo:           f.BaseRepo,
 		remotes:            f.Remotes,
 		config:             f.Config,
+		apiClient:          f.ApiClient,
 		httpClient:         f.HttpClient,
 		currentDirIsParent: true,
 	}
@@ -118,7 +120,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	apiClient, err := api.NewClientWithCfg(o.repoToFork.RepoHost(), cfg, false)
+	apiClient, err := o.apiClient(o.repoToFork.RepoHost(), cfg)
 	if err != nil {
 		return err
 	}

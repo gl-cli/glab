@@ -9,6 +9,7 @@ import (
 	"os"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -382,13 +383,20 @@ func Test_apiRun(t *testing.T) {
 
 			tt.options.io = ios
 			tt.options.config = config.NewBlankConfig()
-			tt.options.httpClient = func() (*gitlab.Client, error) {
+			tt.options.apiClient = func(repoHost string, cfg config.Config) (*api.Client, error) {
 				var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
 					resp := tt.httpResponse
 					resp.Request = req
 					return resp, nil
 				}
 				a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+				if err != nil {
+					return nil, err
+				}
+				return a, nil
+			}
+			tt.options.httpClient = func() (*gitlab.Client, error) {
+				a, err := tt.options.apiClient("", nil)
 				if err != nil {
 					return nil, err
 				}
@@ -436,28 +444,29 @@ func Test_apiRun_paginationREST(t *testing.T) {
 		},
 	}
 
+	var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
+		resp := responses[requestCount]
+		resp.Request = req
+		requestCount++
+		return resp, nil
+	}
+	a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+	require.NoError(t, err)
 	options := options{
 		io:     ios,
 		config: config.NewBlankConfig(),
 		httpClient: func() (*gitlab.Client, error) {
-			var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
-				resp := responses[requestCount]
-				resp.Request = req
-				requestCount++
-				return resp, nil
-			}
-			a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
-			if err != nil {
-				return nil, err
-			}
 			return a.Lab(), nil
+		},
+		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return a, nil
 		},
 
 		requestPath: "issues",
 		paginate:    true,
 	}
 
-	err := options.run()
+	err = options.run()
 	assert.NoError(t, err)
 
 	assert.Equal(t, `{"page":1}{"page":2}{"page":3}`, stdout.String(), "stdout")
@@ -501,21 +510,22 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 		},
 	}
 
+	var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
+		resp := responses[requestCount]
+		resp.Request = req
+		requestCount++
+		return resp, nil
+	}
+	a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+	require.NoError(t, err)
 	options := options{
 		io:     ios,
 		config: config.NewBlankConfig(),
 		httpClient: func() (*gitlab.Client, error) {
-			var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
-				resp := responses[requestCount]
-				resp.Request = req
-				requestCount++
-				return resp, nil
-			}
-			a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
-			if err != nil {
-				return nil, err
-			}
 			return a.Lab(), nil
+		},
+		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return a, nil
 		},
 
 		requestMethod: http.MethodPost,
@@ -523,7 +533,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 		paginate:      true,
 	}
 
-	err := options.run()
+	err = options.run()
 	require.NoError(t, err)
 
 	assert.Contains(t, stdout.String(), `"page one"`)
@@ -592,6 +602,16 @@ func Test_apiRun_inputFile(t *testing.T) {
 			}
 
 			var bodyBytes []byte
+			var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
+				var err error
+				if bodyBytes, err = io.ReadAll(req.Body); err != nil {
+					return nil, err
+				}
+				resp.Request = req
+				return resp, nil
+			}
+			a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+			require.NoError(t, err)
 			options := options{
 				requestPath:      "hello",
 				requestInputFile: inputFile,
@@ -600,23 +620,14 @@ func Test_apiRun_inputFile(t *testing.T) {
 				io:     ios,
 				config: config.NewBlankConfig(),
 				httpClient: func() (*gitlab.Client, error) {
-					var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
-						var err error
-						if bodyBytes, err = io.ReadAll(req.Body); err != nil {
-							return nil, err
-						}
-						resp.Request = req
-						return resp, nil
-					}
-					a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
-					if err != nil {
-						return nil, err
-					}
 					return a.Lab(), nil
+				},
+				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+					return a, nil
 				},
 			}
 
-			err := options.run()
+			err = options.run()
 			if err != nil {
 				t.Errorf("got error %v", err)
 			}
