@@ -20,7 +20,7 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, err
 
 	_, _ = factory.HttpClient()
 
-	cmd := NewCmdFork(factory, nil)
+	cmd := NewCmdFork(factory)
 
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }

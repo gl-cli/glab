@@ -25,7 +25,7 @@ func runCommand(cfg config.Config, isTTY bool, cli string) (*test.CmdOut, error)
 		IOStub: ios,
 	}
 
-	cmd := NewCmdSet(factoryConf, nil)
+	cmd := NewCmdSet(factoryConf)
 
 	// fake command nesting structure needed for validCommand
 	rootCmd := &cobra.Command{}

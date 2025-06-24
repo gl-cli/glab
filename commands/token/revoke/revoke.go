@@ -30,7 +30,7 @@ type options struct {
 	outputFormat string
 }
 
-func NewCmdRevoke(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+func NewCmdRevoke(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
 		httpClient: f.HttpClient,
@@ -74,9 +74,6 @@ func NewCmdRevoke(f cmdutils.Factory, runE func(opts *options) error) *cobra.Com
 				return err
 			}
 
-			if runE != nil {
-				return runE(opts)
-			}
 			return opts.run()
 		},
 	}

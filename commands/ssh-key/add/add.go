@@ -26,7 +26,7 @@ type AddOpts struct {
 	KeyFile string
 }
 
-func NewCmdAdd(f cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
+func NewCmdAdd(f cmdutils.Factory) *cobra.Command {
 	opts := &AddOpts{
 		IO: f.IO(),
 	}
@@ -57,10 +57,6 @@ func NewCmdAdd(f cmdutils.Factory, runE func(*AddOpts) error) *cobra.Command {
 				opts.KeyFile = "-"
 			} else {
 				opts.KeyFile = args[0]
-			}
-
-			if runE != nil {
-				return runE(opts)
 			}
 
 			return addRun(opts)

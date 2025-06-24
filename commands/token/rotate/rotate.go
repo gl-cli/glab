@@ -34,7 +34,7 @@ type options struct {
 	outputFormat string
 }
 
-func NewCmdRotate(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+func NewCmdRotate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
 		httpClient: f.HttpClient,
@@ -83,9 +83,6 @@ func NewCmdRotate(f cmdutils.Factory, runE func(opts *options) error) *cobra.Com
 				return err
 			}
 
-			if runE != nil {
-				return runE(opts)
-			}
 			return opts.run()
 		},
 	}

@@ -21,7 +21,7 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 		return nil, fmt.Errorf("failed to initialize HTTP client: %w", err)
 	}
 
-	cmd := NewCmdRevoke(factory, nil)
+	cmd := NewCmdRevoke(factory)
 
 	if out, err := cmdtest.ExecuteCommand(cmd, cli, stdout, stderr); err != nil {
 		return nil, fmt.Errorf("error running command %s '%s', %s", cmd.Aliases[0], cli, err)
