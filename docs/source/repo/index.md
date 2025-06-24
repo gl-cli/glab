@@ -38,4 +38,5 @@ project
 - [`publish`](publish/index.md)
 - [`search`](search.md)
 - [`transfer`](transfer.md)
+- [`update`](update.md)
 - [`view`](view.md)

@@ -30,6 +30,14 @@ var CreateProject = func(client *gitlab.Client, opts *gitlab.CreateProjectOption
 	return project, nil
 }
 
+var UpdateProject = func(client *gitlab.Client, projectID any, opts *gitlab.EditProjectOptions) (*gitlab.Project, error) {
+	project, _, err := client.Projects.EditProject(projectID, opts)
+	if err != nil {
+		return nil, err
+	}
+	return project, nil
+}
+
 var ForkProject = func(client *gitlab.Client, projectID any, opts *gitlab.ForkProjectOptions) (*gitlab.Project, error) {
 	project, _, err := client.Projects.ForkProject(projectID, opts)
 	if err != nil {
