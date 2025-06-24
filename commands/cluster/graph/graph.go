@@ -26,6 +26,10 @@ type options struct {
 	config                func() (config.Config, error)
 	listenNet, listenAddr string
 	agentID               int64
+	nsNames               []string
+	nsLabels              string
+	nsSelector            string
+	nsCEL                 string
 	resources             []string
 	readQueryFromStdIn    bool
 	groupCore             bool
@@ -77,7 +81,13 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 		$ glab cluster graph -R user/project -a 123 --resources=pods --resources=configmaps
 
 		# Same as above, but more compact
-		$ glab cluster graph -R user/project -a 123 --r={pods,configmaps}
+		$ glab cluster graph -R user/project -a 123 -r={pods,configmaps}
+
+		# Select a certain namespace
+		$ glab cluster graph -R user/project -a 123 -n={my-ns,my-stuff}
+
+		# Select all namespaces that have a certain annotation
+		$ glab cluster graph -R user/project -a 123 --ns-expression='"my-annotation" in annotations'
 
 		# Advanced usage - pass the full query directly via stdin.
 		# The query below watches serviceaccounts in all namespaces except for the kube-system.
@@ -95,6 +105,11 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	fl.StringVar(&opts.listenNet, "listen-net", opts.listenNet, "Network on which to listen for connections.")
 	fl.StringVar(&opts.listenAddr, "listen-addr", opts.listenAddr, "Address to listen on.")
 
+	fl.StringArrayVarP(&opts.nsNames, "namespace", "n", opts.nsNames, "Namespaces to watch. If not specified, all namespaces are watched with label and field selectors filtering.")
+	fl.StringVarP(&opts.nsLabels, "ns-label-selector", "", opts.nsLabels, "Label selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors.")
+	fl.StringVarP(&opts.nsSelector, "ns-field-selector", "", opts.nsSelector, "Field selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/.")
+	fl.StringVarP(&opts.nsCEL, "ns-expression", "", opts.nsCEL, "CEL expression to select namespaces. Always evaluated before a namespace is watched.")
+
 	fl.StringArrayVarP(&opts.resources, "resources", "r", opts.resources, "A list of resources to watch. You can see the list of resources your cluster supports by running kubectl api-resources.")
 	fl.BoolVar(&opts.groupCore, "core", opts.groupCore, "Watch pods, secrets, configmaps, and serviceaccounts in core/v1 group")
 	fl.BoolVar(&opts.groupBatch, "batch", opts.groupBatch, "Watch jobs, and cronjobs in batch/v1 group.")
@@ -105,6 +120,10 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	fl.BoolVar(&opts.readQueryFromStdIn, "stdin", opts.readQueryFromStdIn, "Read watch request from standard input.")
 
 	cobra.CheckErr(graphCmd.MarkFlagRequired("agent"))
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "namespace")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "ns-label-selector")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "ns-field-selector")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "ns-expression")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "resources")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "core")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "batch")
@@ -179,15 +198,31 @@ func (o *options) constructWatchRequest() ([]byte, error) {
 	}
 
 	req, err := json.Marshal(&watchGraphWebSocketRequest{
-		Queries: q,
-		Namespaces: &namespaces{
-			ObjectSelectorExpression: "name != 'kube-system'",
-		},
+		Queries:    q,
+		Namespaces: o.constructWatchNamespaces(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("JSON marshal: %w", err)
 	}
 	return req, nil
+}
+
+func (o *options) constructWatchNamespaces() *namespaces {
+	if o.isNamespaceOptsEmpty() {
+		return &namespaces{
+			ObjectSelectorExpression: "name != 'kube-system'",
+		}
+	}
+	return &namespaces{
+		Names:                    o.nsNames,
+		LabelSelector:            o.nsLabels,
+		FieldSelector:            o.nsSelector,
+		ObjectSelectorExpression: o.nsCEL,
+	}
+}
+
+func (o *options) isNamespaceOptsEmpty() bool {
+	return len(o.nsNames) == 0 && o.nsLabels == "" && o.nsSelector == "" && o.nsCEL == ""
 }
 
 func (o *options) readWatchRequestFromStdin() ([]byte, error) {

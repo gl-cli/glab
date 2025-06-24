@@ -55,7 +55,13 @@ $ glab cluster graph -R user/project -a 123 --core --rbac
 $ glab cluster graph -R user/project -a 123 --resources=pods --resources=configmaps
 
 # Same as above, but more compact
-$ glab cluster graph -R user/project -a 123 --r={pods,configmaps}
+$ glab cluster graph -R user/project -a 123 -r={pods,configmaps}
+
+# Select a certain namespace
+$ glab cluster graph -R user/project -a 123 -n={my-ns,my-stuff}
+
+# Select all namespaces that have a certain annotation
+$ glab cluster graph -R user/project -a 123 --ns-expression='"my-annotation" in annotations'
 
 # Advanced usage - pass the full query directly via stdin.
 # The query below watches serviceaccounts in all namespaces except for the kube-system.
@@ -68,17 +74,21 @@ $ echo -n "$Q" | glab cluster graph -R user/project -a 123 --stdin
 ## Options
 
 ```plaintext
-  -a, --agent int               The numerical Agent ID to connect to.
-      --apps                    Watch deployments, replicasets, daemonsets, and statefulsets in apps/v1 group.
-      --batch                   Watch jobs, and cronjobs in batch/v1 group.
-      --cluster-rbac            Watch clusterroles, and clusterrolebindings in rbac.authorization.k8s.io/v1 group.
-      --core                    Watch pods, secrets, configmaps, and serviceaccounts in core/v1 group
-      --crd                     Watch customresourcedefinitions in apiextensions.k8s.io/v1 group.
-      --listen-addr string      Address to listen on. (default "localhost:0")
-      --listen-net string       Network on which to listen for connections. (default "tcp")
-      --rbac                    Watch roles, and rolebindings in rbac.authorization.k8s.io/v1 group.
-  -r, --resources stringArray   A list of resources to watch. You can see the list of resources your cluster supports by running kubectl api-resources.
-      --stdin                   Read watch request from standard input.
+  -a, --agent int                  The numerical Agent ID to connect to.
+      --apps                       Watch deployments, replicasets, daemonsets, and statefulsets in apps/v1 group.
+      --batch                      Watch jobs, and cronjobs in batch/v1 group.
+      --cluster-rbac               Watch clusterroles, and clusterrolebindings in rbac.authorization.k8s.io/v1 group.
+      --core                       Watch pods, secrets, configmaps, and serviceaccounts in core/v1 group
+      --crd                        Watch customresourcedefinitions in apiextensions.k8s.io/v1 group.
+      --listen-addr string         Address to listen on. (default "localhost:0")
+      --listen-net string          Network on which to listen for connections. (default "tcp")
+  -n, --namespace stringArray      Namespaces to watch. If not specified, all namespaces are watched with label and field selectors filtering.
+      --ns-expression string       CEL expression to select namespaces. Always evaluated before a namespace is watched.
+      --ns-field-selector string   Field selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/.
+      --ns-label-selector string   Label selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors.
+      --rbac                       Watch roles, and rolebindings in rbac.authorization.k8s.io/v1 group.
+  -r, --resources stringArray      A list of resources to watch. You can see the list of resources your cluster supports by running kubectl api-resources.
+      --stdin                      Read watch request from standard input.
 ```
 
 ## Options inherited from parent commands
