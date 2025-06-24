@@ -29,7 +29,6 @@ type IssueWithNotes struct {
 type options struct {
 	showComments   bool
 	showSystemLogs bool
-	openInBrowser  bool
 	web            bool
 	outputFormat   string
 

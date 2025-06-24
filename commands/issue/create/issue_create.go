@@ -47,7 +47,6 @@ type options struct {
 
 	noEditor      bool
 	isInteractive bool
-	openInWeb     bool
 	yes           bool
 	web           bool
 	recover       bool

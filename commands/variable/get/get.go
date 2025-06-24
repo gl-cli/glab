@@ -23,7 +23,6 @@ type options struct {
 	key          string
 	group        string
 	outputFormat string
-	jsonOutput   bool
 }
 
 func NewCmdGet(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {

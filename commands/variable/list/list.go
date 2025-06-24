@@ -23,7 +23,6 @@ type options struct {
 	page       int
 	perPage    int
 
-	valueSet     bool
 	group        string
 	outputFormat string
 }

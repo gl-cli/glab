@@ -23,7 +23,6 @@ type options struct {
 	io         *iostreams.IOStreams
 	baseRepo   func() (glrepo.Interface, error)
 
-	valueSet     bool
 	group        string
 	outputFormat string
 	scope        string

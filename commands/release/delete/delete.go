@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -19,9 +18,6 @@ type options struct {
 	forceDelete bool
 	deleteTag   bool
 	tagName     string
-
-	assetLinks []*upload.ReleaseAsset
-	assetFiles []*upload.ReleaseFile
 
 	io         *iostreams.IOStreams
 	httpClient func() (*gitlab.Client, error)
