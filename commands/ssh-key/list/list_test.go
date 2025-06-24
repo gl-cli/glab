@@ -15,7 +15,7 @@ func runCommand(rt http.RoundTripper, isTTY bool) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
 	factory := cmdtest.InitFactory(ios, rt)
 	_, _ = factory.HttpClient()
-	cmd := NewCmdList(factory, nil)
+	cmd := NewCmdList(factory)
 	return cmdtest.ExecuteCommand(cmd, "", stdout, stderr)
 }
 

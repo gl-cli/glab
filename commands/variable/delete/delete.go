@@ -25,7 +25,7 @@ type DeleteOpts struct {
 	Group string
 }
 
-func NewCmdDelete(f cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &DeleteOpts{
 		IO: f.IO(),
 	}
@@ -58,10 +58,6 @@ func NewCmdDelete(f cmdutils.Factory, runE func(opts *DeleteOpts) error) *cobra.
 				return err
 			}
 
-			if runE != nil {
-				err = runE(opts)
-				return err
-			}
 			err = deleteRun(opts)
 			return err
 		},

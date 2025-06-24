@@ -61,7 +61,7 @@ func TestAliasList(t *testing.T) {
 				IOStub: ios,
 			}
 
-			cmd := NewCmdList(factoryConf, nil)
+			cmd := NewCmdList(factoryConf)
 			cmd.SetArgs([]string{})
 
 			cmd.SetIn(&bytes.Buffer{})

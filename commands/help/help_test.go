@@ -79,7 +79,7 @@ USAGE
 		{
 			name: "test nested alias cmd",
 			args: args{
-				command: set.NewCmdSet(&cmdtest.Factory{}, nil),
+				command: set.NewCmdSet(&cmdtest.Factory{}),
 				args:    []string{"set", "-h"},
 			},
 			wantOut: "USAGE\n  alias set <alias name> '<command>' [flags]\n\nFLAGS\n  -s, --shell ",

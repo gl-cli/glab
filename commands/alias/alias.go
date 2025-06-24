@@ -15,8 +15,8 @@ func NewCmdAlias(f cmdutils.Factory) *cobra.Command {
 		Short: `Create, list, and delete aliases.`,
 		Long:  ``,
 	}
-	aliasCmd.AddCommand(deleteCmd.NewCmdDelete(f, nil))
-	aliasCmd.AddCommand(listCmd.NewCmdList(f, nil))
-	aliasCmd.AddCommand(setCmd.NewCmdSet(f, nil))
+	aliasCmd.AddCommand(deleteCmd.NewCmdDelete(f))
+	aliasCmd.AddCommand(listCmd.NewCmdList(f))
+	aliasCmd.AddCommand(setCmd.NewCmdSet(f))
 	return aliasCmd
 }

@@ -31,7 +31,7 @@ type ListOpts struct {
 	ListActive   bool
 }
 
-func NewCmdList(f cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Command {
+func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &ListOpts{
 		IO: f.IO(),
 	}
@@ -82,9 +82,6 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 				return cmdutils.FlagError{Err: errors.New("--user and --group are mutually exclusive.")}
 			}
 
-			if runE != nil {
-				return runE(opts)
-			}
 			return listRun(opts)
 		},
 	}

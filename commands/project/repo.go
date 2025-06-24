@@ -33,7 +33,7 @@ func NewCmdRepo(f cmdutils.Factory) *cobra.Command {
 	repoCmd.AddCommand(repoCmdList.NewCmdList(f))
 	repoCmd.AddCommand(repoCmdCreate.NewCmdCreate(f))
 	repoCmd.AddCommand(repoCmdDelete.NewCmdDelete(f))
-	repoCmd.AddCommand(repoCmdFork.NewCmdFork(f, nil))
+	repoCmd.AddCommand(repoCmdFork.NewCmdFork(f))
 	repoCmd.AddCommand(repoCmdSearch.NewCmdSearch(f))
 	repoCmd.AddCommand(repoCmdTransfer.NewCmdTransfer(f))
 	repoCmd.AddCommand(repoCmdUpdate.NewCmdUpdate(f))

@@ -22,7 +22,7 @@ func NewVariableCmd(f cmdutils.Factory) *cobra.Command {
 
 	cmd.AddCommand(setCmd.NewCmdSet(f, nil))
 	cmd.AddCommand(listCmd.NewCmdList(f, nil))
-	cmd.AddCommand(deleteCmd.NewCmdDelete(f, nil))
+	cmd.AddCommand(deleteCmd.NewCmdDelete(f))
 	cmd.AddCommand(updateCmd.NewCmdUpdate(f, nil))
 	cmd.AddCommand(getCmd.NewCmdGet(f, nil))
 	cmd.AddCommand(exportCmd.NewCmdExport(f, nil))

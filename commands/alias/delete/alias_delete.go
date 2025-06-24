@@ -17,7 +17,7 @@ type options struct {
 	io     *iostreams.IOStreams
 }
 
-func NewCmdDelete(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		config: f.Config,
 		io:     f.IO(),
@@ -30,10 +30,6 @@ func NewCmdDelete(f cmdutils.Factory, runF func(*options) error) *cobra.Command 
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
-
-			if runF != nil {
-				return runF(opts)
-			}
 
 			return opts.run()
 		},

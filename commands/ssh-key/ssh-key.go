@@ -18,10 +18,10 @@ func NewCmdSSHKey(f cmdutils.Factory) *cobra.Command {
 
 	cmdutils.EnableRepoOverride(cmd, f)
 
-	cmd.AddCommand(cmdAdd.NewCmdAdd(f, nil))
-	cmd.AddCommand(cmdGet.NewCmdGet(f, nil))
-	cmd.AddCommand(cmdList.NewCmdList(f, nil))
-	cmd.AddCommand(cmdDelete.NewCmdDelete(f, nil))
+	cmd.AddCommand(cmdAdd.NewCmdAdd(f))
+	cmd.AddCommand(cmdGet.NewCmdGet(f))
+	cmd.AddCommand(cmdList.NewCmdList(f))
+	cmd.AddCommand(cmdDelete.NewCmdDelete(f))
 
 	return cmd
 }

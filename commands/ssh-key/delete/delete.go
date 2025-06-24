@@ -26,7 +26,7 @@ type DeleteOpts struct {
 	Page    int
 }
 
-func NewCmdDelete(f cmdutils.Factory, runE func(*DeleteOpts) error) *cobra.Command {
+func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &DeleteOpts{
 		IO: f.IO(),
 	}
@@ -59,10 +59,6 @@ func NewCmdDelete(f cmdutils.Factory, runE func(*DeleteOpts) error) *cobra.Comma
 
 			if len(args) == 1 {
 				opts.KeyID = utils.StringToInt(args[0])
-			}
-
-			if runE != nil {
-				return runE(opts)
 			}
 
 			return deleteRun(opts)

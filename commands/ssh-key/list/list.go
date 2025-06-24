@@ -23,7 +23,7 @@ type ListOpts struct {
 	ShowKeyIDs bool
 }
 
-func NewCmdList(f cmdutils.Factory, runE func(*ListOpts) error) *cobra.Command {
+func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &ListOpts{
 		IO: f.IO(),
 	}
@@ -38,10 +38,6 @@ func NewCmdList(f cmdutils.Factory, runE func(*ListOpts) error) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.HTTPClient = f.HttpClient
 			opts.BaseRepo = f.BaseRepo
-
-			if runE != nil {
-				return runE(opts)
-			}
 
 			return listRun(opts)
 		},

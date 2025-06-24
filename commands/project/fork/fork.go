@@ -42,7 +42,7 @@ type options struct {
 	httpClient func() (*gitlab.Client, error)
 }
 
-func NewCmdFork(f cmdutils.Factory, runE func(cmdutils.Factory) error) *cobra.Command {
+func NewCmdFork(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:                 f.IO(),
 		baseRepo:           f.BaseRepo,
@@ -62,10 +62,6 @@ func NewCmdFork(f cmdutils.Factory, runE func(cmdutils.Factory) error) *cobra.Co
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			opts.complete(cmd, args)
-
-			if runE != nil {
-				return runE(f)
-			}
 
 			return opts.run()
 		},

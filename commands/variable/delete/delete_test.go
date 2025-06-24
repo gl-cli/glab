@@ -6,10 +6,12 @@ import (
 	"testing"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"go.uber.org/mock/gomock"
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
@@ -61,6 +63,15 @@ func Test_NewCmdDelete(t *testing.T) {
 			io, _, _, _ := iostreams.Test()
 			f := &cmdtest.Factory{
 				IOStub: io,
+				HttpClientStub: func() (*gitlab.Client, error) {
+					tc := gitlabtesting.NewTestClient(t)
+					tc.MockProjectVariables.EXPECT().RemoveVariable(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+					tc.MockGroupVariables.EXPECT().RemoveVariable(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+					return tc.Client, nil
+				},
+				BaseRepoStub: func() (glrepo.Interface, error) {
+					return glrepo.New("OWNER", "REPO"), nil
+				},
 			}
 
 			io.IsInTTY = tt.stdinTTY
@@ -68,10 +79,7 @@ func Test_NewCmdDelete(t *testing.T) {
 			argv, err := shlex.Split(tt.cli)
 			assert.NoError(t, err)
 
-			cmd := NewCmdDelete(f, func(opts *DeleteOpts) error {
-				return nil
-			})
-
+			cmd := NewCmdDelete(f)
 			cmd.SetArgs(argv)
 			cmd.SetIn(&bytes.Buffer{})
 			cmd.SetOut(&bytes.Buffer{})

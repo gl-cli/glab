@@ -24,7 +24,7 @@ type options struct {
 	rootCmd   *cobra.Command
 }
 
-func NewCmdSet(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
+func NewCmdSet(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		config: f.Config,
 		io:     f.IO(),
@@ -74,9 +74,6 @@ func NewCmdSet(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(cmd, args)
 
-			if runF != nil {
-				return runF(opts)
-			}
 			return opts.run()
 		},
 	}

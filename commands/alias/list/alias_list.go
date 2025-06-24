@@ -19,7 +19,7 @@ type options struct {
 	io     *iostreams.IOStreams
 }
 
-func NewCmdList(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
+func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		config: f.Config,
 		io:     f.IO(),
@@ -30,9 +30,6 @@ func NewCmdList(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 		Short: `List the available aliases.`,
 		Long:  ``,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if runF != nil {
-				return runF(opts)
-			}
 			return opts.run()
 		},
 	}

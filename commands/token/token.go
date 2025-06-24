@@ -17,9 +17,9 @@ func NewTokenCmd(f cmdutils.Factory) *cobra.Command {
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)
-	cmd.AddCommand(create.NewCmdCreate(f, nil))
-	cmd.AddCommand(revoke.NewCmdRevoke(f, nil))
-	cmd.AddCommand(rotate.NewCmdRotate(f, nil))
-	cmd.AddCommand(list.NewCmdList(f, nil))
+	cmd.AddCommand(create.NewCmdCreate(f))
+	cmd.AddCommand(revoke.NewCmdRevoke(f))
+	cmd.AddCommand(rotate.NewCmdRotate(f))
+	cmd.AddCommand(list.NewCmdList(f))
 	return cmd
 }

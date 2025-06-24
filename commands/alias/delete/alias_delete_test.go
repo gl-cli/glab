@@ -65,7 +65,7 @@ func TestAliasDelete(t *testing.T) {
 				},
 			}
 
-			cmd := NewCmdDelete(factoryConf, nil)
+			cmd := NewCmdDelete(factoryConf)
 
 			argv, err := shlex.Split(tt.cli)
 			require.NoError(t, err)

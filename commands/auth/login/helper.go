@@ -25,7 +25,7 @@ type options struct {
 	operation string
 }
 
-func NewCmdCredential(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
+func NewCmdCredential(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io: f.IO(),
 		config: func() (configExt, error) {
@@ -40,10 +40,6 @@ func NewCmdCredential(f cmdutils.Factory, runF func(*options) error) *cobra.Comm
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
-
-			if runF != nil {
-				return runF(opts)
-			}
 
 			if err := opts.validate(); err != nil {
 				return err
