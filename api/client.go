@@ -39,9 +39,6 @@ type glabInstall struct {
 
 var currentGlabInstall glabInstall
 
-// Global api client to be used throughout glab
-var apiClient *Client
-
 // Client represents an argument to NewClient
 type Client struct {
 	// gitlabClient represents GitLab API client.
@@ -61,10 +58,10 @@ type Client struct {
 	host  string
 	token string
 
-	isGraphQL          bool
-	isOauth2           bool
-	isJobToken         bool
-	allowInsecure      bool
+	isGraphQL     bool
+	isOauth2      bool
+	isJobToken    bool
+	allowInsecure bool
 }
 
 func (i glabInstall) UserAgent() string {
@@ -76,20 +73,6 @@ func SetUserAgent(version string, platform string, architecture string) {
 		version:      version,
 		platform:     platform,
 		architecture: architecture,
-	}
-}
-
-func init() {
-	// initialise the global api client to be used throughout glab
-	RefreshClient()
-}
-
-// RefreshClient re-initializes the api client
-func RefreshClient() {
-	apiClient = &Client{
-		protocol:           "https",
-		AuthType:           NoToken,
-		httpClient:         &http.Client{},
 	}
 }
 
@@ -130,24 +113,28 @@ func tlsConfig(host string, allowInsecure bool) *tls.Config {
 
 // NewClient initializes a api client for use throughout glab.
 func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken bool, options ...ClientOption) (*Client, error) {
-	apiClient.host = host
-	apiClient.token = token
-	apiClient.isGraphQL = isGraphQL
-	apiClient.isOauth2 = isOAuth2
-	apiClient.isJobToken = isJobToken
+	client := &Client{
+		protocol:   "https",
+		AuthType:   NoToken,
+		host:       host,
+		token:      token,
+		isGraphQL:  isGraphQL,
+		isOauth2:   isOAuth2,
+		isJobToken: isJobToken,
+	}
 
 	// Apply options
 	for _, option := range options {
-		if err := option(apiClient); err != nil {
+		if err := option(client); err != nil {
 			return nil, fmt.Errorf("failed to apply client option: %w", err)
 		}
 	}
 
-	if apiClient.httpClient == nil {
+	if client.httpClient == nil {
 		// Create TLS configuration based on client settings
 		tlsConfig := &tls.Config{
 			MinVersion:         tls.VersionTLS12,
-			InsecureSkipVerify: apiClient.allowInsecure,
+			InsecureSkipVerify: client.allowInsecure,
 		}
 
 		// Set secure cipher suites for gitlab.com
@@ -156,8 +143,8 @@ func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken boo
 		}
 
 		// Configure custom CA if provided
-		if apiClient.caFile != "" {
-			caCert, err := os.ReadFile(apiClient.caFile)
+		if client.caFile != "" {
+			caCert, err := os.ReadFile(client.caFile)
 			if err != nil {
 				return nil, fmt.Errorf("error reading cert file: %w", err)
 			}
@@ -171,8 +158,8 @@ func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken boo
 		}
 
 		// Configure client certificates if provided
-		if apiClient.clientCertFile != "" && apiClient.clientKeyFile != "" {
-			clientCert, err := tls.LoadX509KeyPair(apiClient.clientCertFile, apiClient.clientKeyFile)
+		if client.clientCertFile != "" && client.clientKeyFile != "" {
+			clientCert, err := tls.LoadX509KeyPair(client.clientCertFile, client.clientKeyFile)
 			if err != nil {
 				return nil, err
 			}
@@ -183,13 +170,13 @@ func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken boo
 		dialTimeout := 5 * time.Second
 		keepAlive := 5 * time.Second
 		idleTimeout := 30 * time.Second
-		if apiClient.caFile != "" {
+		if client.caFile != "" {
 			dialTimeout = 30 * time.Second
 			keepAlive = 30 * time.Second
 			idleTimeout = 90 * time.Second
 		}
 
-		apiClient.httpClient = &http.Client{
+		client.httpClient = &http.Client{
 			Transport: &http.Transport{
 				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
@@ -205,8 +192,8 @@ func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken boo
 			},
 		}
 	}
-	err := apiClient.NewLab()
-	return apiClient, err
+	err := client.NewLab()
+	return client, err
 }
 
 // WithCustomCA configures the client to use a custom CA certificate
@@ -262,9 +249,6 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (*Clie
 	}
 
 	apiProtocol, _ := cfg.Get(repoHost, "api_protocol")
-	if apiProtocol != "" {
-		apiClient.SetProtocol(apiProtocol) // TODO remove this together with global apiClient.
-	}
 
 	isOAuth2Cfg, _ := cfg.Get(repoHost, "is_oauth2")
 	isOAuth2 := false
