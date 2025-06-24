@@ -435,12 +435,10 @@ func StubFactoryWithConfig(repo string, io *iostreams.IOStreams) (cmdutils.Facto
 }
 
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {
-	testClient, err := api.NewClient(host, token, isGraphQL, false, false, api.WithInsecureSkipVerify(true))
+	testClient, err := api.NewClient(host, token, isGraphQL, false, false, api.WithInsecureSkipVerify(true), api.WithProtocol("https"), api.WithHTTPClient(httpClient))
 	if err != nil {
 		return nil, err
 	}
-	testClient.SetProtocol("https")
-	testClient.OverrideHTTPClient(httpClient)
 	testClient.RefreshLabInstance = true
 	if token != "" {
 		testClient.AuthType = api.PrivateToken

@@ -107,10 +107,6 @@ func (c *Client) HTTPClient() *http.Client {
 	return &http.Client{}
 }
 
-func (c *Client) OverrideHTTPClient(client *http.Client) {
-	c.httpClientOverride = client
-}
-
 func (c *Client) Token() string {
 	return c.token
 }
@@ -221,7 +217,6 @@ func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken boo
 	return apiClient, err
 }
 
-
 // WithCustomCA configures the client to use a custom CA certificate
 func WithCustomCA(caFile string) ClientOption {
 	return func(c *Client) error {
@@ -251,6 +246,14 @@ func WithInsecureSkipVerify(skip bool) ClientOption {
 func WithProtocol(protocol string) ClientOption {
 	return func(c *Client) error {
 		c.protocol = protocol
+		return nil
+	}
+}
+
+// WithHTTPClient configures the HTTP client
+func WithHTTPClient(httpClient *http.Client) ClientOption {
+	return func(c *Client) error {
+		c.httpClientOverride = httpClient
 		return nil
 	}
 }
