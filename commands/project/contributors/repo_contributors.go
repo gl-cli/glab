@@ -14,20 +14,22 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
-type Options struct {
-	OrderBy string
-	Sort    string
-	PerPage int
-	Page    int
+type options struct {
+	orderBy string
+	sort    string
+	perPage int
+	page    int
 
-	BaseRepo   func() (glrepo.Interface, error)
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
 }
 
 func NewCmdContributors(f cmdutils.Factory) *cobra.Command {
-	opts := &Options{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		baseRepo:   f.BaseRepo,
+		httpClient: f.HttpClient,
 	}
 	repoContributorsCmd := &cobra.Command{
 		Use:   "contributors",
@@ -42,51 +44,47 @@ func NewCmdContributors(f cmdutils.Factory) *cobra.Command {
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"users"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Support `-R, --repo` override
-			opts.BaseRepo = f.BaseRepo
-			opts.HTTPClient = f.HttpClient
-
-			return runE(opts)
+			return opts.run()
 		},
 	}
 
 	cmdutils.EnableRepoOverride(repoContributorsCmd, f)
 
-	repoContributorsCmd.Flags().StringVarP(&opts.OrderBy, "order", "o", "commits", "Return contributors ordered by name, email, or commits (orders by commit date) fields.")
-	repoContributorsCmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Return contributors. Sort options: asc, desc.")
-	repoContributorsCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
-	repoContributorsCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
+	repoContributorsCmd.Flags().StringVarP(&opts.orderBy, "order", "o", "commits", "Return contributors ordered by name, email, or commits (orders by commit date) fields.")
+	repoContributorsCmd.Flags().StringVarP(&opts.sort, "sort", "s", "", "Return contributors. Sort options: asc, desc.")
+	repoContributorsCmd.Flags().IntVarP(&opts.page, "page", "p", 1, "Page number.")
+	repoContributorsCmd.Flags().IntVarP(&opts.perPage, "per-page", "P", 30, "Number of items to list per page.")
 	return repoContributorsCmd
 }
 
-func runE(opts *Options) error {
+func (o *options) run() error {
 	var err error
-	c := opts.IO.Color()
+	c := o.io.Color()
 
-	apiClient, err := opts.HTTPClient()
+	apiClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	repo, err := opts.BaseRepo()
+	repo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
 
-	if opts.OrderBy == "commits" && opts.Sort == "" {
-		opts.Sort = "desc"
+	if o.orderBy == "commits" && o.sort == "" {
+		o.sort = "desc"
 	}
 
 	l := &gitlab.ListContributorsOptions{
-		OrderBy: gitlab.Ptr(opts.OrderBy),
+		OrderBy: gitlab.Ptr(o.orderBy),
 		ListOptions: gitlab.ListOptions{
-			Page:    opts.Page,
-			PerPage: opts.PerPage,
+			Page:    o.page,
+			PerPage: o.perPage,
 		},
 	}
 
-	if opts.Sort != "" {
-		l.Sort = gitlab.Ptr(opts.Sort)
+	if o.sort != "" {
+		l.Sort = gitlab.Ptr(o.sort)
 	}
 
 	users, _, err := apiClient.Repositories.Contributors(repo.FullName(), l)
@@ -109,6 +107,6 @@ func runE(opts *Options) error {
 		table.EndRow()
 	}
 
-	fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title.Describe(), table.String())
+	fmt.Fprintf(o.io.StdOut, "%s\n%s\n", title.Describe(), table.String())
 	return err
 }

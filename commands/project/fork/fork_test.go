@@ -35,12 +35,6 @@ func TestProjectFork(t *testing.T) {
 
 	httpMocks := []httpMock{
 		{
-			http.MethodGet,
-			"/api/v4/user",
-			http.StatusOK,
-			`{ "username": "OWNER" }`,
-		},
-		{
 			http.MethodPost,
 			"/api/v4/projects/OWNER/REPO/fork",
 			http.StatusCreated,

@@ -22,19 +22,20 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/text"
 )
 
-type Options struct {
-	LabClient   *gitlab.Client
-	CurrentUser *gitlab.User
-	BaseRepo    func() (glrepo.Interface, error)
-	Remotes     func() (glrepo.Remotes, error)
-	Config      func() (config.Config, error)
+type options struct {
+	io        *iostreams.IOStreams
+	labClient *gitlab.Client
+	baseRepo  func() (glrepo.Interface, error)
+	remotes   func() (glrepo.Remotes, error)
+	config    func() (config.Config, error)
 }
 
 func NewCmdReorderStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
-	opts := &Options{
-		Remotes:  f.Remotes,
-		Config:   f.Config,
-		BaseRepo: f.BaseRepo,
+	opts := &options{
+		io:       f.IO(),
+		remotes:  f.Remotes,
+		config:   f.Config,
+		baseRepo: f.BaseRepo,
 	}
 
 	stackSaveCmd := &cobra.Command{
@@ -45,24 +46,18 @@ func NewCmdReorderStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.G
 			$ glab stack reorder
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f.IO().StartSpinner("Reordering\n")
+			opts.io.StartSpinner("Reordering\n")
+			defer opts.io.StopSpinner("%s Reordering complete\n", f.IO().Color().GreenCheck())
 
-			err := reorderFunc(f, getText, f.IO(), opts)
-			if err != nil {
-				return fmt.Errorf("could not run stack reorder: %v", err)
-			}
-
-			f.IO().StopSpinner("%s Reordering complete\n", f.IO().Color().GreenCheck())
-
-			return nil
+			return opts.run(f, getText)
 		},
 	}
 	return stackSaveCmd
 }
 
-func reorderFunc(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostream *iostreams.IOStreams, opts *Options) error {
-	iostream.StartSpinner("Reordering\n")
-	defer iostream.StopSpinner("")
+func (o *options) run(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor) error {
+	o.io.StartSpinner("Reordering\n")
+	defer o.io.StopSpinner("")
 
 	title, err := git.GetCurrentStackTitle()
 	if err != nil {
@@ -79,7 +74,7 @@ func reorderFunc(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostre
 		return fmt.Errorf("error getting refs from file system: %v", err)
 	}
 
-	iostream.StopSpinner("")
+	o.io.StopSpinner("")
 	// pausing the spinner in case it's a terminal based editor
 
 	branches, err := promptForOrder(f, getText, stack, ref.Branch)
@@ -88,7 +83,7 @@ func reorderFunc(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostre
 	}
 
 	// resuming spinner
-	iostream.StartSpinner("Reordering\n")
+	o.io.StartSpinner("Reordering\n")
 
 	updatedStack, err := matchBranchesToStack(stack, branches)
 	if err != nil {
@@ -103,14 +98,14 @@ func reorderFunc(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, iostre
 	if err != nil {
 		return fmt.Errorf("error authorizing with GitLab: %v", err)
 	}
-	opts.LabClient = client
+	o.labClient = client
 
 	err = updateMRs(f, updatedStack, stack)
 	if err != nil {
 		return fmt.Errorf("error updating merge requests: %v", err)
 	}
 
-	iostream.StopSpinner("%s Reordering complete\n", f.IO().Color().GreenCheck())
+	o.io.StopSpinner("%s Reordering complete\n", f.IO().Color().GreenCheck())
 
 	return nil
 }

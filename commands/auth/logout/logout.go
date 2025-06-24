@@ -1,7 +1,6 @@
 package logout
 
 import (
-	"errors"
 	"fmt"
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -13,19 +12,17 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
-type LogoutOptions struct {
-	IO       *iostreams.IOStreams
-	Config   func() (config.Config, error)
-	Hostname string
+type options struct {
+	io       *iostreams.IOStreams
+	config   func() (config.Config, error)
+	hostname string
 }
 
-var opts *LogoutOptions
-
 func NewCmdLogout(f cmdutils.Factory) *cobra.Command {
-	opts = &LogoutOptions{
-		IO:       f.IO(),
-		Config:   f.Config,
-		Hostname: "",
+	opts := &options{
+		io:       f.IO(),
+		config:   f.Config,
+		hostname: "",
 	}
 
 	cmd := &cobra.Command{
@@ -41,27 +38,29 @@ func NewCmdLogout(f cmdutils.Factory) *cobra.Command {
 			- glab auth logout --hostname gitlab.example.com
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if opts.Hostname == "" {
-				return &cmdutils.FlagError{Err: errors.New("hostname is required to logout. Use --hostname flag to specify hostname")}
-			}
-			cfg, err := opts.Config()
-			if err != nil {
-				return err
-			}
-
-			if err := cfg.Set(opts.Hostname, "token", ""); err != nil {
-				return err
-			}
-
-			if err := cfg.Write(); err != nil {
-				return err
-			}
-
-			fmt.Fprintf(f.IO().StdOut, "Successfully logged out of %s\n", opts.Hostname)
-			return nil
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Hostname, "hostname", "h", "", "The hostname of the GitLab instance.")
+	cmd.Flags().StringVarP(&opts.hostname, "hostname", "h", "", "The hostname of the GitLab instance.")
+	cobra.CheckErr(cmd.MarkFlagRequired("hostname"))
 	return cmd
+}
+
+func (o *options) run() error {
+	cfg, err := o.config()
+	if err != nil {
+		return err
+	}
+
+	if err := cfg.Set(o.hostname, "token", ""); err != nil {
+		return err
+	}
+
+	if err := cfg.Write(); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(o.io.StdOut, "Successfully logged out of %s\n", o.hostname)
+	return nil
 }

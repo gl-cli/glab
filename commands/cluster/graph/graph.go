@@ -38,6 +38,10 @@ type options struct {
 
 func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	opts := options{
+		io:       f.IO(),
+		baseRepo: f.BaseRepo,
+		config:   f.Config,
+
 		listenNet:  "tcp",
 		listenAddr: "localhost:0",
 	}
@@ -83,9 +87,6 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.io = f.IO() // TODO move into the struct literal after factory refactoring
-			opts.baseRepo = f.BaseRepo
-			opts.config = f.Config
 			return opts.run(cmd.Context())
 		},
 	}

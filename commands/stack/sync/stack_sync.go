@@ -23,19 +23,17 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/text"
 )
 
-type Options struct {
-	stack       git.Stack
-	target      glrepo.Interface
-	source      glrepo.Interface
-	LabClient   *gitlab.Client
-	CurrentUser *gitlab.User
-	BaseRepo    func() (glrepo.Interface, error)
-	Remotes     func() (glrepo.Remotes, error)
-	Config      func() (config.Config, error)
-	user        gitlab.User
+type options struct {
+	io        *iostreams.IOStreams
+	stack     git.Stack
+	target    glrepo.Interface
+	source    glrepo.Interface
+	labClient *gitlab.Client
+	baseRepo  func() (glrepo.Interface, error)
+	remotes   func() (glrepo.Remotes, error)
+	config    func() (config.Config, error)
+	user      gitlab.User
 }
-
-var iostream *iostreams.IOStreams
 
 // max string size for MR title is ~255, but we'll add a "..."
 const maxMRTitleSize = 252
@@ -49,13 +47,12 @@ const (
 )
 
 func NewCmdSyncStack(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
-	opts := &Options{
-		Remotes:  f.Remotes,
-		Config:   f.Config,
-		BaseRepo: f.BaseRepo,
+	opts := &options{
+		io:       f.IO(),
+		remotes:  f.Remotes,
+		config:   f.Config,
+		baseRepo: f.BaseRepo,
 	}
-
-	iostream = f.IO()
 
 	stackSaveCmd := &cobra.Command{
 		Use:   "sync",
@@ -72,31 +69,26 @@ func NewCmdSyncStack(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 			$ glab stack sync
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			iostream.StartSpinner("Syncing")
+			opts.io.StartSpinner("Syncing")
+			defer opts.io.StopSpinner("")
 
 			var gr git.StandardGitCommand
 
-			err := stackSync(f, iostream, opts, gr)
-			iostream.StopSpinner("")
-			if err != nil {
-				return fmt.Errorf("could not run sync: %v", err)
-			}
-
-			return nil
+			return opts.run(f, gr)
 		},
 	}
 
 	return stackSaveCmd
 }
 
-func stackSync(f cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options, gr git.GitRunner) error {
+func (o *options) run(f cmdutils.Factory, gr git.GitRunner) error {
 	client, err := auth.GetAuthenticatedClient(f)
 	if err != nil {
 		return fmt.Errorf("error authorizing with GitLab: %v", err)
 	}
-	opts.LabClient = client
+	o.labClient = client
 
-	iostream.StopSpinner("")
+	o.io.StopSpinner("")
 
 	repo, err := f.BaseRepo()
 	if err != nil {
@@ -110,7 +102,7 @@ func stackSync(f cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options,
 		return fmt.Errorf("error determining head repo: %v", err)
 	}
 
-	iostream.StartSpinner("Syncing")
+	o.io.StartSpinner("Syncing")
 
 	stack, err := getStack()
 	if err != nil {
@@ -122,10 +114,10 @@ func stackSync(f cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options,
 		return fmt.Errorf("error getting current user: %v", err)
 	}
 
-	opts.stack = stack
-	opts.target = repo
-	opts.source = source
-	opts.user = *user
+	o.stack = stack
+	o.target = repo
+	o.source = source
+	o.user = *user
 
 	err = fetchOrigin(gr)
 	if err != nil {
@@ -142,12 +134,12 @@ func stackSync(f cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options,
 
 		switch {
 		case strings.Contains(status, BranchIsBehind):
-			err = branchBehind(&ref, gr)
+			err = branchBehind(o.io, &ref, gr)
 			if err != nil {
 				return err
 			}
 		case strings.Contains(status, BranchHasDiverged):
-			needsPush, err := branchDiverged(&ref, &stack, gr)
+			needsPush, err := branchDiverged(o.io, &ref, &stack, gr)
 			if err != nil {
 				return err
 			}
@@ -162,7 +154,7 @@ func stackSync(f cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options,
 		}
 
 		if ref.MR == "" {
-			err := populateMR(&ref, opts, client, gr)
+			err := populateMR(o.io, &ref, o, client, gr)
 			if err != nil {
 				return err
 			}
@@ -176,7 +168,7 @@ func stackSync(f cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options,
 			// remove the MR from the stack if it's merged
 			// do not remove the MR from the stack if it is closed,
 			// but alert the user
-			err = removeOldMrs(&ref, mr, &stack, gr)
+			err = removeOldMrs(o.io, &ref, mr, &stack, gr)
 			if err != nil {
 				return fmt.Errorf("error removing merged merge request: %v", err)
 			}
@@ -184,13 +176,13 @@ func stackSync(f cmdutils.Factory, iostream *iostreams.IOStreams, opts *Options,
 	}
 
 	if pushAfterSync {
-		err := forcePushAllWithLease(&stack, gr)
+		err := forcePushAllWithLease(o.io, &stack, gr)
 		if err != nil {
 			return fmt.Errorf("error pushing branches to remote: %v", err)
 		}
 	}
 
-	fmt.Print(progressString("Sync finished!"))
+	fmt.Print(progressString(o.io, "Sync finished!"))
 	return nil
 }
 
@@ -262,8 +254,9 @@ func rebaseWithUpdateRefs(ref *git.StackRef, stack *git.Stack, gr git.GitRunner)
 	return nil
 }
 
-func forcePushAllWithLease(stack *git.Stack, gr git.GitRunner) error {
+func forcePushAllWithLease(io *iostreams.IOStreams, stack *git.Stack, gr git.GitRunner) error {
 	fmt.Print(progressString(
+		io,
 		"Updating branches:",
 		strings.Join(stack.Branches(), ", "),
 	))
@@ -276,11 +269,11 @@ func forcePushAllWithLease(stack *git.Stack, gr git.GitRunner) error {
 		return err
 	}
 
-	fmt.Print(progressString("Push succeeded: " + output))
+	fmt.Print(progressString(io, "Push succeeded: "+output))
 	return nil
 }
 
-func createMR(client *gitlab.Client, opts *Options, ref *git.StackRef, gr git.GitRunner) (*gitlab.MergeRequest, error) {
+func createMR(client *gitlab.Client, opts *options, ref *git.StackRef, gr git.GitRunner) (*gitlab.MergeRequest, error) {
 	targetProject, err := opts.target.Project(client)
 	if err != nil {
 		return &gitlab.MergeRequest{}, fmt.Errorf("error getting target project: %v", err)
@@ -334,10 +327,10 @@ func createMR(client *gitlab.Client, opts *Options, ref *git.StackRef, gr git.Gi
 	return mr, nil
 }
 
-func removeOldMrs(ref *git.StackRef, mr *gitlab.MergeRequest, stack *git.Stack, gr git.GitRunner) error {
+func removeOldMrs(io *iostreams.IOStreams, ref *git.StackRef, mr *gitlab.MergeRequest, stack *git.Stack, gr git.GitRunner) error {
 	if mr.State == mergedStatus {
 		progress := fmt.Sprintf("Merge request !%v has merged. Removing reference...", mr.IID)
-		fmt.Println(progressString(progress))
+		fmt.Println(progressString(io, progress))
 
 		err := stack.RemoveRef(*ref, gr)
 		if err != nil {
@@ -345,13 +338,13 @@ func removeOldMrs(ref *git.StackRef, mr *gitlab.MergeRequest, stack *git.Stack, 
 		}
 	} else if mr.State == closedStatus {
 		progress := fmt.Sprintf("MR !%v has closed", mr.IID)
-		fmt.Println(progressString(progress))
+		fmt.Println(progressString(io, progress))
 	}
 	return nil
 }
 
-func errorString(lines ...string) string {
-	redCheck := iostream.Color().Red("✘")
+func errorString(io *iostreams.IOStreams, lines ...string) string {
+	redCheck := io.Color().Red("✘")
 
 	title := lines[0]
 	body := strings.Join(lines[1:], "\n  ")
@@ -359,8 +352,8 @@ func errorString(lines ...string) string {
 	return fmt.Sprintf("\n%s %s \n  %s", redCheck, title, body)
 }
 
-func progressString(lines ...string) string {
-	blueDot := iostream.Color().ProgressIcon()
+func progressString(io *iostreams.IOStreams, lines ...string) string {
+	blueDot := io.Color().ProgressIcon()
 	title := lines[0]
 
 	var body string
@@ -372,12 +365,13 @@ func progressString(lines ...string) string {
 	return fmt.Sprintf("\n%s %s\n", blueDot, title)
 }
 
-func branchDiverged(ref *git.StackRef, stack *git.Stack, gr git.GitRunner) (bool, error) {
-	fmt.Println(progressString(ref.Branch + " has diverged. Rebasing..."))
+func branchDiverged(io *iostreams.IOStreams, ref *git.StackRef, stack *git.Stack, gr git.GitRunner) (bool, error) {
+	fmt.Println(progressString(io, ref.Branch+" has diverged. Rebasing..."))
 
 	err := rebaseWithUpdateRefs(ref, stack, gr)
 	if err != nil {
 		return false, errors.New(errorString(
+			io,
 			"could not rebase, likely due to a merge conflict.",
 			"Fix the issues with Git and run `glab stack sync` again.",
 		))
@@ -386,10 +380,10 @@ func branchDiverged(ref *git.StackRef, stack *git.Stack, gr git.GitRunner) (bool
 	return true, nil
 }
 
-func branchBehind(ref *git.StackRef, gr git.GitRunner) error {
+func branchBehind(io *iostreams.IOStreams, ref *git.StackRef, gr git.GitRunner) error {
 	// possibly someone applied suggestions or someone else added a
 	// different commit
-	fmt.Println(progressString(ref.Branch + " is behind - pulling updates."))
+	fmt.Println(progressString(io, ref.Branch+" is behind - pulling updates."))
 
 	_, err := gitPull(gr)
 	if err != nil {
@@ -399,17 +393,17 @@ func branchBehind(ref *git.StackRef, gr git.GitRunner) error {
 	return nil
 }
 
-func populateMR(ref *git.StackRef, opts *Options, client *gitlab.Client, gr git.GitRunner) error {
+func populateMR(io *iostreams.IOStreams, ref *git.StackRef, opts *options, client *gitlab.Client, gr git.GitRunner) error {
 	// no MR - lets create one!
-	fmt.Println(progressString(ref.Branch + " needs a merge request. Creating it now."))
+	fmt.Println(progressString(io, ref.Branch+" needs a merge request. Creating it now."))
 
 	mr, err := createMR(client, opts, ref, gr)
 	if err != nil {
 		return fmt.Errorf("error updating stack ref files: %v", err)
 	}
 
-	fmt.Println(progressString("Merge request created!"))
-	fmt.Println(mrutils.DisplayMR(iostream.Color(), &mr.BasicMergeRequest, true))
+	fmt.Println(progressString(io, "Merge request created!"))
+	fmt.Println(mrutils.DisplayMR(io.Color(), &mr.BasicMergeRequest, true))
 
 	// update the ref
 	ref.MR = mr.WebURL

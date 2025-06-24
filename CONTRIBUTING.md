@@ -60,7 +60,7 @@ If your merge request is large, create an issue first. See [Reporting Issues](#r
 
 ### Developing with Workspaces
 
-[GitLab Workspaces](https://docs.gitlab.com/user/workspace/) are fully enabled for the CLI project, 
+[GitLab Workspaces](https://docs.gitlab.com/user/workspace/) are fully enabled for the CLI project,
 providing a complete development environment in your browser.
 
 Benefits of using Workspaces:
@@ -72,7 +72,7 @@ Benefits of using Workspaces:
 - MR-based development: Open a Workspace directly from a merge request for testing and reviews.
 - No context switching: Make changes during code reviews without switching to your local machine.
 
-For more information see, [Creating a workspace](#creating-a-workspace). 
+For more information see, [Creating a workspace](#creating-a-workspace).
 
 ### Building the project
 
@@ -132,6 +132,18 @@ expected behavior as a result:
 Features generally have some or all of these commands. However, some features do not
 map well to the listed commands. In situations like these, it's okay to create or
 use separate verbs that make the most sense for the feature.
+
+#### Command Structure
+
+Commands in this repository follow the
+[OpenShift guidelines](https://github.com/openshift/origin/blob/master/docs/cli_hacking_guide.adoc)
+with the following differences:
+
+- `xxxOptions` structs are private. No need to export them.
+- `xxxOptions` structs are called just `options` to avoid repeating the package name.
+- Methods and fields on `options` are not exported.
+- Only implement the necessary methods out of `complete`, `validate` and `run`.
+- Options struct constructor is optional and should be named `newOptions` - unexported and does not repeat the package name.
 
 #### Precedent
 
@@ -286,11 +298,11 @@ To create a workspace:
 1. Go to the CLI project or any merge request.
 1. In the upper-right corner, select **Code**.
 1. Select **Open in Workspace**.
-1. Complete the form. The form is pre-filled with cluster agent configuration, project reference, 
+1. Complete the form. The form is pre-filled with cluster agent configuration, project reference,
    and Devfile.
 1. Select **Create workspace**.
 
-Wait until the workspace status is **Running**, then select **Open workspace** to launch your 
+Wait until the workspace status is **Running**, then select **Open workspace** to launch your
 development environment.
 
 After your workspace is running, you can start developing:

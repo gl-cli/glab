@@ -22,7 +22,7 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *ListOptions) error, doHyperlinks string) (*test.CmdOut, error) {
+func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *options) error, doHyperlinks string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, doHyperlinks)
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -60,16 +60,16 @@ func TestNewCmdList(t *testing.T) {
 		},
 	}
 	t.Run("MergeRequest_NewCmdList", func(t *testing.T) {
-		gotOpts := &ListOptions{}
-		err := NewCmdList(factory, func(opts *ListOptions) error {
+		gotOpts := &options{}
+		err := NewCmdList(factory, func(opts *options) error {
 			gotOpts = opts
 			return nil
 		}).Execute()
 
 		assert.Nil(t, err)
-		assert.Equal(t, factory.IO(), gotOpts.IO)
+		assert.Equal(t, factory.IO(), gotOpts.io)
 
-		gotBaseRepo, _ := gotOpts.BaseRepo()
+		gotBaseRepo, _ := gotOpts.baseRepo()
 		expectedBaseRepo, _ := factory.BaseRepo()
 		assert.Equal(t, gotBaseRepo, expectedBaseRepo)
 	})

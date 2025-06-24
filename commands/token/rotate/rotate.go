@@ -21,22 +21,24 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
-type RotateOptions struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	User         string
-	Group        string
-	Name         any
-	Duration     time.Duration
-	ExpireAt     expirationdate.ExpirationDate
-	OutputFormat string
+	user         string
+	group        string
+	name         any
+	duration     time.Duration
+	expireAt     expirationdate.ExpirationDate
+	outputFormat string
 }
 
-func NewCmdRotate(f cmdutils.Factory, runE func(opts *RotateOptions) error) *cobra.Command {
-	opts := &RotateOptions{
-		IO: f.IO(),
+func NewCmdRotate(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -72,66 +74,80 @@ func NewCmdRotate(f cmdutils.Factory, runE func(opts *RotateOptions) error) *cob
 			Rotate a personal access token of another user (administrator only)
 			- glab token rotate --user johndoe johns-personal-token
 		`),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			// Supports repo override
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			if opts.Name, err = strconv.Atoi(args[0]); err != nil {
-				opts.Name = args[0]
-			}
-			if opts.Group, err = flag.GroupOverride(cmd); err != nil {
-				return
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := opts.complete(cmd, args); err != nil {
+				return err
 			}
 
-			if opts.Group != "" && opts.User != "" {
-				return cmdutils.FlagError{Err: errors.New("'--group' and '--user' are mutually exclusive.")}
-			}
-
-			if opts.Duration.Truncate(24*time.Hour) != opts.Duration {
-				return cmdutils.FlagError{Err: errors.New("duration must be in days.")}
-			}
-
-			if opts.Duration < 24*time.Hour || opts.Duration > 365*24*time.Hour {
-				return cmdutils.FlagError{Err: errors.New("duration in days must be between 1 and 365.")}
-			}
-
-			if cmd.Flags().Changed("expires-at") && cmd.Flags().Changed("duration") {
-				return cmdutils.FlagError{Err: errors.New("'--expires-at' and '--duration' are mutually exclusive.")}
-			}
-
-			if time.Time(opts.ExpireAt).IsZero() {
-				opts.ExpireAt = expirationdate.ExpirationDate(time.Now().Add(opts.Duration).Truncate(time.Hour * 24))
+			if err := opts.validate(); err != nil {
+				return err
 			}
 
 			if runE != nil {
 				return runE(opts)
 			}
-			return rotateTokenRun(opts)
+			return opts.run()
 		},
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Rotate group access token. Ignored if a user or repository argument is set.")
-	cmd.Flags().StringVarP(&opts.User, "user", "U", "", "Rotate personal access token. Use @me for the current user.")
-	cmd.Flags().DurationVarP(&opts.Duration, "duration", "D", time.Duration(30*24*time.Hour), "Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h.")
-	cmd.Flags().VarP(&opts.ExpireAt, "expires-at", "E", "Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used.")
-	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json. 'text' provides the new token value; 'json' outputs the token with metadata.")
+	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "Rotate group access token. Ignored if a user or repository argument is set.")
+	cmd.Flags().StringVarP(&opts.user, "user", "U", "", "Rotate personal access token. Use @me for the current user.")
+	cmd.Flags().DurationVarP(&opts.duration, "duration", "D", time.Duration(30*24*time.Hour), "Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h.")
+	cmd.Flags().VarP(&opts.expireAt, "expires-at", "E", "Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used.")
+	cmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json. 'text' provides the new token value; 'json' outputs the token with metadata.")
+	cmd.MarkFlagsMutuallyExclusive("duration", "expires-at")
 	return cmd
 }
 
-func rotateTokenRun(opts *RotateOptions) error {
-	httpClient, err := opts.HTTPClient()
+func (o *options) complete(cmd *cobra.Command, args []string) error {
+	if name, err := strconv.Atoi(args[0]); err != nil {
+		o.name = args[0]
+	} else {
+		o.name = name
+	}
+
+	if group, err := flag.GroupOverride(cmd); err != nil {
+		return err
+	} else {
+		o.group = group
+	}
+
+	if time.Time(o.expireAt).IsZero() {
+		o.expireAt = expirationdate.ExpirationDate(time.Now().Add(o.duration).Truncate(time.Hour * 24))
+	}
+
+	return nil
+}
+
+func (o *options) validate() error {
+	if o.group != "" && o.user != "" {
+		return cmdutils.FlagError{Err: errors.New("'--group' and '--user' are mutually exclusive.")}
+	}
+
+	if o.duration.Truncate(24*time.Hour) != o.duration {
+		return cmdutils.FlagError{Err: errors.New("duration must be in days.")}
+	}
+
+	if o.duration < 24*time.Hour || o.duration > 365*24*time.Hour {
+		return cmdutils.FlagError{Err: errors.New("duration in days must be between 1 and 365.")}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
-	expirationDate := gitlab.ISOTime(opts.ExpireAt)
+	expirationDate := gitlab.ISOTime(o.expireAt)
 
 	var outputToken any
 	var outputTokenValue string
 
-	if opts.User != "" {
-		user, err := api.UserByName(httpClient, opts.User)
+	if o.user != "" {
+		user, err := api.UserByName(httpClient, o.user)
 		if err != nil {
 			return cmdutils.FlagError{Err: err}
 		}
@@ -146,15 +162,15 @@ func rotateTokenRun(opts *RotateOptions) error {
 		}
 		var token *gitlab.PersonalAccessToken
 		tokens = filter.Filter(tokens, func(t *gitlab.PersonalAccessToken) bool {
-			return t.Active && (t.Name == opts.Name || t.ID == opts.Name)
+			return t.Active && (t.Name == o.name || t.ID == o.name)
 		})
 		switch len(tokens) {
 		case 1:
 			token = tokens[0]
 		case 0:
-			return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'", opts.Name)}
+			return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'", o.name)}
 		default:
-			return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", opts.Name)}
+			return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", o.name)}
 		}
 		rotateOptions := &gitlab.RotatePersonalAccessTokenOptions{
 			ExpiresAt: &expirationDate,
@@ -165,35 +181,35 @@ func rotateTokenRun(opts *RotateOptions) error {
 		outputToken = token
 		outputTokenValue = token.Token
 	} else {
-		if opts.Group != "" {
+		if o.group != "" {
 			options := &gitlab.ListGroupAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListGroupAccessTokens(httpClient, opts.Group, options)
+			tokens, err := api.ListGroupAccessTokens(httpClient, o.group, options)
 			if err != nil {
 				return err
 			}
 			var token *gitlab.GroupAccessToken
 			tokens = filter.Filter(tokens, func(t *gitlab.GroupAccessToken) bool {
-				return t.Active && (t.Name == opts.Name || t.ID == opts.Name)
+				return t.Active && (t.Name == o.name || t.ID == o.name)
 			})
 			switch len(tokens) {
 			case 1:
 				token = tokens[0]
 			case 0:
-				return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'", opts.Name)}
+				return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'", o.name)}
 			default:
-				return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v', use the ID instead", opts.Name)}
+				return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v', use the ID instead", o.name)}
 			}
 
 			rotateOptions := &gitlab.RotateGroupAccessTokenOptions{
 				ExpiresAt: &expirationDate,
 			}
-			if token, err = api.RotateGroupAccessToken(httpClient, opts.Group, token.ID, rotateOptions); err != nil {
+			if token, err = api.RotateGroupAccessToken(httpClient, o.group, token.ID, rotateOptions); err != nil {
 				return err
 			}
 			outputToken = token
 			outputTokenValue = token.Token
 		} else {
-			repo, err := opts.BaseRepo()
+			repo, err := o.baseRepo()
 			if err != nil {
 				return err
 			}
@@ -203,16 +219,16 @@ func rotateTokenRun(opts *RotateOptions) error {
 				return err
 			}
 			tokens = filter.Filter(tokens, func(t *gitlab.ProjectAccessToken) bool {
-				return t.Active && (t.Name == opts.Name || t.ID == opts.Name)
+				return t.Active && (t.Name == o.name || t.ID == o.name)
 			})
 			var token *gitlab.ProjectAccessToken
 			switch len(tokens) {
 			case 1:
 				token = tokens[0]
 			case 0:
-				return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'", opts.Name)}
+				return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'", o.name)}
 			default:
-				return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v', use the ID instead", opts.Name)}
+				return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v', use the ID instead", o.name)}
 			}
 
 			rotateOptions := &gitlab.RotateProjectAccessTokenOptions{
@@ -226,13 +242,13 @@ func rotateTokenRun(opts *RotateOptions) error {
 		}
 	}
 
-	if opts.OutputFormat == "json" {
-		encoder := json.NewEncoder(opts.IO.StdOut)
+	if o.outputFormat == "json" {
+		encoder := json.NewEncoder(o.io.StdOut)
 		if err := encoder.Encode(outputToken); err != nil {
 			return err
 		}
 	} else {
-		if _, err := fmt.Fprintf(opts.IO.StdOut, "%s\n", outputTokenValue); err != nil {
+		if _, err := fmt.Fprintf(o.io.StdOut, "%s\n", outputTokenValue); err != nil {
 			return err
 		}
 	}

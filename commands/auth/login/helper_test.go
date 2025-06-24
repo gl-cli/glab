@@ -18,7 +18,7 @@ func (c tinyConfig) Get(host, key string) (string, error) {
 func Test_helperRun(t *testing.T) {
 	tests := []struct {
 		name       string
-		opts       CredentialOptions
+		opts       options
 		input      string
 		wantStdout string
 		wantStderr string
@@ -26,9 +26,9 @@ func Test_helperRun(t *testing.T) {
 	}{
 		{
 			name: "host only, credentials found",
-			opts: CredentialOptions{
-				Operation: "get",
-				Config: func() (configExt, error) {
+			opts: options{
+				operation: "get",
+				config: func() (configExt, error) {
 					return tinyConfig{
 						"_source":           "/Users/monalisa/.config/glab/config.yml",
 						"example.com:user":  "monalisa",
@@ -51,9 +51,9 @@ func Test_helperRun(t *testing.T) {
 		},
 		{
 			name: "host plus user",
-			opts: CredentialOptions{
-				Operation: "get",
-				Config: func() (configExt, error) {
+			opts: options{
+				operation: "get",
+				config: func() (configExt, error) {
 					return tinyConfig{
 						"_source":           "/Users/monalisa/.config/glab/config.yml",
 						"example.com:user":  "monalisa",
@@ -77,9 +77,9 @@ func Test_helperRun(t *testing.T) {
 		},
 		{
 			name: "url input",
-			opts: CredentialOptions{
-				Operation: "get",
-				Config: func() (configExt, error) {
+			opts: options{
+				operation: "get",
+				config: func() (configExt, error) {
 					return tinyConfig{
 						"_source":           "/Users/monalisa/.config/glab/config.yml",
 						"example.com:user":  "monalisa",
@@ -101,9 +101,9 @@ func Test_helperRun(t *testing.T) {
 		},
 		{
 			name: "host only, no credentials found",
-			opts: CredentialOptions{
-				Operation: "get",
-				Config: func() (configExt, error) {
+			opts: options{
+				operation: "get",
+				config: func() (configExt, error) {
 					return tinyConfig{
 						"_source":          "/Users/monalisa/.config/glab/config.yml",
 						"example.com:user": "monalisa",
@@ -120,9 +120,9 @@ func Test_helperRun(t *testing.T) {
 		},
 		{
 			name: "token from env",
-			opts: CredentialOptions{
-				Operation: "get",
-				Config: func() (configExt, error) {
+			opts: options{
+				operation: "get",
+				config: func() (configExt, error) {
 					return tinyConfig{
 						"_source":           "GITLAB_TOKEN",
 						"example.com:token": "OTOKEN",
@@ -149,8 +149,8 @@ func Test_helperRun(t *testing.T) {
 			io, stdin, stdout, stderr := iostreams.Test()
 			fmt.Fprint(stdin, tt.input)
 			opts := &tt.opts
-			opts.IO = io
-			if err := helperRun(opts); (err != nil) != tt.wantErr {
+			opts.io = io
+			if err := opts.run(); (err != nil) != tt.wantErr {
 				t.Fatalf("helperRun() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if tt.wantStdout != stdout.String() {

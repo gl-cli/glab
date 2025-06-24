@@ -59,7 +59,7 @@ func TestNewCmdClone(t *testing.T) {
 	testCases := []struct {
 		name        string
 		args        string
-		wantOpts    CloneOptions
+		wantOpts    options
 		wantCtxOpts ContextOpts
 		wantErr     string
 	}{
@@ -71,8 +71,8 @@ func TestNewCmdClone(t *testing.T) {
 		{
 			name: "repo argument",
 			args: "NAMESPACE/REPO",
-			wantOpts: CloneOptions{
-				GitFlags: []string{},
+			wantOpts: options{
+				gitFlags: []string{},
 			},
 			wantCtxOpts: ContextOpts{
 				Repo: "NAMESPACE/REPO",
@@ -81,9 +81,9 @@ func TestNewCmdClone(t *testing.T) {
 		{
 			name: "directory argument",
 			args: "NAMESPACE/REPO mydir",
-			wantOpts: CloneOptions{
-				GitFlags: []string{},
-				Dir:      "mydir",
+			wantOpts: options{
+				gitFlags: []string{},
+				dir:      "mydir",
 			},
 			wantCtxOpts: ContextOpts{
 				Repo: "NAMESPACE/REPO",
@@ -92,8 +92,8 @@ func TestNewCmdClone(t *testing.T) {
 		{
 			name: "git clone arguments",
 			args: "NAMESPACE/REPO -- --depth 1 --recurse-submodules",
-			wantOpts: CloneOptions{
-				GitFlags: []string{"--depth", "1", "--recurse-submodules"},
+			wantOpts: options{
+				gitFlags: []string{"--depth", "1", "--recurse-submodules"},
 			},
 			wantCtxOpts: ContextOpts{
 				Repo: "NAMESPACE/REPO",
@@ -102,8 +102,8 @@ func TestNewCmdClone(t *testing.T) {
 		{
 			name: "group clone arguments",
 			args: "-g NAMESPACE/REPO -- --depth 1 --recurse-submodules",
-			wantOpts: CloneOptions{
-				GitFlags: []string{"--depth", "1", "--recurse-submodules"},
+			wantOpts: options{
+				gitFlags: []string{"--depth", "1", "--recurse-submodules"},
 			},
 			wantCtxOpts: ContextOpts{
 				Repo: "",
@@ -120,9 +120,9 @@ func TestNewCmdClone(t *testing.T) {
 			io, stdin, stdout, stderr := iostreams.Test()
 			fac := &cmdtest.Factory{IOStub: io}
 
-			var opts *CloneOptions
+			var opts *options
 			var ctxOpts *ContextOpts
-			cmd := NewCmdClone(fac, func(co *CloneOptions, cx *ContextOpts) error {
+			cmd := NewCmdClone(fac, func(co *options, cx *ContextOpts) error {
 				opts = co
 				ctxOpts = cx
 				return nil
@@ -148,7 +148,7 @@ func TestNewCmdClone(t *testing.T) {
 			assert.Equal(t, "", stderr.String())
 
 			assert.Equal(t, tt.wantCtxOpts.Repo, ctxOpts.Repo)
-			assert.Equal(t, tt.wantOpts.GitFlags, opts.GitFlags)
+			assert.Equal(t, tt.wantOpts.gitFlags, opts.gitFlags)
 		})
 	}
 }

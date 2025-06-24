@@ -14,15 +14,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type ListOptions struct {
-	Config func() (config.Config, error)
-	IO     *iostreams.IOStreams
+type options struct {
+	config func() (config.Config, error)
+	io     *iostreams.IOStreams
 }
 
-func NewCmdList(f cmdutils.Factory, runF func(*ListOptions) error) *cobra.Command {
-	opts := &ListOptions{
-		Config: f.Config,
-		IO:     f.IO(),
+func NewCmdList(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
+	opts := &options{
+		config: f.Config,
+		io:     f.IO(),
 	}
 
 	aliasListCmd := &cobra.Command{
@@ -33,14 +33,14 @@ func NewCmdList(f cmdutils.Factory, runF func(*ListOptions) error) *cobra.Comman
 			if runF != nil {
 				return runF(opts)
 			}
-			return listRun(cmd, opts)
+			return opts.run()
 		},
 	}
 	return aliasListCmd
 }
 
-func listRun(cmd *cobra.Command, opts *ListOptions) error {
-	cfg, err := opts.Config()
+func (o *options) run() error {
+	cfg, err := o.config()
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func listRun(cmd *cobra.Command, opts *ListOptions) error {
 
 	if aliasCfg.Empty() {
 
-		fmt.Fprintf(opts.IO.StdErr, "no aliases configured.\n")
+		fmt.Fprintf(o.io.StdErr, "no aliases configured.\n")
 		return nil
 	}
 
@@ -70,7 +70,7 @@ func listRun(cmd *cobra.Command, opts *ListOptions) error {
 	for _, alias := range keys {
 		table.AddRow(alias, aliasMap[alias])
 	}
-	fmt.Fprintf(opts.IO.StdOut, "%s", table.Render())
+	fmt.Fprintf(o.io.StdOut, "%s", table.Render())
 
 	return nil
 }

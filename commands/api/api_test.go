@@ -31,114 +31,114 @@ func Test_NewCmdApi(t *testing.T) {
 	tests := []struct {
 		name     string
 		cli      string
-		wants    ApiOptions
+		wants    options
 		wantsErr bool
 	}{
 		{
 			name: "no flags",
 			cli:  "graphql",
-			wants: ApiOptions{
-				Hostname:            "",
-				RequestMethod:       http.MethodGet,
-				RequestMethodPassed: false,
-				RequestPath:         "graphql",
-				RequestInputFile:    "",
-				RawFields:           []string(nil),
-				MagicFields:         []string(nil),
-				RequestHeaders:      []string(nil),
-				ShowResponseHeaders: false,
-				Paginate:            false,
-				Silent:              false,
+			wants: options{
+				hostname:            "",
+				requestMethod:       http.MethodGet,
+				requestMethodPassed: false,
+				requestPath:         "graphql",
+				requestInputFile:    "",
+				rawFields:           []string(nil),
+				magicFields:         []string(nil),
+				requestHeaders:      []string(nil),
+				showResponseHeaders: false,
+				paginate:            false,
+				silent:              false,
 			},
 			wantsErr: false,
 		},
 		{
 			name: "override method",
 			cli:  "projects/octocat%2FSpoon-Knife -XDELETE",
-			wants: ApiOptions{
-				Hostname:            "",
-				RequestMethod:       http.MethodDelete,
-				RequestMethodPassed: true,
-				RequestPath:         "projects/octocat%2FSpoon-Knife",
-				RequestInputFile:    "",
-				RawFields:           []string(nil),
-				MagicFields:         []string(nil),
-				RequestHeaders:      []string(nil),
-				ShowResponseHeaders: false,
-				Paginate:            false,
-				Silent:              false,
+			wants: options{
+				hostname:            "",
+				requestMethod:       http.MethodDelete,
+				requestMethodPassed: true,
+				requestPath:         "projects/octocat%2FSpoon-Knife",
+				requestInputFile:    "",
+				rawFields:           []string(nil),
+				magicFields:         []string(nil),
+				requestHeaders:      []string(nil),
+				showResponseHeaders: false,
+				paginate:            false,
+				silent:              false,
 			},
 			wantsErr: false,
 		},
 		{
 			name: "with fields",
 			cli:  "graphql -f query=QUERY -F body=@file.txt",
-			wants: ApiOptions{
-				Hostname:            "",
-				RequestMethod:       http.MethodGet,
-				RequestMethodPassed: false,
-				RequestPath:         "graphql",
-				RequestInputFile:    "",
-				RawFields:           []string{"query=QUERY"},
-				MagicFields:         []string{"body=@file.txt"},
-				RequestHeaders:      []string(nil),
-				ShowResponseHeaders: false,
-				Paginate:            false,
-				Silent:              false,
+			wants: options{
+				hostname:            "",
+				requestMethod:       http.MethodGet,
+				requestMethodPassed: false,
+				requestPath:         "graphql",
+				requestInputFile:    "",
+				rawFields:           []string{"query=QUERY"},
+				magicFields:         []string{"body=@file.txt"},
+				requestHeaders:      []string(nil),
+				showResponseHeaders: false,
+				paginate:            false,
+				silent:              false,
 			},
 			wantsErr: false,
 		},
 		{
 			name: "with headers",
 			cli:  "user -H 'accept: text/plain' -i",
-			wants: ApiOptions{
-				Hostname:            "",
-				RequestMethod:       http.MethodGet,
-				RequestMethodPassed: false,
-				RequestPath:         "user",
-				RequestInputFile:    "",
-				RawFields:           []string(nil),
-				MagicFields:         []string(nil),
-				RequestHeaders:      []string{"accept: text/plain"},
-				ShowResponseHeaders: true,
-				Paginate:            false,
-				Silent:              false,
+			wants: options{
+				hostname:            "",
+				requestMethod:       http.MethodGet,
+				requestMethodPassed: false,
+				requestPath:         "user",
+				requestInputFile:    "",
+				rawFields:           []string(nil),
+				magicFields:         []string(nil),
+				requestHeaders:      []string{"accept: text/plain"},
+				showResponseHeaders: true,
+				paginate:            false,
+				silent:              false,
 			},
 			wantsErr: false,
 		},
 		{
 			name: "with pagination",
 			cli:  "projects/OWNER%2FREPO/issues --paginate",
-			wants: ApiOptions{
-				Hostname:            "",
-				RequestMethod:       http.MethodGet,
-				RequestMethodPassed: false,
-				RequestPath:         "projects/OWNER%2FREPO/issues",
-				RequestInputFile:    "",
-				RawFields:           []string(nil),
-				MagicFields:         []string(nil),
-				RequestHeaders:      []string(nil),
-				ShowResponseHeaders: false,
-				Paginate:            true,
-				Silent:              false,
+			wants: options{
+				hostname:            "",
+				requestMethod:       http.MethodGet,
+				requestMethodPassed: false,
+				requestPath:         "projects/OWNER%2FREPO/issues",
+				requestInputFile:    "",
+				rawFields:           []string(nil),
+				magicFields:         []string(nil),
+				requestHeaders:      []string(nil),
+				showResponseHeaders: false,
+				paginate:            true,
+				silent:              false,
 			},
 			wantsErr: false,
 		},
 		{
 			name: "with silenced output",
 			cli:  "projects/OWNER%2FREPO/issues --silent",
-			wants: ApiOptions{
-				Hostname:            "",
-				RequestMethod:       http.MethodGet,
-				RequestMethodPassed: false,
-				RequestPath:         "projects/OWNER%2FREPO/issues",
-				RequestInputFile:    "",
-				RawFields:           []string(nil),
-				MagicFields:         []string(nil),
-				RequestHeaders:      []string(nil),
-				ShowResponseHeaders: false,
-				Paginate:            false,
-				Silent:              true,
+			wants: options{
+				hostname:            "",
+				requestMethod:       http.MethodGet,
+				requestMethodPassed: false,
+				requestPath:         "projects/OWNER%2FREPO/issues",
+				requestInputFile:    "",
+				rawFields:           []string(nil),
+				magicFields:         []string(nil),
+				requestHeaders:      []string(nil),
+				showResponseHeaders: false,
+				paginate:            false,
+				silent:              true,
 			},
 			wantsErr: false,
 		},
@@ -150,18 +150,18 @@ func Test_NewCmdApi(t *testing.T) {
 		{
 			name: "GraphQL pagination",
 			cli:  "-XPOST graphql --paginate",
-			wants: ApiOptions{
-				Hostname:            "",
-				RequestMethod:       http.MethodPost,
-				RequestMethodPassed: true,
-				RequestPath:         "graphql",
-				RequestInputFile:    "",
-				RawFields:           []string(nil),
-				MagicFields:         []string(nil),
-				RequestHeaders:      []string(nil),
-				ShowResponseHeaders: false,
-				Paginate:            true,
-				Silent:              false,
+			wants: options{
+				hostname:            "",
+				requestMethod:       http.MethodPost,
+				requestMethodPassed: true,
+				requestPath:         "graphql",
+				requestInputFile:    "",
+				rawFields:           []string(nil),
+				magicFields:         []string(nil),
+				requestHeaders:      []string(nil),
+				showResponseHeaders: false,
+				paginate:            true,
+				silent:              false,
 			},
 			wantsErr: false,
 		},
@@ -173,18 +173,18 @@ func Test_NewCmdApi(t *testing.T) {
 		{
 			name: "with request body from file",
 			cli:  "user --input myfile",
-			wants: ApiOptions{
-				Hostname:            "",
-				RequestMethod:       http.MethodGet,
-				RequestMethodPassed: false,
-				RequestPath:         "user",
-				RequestInputFile:    "myfile",
-				RawFields:           []string(nil),
-				MagicFields:         []string(nil),
-				RequestHeaders:      []string(nil),
-				ShowResponseHeaders: false,
-				Paginate:            false,
-				Silent:              false,
+			wants: options{
+				hostname:            "",
+				requestMethod:       http.MethodGet,
+				requestMethodPassed: false,
+				requestPath:         "user",
+				requestInputFile:    "myfile",
+				rawFields:           []string(nil),
+				magicFields:         []string(nil),
+				requestHeaders:      []string(nil),
+				showResponseHeaders: false,
+				paginate:            false,
+				silent:              false,
 			},
 			wantsErr: false,
 		},
@@ -196,34 +196,34 @@ func Test_NewCmdApi(t *testing.T) {
 		{
 			name: "with hostname",
 			cli:  "graphql --hostname tom.petty",
-			wants: ApiOptions{
-				Hostname:            "tom.petty",
-				RequestMethod:       http.MethodGet,
-				RequestMethodPassed: false,
-				RequestPath:         "graphql",
-				RequestInputFile:    "",
-				RawFields:           []string(nil),
-				MagicFields:         []string(nil),
-				RequestHeaders:      []string(nil),
-				ShowResponseHeaders: false,
-				Paginate:            false,
-				Silent:              false,
+			wants: options{
+				hostname:            "tom.petty",
+				requestMethod:       http.MethodGet,
+				requestMethodPassed: false,
+				requestPath:         "graphql",
+				requestInputFile:    "",
+				rawFields:           []string(nil),
+				magicFields:         []string(nil),
+				requestHeaders:      []string(nil),
+				showResponseHeaders: false,
+				paginate:            false,
+				silent:              false,
 			},
 			wantsErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := NewCmdApi(f, func(o *ApiOptions) error {
-				assert.Equal(t, tt.wants.Hostname, o.Hostname)
-				assert.Equal(t, tt.wants.RequestMethod, o.RequestMethod)
-				assert.Equal(t, tt.wants.RequestMethodPassed, o.RequestMethodPassed)
-				assert.Equal(t, tt.wants.RequestPath, o.RequestPath)
-				assert.Equal(t, tt.wants.RequestInputFile, o.RequestInputFile)
-				assert.Equal(t, tt.wants.RawFields, o.RawFields)
-				assert.Equal(t, tt.wants.MagicFields, o.MagicFields)
-				assert.Equal(t, tt.wants.RequestHeaders, o.RequestHeaders)
-				assert.Equal(t, tt.wants.ShowResponseHeaders, o.ShowResponseHeaders)
+			cmd := NewCmdApi(f, func(o *options) error {
+				assert.Equal(t, tt.wants.hostname, o.hostname)
+				assert.Equal(t, tt.wants.requestMethod, o.requestMethod)
+				assert.Equal(t, tt.wants.requestMethodPassed, o.requestMethodPassed)
+				assert.Equal(t, tt.wants.requestPath, o.requestPath)
+				assert.Equal(t, tt.wants.requestInputFile, o.requestInputFile)
+				assert.Equal(t, tt.wants.rawFields, o.rawFields)
+				assert.Equal(t, tt.wants.magicFields, o.magicFields)
+				assert.Equal(t, tt.wants.requestHeaders, o.requestHeaders)
+				assert.Equal(t, tt.wants.showResponseHeaders, o.showResponseHeaders)
 				return nil
 			})
 
@@ -246,7 +246,7 @@ func Test_NewCmdApi(t *testing.T) {
 func Test_apiRun(t *testing.T) {
 	tests := []struct {
 		name         string
-		options      ApiOptions
+		options      options
 		httpResponse *http.Response
 		err          error
 		stdout       string
@@ -264,8 +264,8 @@ func Test_apiRun(t *testing.T) {
 		},
 		{
 			name: "show response headers",
-			options: ApiOptions{
-				ShowResponseHeaders: true,
+			options: options{
+				showResponseHeaders: true,
 			},
 			httpResponse: &http.Response{
 				Proto:      "HTTP/1.1",
@@ -323,8 +323,8 @@ func Test_apiRun(t *testing.T) {
 		},
 		{
 			name: "GraphQL error",
-			options: ApiOptions{
-				RequestPath: "graphql",
+			options: options{
+				requestPath: "graphql",
 			},
 			httpResponse: &http.Response{
 				StatusCode: http.StatusOK,
@@ -347,8 +347,8 @@ func Test_apiRun(t *testing.T) {
 		},
 		{
 			name: "silent",
-			options: ApiOptions{
-				Silent: true,
+			options: options{
+				silent: true,
 			},
 			httpResponse: &http.Response{
 				StatusCode: http.StatusOK,
@@ -360,9 +360,9 @@ func Test_apiRun(t *testing.T) {
 		},
 		{
 			name: "show response headers even when silent",
-			options: ApiOptions{
-				ShowResponseHeaders: true,
-				Silent:              true,
+			options: options{
+				showResponseHeaders: true,
+				silent:              true,
 			},
 			httpResponse: &http.Response{
 				Proto:      "HTTP/1.1",
@@ -381,9 +381,9 @@ func Test_apiRun(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ios, _, stdout, stderr := iostreams.Test()
 
-			tt.options.IO = ios
-			tt.options.Config = config.NewBlankConfig()
-			tt.options.HttpClient = func() (*gitlab.Client, error) {
+			tt.options.io = ios
+			tt.options.config = config.NewBlankConfig()
+			tt.options.httpClient = func() (*gitlab.Client, error) {
 				var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
 					resp := tt.httpResponse
 					resp.Request = req
@@ -396,7 +396,7 @@ func Test_apiRun(t *testing.T) {
 				return a.Lab(), nil
 			}
 
-			err := apiRun(&tt.options)
+			err := tt.options.run()
 			if err != tt.err {
 				t.Errorf("expected error %v, got %v", tt.err, err)
 			}
@@ -437,10 +437,10 @@ func Test_apiRun_paginationREST(t *testing.T) {
 		},
 	}
 
-	options := ApiOptions{
-		IO:     ios,
-		Config: config.NewBlankConfig(),
-		HttpClient: func() (*gitlab.Client, error) {
+	options := options{
+		io:     ios,
+		config: config.NewBlankConfig(),
+		httpClient: func() (*gitlab.Client, error) {
 			var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
 				resp := responses[requestCount]
 				resp.Request = req
@@ -454,11 +454,11 @@ func Test_apiRun_paginationREST(t *testing.T) {
 			return a.Lab(), nil
 		},
 
-		RequestPath: "issues",
-		Paginate:    true,
+		requestPath: "issues",
+		paginate:    true,
 	}
 
-	err := apiRun(&options)
+	err := options.run()
 	assert.NoError(t, err)
 
 	assert.Equal(t, `{"page":1}{"page":2}{"page":3}`, stdout.String(), "stdout")
@@ -502,10 +502,10 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 		},
 	}
 
-	options := ApiOptions{
-		IO:     ios,
-		Config: config.NewBlankConfig(),
-		HttpClient: func() (*gitlab.Client, error) {
+	options := options{
+		io:     ios,
+		config: config.NewBlankConfig(),
+		httpClient: func() (*gitlab.Client, error) {
 			var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
 				resp := responses[requestCount]
 				resp.Request = req
@@ -519,12 +519,12 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 			return a.Lab(), nil
 		},
 
-		RequestMethod: http.MethodPost,
-		RequestPath:   "graphql",
-		Paginate:      true,
+		requestMethod: http.MethodPost,
+		requestPath:   "graphql",
+		paginate:      true,
 	}
 
-	err := apiRun(&options)
+	err := options.run()
 	require.NoError(t, err)
 
 	assert.Contains(t, stdout.String(), `"page one"`)
@@ -593,14 +593,14 @@ func Test_apiRun_inputFile(t *testing.T) {
 			}
 
 			var bodyBytes []byte
-			options := ApiOptions{
-				RequestPath:      "hello",
-				RequestInputFile: inputFile,
-				RawFields:        []string{"a=b", "c=d"},
+			options := options{
+				requestPath:      "hello",
+				requestInputFile: inputFile,
+				rawFields:        []string{"a=b", "c=d"},
 
-				IO:     ios,
-				Config: config.NewBlankConfig(),
-				HttpClient: func() (*gitlab.Client, error) {
+				io:     ios,
+				config: config.NewBlankConfig(),
+				httpClient: func() (*gitlab.Client, error) {
 					var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
 						var err error
 						if bodyBytes, err = io.ReadAll(req.Body); err != nil {
@@ -617,7 +617,7 @@ func Test_apiRun_inputFile(t *testing.T) {
 				},
 			}
 
-			err := apiRun(&options)
+			err := options.run()
 			if err != nil {
 				t.Errorf("got error %v", err)
 			}
@@ -635,15 +635,15 @@ func Test_parseFields(t *testing.T) {
 	ios, stdin, _, _ := iostreams.Test()
 	fmt.Fprint(stdin, "pasted contents")
 
-	opts := ApiOptions{
-		IO: ios,
-		RawFields: []string{
+	opts := options{
+		io: ios,
+		rawFields: []string{
 			"robot=Hubot",
 			"destroyer=false",
 			"helper=true",
 			"location=@work",
 		},
-		MagicFields: []string{
+		magicFields: []string{
 			"input=@-",
 			"enabled=true",
 			"victories=123",
@@ -680,7 +680,7 @@ func Test_magicFieldValue(t *testing.T) {
 
 	type args struct {
 		v    string
-		opts *ApiOptions
+		opts *options
 	}
 	tests := []struct {
 		name    string
@@ -716,9 +716,9 @@ func Test_magicFieldValue(t *testing.T) {
 			name: "placeholder",
 			args: args{
 				v: ":namespace",
-				opts: &ApiOptions{
-					IO: ios,
-					BaseRepo: func() (glrepo.Interface, error) {
+				opts: &options{
+					io: ios,
+					baseRepo: func() (glrepo.Interface, error) {
 						return glrepo.New("gitlab-com", "www-gitlab-com"), nil
 					},
 				},
@@ -730,7 +730,7 @@ func Test_magicFieldValue(t *testing.T) {
 			name: "file",
 			args: args{
 				v:    "@" + f.Name(),
-				opts: &ApiOptions{IO: ios},
+				opts: &options{io: ios},
 			},
 			want:    []byte("file contents"),
 			wantErr: false,
@@ -739,7 +739,7 @@ func Test_magicFieldValue(t *testing.T) {
 			name: "file error",
 			args: args{
 				v:    "@",
-				opts: &ApiOptions{IO: ios},
+				opts: &options{io: ios},
 			},
 			want:    nil,
 			wantErr: true,
@@ -787,7 +787,7 @@ func Test_openUserFile(t *testing.T) {
 func Test_fillPlaceholders(t *testing.T) {
 	type args struct {
 		value string
-		opts  *ApiOptions
+		opts  *options
 	}
 	tests := []struct {
 		name    string
@@ -799,8 +799,8 @@ func Test_fillPlaceholders(t *testing.T) {
 			name: "no changes",
 			args: args{
 				value: "projects/namespace%2Frepo/releases",
-				opts: &ApiOptions{
-					BaseRepo: nil,
+				opts: &options{
+					baseRepo: nil,
 				},
 			},
 			want:    "projects/namespace%2Frepo/releases",
@@ -810,8 +810,8 @@ func Test_fillPlaceholders(t *testing.T) {
 			name: "has substitutes",
 			args: args{
 				value: "projects/:namespace%2F:repo/releases",
-				opts: &ApiOptions{
-					BaseRepo: func() (glrepo.Interface, error) {
+				opts: &options{
+					baseRepo: func() (glrepo.Interface, error) {
 						return glrepo.New("gitlab-com", "www-gitlab-com"), nil
 					},
 				},
@@ -823,11 +823,11 @@ func Test_fillPlaceholders(t *testing.T) {
 			name: "has branch placeholder",
 			args: args{
 				value: "projects/glab-cli%2Ftest/branches/:branch/.../.../",
-				opts: &ApiOptions{
-					BaseRepo: func() (glrepo.Interface, error) {
+				opts: &options{
+					baseRepo: func() (glrepo.Interface, error) {
 						return glrepo.New("glab-cli", "test"), nil
 					},
-					Branch: func() (string, error) {
+					branch: func() (string, error) {
 						return "master", nil
 					},
 				},
@@ -839,11 +839,11 @@ func Test_fillPlaceholders(t *testing.T) {
 			name: "has branch placeholder and git is in detached head",
 			args: args{
 				value: "projects/:fullpath/branches/:branch",
-				opts: &ApiOptions{
-					BaseRepo: func() (glrepo.Interface, error) {
+				opts: &options{
+					baseRepo: func() (glrepo.Interface, error) {
 						return glrepo.New("glab-cli", "test"), nil
 					},
-					Branch: func() (string, error) {
+					branch: func() (string, error) {
 						return "", git.ErrNotOnAnyBranch
 					},
 				},
@@ -855,8 +855,8 @@ func Test_fillPlaceholders(t *testing.T) {
 			name: "no greedy substitutes",
 			args: args{
 				value: ":namespaces/:repository",
-				opts: &ApiOptions{
-					BaseRepo: nil,
+				opts: &options{
+					baseRepo: nil,
 				},
 			},
 			want:    ":namespaces/:repository",

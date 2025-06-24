@@ -12,16 +12,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Options struct {
-	Group          string
-	Recursive      bool
-	ProjectPerPage int
-	ProjectPage    int
-	AgentPerPage   int
-	AgentPage      int
+type options struct {
+	group          string
+	recursive      bool
+	projectPerPage int
+	projectPage    int
+	agentPerPage   int
+	agentPage      int
 
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
 }
 
 type AgentConfig struct {
@@ -31,8 +31,9 @@ type AgentConfig struct {
 }
 
 func NewCmdCheckManifestUsage(f cmdutils.Factory) *cobra.Command {
-	opts := &Options{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
 	}
 	checkManifestUsageCmd := &cobra.Command{
 		Use:   "check_manifest_usage [flags]",
@@ -41,44 +42,42 @@ func NewCmdCheckManifestUsage(f cmdutils.Factory) *cobra.Command {
 The output can be piped to a tab-separated value (TSV) file.
 ` + text.ExperimentalString,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-
-			return checkManifestUsageInGroup(opts)
+			return opts.run()
 		},
 	}
 	// Boolean to authorize experimental features
-	checkManifestUsageCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Group ID to check.")
+	checkManifestUsageCmd.Flags().StringVarP(&opts.group, "group", "g", "", "Group ID to check.")
 	cobra.CheckErr(checkManifestUsageCmd.MarkFlagRequired("group"))
-	checkManifestUsageCmd.Flags().IntVarP(&opts.ProjectPage, "page", "p", 1, "Page number for projects.")
-	checkManifestUsageCmd.Flags().IntVarP(&opts.ProjectPerPage, "per-page", "P", 30, "Number of projects to list per page.")
-	checkManifestUsageCmd.Flags().IntVarP(&opts.AgentPage, "agent-page", "a", 1, "Page number for projects.")
-	checkManifestUsageCmd.Flags().IntVarP(&opts.AgentPerPage, "agent-per-page", "A", 30, "Number of projects to list per page.")
-	checkManifestUsageCmd.Flags().BoolVarP(&opts.Recursive, "recursive", "r", false, "Recursively check subgroups.")
+	checkManifestUsageCmd.Flags().IntVarP(&opts.projectPage, "page", "p", 1, "Page number for projects.")
+	checkManifestUsageCmd.Flags().IntVarP(&opts.projectPerPage, "per-page", "P", 30, "Number of projects to list per page.")
+	checkManifestUsageCmd.Flags().IntVarP(&opts.agentPage, "agent-page", "a", 1, "Page number for projects.")
+	checkManifestUsageCmd.Flags().IntVarP(&opts.agentPerPage, "agent-per-page", "A", 30, "Number of projects to list per page.")
+	checkManifestUsageCmd.Flags().BoolVarP(&opts.recursive, "recursive", "r", false, "Recursively check subgroups.")
 
 	return checkManifestUsageCmd
 }
 
-func checkManifestUsageInGroup(opts *Options) error {
-	apiClient, err := opts.HTTPClient()
+func (o *options) run() error {
+	apiClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
 	// new line
-	err = checkGroup(apiClient, opts.Group, opts)
+	err = checkGroup(apiClient, o.group, o)
 	if err != nil {
 		return err
 	}
 
-	if opts.Recursive {
+	if o.recursive {
 		var groups []*gitlab.Group
-		groups, _, err = listAllGroupsForGroup(apiClient, opts.Group)
+		groups, _, err = listAllGroupsForGroup(apiClient, o.group)
 		if err != nil {
 			return err
 		}
 
 		for _, group := range groups {
-			err = checkGroup(apiClient, group.FullPath, opts)
+			err = checkGroup(apiClient, group.FullPath, o)
 			if err != nil {
 				return err
 			}
@@ -89,7 +88,7 @@ func checkManifestUsageInGroup(opts *Options) error {
 	return nil
 }
 
-func checkGroup(apiClient *gitlab.Client, group string, opts *Options) error {
+func checkGroup(apiClient *gitlab.Client, group string, opts *options) error {
 	var projects []*gitlab.Project
 	var resp *gitlab.Response
 	projects, resp, err := listAllProjectsForGroup(apiClient, group, *opts)
@@ -97,8 +96,8 @@ func checkGroup(apiClient *gitlab.Client, group string, opts *Options) error {
 		return err
 	}
 
-	color := opts.IO.Color()
-	opts.IO.Log(color.ProgressIcon(), fmt.Sprintf("Checking %d of %d projects (Page %d of %d)\n", len(projects), resp.TotalItems, resp.CurrentPage, resp.TotalPages))
+	color := opts.io.Color()
+	opts.io.Log(color.ProgressIcon(), fmt.Sprintf("Checking %d of %d projects (Page %d of %d)\n", len(projects), resp.TotalItems, resp.CurrentPage, resp.TotalPages))
 	for _, prj := range projects {
 		err = checkManifestUsageInProject(apiClient, opts, prj)
 		if err != nil {
@@ -106,7 +105,7 @@ func checkGroup(apiClient *gitlab.Client, group string, opts *Options) error {
 		}
 	}
 
-	opts.IO.Log()
+	opts.io.Log()
 	return nil
 }
 
@@ -115,56 +114,56 @@ func listAllGroupsForGroup(apiClient *gitlab.Client, group string) ([]*gitlab.Gr
 	return apiClient.Groups.ListDescendantGroups(group, l)
 }
 
-func listAllProjectsForGroup(apiClient *gitlab.Client, group string, opts Options) ([]*gitlab.Project, *gitlab.Response, error) {
+func listAllProjectsForGroup(apiClient *gitlab.Client, group string, opts options) ([]*gitlab.Project, *gitlab.Response, error) {
 	l := &gitlab.ListGroupProjectsOptions{
 		ListOptions: gitlab.ListOptions{
-			PerPage: opts.ProjectPerPage,
-			Page:    opts.ProjectPage,
+			PerPage: opts.projectPerPage,
+			Page:    opts.projectPage,
 		},
 	}
 
 	return apiClient.Groups.ListGroupProjects(group, l)
 }
 
-func checkManifestUsageInProject(apiClient *gitlab.Client, opts *Options, project *gitlab.Project) error {
-	color := opts.IO.Color()
-	opts.IO.StartSpinner(fmt.Sprintf("Checking project %s for agents.\n", project.PathWithNamespace))
-	defer opts.IO.StopSpinner("")
+func checkManifestUsageInProject(apiClient *gitlab.Client, opts *options, project *gitlab.Project) error {
+	color := opts.io.Color()
+	opts.io.StartSpinner(fmt.Sprintf("Checking project %s for agents.\n", project.PathWithNamespace))
+	defer opts.io.StopSpinner("")
 
 	agents, err := api.ListAgents(apiClient, project.ID, &gitlab.ListAgentsOptions{
-		Page:    opts.AgentPage,
-		PerPage: opts.AgentPerPage,
+		Page:    opts.agentPage,
+		PerPage: opts.agentPerPage,
 	})
 	if err != nil {
 		return err
 	}
 
-	opts.IO.Log(color.ProgressIcon(), fmt.Sprintf("Found %d agents.\n", len(agents)))
+	opts.io.Log(color.ProgressIcon(), fmt.Sprintf("Found %d agents.\n", len(agents)))
 	for _, agent := range agents {
 		found, err := agentUsesManifestProjects(apiClient, opts, agent)
 		if err != nil {
-			opts.IO.Log(color.RedCheck(), "An error happened.", err)
+			opts.io.Log(color.RedCheck(), "An error happened.", err)
 			continue
 		}
 		if found {
-			opts.IO.LogInfo(fmt.Sprintf("%s\t%s\t%d", agent.ConfigProject.PathWithNamespace, agent.Name, 1))
+			opts.io.LogInfo(fmt.Sprintf("%s\t%s\t%d", agent.ConfigProject.PathWithNamespace, agent.Name, 1))
 		} else {
-			opts.IO.LogInfo(fmt.Sprintf("%s\t%s\t%d", agent.ConfigProject.PathWithNamespace, agent.Name, 0))
+			opts.io.LogInfo(fmt.Sprintf("%s\t%s\t%d", agent.ConfigProject.PathWithNamespace, agent.Name, 0))
 		}
 	}
 
 	return nil
 }
 
-func agentUsesManifestProjects(apiClient *gitlab.Client, opts *Options, agent *gitlab.Agent) (bool, error) {
-	color := opts.IO.Color()
-	opts.IO.StartSpinner(fmt.Sprintf("Checking manifests of agent %s.\n", agent.Name))
-	defer opts.IO.StopSpinner("")
+func agentUsesManifestProjects(apiClient *gitlab.Client, opts *options, agent *gitlab.Agent) (bool, error) {
+	color := opts.io.Color()
+	opts.io.StartSpinner(fmt.Sprintf("Checking manifests of agent %s.\n", agent.Name))
+	defer opts.io.StopSpinner("")
 
 	// GetRawFile
 	file, _, err := apiClient.RepositoryFiles.GetRawFile(agent.ConfigProject.ID, ".gitlab/agents/"+agent.Name+"/config.yaml", &gitlab.GetRawFileOptions{})
 	if err != nil {
-		opts.IO.Log(color.WarnIcon(), fmt.Sprintf("Agent %s uses the default configuration.", agent.Name))
+		opts.io.Log(color.WarnIcon(), fmt.Sprintf("Agent %s uses the default configuration.", agent.Name))
 		return false, nil
 	}
 
@@ -172,15 +171,15 @@ func agentUsesManifestProjects(apiClient *gitlab.Client, opts *Options, agent *g
 	var configData AgentConfig
 	err = yaml.Unmarshal(file, &configData)
 	if err != nil {
-		opts.IO.Log("Unmarshal error", fmt.Sprintf("%s\n", string(file)))
+		opts.io.Log("Unmarshal error", fmt.Sprintf("%s\n", string(file)))
 		return false, err
 	}
 
 	if len(configData.GitOps.ManifestProjects) == 0 {
-		opts.IO.Log(color.GreenCheck(), fmt.Sprintf("Agent %s does not have manifest projects configured.", agent.Name))
+		opts.io.Log(color.GreenCheck(), fmt.Sprintf("Agent %s does not have manifest projects configured.", agent.Name))
 		return false, nil
 	} else {
-		opts.IO.Log(color.FailedIcon(), fmt.Sprintf("Agent %s has %d manifest projects configured.", agent.Name, len(configData.GitOps.ManifestProjects)))
+		opts.io.Log(color.FailedIcon(), fmt.Sprintf("Agent %s has %d manifest projects configured.", agent.Name, len(configData.GitOps.ManifestProjects)))
 		return true, nil
 	}
 }

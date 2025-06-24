@@ -5,17 +5,28 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/spf13/cobra"
 )
 
-type MRRebaseOptions struct {
+type options struct {
+	f          cmdutils.Factory // TODO: refactor mrutils to not rely on factory
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+
 	// SkipCI: rebase merge request while skipping CI/CD pipeline.
 	SkipCI bool
+
+	args []string
 }
 
 func NewCmdRebase(f cmdutils.Factory) *cobra.Command {
-	opts := &MRRebaseOptions{}
+	opts := &options{
+		f:          f,
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+	}
 
 	mrRebaseCmd := &cobra.Command{
 		Use:   "rebase [<id> | <branch>] [flags]",
@@ -35,36 +46,36 @@ func NewCmdRebase(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
+			opts.complete(args)
 
-			apiClient, err := f.HttpClient()
-			if err != nil {
-				return err
-			}
-
-			mr, repo, err := mrutils.MRFromArgs(f, args, "opened")
-			if err != nil {
-				return err
-			}
-
-			if err = mrutils.RebaseMR(f.IO(), apiClient, repo, mr,
-				&gitlab.RebaseMergeRequestOptions{
-					SkipCI: gitlab.Ptr(opts.SkipCI),
-				}); err != nil {
-				return err
-			}
-
-			return nil
+			return opts.run()
 		},
 	}
-
-	mrRebaseCmd.Flags().BoolVarP(
-		&opts.SkipCI,
-		"skip-ci",
-		"",
-		false,
-		"Rebase merge request while skipping CI/CD pipeline.",
-	)
+	mrRebaseCmd.Flags().BoolVarP(&opts.SkipCI, "skip-ci", "", false, "Rebase merge request while skipping CI/CD pipeline.")
 
 	return mrRebaseCmd
+}
+
+func (o *options) complete(args []string) {
+	o.args = args
+}
+
+func (o *options) run() error {
+	apiClient, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+
+	mr, repo, err := mrutils.MRFromArgs(o.f, o.args, "opened")
+	if err != nil {
+		return err
+	}
+
+	return mrutils.RebaseMR(
+		o.io,
+		apiClient,
+		repo,
+		mr,
+		&gitlab.RebaseMergeRequestOptions{SkipCI: gitlab.Ptr(o.SkipCI)},
+	)
 }

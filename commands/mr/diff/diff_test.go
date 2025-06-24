@@ -25,32 +25,32 @@ func Test_NewCmdDiff(t *testing.T) {
 		name    string
 		args    string
 		isTTY   bool
-		want    DiffOptions
+		want    options
 		wantErr string
 	}{
 		{
 			name:  "number argument",
 			args:  "123",
 			isTTY: true,
-			want: DiffOptions{
-				Args:     []string{"123"},
-				UseColor: "auto",
+			want: options{
+				args:     []string{"123"},
+				useColor: "auto",
 			},
 		},
 		{
 			name:  "no argument",
 			args:  "",
 			isTTY: true,
-			want: DiffOptions{
-				UseColor: "auto",
+			want: options{
+				useColor: "auto",
 			},
 		},
 		{
 			name:  "no color when redirected",
 			args:  "",
 			isTTY: false,
-			want: DiffOptions{
-				UseColor: "never",
+			want: options{
+				useColor: "never",
 			},
 		},
 		{
@@ -77,8 +77,8 @@ func Test_NewCmdDiff(t *testing.T) {
 				IOStub: ios,
 			}
 
-			var opts *DiffOptions
-			cmd := NewCmdDiff(f, func(o *DiffOptions) error {
+			var opts *options
+			cmd := NewCmdDiff(f, func(o *options) error {
 				opts = o
 				return nil
 			})
@@ -100,8 +100,8 @@ func Test_NewCmdDiff(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			assert.Equal(t, tt.want.Args, opts.Args)
-			assert.Equal(t, tt.want.UseColor, opts.UseColor)
+			assert.Equal(t, tt.want.args, opts.args)
+			assert.Equal(t, tt.want.useColor, opts.useColor)
 		})
 	}
 }

@@ -22,25 +22,27 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
-type CreateOptions struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	Name         string
-	Description  string
-	User         string
-	Group        string
-	AccessLevel  accesslevel.AccessLevel
-	Scopes       []string
-	Duration     time.Duration
-	ExpireAt     expirationdate.ExpirationDate
-	OutputFormat string
+	name         string
+	description  string
+	user         string
+	group        string
+	accessLevel  accesslevel.AccessLevel
+	scopes       []string
+	duration     time.Duration
+	expireAt     expirationdate.ExpirationDate
+	outputFormat string
 }
 
-func NewCmdCreate(f cmdutils.Factory, runE func(opts *CreateOptions) error) *cobra.Command {
-	opts := &CreateOptions{
-		IO: f.IO(),
+func NewCmdCreate(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -82,75 +84,79 @@ func NewCmdCreate(f cmdutils.Factory, runE func(opts *CreateOptions) error) *cob
 		- glab token create --user johndoe --scope api johns-personal-token
 
 		`),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			// Supports repo override
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-			opts.Name = args[0]
-			if opts.Group, err = flag.GroupOverride(cmd); err != nil {
-				return
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := opts.complete(cmd, args); err != nil {
+				return err
 			}
 
-			if opts.Group != "" && opts.User != "" {
-				return cmdutils.FlagError{Err: errors.New("'--group' and '--user' are mutually exclusive.")}
-			}
-
-			if cmd.Flags().Changed("expires-at") && cmd.Flags().Changed("duration") {
-				return cmdutils.FlagError{Err: errors.New("'--expires-at' and '--duration' are mutually exclusive.")}
-			}
-
-			if time.Time(opts.ExpireAt).IsZero() {
-				opts.ExpireAt = expirationdate.ExpirationDate(time.Now().Add(opts.Duration).Truncate(time.Hour * 24))
-			}
-
-			if opts.Duration.Truncate(24*time.Hour) != opts.Duration {
-				return cmdutils.FlagError{Err: errors.New("duration must be in days.")}
-			}
-
-			if opts.Duration < 24*time.Hour || opts.Duration > 365*24*time.Hour {
-				return cmdutils.FlagError{Err: errors.New("duration in days must be between 1 and 365.")}
-			}
-
-			if opts.User != "" && opts.Group != "" {
-				return cmdutils.FlagError{Err: errors.New("'--user' and '--group' are mutually exclusive.")}
-			}
-
-			if opts.User == "" && !cmd.Flag("access-level").Changed {
-				return cmdutils.FlagError{Err: errors.New("the required flag '--access-level' is not set.")}
+			if err := opts.validate(cmd); err != nil {
+				return err
 			}
 
 			if runE != nil {
-				err = runE(opts)
-				return
+				return runE(opts)
 			}
-			err = createTokenRun(opts)
-			return
+			return opts.run()
 		},
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Create a group access token. Ignored if a user or repository argument is set.")
-	cmd.Flags().StringVarP(&opts.User, "user", "U", "", "Create a personal access token. For the current user, use @me.")
-	cmd.Flags().StringVarP(&opts.Description, "description", "", "description", "Sets the token's description.")
-	cmd.Flags().DurationVarP(&opts.Duration, "duration", "D", time.Duration(30*24*time.Hour), "Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h.")
-	cmd.Flags().VarP(&opts.ExpireAt, "expires-at", "E", "Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used.")
-	cmd.Flags().StringSliceVarP(&opts.Scopes, "scope", "S", []string{"read_repository"}, "Scopes for the token. For a list, see https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes.")
-	cmd.Flags().VarP(&opts.AccessLevel, "access-level", "A", "Access level of the token: one of 'guest', 'reporter', 'developer', 'maintainer', 'owner'.")
-	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as 'text' for the token value, 'json' for the actual API token structure.")
+	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "Create a group access token. Ignored if a user or repository argument is set.")
+	cmd.Flags().StringVarP(&opts.user, "user", "U", "", "Create a personal access token. For the current user, use @me.")
+	cmd.Flags().StringVarP(&opts.description, "description", "", "description", "Sets the token's description.")
+	cmd.Flags().DurationVarP(&opts.duration, "duration", "D", time.Duration(30*24*time.Hour), "Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h.")
+	cmd.Flags().VarP(&opts.expireAt, "expires-at", "E", "Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used.")
+	cmd.Flags().StringSliceVarP(&opts.scopes, "scope", "S", []string{"read_repository"}, "Scopes for the token. For a list, see https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes.")
+	cmd.Flags().VarP(&opts.accessLevel, "access-level", "A", "Access level of the token: one of 'guest', 'reporter', 'developer', 'maintainer', 'owner'.")
+	cmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as 'text' for the token value, 'json' for the actual API token structure.")
+	cmd.MarkFlagsMutuallyExclusive("user", "group")
+	cmd.MarkFlagsMutuallyExclusive("expires-at", "duration")
 	return cmd
 }
 
-func createTokenRun(opts *CreateOptions) error {
-	httpClient, err := opts.HTTPClient()
+func (o *options) complete(cmd *cobra.Command, args []string) error {
+	o.name = args[0]
+
+	if group, err := flag.GroupOverride(cmd); err != nil {
+		return err
+	} else {
+		o.group = group
+	}
+
+	if time.Time(o.expireAt).IsZero() {
+		o.expireAt = expirationdate.ExpirationDate(time.Now().Add(o.duration).Truncate(time.Hour * 24))
+	}
+
+	return nil
+}
+
+func (o *options) validate(cmd *cobra.Command) error {
+	if o.duration.Truncate(24*time.Hour) != o.duration {
+		return cmdutils.FlagError{Err: errors.New("duration must be in days.")}
+	}
+
+	if o.duration < 24*time.Hour || o.duration > 365*24*time.Hour {
+		return cmdutils.FlagError{Err: errors.New("duration in days must be between 1 and 365.")}
+	}
+
+	if o.user == "" && !cmd.Flag("access-level").Changed {
+		return cmdutils.FlagError{Err: errors.New("the required flag '--access-level' is not set.")}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 	var outputToken any
 	var outputTokenValue string
-	expirationDate := gitlab.ISOTime(opts.ExpireAt)
+	expirationDate := gitlab.ISOTime(o.expireAt)
 
-	if opts.User != "" {
-		user, err := api.UserByName(httpClient, opts.User)
+	if o.user != "" {
+		user, err := api.UserByName(httpClient, o.user)
 		if err != nil {
 			return err
 		}
@@ -164,14 +170,14 @@ func createTokenRun(opts *CreateOptions) error {
 			return err
 		}
 		tokens = filter.Filter(tokens, func(t *gitlab.PersonalAccessToken) bool {
-			return t.Active && t.Name == opts.Name
+			return t.Active && t.Name == o.name
 		})
 		if len(tokens) > 0 {
-			return cmdutils.FlagError{Err: fmt.Errorf("a personal access token with the name %s already exists.", opts.Name)}
+			return cmdutils.FlagError{Err: fmt.Errorf("a personal access token with the name %s already exists.", o.name)}
 		}
 
-		if opts.User == "@me" {
-			token, err := api.CreatePersonalAccessTokenForCurrentUser(httpClient, opts.Name, opts.Scopes, time.Time(expirationDate))
+		if o.user == "@me" {
+			token, err := api.CreatePersonalAccessTokenForCurrentUser(httpClient, o.name, o.scopes, time.Time(expirationDate))
 			if err != nil {
 				return err
 			}
@@ -179,10 +185,10 @@ func createTokenRun(opts *CreateOptions) error {
 			outputTokenValue = token.Token
 		} else {
 			createOptions := &gitlab.CreatePersonalAccessTokenOptions{
-				Name:        &opts.Name,
-				Description: &opts.Description,
+				Name:        &o.name,
+				Description: &o.description,
 				ExpiresAt:   &expirationDate,
-				Scopes:      &opts.Scopes,
+				Scopes:      &o.scopes,
 			}
 			token, err := api.CreatePersonalAccessToken(httpClient, user.ID, createOptions)
 			if err != nil {
@@ -192,27 +198,27 @@ func createTokenRun(opts *CreateOptions) error {
 			outputTokenValue = token.Token
 		}
 	} else {
-		if opts.Group != "" {
+		if o.group != "" {
 			listOptions := &gitlab.ListGroupAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListGroupAccessTokens(httpClient, opts.Group, listOptions)
+			tokens, err := api.ListGroupAccessTokens(httpClient, o.group, listOptions)
 			if err != nil {
 				return err
 			}
 			tokens = filter.Filter(tokens, func(t *gitlab.GroupAccessToken) bool {
-				return t.Active && t.Name == opts.Name
+				return t.Active && t.Name == o.name
 			})
 			if len(tokens) > 0 {
-				return cmdutils.FlagError{Err: fmt.Errorf("a group access token with the name %s already exists.", opts.Name)}
+				return cmdutils.FlagError{Err: fmt.Errorf("a group access token with the name %s already exists.", o.name)}
 			}
 
 			options := gitlab.CreateGroupAccessTokenOptions{
-				Name:        &opts.Name,
-				Description: &opts.Description,
-				Scopes:      &opts.Scopes,
-				AccessLevel: &opts.AccessLevel.Value,
+				Name:        &o.name,
+				Description: &o.description,
+				Scopes:      &o.scopes,
+				AccessLevel: &o.accessLevel.Value,
 				ExpiresAt:   &expirationDate,
 			}
-			token, err := api.CreateGroupAccessToken(httpClient, opts.Group, &options)
+			token, err := api.CreateGroupAccessToken(httpClient, o.group, &options)
 			if err != nil {
 				return err
 			}
@@ -220,7 +226,7 @@ func createTokenRun(opts *CreateOptions) error {
 			outputTokenValue = token.Token
 
 		} else {
-			repo, err := opts.BaseRepo()
+			repo, err := o.baseRepo()
 			if err != nil {
 				return err
 			}
@@ -230,18 +236,18 @@ func createTokenRun(opts *CreateOptions) error {
 				return err
 			}
 			tokens = filter.Filter(tokens, func(t *gitlab.ProjectAccessToken) bool {
-				return t.Active && t.Name == opts.Name
+				return t.Active && t.Name == o.name
 			})
 
 			if len(tokens) > 0 {
-				return cmdutils.FlagError{Err: fmt.Errorf("a project access token with name %s already exists.", opts.Name)}
+				return cmdutils.FlagError{Err: fmt.Errorf("a project access token with name %s already exists.", o.name)}
 			}
 
 			options := gitlab.CreateProjectAccessTokenOptions{
-				Name:        &opts.Name,
-				Description: &opts.Description,
-				Scopes:      &opts.Scopes,
-				AccessLevel: &opts.AccessLevel.Value,
+				Name:        &o.name,
+				Description: &o.description,
+				Scopes:      &o.scopes,
+				AccessLevel: &o.accessLevel.Value,
 				ExpiresAt:   &expirationDate,
 			}
 			token, err := api.CreateProjectAccessToken(httpClient, repo.FullName(), &options)
@@ -253,14 +259,14 @@ func createTokenRun(opts *CreateOptions) error {
 		}
 	}
 
-	if opts.OutputFormat == "json" {
-		encoder := json.NewEncoder(opts.IO.StdOut)
+	if o.outputFormat == "json" {
+		encoder := json.NewEncoder(o.io.StdOut)
 		encoder.SetIndent("  ", "  ")
 		if err := encoder.Encode(outputToken); err != nil {
 			return err
 		}
 	} else {
-		if _, err := fmt.Fprintf(opts.IO.StdOut, "%s\n", outputTokenValue); err != nil {
+		if _, err := fmt.Fprintf(o.io.StdOut, "%s\n", outputTokenValue); err != nil {
 			return err
 		}
 	}

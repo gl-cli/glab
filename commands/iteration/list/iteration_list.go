@@ -8,21 +8,30 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-type IterationListOptions struct {
-	Group        string
-	Page         int
-	PerPage      int
-	OutputFormat string
+type options struct {
+	io           *iostreams.IOStreams
+	httpClient   func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
+	group        string
+	page         int
+	perPage      int
+	outputFormat string
 }
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
-	opts := &IterationListOptions{}
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+	}
 
 	iterationListCmd := &cobra.Command{
 		Use:     "list [flags]",
@@ -37,67 +46,69 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			apiClient, err := f.HttpClient()
-			if err != nil {
-				return err
-			}
-			repo, err := f.BaseRepo()
-			if err != nil {
-				return err
-			}
-			iterationApiOpts := &api.ListProjectIterationsOptions{}
-			iterationApiOpts.IncludeAncestors = gitlab.Ptr(true)
-
-			if p := opts.Page; p != 0 {
-				iterationApiOpts.Page = p
-			}
-			if pp := opts.PerPage; pp != 0 {
-				iterationApiOpts.PerPage = pp
-			}
-
-			var iterationBuilder strings.Builder
-
-			if opts.Group != "" {
-				iterations, err := api.ListGroupIterations(apiClient, opts.Group, iterationApiOpts)
-				if err != nil {
-					return err
-				}
-				if opts.OutputFormat == "json" {
-					iterationListJSON, _ := json.Marshal(iterations)
-					fmt.Fprintln(f.IO().StdOut, string(iterationListJSON))
-				} else {
-					fmt.Fprintf(f.IO().StdOut, "Showing iteration %d of %d for group %s.\n\n", len(iterations), len(iterations), opts.Group)
-					for _, iteration := range iterations {
-						iterationBuilder.WriteString(formatIterationInfo(iteration.Description, iteration.Title, iteration.WebURL))
-					}
-				}
-			} else {
-				iterations, err := api.ListProjectIterations(apiClient, repo.FullName(), iterationApiOpts)
-				if err != nil {
-					return err
-				}
-				if opts.OutputFormat == "json" {
-					iterationListJSON, _ := json.Marshal(iterations)
-					fmt.Fprintln(f.IO().StdOut, string(iterationListJSON))
-				} else {
-					fmt.Fprintf(f.IO().StdOut, "Showing iteration %d of %d on %s.\n\n", len(iterations), len(iterations), repo.FullName())
-					for _, iteration := range iterations {
-						iterationBuilder.WriteString(formatIterationInfo(iteration.Description, iteration.Title, iteration.WebURL))
-					}
-				}
-			}
-			fmt.Fprintln(f.IO().StdOut, utils.Indent(iterationBuilder.String(), " "))
-			return nil
+			return opts.run()
 		},
 	}
 
-	iterationListCmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
-	iterationListCmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
-	iterationListCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
-	iterationListCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "List iterations for a group.")
+	iterationListCmd.Flags().IntVarP(&opts.page, "page", "p", 1, "Page number.")
+	iterationListCmd.Flags().IntVarP(&opts.perPage, "per-page", "P", 30, "Number of items to list per page.")
+	iterationListCmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json.")
+	iterationListCmd.Flags().StringVarP(&opts.group, "group", "g", "", "List iterations for a group.")
 	return iterationListCmd
+}
+
+func (o *options) run() error {
+	apiClient, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+	repo, err := o.baseRepo()
+	if err != nil {
+		return err
+	}
+	iterationApiOpts := &api.ListProjectIterationsOptions{}
+	iterationApiOpts.IncludeAncestors = gitlab.Ptr(true)
+
+	if p := o.page; p != 0 {
+		iterationApiOpts.Page = p
+	}
+	if pp := o.perPage; pp != 0 {
+		iterationApiOpts.PerPage = pp
+	}
+
+	var iterationBuilder strings.Builder
+
+	if o.group != "" {
+		iterations, err := api.ListGroupIterations(apiClient, o.group, iterationApiOpts)
+		if err != nil {
+			return err
+		}
+		if o.outputFormat == "json" {
+			iterationListJSON, _ := json.Marshal(iterations)
+			fmt.Fprintln(o.io.StdOut, string(iterationListJSON))
+		} else {
+			fmt.Fprintf(o.io.StdOut, "Showing iteration %d of %d for group %s.\n\n", len(iterations), len(iterations), o.group)
+			for _, iteration := range iterations {
+				iterationBuilder.WriteString(formatIterationInfo(iteration.Description, iteration.Title, iteration.WebURL))
+			}
+		}
+	} else {
+		iterations, err := api.ListProjectIterations(apiClient, repo.FullName(), iterationApiOpts)
+		if err != nil {
+			return err
+		}
+		if o.outputFormat == "json" {
+			iterationListJSON, _ := json.Marshal(iterations)
+			fmt.Fprintln(o.io.StdOut, string(iterationListJSON))
+		} else {
+			fmt.Fprintf(o.io.StdOut, "Showing iteration %d of %d on %s.\n\n", len(iterations), len(iterations), repo.FullName())
+			for _, iteration := range iterations {
+				iterationBuilder.WriteString(formatIterationInfo(iteration.Description, iteration.Title, iteration.WebURL))
+			}
+		}
+	}
+	fmt.Fprintln(o.io.StdOut, utils.Indent(iterationBuilder.String(), " "))
+	return nil
 }
 
 func formatIterationInfo(description string, title string, webURL string) string {

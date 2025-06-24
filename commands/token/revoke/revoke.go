@@ -2,7 +2,6 @@ package revoke
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -19,21 +18,23 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
-type RevokeOptions struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	User         string
-	Group        string
-	Name         string
-	TokenId      int
-	OutputFormat string
+	user         string
+	group        string
+	name         string
+	tokenID      int
+	outputFormat string
 }
 
-func NewCmdRevoke(f cmdutils.Factory, runE func(opts *RevokeOptions) error) *cobra.Command {
-	opts := &RevokeOptions{
-		IO: f.IO(),
+func NewCmdRevoke(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -68,38 +69,43 @@ func NewCmdRevoke(f cmdutils.Factory, runE func(opts *RevokeOptions) error) *cob
 			- glab token revoke --user johndoe johns-personal-token
 
 		`),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			// Supports repo override
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			if opts.TokenId, err = strconv.Atoi(args[0]); err != nil {
-				opts.Name = args[0]
-			}
-			if opts.Group, err = flag.GroupOverride(cmd); err != nil {
-				return
-			}
-
-			if opts.Group != "" && opts.User != "" {
-				return cmdutils.FlagError{Err: errors.New("'--group' and '--user' are mutually exclusive.")}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := opts.complete(cmd, args); err != nil {
+				return err
 			}
 
 			if runE != nil {
 				return runE(opts)
 			}
-			return revokeTokenRun(opts)
+			return opts.run()
 		},
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Revoke group access token. Ignored if a user or repository argument is set.")
-	cmd.Flags().StringVarP(&opts.User, "user", "U", "", "Revoke personal access token. Use @me for the current user.")
-	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json. 'text' provides the name and ID of the revoked token; 'json' outputs the token with metadata.")
+	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "Revoke group access token. Ignored if a user or repository argument is set.")
+	cmd.Flags().StringVarP(&opts.user, "user", "U", "", "Revoke personal access token. Use @me for the current user.")
+	cmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json. 'text' provides the name and ID of the revoked token; 'json' outputs the token with metadata.")
+	cmd.MarkFlagsMutuallyExclusive("group", "user")
 	return cmd
 }
 
-func revokeTokenRun(opts *RevokeOptions) error {
-	httpClient, err := opts.HTTPClient()
+func (o *options) complete(cmd *cobra.Command, args []string) error {
+	if tokenID, err := strconv.Atoi(args[0]); err != nil {
+		o.name = args[0]
+	} else {
+		o.tokenID = tokenID
+	}
+	if group, err := flag.GroupOverride(cmd); err != nil {
+		return err
+	} else {
+		o.group = group
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
@@ -107,8 +113,8 @@ func revokeTokenRun(opts *RevokeOptions) error {
 	var outputToken any
 	var outputTokenValue string
 
-	if opts.User != "" {
-		user, err := api.UserByName(httpClient, opts.User)
+	if o.user != "" {
+		user, err := api.UserByName(httpClient, o.user)
 		if err != nil {
 			return cmdutils.FlagError{Err: err}
 		}
@@ -123,50 +129,50 @@ func revokeTokenRun(opts *RevokeOptions) error {
 		}
 		var token *gitlab.PersonalAccessToken
 		tokens = filter.Filter(tokens, func(t *gitlab.PersonalAccessToken) bool {
-			return t.Active && (t.Name == opts.Name || t.ID == opts.TokenId)
+			return t.Active && (t.Name == o.name || t.ID == o.tokenID)
 		})
 		switch len(tokens) {
 		case 1:
 			token = tokens[0]
 		case 0:
-			return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'.", opts.Name)}
+			return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'.", o.name)}
 		default:
-			return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", opts.Name)}
+			return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", o.name)}
 		}
 		if err = api.RevokePersonalAccessToken(httpClient, token.ID); err != nil {
 			return err
 		}
 		token.Revoked = true
 		outputToken = token
-		outputTokenValue = fmt.Sprintf("revoked %s %s %d", opts.User, token.Name, token.ID)
+		outputTokenValue = fmt.Sprintf("revoked %s %s %d", o.user, token.Name, token.ID)
 	} else {
-		if opts.Group != "" {
+		if o.group != "" {
 			options := &gitlab.ListGroupAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListGroupAccessTokens(httpClient, opts.Group, options)
+			tokens, err := api.ListGroupAccessTokens(httpClient, o.group, options)
 			if err != nil {
 				return err
 			}
 			var token *gitlab.GroupAccessToken
 			tokens = filter.Filter(tokens, func(t *gitlab.GroupAccessToken) bool {
-				return t.Active && (t.Name == opts.Name || t.ID == opts.TokenId)
+				return t.Active && (t.Name == o.name || t.ID == o.tokenID)
 			})
 			switch len(tokens) {
 			case 1:
 				token = tokens[0]
 			case 0:
-				return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'.", opts.Name)}
+				return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'.", o.name)}
 			default:
-				return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", opts.Name)}
+				return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", o.name)}
 			}
 
-			if err = api.RevokeGroupAccessToken(httpClient, opts.Group, token.ID); err != nil {
+			if err = api.RevokeGroupAccessToken(httpClient, o.group, token.ID); err != nil {
 				return err
 			}
 			token.Revoked = true
 			outputToken = token
 			outputTokenValue = fmt.Sprintf("revoked %s %d", token.Name, token.ID)
 		} else {
-			repo, err := opts.BaseRepo()
+			repo, err := o.baseRepo()
 			if err != nil {
 				return err
 			}
@@ -176,16 +182,16 @@ func revokeTokenRun(opts *RevokeOptions) error {
 				return err
 			}
 			tokens = filter.Filter(tokens, func(t *gitlab.ProjectAccessToken) bool {
-				return t.Active && (t.Name == opts.Name || t.ID == opts.TokenId)
+				return t.Active && (t.Name == o.name || t.ID == o.tokenID)
 			})
 			var token *gitlab.ProjectAccessToken
 			switch len(tokens) {
 			case 1:
 				token = tokens[0]
 			case 0:
-				return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'.", opts.Name)}
+				return cmdutils.FlagError{Err: fmt.Errorf("no token found with the name '%v'.", o.name)}
 			default:
-				return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", opts.Name)}
+				return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", o.name)}
 			}
 
 			if err = api.RevokeProjectAccessToken(httpClient, repo.FullName(), token.ID); err != nil {
@@ -197,13 +203,13 @@ func revokeTokenRun(opts *RevokeOptions) error {
 		}
 	}
 
-	if opts.OutputFormat == "json" {
-		encoder := json.NewEncoder(opts.IO.StdOut)
+	if o.outputFormat == "json" {
+		encoder := json.NewEncoder(o.io.StdOut)
 		if err := encoder.Encode(outputToken); err != nil {
 			return err
 		}
 	} else {
-		if _, err := opts.IO.StdOut.Write([]byte(outputTokenValue)); err != nil {
+		if _, err := o.io.StdOut.Write([]byte(outputTokenValue)); err != nil {
 			return err
 		}
 	}
