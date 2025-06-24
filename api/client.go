@@ -65,7 +65,6 @@ type Client struct {
 	isOauth2           bool
 	isJobToken         bool
 	allowInsecure      bool
-	RefreshLabInstance bool
 }
 
 func (i glabInstall) UserAgent() string {
@@ -91,7 +90,6 @@ func RefreshClient() {
 		protocol:           "https",
 		AuthType:           NoToken,
 		httpClient:         &http.Client{},
-		RefreshLabInstance: true,
 	}
 }
 
@@ -207,7 +205,6 @@ func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken boo
 			},
 		}
 	}
-	apiClient.RefreshLabInstance = true
 	err := apiClient.NewLab()
 	return apiClient, err
 }
@@ -323,38 +320,37 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (*Clie
 
 // NewLab initializes the GitLab Client
 func (c *Client) NewLab() error {
-	var err error
+	if c.host == "" {
+		c.host = glinstance.OverridableDefault()
+	}
+
 	var baseURL string
-	if apiClient.RefreshLabInstance {
-		if c.host == "" {
-			c.host = glinstance.OverridableDefault()
-		}
-		if c.isGraphQL {
-			baseURL = glinstance.GraphQLEndpoint(c.host, c.protocol)
-		} else {
-			baseURL = glinstance.APIEndpoint(c.host, c.protocol, "")
-		}
+	if c.isGraphQL {
+		baseURL = glinstance.GraphQLEndpoint(c.host, c.protocol)
+	} else {
+		baseURL = glinstance.APIEndpoint(c.host, c.protocol, "")
+	}
 
+	var err error
+	if c.isOauth2 {
+		ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: c.token})
+		c.gitlabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
+	} else if c.isJobToken {
+		c.gitlabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
+	} else {
+		c.gitlabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to initialize GitLab client: %v", err)
+	}
+	c.gitlabClient.UserAgent = currentGlabInstall.UserAgent()
+
+	if c.token != "" {
 		if c.isOauth2 {
-			ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: c.token})
-			c.gitlabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-		} else if c.isJobToken {
-			c.gitlabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
+			c.AuthType = OAuthToken
 		} else {
-			c.gitlabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-		}
-
-		if err != nil {
-			return fmt.Errorf("failed to initialize GitLab client: %v", err)
-		}
-		c.gitlabClient.UserAgent = currentGlabInstall.UserAgent()
-
-		if c.token != "" {
-			if c.isOauth2 {
-				c.AuthType = OAuthToken
-			} else {
-				c.AuthType = PrivateToken
-			}
+			c.AuthType = PrivateToken
 		}
 	}
 	return nil

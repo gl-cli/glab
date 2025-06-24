@@ -439,7 +439,6 @@ func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*a
 	if err != nil {
 		return nil, err
 	}
-	testClient.RefreshLabInstance = true
 	if token != "" {
 		testClient.AuthType = api.PrivateToken
 	}
