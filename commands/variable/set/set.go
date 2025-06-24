@@ -15,25 +15,27 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
-type SetOpts struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	Key         string
-	Value       string
-	Type        string
-	Scope       string
-	Protected   bool
-	Masked      bool
-	Raw         bool
-	Group       string
-	Description string
+	key         string
+	value       string
+	typ         string
+	scope       string
+	protected   bool
+	masked      bool
+	raw         bool
+	group       string
+	description string
 }
 
-func NewCmdSet(f cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Command {
-	opts := &SetOpts{
-		IO: f.IO(),
+func NewCmdSet(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -51,104 +53,108 @@ func NewCmdSet(f cmdutils.Factory, runE func(opts *SetOpts) error) *cobra.Comman
 			$ cat file.txt | glab variable set SERVER_TOKEN
 			$ cat token.txt | glab variable set GROUP_TOKEN -g mygroup --scope=prod
 		`),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			// Supports repo override
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
+		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.complete(args)
 
-			opts.Key = args[0]
-
-			if !variableutils.IsValidKey(opts.Key) {
-				err = cmdutils.FlagError{Err: fmt.Errorf("invalid key provided.\n%s", variableutils.ValidKeyMsg)}
-				return
-			}
-
-			if opts.Value != "" && len(args) == 2 {
-				err = cmdutils.FlagError{Err: errors.New("specify value either by the second positional argument or the --value flag.")}
-				return
-			}
-
-			opts.Value, err = variableutils.GetValue(opts.Value, opts.IO, args)
-			if err != nil {
-				return
-			}
-
-			if cmd.Flags().Changed("type") {
-				if opts.Type != "env_var" && opts.Type != "file" {
-					err = cmdutils.FlagError{Err: fmt.Errorf("invalid type: %s. --type must be one of `env_var` or `file`.", opts.Type)}
-					return
-				}
+			if err := opts.validate(cmd, args); err != nil {
+				return err
 			}
 
 			if runE != nil {
-				err = runE(opts)
-				return
+				return runE(opts)
 			}
-			err = setRun(opts)
-			return
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Value, "value", "v", "", "The value of a variable.")
-	cmd.Flags().StringVarP(&opts.Type, "type", "t", "env_var", "The type of a variable: env_var, file.")
-	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. Values: all (*), or specific environments.")
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Set variable for a group.")
-	cmd.Flags().BoolVarP(&opts.Masked, "masked", "m", false, "Whether the variable is masked.")
-	cmd.Flags().BoolVarP(&opts.Raw, "raw", "r", false, "Whether the variable is treated as a raw string.")
-	cmd.Flags().BoolVarP(&opts.Protected, "protected", "p", false, "Whether the variable is protected.")
-	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Set description of a variable.")
+	cmd.Flags().StringVarP(&opts.value, "value", "v", "", "The value of a variable.")
+	cmd.Flags().StringVarP(&opts.typ, "type", "t", "env_var", "The type of a variable: env_var, file.")
+	cmd.Flags().StringVarP(&opts.scope, "scope", "s", "*", "The environment_scope of the variable. Values: all (*), or specific environments.")
+	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "Set variable for a group.")
+	cmd.Flags().BoolVarP(&opts.masked, "masked", "m", false, "Whether the variable is masked.")
+	cmd.Flags().BoolVarP(&opts.raw, "raw", "r", false, "Whether the variable is treated as a raw string.")
+	cmd.Flags().BoolVarP(&opts.protected, "protected", "p", false, "Whether the variable is protected.")
+	cmd.Flags().StringVarP(&opts.description, "description", "d", "", "Set description of a variable.")
 	return cmd
 }
 
-func setRun(opts *SetOpts) error {
-	c := opts.IO.Color()
-	httpClient, err := opts.HTTPClient()
+func (o *options) complete(args []string) {
+	o.key = args[0]
+}
+
+func (o *options) validate(cmd *cobra.Command, args []string) error {
+	if !variableutils.IsValidKey(o.key) {
+		return cmdutils.FlagError{Err: fmt.Errorf("invalid key provided.\n%s", variableutils.ValidKeyMsg)}
+	}
+
+	if o.value != "" && len(args) == 2 {
+		return cmdutils.FlagError{Err: errors.New("specify value either by the second positional argument or the --value flag.")}
+	}
+
+	value, err := variableutils.GetValue(o.value, o.io, args)
+	if err != nil {
+		return err
+	}
+	o.value = value
+
+	if cmd.Flags().Changed("type") {
+		if o.typ != "env_var" && o.typ != "file" {
+			return cmdutils.FlagError{Err: fmt.Errorf("invalid type: %s. --type must be one of `env_var` or `file`.", o.typ)}
+		}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	c := o.io.Color()
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	if opts.Group != "" {
+	if o.group != "" {
 		// creating group-level variable
 		createVarOpts := &gitlab.CreateGroupVariableOptions{
-			Key:              gitlab.Ptr(opts.Key),
-			Value:            gitlab.Ptr(opts.Value),
-			EnvironmentScope: gitlab.Ptr(opts.Scope),
-			Masked:           gitlab.Ptr(opts.Masked),
-			Protected:        gitlab.Ptr(opts.Protected),
-			VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(opts.Type)),
-			Raw:              gitlab.Ptr(opts.Raw),
-			Description:      gitlab.Ptr(opts.Description),
+			Key:              gitlab.Ptr(o.key),
+			Value:            gitlab.Ptr(o.value),
+			EnvironmentScope: gitlab.Ptr(o.scope),
+			Masked:           gitlab.Ptr(o.masked),
+			Protected:        gitlab.Ptr(o.protected),
+			VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(o.typ)),
+			Raw:              gitlab.Ptr(o.raw),
+			Description:      gitlab.Ptr(o.description),
 		}
 
-		_, err = api.CreateGroupVariable(httpClient, opts.Group, createVarOpts)
+		_, err = api.CreateGroupVariable(httpClient, o.group, createVarOpts)
 		if err != nil {
 			return err
 		}
 
-		fmt.Fprintf(opts.IO.StdOut, "%s Created variable %s for group %s.\n", c.GreenCheck(), opts.Key, opts.Group)
+		fmt.Fprintf(o.io.StdOut, "%s Created variable %s for group %s.\n", c.GreenCheck(), o.key, o.group)
 		return nil
 	}
 
 	// creating project-level variable
-	baseRepo, err := opts.BaseRepo()
+	baseRepo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
 	createVarOpts := &gitlab.CreateProjectVariableOptions{
-		Key:              gitlab.Ptr(opts.Key),
-		Value:            gitlab.Ptr(opts.Value),
-		EnvironmentScope: gitlab.Ptr(opts.Scope),
-		Masked:           gitlab.Ptr(opts.Masked),
-		Protected:        gitlab.Ptr(opts.Protected),
-		VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(opts.Type)),
-		Raw:              gitlab.Ptr(opts.Raw),
-		Description:      gitlab.Ptr(opts.Description),
+		Key:              gitlab.Ptr(o.key),
+		Value:            gitlab.Ptr(o.value),
+		EnvironmentScope: gitlab.Ptr(o.scope),
+		Masked:           gitlab.Ptr(o.masked),
+		Protected:        gitlab.Ptr(o.protected),
+		VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(o.typ)),
+		Raw:              gitlab.Ptr(o.raw),
+		Description:      gitlab.Ptr(o.description),
 	}
 	_, err = api.CreateProjectVariable(httpClient, baseRepo.FullName(), createVarOpts)
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(opts.IO.StdOut, "%s Created variable %s for %s with scope %s.\n", c.GreenCheck(), opts.Key, baseRepo.FullName(), opts.Scope)
+	fmt.Fprintf(o.io.StdOut, "%s Created variable %s for %s with scope %s.\n", c.GreenCheck(), o.key, baseRepo.FullName(), o.scope)
 	return nil
 }

@@ -12,13 +12,13 @@ import (
 )
 
 func TestGenerateIssueWebURL(t *testing.T) {
-	opts := &CreateOpts{
+	opts := &options{
 		Labels:         []string{"backend", "frontend"},
 		Assignees:      []string{"johndoe", "janedoe"},
 		Milestone:      15,
 		Weight:         3,
 		IsConfidential: true,
-		BaseProject: &gitlab.Project{
+		baseProject: &gitlab.Project{
 			ID:     101,
 			WebURL: "https://gitlab.example.com/gitlab-org/gitlab",
 		},

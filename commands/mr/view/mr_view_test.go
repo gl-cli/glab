@@ -274,14 +274,14 @@ func Test_rawMRPreview(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		opts  *ViewOpts
+		opts  *options
 		mr    *gitlab.MergeRequest
 		notes []*gitlab.Note
 		want  []string
 	}{
 		{
 			"mr_default",
-			&ViewOpts{},
+			&options{},
 			mr,
 			notes,
 			[]string{
@@ -301,9 +301,9 @@ func Test_rawMRPreview(t *testing.T) {
 		},
 		{
 			"mr_show_comments_no_comments",
-			&ViewOpts{
-				ShowComments:   true,
-				ShowSystemLogs: true,
+			&options{
+				showComments:   true,
+				showSystemLogs: true,
 			},
 			mr,
 			[]*gitlab.Note{},
@@ -326,9 +326,9 @@ func Test_rawMRPreview(t *testing.T) {
 		},
 		{
 			"mr_with_comments_and_notes",
-			&ViewOpts{
-				ShowComments:   true,
-				ShowSystemLogs: true,
+			&options{
+				showComments:   true,
+				showSystemLogs: true,
 			},
 			mr,
 			notes,

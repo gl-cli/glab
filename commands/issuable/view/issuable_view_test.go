@@ -280,13 +280,13 @@ func Test_rawIssuePreview(t *testing.T) {
 
 	tests := []struct {
 		name string
-		opts *ViewOpts
+		opts *options
 		want []string
 	}{
 		{
 			"issue_default",
-			&ViewOpts{
-				Issue: &gitlab.Issue{
+			&options{
+				issue: &gitlab.Issue{
 					Title:          "Issue title",
 					State:          "opened",
 					Author:         &gitlab.IssueAuthor{Username: "alice"},
@@ -297,7 +297,7 @@ func Test_rawIssuePreview(t *testing.T) {
 					IssueType:      &issueType,
 					Milestone:      &gitlab.Milestone{Title: "Milestone 5"},
 				},
-				ShowComments: false,
+				showComments: false,
 			},
 			[]string{
 				"title:\tIssue title",
@@ -313,8 +313,8 @@ func Test_rawIssuePreview(t *testing.T) {
 		},
 		{
 			"issue_show_comments_no_comments",
-			&ViewOpts{
-				Issue: &gitlab.Issue{
+			&options{
+				issue: &gitlab.Issue{
 					Title:          "Issue title",
 					Author:         &gitlab.IssueAuthor{Username: "alice"},
 					UserNotesCount: 2,
@@ -322,7 +322,7 @@ func Test_rawIssuePreview(t *testing.T) {
 					IssueType:      &issueType,
 					Milestone:      &gitlab.Milestone{Title: "Milestone 5"},
 				},
-				ShowComments: true,
+				showComments: true,
 			},
 			[]string{
 				"title:\tIssue title",
@@ -340,8 +340,8 @@ func Test_rawIssuePreview(t *testing.T) {
 		},
 		{
 			"incident_show_comments_no_comments",
-			&ViewOpts{
-				Issue: &gitlab.Issue{
+			&options{
+				issue: &gitlab.Issue{
 					Title:          "Incident title",
 					Author:         &gitlab.IssueAuthor{Username: "alice"},
 					UserNotesCount: 2,
@@ -349,7 +349,7 @@ func Test_rawIssuePreview(t *testing.T) {
 					IssueType:      &incidentType,
 					Milestone:      &gitlab.Milestone{Title: "Milestone 5"},
 				},
-				ShowComments: true,
+				showComments: true,
 			},
 			[]string{
 				"title:\tIncident title",
@@ -367,8 +367,8 @@ func Test_rawIssuePreview(t *testing.T) {
 		},
 		{
 			"issue_show_comments_with_comments_and_system_notes",
-			&ViewOpts{
-				Issue: &gitlab.Issue{
+			&options{
+				issue: &gitlab.Issue{
 					Title:          "Issue title",
 					Author:         &gitlab.IssueAuthor{Username: "alice"},
 					UserNotesCount: 2,
@@ -376,9 +376,9 @@ func Test_rawIssuePreview(t *testing.T) {
 					IssueType:      &issueType,
 					Milestone:      &gitlab.Milestone{Title: "Milestone 5"},
 				},
-				ShowComments:   true,
-				ShowSystemLogs: true,
-				Notes: []*gitlab.Note{
+				showComments:   true,
+				showSystemLogs: true,
+				notes: []*gitlab.Note{
 					{
 						System:    true,
 						Author:    fakeNote1.Author,
@@ -435,22 +435,22 @@ func Test_rawIssuePreview(t *testing.T) {
 func Test_labelsList(t *testing.T) {
 	tests := []struct {
 		name string
-		opts *ViewOpts
+		opts *options
 		want string
 	}{
 		{
 			"no labels",
-			&ViewOpts{Issue: &gitlab.Issue{Labels: gitlab.Labels{}}},
+			&options{issue: &gitlab.Issue{Labels: gitlab.Labels{}}},
 			"",
 		},
 		{
 			"one label",
-			&ViewOpts{Issue: &gitlab.Issue{Labels: gitlab.Labels{"label1"}}},
+			&options{issue: &gitlab.Issue{Labels: gitlab.Labels{"label1"}}},
 			"label1",
 		},
 		{
 			"two labels",
-			&ViewOpts{Issue: &gitlab.Issue{Labels: gitlab.Labels{"label1", "label2"}}},
+			&options{issue: &gitlab.Issue{Labels: gitlab.Labels{"label1", "label2"}}},
 			"label1, label2",
 		},
 	}
@@ -469,22 +469,22 @@ func Test_labelsList(t *testing.T) {
 func Test_assigneesList(t *testing.T) {
 	tests := []struct {
 		name string
-		opts *ViewOpts
+		opts *options
 		want string
 	}{
 		{
 			"no assignee",
-			&ViewOpts{Issue: &gitlab.Issue{Assignees: []*gitlab.IssueAssignee{}}},
+			&options{issue: &gitlab.Issue{Assignees: []*gitlab.IssueAssignee{}}},
 			"",
 		},
 		{
 			"one assignee",
-			&ViewOpts{Issue: &gitlab.Issue{Assignees: []*gitlab.IssueAssignee{{Username: "Alice"}}}},
+			&options{issue: &gitlab.Issue{Assignees: []*gitlab.IssueAssignee{{Username: "Alice"}}}},
 			"Alice",
 		},
 		{
 			"two assignees",
-			&ViewOpts{Issue: &gitlab.Issue{Assignees: []*gitlab.IssueAssignee{{Username: "Alice"}, {Username: "Bob"}}}},
+			&options{issue: &gitlab.Issue{Assignees: []*gitlab.IssueAssignee{{Username: "Alice"}, {Username: "Bob"}}}},
 			"Alice, Bob",
 		},
 	}

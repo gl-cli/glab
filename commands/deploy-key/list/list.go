@@ -11,21 +11,23 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
-type ListOpts struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
 	// Pagination
-	Page    int
-	PerPage int
+	page    int
+	perPage int
 
-	ShowKeyIDs bool
+	showKeyIDs bool
 }
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
-	opts := &ListOpts{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -36,32 +38,29 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			return listRun(opts)
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().BoolVarP(&opts.ShowKeyIDs, "show-id", "", false, "Shows IDs of deploy keys.")
-	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
-	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 30, "Number of items to list per page.")
+	cmd.Flags().BoolVarP(&opts.showKeyIDs, "show-id", "", false, "Shows IDs of deploy keys.")
+	cmd.Flags().IntVarP(&opts.page, "page", "p", 1, "Page number.")
+	cmd.Flags().IntVarP(&opts.perPage, "per-page", "P", 30, "Number of items to list per page.")
 
 	return cmd
 }
 
-func listRun(opts *ListOpts) error {
-	httpClient, err := opts.HTTPClient()
+func (o *options) run() error {
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
 	listProjectDeployKeysOptions := &gitlab.ListProjectDeployKeysOptions{
-		Page:    opts.Page,
-		PerPage: opts.PerPage,
+		Page:    o.page,
+		PerPage: o.perPage,
 	}
 
-	baseRepo, err := opts.BaseRepo()
+	baseRepo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
@@ -71,12 +70,12 @@ func listRun(opts *ListOpts) error {
 		return cmdutils.WrapError(err, "failed to get deploy keys.")
 	}
 
-	cs := opts.IO.Color()
+	cs := o.io.Color()
 	table := tableprinter.NewTablePrinter()
-	isTTy := opts.IO.IsOutputTTY()
+	isTTy := o.io.IsOutputTTY()
 
 	if len(keys) > 0 {
-		if opts.ShowKeyIDs {
+		if o.showKeyIDs {
 			table.AddRow("ID", "Title", "Key", "Can Push", "Created At")
 		} else {
 			table.AddRow("Title", "Key", "Can Push", "Created At")
@@ -85,7 +84,7 @@ func listRun(opts *ListOpts) error {
 
 	for _, key := range keys {
 		createdAt := key.CreatedAt.String()
-		if opts.ShowKeyIDs {
+		if o.showKeyIDs {
 			table.AddCell(key.ID)
 		}
 		if isTTy {
@@ -94,7 +93,7 @@ func listRun(opts *ListOpts) error {
 		table.AddRow(key.Title, key.Key, key.CanPush, cs.Gray(createdAt))
 	}
 
-	opts.IO.LogInfo(table.String())
+	o.io.LogInfo(table.String())
 
 	return nil
 }

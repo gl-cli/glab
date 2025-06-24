@@ -22,7 +22,7 @@ func Test_NewCmdDelete(t *testing.T) {
 	tests := []struct {
 		name     string
 		cli      string
-		wants    DeleteOpts
+		wants    options
 		stdinTTY bool
 		wantsErr bool
 	}{
@@ -123,40 +123,40 @@ func Test_deleteRun(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		opts        DeleteOpts
+		opts        options
 		wantsErr    bool
 		wantsOutput string
 	}{
 		{
 			name: "delete project variable no scope",
-			opts: DeleteOpts{
-				HTTPClient: httpClient,
-				BaseRepo:   baseRepo,
-				Key:        "TEST_VAR",
-				Scope:      "*",
+			opts: options{
+				httpClient: httpClient,
+				baseRepo:   baseRepo,
+				key:        "TEST_VAR",
+				scope:      "*",
 			},
 			wantsErr:    false,
 			wantsOutput: "✓ Deleted variable TEST_VAR with scope * for owner/repo.\n",
 		},
 		{
 			name: "delete project variable with stage scope",
-			opts: DeleteOpts{
-				HTTPClient: httpClient,
-				BaseRepo:   baseRepo,
-				Key:        "TEST_VAR",
-				Scope:      "stage",
+			opts: options{
+				httpClient: httpClient,
+				baseRepo:   baseRepo,
+				key:        "TEST_VAR",
+				scope:      "stage",
 			},
 			wantsErr:    false,
 			wantsOutput: "✓ Deleted variable TEST_VAR with scope stage for owner/repo.\n",
 		},
 		{
 			name: "delete group variable",
-			opts: DeleteOpts{
-				HTTPClient: httpClient,
-				BaseRepo:   baseRepo,
-				Key:        "TEST_VAR",
-				Scope:      "",
-				Group:      "testGroup",
+			opts: options{
+				httpClient: httpClient,
+				baseRepo:   baseRepo,
+				key:        "TEST_VAR",
+				scope:      "",
+				group:      "testGroup",
 			},
 			wantsErr:    false,
 			wantsOutput: "✓ Deleted variable TEST_VAR for group testGroup.\n",
@@ -165,13 +165,13 @@ func Test_deleteRun(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _ = tt.opts.HTTPClient()
+			_, _ = tt.opts.httpClient()
 
 			io, _, stdout, _ := iostreams.Test()
-			tt.opts.IO = io
+			tt.opts.io = io
 			io.IsInTTY = false
 
-			err := deleteRun(&tt.opts)
+			err := tt.opts.run()
 			assert.NoError(t, err)
 			assert.Equal(t, stdout.String(), tt.wantsOutput)
 		})

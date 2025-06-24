@@ -22,21 +22,23 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type DownloadOpts struct {
-	TagName    string
-	AssetNames []string
-	Dir        string
+type options struct {
+	tagName    string
+	assetNames []string
+	dir        string
 
-	IO         *iostreams.IOStreams
-	HTTPClient func() (*gitlab.Client, error)
-	BaseRepo   func() (glrepo.Interface, error)
-	Config     func() (config.Config, error)
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
+	config     func() (config.Config, error)
 }
 
 func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
-	opts := &DownloadOpts{
-		IO:     f.IO(),
-		Config: f.Config,
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+		config:     f.Config,
 	}
 
 	cmd := &cobra.Command{
@@ -60,45 +62,44 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 			$ glab release download v1.10.1 --asset-name="*.tar.gz"
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.IO = f.IO()
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-			opts.Config = f.Config
+			opts.complete(args)
 
-			if len(args) == 1 {
-				opts.TagName = args[0]
-			}
-
-			return downloadRun(opts)
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&opts.AssetNames, "asset-name", "n", []string{}, "Download only assets that match the name or a glob pattern.")
-	cmd.Flags().StringVarP(&opts.Dir, "dir", "D", ".", "Directory to download the release assets to.")
+	cmd.Flags().StringArrayVarP(&opts.assetNames, "asset-name", "n", []string{}, "Download only assets that match the name or a glob pattern.")
+	cmd.Flags().StringVarP(&opts.dir, "dir", "D", ".", "Directory to download the release assets to.")
 
 	return cmd
 }
 
-func downloadRun(opts *DownloadOpts) error {
-	client, err := opts.HTTPClient()
+func (o *options) complete(args []string) {
+	if len(args) == 1 {
+		o.tagName = args[0]
+	}
+}
+
+func (o *options) run() error {
+	client, err := o.httpClient()
 	if err != nil {
 		return err
 	}
-	cfg, err := opts.Config()
+	cfg, err := o.config()
 	if err != nil {
 		return err
 	}
-	repo, err := opts.BaseRepo()
+	repo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
-	color := opts.IO.Color()
+	color := o.io.Color()
 	var resp *gitlab.Response
 	var release *gitlab.Release
 	var downloadableAssets []*upload.ReleaseAsset
 
-	if opts.TagName == "" {
-		opts.IO.Logf("%s fetching latest release %s=%s\n",
+	if o.tagName == "" {
+		o.io.Logf("%s fetching latest release %s=%s\n",
 			color.ProgressIcon(),
 			color.Blue("repo"), repo.FullName())
 		releases, _, err := client.Releases.ListReleases(repo.FullName(), &gitlab.ListReleasesOptions{})
@@ -110,14 +111,14 @@ func downloadRun(opts *DownloadOpts) error {
 		}
 
 		release = releases[0]
-		opts.TagName = release.TagName
+		o.tagName = release.TagName
 	} else {
-		opts.IO.Logf("%s fetching release %s=%s %s=%s.\n",
+		o.io.Logf("%s fetching release %s=%s %s=%s.\n",
 			color.ProgressIcon(),
 			color.Blue("repo"), repo.FullName(),
-			color.Blue("tag"), opts.TagName)
+			color.Blue("tag"), o.tagName)
 
-		release, resp, err = client.Releases.GetRelease(repo.FullName(), opts.TagName)
+		release, resp, err = client.Releases.GetRelease(repo.FullName(), o.tagName)
 		if err != nil {
 			if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
 				return cmdutils.WrapError(err, "release does not exist.")
@@ -127,7 +128,7 @@ func downloadRun(opts *DownloadOpts) error {
 	}
 
 	for _, link := range release.Assets.Links {
-		if len(opts.AssetNames) > 0 && (!matchAny(opts.AssetNames, link.Name)) {
+		if len(o.assetNames) > 0 && (!matchAny(o.assetNames, link.Name)) {
 			continue
 		}
 		downloadableAssets = append(downloadableAssets, &upload.ReleaseAsset{
@@ -139,7 +140,7 @@ func downloadRun(opts *DownloadOpts) error {
 	for _, source := range release.Assets.Sources {
 		source := source
 		name := path.Base(source.URL)
-		if len(opts.AssetNames) > 0 && (!matchAny(opts.AssetNames, name)) {
+		if len(o.assetNames) > 0 && (!matchAny(o.assetNames, name)) {
 			continue
 		}
 		downloadableAssets = append(downloadableAssets, &upload.ReleaseAsset{
@@ -149,25 +150,25 @@ func downloadRun(opts *DownloadOpts) error {
 	}
 
 	if len(downloadableAssets) < 1 {
-		opts.IO.Logf("%s no release assets found!\n",
+		o.io.Logf("%s no release assets found!\n",
 			color.DotWarnIcon())
 		return nil
 	}
-	opts.IO.Logf("%s downloading release assets %s=%s %s=%s\n",
+	o.io.Logf("%s downloading release assets %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
-		color.Blue("tag"), opts.TagName)
+		color.Blue("tag"), o.tagName)
 
 	c, err := api.NewClientWithCfg(repo.RepoHost(), cfg, false)
 	if err != nil {
 		return err
 	}
-	err = downloadAssets(c, opts.IO, downloadableAssets, opts.Dir)
+	err = downloadAssets(c, o.io, downloadableAssets, o.dir)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to download release.")
 	}
 
-	opts.IO.Logf(color.Bold("%s release %q downloaded\n"), color.RedCheck(), release.Name)
+	o.io.Logf(color.Bold("%s release %q downloaded\n"), color.RedCheck(), release.Name)
 
 	return nil
 }

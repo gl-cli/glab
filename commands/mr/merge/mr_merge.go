@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/dbg"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/surveyext"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -29,23 +31,31 @@ const (
 	MRMergeMethodRebase
 )
 
-type MergeOpts struct {
-	SetAutoMerge       bool
-	SquashBeforeMerge  bool
-	RebaseBeforeMerge  bool
-	RemoveSourceBranch bool
-	SkipPrompts        bool
+type options struct {
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	config     func() (config.Config, error)
 
-	SquashMessage      string
-	MergeCommitMessage string
-	SHA                string
+	setAutoMerge       bool
+	squashBeforeMerge  bool
+	rebaseBeforeMerge  bool
+	removeSourceBranch bool
+	skipPrompts        bool
 
-	MergeMethod MRMergeMethod
+	squashMessage      string
+	mergeCommitMessage string
+	sha                string
+
+	mergeMethod MRMergeMethod
 }
 
 func NewCmdMerge(f cmdutils.Factory) *cobra.Command {
-	opts := &MergeOpts{
-		MergeMethod: MRMergeMethodMerge,
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		config:     f.Config,
+
+		mergeMethod: MRMergeMethodMerge,
 	}
 
 	mrMergeCmd := &cobra.Command{
@@ -63,208 +73,216 @@ func NewCmdMerge(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-			c := f.IO().Color()
-
-			if opts.SquashBeforeMerge && opts.RebaseBeforeMerge {
-				return &cmdutils.FlagError{Err: errors.New("only one of --rebase or --squash can be enabled")}
-			}
-
-			if !opts.SquashBeforeMerge && opts.SquashMessage != "" {
-				return &cmdutils.FlagError{Err: errors.New("--squash-message can only be used with --squash.")}
-			}
-
-			apiClient, err := f.HttpClient()
-			if err != nil {
+			if err := opts.validate(); err != nil {
 				return err
 			}
 
-			mr, repo, err := mrutils.MRFromArgs(f, args, "opened")
-			if err != nil {
-				return err
-			}
-
-			if err = mrutils.MRCheckErrors(mr, mrutils.MRCheckErrOptions{
-				Draft:          true,
-				Closed:         true,
-				Merged:         true,
-				Conflict:       true,
-				PipelineStatus: true,
-				MergePrivilege: true,
-			}); err != nil {
-				dbg.Debug("MRCheckErrors failed")
-				return err
-			}
-
-			if !cmd.Flags().Changed("when-pipeline-succeeds") &&
-				!cmd.Flags().Changed("auto-merge") &&
-				f.IO().IsOutputTTY() &&
-				mr.Pipeline != nil &&
-				f.IO().PromptEnabled() &&
-				!opts.SkipPrompts {
-				_ = prompt.Confirm(&opts.SetAutoMerge, "Set auto-merge?", true)
-			}
-
-			if f.IO().IsOutputTTY() && !opts.SkipPrompts {
-				if !opts.SquashBeforeMerge && !opts.RebaseBeforeMerge && opts.MergeCommitMessage == "" {
-					opts.MergeMethod, err = mergeMethodSurvey()
-					if err != nil {
-						return err
-					}
-					if opts.MergeMethod == MRMergeMethodSquash {
-						opts.SquashBeforeMerge = true
-					} else if opts.MergeMethod == MRMergeMethodRebase {
-						opts.RebaseBeforeMerge = true
-					}
-				}
-
-				if opts.MergeCommitMessage == "" && opts.SquashMessage == "" {
-					action, err := confirmSurvey(opts.MergeMethod != MRMergeMethodRebase)
-					if err != nil {
-						return fmt.Errorf("unable to prompt: %w", err)
-					}
-
-					if action == cmdutils.EditCommitMessageAction {
-						var mergeMessage string
-
-						editor, err := cmdutils.GetEditor(f.Config)
-						if err != nil {
-							return err
-						}
-						mergeMessage, err = surveyext.Edit(editor, "*.md", mr.Title, f.IO().In, f.IO().StdOut, f.IO().StdErr, nil)
-						if err != nil {
-							return err
-						}
-
-						if opts.SquashBeforeMerge {
-							opts.SquashMessage = mergeMessage
-						} else {
-							opts.MergeCommitMessage = mergeMessage
-						}
-
-						action, err = confirmSurvey(false)
-						if err != nil {
-							return fmt.Errorf("unable to confirm: %w", err)
-						}
-					}
-					if action == cmdutils.CancelAction {
-						fmt.Fprintln(f.IO().StdErr, "Cancelled.")
-						return cmdutils.SilentError
-					}
-				}
-			}
-
-			mergeOpts := &gitlab.AcceptMergeRequestOptions{}
-			if opts.MergeCommitMessage != "" {
-				mergeOpts.MergeCommitMessage = gitlab.Ptr(opts.MergeCommitMessage)
-			}
-			if opts.SquashMessage != "" {
-				mergeOpts.SquashCommitMessage = gitlab.Ptr(opts.SquashMessage)
-			}
-			if opts.SquashBeforeMerge {
-				mergeOpts.Squash = gitlab.Ptr(true)
-			}
-			if opts.RemoveSourceBranch {
-				mergeOpts.ShouldRemoveSourceBranch = gitlab.Ptr(true)
-			}
-			if opts.SetAutoMerge && mr.Pipeline != nil {
-				if mr.Pipeline.Status == "canceled" || mr.Pipeline.Status == "failed" {
-					fmt.Fprintln(f.IO().StdOut, c.FailedIcon(), "Pipeline status:", mr.Pipeline.Status)
-					fmt.Fprintln(f.IO().StdOut, c.FailedIcon(), "Cannot perform merge action")
-					return cmdutils.SilentError
-				}
-				mergeOpts.MergeWhenPipelineSucceeds = gitlab.Ptr(true)
-			}
-			if opts.SHA != "" {
-				mergeOpts.SHA = gitlab.Ptr(opts.SHA)
-			}
-
-			if opts.RebaseBeforeMerge {
-				err := mrutils.RebaseMR(f.IO(), apiClient, repo, mr, nil)
-				if err != nil {
-					return err
-				}
-			}
-
-			f.IO().StartSpinner("Merging merge request !%d.", mr.IID)
-
-			// Store the IID of the merge request here before overriding the `mr` variable
-			// inside the retry function, if the function fails at first the `mr` is replaced
-			// with `nil` and will cause a crash on the second run
-			mrIID := mr.IID
-
-			err = retry.Do(func() error {
-				var resp *gitlab.Response
-				mr, resp, err = api.MergeMR(apiClient, repo.FullName(), mrIID, mergeOpts)
-				if err != nil {
-					// https://docs.gitlab.com/api/merge_requests/#merge-a-merge-request
-					// `406` is the documented status code we will receive if the
-					// branch cannot be merged, this will catch situations where
-					// there are actually conflicts in the branch instead of just
-					// the situation we want to workaround (GitLab thinking branch
-					// is not mergeable right after a rebase), but we want to catch
-					// situations where the user rebased via external sources like
-					// the WebUI or running `glab rebase` before trying to merge
-					if resp.StatusCode == http.StatusNotAcceptable {
-						return err
-					}
-
-					// Return an unrecoverable error if we are not rebasing OR if the
-					// error isn't the one we are working around, this makes the retry
-					// to quit instead of trying again
-					return retry.Unrecoverable(err)
-				}
-				return err
-			}, retry.Attempts(3), retry.Delay(time.Second*6))
-			if err != nil {
-				return err
-			}
-			f.IO().StopSpinner("")
-			isMerged := true
-			if opts.SetAutoMerge {
-				if mr.Pipeline == nil {
-					fmt.Fprintln(f.IO().StdOut, c.WarnIcon(), "No pipeline running on", mr.SourceBranch)
-				} else {
-					switch mr.Pipeline.Status {
-					case "success":
-						fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Pipeline succeeded.")
-					default:
-						fmt.Fprintln(f.IO().StdOut, c.WarnIcon(), "Pipeline status:", mr.Pipeline.Status)
-						if mr.State != "merged" {
-							fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), "Will auto-merge")
-							isMerged = false
-						}
-					}
-				}
-			}
-			if isMerged {
-				action := "Merged!"
-				switch opts.MergeMethod {
-				case MRMergeMethodRebase:
-					action = "Rebased and merged!"
-				case MRMergeMethodSquash:
-					action = "Squashed and merged!"
-				}
-				fmt.Fprintln(f.IO().StdOut, c.GreenCheck(), action)
-			}
-			fmt.Fprintln(f.IO().StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, f.IO().IsaTTY))
-			return nil
+			return opts.run(f, cmd, args)
 		},
 	}
 
-	mrMergeCmd.Flags().StringVarP(&opts.SHA, "sha", "", "", "Merge commit SHA.")
-	mrMergeCmd.Flags().BoolVarP(&opts.RemoveSourceBranch, "remove-source-branch", "d", false, "Remove source branch on merge.")
-	mrMergeCmd.Flags().BoolVarP(&opts.SetAutoMerge, "auto-merge", "", true, "Set auto-merge.")
-	mrMergeCmd.Flags().StringVarP(&opts.MergeCommitMessage, "message", "m", "", "Custom merge commit message.")
-	mrMergeCmd.Flags().StringVarP(&opts.SquashMessage, "squash-message", "", "", "Custom squash commit message.")
-	mrMergeCmd.Flags().BoolVarP(&opts.SquashBeforeMerge, "squash", "s", false, "Squash commits on merge.")
-	mrMergeCmd.Flags().BoolVarP(&opts.RebaseBeforeMerge, "rebase", "r", false, "Rebase the commits onto the base branch.")
-	mrMergeCmd.Flags().BoolVarP(&opts.SkipPrompts, "yes", "y", false, "Skip submission confirmation prompt.")
+	mrMergeCmd.Flags().StringVarP(&opts.sha, "sha", "", "", "Merge commit SHA.")
+	mrMergeCmd.Flags().BoolVarP(&opts.removeSourceBranch, "remove-source-branch", "d", false, "Remove source branch on merge.")
+	mrMergeCmd.Flags().BoolVarP(&opts.setAutoMerge, "auto-merge", "", true, "Set auto-merge.")
+	mrMergeCmd.Flags().StringVarP(&opts.mergeCommitMessage, "message", "m", "", "Custom merge commit message.")
+	mrMergeCmd.Flags().StringVarP(&opts.squashMessage, "squash-message", "", "", "Custom squash commit message.")
+	mrMergeCmd.Flags().BoolVarP(&opts.squashBeforeMerge, "squash", "s", false, "Squash commits on merge.")
+	mrMergeCmd.Flags().BoolVarP(&opts.rebaseBeforeMerge, "rebase", "r", false, "Rebase the commits onto the base branch.")
+	mrMergeCmd.Flags().BoolVarP(&opts.skipPrompts, "yes", "y", false, "Skip submission confirmation prompt.")
 
-	mrMergeCmd.Flags().BoolVarP(&opts.SetAutoMerge, "when-pipeline-succeeds", "", true, "Merge only when pipeline succeeds")
+	mrMergeCmd.Flags().BoolVarP(&opts.setAutoMerge, "when-pipeline-succeeds", "", true, "Merge only when pipeline succeeds")
 	_ = mrMergeCmd.Flags().MarkDeprecated("when-pipeline-succeeds", "use --auto-merge instead.")
+	mrMergeCmd.MarkFlagsMutuallyExclusive("squash", "rebase")
 
 	return mrMergeCmd
+}
+
+func (o *options) validate() error {
+	if !o.squashBeforeMerge && o.squashMessage != "" {
+		return &cmdutils.FlagError{Err: errors.New("--squash-message can only be used with --squash.")}
+	}
+
+	return nil
+}
+
+func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) error {
+	c := o.io.Color()
+
+	apiClient, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+
+	mr, repo, err := mrutils.MRFromArgs(x, args, "opened")
+	if err != nil {
+		return err
+	}
+
+	if err = mrutils.MRCheckErrors(mr, mrutils.MRCheckErrOptions{
+		Draft:          true,
+		Closed:         true,
+		Merged:         true,
+		Conflict:       true,
+		PipelineStatus: true,
+		MergePrivilege: true,
+	}); err != nil {
+		dbg.Debug("MRCheckErrors failed")
+		return err
+	}
+
+	if !cmd.Flags().Changed("when-pipeline-succeeds") &&
+		!cmd.Flags().Changed("auto-merge") &&
+		o.io.IsOutputTTY() &&
+		mr.Pipeline != nil &&
+		o.io.PromptEnabled() &&
+		!o.skipPrompts {
+		_ = prompt.Confirm(&o.setAutoMerge, "Set auto-merge?", true)
+	}
+
+	if o.io.IsOutputTTY() && !o.skipPrompts {
+		if !o.squashBeforeMerge && !o.rebaseBeforeMerge && o.mergeCommitMessage == "" {
+			o.mergeMethod, err = mergeMethodSurvey()
+			if err != nil {
+				return err
+			}
+			if o.mergeMethod == MRMergeMethodSquash {
+				o.squashBeforeMerge = true
+			} else if o.mergeMethod == MRMergeMethodRebase {
+				o.rebaseBeforeMerge = true
+			}
+		}
+
+		if o.mergeCommitMessage == "" && o.squashMessage == "" {
+			action, err := confirmSurvey(o.mergeMethod != MRMergeMethodRebase)
+			if err != nil {
+				return fmt.Errorf("unable to prompt: %w", err)
+			}
+
+			if action == cmdutils.EditCommitMessageAction {
+				var mergeMessage string
+
+				editor, err := cmdutils.GetEditor(o.config)
+				if err != nil {
+					return err
+				}
+				mergeMessage, err = surveyext.Edit(editor, "*.md", mr.Title, o.io.In, o.io.StdOut, o.io.StdErr, nil)
+				if err != nil {
+					return err
+				}
+
+				if o.squashBeforeMerge {
+					o.squashMessage = mergeMessage
+				} else {
+					o.mergeCommitMessage = mergeMessage
+				}
+
+				action, err = confirmSurvey(false)
+				if err != nil {
+					return fmt.Errorf("unable to confirm: %w", err)
+				}
+			}
+			if action == cmdutils.CancelAction {
+				fmt.Fprintln(o.io.StdErr, "Cancelled.")
+				return cmdutils.SilentError
+			}
+		}
+	}
+
+	mergeOpts := &gitlab.AcceptMergeRequestOptions{}
+	if o.mergeCommitMessage != "" {
+		mergeOpts.MergeCommitMessage = gitlab.Ptr(o.mergeCommitMessage)
+	}
+	if o.squashMessage != "" {
+		mergeOpts.SquashCommitMessage = gitlab.Ptr(o.squashMessage)
+	}
+	if o.squashBeforeMerge {
+		mergeOpts.Squash = gitlab.Ptr(true)
+	}
+	if o.removeSourceBranch {
+		mergeOpts.ShouldRemoveSourceBranch = gitlab.Ptr(true)
+	}
+	if o.setAutoMerge && mr.Pipeline != nil {
+		if mr.Pipeline.Status == "canceled" || mr.Pipeline.Status == "failed" {
+			fmt.Fprintln(o.io.StdOut, c.FailedIcon(), "Pipeline status:", mr.Pipeline.Status)
+			fmt.Fprintln(o.io.StdOut, c.FailedIcon(), "Cannot perform merge action")
+			return cmdutils.SilentError
+		}
+		mergeOpts.MergeWhenPipelineSucceeds = gitlab.Ptr(true)
+	}
+	if o.sha != "" {
+		mergeOpts.SHA = gitlab.Ptr(o.sha)
+	}
+
+	if o.rebaseBeforeMerge {
+		err := mrutils.RebaseMR(o.io, apiClient, repo, mr, nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	o.io.StartSpinner("Merging merge request !%d.", mr.IID)
+
+	// Store the IID of the merge request here before overriding the `mr` variable
+	// inside the retry function, if the function fails at first the `mr` is replaced
+	// with `nil` and will cause a crash on the second run
+	mrIID := mr.IID
+
+	err = retry.Do(func() error {
+		var resp *gitlab.Response
+		mr, resp, err = api.MergeMR(apiClient, repo.FullName(), mrIID, mergeOpts)
+		if err != nil {
+			// https://docs.gitlab.com/api/merge_requests/#merge-a-merge-request
+			// `406` is the documented status code we will receive if the
+			// branch cannot be merged, this will catch situations where
+			// there are actually conflicts in the branch instead of just
+			// the situation we want to workaround (GitLab thinking branch
+			// is not mergeable right after a rebase), but we want to catch
+			// situations where the user rebased via external sources like
+			// the WebUI or running `glab rebase` before trying to merge
+			if resp.StatusCode == http.StatusNotAcceptable {
+				return err
+			}
+
+			// Return an unrecoverable error if we are not rebasing OR if the
+			// error isn't the one we are working around, this makes the retry
+			// to quit instead of trying again
+			return retry.Unrecoverable(err)
+		}
+		return err
+	}, retry.Attempts(3), retry.Delay(time.Second*6))
+	if err != nil {
+		return err
+	}
+	o.io.StopSpinner("")
+	isMerged := true
+	if o.setAutoMerge {
+		if mr.Pipeline == nil {
+			fmt.Fprintln(o.io.StdOut, c.WarnIcon(), "No pipeline running on", mr.SourceBranch)
+		} else {
+			switch mr.Pipeline.Status {
+			case "success":
+				fmt.Fprintln(o.io.StdOut, c.GreenCheck(), "Pipeline succeeded.")
+			default:
+				fmt.Fprintln(o.io.StdOut, c.WarnIcon(), "Pipeline status:", mr.Pipeline.Status)
+				if mr.State != "merged" {
+					fmt.Fprintln(o.io.StdOut, c.GreenCheck(), "Will auto-merge")
+					isMerged = false
+				}
+			}
+		}
+	}
+	if isMerged {
+		action := "Merged!"
+		switch o.mergeMethod {
+		case MRMergeMethodRebase:
+			action = "Rebased and merged!"
+		case MRMergeMethodSquash:
+			action = "Squashed and merged!"
+		}
+		fmt.Fprintln(o.io.StdOut, c.GreenCheck(), action)
+	}
+	fmt.Fprintln(o.io.StdOut, mrutils.DisplayMR(c, &mr.BasicMergeRequest, o.io.IsaTTY))
+	return nil
 }
 
 func mergeMethodSurvey() (MRMergeMethod, error) {

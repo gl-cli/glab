@@ -25,7 +25,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
 
-type CreateOpts struct {
+type options struct {
 	Title       string   `json:"title,omitempty"`
 	Description string   `json:"description,omitempty"`
 	Labels      []string `json:"labels,omitempty"`
@@ -43,28 +43,31 @@ type CreateOpts struct {
 
 	MilestoneFlag string `json:"milestone_flag"`
 
-	NoEditor       bool `json:"-"`
 	IsConfidential bool `json:"is_confidential,omitempty"`
-	IsInteractive  bool `json:"-"`
-	OpenInWeb      bool `json:"-"`
-	Yes            bool `json:"-"`
-	Web            bool `json:"-"`
-	Recover        bool `json:"-"`
 
-	IO         *iostreams.IOStreams             `json:"-"`
-	BaseRepo   func() (glrepo.Interface, error) `json:"-"`
-	HTTPClient func() (*gitlab.Client, error)   `json:"-"`
-	Remotes    func() (glrepo.Remotes, error)   `json:"-"`
-	Config     func() (config.Config, error)    `json:"-"`
+	noEditor      bool
+	isInteractive bool
+	openInWeb     bool
+	yes           bool
+	web           bool
+	recover       bool
 
-	BaseProject *gitlab.Project `json:"-"`
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
+	httpClient func() (*gitlab.Client, error)
+	remotes    func() (glrepo.Remotes, error)
+	config     func() (config.Config, error)
+
+	baseProject *gitlab.Project
 }
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
-	opts := &CreateOpts{
-		IO:      f.IO(),
-		Remotes: f.Remotes,
-		Config:  f.Config,
+	opts := &options{
+		io:         f.IO(),
+		baseRepo:   f.BaseRepo,
+		httpClient: f.HttpClient,
+		remotes:    f.Remotes,
+		config:     f.Config,
 	}
 	issueCreateCmd := &cobra.Command{
 		Use:     "create [flags]",
@@ -80,22 +83,12 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			// support `-R, --repo` override
-			//
-			// NOTE: it is important to assign the BaseRepo and HTTPClient in RunE because
-			// they are overridden in a PersistentRun hook (when `-R, --repo` is specified)
-			// which runs before RunE is executed
-			opts.BaseRepo = f.BaseRepo
-			opts.HTTPClient = f.HttpClient
-
-			apiClient, err := opts.HTTPClient()
+			apiClient, err := opts.httpClient()
 			if err != nil {
 				return err
 			}
 
-			repo, err := opts.BaseRepo()
+			repo, err := opts.baseRepo()
 			if err != nil {
 				return err
 			}
@@ -103,27 +96,27 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			hasDescription := cmd.Flags().Changed("description")
 
 			// disable interactive mode if title and description are explicitly defined
-			opts.IsInteractive = !(hasTitle && hasDescription)
+			opts.isInteractive = !(hasTitle && hasDescription)
 
-			if opts.IsInteractive && !opts.IO.PromptEnabled() {
+			if opts.isInteractive && !opts.io.PromptEnabled() {
 				return &cmdutils.FlagError{Err: errors.New("'--title' and '--description' required for non-interactive mode.")}
 			}
 
 			// Remove this once --yes does more than just skip the prompts that --web happen to skip
 			// by design
-			if opts.Yes && opts.Web {
+			if opts.yes && opts.web {
 				return &cmdutils.FlagError{Err: errors.New("'--web' already skips all prompts currently skipped by '--yes'.")}
 			}
 
-			opts.BaseProject, err = api.GetProject(apiClient, repo.FullName())
+			opts.baseProject, err = api.GetProject(apiClient, repo.FullName())
 			if err != nil {
 				return err
 			}
 
-			if !opts.BaseProject.IssuesEnabled { //nolint:staticcheck
-				fmt.Fprintf(opts.IO.StdErr, "Issues are disabled for project %q or require project membership. ", opts.BaseProject.PathWithNamespace)
-				fmt.Fprintf(opts.IO.StdErr, "Make sure issues are enabled for the %q project, and if required, you are a member of the project.\n",
-					opts.BaseProject.PathWithNamespace)
+			if !opts.baseProject.IssuesEnabled { //nolint:staticcheck
+				fmt.Fprintf(opts.io.StdErr, "Issues are disabled for project %q or require project membership. ", opts.baseProject.PathWithNamespace)
+				fmt.Fprintf(opts.io.StdErr, "Make sure issues are enabled for the %q project, and if required, you are a member of the project.\n",
+					opts.baseProject.PathWithNamespace)
 				return cmdutils.SilentError
 			}
 
@@ -131,7 +124,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				// always save options to file
 				recoverErr := createRecoverSaveFile(repo.FullName(), opts)
 				if recoverErr != nil {
-					fmt.Fprintf(opts.IO.StdErr, "Could not create recovery file: %v", recoverErr)
+					fmt.Fprintf(opts.io.StdErr, "Could not create recovery file: %v", recoverErr)
 				}
 
 				return err
@@ -148,27 +141,27 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	issueCreateCmd.Flags().BoolVarP(&opts.IsConfidential, "confidential", "c", false, "Set an issue to be confidential. (default false)")
 	issueCreateCmd.Flags().IntVarP(&opts.LinkedMR, "linked-mr", "", 0, "The IID of a merge request in which to resolve all issues.")
 	issueCreateCmd.Flags().IntVarP(&opts.Weight, "weight", "w", 0, "Issue weight. Valid values are greater than or equal to 0.")
-	issueCreateCmd.Flags().BoolVarP(&opts.NoEditor, "no-editor", "", false, "Don't open editor to enter a description. If set to true, uses prompt. (default false)")
-	issueCreateCmd.Flags().BoolVarP(&opts.Yes, "yes", "y", false, "Don't prompt for confirmation to submit the issue.")
-	issueCreateCmd.Flags().BoolVar(&opts.Web, "web", false, "Continue issue creation with web interface.")
+	issueCreateCmd.Flags().BoolVarP(&opts.noEditor, "no-editor", "", false, "Don't open editor to enter a description. If set to true, uses prompt. (default false)")
+	issueCreateCmd.Flags().BoolVarP(&opts.yes, "yes", "y", false, "Don't prompt for confirmation to submit the issue.")
+	issueCreateCmd.Flags().BoolVar(&opts.web, "web", false, "Continue issue creation with web interface.")
 	issueCreateCmd.Flags().IntSliceVarP(&opts.LinkedIssues, "linked-issues", "", []int{}, "The IIDs of issues that this issue links to.")
 	issueCreateCmd.Flags().StringVarP(&opts.IssueLinkType, "link-type", "", "relates_to", "Type for the issue link")
 	issueCreateCmd.Flags().StringVarP(&opts.TimeEstimate, "time-estimate", "e", "", "Set time estimate for the issue.")
 	issueCreateCmd.Flags().StringVarP(&opts.TimeSpent, "time-spent", "s", "", "Set time spent for the issue.")
-	issueCreateCmd.Flags().BoolVar(&opts.Recover, "recover", false, "Save the options to a file if the issue fails to be created. If the file exists, the options will be loaded from the recovery file. (EXPERIMENTAL.)")
+	issueCreateCmd.Flags().BoolVar(&opts.recover, "recover", false, "Save the options to a file if the issue fails to be created. If the file exists, the options will be loaded from the recovery file. (EXPERIMENTAL.)")
 	issueCreateCmd.Flags().IntVarP(&opts.EpicID, "epic", "", 0, "ID of the epic to add the issue to.")
 	issueCreateCmd.Flags().StringVarP(&opts.DueDate, "due-date", "", "", "A date in 'YYYY-MM-DD' format.")
 
 	return issueCreateCmd
 }
 
-var createRun = func(opts *CreateOpts) error {
-	apiClient, err := opts.HTTPClient()
+var createRun = func(opts *options) error {
+	apiClient, err := opts.httpClient()
 	if err != nil {
 		return err
 	}
 
-	repo, err := opts.BaseRepo()
+	repo, err := opts.baseRepo()
 	if err != nil {
 		return err
 	}
@@ -185,20 +178,20 @@ var createRun = func(opts *CreateOpts) error {
 		}
 	}
 
-	if opts.Recover {
+	if opts.recover {
 		if err := recovery.FromFile(repo.FullName(), "issue.json", opts); err != nil {
 			// if the file to recover doesn't exist, we can just ignore the error and move on
 			if !errors.Is(err, os.ErrNotExist) {
-				fmt.Fprintf(opts.IO.StdErr, "Failed to recover from file: %v", err)
+				fmt.Fprintf(opts.io.StdErr, "Failed to recover from file: %v", err)
 			}
 		} else {
-			fmt.Fprintln(opts.IO.StdOut, "Recovered create options from file.")
+			fmt.Fprintln(opts.io.StdOut, "Recovered create options from file.")
 		}
 	}
 
-	if opts.IsInteractive {
+	if opts.isInteractive {
 		if opts.Description == "" {
-			if opts.NoEditor {
+			if opts.noEditor {
 				err = prompt.AskMultiline(&opts.Description, "description", "Description:", "")
 				if err != nil {
 					return err
@@ -244,13 +237,13 @@ var createRun = func(opts *CreateOpts) error {
 			}
 		}
 		if opts.Description == "" {
-			if opts.NoEditor {
+			if opts.noEditor {
 				err = prompt.AskMultiline(&opts.Description, "description", "Description:", "")
 				if err != nil {
 					return err
 				}
 			} else {
-				editor, err := cmdutils.GetEditor(opts.Config)
+				editor, err := cmdutils.GetEditor(opts.config)
 				if err != nil {
 					return err
 				}
@@ -267,11 +260,11 @@ var createRun = func(opts *CreateOpts) error {
 	var action cmdutils.Action
 
 	// submit without prompting for non interactive mode
-	if !opts.IsInteractive || opts.Yes {
+	if !opts.isInteractive || opts.yes {
 		action = cmdutils.SubmitAction
 	}
 
-	if opts.Web {
+	if opts.web {
 		action = cmdutils.PreviewAction
 	}
 
@@ -290,7 +283,7 @@ var createRun = func(opts *CreateOpts) error {
 			return fmt.Errorf("failed to pick metadata to add: %w", err)
 		}
 
-		remotes, err := opts.Remotes()
+		remotes, err := opts.remotes()
 		if err != nil {
 			return err
 		}
@@ -315,13 +308,13 @@ var createRun = func(opts *CreateOpts) error {
 			if x == cmdutils.AddAssigneeAction {
 				// Involve only reporters and up, in the future this might be expanded to `guests`
 				// but that might hit the `100` limit for projects with large amounts of collaborators
-				err = cmdutils.UsersPrompt(&opts.Assignees, apiClient, repoRemote, opts.IO, 20, "assignees")
+				err = cmdutils.UsersPrompt(&opts.Assignees, apiClient, repoRemote, opts.io, 20, "assignees")
 				if err != nil {
 					return err
 				}
 			}
 			if x == cmdutils.AddMilestoneAction {
-				err = cmdutils.MilestonesPrompt(&opts.Milestone, apiClient, repoRemote, opts.IO)
+				err = cmdutils.MilestonesPrompt(&opts.Milestone, apiClient, repoRemote, opts.io)
 				if err != nil {
 					return err
 				}
@@ -337,7 +330,7 @@ var createRun = func(opts *CreateOpts) error {
 	}
 
 	if action == cmdutils.CancelAction {
-		fmt.Fprintln(opts.IO.StdErr, "Discarded.")
+		fmt.Fprintln(opts.io.StdErr, "Discarded.")
 		return nil
 	}
 
@@ -379,7 +372,7 @@ var createRun = func(opts *CreateOpts) error {
 			}
 			issueCreateOpts.AssigneeIDs = cmdutils.IDsFromUsers(users)
 		}
-		fmt.Fprintln(opts.IO.StdErr, "- Creating issue in", repo.FullName())
+		fmt.Fprintln(opts.io.StdErr, "- Creating issue in", repo.FullName())
 		issue, err := api.CreateIssue(apiClient, repo.FullName(), issueCreateOpts)
 		if err != nil {
 			return err
@@ -388,18 +381,18 @@ var createRun = func(opts *CreateOpts) error {
 			return err
 		}
 
-		fmt.Fprintln(opts.IO.StdOut, issueutils.DisplayIssue(opts.IO.Color(), issue, opts.IO.IsaTTY))
+		fmt.Fprintln(opts.io.StdOut, issueutils.DisplayIssue(opts.io.Color(), issue, opts.io.IsaTTY))
 		return nil
 	}
 
 	return errors.New("expected to cancel, preview in browser, add metadata, or submit")
 }
 
-func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *CreateOpts, repo glrepo.Interface) error {
+func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *options, repo glrepo.Interface) error {
 	if len(opts.LinkedIssues) > 0 {
 		var err error
 		for _, targetIssueIID := range opts.LinkedIssues {
-			fmt.Fprintln(opts.IO.StdErr, "- Linking to issue ", targetIssueIID)
+			fmt.Fprintln(opts.io.StdErr, "- Linking to issue ", targetIssueIID)
 			issue, _, err = api.LinkIssues(apiClient, repo.FullName(), issue.IID, &gitlab.CreateIssueLinkOptions{
 				TargetIssueIID: gitlab.Ptr(strconv.Itoa(targetIssueIID)),
 				LinkType:       gitlab.Ptr(opts.IssueLinkType),
@@ -410,7 +403,7 @@ func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *Crea
 		}
 	}
 	if opts.TimeEstimate != "" {
-		fmt.Fprintln(opts.IO.StdErr, "- Adding time estimate ", opts.TimeEstimate)
+		fmt.Fprintln(opts.io.StdErr, "- Adding time estimate ", opts.TimeEstimate)
 		_, err := api.SetIssueTimeEstimate(apiClient, repo.FullName(), issue.IID, &gitlab.SetTimeEstimateOptions{
 			Duration: gitlab.Ptr(opts.TimeEstimate),
 		})
@@ -419,7 +412,7 @@ func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *Crea
 		}
 	}
 	if opts.TimeSpent != "" {
-		fmt.Fprintln(opts.IO.StdErr, "- Adding time spent ", opts.TimeSpent)
+		fmt.Fprintln(opts.io.StdErr, "- Adding time spent ", opts.TimeSpent)
 		_, err := api.AddIssueTimeSpent(apiClient, repo.FullName(), issue.IID, &gitlab.AddSpentTimeOptions{
 			Duration: gitlab.Ptr(opts.TimeSpent),
 		})
@@ -430,13 +423,13 @@ func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *Crea
 	return nil
 }
 
-func previewIssue(opts *CreateOpts) error {
-	repo, err := opts.BaseRepo()
+func previewIssue(opts *options) error {
+	repo, err := opts.baseRepo()
 	if err != nil {
 		return err
 	}
 
-	cfg, err := opts.Config()
+	cfg, err := opts.config()
 	if err != nil {
 		return err
 	}
@@ -446,14 +439,14 @@ func previewIssue(opts *CreateOpts) error {
 		return err
 	}
 
-	if opts.IO.IsOutputTTY() {
-		fmt.Fprintf(opts.IO.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(openURL))
+	if opts.io.IsOutputTTY() {
+		fmt.Fprintf(opts.io.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(openURL))
 	}
 	browser, _ := cfg.Get(repo.RepoHost(), "browser")
 	return utils.OpenInBrowser(openURL, browser)
 }
 
-func generateIssueWebURL(opts *CreateOpts) (string, error) {
+func generateIssueWebURL(opts *options) (string, error) {
 	description := opts.Description
 
 	if len(opts.Labels) > 0 {
@@ -482,7 +475,7 @@ func generateIssueWebURL(opts *CreateOpts) (string, error) {
 		description += "\n/confidential"
 	}
 
-	u, err := url.Parse(opts.BaseProject.WebURL)
+	u, err := url.Parse(opts.baseProject.WebURL)
 	if err != nil {
 		return "", err
 	}
@@ -497,12 +490,12 @@ func generateIssueWebURL(opts *CreateOpts) (string, error) {
 }
 
 // createRecoverSaveFile will try save the issue create options to a file
-func createRecoverSaveFile(repoName string, opts *CreateOpts) error {
+func createRecoverSaveFile(repoName string, opts *options) error {
 	recoverFile, err := recovery.CreateFile(repoName, "issue.json", opts)
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(opts.IO.StdErr, "Failed to create issue. Created recovery file: %s\nRun the command again with the '--recover' option to retry", recoverFile)
+	fmt.Fprintf(opts.io.StdErr, "Failed to create issue. Created recovery file: %s\nRun the command again with the '--recover' option to retry", recoverFile)
 	return nil
 }

@@ -15,20 +15,22 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
 
-type DeleteOpts struct {
-	ForceDelete bool
-	FileID      int
+type options struct {
+	forceDelete bool
+	fileID      int
 
-	IO         *iostreams.IOStreams
-	HTTPClient func() (*gitlab.Client, error)
-	BaseRepo   func() (glrepo.Interface, error)
-	Config     func() (config.Config, error)
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
+	config     func() (config.Config, error)
 }
 
 func NewCmdRemove(f cmdutils.Factory) *cobra.Command {
-	opts := &DeleteOpts{
-		IO:     f.IO(),
-		Config: f.Config,
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+		config:     f.Config,
 	}
 	securefileRemoveCmd := &cobra.Command{
 		Use:     "remove <fileID>",
@@ -50,64 +52,76 @@ func NewCmdRemove(f cmdutils.Factory) *cobra.Command {
 			- glab securefile delete 1
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			fileID, err := strconv.Atoi(args[0])
-			if err != nil {
-				return fmt.Errorf("Secure file ID must be an integer: %s", args[0])
+			if err := opts.complete(args); err != nil {
+				return err
 			}
 
-			opts.FileID = fileID
-
-			if !opts.ForceDelete && !opts.IO.PromptEnabled() {
-				return &cmdutils.FlagError{Err: fmt.Errorf("--yes or -y flag is required when not running interactively.")}
+			if err := opts.validate(); err != nil {
+				return err
 			}
 
-			return deleteRun(opts)
+			return opts.run()
 		},
 	}
 
-	securefileRemoveCmd.Flags().BoolVarP(&opts.ForceDelete, "yes", "y", false, "Skip the confirmation prompt.")
+	securefileRemoveCmd.Flags().BoolVarP(&opts.forceDelete, "yes", "y", false, "Skip the confirmation prompt.")
 
 	return securefileRemoveCmd
 }
 
-func deleteRun(opts *DeleteOpts) error {
-	apiClient, err := opts.HTTPClient()
+func (o *options) complete(args []string) error {
+	fileID, err := strconv.Atoi(args[0])
+	if err != nil {
+		return fmt.Errorf("Secure file ID must be an integer: %s", args[0])
+	}
+	o.fileID = fileID
+
+	return nil
+}
+
+func (o *options) validate() error {
+	if !o.forceDelete && !o.io.PromptEnabled() {
+		return &cmdutils.FlagError{Err: fmt.Errorf("--yes or -y flag is required when not running interactively.")}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	apiClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	repo, err := opts.BaseRepo()
+	repo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
 
-	if !opts.ForceDelete && opts.IO.PromptEnabled() {
-		opts.IO.Logf("This action will permanently delete secure file %d immediately.\n\n", opts.FileID)
-		err = prompt.Confirm(&opts.ForceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete this secure file %d?", opts.FileID), false)
+	if !o.forceDelete && o.io.PromptEnabled() {
+		o.io.Logf("This action will permanently delete secure file %d immediately.\n\n", o.fileID)
+		err = prompt.Confirm(&o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete this secure file %d?", o.fileID), false)
 		if err != nil {
 			return cmdutils.WrapError(err, "could not prompt")
 		}
 	}
 
-	if !opts.ForceDelete {
+	if !o.forceDelete {
 		return cmdutils.CancelError()
 	}
 
-	color := opts.IO.Color()
-	opts.IO.Logf("%s Deleting secure file %s=%s %s=%d\n",
+	color := o.io.Color()
+	o.io.Logf("%s Deleting secure file %s=%s %s=%d\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
-		color.Blue("fileID"), opts.FileID)
+		color.Blue("fileID"), o.fileID)
 
-	err = api.RemoveSecureFile(apiClient, repo.FullName(), opts.FileID)
+	err = api.RemoveSecureFile(apiClient, repo.FullName(), o.fileID)
 	if err != nil {
 		return fmt.Errorf("Error removing secure file: %v", err)
 	}
 
-	opts.IO.Logf(color.Bold("%s Secure file %d deleted.\n"), color.RedCheck(), opts.FileID)
+	o.io.Logf(color.Bold("%s Secure file %d deleted.\n"), color.RedCheck(), o.fileID)
 
 	return nil
 }

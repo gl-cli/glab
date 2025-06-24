@@ -13,22 +13,24 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type AddOpts struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	Title     string
-	Key       string
-	ExpiresAt string
-	UsageType string
+	title     string
+	key       string
+	expiresAt string
+	usageType string
 
-	KeyFile string
+	keyFile string
 }
 
 func NewCmdAdd(f cmdutils.Factory) *cobra.Command {
-	opts := &AddOpts{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 	cmd := &cobra.Command{
 		Use:   "add [key-file]",
@@ -47,43 +49,48 @@ func NewCmdAdd(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			if len(args) == 0 {
-				if opts.IO.IsOutputTTY() && opts.IO.IsInTTY {
-					return &cmdutils.FlagError{Err: errors.New("missing key file")}
-				}
-				opts.KeyFile = "-"
-			} else {
-				opts.KeyFile = args[0]
+			if err := opts.complete(args); err != nil {
+				return err
 			}
 
-			return addRun(opts)
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Title, "title", "t", "", "New SSH key's title.")
-	cmd.Flags().StringVarP(&opts.UsageType, "usage-type", "u", "auth_and_signing", "Usage scope for the key. Possible values: 'auth', 'signing' or 'auth_and_signing'. Default value: 'auth_and_signing'.")
-	cmd.Flags().StringVarP(&opts.ExpiresAt, "expires-at", "e", "", "The expiration date of the SSH key. Uses ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.")
+	cmd.Flags().StringVarP(&opts.title, "title", "t", "", "New SSH key's title.")
+	cmd.Flags().StringVarP(&opts.usageType, "usage-type", "u", "auth_and_signing", "Usage scope for the key. Possible values: 'auth', 'signing' or 'auth_and_signing'. Default value: 'auth_and_signing'.")
+	cmd.Flags().StringVarP(&opts.expiresAt, "expires-at", "e", "", "The expiration date of the SSH key. Uses ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.")
 
 	_ = cmd.MarkFlagRequired("title")
 
 	return cmd
 }
 
-func addRun(opts *AddOpts) error {
-	httpClient, err := opts.HTTPClient()
+func (o *options) complete(args []string) error {
+	if len(args) == 0 {
+		if o.io.IsOutputTTY() && o.io.IsInTTY {
+			return &cmdutils.FlagError{Err: errors.New("missing key file")}
+		}
+		o.keyFile = "-"
+	} else {
+		o.keyFile = args[0]
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
 	var keyFileReader io.Reader
-	if opts.KeyFile == "-" {
-		keyFileReader = opts.IO.In
-		defer opts.IO.In.Close()
+	if o.keyFile == "-" {
+		keyFileReader = o.io.In
+		defer o.io.In.Close()
 	} else {
-		f, err := os.Open(opts.KeyFile)
+		f, err := os.Open(o.keyFile)
 		if err != nil {
 			return err
 		}
@@ -97,16 +104,16 @@ func addRun(opts *AddOpts) error {
 		return cmdutils.WrapError(err, "failed to read SSH key file.")
 	}
 
-	opts.Key = string(keyInBytes)
+	o.key = string(keyInBytes)
 
-	err = UploadSSHKey(httpClient, opts.Title, opts.Key, opts.UsageType, opts.ExpiresAt)
+	err = UploadSSHKey(httpClient, o.title, o.key, o.usageType, o.expiresAt)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to add new SSH public key.")
 	}
 
-	if opts.IO.IsOutputTTY() {
-		cs := opts.IO.Color()
-		opts.IO.Logf("%s New SSH public key added to your account.\n", cs.GreenCheck())
+	if o.io.IsOutputTTY() {
+		cs := o.io.Color()
+		o.io.Logf("%s New SSH public key added to your account.\n", cs.GreenCheck())
 	}
 
 	return nil

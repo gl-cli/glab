@@ -11,6 +11,7 @@ import (
 	"os"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/text"
 
 	"gitlab.com/gitlab-org/cli/commands/auth/generate/dpop"
@@ -27,11 +28,12 @@ import (
 	"golang.org/x/term"
 )
 
-type GenerateOpts struct {
-	IO                  *iostreams.IOStreams
-	PrivateKeyLocation  string
-	PersonalAccessToken string
-	Hostname            string
+type options struct {
+	io                  *iostreams.IOStreams
+	config              func() (config.Config, error)
+	privateKeyLocation  string
+	personalAccessToken string
+	hostname            string
 }
 
 type PasswordReader interface {
@@ -45,8 +47,9 @@ func (pr ConsolePasswordReader) Read() ([]byte, error) {
 }
 
 func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
-	opts := &GenerateOpts{
-		IO: f.IO(),
+	opts := &options{
+		io:     f.IO(),
+		config: f.Config,
 	}
 	cmd := &cobra.Command{
 		Use:   "dpop-gen [flags]",
@@ -79,48 +82,57 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if opts.PrivateKeyLocation == "" {
-				return fmt.Errorf("private key location is required")
-			}
-			if opts.PersonalAccessToken == "" {
-				cfg, err := f.Config()
-				if err != nil {
-					return fmt.Errorf("could not get config: %w", err)
-				}
-
-				token, err := cfg.Get(opts.Hostname, "token")
-				if err != nil {
-					return err
-				}
-
-				if token != "" {
-					opts.PersonalAccessToken = token
-				} else {
-					return fmt.Errorf("personal access token is required")
-				}
-			}
-
-			privateKey, err := loadPrivateKey(opts.PrivateKeyLocation, ConsolePasswordReader{})
-			if err != nil {
+			if err := opts.complete(); err != nil {
 				return err
 			}
 
-			proofString, err := generateDPoPProof(privateKey, opts.PersonalAccessToken)
-			if err != nil {
-				return err
-			}
-
-			log.Println("DPoP Proof:", proofString)
-
-			return nil
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.PrivateKeyLocation, "private-key", "p", "", "Location of the private SSH key on the local system.")
-	cmd.Flags().StringVar(&opts.PersonalAccessToken, "pat", "", "Personal Access Token (PAT) to generate a DPoP proof for. Defaults to the token set with 'glab auth login'. Returns an error if both are empty.")
-	cmd.Flags().StringVarP(&opts.Hostname, "hostname", "h", "gitlab.com", "The hostname of the GitLab instance to authenticate with. Defaults to 'gitlab.com'.")
+	cmd.Flags().StringVarP(&opts.privateKeyLocation, "private-key", "p", "", "Location of the private SSH key on the local system.")
+	cmd.Flags().StringVar(&opts.personalAccessToken, "pat", "", "Personal Access Token (PAT) to generate a DPoP proof for. Defaults to the token set with 'glab auth login'. Returns an error if both are empty.")
+	cmd.Flags().StringVarP(&opts.hostname, "hostname", "h", "gitlab.com", "The hostname of the GitLab instance to authenticate with. Defaults to 'gitlab.com'.")
+	cobra.CheckErr(cmd.MarkFlagRequired("private-key"))
 
 	return cmd
+}
+
+func (o *options) complete() error {
+	if o.personalAccessToken == "" {
+		cfg, err := o.config()
+		if err != nil {
+			return fmt.Errorf("could not get config: %w", err)
+		}
+
+		token, err := cfg.Get(o.hostname, "token")
+		if err != nil {
+			return err
+		}
+
+		if token != "" {
+			o.personalAccessToken = token
+		} else {
+			return fmt.Errorf("personal access token is required")
+		}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	privateKey, err := loadPrivateKey(o.privateKeyLocation, ConsolePasswordReader{})
+	if err != nil {
+		return err
+	}
+
+	proofString, err := generateDPoPProof(privateKey, o.personalAccessToken)
+	if err != nil {
+		return err
+	}
+
+	log.Println("DPoP Proof:", proofString)
+	return nil
 }
 
 func generateDPoPProof(key crypto.PrivateKey, accessToken string) (string, error) {

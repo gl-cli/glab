@@ -14,7 +14,7 @@ func Test_NewCmdList(t *testing.T) {
 	tests := []struct {
 		name     string
 		cli      string
-		wants    ListOpts
+		wants    options
 		stdinTTY bool
 		wantsErr bool
 	}{
@@ -22,44 +22,44 @@ func Test_NewCmdList(t *testing.T) {
 			name:     "no input",
 			cli:      "",
 			wantsErr: false,
-			wants: ListOpts{
-				Group:        "",
-				OutputFormat: "text",
-				PerPage:      20,
-				Page:         1,
+			wants: options{
+				group:        "",
+				outputFormat: "text",
+				perPage:      20,
+				page:         1,
 			},
 		},
 		{
 			name:     "no input with json output format",
 			cli:      "-F json",
 			wantsErr: false,
-			wants: ListOpts{
-				Group:        "",
-				OutputFormat: "json",
-				PerPage:      20,
-				Page:         1,
+			wants: options{
+				group:        "",
+				outputFormat: "json",
+				perPage:      20,
+				page:         1,
 			},
 		},
 		{
 			name:     "group vars",
 			cli:      "--group group/group",
 			wantsErr: false,
-			wants: ListOpts{
-				Group:        "group/group",
-				OutputFormat: "text",
-				PerPage:      20,
-				Page:         1,
+			wants: options{
+				group:        "group/group",
+				outputFormat: "text",
+				perPage:      20,
+				page:         1,
 			},
 		},
 		{
 			name:     "per page",
 			cli:      "--per-page 100 --page 1",
 			wantsErr: false,
-			wants: ListOpts{
-				Group:        "",
-				OutputFormat: "text",
-				Page:         1,
-				PerPage:      100,
+			wants: options{
+				group:        "",
+				outputFormat: "text",
+				page:         1,
+				perPage:      100,
 			},
 		},
 	}
@@ -76,8 +76,8 @@ func Test_NewCmdList(t *testing.T) {
 			argv, err := shlex.Split(tt.cli)
 			assert.NoError(t, err)
 
-			var gotOpts *ListOpts
-			cmd := NewCmdList(f, func(opts *ListOpts) error {
+			var gotOpts *options
+			cmd := NewCmdList(f, func(opts *options) error {
 				gotOpts = opts
 				return nil
 			})
@@ -93,10 +93,10 @@ func Test_NewCmdList(t *testing.T) {
 			}
 			assert.NoError(t, err)
 
-			assert.Equal(t, tt.wants.Group, gotOpts.Group)
-			assert.Equal(t, tt.wants.OutputFormat, gotOpts.OutputFormat)
-			assert.Equal(t, tt.wants.Page, gotOpts.Page)
-			assert.Equal(t, tt.wants.PerPage, gotOpts.PerPage)
+			assert.Equal(t, tt.wants.group, gotOpts.group)
+			assert.Equal(t, tt.wants.outputFormat, gotOpts.outputFormat)
+			assert.Equal(t, tt.wants.page, gotOpts.page)
+			assert.Equal(t, tt.wants.perPage, gotOpts.perPage)
 		})
 	}
 }

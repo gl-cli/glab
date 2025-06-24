@@ -15,20 +15,22 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type CreateOpts struct {
-	FileName      string
-	InputFilePath string
+type options struct {
+	fileName      string
+	inputFilePath string
 
-	IO         *iostreams.IOStreams
-	HTTPClient func() (*gitlab.Client, error)
-	BaseRepo   func() (glrepo.Interface, error)
-	Config     func() (config.Config, error)
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
+	config     func() (config.Config, error)
 }
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
-	opts := &CreateOpts{
-		IO:     f.IO(),
-		Config: f.Config,
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+		config:     f.Config,
 	}
 	securefileCreateCmd := &cobra.Command{
 		Use:   "create <fileName> <inputFilePath>",
@@ -44,45 +46,47 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"upload"},
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-			opts.FileName = args[0]
-			opts.InputFilePath = args[1]
+			opts.complete(args)
 
-			return createRun(opts)
+			return opts.run()
 		},
 	}
 	return securefileCreateCmd
 }
 
-func createRun(opts *CreateOpts) error {
-	apiClient, err := opts.HTTPClient()
+func (o *options) complete(args []string) {
+	o.fileName = args[0]
+	o.inputFilePath = args[1]
+}
+
+func (o *options) run() error {
+	apiClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	repo, err := opts.BaseRepo()
+	repo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
 
-	color := opts.IO.Color()
-	opts.IO.Logf("%s Creating secure file %s=%s %s=%s\n",
+	color := o.io.Color()
+	o.io.Logf("%s Creating secure file %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
-		color.Blue("fileName"), opts.FileName)
+		color.Blue("fileName"), o.fileName)
 
-	reader, err := getReaderFromFilePath(opts.InputFilePath)
+	reader, err := getReaderFromFilePath(o.inputFilePath)
 	if err != nil {
-		return fmt.Errorf("Unable to read file at %s: %w", opts.InputFilePath, err)
+		return fmt.Errorf("Unable to read file at %s: %w", o.inputFilePath, err)
 	}
 
-	err = api.CreateSecureFile(apiClient, repo.FullName(), opts.FileName, reader)
+	err = api.CreateSecureFile(apiClient, repo.FullName(), o.fileName, reader)
 	if err != nil {
 		return fmt.Errorf("Error creating secure file: %w", err)
 	}
 
-	opts.IO.Logf(color.Bold("%s Secure file %s created.\n"), color.GreenCheck(), opts.FileName)
+	o.io.Logf(color.Bold("%s Secure file %s created.\n"), color.GreenCheck(), o.fileName)
 	return nil
 }
 

@@ -20,7 +20,7 @@ func Test_NewCmdSet(t *testing.T) {
 	tests := []struct {
 		name     string
 		cli      string
-		wants    SetOpts
+		wants    options
 		stdinTTY bool
 		wantsErr bool
 	}{
@@ -48,37 +48,37 @@ func Test_NewCmdSet(t *testing.T) {
 		{
 			name: "protected var",
 			cli:  `cool_secret -v"a secret" -p`,
-			wants: SetOpts{
-				Key:       "cool_secret",
-				Protected: true,
-				Value:     "a secret",
-				Group:     "",
-				Scope:     "*",
-				Type:      "env_var",
+			wants: options{
+				key:       "cool_secret",
+				protected: true,
+				value:     "a secret",
+				group:     "",
+				scope:     "*",
+				typ:       "env_var",
 			},
 		},
 		{
 			name: "protected var in group",
 			cli:  `cool_secret --group coolGroup -v"cool"`,
-			wants: SetOpts{
-				Key:       "cool_secret",
-				Protected: false,
-				Value:     "cool",
-				Group:     "coolGroup",
-				Scope:     "*",
-				Type:      "env_var",
+			wants: options{
+				key:       "cool_secret",
+				protected: false,
+				value:     "cool",
+				group:     "coolGroup",
+				scope:     "*",
+				typ:       "env_var",
 			},
 		},
 		{
 			name: "leading numbers in name",
 			cli:  `123_TOKEN -v"cool"`,
-			wants: SetOpts{
-				Key:       "123_TOKEN",
-				Protected: false,
-				Value:     "cool",
-				Group:     "",
-				Scope:     "*",
-				Type:      "env_var",
+			wants: options{
+				key:       "123_TOKEN",
+				protected: false,
+				value:     "cool",
+				group:     "",
+				scope:     "*",
+				typ:       "env_var",
 			},
 		},
 		{
@@ -89,62 +89,62 @@ func Test_NewCmdSet(t *testing.T) {
 		{
 			name: "environment scope in group",
 			cli:  `cool_secret --group coolGroup -v"cool" -s"production"`,
-			wants: SetOpts{
-				Key:   "cool_secret",
-				Scope: "production",
-				Value: "cool",
-				Group: "coolGroup",
-				Type:  "env_var",
+			wants: options{
+				key:   "cool_secret",
+				scope: "production",
+				value: "cool",
+				group: "coolGroup",
+				typ:   "env_var",
 			},
 		},
 		{
 			name: "raw variable with flag",
 			cli:  `cool_secret -r -v"$variable_name"`,
-			wants: SetOpts{
-				Key:   "cool_secret",
-				Value: "$variable_name",
-				Raw:   true,
-				Group: "",
-				Scope: "*",
-				Type:  "env_var",
+			wants: options{
+				key:   "cool_secret",
+				value: "$variable_name",
+				raw:   true,
+				group: "",
+				scope: "*",
+				typ:   "env_var",
 			},
 		},
 		{
 			name: "raw variable with flag in group",
 			cli:  `cool_secret -r --group coolGroup -v"$variable_name"`,
-			wants: SetOpts{
-				Key:   "cool_secret",
-				Value: "$variable_name",
-				Raw:   true,
-				Group: "coolGroup",
-				Scope: "*",
-				Type:  "env_var",
+			wants: options{
+				key:   "cool_secret",
+				value: "$variable_name",
+				raw:   true,
+				group: "coolGroup",
+				scope: "*",
+				typ:   "env_var",
 			},
 		},
 		{
 			name: "raw is false by default",
 			cli:  `cool_secret -v"$variable_name"`,
-			wants: SetOpts{
-				Key:       "cool_secret",
-				Value:     "$variable_name",
-				Raw:       false,
-				Group:     "",
-				Scope:     "*",
-				Protected: false,
-				Type:      "env_var",
+			wants: options{
+				key:       "cool_secret",
+				value:     "$variable_name",
+				raw:       false,
+				group:     "",
+				scope:     "*",
+				protected: false,
+				typ:       "env_var",
 			},
 		},
 		{
 			name: "var with descripton",
 			cli:  `var_desc -v"var_desc" -d "cool var description"`,
-			wants: SetOpts{
-				Key:         "var_desc",
-				Protected:   false,
-				Value:       "var_desc",
-				Group:       "",
-				Description: "cool var description",
-				Scope:       "*",
-				Type:        "env_var",
+			wants: options{
+				key:         "var_desc",
+				protected:   false,
+				value:       "var_desc",
+				group:       "",
+				description: "cool var description",
+				scope:       "*",
+				typ:         "env_var",
 			},
 		},
 	}
@@ -161,8 +161,8 @@ func Test_NewCmdSet(t *testing.T) {
 			argv, err := shlex.Split(tt.cli)
 			assert.NoError(t, err)
 
-			var gotOpts *SetOpts
-			cmd := NewCmdSet(f, func(opts *SetOpts) error {
+			var gotOpts *options
+			cmd := NewCmdSet(f, func(opts *options) error {
 				gotOpts = opts
 				return nil
 			})
@@ -178,15 +178,15 @@ func Test_NewCmdSet(t *testing.T) {
 			}
 			assert.NoError(t, err)
 
-			assert.Equal(t, tt.wants.Key, gotOpts.Key)
-			assert.Equal(t, tt.wants.Value, gotOpts.Value)
-			assert.Equal(t, tt.wants.Group, gotOpts.Group)
-			assert.Equal(t, tt.wants.Scope, gotOpts.Scope)
-			assert.Equal(t, tt.wants.Protected, gotOpts.Protected)
-			assert.Equal(t, tt.wants.Description, gotOpts.Description)
-			assert.Equal(t, tt.wants.Raw, gotOpts.Raw)
-			assert.Equal(t, tt.wants.Masked, gotOpts.Masked)
-			assert.Equal(t, tt.wants.Type, gotOpts.Type)
+			assert.Equal(t, tt.wants.key, gotOpts.key)
+			assert.Equal(t, tt.wants.value, gotOpts.value)
+			assert.Equal(t, tt.wants.group, gotOpts.group)
+			assert.Equal(t, tt.wants.scope, gotOpts.scope)
+			assert.Equal(t, tt.wants.protected, gotOpts.protected)
+			assert.Equal(t, tt.wants.description, gotOpts.description)
+			assert.Equal(t, tt.wants.raw, gotOpts.raw)
+			assert.Equal(t, tt.wants.masked, gotOpts.masked)
+			assert.Equal(t, tt.wants.typ, gotOpts.typ)
 		})
 	}
 }
@@ -211,22 +211,22 @@ func Test_setRun_project(t *testing.T) {
 
 	io, _, stdout, _ := iostreams.Test()
 
-	opts := &SetOpts{
-		HTTPClient: func() (*gitlab.Client, error) {
+	opts := &options{
+		httpClient: func() (*gitlab.Client, error) {
 			a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 			return a.Lab(), nil
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo")
 		},
-		IO:    io,
-		Key:   "NEW_VARIABLE",
-		Value: "new value",
-		Scope: "*",
+		io:    io,
+		key:   "NEW_VARIABLE",
+		value: "new value",
+		scope: "*",
 	}
-	_, _ = opts.HTTPClient()
+	_, _ = opts.httpClient()
 
-	err := setRun(opts)
+	err := opts.run()
 	assert.NoError(t, err)
 	assert.Equal(t, stdout.String(), "✓ Created variable NEW_VARIABLE for owner/repo with scope *.\n")
 }
@@ -251,22 +251,22 @@ func Test_setRun_group(t *testing.T) {
 
 	io, _, stdout, _ := iostreams.Test()
 
-	opts := &SetOpts{
-		HTTPClient: func() (*gitlab.Client, error) {
+	opts := &options{
+		httpClient: func() (*gitlab.Client, error) {
 			a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 			return a.Lab(), nil
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo")
 		},
-		IO:    io,
-		Key:   "NEW_VARIABLE",
-		Value: "new value",
-		Group: "mygroup",
+		io:    io,
+		key:   "NEW_VARIABLE",
+		value: "new value",
+		group: "mygroup",
 	}
-	_, _ = opts.HTTPClient()
+	_, _ = opts.httpClient()
 
-	err := setRun(opts)
+	err := opts.run()
 	assert.NoError(t, err)
 	assert.Equal(t, stdout.String(), "✓ Created variable NEW_VARIABLE for group mygroup.\n")
 }

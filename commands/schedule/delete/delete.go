@@ -4,22 +4,29 @@ import (
 	"fmt"
 	"strconv"
 
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 )
 
-type RunOpts struct {
-	ScheduleId int
-	IO         *iostreams.IOStreams
+type options struct {
+	scheduleID int
+
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
 }
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
-	opts := &RunOpts{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 	scheduleDeleteCmd := &cobra.Command{
 		Use:   "delete <id> [flags]",
@@ -32,34 +39,46 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		Long: ``,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
-			if err != nil {
+			if err := opts.complete(args); err != nil {
 				return err
 			}
 
-			repo, err := f.BaseRepo()
-			if err != nil {
-				return err
-			}
-
-			id, err := strconv.ParseUint(args[0], 10, 64)
-			if err != nil {
-				return err
-			}
-
-			scheduleId := int(id)
-			if err != nil {
-				return err
-			}
-
-			err = api.DeleteSchedule(apiClient, scheduleId, repo.FullName())
-			if err != nil {
-				return err
-			}
-			fmt.Fprintln(opts.IO.StdOut, "Deleted schedule with ID", scheduleId)
-
-			return nil
+			return opts.run()
 		},
 	}
 	return scheduleDeleteCmd
+}
+
+func (o *options) complete(args []string) error {
+	id, err := strconv.ParseUint(args[0], 10, 64)
+	if err != nil {
+		return err
+	}
+	o.scheduleID = int(id)
+
+	return nil
+}
+
+func (o *options) run() error {
+	apiClient, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+
+	repo, err := o.baseRepo()
+	if err != nil {
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+
+	err = api.DeleteSchedule(apiClient, o.scheduleID, repo.FullName())
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(o.io.StdOut, "Deleted schedule with ID", o.scheduleID)
+
+	return nil
 }

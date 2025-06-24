@@ -19,25 +19,25 @@ func Test_NewCmdStatus(t *testing.T) {
 	tests := []struct {
 		name  string
 		cli   string
-		wants StatusOpts
+		wants options
 	}{
 		{
 			name:  "no arguments",
 			cli:   "",
-			wants: StatusOpts{},
+			wants: options{},
 		},
 		{
 			name: "hostname set",
 			cli:  "--hostname gitlab.gnome.org",
-			wants: StatusOpts{
-				Hostname: "gitlab.gnome.org",
+			wants: options{
+				hostname: "gitlab.gnome.org",
 			},
 		},
 		{
 			name: "show token",
 			cli:  "--show-token",
-			wants: StatusOpts{
-				ShowToken: true,
+			wants: options{
+				showToken: true,
 			},
 		},
 	}
@@ -49,8 +49,8 @@ func Test_NewCmdStatus(t *testing.T) {
 			argv, err := shlex.Split(tt.cli)
 			assert.NoError(t, err)
 
-			var gotOpts *StatusOpts
-			cmd := NewCmdStatus(f, func(opts *StatusOpts) error {
+			var gotOpts *options
+			cmd := NewCmdStatus(f, func(opts *options) error {
 				gotOpts = opts
 				return nil
 			})
@@ -66,7 +66,7 @@ func Test_NewCmdStatus(t *testing.T) {
 			_, err = cmd.ExecuteC()
 			assert.NoError(t, err)
 
-			assert.Equal(t, tt.wants.Hostname, gotOpts.Hostname)
+			assert.Equal(t, tt.wants.hostname, gotOpts.hostname)
 		})
 	}
 }
@@ -98,15 +98,15 @@ hosts:
 
 	tests := []struct {
 		name    string
-		opts    *StatusOpts
+		opts    *options
 		envVar  bool
 		wantErr bool
 		stderr  string
 	}{
 		{
 			name: "hostname set with old token format",
-			opts: &StatusOpts{
-				Hostname: "gitlab.alpinelinux.org",
+			opts: &options{
+				hostname: "gitlab.alpinelinux.org",
 			},
 			wantErr: false,
 			stderr: fmt.Sprintf(`gitlab.alpinelinux.org
@@ -120,8 +120,8 @@ hosts:
 		},
 		{
 			name: "hostname set with new token format",
-			opts: &StatusOpts{
-				Hostname: "gitlab.foo.bar",
+			opts: &options{
+				hostname: "gitlab.foo.bar",
 			},
 			wantErr: false,
 			stderr: fmt.Sprintf(`gitlab.foo.bar
@@ -135,16 +135,16 @@ hosts:
 		},
 		{
 			name: "instance not authenticated",
-			opts: &StatusOpts{
-				Hostname: "invalid.instance",
+			opts: &options{
+				hostname: "invalid.instance",
 			},
 			wantErr: true,
 			stderr:  "x invalid.instance has not been authenticated with glab. Run `glab auth login --hostname invalid.instance` to authenticate.",
 		},
 		{
 			name: "with token set in env variable",
-			opts: &StatusOpts{
-				Hostname: "gitlab.env.bar",
+			opts: &options{
+				hostname: "gitlab.env.bar",
 			},
 			envVar:  true,
 			wantErr: false,
@@ -190,11 +190,11 @@ hosts:
 
 	for _, tt := range tests {
 		io, _, stdout, stderr := iostreams.Test()
-		tt.opts.Config = func() (config.Config, error) {
+		tt.opts.config = func() (config.Config, error) {
 			return configs, nil
 		}
-		tt.opts.IO = io
-		tt.opts.HttpClientOverride = client
+		tt.opts.io = io
+		tt.opts.httpClientOverride = client
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.envVar {
 				t.Setenv("GITLAB_TOKEN", "foo")
@@ -202,7 +202,7 @@ hosts:
 				t.Setenv("GITLAB_TOKEN", "")
 			}
 
-			err := statusRun(tt.opts)
+			err := tt.opts.run()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("statusRun() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -293,15 +293,15 @@ gl.io
 	// FIXME: something fishy is occurring here as without making a first call to client function, httpMock does not work
 	_, _ = client("", "gitlab.com")
 
-	opts := &StatusOpts{
-		Config: func() (config.Config, error) {
+	opts := &options{
+		config: func() (config.Config, error) {
 			return configs, nil
 		},
-		HttpClientOverride: client,
-		IO:                 io,
+		httpClientOverride: client,
+		io:                 io,
 	}
 
-	err = statusRun(opts)
+	err = opts.run()
 	assert.Equal(t, "\nx could not authenticate to one or more of the configured GitLab instances.", err.Error())
 	assert.Empty(t, stdout.String())
 	assert.Equal(t, expectedOutput, stderr.String())
@@ -316,14 +316,14 @@ git_protocol: ssh
 	assert.Nil(t, err)
 	io, _, stdout, _ := iostreams.Test()
 
-	opts := &StatusOpts{
-		Config: func() (config.Config, error) {
+	opts := &options{
+		config: func() (config.Config, error) {
 			return configs, nil
 		},
-		IO: io,
+		io: io,
 	}
 	t.Run("no instance authenticated", func(t *testing.T) {
-		err := statusRun(opts)
+		err := opts.run()
 		assert.Equal(t, "No GitLab instances have been authenticated with glab. Run `glab auth login` to authenticate.\n", err.Error())
 		assert.Empty(t, stdout.String())
 	})

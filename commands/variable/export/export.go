@@ -18,18 +18,18 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type ExportOpts struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	ValueSet     bool
-	Group        string
-	OutputFormat string
-	Scope        string
+	valueSet     bool
+	group        string
+	outputFormat string
+	scope        string
 
-	Page    int
-	PerPage int
+	page    int
+	perPage int
 }
 
 func marshalJson(variables any) ([]byte, error) {
@@ -41,9 +41,11 @@ func marshalJson(variables any) ([]byte, error) {
 	return res, nil
 }
 
-func NewCmdExport(f cmdutils.Factory, runE func(opts *ExportOpts) error) *cobra.Command {
-	opts := &ExportOpts{
-		IO: f.IO(),
+func NewCmdExport(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -57,81 +59,84 @@ func NewCmdExport(f cmdutils.Factory, runE func(opts *ExportOpts) error) *cobra.
 			$ glab variable export --group gitlab-org
 			$ glab variable export --group gitlab-org --per-page 1000 --page 1
 		`),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			// Supports repo override
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			group, err := flag.GroupOverride(cmd)
-			if err != nil {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := opts.complete(cmd); err != nil {
 				return err
 			}
-			opts.Group = group
 
 			if runE != nil {
-				err = runE(opts)
-				return
+				return runE(opts)
 			}
-			err = exportRun(opts)
-			return
+
+			return opts.run()
 		},
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)
 	cmd.PersistentFlags().StringP("group", "g", "", "Select a group or subgroup. Ignored if a repository argument is set.")
-	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
-	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 100, "Number of items to list per page.")
-	cmd.Flags().StringVarP(&opts.OutputFormat, "format", "F", "json", "Format of output: json, export, env.")
-	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variables. Values: '*' (default), or specific environments.")
+	cmd.Flags().IntVarP(&opts.page, "page", "p", 1, "Page number.")
+	cmd.Flags().IntVarP(&opts.perPage, "per-page", "P", 100, "Number of items to list per page.")
+	cmd.Flags().StringVarP(&opts.outputFormat, "format", "F", "json", "Format of output: json, export, env.")
+	cmd.Flags().StringVarP(&opts.scope, "scope", "s", "*", "The environment_scope of the variables. Values: '*' (default), or specific environments.")
 
 	return cmd
 }
 
-func exportRun(opts *ExportOpts) error {
+func (o *options) complete(cmd *cobra.Command) error {
+	group, err := flag.GroupOverride(cmd)
+	if err != nil {
+		return err
+	}
+	o.group = group
+
+	return nil
+}
+
+func (o *options) run() error {
 	var out io.Writer = os.Stdout
-	if opts.IO != nil && opts.IO.StdOut != nil {
-		out = opts.IO.StdOut
+	if o.io != nil && o.io.StdOut != nil {
+		out = o.io.StdOut
 	}
 
-	httpClient, err := opts.HTTPClient()
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	repo, err := opts.BaseRepo()
+	repo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
 
-	if opts.Group != "" {
-		createVarOpts := &gitlab.ListGroupVariablesOptions{Page: opts.Page, PerPage: opts.PerPage}
-		groupVariables, err := api.ListGroupVariables(httpClient, opts.Group, createVarOpts)
+	if o.group != "" {
+		createVarOpts := &gitlab.ListGroupVariablesOptions{Page: o.page, PerPage: o.perPage}
+		groupVariables, err := api.ListGroupVariables(httpClient, o.group, createVarOpts)
 		if err != nil {
 			return err
 		}
 
-		opts.IO.Logf("Exporting variables from the %s group:\n", opts.Group)
+		o.io.Logf("Exporting variables from the %s group:\n", o.group)
 
 		if len(groupVariables) == 0 {
 			return nil
 		}
 
-		return printGroupVariables(groupVariables, opts, out)
+		return printGroupVariables(groupVariables, o, out)
 
 	} else {
-		createVarOpts := &gitlab.ListProjectVariablesOptions{Page: opts.Page, PerPage: opts.PerPage}
+		createVarOpts := &gitlab.ListProjectVariablesOptions{Page: o.page, PerPage: o.perPage}
 		projectVariables, err := api.ListProjectVariables(httpClient, repo.FullName(), createVarOpts)
 		if err != nil {
 			return err
 		}
 
-		opts.IO.Logf("Exporting variables from the %s project:\n", repo.FullName())
+		o.io.Logf("Exporting variables from the %s project:\n", repo.FullName())
 
 		if len(projectVariables) == 0 {
 			return nil
 		}
 
-		return printProjectVariables(projectVariables, opts, out)
+		return printProjectVariables(projectVariables, o, out)
 	}
 }
 
@@ -164,16 +169,16 @@ func isValidEnvironmentScope(optScope string) bool {
 	return matched || optScope == "*"
 }
 
-func printGroupVariables(variables []*gitlab.GroupVariable, opts *ExportOpts, out io.Writer) error {
-	if !isValidEnvironmentScope((opts.Scope)) {
-		return fmt.Errorf("invalid environment scope: %s", opts.Scope)
+func printGroupVariables(variables []*gitlab.GroupVariable, opts *options, out io.Writer) error {
+	if !isValidEnvironmentScope((opts.scope)) {
+		return fmt.Errorf("invalid environment scope: %s", opts.scope)
 	}
 
 	writtenKeys := make([]string, 0)
-	switch opts.OutputFormat {
+	switch opts.outputFormat {
 	case "env":
 		for _, variable := range variables {
-			if matchesScope(variable.EnvironmentScope, opts.Scope) {
+			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !strings.Contains(variable.EnvironmentScope, "*") {
 					fmt.Fprintf(out, "%s=%s\n", variable.Key, variable.Value)
 					writtenKeys = append(writtenKeys, variable.Key)
@@ -182,7 +187,7 @@ func printGroupVariables(variables []*gitlab.GroupVariable, opts *ExportOpts, ou
 		}
 		keysMap := CreateWrittenKeysMap(writtenKeys)
 		for _, variable := range variables {
-			if matchesScope(variable.EnvironmentScope, opts.Scope) {
+			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !(keysMap[variable.Key]) && (strings.Contains(variable.EnvironmentScope, "*")) {
 					fmt.Fprintf(out, "%s=%s\n", variable.Key, variable.Value)
 				}
@@ -190,7 +195,7 @@ func printGroupVariables(variables []*gitlab.GroupVariable, opts *ExportOpts, ou
 		}
 	case "export":
 		for _, variable := range variables {
-			if matchesScope(variable.EnvironmentScope, opts.Scope) {
+			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !strings.Contains(variable.EnvironmentScope, "*") {
 					fmt.Fprintf(out, "export %s=%s\n", variable.Key, variable.Value)
 					writtenKeys = append(writtenKeys, variable.Key)
@@ -199,7 +204,7 @@ func printGroupVariables(variables []*gitlab.GroupVariable, opts *ExportOpts, ou
 		}
 		keysMap := CreateWrittenKeysMap(writtenKeys)
 		for _, variable := range variables {
-			if matchesScope(variable.EnvironmentScope, opts.Scope) {
+			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !(keysMap[variable.Key]) && (strings.Contains(variable.EnvironmentScope, "*")) {
 					fmt.Fprintf(out, "export %s=%s\n", variable.Key, variable.Value)
 				}
@@ -208,7 +213,7 @@ func printGroupVariables(variables []*gitlab.GroupVariable, opts *ExportOpts, ou
 	case "json":
 		filteredVariables := make([]*gitlab.GroupVariable, 0)
 		for _, variable := range variables {
-			if matchesScope(variable.EnvironmentScope, opts.Scope) {
+			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				filteredVariables = append(filteredVariables, variable)
 			}
 		}
@@ -218,22 +223,22 @@ func printGroupVariables(variables []*gitlab.GroupVariable, opts *ExportOpts, ou
 		}
 		fmt.Fprintln(out, string(res))
 	default:
-		return fmt.Errorf("unsupported output format: %s", opts.OutputFormat)
+		return fmt.Errorf("unsupported output format: %s", opts.outputFormat)
 	}
 
 	return nil
 }
 
-func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts, out io.Writer) error {
-	if !isValidEnvironmentScope((opts.Scope)) {
-		return fmt.Errorf("invalid environment scope: %s", opts.Scope)
+func printProjectVariables(variables []*gitlab.ProjectVariable, opts *options, out io.Writer) error {
+	if !isValidEnvironmentScope((opts.scope)) {
+		return fmt.Errorf("invalid environment scope: %s", opts.scope)
 	}
 
 	writtenKeys := make([]string, 0)
-	switch opts.OutputFormat {
+	switch opts.outputFormat {
 	case "env":
 		for _, variable := range variables {
-			if matchesScope(variable.EnvironmentScope, opts.Scope) {
+			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !strings.Contains(variable.EnvironmentScope, "*") {
 					fmt.Fprintf(out, "%s=\"%s\"\n", variable.Key, variable.Value)
 					writtenKeys = append(writtenKeys, variable.Key)
@@ -242,7 +247,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts
 		}
 		keysMap := CreateWrittenKeysMap(writtenKeys)
 		for _, variable := range variables {
-			if matchesScope(variable.EnvironmentScope, opts.Scope) {
+			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !(keysMap[variable.Key]) && (strings.Contains(variable.EnvironmentScope, "*")) {
 					fmt.Fprintf(out, "%s=\"%s\"\n", variable.Key, variable.Value)
 				}
@@ -250,7 +255,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts
 		}
 	case "export":
 		for _, variable := range variables {
-			if matchesScope(variable.EnvironmentScope, opts.Scope) {
+			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !strings.Contains(variable.EnvironmentScope, "*") {
 					fmt.Fprintf(out, "export %s=\"%s\"\n", variable.Key, variable.Value)
 					writtenKeys = append(writtenKeys, variable.Key)
@@ -259,7 +264,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts
 		}
 		keysMap := CreateWrittenKeysMap(writtenKeys)
 		for _, variable := range variables {
-			if matchesScope(variable.EnvironmentScope, opts.Scope) {
+			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				if !(keysMap[variable.Key]) && (strings.Contains(variable.EnvironmentScope, "*")) {
 					fmt.Fprintf(out, "export %s=\"%s\"\n", variable.Key, variable.Value)
 				}
@@ -268,7 +273,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts
 	case "json":
 		filteredVariables := make([]*gitlab.ProjectVariable, 0)
 		for _, variable := range variables {
-			if matchesScope(variable.EnvironmentScope, opts.Scope) {
+			if matchesScope(variable.EnvironmentScope, opts.scope) {
 				filteredVariables = append(filteredVariables, variable)
 			}
 		}
@@ -278,7 +283,7 @@ func printProjectVariables(variables []*gitlab.ProjectVariable, opts *ExportOpts
 		}
 		fmt.Fprintln(out, string(res))
 	default:
-		return fmt.Errorf("unsupported output format: %s", opts.OutputFormat)
+		return fmt.Errorf("unsupported output format: %s", opts.outputFormat)
 	}
 
 	return nil

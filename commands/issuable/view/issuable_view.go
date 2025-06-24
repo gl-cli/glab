@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"gitlab.com/gitlab-org/cli/commands/issuable"
@@ -24,20 +26,23 @@ type IssueWithNotes struct {
 	Notes []*gitlab.Note
 }
 
-type ViewOpts struct {
-	ShowComments   bool
-	ShowSystemLogs bool
-	OpenInBrowser  bool
-	Web            bool
-	OutputFormat   string
+type options struct {
+	showComments   bool
+	showSystemLogs bool
+	openInBrowser  bool
+	web            bool
+	outputFormat   string
 
-	CommentPageNumber int
-	CommentLimit      int
+	commentPageNumber int
+	commentLimit      int
 
-	Notes []*gitlab.Note
-	Issue *gitlab.Issue
+	notes []*gitlab.Note
+	issue *gitlab.Issue
 
-	IO *iostreams.IOStreams
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	config     func() (config.Config, error)
+	baseRepo   func() (glrepo.Interface, error)
 }
 
 func NewCmdView(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
@@ -47,8 +52,11 @@ func NewCmdView(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 		examplePath = "issues/incident/123"
 	}
 
-	opts := &ViewOpts{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		config:     f.Config,
+		baseRepo:   f.BaseRepo,
 	}
 	issueViewCmd := &cobra.Command{
 		Use:     "view <id>",
@@ -64,198 +72,202 @@ func NewCmdView(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
-			if err != nil {
-				return err
-			}
-			cfg, _ := f.Config()
-
-			issue, baseRepo, err := issueutils.IssueFromArg(apiClient, f.BaseRepo, args[0])
-			if err != nil {
-				return err
-			}
-
-			opts.Issue = issue
-
-			valid, msg := issuable.ValidateIncidentCmd(issueType, "view", opts.Issue)
-			if !valid {
-				fmt.Fprintln(opts.IO.StdErr, msg)
-				return nil
-			}
-
-			// open in browser if --web flag is specified
-			if opts.Web {
-				if f.IO().IsaTTY && f.IO().IsErrTTY {
-					fmt.Fprintf(opts.IO.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(opts.Issue.WebURL))
-				}
-
-				browser, _ := cfg.Get(baseRepo.RepoHost(), "browser")
-				return utils.OpenInBrowser(opts.Issue.WebURL, browser)
-			}
-
-			if opts.ShowComments {
-				l := &gitlab.ListIssueNotesOptions{
-					Sort: gitlab.Ptr("asc"),
-				}
-				if opts.CommentPageNumber != 0 {
-					l.Page = opts.CommentPageNumber
-				}
-				if opts.CommentLimit != 0 {
-					l.PerPage = opts.CommentLimit
-				}
-				opts.Notes, err = api.ListIssueNotes(apiClient, baseRepo.FullName(), opts.Issue.IID, l)
-				if err != nil {
-					return err
-				}
-			}
-
-			glamourStyle, _ := cfg.Get(baseRepo.RepoHost(), "glamour_style")
-			f.IO().ResolveBackgroundColor(glamourStyle)
-			err = f.IO().StartPager()
-			if err != nil {
-				return err
-			}
-			defer f.IO().StopPager()
-			if opts.OutputFormat == "json" {
-				return printJSONIssue(opts)
-			}
-			if f.IO().IsErrTTY && f.IO().IsaTTY {
-				return printTTYIssuePreview(opts)
-			}
-			return printRawIssuePreview(opts)
+			return opts.run(issueType, args)
 		},
 	}
 
-	issueViewCmd.Flags().BoolVarP(&opts.ShowComments, "comments", "c", false, fmt.Sprintf("Show %s comments and activities.", issueType))
-	issueViewCmd.Flags().BoolVarP(&opts.ShowSystemLogs, "system-logs", "s", false, "Show system activities and logs.")
-	issueViewCmd.Flags().BoolVarP(&opts.Web, "web", "w", false, fmt.Sprintf("Open %s in a browser. Uses the default browser, or the browser specified in the $BROWSER variable.", issueType))
-	issueViewCmd.Flags().IntVarP(&opts.CommentPageNumber, "page", "p", 1, "Page number.")
-	issueViewCmd.Flags().IntVarP(&opts.CommentLimit, "per-page", "P", 20, "Number of items to list per page.")
-	issueViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
+	issueViewCmd.Flags().BoolVarP(&opts.showComments, "comments", "c", false, fmt.Sprintf("Show %s comments and activities.", issueType))
+	issueViewCmd.Flags().BoolVarP(&opts.showSystemLogs, "system-logs", "s", false, "Show system activities and logs.")
+	issueViewCmd.Flags().BoolVarP(&opts.web, "web", "w", false, fmt.Sprintf("Open %s in a browser. Uses the default browser, or the browser specified in the $BROWSER variable.", issueType))
+	issueViewCmd.Flags().IntVarP(&opts.commentPageNumber, "page", "p", 1, "Page number.")
+	issueViewCmd.Flags().IntVarP(&opts.commentLimit, "per-page", "P", 20, "Number of items to list per page.")
+	issueViewCmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json.")
 
 	return issueViewCmd
 }
 
-func labelsList(opts *ViewOpts) string {
-	return strings.Join(opts.Issue.Labels, ", ")
+func (o *options) run(issueType issuable.IssueType, args []string) error {
+	apiClient, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+	cfg, _ := o.config()
+
+	issue, baseRepo, err := issueutils.IssueFromArg(apiClient, o.baseRepo, args[0])
+	if err != nil {
+		return err
+	}
+
+	o.issue = issue
+
+	valid, msg := issuable.ValidateIncidentCmd(issueType, "view", o.issue)
+	if !valid {
+		fmt.Fprintln(o.io.StdErr, msg)
+		return nil
+	}
+
+	// open in browser if --web flag is specified
+	if o.web {
+		if o.io.IsaTTY && o.io.IsErrTTY {
+			fmt.Fprintf(o.io.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(o.issue.WebURL))
+		}
+
+		browser, _ := cfg.Get(baseRepo.RepoHost(), "browser")
+		return utils.OpenInBrowser(o.issue.WebURL, browser)
+	}
+
+	if o.showComments {
+		l := &gitlab.ListIssueNotesOptions{
+			Sort: gitlab.Ptr("asc"),
+		}
+		if o.commentPageNumber != 0 {
+			l.Page = o.commentPageNumber
+		}
+		if o.commentLimit != 0 {
+			l.PerPage = o.commentLimit
+		}
+		o.notes, err = api.ListIssueNotes(apiClient, baseRepo.FullName(), o.issue.IID, l)
+		if err != nil {
+			return err
+		}
+	}
+
+	glamourStyle, _ := cfg.Get(baseRepo.RepoHost(), "glamour_style")
+	o.io.ResolveBackgroundColor(glamourStyle)
+	err = o.io.StartPager()
+	if err != nil {
+		return err
+	}
+	defer o.io.StopPager()
+	if o.outputFormat == "json" {
+		return printJSONIssue(o)
+	}
+	if o.io.IsErrTTY && o.io.IsaTTY {
+		return printTTYIssuePreview(o)
+	}
+	return printRawIssuePreview(o)
 }
 
-func assigneesList(opts *ViewOpts) string {
-	assignees := utils.Map(opts.Issue.Assignees, func(a *gitlab.IssueAssignee) string {
+func labelsList(opts *options) string {
+	return strings.Join(opts.issue.Labels, ", ")
+}
+
+func assigneesList(opts *options) string {
+	assignees := utils.Map(opts.issue.Assignees, func(a *gitlab.IssueAssignee) string {
 		return a.Username
 	})
 
 	return strings.Join(assignees, ", ")
 }
 
-func issueState(opts *ViewOpts, c *iostreams.ColorPalette) (state string) {
-	if opts.Issue.State == "opened" {
+func issueState(opts *options, c *iostreams.ColorPalette) (state string) {
+	if opts.issue.State == "opened" {
 		state = c.Green("open")
-	} else if opts.Issue.State == "locked" {
-		state = c.Blue(opts.Issue.State)
+	} else if opts.issue.State == "locked" {
+		state = c.Blue(opts.issue.State)
 	} else {
-		state = c.Red(opts.Issue.State)
+		state = c.Red(opts.issue.State)
 	}
 
 	return
 }
 
-func printTTYIssuePreview(opts *ViewOpts) error {
-	c := opts.IO.Color()
-	issueTimeAgo := utils.TimeToPrettyTimeAgo(*opts.Issue.CreatedAt)
+func printTTYIssuePreview(opts *options) error {
+	c := opts.io.Color()
+	issueTimeAgo := utils.TimeToPrettyTimeAgo(*opts.issue.CreatedAt)
 	// Header
-	fmt.Fprint(opts.IO.StdOut, issueState(opts, c))
-	fmt.Fprintf(opts.IO.StdOut, c.Gray(" • opened by %s %s\n"), opts.Issue.Author.Username, issueTimeAgo)
-	fmt.Fprint(opts.IO.StdOut, c.Bold(opts.Issue.Title))
-	fmt.Fprintf(opts.IO.StdOut, c.Gray(" #%d"), opts.Issue.IID)
-	fmt.Fprintln(opts.IO.StdOut)
+	fmt.Fprint(opts.io.StdOut, issueState(opts, c))
+	fmt.Fprintf(opts.io.StdOut, c.Gray(" • opened by %s %s\n"), opts.issue.Author.Username, issueTimeAgo)
+	fmt.Fprint(opts.io.StdOut, c.Bold(opts.issue.Title))
+	fmt.Fprintf(opts.io.StdOut, c.Gray(" #%d"), opts.issue.IID)
+	fmt.Fprintln(opts.io.StdOut)
 
 	// Description
-	if opts.Issue.Description != "" {
-		opts.Issue.Description, _ = utils.RenderMarkdown(opts.Issue.Description, opts.IO.BackgroundColor())
-		fmt.Fprintln(opts.IO.StdOut, opts.Issue.Description)
+	if opts.issue.Description != "" {
+		opts.issue.Description, _ = utils.RenderMarkdown(opts.issue.Description, opts.io.BackgroundColor())
+		fmt.Fprintln(opts.io.StdOut, opts.issue.Description)
 	}
 
-	fmt.Fprintf(opts.IO.StdOut, c.Gray("\n%d upvotes • %d downvotes • %d comments\n"), opts.Issue.Upvotes, opts.Issue.Downvotes, opts.Issue.UserNotesCount)
+	fmt.Fprintf(opts.io.StdOut, c.Gray("\n%d upvotes • %d downvotes • %d comments\n"), opts.issue.Upvotes, opts.issue.Downvotes, opts.issue.UserNotesCount)
 
 	// Meta information
 	if labels := labelsList(opts); labels != "" {
-		fmt.Fprint(opts.IO.StdOut, c.Bold("Labels: "))
-		fmt.Fprintln(opts.IO.StdOut, labels)
+		fmt.Fprint(opts.io.StdOut, c.Bold("Labels: "))
+		fmt.Fprintln(opts.io.StdOut, labels)
 	}
 	if assignees := assigneesList(opts); assignees != "" {
-		fmt.Fprint(opts.IO.StdOut, c.Bold("Assignees: "))
-		fmt.Fprintln(opts.IO.StdOut, assignees)
+		fmt.Fprint(opts.io.StdOut, c.Bold("Assignees: "))
+		fmt.Fprintln(opts.io.StdOut, assignees)
 	}
-	if opts.Issue.Milestone != nil {
-		fmt.Fprint(opts.IO.StdOut, c.Bold("Milestone: "))
-		fmt.Fprintln(opts.IO.StdOut, opts.Issue.Milestone.Title)
+	if opts.issue.Milestone != nil {
+		fmt.Fprint(opts.io.StdOut, c.Bold("Milestone: "))
+		fmt.Fprintln(opts.io.StdOut, opts.issue.Milestone.Title)
 	}
-	if opts.Issue.State == "closed" {
-		fmt.Fprintf(opts.IO.StdOut, "Closed by: %s %s\n", opts.Issue.ClosedBy.Username, issueTimeAgo)
+	if opts.issue.State == "closed" {
+		fmt.Fprintf(opts.io.StdOut, "Closed by: %s %s\n", opts.issue.ClosedBy.Username, issueTimeAgo)
 	}
 
 	// Comments
-	if opts.ShowComments {
-		fmt.Fprintln(opts.IO.StdOut, heredoc.Doc(`
+	if opts.showComments {
+		fmt.Fprintln(opts.io.StdOut, heredoc.Doc(`
 			--------------------------------------------
 			Comments / Notes
 			--------------------------------------------
 			`))
-		if len(opts.Notes) > 0 {
-			for _, note := range opts.Notes {
-				if note.System && !opts.ShowSystemLogs {
+		if len(opts.notes) > 0 {
+			for _, note := range opts.notes {
+				if note.System && !opts.showSystemLogs {
 					continue
 				}
 				createdAt := utils.TimeToPrettyTimeAgo(*note.CreatedAt)
-				fmt.Fprint(opts.IO.StdOut, note.Author.Username)
+				fmt.Fprint(opts.io.StdOut, note.Author.Username)
 				if note.System {
-					fmt.Fprintf(opts.IO.StdOut, " %s ", note.Body)
-					fmt.Fprintln(opts.IO.StdOut, c.Gray(createdAt))
+					fmt.Fprintf(opts.io.StdOut, " %s ", note.Body)
+					fmt.Fprintln(opts.io.StdOut, c.Gray(createdAt))
 				} else {
-					body, _ := utils.RenderMarkdown(note.Body, opts.IO.BackgroundColor())
-					fmt.Fprint(opts.IO.StdOut, " commented ")
-					fmt.Fprintf(opts.IO.StdOut, c.Gray("%s\n"), createdAt)
-					fmt.Fprintln(opts.IO.StdOut, utils.Indent(body, " "))
+					body, _ := utils.RenderMarkdown(note.Body, opts.io.BackgroundColor())
+					fmt.Fprint(opts.io.StdOut, " commented ")
+					fmt.Fprintf(opts.io.StdOut, c.Gray("%s\n"), createdAt)
+					fmt.Fprintln(opts.io.StdOut, utils.Indent(body, " "))
 				}
-				fmt.Fprintln(opts.IO.StdOut)
+				fmt.Fprintln(opts.io.StdOut)
 			}
 		} else {
-			fmt.Fprintf(opts.IO.StdOut, "There are no comments on this %s.\n", *opts.Issue.IssueType)
+			fmt.Fprintf(opts.io.StdOut, "There are no comments on this %s.\n", *opts.issue.IssueType)
 		}
 	}
 
-	fmt.Fprintf(opts.IO.StdOut, c.Gray("\nView this %s on GitLab: %s\n"), *opts.Issue.IssueType, opts.Issue.WebURL)
+	fmt.Fprintf(opts.io.StdOut, c.Gray("\nView this %s on GitLab: %s\n"), *opts.issue.IssueType, opts.issue.WebURL)
 
 	return nil
 }
 
-func printRawIssuePreview(opts *ViewOpts) error {
-	fmt.Fprint(opts.IO.StdOut, rawIssuePreview(opts))
+func printRawIssuePreview(opts *options) error {
+	fmt.Fprint(opts.io.StdOut, rawIssuePreview(opts))
 
 	return nil
 }
 
-func rawIssuePreview(opts *ViewOpts) string {
+func rawIssuePreview(opts *options) string {
 	var out string
 
 	assignees := assigneesList(opts)
 	labels := labelsList(opts)
 
-	out += fmt.Sprintf("title:\t%s\n", opts.Issue.Title)
-	out += fmt.Sprintf("state:\t%s\n", issueState(opts, opts.IO.Color()))
-	out += fmt.Sprintf("author:\t%s\n", opts.Issue.Author.Username)
+	out += fmt.Sprintf("title:\t%s\n", opts.issue.Title)
+	out += fmt.Sprintf("state:\t%s\n", issueState(opts, opts.io.Color()))
+	out += fmt.Sprintf("author:\t%s\n", opts.issue.Author.Username)
 	out += fmt.Sprintf("labels:\t%s\n", labels)
-	out += fmt.Sprintf("comments:\t%d\n", opts.Issue.UserNotesCount)
+	out += fmt.Sprintf("comments:\t%d\n", opts.issue.UserNotesCount)
 	out += fmt.Sprintf("assignees:\t%s\n", assignees)
-	if opts.Issue.Milestone != nil {
-		out += fmt.Sprintf("milestone:\t%s\n", opts.Issue.Milestone.Title)
+	if opts.issue.Milestone != nil {
+		out += fmt.Sprintf("milestone:\t%s\n", opts.issue.Milestone.Title)
 	}
 
 	out += "--\n"
-	out += fmt.Sprintf("%s\n", opts.Issue.Description)
+	out += fmt.Sprintf("%s\n", opts.issue.Description)
 
-	out += RawIssuableNotes(opts.Notes, opts.ShowComments, opts.ShowSystemLogs, *opts.Issue.IssueType)
+	out += RawIssuableNotes(opts.notes, opts.showComments, opts.showSystemLogs, *opts.issue.IssueType)
 
 	return out
 }
@@ -287,16 +299,16 @@ func RawIssuableNotes(notes []*gitlab.Note, showComments bool, showSystemLogs bo
 	return out
 }
 
-func printJSONIssue(opts *ViewOpts) error {
+func printJSONIssue(opts *options) error {
 	// var notes []gitlab.Note
-	if opts.ShowComments {
+	if opts.showComments {
 
-		extendedIssue := IssueWithNotes{opts.Issue, opts.Notes}
+		extendedIssue := IssueWithNotes{opts.issue, opts.notes}
 		issueJSON, _ := json.Marshal(extendedIssue)
-		fmt.Fprintln(opts.IO.StdOut, string(issueJSON))
+		fmt.Fprintln(opts.io.StdOut, string(issueJSON))
 	} else {
-		issueJSON, _ := json.Marshal(opts.Issue)
-		fmt.Fprintln(opts.IO.StdOut, string(issueJSON))
+		issueJSON, _ := json.Marshal(opts.issue)
+		fmt.Fprintln(opts.io.StdOut, string(issueJSON))
 	}
 	return nil
 }
