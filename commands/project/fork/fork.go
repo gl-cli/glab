@@ -122,7 +122,7 @@ func (o *options) run() error {
 	if err != nil {
 		return err
 	}
-	labClient := apiClient.LabClient
+	labClient := apiClient.Lab()
 
 	if o.isTerminal {
 		fmt.Fprintf(o.io.StdErr, "- Forking %s\n", c.Bold(o.repoToFork.FullName()))

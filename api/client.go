@@ -44,9 +44,8 @@ var apiClient *Client
 
 // Client represents an argument to NewClient
 type Client struct {
-	// LabClient represents GitLab API client.
-	// Note: this is exported for tests. Do not access it directly. Use Lab() method
-	LabClient *gitlab.Client
+	// gitlabClient represents GitLab API client.
+	gitlabClient *gitlab.Client
 	// internal http client
 	httpClient *http.Client
 	// internal http client overrider
@@ -345,17 +344,17 @@ func (c *Client) NewLab() error {
 
 		if c.isOauth2 {
 			ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: c.token})
-			c.LabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+			c.gitlabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
 		} else if c.isJobToken {
-			c.LabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+			c.gitlabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
 		} else {
-			c.LabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
+			c.gitlabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(httpClient), gitlab.WithBaseURL(baseURL))
 		}
 
 		if err != nil {
 			return fmt.Errorf("failed to initialize GitLab client: %v", err)
 		}
-		c.LabClient.UserAgent = currentGlabInstall.UserAgent()
+		c.gitlabClient.UserAgent = currentGlabInstall.UserAgent()
 
 		if c.token != "" {
 			if c.isOauth2 {
@@ -371,14 +370,14 @@ func (c *Client) NewLab() error {
 // Lab returns the initialized GitLab client.
 // Initializes a new GitLab Client if not initialized but error is ignored
 func (c *Client) Lab() *gitlab.Client {
-	if c.LabClient != nil {
-		return c.LabClient
+	if c.gitlabClient != nil {
+		return c.gitlabClient
 	}
 	err := c.NewLab()
 	if err != nil {
-		c.LabClient = &gitlab.Client{}
+		c.gitlabClient = &gitlab.Client{}
 	}
-	return c.LabClient
+	return c.gitlabClient
 }
 
 // BaseURL returns a copy of the BaseURL
