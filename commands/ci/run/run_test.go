@@ -8,6 +8,10 @@ import (
 	"os/exec"
 	"testing"
 
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/pkg/prompt"
+
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/run"
 
@@ -107,6 +111,126 @@ func TestCIRun(t *testing.T) {
 
 			assert.Equal(t, tc.expectedOut, output.String())
 			assert.Equal(t, tc.expectedErr, output.Stderr())
+		})
+	}
+}
+
+func TestCIRunMrPipeline(t *testing.T) {
+	tests := []struct {
+		name string
+		cli  string
+
+		expectedOut string
+		expectedErr string
+		mrIid       int
+	}{
+		{
+			name:        "bare mr flag",
+			cli:         "--mr",
+			expectedOut: "Created pipeline (id: 21370), status: created, ref: , weburl: https://gitlab.com/OWNER/REPO/-/pipelines/21370\n",
+			mrIid:       2137,
+		},
+		{
+			name:        "mr flag with branch specified",
+			cli:         "--mr --branch branchy",
+			expectedOut: "Created pipeline (id: 7350), status: created, ref: , weburl: https://gitlab.com/OWNER/REPO/-/pipelines/7350\n",
+			mrIid:       735,
+		},
+		{
+			name:        "mr flag with branch specified & multiple MRs",
+			cli:         "--mr --branch my_branch_with_a_myriad_of_mrs",
+			expectedOut: "Created pipeline (id: 12340), status: created, ref: , weburl: https://gitlab.com/OWNER/REPO/-/pipelines/12340\n",
+			mrIid:       1234,
+		},
+		{
+			name:        "mr flag with branch specified & no MRs",
+			cli:         "--mr --branch branch_without_mrs",
+			expectedErr: "error running command `ci run --mr --branch branch_without_mrs`: no open merge request available for \"branch_without_mrs\"",
+			mrIid:       1234,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fakeHTTP := &httpmock.Mocker{
+				MatchURL: httpmock.PathAndQuerystring,
+			}
+			defer fakeHTTP.Verify(t)
+			if tc.expectedErr == "" {
+				iid := tc.mrIid
+				fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/merge_requests/"+fmt.Sprint(iid)+"/pipelines",
+					func(req *http.Request) (*http.Response, error) {
+						pipelineId := iid * 10
+						resp, _ := httpmock.NewStringResponse(http.StatusOK, fmt.Sprintf(`{
+ 						"id": %d,
+ 						"status": "created",
+			            "web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/%d"}`, pipelineId, pipelineId))(req)
+						return resp, nil
+					},
+				)
+			}
+			api.ListMRs = func(client *gitlab.Client, projectID interface{}, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...api.CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+				if *opts.SourceBranch == "custom-branch-123" {
+					return []*gitlab.BasicMergeRequest{
+						{
+							IID: 2137,
+							Author: &gitlab.BasicUser{
+								Username: "Huan Pablo Secundo",
+							},
+						},
+					}, nil
+				}
+				if *opts.SourceBranch == "branchy" {
+					return []*gitlab.BasicMergeRequest{
+						{
+							IID: 735,
+							Author: &gitlab.BasicUser{
+								Username: "Franciszek",
+							},
+						},
+					}, nil
+				}
+				if *opts.SourceBranch == "my_branch_with_a_myriad_of_mrs" {
+					return []*gitlab.BasicMergeRequest{
+						{
+							IID: 1234,
+							Author: &gitlab.BasicUser{
+								Username: "Chris Harms",
+							},
+						},
+						{
+							IID: 666,
+							Author: &gitlab.BasicUser{
+								Username: "Bruce Dickinson",
+							},
+						},
+					}, nil
+				}
+				if *opts.SourceBranch == "branch_without_mrs" {
+					return []*gitlab.BasicMergeRequest{}, nil
+				}
+				return nil, fmt.Errorf("unexpected branch in this mock :(")
+			}
+			as, restoreAsk := prompt.InitAskStubber()
+			defer restoreAsk()
+
+			as.Stub([]*prompt.QuestionStub{
+				{
+					Name:  "mr",
+					Value: "!1234 (my_branch_with_a_myriad_of_mrs) by @Chris Harms",
+				},
+			})
+			output, err, restoreCmd := runCommand(fakeHTTP, tc.cli)
+			defer restoreCmd()
+
+			if tc.expectedErr == "" {
+				assert.NoErrorf(t, err, "error running command `ci run %s`: %v", tc.cli, err)
+
+				assert.Equal(t, tc.expectedOut, output.String())
+				assert.Equal(t, tc.expectedErr, output.Stderr())
+			} else {
+				assert.Errorf(t, err, "error running command `ci run %s`: %v", tc.cli, err)
+			}
 		})
 	}
 }
