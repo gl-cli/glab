@@ -689,7 +689,6 @@ func Test_latestJobs(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 			jobs := latestJobs(test.jobs)
@@ -783,7 +782,6 @@ func Test_adjacentStages(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 			prev, next := adjacentStages(test.jobs, test.stage)
@@ -878,7 +876,6 @@ func Test_stageBounds(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 			lower, upper := stageBounds(test.jobs, test.stage)
@@ -1142,7 +1139,6 @@ func Test_handleNavigation(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 			var navi navigator
