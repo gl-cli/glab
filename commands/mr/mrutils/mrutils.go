@@ -43,11 +43,11 @@ type MRCheckErrOptions struct {
 	MergePrivilege bool
 }
 
-type mrOptions struct {
-	baseRepo      glrepo.Interface
-	branch        string
-	state         string
-	promptEnabled bool
+type MrOptions struct {
+	BaseRepo      glrepo.Interface
+	Branch        string
+	State         string
+	PromptEnabled bool
 }
 
 // MRCheckErrors checks and return merge request errors specified in MRCheckErrOptions{}
@@ -178,7 +178,7 @@ func MRFromArgsWithOpts(
 	}
 
 	if mrID == 0 {
-		basicMR, err := getMRForBranch(apiClient, mrOptions{baseRepo, branch, state, f.IO().PromptEnabled()})
+		basicMR, err := GetMRForBranch(apiClient, MrOptions{baseRepo, branch, state, f.IO().PromptEnabled()})
 		if err != nil {
 			return nil, nil, err
 		}
@@ -246,19 +246,19 @@ func resolveOwnerAndBranch(potentialBranch string) (string, string) {
 	return owner, branch
 }
 
-var getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.BasicMergeRequest, error) {
-	owner, currentBranch := resolveOwnerAndBranch(mrOpts.branch)
+var GetMRForBranch = func(apiClient *gitlab.Client, mrOpts MrOptions) (*gitlab.BasicMergeRequest, error) {
+	owner, currentBranch := resolveOwnerAndBranch(mrOpts.Branch)
 
 	opts := gitlab.ListProjectMergeRequestsOptions{
 		SourceBranch: gitlab.Ptr(currentBranch),
 	}
 
-	userAskedForSpecificState := mrOpts.state != "" && mrOpts.state != "any"
+	userAskedForSpecificState := mrOpts.State != "" && mrOpts.State != "any"
 	if userAskedForSpecificState {
-		opts.State = gitlab.Ptr(mrOpts.state)
+		opts.State = gitlab.Ptr(mrOpts.State)
 	}
 
-	mrs, err := api.ListMRs(apiClient, mrOpts.baseRepo.FullName(), &opts)
+	mrs, err := api.ListMRs(apiClient, mrOpts.BaseRepo.FullName(), &opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get open merge request for %q: %w", currentBranch, err)
 	}
@@ -295,7 +295,7 @@ var getMRForBranch = func(apiClient *gitlab.Client, mrOpts mrOptions) (*gitlab.B
 	}
 	pickedMR := mrNames[0]
 
-	if !mrOpts.promptEnabled {
+	if !mrOpts.PromptEnabled {
 		// NO_PROMPT environment variable is set. Skip prompt and return error when multiple merge requests exist for branch.
 		err = fmt.Errorf("merge request ID number required. Possible matches:\n\n%s", strings.Join(mrNames, "\n"))
 	} else {
