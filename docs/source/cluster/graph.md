@@ -82,6 +82,7 @@ $ echo -n "$Q" | glab cluster graph -R user/project -a 123 --stdin
       --crd                        Watch customresourcedefinitions in apiextensions.k8s.io/v1 group.
       --listen-addr string         Address to listen on. (default "localhost:0")
       --listen-net string          Network on which to listen for connections. (default "tcp")
+      --log-watch-request          Log watch request to stdout. Can be useful for debugging.
   -n, --namespace stringArray      Namespaces to watch. If not specified, all namespaces are watched with label and field selectors filtering.
       --ns-expression string       CEL expression to select namespaces. Always evaluated before a namespace is watched.
       --ns-field-selector string   Field selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/.

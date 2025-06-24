@@ -38,6 +38,7 @@ type options struct {
 	groupRBAC             bool
 	groupClusterRBAC      bool
 	groupCRD              bool
+	logWatchRequest       bool
 }
 
 func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
@@ -104,6 +105,7 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	fl.Int64VarP(&opts.agentID, "agent", "a", opts.agentID, "The numerical Agent ID to connect to.")
 	fl.StringVar(&opts.listenNet, "listen-net", opts.listenNet, "Network on which to listen for connections.")
 	fl.StringVar(&opts.listenAddr, "listen-addr", opts.listenAddr, "Address to listen on.")
+	fl.BoolVarP(&opts.logWatchRequest, "log-watch-request", "", opts.logWatchRequest, "Log watch request to stdout. Can be useful for debugging.")
 
 	fl.StringArrayVarP(&opts.nsNames, "namespace", "n", opts.nsNames, "Namespaces to watch. If not specified, all namespaces are watched with label and field selectors filtering.")
 	fl.StringVarP(&opts.nsLabels, "ns-label-selector", "", opts.nsLabels, "Label selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors.")
@@ -159,6 +161,10 @@ func (o *options) run(ctx context.Context) error {
 	watchReq, err := o.constructWatchRequest()
 	if err != nil {
 		return err
+	}
+
+	if o.logWatchRequest {
+		o.io.LogInfo(string(watchReq))
 	}
 
 	// 4. Construct API URL
