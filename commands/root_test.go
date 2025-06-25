@@ -28,7 +28,7 @@ func TestRootVersion(t *testing.T) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	rootCmd := NewCmdRoot(cmdutils.NewFactory(setupIOStreams(), false), "v1.0.0", "abcdefgh")
+	rootCmd := NewCmdRoot(cmdutils.NewFactory(setupIOStreams(), false, nil), "v1.0.0", "abcdefgh")
 	assert.Nil(t, rootCmd.Flag("version").Value.Set("true"))
 	assert.Nil(t, rootCmd.Execute())
 
@@ -41,7 +41,7 @@ func TestRootNoArg(t *testing.T) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	rootCmd := NewCmdRoot(cmdutils.NewFactory(setupIOStreams(), false), "v1.0.0", "abcdefgh")
+	rootCmd := NewCmdRoot(cmdutils.NewFactory(setupIOStreams(), false, nil), "v1.0.0", "abcdefgh")
 	assert.Nil(t, rootCmd.Execute())
 
 	out := test.ReturnBuffer(old, r, w)

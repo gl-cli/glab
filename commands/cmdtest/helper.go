@@ -441,7 +441,7 @@ func Eq(t *testing.T, got any, expected any) {
 }
 
 func StubFactory(repo string, io *iostreams.IOStreams) cmdutils.Factory {
-	f := cmdutils.NewFactory(io, false)
+	f := cmdutils.NewFactory(io, false, nil)
 	if repo != "" {
 		f.RepoOverride(repo)
 	}
@@ -454,7 +454,7 @@ func StubFactoryWithConfig(repo string, io *iostreams.IOStreams) (cmdutils.Facto
 	if err != nil {
 		return nil, err
 	}
-	f := cmdutils.NewFactoryWithConfig(io, false, cfg)
+	f := cmdutils.NewFactory(io, false, cfg)
 	if repo != "" {
 		f.RepoOverride(repo)
 	}

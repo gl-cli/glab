@@ -37,14 +37,7 @@ type DefaultFactory struct {
 	configError  error
 }
 
-func NewFactory(io *iostreams.IOStreams, resolveRepos bool) *DefaultFactory {
-	return &DefaultFactory{
-		io:           io,
-		resolveRepos: resolveRepos,
-	}
-}
-
-func NewFactoryWithConfig(io *iostreams.IOStreams, resolveRepos bool, cfg config.Config) *DefaultFactory {
+func NewFactory(io *iostreams.IOStreams, resolveRepos bool, cfg config.Config) *DefaultFactory {
 	return &DefaultFactory{
 		io:           io,
 		resolveRepos: resolveRepos,

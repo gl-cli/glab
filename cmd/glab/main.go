@@ -58,7 +58,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	cmdFactory := cmdutils.NewFactoryWithConfig(
+	cmdFactory := cmdutils.NewFactory(
 		iostreams.New(
 			iostreams.WithStdin(os.Stdin, iostreams.IsTerminal(os.Stdin)),
 			iostreams.WithStdout(iostreams.NewColorable(os.Stdout), iostreams.IsTerminal(os.Stdout)),
