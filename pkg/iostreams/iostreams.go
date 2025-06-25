@@ -112,9 +112,10 @@ func (s *IOStreams) Is256ColorSupported() bool {
 }
 
 func (s *IOStreams) SetPrompt(promptDisabled string) {
-	if promptDisabled == "true" || promptDisabled == "1" {
+	switch promptDisabled {
+	case "true", "1":
 		s.promptDisabled = true
-	} else if promptDisabled == "false" || promptDisabled == "0" {
+	case "false", "0":
 		s.promptDisabled = false
 	}
 }
