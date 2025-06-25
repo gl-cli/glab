@@ -14,7 +14,7 @@ import (
 
 type options struct {
 	io       *iostreams.IOStreams
-	config   func() (config.Config, error)
+	config   func() config.Config
 	hostname string
 }
 
@@ -48,10 +48,7 @@ func NewCmdLogout(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run() error {
-	cfg, err := o.config()
-	if err != nil {
-		return err
-	}
+	cfg := o.config()
 
 	if err := cfg.Set(o.hostname, "token", ""); err != nil {
 		return err

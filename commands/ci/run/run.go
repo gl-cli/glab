@@ -252,10 +252,7 @@ If used with merge request pipelines, the command fails with a message like ` + 
 					fmt.Fprintf(f.IO().StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
 				}
 
-				cfg, err := f.Config()
-				if err != nil {
-					return err
-				}
+				cfg := f.Config()
 
 				browser, _ := cfg.Get(repo.RepoHost(), "browser")
 				return utils.OpenInBrowser(webURL, browser)

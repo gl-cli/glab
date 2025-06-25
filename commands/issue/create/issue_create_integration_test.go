@@ -59,7 +59,7 @@ func Test_IssueCreate_Integration(t *testing.T) {
 	}
 
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	f := cmdtest.StubFactory(glTestHost+"/cli-automated-testing/test", io)
+	f := cmdtest.StubFactory(t, glTestHost+"/cli-automated-testing/test", io)
 
 	cmd := NewCmdCreate(f)
 	cmd.Flags().StringP("repo", "R", "", "")
@@ -129,7 +129,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 	}
 
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	f := cmdtest.StubFactory(glTestHost+"/cli-automated-testing/test", io)
+	f := cmdtest.StubFactory(t, glTestHost+"/cli-automated-testing/test", io)
 
 	oldCreateRun := createRun
 

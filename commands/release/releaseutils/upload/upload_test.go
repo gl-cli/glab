@@ -79,7 +79,7 @@ func TestContext_CreateReleaseAssetFromProjectFile(t *testing.T) {
 	}
 
 	io, _, _, _ := cmdtest.TestIOStreams()
-	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test", io)
+	f := cmdtest.StubFactory(t, "https://gitlab.com/cli-automated-testing/test", io)
 	client, _ := f.HttpClient()
 	context := &Context{
 		Client: client,

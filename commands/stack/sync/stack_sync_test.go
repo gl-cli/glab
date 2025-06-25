@@ -53,7 +53,6 @@ func setupTestFactory(rt http.RoundTripper) (cmdutils.Factory, *options) {
 		io:        ios,
 		remotes:   f.Remotes,
 		labClient: client,
-		config:    f.Config,
 		baseRepo:  f.BaseRepo,
 	}
 }

@@ -24,7 +24,7 @@ type options struct {
 	io                    *iostreams.IOStreams
 	apiClient             func(repoHost string, cfg config.Config) (*api.Client, error)
 	baseRepo              func() (glrepo.Interface, error)
-	config                func() (config.Config, error)
+	config                func() config.Config
 	listenNet, listenAddr string
 	agentID               int64
 	nsNames               []string
@@ -174,10 +174,7 @@ func (o *options) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	cfg, err := o.config()
-	if err != nil {
-		return err
-	}
+	cfg := o.config()
 	client, err := o.apiClient(repo.RepoHost(), cfg)
 	if err != nil {
 		return err

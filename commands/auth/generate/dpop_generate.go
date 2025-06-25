@@ -30,7 +30,7 @@ import (
 
 type options struct {
 	io                  *iostreams.IOStreams
-	config              func() (config.Config, error)
+	config              func() config.Config
 	privateKeyLocation  string
 	personalAccessToken string
 	hostname            string
@@ -100,10 +100,7 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 
 func (o *options) complete() error {
 	if o.personalAccessToken == "" {
-		cfg, err := o.config()
-		if err != nil {
-			return fmt.Errorf("could not get config: %w", err)
-		}
+		cfg := o.config()
 
 		token, err := cfg.Get(o.hostname, "token")
 		if err != nil {

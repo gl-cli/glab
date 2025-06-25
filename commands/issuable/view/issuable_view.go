@@ -41,7 +41,7 @@ type options struct {
 	io         *iostreams.IOStreams
 	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
 	httpClient func() (*gitlab.Client, error)
-	config     func() (config.Config, error)
+	config     func() config.Config
 	baseRepo   func() (glrepo.Interface, error)
 }
 
@@ -92,7 +92,7 @@ func (o *options) run(issueType issuable.IssueType, args []string) error {
 	if err != nil {
 		return err
 	}
-	cfg, _ := o.config()
+	cfg := o.config()
 
 	issue, baseRepo, err := issueutils.IssueFromArg(o.apiClient, gitlabClient, o.baseRepo, args[0])
 	if err != nil {

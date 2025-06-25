@@ -68,7 +68,7 @@ func listReleases(factory cmdutils.Factory, cmd *cobra.Command) error {
 			return err
 		}
 
-		cfg, _ := factory.Config()
+		cfg := factory.Config()
 		glamourStyle, _ := cfg.Get(repo.RepoHost(), "glamour_style")
 		factory.IO().ResolveBackgroundColor(glamourStyle)
 

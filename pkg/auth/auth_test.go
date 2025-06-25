@@ -17,25 +17,18 @@ func Test_GetAuthenticatedClient(t *testing.T) {
 	tests := []struct {
 		name       string
 		HttpClient func() (*gitlab.Client, error)
-		Config     func() (config.Config, error)
+		Config     func() config.Config
 		wantErr    bool
 	}{
 		{
 			name: "everything ok!",
 		},
 		{
-			name: "can't find config",
-			Config: func() (config.Config, error) {
-				return nil, errors.New("oopsies")
-			},
-			wantErr: true,
-		},
-		{
 			name: "no hosts",
-			Config: func() (config.Config, error) {
+			Config: func() config.Config {
 				return config.NewFromString(heredoc.Doc(`
 				hosts:
-			`)), nil
+			`))
 			},
 			wantErr: true,
 		},

@@ -43,10 +43,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 }
 
 func runUpdateProject(cmd *cobra.Command, f cmdutils.Factory, args []string) error {
-	cfg, err := f.Config()
-	if err != nil {
-		return err
-	}
+	cfg := f.Config()
 
 	var projectID string
 	if len(args) == 1 {

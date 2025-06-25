@@ -38,7 +38,7 @@ type options struct {
 	io         *iostreams.IOStreams
 	baseRepo   func() (glrepo.Interface, error)
 	remotes    func() (glrepo.Remotes, error)
-	config     func() (config.Config, error)
+	config     func() config.Config
 	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
 	httpClient func() (*gitlab.Client, error)
 }
@@ -115,10 +115,7 @@ func (o *options) run() error {
 		}
 	}
 
-	cfg, err := o.config()
-	if err != nil {
-		return err
-	}
+	cfg := o.config()
 
 	apiClient, err := o.apiClient(o.repoToFork.RepoHost(), cfg)
 	if err != nil {

@@ -95,7 +95,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 		var host string
 		host, namespace, projectPath = projectPathFromArgs(args)
 		if host != "" {
-			cfg, _ := f.Config()
+			cfg := f.Config()
 			client, err := f.ApiClient(host, cfg)
 			if err != nil {
 				return err
@@ -180,7 +180,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 	if err == nil {
 		fmt.Fprintf(f.IO().StdOut, "%s Created repository %s on GitLab: %s\n", greenCheck, project.NameWithNamespace, project.WebURL)
 		if isPath {
-			cfg, _ := f.Config()
+			cfg := f.Config()
 			webURL, _ := url.Parse(project.WebURL)
 			protocol, _ := cfg.Get(webURL.Host, "git_protocol")
 

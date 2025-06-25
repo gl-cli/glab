@@ -282,8 +282,8 @@ func (f *factory) Remotes() (glrepo.Remotes, error) {
 	return nil, errors.New("not implemented")
 }
 
-func (f *factory) Config() (config.Config, error) {
-	return nil, errors.New("not implemented")
+func (f *factory) Config() config.Config {
+	return nil
 }
 
 func (f *factory) Branch() (string, error) {

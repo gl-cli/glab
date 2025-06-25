@@ -21,12 +21,12 @@ func Test_remoteResolver(t *testing.T) {
 				git.NewRemote("upstream", "https://example.org/owner/repo.git"),
 			}, nil
 		},
-		getConfig: func() (config.Config, error) {
+		getConfig: func() config.Config {
 			return config.NewFromString(heredoc.Doc(`
 				hosts:
 				  example.org:
 				    oauth_token: OTOKEN
-			`)), nil
+			`))
 		},
 		urlTranslator: func(u *url.URL) *url.URL {
 			return u
@@ -51,12 +51,12 @@ func Test_remoteResolverOverride(t *testing.T) {
 				git.NewRemote("upstream", "https://example.org/ghe-owner/ghe-repo.git"),
 			}, nil
 		},
-		getConfig: func() (config.Config, error) {
+		getConfig: func() config.Config {
 			return config.NewFromString(heredoc.Doc(`
 				hosts:
 				  example.org:
 				    oauth_token: GHETOKEN
-			`)), nil
+			`))
 		},
 		urlTranslator: func(u *url.URL) *url.URL {
 			return u
@@ -113,12 +113,12 @@ func Test_remoteResolverErrors(t *testing.T) {
 				readRemotes: func() (git.RemoteSet, error) {
 					return test.remotes, nil
 				},
-				getConfig: func() (config.Config, error) {
+				getConfig: func() config.Config {
 					return config.NewFromString(heredoc.Doc(`
 				hosts:
 				  my-gitlab.org:
 				    oauth_token: OTOKEN
-			`)), nil
+			`))
 				},
 			}
 

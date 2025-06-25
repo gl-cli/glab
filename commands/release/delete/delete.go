@@ -22,7 +22,7 @@ type options struct {
 	io         *iostreams.IOStreams
 	httpClient func() (*gitlab.Client, error)
 	baseRepo   func() (glrepo.Interface, error)
-	config     func() (config.Config, error)
+	config     func() config.Config
 }
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {

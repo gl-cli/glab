@@ -52,8 +52,8 @@ func TestAliasList(t *testing.T) {
 			ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isaTTy))
 
 			factoryConf := &cmdtest.Factory{
-				ConfigStub: func() (config.Config, error) {
-					return cfg, nil
+				ConfigStub: func() config.Config {
+					return cfg
 				},
 				IOStub: ios,
 			}

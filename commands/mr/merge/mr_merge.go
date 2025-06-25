@@ -34,7 +34,7 @@ const (
 type options struct {
 	io         *iostreams.IOStreams
 	httpClient func() (*gitlab.Client, error)
-	config     func() (config.Config, error)
+	config     func() config.Config
 
 	setAutoMerge       bool
 	squashBeforeMerge  bool

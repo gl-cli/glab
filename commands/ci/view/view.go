@@ -36,7 +36,7 @@ type options struct {
 	io         *iostreams.IOStreams
 	httpClient func() (*gitlab.Client, error)
 	baseRepo   func() (glrepo.Interface, error)
-	config     func() (config.Config, error)
+	config     func() config.Config
 
 	refName       string
 	openInBrowser bool
@@ -189,7 +189,7 @@ func (o *options) run() error {
 		return fmt.Errorf("Can't find pipeline for commit: %s", commitSHA)
 	}
 
-	cfg, _ := o.config()
+	cfg := o.config()
 
 	if o.openInBrowser { // open in browser if --web flag is specified
 		webURL := commit.LastPipeline.WebURL

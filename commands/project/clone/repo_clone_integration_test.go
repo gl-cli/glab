@@ -21,8 +21,8 @@ func Test_repoClone_Integration(t *testing.T) {
 	io, stdin, stdout, stderr := cmdtest.TestIOStreams()
 	fac := &cmdtest.Factory{
 		IOStub: io,
-		ConfigStub: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
+		ConfigStub: func() config.Config {
+			return config.NewBlankConfig()
 		},
 		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
 			return api.NewClientWithCfg(repoHost, cfg, false)
@@ -76,8 +76,8 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 	io, stdin, stdout, stderr := cmdtest.TestIOStreams()
 	fac := &cmdtest.Factory{
 		IOStub: io,
-		ConfigStub: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
+		ConfigStub: func() config.Config {
+			return config.NewBlankConfig()
 		},
 		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
 			return api.NewClientWithCfg(repoHost, cfg, false)

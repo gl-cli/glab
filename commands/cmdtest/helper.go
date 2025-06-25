@@ -21,6 +21,7 @@ import (
 	"github.com/google/shlex"
 	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -166,7 +167,7 @@ type Factory struct {
 	HttpClientStub func() (*gitlab.Client, error)
 	BaseRepoStub   func() (glrepo.Interface, error)
 	RemotesStub    func() (glrepo.Remotes, error)
-	ConfigStub     func() (config.Config, error)
+	ConfigStub     func() config.Config
 	BranchStub     func() (string, error)
 	IOStub         *iostreams.IOStreams
 
@@ -196,7 +197,7 @@ func (f *Factory) Remotes() (glrepo.Remotes, error) {
 	return f.RemotesStub()
 }
 
-func (f *Factory) Config() (config.Config, error) {
+func (f *Factory) Config() config.Config {
 	return f.ConfigStub()
 }
 
@@ -225,8 +226,8 @@ func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *Factory {
 			}
 			return a.Lab(), err
 		},
-		ConfigStub: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
+		ConfigStub: func() config.Config {
+			return config.NewBlankConfig()
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
@@ -256,16 +257,8 @@ func WithGitLabClient(client *gitlab.Client) FactoryOption {
 // WithConfig configures the Factory with a specific config
 func WithConfig(cfg config.Config) FactoryOption {
 	return func(f *Factory) {
-		f.ConfigStub = func() (config.Config, error) {
-			return cfg, nil
-		}
-	}
-}
-
-func WithConfigError(err error) FactoryOption {
-	return func(f *Factory) {
-		f.ConfigStub = func() (config.Config, error) {
-			return nil, err
+		f.ConfigStub = func() config.Config {
+			return cfg
 		}
 	}
 }
@@ -325,8 +318,8 @@ func NewTestFactory(t *testing.T, ios *iostreams.IOStreams, opts ...FactoryOptio
 		HttpClientStub: func() (*gitlab.Client, error) {
 			return &gitlab.Client{}, nil
 		},
-		ConfigStub: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
+		ConfigStub: func() config.Config {
+			return config.NewBlankConfig()
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
@@ -357,8 +350,8 @@ func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdEx
 			t.Errorf("You must configure a GitLab Test client in your tests. Use the WithGitLabClient option function")
 			return nil, nil
 		},
-		ConfigStub: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
+		ConfigStub: func() config.Config {
+			return config.NewBlankConfig()
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil
@@ -440,8 +433,12 @@ func Eq(t *testing.T, got any, expected any) {
 	}
 }
 
-func StubFactory(repo string, io *iostreams.IOStreams) cmdutils.Factory {
-	f := cmdutils.NewFactory(io, false, nil)
+func StubFactory(t *testing.T, repo string, io *iostreams.IOStreams) cmdutils.Factory {
+	t.Helper()
+
+	cfg, err := config.Init()
+	require.NoError(t, err)
+	f := cmdutils.NewFactory(io, false, cfg)
 	if repo != "" {
 		f.RepoOverride(repo)
 	}

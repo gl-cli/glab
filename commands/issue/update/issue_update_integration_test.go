@@ -92,7 +92,7 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 	}
 
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	f := cmdtest.StubFactory(glTestHost+"/cli-automated-testing/test", ios)
+	f := cmdtest.StubFactory(t, glTestHost+"/cli-automated-testing/test", ios)
 
 	cmd := NewCmdUpdate(f)
 	cmd.Flags().StringP("repo", "R", "", "")

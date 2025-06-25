@@ -57,14 +57,14 @@ func Test_NewCmdLogout(t *testing.T) {
 			token := "xxxxxxxx"
 
 			f := &cmdtest.Factory{
-				ConfigStub: func() (config.Config, error) {
+				ConfigStub: func() config.Config {
 					return config.NewFromString(heredoc.Docf(`
 					hosts:
 					  gitlab.something.com:
 					    token: %[1]s
 					  gitlab.example.com:
 					    token: %[1]s
-					`, token)), nil
+					`, token))
 				},
 			}
 

@@ -98,8 +98,8 @@ func TestConfigGet(t *testing.T) {
 			io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isTTY))
 
 			f := &cmdtest.Factory{
-				ConfigStub: func() (config.Config, error) {
-					return tt.config, nil
+				ConfigStub: func() config.Config {
+					return tt.config
 				},
 				IOStub: io,
 			}
@@ -154,8 +154,8 @@ func TestConfigSet(t *testing.T) {
 			io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isTTY))
 
 			f := &cmdtest.Factory{
-				ConfigStub: func() (config.Config, error) {
-					return tt.config, nil
+				ConfigStub: func() config.Config {
+					return tt.config
 				},
 				IOStub: io,
 			}

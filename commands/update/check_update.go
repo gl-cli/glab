@@ -128,10 +128,7 @@ func isOlderVersion(latestVersion, appVersion string) bool {
 // We only want to check for updates once every 24 hours
 func checkLastUpdate(f cmdutils.Factory) (bool, error) {
 	const updateCheckInterval = 24 * time.Hour
-	cfg, err := f.Config()
-	if err != nil {
-		return false, err
-	}
+	cfg := f.Config()
 
 	// We don't care when the command was run if the environment variable is forcing an update
 	if isEnvForcingUpdate() {

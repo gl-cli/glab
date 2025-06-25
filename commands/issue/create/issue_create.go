@@ -55,7 +55,7 @@ type options struct {
 	baseRepo   func() (glrepo.Interface, error)
 	httpClient func() (*gitlab.Client, error)
 	remotes    func() (glrepo.Remotes, error)
-	config     func() (config.Config, error)
+	config     func() config.Config
 
 	baseProject *gitlab.Project
 }
@@ -428,10 +428,7 @@ func previewIssue(opts *options) error {
 		return err
 	}
 
-	cfg, err := opts.config()
-	if err != nil {
-		return err
-	}
+	cfg := opts.config()
 
 	openURL, err := generateIssueWebURL(opts)
 	if err != nil {

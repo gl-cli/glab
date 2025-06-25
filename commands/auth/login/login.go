@@ -26,7 +26,7 @@ import (
 
 type LoginOptions struct {
 	IO        *iostreams.IOStreams
-	Config    func() (config.Config, error)
+	Config    func() config.Config
 	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
 
 	Interactive bool
@@ -144,10 +144,7 @@ func NewCmdLogin(f cmdutils.Factory) *cobra.Command {
 
 func loginRun(opts *LoginOptions) error {
 	c := opts.IO.Color()
-	cfg, err := opts.Config()
-	if err != nil {
-		return err
-	}
+	cfg := opts.Config()
 
 	if opts.Token != "" {
 		if opts.Hostname == "" {
@@ -326,6 +323,7 @@ func loginRun(opts *LoginOptions) error {
 	}
 
 	var token string
+	var err error
 	if strings.EqualFold(loginType, "token") {
 		token, err = showTokenPrompt(opts.IO, hostname)
 		if err != nil {

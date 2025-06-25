@@ -10,7 +10,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
@@ -22,7 +21,6 @@ type options struct {
 	io         *iostreams.IOStreams
 	httpClient func() (*gitlab.Client, error)
 	baseRepo   func() (glrepo.Interface, error)
-	config     func() (config.Config, error)
 }
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
@@ -30,7 +28,6 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		io:         f.IO(),
 		httpClient: f.HttpClient,
 		baseRepo:   f.BaseRepo,
-		config:     f.Config,
 	}
 	securefileCreateCmd := &cobra.Command{
 		Use:   "create <fileName> <inputFilePath>",

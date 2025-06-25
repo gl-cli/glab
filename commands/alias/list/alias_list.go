@@ -15,7 +15,7 @@ import (
 )
 
 type options struct {
-	config func() (config.Config, error)
+	config func() config.Config
 	io     *iostreams.IOStreams
 }
 
@@ -37,10 +37,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run() error {
-	cfg, err := o.config()
-	if err != nil {
-		return err
-	}
+	cfg := o.config()
 
 	aliasCfg, err := cfg.Aliases()
 	if err != nil {
