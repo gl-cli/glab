@@ -52,7 +52,7 @@ func NewColorable(out io.Writer) io.Writer {
 }
 
 func makeColorFunc(isColorfulOutput bool, color string) func(string) string {
-	if isColorfulOutput && color == "black+h" && Is256ColorSupported() {
+	if isColorfulOutput && color == "black+h" && is256ColorSupported() {
 		return func(t string) string {
 			return fmt.Sprintf("\x1b[%d;5;%dm%s\x1b[m", 38, 242, t)
 		}
@@ -90,7 +90,7 @@ func detectIsColorEnabled() bool {
 	return true
 }
 
-func Is256ColorSupported() bool {
+func is256ColorSupported() bool {
 	term := os.Getenv("TERM")
 	colorterm := os.Getenv("COLORTERM")
 
