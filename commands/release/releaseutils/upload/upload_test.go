@@ -4,9 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-
-	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 func TestReleaseUtilsUpload_AliasFilePathToAssetDirectPath(t *testing.T) {
@@ -78,9 +77,8 @@ func TestContext_CreateReleaseAssetFromProjectFile(t *testing.T) {
 		FullPath: "/-/project/42/uploads/66dbcd21ec5d24ed6ea225176098d52b/test_file.txt",
 	}
 
-	io, _, _, _ := cmdtest.TestIOStreams()
-	f := cmdtest.StubFactory(t, "https://gitlab.com/cli-automated-testing/test", io)
-	client, _ := f.HttpClient()
+	client, err := gitlab.NewClient("", gitlab.WithBaseURL("https://gitlab.com"))
+	require.NoError(t, err)
 	context := &Context{
 		Client: client,
 	}

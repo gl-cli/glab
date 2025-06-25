@@ -18,8 +18,7 @@ func TestAskGit_Integration(t *testing.T) {
 	defer restore()
 
 	io, _, stdout, _ := cmdtest.TestIOStreams()
-
-	f := cmdtest.StubFactory(t, "", io)
+	f := cmdtest.NewTestFactory(t, io)
 
 	cmd := NewCmdAsk(f)
 	cli := "--git how to create a branch"
