@@ -28,7 +28,12 @@ func Test_HelperFunctions(t *testing.T) {
 		t.Run("PAGER=", func(t *testing.T) {
 			t.Setenv("PAGER", "")
 
-			got := Init()
+			got := New(
+				WithStdin(os.Stdin, IsTerminal(os.Stdin)),
+				WithStdout(NewColorable(os.Stdout), IsTerminal(os.Stdout)),
+				WithStderr(NewColorable(os.Stderr), IsTerminal(os.Stderr)),
+				WithPagerCommand(PagerCommandFromEnv()),
+			)
 
 			assert.Equal(t, ios.In, got.In)
 			assert.Equal(t, ios.IsaTTY, got.IsaTTY)
@@ -40,7 +45,12 @@ func Test_HelperFunctions(t *testing.T) {
 		t.Run("GLAB_PAGER=", func(t *testing.T) {
 			t.Setenv("GLAB_PAGER", "more")
 
-			got := Init()
+			got := New(
+				WithStdin(os.Stdin, IsTerminal(os.Stdin)),
+				WithStdout(NewColorable(os.Stdout), IsTerminal(os.Stdout)),
+				WithStderr(NewColorable(os.Stderr), IsTerminal(os.Stderr)),
+				WithPagerCommand(PagerCommandFromEnv()),
+			)
 
 			assert.Equal(t, ios.In, got.In)
 			assert.Equal(t, ios.IsaTTY, got.IsaTTY)

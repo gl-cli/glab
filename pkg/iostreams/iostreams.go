@@ -43,35 +43,53 @@ type IOStreams struct {
 
 var controlCharRegEx = regexp.MustCompile(`(\x1b\[)((?:(\d*)(;*))*)([A-Z,a-l,n-z])`)
 
-func Init() *IOStreams {
-	stdoutIsTTY := IsTerminal(os.Stdout)
-	stderrIsTTY := IsTerminal(os.Stderr)
+// IOStreamsOption represents a function that configures io streams
+type IOStreamsOption func(*IOStreams)
 
-	var pagerCommand string
-	if glabPager, glabPagerExists := os.LookupEnv("GLAB_PAGER"); glabPagerExists {
-		pagerCommand = glabPager
-	} else {
-		pagerCommand = os.Getenv("PAGER")
+func WithStdin(stdin io.ReadCloser, isTTY bool) IOStreamsOption {
+	return func(i *IOStreams) {
+		i.In = stdin
+		i.IsInTTY = isTTY
 	}
+}
 
-	ioStream := &IOStreams{
-		In:                os.Stdin,
-		StdOut:            NewColorable(os.Stdout),
-		StdErr:            NewColorable(os.Stderr),
-		systemStdOut:      NewColorable(os.Stdout),
-		pagerCommand:      pagerCommand,
-		IsaTTY:            stdoutIsTTY,
-		IsErrTTY:          stderrIsTTY,
+func WithStdout(stdout io.Writer, isTTY bool) IOStreamsOption {
+	return func(i *IOStreams) {
+		i.StdOut = stdout
+		i.systemStdOut = stdout // TODO: is this really correct?!
+		i.IsaTTY = isTTY
+	}
+}
+
+func WithStderr(stderr io.Writer, isTTY bool) IOStreamsOption {
+	return func(i *IOStreams) {
+		i.StdErr = stderr
+		i.IsErrTTY = isTTY
+	}
+}
+
+func WithPagerCommand(command string) IOStreamsOption {
+	return func(i *IOStreams) {
+		i.pagerCommand = command
+	}
+}
+
+func New(options ...IOStreamsOption) *IOStreams {
+	iostreams := &IOStreams{
+		// static configuration that we don't need to change in tests.
 		is256ColorEnabled: Is256ColorSupported(),
 		displayHyperlinks: "never",
-		isColorEnabled:    detectIsColorEnabled() && stdoutIsTTY && stderrIsTTY,
 	}
 
-	if stdin, ok := ioStream.In.(*os.File); ok {
-		ioStream.IsInTTY = IsTerminal(stdin)
+	// Apply options
+	for _, option := range options {
+		option(iostreams)
 	}
 
-	return ioStream
+	// configure static fields that rely on option functions
+	iostreams.isColorEnabled = detectIsColorEnabled() && iostreams.IsaTTY && iostreams.IsErrTTY
+
+	return iostreams
 }
 
 func stripControlCharacters(input string) string {

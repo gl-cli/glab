@@ -51,7 +51,15 @@ var debug bool
 func main() {
 	debug = debugMode == "true" || debugMode == "1"
 
-	cmdFactory := cmdutils.NewFactory(iostreams.Init(), true)
+	cmdFactory := cmdutils.NewFactory(
+		iostreams.New(
+			iostreams.WithStdin(os.Stdin, iostreams.IsTerminal(os.Stdin)),
+			iostreams.WithStdout(iostreams.NewColorable(os.Stdout), iostreams.IsTerminal(os.Stdout)),
+			iostreams.WithStderr(iostreams.NewColorable(os.Stderr), iostreams.IsTerminal(os.Stderr)),
+			iostreams.WithPagerCommand(iostreams.PagerCommandFromEnv()),
+		),
+		true,
+	)
 
 	cfg, err := cmdFactory.Config()
 	if err != nil {
