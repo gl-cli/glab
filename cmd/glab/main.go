@@ -51,7 +51,14 @@ var debug bool
 func main() {
 	debug = debugMode == "true" || debugMode == "1"
 
-	cmdFactory := cmdutils.NewFactory(
+	// Initialize configuration
+	cfg, err := config.Init()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to read configuration:  %s\n", err)
+		os.Exit(2)
+	}
+
+	cmdFactory := cmdutils.NewFactoryWithConfig(
 		iostreams.New(
 			iostreams.WithStdin(os.Stdin, iostreams.IsTerminal(os.Stdin)),
 			iostreams.WithStdout(iostreams.NewColorable(os.Stdout), iostreams.IsTerminal(os.Stdout)),
@@ -59,13 +66,8 @@ func main() {
 			iostreams.WithPagerCommand(iostreams.PagerCommandFromEnv()),
 		),
 		true,
+		cfg,
 	)
-
-	cfg, err := cmdFactory.Config()
-	if err != nil {
-		cmdFactory.IO().Logf("failed to read configuration:  %s\n", err)
-		os.Exit(2)
-	}
 
 	api.SetUserAgent(version, platform, runtime.GOARCH)
 	maybeOverrideDefaultHost(cmdFactory, cfg)
