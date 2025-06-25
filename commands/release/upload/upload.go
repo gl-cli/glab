@@ -18,23 +18,25 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type UploadOpts struct {
-	TagName          string
-	AssetLinksAsJson string
+type options struct {
+	tagName          string
+	assetLinksAsJSON string
 
-	AssetLinks []*upload.ReleaseAsset
-	AssetFiles []*upload.ReleaseFile
+	assetLinks []*upload.ReleaseAsset
+	assetFiles []*upload.ReleaseFile
 
-	IO         *iostreams.IOStreams
-	HTTPClient func() (*gitlab.Client, error)
-	BaseRepo   func() (glrepo.Interface, error)
-	Config     func() (config.Config, error)
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
+	config     func() (config.Config, error)
 }
 
 func NewCmdUpload(f cmdutils.Factory) *cobra.Command {
-	opts := &UploadOpts{
-		IO:     f.IO(),
-		Config: f.Config,
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+		config:     f.Config,
 	}
 
 	cmd := &cobra.Command{
@@ -50,7 +52,7 @@ func NewCmdUpload(f cmdutils.Factory) *cobra.Command {
 				if len(args) < 1 {
 					return &cmdutils.FlagError{Err: errors.New("no tag name provided.")}
 				}
-				if len(args) < 2 && opts.AssetLinksAsJson == "" {
+				if len(args) < 2 && opts.assetLinksAsJSON == "" {
 					return cmdutils.FlagError{Err: errors.New("no files specified.")}
 				}
 				return nil
@@ -81,71 +83,84 @@ func NewCmdUpload(f cmdutils.Factory) *cobra.Command {
 			  ]'
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			opts.TagName = args[0]
-
-			opts.AssetFiles, err = releaseutils.AssetsFromArgs(args[1:])
-			if err != nil {
+			if err := opts.complete(args); err != nil {
 				return err
 			}
 
-			if opts.AssetFiles == nil && opts.AssetLinksAsJson == "" {
-				return cmdutils.FlagError{Err: errors.New("no files specified.")}
+			if err := opts.validate(); err != nil {
+				return err
 			}
 
-			if opts.AssetLinksAsJson != "" {
-				err := json.Unmarshal([]byte(opts.AssetLinksAsJson), &opts.AssetLinks)
-				if err != nil {
-					return fmt.Errorf("failed to parse JSON string: %w", err)
-				}
-			}
-
-			return uploadRun(opts)
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.AssetLinksAsJson, "assets-links", "a", "", "`JSON` string representation of assets links, like: `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
+	cmd.Flags().StringVarP(&opts.assetLinksAsJSON, "assets-links", "a", "", "`JSON` string representation of assets links, like: `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
 
 	return cmd
 }
 
-func uploadRun(opts *UploadOpts) error {
+func (o *options) complete(args []string) error {
+	o.tagName = args[0]
+
+	assetFiles, err := releaseutils.AssetsFromArgs(args[1:])
+	if err != nil {
+		return err
+	}
+	o.assetFiles = assetFiles
+
+	return nil
+}
+
+func (o *options) validate() error {
+	if o.assetFiles == nil && o.assetLinksAsJSON == "" {
+		return cmdutils.FlagError{Err: errors.New("no files specified.")}
+	}
+
+	if o.assetLinksAsJSON != "" {
+		err := json.Unmarshal([]byte(o.assetLinksAsJSON), &o.assetLinks)
+		if err != nil {
+			return fmt.Errorf("failed to parse JSON string: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
 	start := time.Now()
 
-	client, err := opts.HTTPClient()
+	client, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	repo, err := opts.BaseRepo()
+	repo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
-	color := opts.IO.Color()
+	color := o.io.Color()
 	var resp *gitlab.Response
 
-	opts.IO.Logf("%s Validating tag %s=%s %s=%s\n",
+	o.io.Logf("%s Validating tag %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
-		color.Blue("tag"), opts.TagName)
+		color.Blue("tag"), o.tagName)
 
-	release, resp, err := client.Releases.GetRelease(repo.FullName(), opts.TagName)
+	release, resp, err := client.Releases.GetRelease(repo.FullName(), o.tagName)
 	if err != nil {
 		if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
-			return cmdutils.WrapError(err, "release does not exist. Create a new release with `glab release create "+opts.TagName+"`.")
+			return cmdutils.WrapError(err, "release does not exist. Create a new release with `glab release create "+o.tagName+"`.")
 		}
 		return cmdutils.WrapError(err, "failed to fetch release.")
 	}
 
 	// upload files and create asset links
-	err = releaseutils.CreateReleaseAssets(opts.IO, client, opts.AssetFiles, opts.AssetLinks, repo.FullName(), release.TagName)
+	err = releaseutils.CreateReleaseAssets(o.io, client, o.assetFiles, o.assetLinks, repo.FullName(), release.TagName)
 	if err != nil {
 		return cmdutils.WrapError(err, "creating release assets failed.")
 	}
 
-	opts.IO.Logf(color.Bold("%s Upload succeeded after %0.2fs.\n"), color.GreenCheck(), time.Since(start).Seconds())
+	o.io.Logf(color.Bold("%s Upload succeeded after %0.2fs.\n"), color.GreenCheck(), time.Since(start).Seconds())
 	return nil
 }

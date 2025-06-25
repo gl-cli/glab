@@ -15,25 +15,27 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
-type UpdateOpts struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	Key         string
-	Value       string
-	Type        string
-	Scope       string
-	Protected   bool
-	Masked      bool
-	Raw         bool
-	Group       string
-	Description string
+	key         string
+	value       string
+	typ         string
+	scope       string
+	protected   bool
+	masked      bool
+	raw         bool
+	group       string
+	description string
 }
 
-func NewCmdUpdate(f cmdutils.Factory, runE func(opts *UpdateOpts) error) *cobra.Command {
-	opts := &UpdateOpts{
-		IO: f.IO(),
+func NewCmdUpdate(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -49,109 +51,113 @@ func NewCmdUpdate(f cmdutils.Factory, runE func(opts *UpdateOpts) error) *cobra.
 			$ cat file.txt | glab variable update SERVER_TOKEN
 			$ cat token.txt | glab variable update GROUP_TOKEN -g mygroup --scope=prod
 		`),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			// Supports repo override
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
+		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.complete(args)
 
-			opts.Key = args[0]
-
-			if !variableutils.IsValidKey(opts.Key) {
-				err = cmdutils.FlagError{Err: fmt.Errorf("invalid key provided.\n%s", variableutils.ValidKeyMsg)}
-				return
-			}
-
-			if opts.Value != "" && len(args) == 2 {
-				err = cmdutils.FlagError{Err: errors.New("specify value either by the second positional argument or the --value flag.")}
-				return
-			}
-
-			if cmd.Flags().Changed("scope") && opts.Group != "" {
-				err = cmdutils.FlagError{Err: errors.New("scope is not required for group variables.")}
-				return
-			}
-
-			opts.Value, err = variableutils.GetValue(opts.Value, opts.IO, args)
-			if err != nil {
-				return
-			}
-
-			if cmd.Flags().Changed("type") {
-				if opts.Type != "env_var" && opts.Type != "file" {
-					err = cmdutils.FlagError{Err: fmt.Errorf("invalid type: %s. --type must be one of `env_var` or `file`.", opts.Type)}
-					return
-				}
+			if err := opts.validate(cmd, args); err != nil {
+				return err
 			}
 
 			if runE != nil {
-				err = runE(opts)
-				return
+				return runE(opts)
 			}
-			err = updateRun(opts)
-			return
+
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Value, "value", "v", "", "The value of a variable.")
-	cmd.Flags().StringVarP(&opts.Type, "type", "t", "env_var", "The type of a variable: env_var, file.")
-	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. Values: all (*), or specific environments.")
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Set variable for a group.")
-	cmd.Flags().BoolVarP(&opts.Masked, "masked", "m", false, "Whether the variable is masked.")
-	cmd.Flags().BoolVarP(&opts.Raw, "raw", "r", false, "Whether the variable is treated as a raw string.")
-	cmd.Flags().BoolVarP(&opts.Protected, "protected", "p", false, "Whether the variable is protected.")
-	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Set description of a variable.")
+	cmd.Flags().StringVarP(&opts.value, "value", "v", "", "The value of a variable.")
+	cmd.Flags().StringVarP(&opts.typ, "type", "t", "env_var", "The type of a variable: env_var, file.")
+	cmd.Flags().StringVarP(&opts.scope, "scope", "s", "*", "The environment_scope of the variable. Values: all (*), or specific environments.")
+	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "Set variable for a group.")
+	cmd.Flags().BoolVarP(&opts.masked, "masked", "m", false, "Whether the variable is masked.")
+	cmd.Flags().BoolVarP(&opts.raw, "raw", "r", false, "Whether the variable is treated as a raw string.")
+	cmd.Flags().BoolVarP(&opts.protected, "protected", "p", false, "Whether the variable is protected.")
+	cmd.Flags().StringVarP(&opts.description, "description", "d", "", "Set description of a variable.")
 	return cmd
 }
 
-func updateRun(opts *UpdateOpts) error {
-	c := opts.IO.Color()
-	httpClient, err := opts.HTTPClient()
+func (o *options) complete(args []string) {
+	o.key = args[0]
+}
+
+func (o *options) validate(cmd *cobra.Command, args []string) error {
+	if !variableutils.IsValidKey(o.key) {
+		return cmdutils.FlagError{Err: fmt.Errorf("invalid key provided.\n%s", variableutils.ValidKeyMsg)}
+	}
+
+	if o.value != "" && len(args) == 2 {
+		return cmdutils.FlagError{Err: errors.New("specify value either by the second positional argument or the --value flag.")}
+	}
+
+	if cmd.Flags().Changed("scope") && o.group != "" {
+		return cmdutils.FlagError{Err: errors.New("scope is not required for group variables.")}
+	}
+
+	value, err := variableutils.GetValue(o.value, o.io, args)
+	if err != nil {
+		return err
+	}
+	o.value = value
+
+	if cmd.Flags().Changed("type") {
+		if o.typ != "env_var" && o.typ != "file" {
+			return cmdutils.FlagError{Err: fmt.Errorf("invalid type: %s. --type must be one of `env_var` or `file`.", o.typ)}
+		}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	c := o.io.Color()
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	if opts.Group != "" {
+	if o.group != "" {
 		// update group-level variable
 		updateGroupVarOpts := &gitlab.UpdateGroupVariableOptions{
-			Value:            gitlab.Ptr(opts.Value),
-			VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(opts.Type)),
-			Masked:           gitlab.Ptr(opts.Masked),
-			Protected:        gitlab.Ptr(opts.Protected),
-			Raw:              gitlab.Ptr(opts.Raw),
-			EnvironmentScope: gitlab.Ptr(opts.Scope),
-			Description:      gitlab.Ptr(opts.Description),
+			Value:            gitlab.Ptr(o.value),
+			VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(o.typ)),
+			Masked:           gitlab.Ptr(o.masked),
+			Protected:        gitlab.Ptr(o.protected),
+			Raw:              gitlab.Ptr(o.raw),
+			EnvironmentScope: gitlab.Ptr(o.scope),
+			Description:      gitlab.Ptr(o.description),
 		}
 
-		_, err = api.UpdateGroupVariable(httpClient, opts.Group, opts.Key, updateGroupVarOpts)
+		_, err = api.UpdateGroupVariable(httpClient, o.group, o.key, updateGroupVarOpts)
 		if err != nil {
 			return err
 		}
 
-		fmt.Fprintf(opts.IO.StdOut, "%s Updated variable %s for group %s.\n", c.GreenCheck(), opts.Key, opts.Group)
+		fmt.Fprintf(o.io.StdOut, "%s Updated variable %s for group %s.\n", c.GreenCheck(), o.key, o.group)
 		return nil
 	}
 
 	// update project-level variable
-	baseRepo, err := opts.BaseRepo()
+	baseRepo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
 
 	updateProjectVarOpts := &gitlab.UpdateProjectVariableOptions{
-		Value:            gitlab.Ptr(opts.Value),
-		VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(opts.Type)),
-		Masked:           gitlab.Ptr(opts.Masked),
-		Protected:        gitlab.Ptr(opts.Protected),
-		Raw:              gitlab.Ptr(opts.Raw),
-		EnvironmentScope: gitlab.Ptr(opts.Scope),
-		Description:      gitlab.Ptr(opts.Description),
+		Value:            gitlab.Ptr(o.value),
+		VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(o.typ)),
+		Masked:           gitlab.Ptr(o.masked),
+		Protected:        gitlab.Ptr(o.protected),
+		Raw:              gitlab.Ptr(o.raw),
+		EnvironmentScope: gitlab.Ptr(o.scope),
+		Description:      gitlab.Ptr(o.description),
 	}
 
-	_, err = api.UpdateProjectVariable(httpClient, baseRepo.FullName(), opts.Key, updateProjectVarOpts)
+	_, err = api.UpdateProjectVariable(httpClient, baseRepo.FullName(), o.key, updateProjectVarOpts)
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(opts.IO.StdOut, "%s Updated variable %s for project %s with scope %s.\n", c.GreenCheck(), opts.Key, baseRepo.FullName(), opts.Scope)
+	fmt.Fprintf(o.io.StdOut, "%s Updated variable %s for project %s with scope %s.\n", c.GreenCheck(), o.key, baseRepo.FullName(), o.scope)
 	return nil
 }

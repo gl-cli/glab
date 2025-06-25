@@ -2,7 +2,6 @@ package list
 
 import (
 	"encoding/json"
-	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -20,20 +19,22 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type ListOpts struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	User         string
-	Group        string
-	OutputFormat string
-	ListActive   bool
+	user         string
+	group        string
+	outputFormat string
+	listActive   bool
 }
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
-	opts := &ListOpts{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -70,29 +71,32 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 		`,
 		),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			opts.Group, err = flag.GroupOverride(cmd)
-			if err != nil {
+			if err := opts.complete(cmd); err != nil {
 				return err
 			}
 
-			if opts.Group != "" && opts.User != "" {
-				return cmdutils.FlagError{Err: errors.New("--user and --group are mutually exclusive.")}
-			}
-
-			return listRun(opts)
+			return opts.run()
 		},
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "List group access tokens. Ignored if a user or repository argument is set.")
-	cmd.Flags().StringVarP(&opts.User, "user", "U", "", "List personal access tokens. Use @me for the current user.")
-	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json. text provides a readable table, json outputs the tokens with metadata.")
-	cmd.Flags().BoolVarP(&opts.ListActive, "active", "a", false, "List only the active tokens.")
+	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "List group access tokens. Ignored if a user or repository argument is set.")
+	cmd.Flags().StringVarP(&opts.user, "user", "U", "", "List personal access tokens. Use @me for the current user.")
+	cmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json. text provides a readable table, json outputs the tokens with metadata.")
+	cmd.Flags().BoolVarP(&opts.listActive, "active", "a", false, "List only the active tokens.")
+	cmd.MarkFlagsMutuallyExclusive("group", "user")
 
 	return cmd
+}
+
+func (o *options) complete(cmd *cobra.Command) error {
+	group, err := flag.GroupOverride(cmd)
+	if err != nil {
+		return err
+	}
+	o.group = group
+
+	return nil
 }
 
 type Token struct {
@@ -142,8 +146,8 @@ func formatExpiresAt(expiresAt *gitlab.ISOTime) string {
 	return expiresAt.String()
 }
 
-func listRun(opts *ListOpts) error {
-	httpClient, err := opts.HTTPClient()
+func (o *options) run() error {
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
@@ -151,8 +155,8 @@ func listRun(opts *ListOpts) error {
 	var apiTokens any
 	var outputTokens Tokens
 	switch {
-	case opts.User != "":
-		user, err := api.UserByName(httpClient, opts.User)
+	case o.user != "":
+		user, err := api.UserByName(httpClient, o.user)
 		if err != nil {
 			return err
 		}
@@ -166,7 +170,7 @@ func listRun(opts *ListOpts) error {
 		apiTokens = tokens
 		outputTokens = make([]Token, 0, len(tokens))
 		for _, token := range tokens {
-			if !opts.ListActive || token.Active {
+			if !o.listActive || token.Active {
 				outputTokens = append(outputTokens, Token{
 					ID:          strconv.FormatInt(int64(token.ID), 10),
 					Name:        token.Name,
@@ -181,16 +185,16 @@ func listRun(opts *ListOpts) error {
 				})
 			}
 		}
-	case opts.Group != "":
+	case o.group != "":
 		options := &gitlab.ListGroupAccessTokensOptions{}
-		tokens, err := api.ListGroupAccessTokens(httpClient, opts.Group, options)
+		tokens, err := api.ListGroupAccessTokens(httpClient, o.group, options)
 		if err != nil {
 			return err
 		}
 		apiTokens = tokens
 		outputTokens = make([]Token, 0, len(tokens))
 		for _, token := range tokens {
-			if !opts.ListActive || token.Active {
+			if !o.listActive || token.Active {
 				outputTokens = append(outputTokens, Token{
 					ID:          strconv.FormatInt(int64(token.ID), 10),
 					Name:        token.Name,
@@ -206,7 +210,7 @@ func listRun(opts *ListOpts) error {
 			}
 		}
 	default:
-		repo, err := opts.BaseRepo()
+		repo, err := o.baseRepo()
 		if err != nil {
 			return err
 		}
@@ -218,7 +222,7 @@ func listRun(opts *ListOpts) error {
 		apiTokens = tokens
 		outputTokens = make([]Token, 0, len(tokens))
 		for _, token := range tokens {
-			if !opts.ListActive || token.Active {
+			if !o.listActive || token.Active {
 				outputTokens = append(outputTokens, Token{
 					ID:          strconv.FormatInt(int64(token.ID), 10),
 					Name:        token.Name,
@@ -235,14 +239,14 @@ func listRun(opts *ListOpts) error {
 		}
 	}
 
-	if opts.OutputFormat == "json" {
-		encoder := json.NewEncoder(opts.IO.StdOut)
+	if o.outputFormat == "json" {
+		encoder := json.NewEncoder(o.io.StdOut)
 		if err := encoder.Encode(apiTokens); err != nil {
 			return err
 		}
 	} else {
 		table := createTablePrinter(outputTokens)
-		opts.IO.LogInfof("%s", table.String())
+		o.io.LogInfof("%s", table.String())
 	}
 	return nil
 }

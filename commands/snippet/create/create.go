@@ -17,21 +17,22 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type CreateOpts struct {
-	Title           string
-	Description     string
-	DisplayFilename string
-	Visibility      string
-	Personal        bool
+type options struct {
+	title           string
+	description     string
+	displayFilename string
+	visibility      string
+	personal        bool
 
-	Files []*gitlab.CreateSnippetFileOptions
+	files []*gitlab.CreateSnippetFileOptions
 
-	IO       *iostreams.IOStreams
-	BaseRepo func() (glrepo.Interface, error)
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
 }
 
-func (opts *CreateOpts) addFile(path, content *string) {
-	opts.Files = append(opts.Files, &gitlab.CreateSnippetFileOptions{
+func (opts *options) addFile(path, content *string) {
+	opts.files = append(opts.files, &gitlab.CreateSnippetFileOptions{
 		FilePath: path,
 		Content:  content,
 	})
@@ -47,7 +48,11 @@ func hasStdIn() bool {
 }
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
-	opts := &CreateOpts{}
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+	}
 	snippetCreateCmd := &cobra.Command{
 		Use: `create [flags] -t <title> <file1> [<file2>...]
 glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
@@ -61,107 +66,118 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 			$ glab snippet create -t Title -f "different.go" -d Description --filename different.go main.go
 			$ glab snippet create --personal --title "Personal snippet" script.py
 		`),
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			opts.IO = f.IO()
-			opts.BaseRepo = f.BaseRepo
-			if opts.Title == "" {
-				return &cmdutils.FlagError{
-					Err: errors.New("--title required for snippets"),
-				}
-			}
-			if len(args) == 0 {
-				if opts.DisplayFilename == "" {
-					return &cmdutils.FlagError{Err: errors.New("if 'path' is not provided, 'filename' and stdin are required")}
-				} else {
-					if !opts.IO.IsInTTY && !hasStdIn() {
-						return errors.New("stdin required if no 'path' is provided")
-					}
-				}
-				fmt.Fprintln(opts.IO.StdOut, "reading from stdin (Ctrl+D to finish, Ctrl+C to abort):")
-				content, err := readFromSTDIN(opts.IO)
-				if err != nil {
-					return err
-				}
-				opts.addFile(&opts.DisplayFilename, &content)
-			} else {
-				for _, path := range args {
-					filename := path
-					if len(args) == 1 && opts.DisplayFilename != "" {
-						filename = opts.DisplayFilename
-					}
-
-					content, err := readFromFile(path)
-					if err != nil {
-						return err
-					}
-					dbg.Debug("Adding:", filename)
-					opts.addFile(&filename, &content)
-				}
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := f.HttpClient()
-			if err != nil {
+			if err := opts.complete(args); err != nil {
 				return err
 			}
-			if opts.Personal {
-				return runCreate(client, nil, opts)
-			} else {
-				repo, err := opts.BaseRepo()
-				if err != nil {
-					redCheck := opts.IO.Color().FailedIcon()
-					return fmt.Errorf("%s Project snippet needs a repository. Do you want --personal?", redCheck)
-				}
-				return runCreate(client, repo, opts)
 
+			if err := opts.validate(); err != nil {
+				return err
 			}
+
+			return opts.run()
 		},
 	}
 
-	snippetCreateCmd.Flags().StringVarP(&opts.Title, "title", "t", "", "(required) Title of the snippet.")
-	snippetCreateCmd.Flags().StringVarP(&opts.DisplayFilename, "filename", "f", "", "Filename of the snippet in GitLab.")
-	snippetCreateCmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Description of the snippet.")
-	snippetCreateCmd.Flags().StringVarP(&opts.Visibility, "visibility", "v", "private", "Limit by visibility: 'public', 'internal', or 'private'")
-	snippetCreateCmd.Flags().BoolVarP(&opts.Personal, "personal", "p", false, "Create a personal snippet.")
+	snippetCreateCmd.Flags().StringVarP(&opts.title, "title", "t", "", "(required) Title of the snippet.")
+	snippetCreateCmd.Flags().StringVarP(&opts.displayFilename, "filename", "f", "", "Filename of the snippet in GitLab.")
+	snippetCreateCmd.Flags().StringVarP(&opts.description, "description", "d", "", "Description of the snippet.")
+	snippetCreateCmd.Flags().StringVarP(&opts.visibility, "visibility", "v", "private", "Limit by visibility: 'public', 'internal', or 'private'")
+	snippetCreateCmd.Flags().BoolVarP(&opts.personal, "personal", "p", false, "Create a personal snippet.")
 
 	return snippetCreateCmd
 }
 
-func runCreate(client *gitlab.Client, repo glrepo.Interface, opts *CreateOpts) error {
+func (o *options) complete(args []string) error {
+	if len(args) == 0 {
+		if o.displayFilename == "" {
+			return &cmdutils.FlagError{Err: errors.New("if 'path' is not provided, 'filename' and stdin are required")}
+		} else {
+			if !o.io.IsInTTY && !hasStdIn() {
+				return errors.New("stdin required if no 'path' is provided")
+			}
+		}
+		fmt.Fprintln(o.io.StdOut, "reading from stdin (Ctrl+D to finish, Ctrl+C to abort):")
+		content, err := readFromSTDIN(o.io)
+		if err != nil {
+			return err
+		}
+		o.addFile(&o.displayFilename, &content)
+	} else {
+		for _, path := range args {
+			filename := path
+			if len(args) == 1 && o.displayFilename != "" {
+				filename = o.displayFilename
+			}
+
+			content, err := readFromFile(path)
+			if err != nil {
+				return err
+			}
+			dbg.Debug("Adding:", filename)
+			o.addFile(&filename, &content)
+		}
+	}
+
+	return nil
+}
+
+func (o *options) validate() error {
+	if o.title == "" {
+		return &cmdutils.FlagError{
+			Err: errors.New("--title required for snippets"),
+		}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	client, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+
+	var repo glrepo.Interface
+	if !o.personal {
+		repo, err = o.baseRepo()
+		if err != nil {
+			redCheck := o.io.Color().FailedIcon()
+			return fmt.Errorf("%s Project snippet needs a repository. Do you want --personal?", redCheck)
+		}
+	}
+
 	var snippet *gitlab.Snippet
-	var err error
-	if opts.Personal {
-		fmt.Fprintln(opts.IO.StdErr, "- Creating snippet in personal space")
+	if o.personal {
+		fmt.Fprintln(o.io.StdErr, "- Creating snippet in personal space")
 		snippet, err = api.CreateSnippet(client, &gitlab.CreateSnippetOptions{
-			Title:       &opts.Title,
-			Description: &opts.Description,
-			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility)),
-			Files:       &opts.Files,
+			Title:       &o.title,
+			Description: &o.description,
+			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(o.visibility)),
+			Files:       &o.files,
 		})
 	} else {
-		fmt.Fprintln(opts.IO.StdErr, "- Creating snippet in", repo.FullName())
+		fmt.Fprintln(o.io.StdErr, "- Creating snippet in", repo.FullName())
 		snippet, err = api.CreateProjectSnippet(client, repo.FullName(), &gitlab.CreateProjectSnippetOptions{
-			Title:       &opts.Title,
-			Description: &opts.Description,
-			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(opts.Visibility)),
-			Files:       &opts.Files,
+			Title:       &o.title,
+			Description: &o.description,
+			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(o.visibility)),
+			Files:       &o.files,
 		})
 	}
 	if err != nil {
 		return fmt.Errorf("failed to create snippet: %w", err)
 	}
-	snippetID := opts.IO.Color().Green(fmt.Sprintf("$%d", snippet.ID))
+	snippetID := o.io.Color().Green(fmt.Sprintf("$%d", snippet.ID))
 	var files []string
-	for _, file := range opts.Files {
+	for _, file := range o.files {
 		files = append(files, *file.FilePath)
 	}
 	names := strings.Join(files, " ")
-	if opts.IO.IsaTTY {
-		fmt.Fprintf(opts.IO.StdOut, "%s %s (%s)\n %s\n", snippetID, snippet.Title, names, snippet.WebURL)
+	if o.io.IsaTTY {
+		fmt.Fprintf(o.io.StdOut, "%s %s (%s)\n %s\n", snippetID, snippet.Title, names, snippet.WebURL)
 	} else {
-		fmt.Fprintln(opts.IO.StdOut, snippet.WebURL)
+		fmt.Fprintln(o.io.StdOut, snippet.WebURL)
 	}
 
 	return nil

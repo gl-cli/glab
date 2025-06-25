@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"gitlab.com/gitlab-org/cli/api"
@@ -18,16 +19,18 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-type ViewOpts struct {
-	ShowComments   bool
-	ShowSystemLogs bool
-	OpenInBrowser  bool
-	OutputFormat   string
+type options struct {
+	showComments   bool
+	showSystemLogs bool
+	openInBrowser  bool
+	outputFormat   string
 
-	CommentPageNumber int
-	CommentLimit      int
+	commentPageNujmber int
+	commentLimit       int
 
-	IO *iostreams.IOStreams
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	config     func() (config.Config, error)
 }
 
 type MRWithNotes struct {
@@ -36,8 +39,10 @@ type MRWithNotes struct {
 }
 
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
-	opts := &ViewOpts{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		config:     f.Config,
 	}
 	mrViewCmd := &cobra.Command{
 		Use:     "view {<id> | <branch>}",
@@ -46,83 +51,87 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"show"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
-			if err != nil {
-				return err
-			}
-
-			mr, baseRepo, err := mrutils.MRFromArgsWithOpts(f, args, &gitlab.GetMergeRequestsOptions{
-				IncludeDivergedCommitsCount: gitlab.Ptr(true),
-				RenderHTML:                  gitlab.Ptr(true),
-				IncludeRebaseInProgress:     gitlab.Ptr(true),
-			}, "any")
-			if err != nil {
-				return err
-			}
-
-			// Optional: check for approval state of the MR (if the project supports it). In the event of a failure
-			// for this step, move forward assuming MR approvals are not supported. See below.
-			//
-			// NOTE: the API documentation says that project details have `approvals_before_merge` for GitLab Premium
-			// https://docs.gitlab.com/api/projects/#get-a-single-project. Unfortunately, the API client used
-			// does not provide the necessary ability to determine if this value was present or not in the response JSON
-			// since Project.ApprovalsBeforeMerge is a non-pointer type. Because of this, this step will either succeed
-			// and show approval state or it will fail silently
-			mrApprovals, _ := api.GetMRApprovalState(apiClient, baseRepo.FullName(), mr.IID)
-
-			cfg, _ := f.Config()
-
-			if opts.OpenInBrowser { // open in browser if --web flag is specified
-				if f.IO().IsOutputTTY() {
-					fmt.Fprintf(f.IO().StdErr, "Opening %s in your browser.\n", utils.DisplayURL(mr.WebURL))
-				}
-
-				browser, _ := cfg.Get(baseRepo.RepoHost(), "browser")
-				return utils.OpenInBrowser(mr.WebURL, browser)
-			}
-
-			notes := []*gitlab.Note{}
-
-			if opts.ShowComments {
-				l := &gitlab.ListMergeRequestNotesOptions{
-					Sort: gitlab.Ptr("asc"),
-					ListOptions: gitlab.ListOptions{
-						Page:    opts.CommentPageNumber,
-						PerPage: opts.CommentLimit,
-					},
-				}
-
-				notes, err = api.ListMRNotes(apiClient, baseRepo.FullName(), mr.IID, l)
-				if err != nil {
-					return err
-				}
-			}
-
-			glamourStyle, _ := cfg.Get(baseRepo.RepoHost(), "glamour_style")
-			f.IO().ResolveBackgroundColor(glamourStyle)
-			if err := f.IO().StartPager(); err != nil {
-				return err
-			}
-			defer f.IO().StopPager()
-
-			if opts.OutputFormat == "json" {
-				return printJSONMR(opts, mr, notes)
-			}
-			if f.IO().IsOutputTTY() {
-				return printTTYMRPreview(opts, mr, mrApprovals, notes)
-			}
-			return printRawMRPreview(opts, mr, notes)
+			return opts.run(f, args)
 		},
 	}
 
-	mrViewCmd.Flags().BoolVarP(&opts.ShowComments, "comments", "c", false, "Show merge request comments and activities.")
-	mrViewCmd.Flags().BoolVarP(&opts.ShowSystemLogs, "system-logs", "s", false, "Show system activities and logs.")
-	mrViewCmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
-	mrViewCmd.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open merge request in a browser. Uses default browser or browser specified in BROWSER variable.")
-	mrViewCmd.Flags().IntVarP(&opts.CommentPageNumber, "page", "p", 0, "Page number.")
-	mrViewCmd.Flags().IntVarP(&opts.CommentLimit, "per-page", "P", 20, "Number of items to list per page.")
+	mrViewCmd.Flags().BoolVarP(&opts.showComments, "comments", "c", false, "Show merge request comments and activities.")
+	mrViewCmd.Flags().BoolVarP(&opts.showSystemLogs, "system-logs", "s", false, "Show system activities and logs.")
+	mrViewCmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json.")
+	mrViewCmd.Flags().BoolVarP(&opts.openInBrowser, "web", "w", false, "Open merge request in a browser. Uses default browser or browser specified in BROWSER variable.")
+	mrViewCmd.Flags().IntVarP(&opts.commentPageNujmber, "page", "p", 0, "Page number.")
+	mrViewCmd.Flags().IntVarP(&opts.commentLimit, "per-page", "P", 20, "Number of items to list per page.")
 
 	return mrViewCmd
+}
+
+func (o *options) run(f cmdutils.Factory, args []string) error {
+	apiClient, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+
+	mr, baseRepo, err := mrutils.MRFromArgsWithOpts(f, args, &gitlab.GetMergeRequestsOptions{
+		IncludeDivergedCommitsCount: gitlab.Ptr(true),
+		RenderHTML:                  gitlab.Ptr(true),
+		IncludeRebaseInProgress:     gitlab.Ptr(true),
+	}, "any")
+	if err != nil {
+		return err
+	}
+
+	// Optional: check for approval state of the MR (if the project supports it). In the event of a failure
+	// for this step, move forward assuming MR approvals are not supported. See below.
+	//
+	// NOTE: the API documentation says that project details have `approvals_before_merge` for GitLab Premium
+	// https://docs.gitlab.com/api/projects/#get-a-single-project. Unfortunately, the API client used
+	// does not provide the necessary ability to determine if this value was present or not in the response JSON
+	// since Project.ApprovalsBeforeMerge is a non-pointer type. Because of this, this step will either succeed
+	// and show approval state or it will fail silently
+	mrApprovals, _ := api.GetMRApprovalState(apiClient, baseRepo.FullName(), mr.IID)
+
+	cfg, _ := o.config()
+
+	if o.openInBrowser { // open in browser if --web flag is specified
+		if o.io.IsOutputTTY() {
+			fmt.Fprintf(o.io.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(mr.WebURL))
+		}
+
+		browser, _ := cfg.Get(baseRepo.RepoHost(), "browser")
+		return utils.OpenInBrowser(mr.WebURL, browser)
+	}
+
+	notes := []*gitlab.Note{}
+
+	if o.showComments {
+		l := &gitlab.ListMergeRequestNotesOptions{
+			Sort: gitlab.Ptr("asc"),
+			ListOptions: gitlab.ListOptions{
+				Page:    o.commentPageNujmber,
+				PerPage: o.commentLimit,
+			},
+		}
+
+		notes, err = api.ListMRNotes(apiClient, baseRepo.FullName(), mr.IID, l)
+		if err != nil {
+			return err
+		}
+	}
+
+	glamourStyle, _ := cfg.Get(baseRepo.RepoHost(), "glamour_style")
+	o.io.ResolveBackgroundColor(glamourStyle)
+	if err := o.io.StartPager(); err != nil {
+		return err
+	}
+	defer o.io.StopPager()
+
+	if o.outputFormat == "json" {
+		return printJSONMR(o, mr, notes)
+	}
+	if o.io.IsOutputTTY() {
+		return printTTYMRPreview(o, mr, mrApprovals, notes)
+	}
+	return printRawMRPreview(o, mr, notes)
 }
 
 func labelsList(mr *gitlab.MergeRequest) string {
@@ -157,9 +166,9 @@ func mrState(c *iostreams.ColorPalette, mr *gitlab.MergeRequest) (mrState string
 	return mrState
 }
 
-func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *gitlab.MergeRequestApprovalState, notes []*gitlab.Note) error {
-	c := opts.IO.Color()
-	out := opts.IO.StdOut
+func printTTYMRPreview(opts *options, mr *gitlab.MergeRequest, mrApprovals *gitlab.MergeRequestApprovalState, notes []*gitlab.Note) error {
+	c := opts.io.Color()
+	out := opts.io.StdOut
 	mrTimeAgo := utils.TimeToPrettyTimeAgo(*mr.CreatedAt)
 	// Header
 	fmt.Fprint(out, mrState(c, mr))
@@ -170,7 +179,7 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 
 	// Description
 	if mr.Description != "" {
-		mr.Description, _ = utils.RenderMarkdown(mr.Description, opts.IO.BackgroundColor())
+		mr.Description, _ = utils.RenderMarkdown(mr.Description, opts.io.BackgroundColor())
 		fmt.Fprintln(out, mr.Description)
 	}
 
@@ -215,7 +224,7 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 	}
 	if mrApprovals != nil {
 		fmt.Fprintln(out, c.Bold("Approvals status:"))
-		mrutils.PrintMRApprovalState(opts.IO, mrApprovals)
+		mrutils.PrintMRApprovalState(opts.io, mrApprovals)
 	}
 	fmt.Fprintf(out, "%s This merge request has %s changes.\n", c.GreenCheck(), c.Yellow(mr.ChangesCount))
 	if mr.State == "merged" && mr.MergedBy != nil { //nolint:staticcheck
@@ -227,7 +236,7 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 	}
 
 	// Comments
-	if opts.ShowComments {
+	if opts.showComments {
 		fmt.Fprintln(out, heredoc.Doc(`
 			--------------------------------------------
 			Comments / Notes
@@ -235,7 +244,7 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 			`))
 		if len(notes) > 0 {
 			for _, note := range notes {
-				if note.System && !opts.ShowSystemLogs {
+				if note.System && !opts.showSystemLogs {
 					continue
 				}
 				createdAt := utils.TimeToPrettyTimeAgo(*note.CreatedAt)
@@ -244,7 +253,7 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 					fmt.Fprintf(out, " %s ", note.Body)
 					fmt.Fprintln(out, c.Gray(createdAt))
 				} else {
-					body, _ := utils.RenderMarkdown(note.Body, opts.IO.BackgroundColor())
+					body, _ := utils.RenderMarkdown(note.Body, opts.io.BackgroundColor())
 					fmt.Fprint(out, " commented ")
 					fmt.Fprintf(out, c.Gray("%s\n"), createdAt)
 					fmt.Fprintln(out, utils.Indent(body, " "))
@@ -262,13 +271,13 @@ func printTTYMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, mrApprovals *git
 	return nil
 }
 
-func printRawMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.Note) error {
-	fmt.Fprint(opts.IO.StdOut, rawMRPreview(opts, mr, notes))
+func printRawMRPreview(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) error {
+	fmt.Fprint(opts.io.StdOut, rawMRPreview(opts, mr, notes))
 
 	return nil
 }
 
-func rawMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.Note) string {
+func rawMRPreview(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) string {
 	var out string
 
 	assignees := assigneesList(mr)
@@ -276,7 +285,7 @@ func rawMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.Note)
 	labels := labelsList(mr)
 
 	out += fmt.Sprintf("title:\t%s\n", mr.Title)
-	out += fmt.Sprintf("state:\t%s\n", mrState(opts.IO.Color(), mr))
+	out += fmt.Sprintf("state:\t%s\n", mrState(opts.io.Color(), mr))
 	out += fmt.Sprintf("author:\t%s\n", mr.Author.Username)
 	out += fmt.Sprintf("labels:\t%s\n", labels)
 	out += fmt.Sprintf("assignees:\t%s\n", assignees)
@@ -290,19 +299,19 @@ func rawMRPreview(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.Note)
 	out += "--\n"
 	out += fmt.Sprintf("%s\n", mr.Description)
 
-	out += issuableView.RawIssuableNotes(notes, opts.ShowComments, opts.ShowSystemLogs, "merge request")
+	out += issuableView.RawIssuableNotes(notes, opts.showComments, opts.showSystemLogs, "merge request")
 
 	return out
 }
 
-func printJSONMR(opts *ViewOpts, mr *gitlab.MergeRequest, notes []*gitlab.Note) error {
-	if opts.ShowComments {
+func printJSONMR(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) error {
+	if opts.showComments {
 		extendedMR := MRWithNotes{mr, notes}
 		mrJSON, _ := json.Marshal(extendedMR)
-		fmt.Fprintln(opts.IO.StdOut, string(mrJSON))
+		fmt.Fprintln(opts.io.StdOut, string(mrJSON))
 	} else {
 		mrJSON, _ := json.Marshal(mr)
-		fmt.Fprintln(opts.IO.StdOut, string(mrJSON))
+		fmt.Fprintln(opts.io.StdOut, string(mrJSON))
 	}
 	return nil
 }

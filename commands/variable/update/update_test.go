@@ -20,7 +20,7 @@ func Test_NewCmdUpdate(t *testing.T) {
 	tests := []struct {
 		name     string
 		cli      string
-		wants    UpdateOpts
+		wants    options
 		stdinTTY bool
 		wantsErr bool
 	}{
@@ -48,85 +48,85 @@ func Test_NewCmdUpdate(t *testing.T) {
 		{
 			name: "protected var",
 			cli:  `cool_secret -v"a secret" -p`,
-			wants: UpdateOpts{
-				Key:       "cool_secret",
-				Protected: true,
-				Value:     "a secret",
-				Group:     "",
-				Type:      "env_var",
-				Scope:     "*",
+			wants: options{
+				key:       "cool_secret",
+				protected: true,
+				value:     "a secret",
+				group:     "",
+				typ:       "env_var",
+				scope:     "*",
 			},
 		},
 		{
 			name: "protected var in group",
 			cli:  `cool_secret --group coolGroup -v"cool"`,
-			wants: UpdateOpts{
-				Key:       "cool_secret",
-				Protected: false,
-				Value:     "cool",
-				Group:     "coolGroup",
-				Type:      "env_var",
-				Scope:     "*",
+			wants: options{
+				key:       "cool_secret",
+				protected: false,
+				value:     "cool",
+				group:     "coolGroup",
+				typ:       "env_var",
+				scope:     "*",
 			},
 		},
 		{
 			name: "raw variable with flag",
 			cli:  `cool_secret -r -v"$variable_name"`,
-			wants: UpdateOpts{
-				Key:   "cool_secret",
-				Value: "$variable_name",
-				Raw:   true,
-				Group: "",
-				Scope: "*",
-				Type:  "env_var",
+			wants: options{
+				key:   "cool_secret",
+				value: "$variable_name",
+				raw:   true,
+				group: "",
+				scope: "*",
+				typ:   "env_var",
 			},
 		},
 		{
 			name: "raw variable with flag in group",
 			cli:  `cool_secret -r --group coolGroup -v"$variable_name"`,
-			wants: UpdateOpts{
-				Key:   "cool_secret",
-				Value: "$variable_name",
-				Raw:   true,
-				Group: "coolGroup",
-				Scope: "*",
-				Type:  "env_var",
+			wants: options{
+				key:   "cool_secret",
+				value: "$variable_name",
+				raw:   true,
+				group: "coolGroup",
+				scope: "*",
+				typ:   "env_var",
 			},
 		},
 		{
 			name: "raw is false by default",
 			cli:  `cool_secret -v"$variable_name"`,
-			wants: UpdateOpts{
-				Key:   "cool_secret",
-				Value: "$variable_name",
-				Raw:   false,
-				Group: "",
-				Scope: "*",
-				Type:  "env_var",
+			wants: options{
+				key:   "cool_secret",
+				value: "$variable_name",
+				raw:   false,
+				group: "",
+				scope: "*",
+				typ:   "env_var",
 			},
 		},
 		{
 			name: "var with desription",
 			cli:  `cool_secret -d"description"`,
-			wants: UpdateOpts{
-				Key:         "cool_secret",
-				Raw:         false,
-				Group:       "",
-				Scope:       "*",
-				Type:        "env_var",
-				Description: "description",
+			wants: options{
+				key:         "cool_secret",
+				raw:         false,
+				group:       "",
+				scope:       "*",
+				typ:         "env_var",
+				description: "description",
 			},
 		},
 		{
 			name: "leading numbers in name",
 			cli:  `123_TOKEN -v"cool"`,
-			wants: UpdateOpts{
-				Key:       "123_TOKEN",
-				Protected: false,
-				Value:     "cool",
-				Group:     "",
-				Scope:     "*",
-				Type:      "env_var",
+			wants: options{
+				key:       "123_TOKEN",
+				protected: false,
+				value:     "cool",
+				group:     "",
+				scope:     "*",
+				typ:       "env_var",
 			},
 		},
 		{
@@ -148,8 +148,8 @@ func Test_NewCmdUpdate(t *testing.T) {
 			argv, err := shlex.Split(tt.cli)
 			assert.NoError(t, err)
 
-			var gotOpts *UpdateOpts
-			cmd := NewCmdUpdate(f, func(opts *UpdateOpts) error {
+			var gotOpts *options
+			cmd := NewCmdUpdate(f, func(opts *options) error {
 				gotOpts = opts
 				return nil
 			})
@@ -165,15 +165,15 @@ func Test_NewCmdUpdate(t *testing.T) {
 			}
 			assert.NoError(t, err)
 
-			assert.Equal(t, tt.wants.Key, gotOpts.Key)
-			assert.Equal(t, tt.wants.Value, gotOpts.Value)
-			assert.Equal(t, tt.wants.Group, gotOpts.Group)
-			assert.Equal(t, tt.wants.Protected, gotOpts.Protected)
-			assert.Equal(t, tt.wants.Raw, gotOpts.Raw)
-			assert.Equal(t, tt.wants.Masked, gotOpts.Masked)
-			assert.Equal(t, tt.wants.Type, gotOpts.Type)
-			assert.Equal(t, tt.wants.Description, gotOpts.Description)
-			assert.Equal(t, tt.wants.Scope, gotOpts.Scope)
+			assert.Equal(t, tt.wants.key, gotOpts.key)
+			assert.Equal(t, tt.wants.value, gotOpts.value)
+			assert.Equal(t, tt.wants.group, gotOpts.group)
+			assert.Equal(t, tt.wants.protected, gotOpts.protected)
+			assert.Equal(t, tt.wants.raw, gotOpts.raw)
+			assert.Equal(t, tt.wants.masked, gotOpts.masked)
+			assert.Equal(t, tt.wants.typ, gotOpts.typ)
+			assert.Equal(t, tt.wants.description, gotOpts.description)
+			assert.Equal(t, tt.wants.scope, gotOpts.scope)
 		})
 	}
 }
@@ -196,22 +196,22 @@ func Test_updateRun_project(t *testing.T) {
 
 	io, _, stdout, _ := iostreams.Test()
 
-	opts := &UpdateOpts{
-		HTTPClient: func() (*gitlab.Client, error) {
+	opts := &options{
+		httpClient: func() (*gitlab.Client, error) {
 			a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 			return a.Lab(), nil
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo")
 		},
-		IO:    io,
-		Key:   "TEST_VARIABLE",
-		Value: "foo",
-		Scope: "*",
+		io:    io,
+		key:   "TEST_VARIABLE",
+		value: "foo",
+		scope: "*",
 	}
-	_, _ = opts.HTTPClient()
+	_, _ = opts.httpClient()
 
-	err := updateRun(opts)
+	err := opts.run()
 	assert.NoError(t, err)
 	assert.Equal(t, stdout.String(), "✓ Updated variable TEST_VARIABLE for project owner/repo with scope *.\n")
 }
@@ -234,22 +234,22 @@ func Test_updateRun_group(t *testing.T) {
 
 	io, _, stdout, _ := iostreams.Test()
 
-	opts := &UpdateOpts{
-		HTTPClient: func() (*gitlab.Client, error) {
+	opts := &options{
+		httpClient: func() (*gitlab.Client, error) {
 			a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 			return a.Lab(), nil
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo")
 		},
-		IO:    io,
-		Key:   "TEST_VARIABLE",
-		Value: "blargh",
-		Group: "mygroup",
+		io:    io,
+		key:   "TEST_VARIABLE",
+		value: "blargh",
+		group: "mygroup",
 	}
-	_, _ = opts.HTTPClient()
+	_, _ = opts.httpClient()
 
-	err := updateRun(opts)
+	err := opts.run()
 	assert.NoError(t, err)
 	assert.Equal(t, stdout.String(), "✓ Updated variable TEST_VARIABLE for group mygroup.\n")
 }

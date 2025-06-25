@@ -140,7 +140,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 	oldCreateRun := createRun
 
 	// Force createRun to throw error
-	createRun = func(opts *CreateOpts) error {
+	createRun = func(opts *options) error {
 		return errors.New("fail on purpose")
 	}
 

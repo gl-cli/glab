@@ -16,19 +16,21 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
-type GetOpts struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	KeyID   int
-	PerPage int
-	Page    int
+	keyID   int
+	perPage int
+	page    int
 }
 
 func NewCmdGet(f cmdutils.Factory) *cobra.Command {
-	opts := &GetOpts{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 	cmd := &cobra.Command{
 		Use:   "get <key-id>",
@@ -46,58 +48,63 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			if len(args) == 0 {
-				keyID, err := keySelectPrompt(opts)
-				if err != nil {
-					return err
-				}
-				opts.KeyID = keyID
+			if err := opts.complete(args); err != nil {
+				return err
 			}
 
-			if len(args) == 1 {
-				opts.KeyID = utils.StringToInt(args[0])
-			}
-
-			return getRun(opts)
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
-	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 20, "Number of items to list per page.")
+	cmd.Flags().IntVarP(&opts.page, "page", "p", 1, "Page number.")
+	cmd.Flags().IntVarP(&opts.perPage, "per-page", "P", 20, "Number of items to list per page.")
 
 	return cmd
 }
 
-func getRun(opts *GetOpts) error {
-	httpClient, err := opts.HTTPClient()
-	if err != nil {
-		return err
+func (o *options) complete(args []string) error {
+	if len(args) == 0 {
+		keyID, err := keySelectPrompt(o)
+		if err != nil {
+			return err
+		}
+		o.keyID = keyID
 	}
 
-	key, _, err := httpClient.Users.GetSSHKey(opts.KeyID)
-	if err != nil {
-		return cmdutils.WrapError(err, "getting SSH key.")
+	if len(args) == 1 {
+		o.keyID = utils.StringToInt(args[0])
 	}
-
-	opts.IO.LogInfo(key.Key)
 
 	return nil
 }
 
-func keySelectPrompt(opts *GetOpts) (int, error) {
-	if !opts.IO.PromptEnabled() {
+func (o *options) run() error {
+	httpClient, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+
+	key, _, err := httpClient.Users.GetSSHKey(o.keyID)
+	if err != nil {
+		return cmdutils.WrapError(err, "getting SSH key.")
+	}
+
+	o.io.LogInfo(key.Key)
+
+	return nil
+}
+
+func keySelectPrompt(opts *options) (int, error) {
+	if !opts.io.PromptEnabled() {
 		return 0, cmdutils.FlagError{Err: errors.New("the <key-id> argument is required when prompts are disabled.")}
 	}
 
 	sshKeyListOptions := &gitlab.ListSSHKeysOptions{
-		PerPage: opts.PerPage,
-		Page:    opts.Page,
+		PerPage: opts.perPage,
+		Page:    opts.page,
 	}
 
-	httpClient, err := opts.HTTPClient()
+	httpClient, err := opts.httpClient()
 	if err != nil {
 		return 0, err
 	}
@@ -122,7 +129,7 @@ func keySelectPrompt(opts *GetOpts) (int, error) {
 			"Select key - Showing %d/%d keys - page %d/%d",
 			len(keys),
 			response.TotalItems,
-			opts.Page,
+			opts.page,
 			response.TotalPages,
 		),
 		Options: surveyOpts,

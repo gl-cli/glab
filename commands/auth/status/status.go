@@ -14,19 +14,19 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type StatusOpts struct {
-	Hostname  string
-	ShowToken bool
+type options struct {
+	hostname  string
+	showToken bool
 
-	HttpClientOverride func(token, hostname string) (*api.Client, error) // used in tests to mock http client
-	IO                 *iostreams.IOStreams
-	Config             func() (config.Config, error)
+	httpClientOverride func(token, hostname string) (*api.Client, error) // used in tests to mock http client
+	io                 *iostreams.IOStreams
+	config             func() (config.Config, error)
 }
 
-func NewCmdStatus(f cmdutils.Factory, runE func(*StatusOpts) error) *cobra.Command {
-	opts := &StatusOpts{
-		IO:     f.IO(),
-		Config: f.Config,
+func NewCmdStatus(f cmdutils.Factory, runE func(*options) error) *cobra.Command {
+	opts := &options{
+		io:     f.IO(),
+		config: f.Config,
 	}
 
 	cmd := &cobra.Command{
@@ -42,24 +42,24 @@ func NewCmdStatus(f cmdutils.Factory, runE func(*StatusOpts) error) *cobra.Comma
 				return runE(opts)
 			}
 
-			return statusRun(opts)
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Hostname, "hostname", "h", "", "Check a specific instance's authentication status.")
-	cmd.Flags().BoolVarP(&opts.ShowToken, "show-token", "t", false, "Display the authentication token.")
+	cmd.Flags().StringVarP(&opts.hostname, "hostname", "h", "", "Check a specific instance's authentication status.")
+	cmd.Flags().BoolVarP(&opts.showToken, "show-token", "t", false, "Display the authentication token.")
 
 	return cmd
 }
 
-func statusRun(opts *StatusOpts) error {
-	c := opts.IO.Color()
-	cfg, err := opts.Config()
+func (o *options) run() error {
+	c := o.io.Color()
+	cfg, err := o.config()
 	if err != nil {
 		return err
 	}
 
-	stderr := opts.IO.StdErr
+	stderr := o.io.StdErr
 
 	statusInfo := map[string][]string{}
 
@@ -68,13 +68,13 @@ func statusRun(opts *StatusOpts) error {
 		return fmt.Errorf("No GitLab instances have been authenticated with glab. Run `%s` to authenticate.\n", c.Bold("glab auth login"))
 	}
 
-	if opts.Hostname != "" && !slices.Contains(instances, opts.Hostname) {
-		return fmt.Errorf("%s %s has not been authenticated with glab. Run `%s %s` to authenticate.", c.FailedIcon(), opts.Hostname, c.Bold("glab auth login --hostname"), c.Bold(opts.Hostname))
+	if o.hostname != "" && !slices.Contains(instances, o.hostname) {
+		return fmt.Errorf("%s %s has not been authenticated with glab. Run `%s %s` to authenticate.", c.FailedIcon(), o.hostname, c.Bold("glab auth login --hostname"), c.Bold(o.hostname))
 	}
 
 	failedAuth := false
 	for _, instance := range instances {
-		if opts.Hostname != "" && opts.Hostname != instance {
+		if o.hostname != "" && o.hostname != instance {
 			continue
 		}
 		statusInfo[instance] = []string{}
@@ -84,8 +84,8 @@ func statusRun(opts *StatusOpts) error {
 
 		token, tokenSource, _ := cfg.GetWithSource(instance, "token", false)
 		apiClient, err := api.NewClientWithCfg(instance, cfg, false)
-		if opts.HttpClientOverride != nil {
-			apiClient, _ = opts.HttpClientOverride(token, instance)
+		if o.httpClientOverride != nil {
+			apiClient, _ = o.httpClientOverride(token, instance)
 		}
 		if err == nil {
 			user, err := api.CurrentUser(apiClient.Lab())
@@ -118,7 +118,7 @@ func statusRun(opts *StatusOpts) error {
 		}
 		if token != "" {
 			tokenDisplay := "**************************"
-			if opts.ShowToken {
+			if o.showToken {
 				tokenDisplay = token
 			}
 			addMsg("%s Token: %s", c.GreenCheck(), tokenDisplay)
@@ -131,7 +131,7 @@ func statusRun(opts *StatusOpts) error {
 	}
 
 	for _, instance := range instances {
-		if opts.Hostname != "" && opts.Hostname != instance {
+		if o.hostname != "" && o.hostname != instance {
 			continue
 		}
 

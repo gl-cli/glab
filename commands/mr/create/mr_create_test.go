@@ -438,7 +438,7 @@ func TestMRCreate_nontty_insufficient_flags(t *testing.T) {
 }
 
 func TestMrBodyAndTitle(t *testing.T) {
-	opts := &CreateOpts{
+	opts := &options{
 		SourceBranch:         "mr-autofill-test-br",
 		TargetBranch:         "master",
 		TargetTrackingBranch: "origin/master",
@@ -503,7 +503,7 @@ resolves #1
 `, opts.Description)
 	})
 	t.Run("given-fill-commit-body", func(t *testing.T) {
-		opts = &CreateOpts{
+		opts = &options{
 			SourceBranch:         "mr-autofill-test-br",
 			TargetBranch:         "master",
 			TargetTrackingBranch: "origin/master",
@@ -538,7 +538,7 @@ closes 1234
 }
 
 func TestGenerateMRCompareURL(t *testing.T) {
-	opts := &CreateOpts{
+	opts := &options{
 		Labels:        []string{"backend", "frontend"},
 		Assignees:     []string{"johndoe", "janedoe"},
 		Reviewers:     []string{"user", "person"},

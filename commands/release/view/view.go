@@ -16,20 +16,22 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
-type ViewOpts struct {
-	TagName       string
-	OpenInBrowser bool
+type options struct {
+	tagName       string
+	openInBrowser bool
 
-	IO         *iostreams.IOStreams
-	HTTPClient func() (*gitlab.Client, error)
-	BaseRepo   func() (glrepo.Interface, error)
-	Config     func() (config.Config, error)
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
+	config     func() (config.Config, error)
 }
 
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
-	opts := &ViewOpts{
-		IO:     f.IO(),
-		Config: f.Config,
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+		config:     f.Config,
 	}
 
 	cmd := &cobra.Command{
@@ -48,39 +50,40 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
+			opts.complete(args)
 
-			if len(args) == 1 {
-				opts.TagName = args[0]
-			}
-
-			return viewRun(opts)
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open the release in the browser.")
+	cmd.Flags().BoolVarP(&opts.openInBrowser, "web", "w", false, "Open the release in the browser.")
 
 	return cmd
 }
 
-func viewRun(opts *ViewOpts) error {
-	client, err := opts.HTTPClient()
+func (o *options) complete(args []string) {
+	if len(args) == 1 {
+		o.tagName = args[0]
+	}
+}
+
+func (o *options) run() error {
+	client, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	repo, err := opts.BaseRepo()
+	repo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
 
-	cfg, _ := opts.Config()
+	cfg, _ := o.config()
 
 	var resp *gitlab.Response
 	var release *gitlab.Release
 
-	if opts.TagName == "" {
+	if o.tagName == "" {
 		releases, _, err := client.Releases.ListReleases(repo.FullName(), &gitlab.ListReleasesOptions{})
 		if err != nil {
 			return cmdutils.WrapError(err, "could not fetch latest release.")
@@ -90,9 +93,9 @@ func viewRun(opts *ViewOpts) error {
 		}
 
 		release = releases[0]
-		opts.TagName = release.TagName
+		o.tagName = release.TagName
 	} else {
-		release, resp, err = client.Releases.GetRelease(repo.FullName(), opts.TagName)
+		release, resp, err = client.Releases.GetRelease(repo.FullName(), o.tagName)
 		if err != nil {
 			if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden) {
 				return cmdutils.WrapError(err, "release does not exist.")
@@ -101,11 +104,11 @@ func viewRun(opts *ViewOpts) error {
 		}
 	}
 
-	if opts.OpenInBrowser { // open in browser if --web flag is specified
+	if o.openInBrowser { // open in browser if --web flag is specified
 		url := release.Links.Self
 
-		if opts.IO.IsOutputTTY() {
-			opts.IO.Logf("Opening %s in your browser.\n", url)
+		if o.io.IsOutputTTY() {
+			o.io.Logf("Opening %s in your browser.\n", url)
 		}
 
 		browser, _ := cfg.Get(repo.RepoHost(), "browser")
@@ -113,14 +116,14 @@ func viewRun(opts *ViewOpts) error {
 	}
 
 	glamourStyle, _ := cfg.Get(repo.RepoHost(), "glamour_style")
-	opts.IO.ResolveBackgroundColor(glamourStyle)
+	o.io.ResolveBackgroundColor(glamourStyle)
 
-	err = opts.IO.StartPager()
+	err = o.io.StartPager()
 	if err != nil {
 		return err
 	}
-	defer opts.IO.StopPager()
+	defer o.io.StopPager()
 
-	opts.IO.LogInfo(releaseutils.DisplayRelease(opts.IO, release, repo))
+	o.io.LogInfo(releaseutils.DisplayRelease(o.io, release, repo))
 	return nil
 }

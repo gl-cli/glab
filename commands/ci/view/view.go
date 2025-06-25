@@ -14,7 +14,10 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -29,17 +32,14 @@ import (
 	"golang.org/x/text/language"
 )
 
-type ViewOpts struct {
-	RefName string
+type options struct {
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
+	config     func() (config.Config, error)
 
-	ProjectID string
-	Commit    *gitlab.Commit
-	CommitSHA string
-	ApiClient *gitlab.Client
-	Output    io.Writer
-
-	OpenInBrowser bool
-	PipelineUser  *gitlab.BasicUser
+	refName       string
+	openInBrowser bool
 }
 
 type ViewJobKind int64
@@ -99,7 +99,12 @@ func ViewJobFromJob(job *gitlab.Job) *ViewJob {
 }
 
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
-	opts := ViewOpts{}
+	opts := options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+		config:     f.Config,
+	}
 	pipelineCIView := &cobra.Command{
 		Use:   "view [branch/tag]",
 		Short: "View, run, trace, log, and cancel CI/CD job's current pipeline.",
@@ -130,81 +135,87 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.Output = f.IO().StdOut
-
-			var err error
-			opts.ApiClient, err = f.HttpClient()
-			if err != nil {
+			if err := opts.complete(args); err != nil {
 				return err
 			}
 
-			repo, err := f.BaseRepo()
-			if err != nil {
-				return err
-			}
-
-			opts.ProjectID = repo.FullName()
-
-			if opts.RefName == "" {
-				if len(args) == 1 {
-					opts.RefName = args[0]
-				} else {
-					opts.RefName, err = git.CurrentBranch()
-					if err != nil {
-						return err
-					}
-				}
-			}
-
-			opts.Commit, err = api.GetCommit(opts.ApiClient, opts.ProjectID, opts.RefName)
-			if err != nil {
-				return err
-			}
-
-			opts.CommitSHA = opts.Commit.ID
-			if opts.Commit.LastPipeline == nil {
-				return fmt.Errorf("Can't find pipeline for commit: %s", opts.CommitSHA)
-			}
-
-			cfg, _ := f.Config()
-
-			if opts.OpenInBrowser { // open in browser if --web flag is specified
-				webURL := opts.Commit.LastPipeline.WebURL
-
-				if f.IO().IsOutputTTY() {
-					fmt.Fprintf(f.IO().StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
-				}
-
-				browser, _ := cfg.Get(repo.RepoHost(), "browser")
-				return utils.OpenInBrowser(webURL, browser)
-			}
-
-			p, err := api.GetSinglePipeline(opts.ApiClient, opts.Commit.LastPipeline.ID, opts.ProjectID)
-			if err != nil {
-				return fmt.Errorf("Can't get pipeline #%d info: %s", opts.Commit.LastPipeline.ID, err)
-			}
-			opts.PipelineUser = p.User
-
-			pipelines = make([]gitlab.PipelineInfo, 0, 10)
-
-			return drawView(opts)
+			return opts.run()
 		},
 	}
 
 	pipelineCIView.Flags().
-		StringVarP(&opts.RefName, "branch", "b", "", "Check pipeline status for a branch or tag. Defaults to the current branch.")
-	pipelineCIView.Flags().BoolVarP(&opts.OpenInBrowser, "web", "w", false, "Open pipeline in a browser. Uses default browser, or browser specified in BROWSER variable.")
+		StringVarP(&opts.refName, "branch", "b", "", "Check pipeline status for a branch or tag. Defaults to the current branch.")
+	pipelineCIView.Flags().BoolVarP(&opts.openInBrowser, "web", "w", false, "Open pipeline in a browser. Uses default browser, or browser specified in BROWSER variable.")
 
 	return pipelineCIView
 }
 
-func drawView(opts ViewOpts) error {
+func (o *options) complete(args []string) error {
+	if o.refName == "" {
+		if len(args) == 1 {
+			o.refName = args[0]
+		} else {
+			refName, err := git.CurrentBranch()
+			if err != nil {
+				return err
+			}
+			o.refName = refName
+		}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	apiClient, err := o.httpClient()
+	if err != nil {
+		return err
+	}
+
+	repo, err := o.baseRepo()
+	if err != nil {
+		return err
+	}
+
+	projectID := repo.FullName()
+
+	commit, err := api.GetCommit(apiClient, projectID, o.refName)
+	if err != nil {
+		return err
+	}
+
+	commitSHA := commit.ID
+	if commit.LastPipeline == nil {
+		return fmt.Errorf("Can't find pipeline for commit: %s", commitSHA)
+	}
+
+	cfg, _ := o.config()
+
+	if o.openInBrowser { // open in browser if --web flag is specified
+		webURL := commit.LastPipeline.WebURL
+
+		if o.io.IsOutputTTY() {
+			fmt.Fprintf(o.io.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
+		}
+
+		browser, _ := cfg.Get(repo.RepoHost(), "browser")
+		return utils.OpenInBrowser(webURL, browser)
+	}
+
+	p, err := api.GetSinglePipeline(apiClient, commit.LastPipeline.ID, projectID)
+	if err != nil {
+		return fmt.Errorf("Can't get pipeline #%d info: %s", commit.LastPipeline.ID, err)
+	}
+	pipelineUser := p.User
+
+	pipelines = make([]gitlab.PipelineInfo, 0, 10)
+
 	root := tview.NewPages()
 	root.
 		SetBackgroundColor(tcell.ColorDefault).
 		SetBorderPadding(1, 1, 2, 2).
 		SetBorder(true).
-		SetTitle(fmt.Sprintf(" Pipeline #%d triggered %s by %s ", opts.Commit.LastPipeline.ID, utils.TimeToPrettyTimeAgo(*opts.Commit.LastPipeline.CreatedAt), opts.PipelineUser.Name))
+		SetTitle(fmt.Sprintf(" Pipeline #%d triggered %s by %s ", commit.LastPipeline.ID, utils.TimeToPrettyTimeAgo(*commit.LastPipeline.CreatedAt), pipelineUser.Name))
 
 	boxes = make(map[string]*tview.TextView)
 	jobsCh := make(chan []*ViewJob)
@@ -219,13 +230,13 @@ func drawView(opts ViewOpts) error {
 	defer recoverPanic(app)
 
 	var navi navigator
-	app.SetInputCapture(inputCapture(app, root, navi, inputCh, forceUpdateCh, opts))
-	go updateJobs(app, jobsCh, forceUpdateCh, opts)
+	app.SetInputCapture(inputCapture(app, root, navi, inputCh, forceUpdateCh, o, apiClient, projectID, commitSHA))
+	go updateJobs(app, jobsCh, forceUpdateCh, apiClient, commit)
 	go func() {
 		defer recoverPanic(app)
 		for {
 			app.SetFocus(root)
-			jobsView(app, jobsCh, inputCh, root, opts)
+			jobsView(app, jobsCh, inputCh, root, apiClient, projectID, commitSHA)
 			app.Draw()
 		}
 	}()
@@ -241,7 +252,10 @@ func inputCapture(
 	navi navigator,
 	inputCh chan struct{},
 	forceUpdateCh chan bool,
-	opts ViewOpts,
+	opts *options,
+	apiClient *gitlab.Client,
+	projectID string,
+	commitSHA string,
 ) func(event *tcell.EventKey) *tcell.EventKey {
 	return func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Rune() == 'q' || event.Key() == tcell.KeyEscape {
@@ -296,7 +310,7 @@ func inputCapture(
 						}
 						root.RemovePage("logs-" + curJob.Name)
 						app.ForceDraw()
-						job, err := api.CancelPipelineJob(opts.ApiClient, opts.ProjectID, curJob.ID)
+						job, err := api.CancelPipelineJob(apiClient, projectID, curJob.ID)
 						if err != nil {
 							app.Stop()
 							log.Fatal(err)
@@ -331,8 +345,8 @@ func inputCapture(
 					app.ForceDraw()
 
 					job, err := api.PlayOrRetryJobs(
-						opts.ApiClient,
-						opts.ProjectID,
+						apiClient,
+						projectID,
 						curJob.ID,
 						curJob.Status,
 					)
@@ -372,10 +386,10 @@ func inputCapture(
 				go func() {
 					err := ciutils.RunTraceSha(
 						ctx,
-						opts.ApiClient,
-						opts.Output,
-						opts.ProjectID,
-						opts.CommitSHA,
+						apiClient,
+						opts.io.StdOut,
+						projectID,
+						commitSHA,
 						curJob.Name,
 					)
 					if err != nil {
@@ -419,9 +433,9 @@ var (
 	boxes                     map[string]*tview.TextView
 )
 
-func curPipeline(opts ViewOpts) gitlab.PipelineInfo {
+func curPipeline(commit *gitlab.Commit) gitlab.PipelineInfo {
 	if len(pipelines) == 0 {
-		return *opts.Commit.LastPipeline
+		return *commit.LastPipeline
 	}
 	return pipelines[len(pipelines)-1]
 }
@@ -527,7 +541,9 @@ func jobsView(
 	jobsCh chan []*ViewJob,
 	inputCh chan struct{},
 	root *tview.Pages,
-	opts ViewOpts,
+	apiClient *gitlab.Client,
+	projectID string,
+	commitSHA string,
 ) {
 	select {
 	case jobs = <-jobsCh:
@@ -556,10 +572,10 @@ func jobsView(
 			go func() {
 				err := ciutils.RunTraceSha(
 					context.Background(),
-					opts.ApiClient,
+					apiClient,
 					vtclean.NewWriter(tview.ANSIWriter(tv), true),
-					opts.ProjectID,
-					opts.CommitSHA,
+					projectID,
+					commitSHA,
 					curJob.Name,
 				)
 				if err != nil {
@@ -717,7 +733,8 @@ func updateJobs(
 	app *tview.Application,
 	jobsCh chan []*ViewJob,
 	forceUpdateCh chan bool,
-	opts ViewOpts,
+	apiClient *gitlab.Client,
+	commit *gitlab.Commit,
 ) {
 	defer recoverPanic(app)
 	for {
@@ -728,9 +745,9 @@ func updateJobs(
 		var jobs []*gitlab.Job
 		var bridges []*gitlab.Bridge
 		var err error
-		pipeline := curPipeline(opts)
+		pipeline := curPipeline(commit)
 		jobs, bridges, err = api.PipelineJobsWithID(
-			opts.ApiClient,
+			apiClient,
 			pipeline.ProjectID,
 			pipeline.ID,
 		)

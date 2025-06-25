@@ -20,7 +20,7 @@ func Test_NewCmdExport(t *testing.T) {
 	tests := []struct {
 		name     string
 		cli      string
-		wants    ExportOpts
+		wants    options
 		wantsErr bool
 	}{
 		{
@@ -32,16 +32,16 @@ func Test_NewCmdExport(t *testing.T) {
 			name:     "with group",
 			cli:      "--group STH",
 			wantsErr: false,
-			wants: ExportOpts{
-				Group: "STH",
+			wants: options{
+				group: "STH",
 			},
 		},
 		{
 			name:     "missing group",
 			cli:      "--group",
 			wantsErr: true,
-			wants: ExportOpts{
-				Group: "STH",
+			wants: options{
+				group: "STH",
 			},
 		},
 		{
@@ -66,8 +66,8 @@ func Test_NewCmdExport(t *testing.T) {
 			argv, err := shlex.Split(test.cli)
 			assert.NoError(t, err)
 
-			var gotOpts *ExportOpts
-			cmd := NewCmdExport(f, func(opts *ExportOpts) error {
+			var gotOpts *options
+			cmd := NewCmdExport(f, func(opts *options) error {
 				gotOpts = opts
 				return nil
 			})
@@ -83,7 +83,7 @@ func Test_NewCmdExport(t *testing.T) {
 			}
 			assert.NoError(t, err)
 
-			assert.Equal(t, test.wants.Group, gotOpts.Group)
+			assert.Equal(t, test.wants.group, gotOpts.group)
 		})
 	}
 }
@@ -337,23 +337,23 @@ func Test_exportRun_project(t *testing.T) {
 			reg.RegisterResponder(http.MethodGet, "https://gitlab.com/api/v4/projects/owner%2Frepo/variables?page=1&per_page=10",
 				httpmock.NewJSONResponse(http.StatusOK, mockProjectVariables),
 			)
-			opts := &ExportOpts{
-				HTTPClient: func() (*gitlab.Client, error) {
+			opts := &options{
+				httpClient: func() (*gitlab.Client, error) {
 					a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 					return a.Lab(), nil
 				},
-				BaseRepo: func() (glrepo.Interface, error) {
+				baseRepo: func() (glrepo.Interface, error) {
 					return glrepo.FromFullName("owner/repo")
 				},
-				IO:           io,
-				Page:         1,
-				PerPage:      10,
-				OutputFormat: test.format,
-				Scope:        test.scope,
+				io:           io,
+				page:         1,
+				perPage:      10,
+				outputFormat: test.format,
+				scope:        test.scope,
 			}
-			_, _ = opts.HTTPClient()
+			_, _ = opts.httpClient()
 
-			err := exportRun(opts)
+			err := opts.run()
 			assert.NoError(t, err)
 			assert.Equal(t, test.expectedOutput, stdout.String())
 			stdout.Reset()
@@ -610,24 +610,24 @@ func Test_exportRun_group(t *testing.T) {
 			reg.RegisterResponder(http.MethodGet, "https://gitlab.com/api/v4/groups/group/variables?page=1&per_page=10",
 				httpmock.NewJSONResponse(http.StatusOK, mockGroupVariables),
 			)
-			opts := &ExportOpts{
-				HTTPClient: func() (*gitlab.Client, error) {
+			opts := &options{
+				httpClient: func() (*gitlab.Client, error) {
 					a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 					return a.Lab(), nil
 				},
-				BaseRepo: func() (glrepo.Interface, error) {
+				baseRepo: func() (glrepo.Interface, error) {
 					return glrepo.FromFullName("owner/repo")
 				},
-				IO:           io,
-				Page:         1,
-				PerPage:      10,
-				OutputFormat: test.format,
-				Scope:        test.scope,
-				Group:        "group",
+				io:           io,
+				page:         1,
+				perPage:      10,
+				outputFormat: test.format,
+				scope:        test.scope,
+				group:        "group",
 			}
-			_, _ = opts.HTTPClient()
+			_, _ = opts.httpClient()
 
-			err := exportRun(opts)
+			err := opts.run()
 			assert.NoError(t, err)
 			assert.Equal(t, test.expectedOutput, stdout.String())
 			stdout.Reset()

@@ -16,21 +16,22 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 )
 
-type ListOpts struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
-	Page       int
-	PerPage    int
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
+	page       int
+	perPage    int
 
-	ValueSet     bool
-	Group        string
-	OutputFormat string
+	group        string
+	outputFormat string
 }
 
-func NewCmdList(f cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Command {
-	opts := &ListOpts{
-		IO: f.IO(),
+func NewCmdList(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -45,38 +46,41 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *ListOpts) error) *cobra.Comm
 			$ glab variable list --group gitlab-org --per-page 100
 		`,
 		),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			// Supports repo override
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			group, err := flag.GroupOverride(cmd)
-			if err != nil {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := opts.complete(cmd); err != nil {
 				return err
 			}
-			opts.Group = group
 
 			if runE != nil {
-				err = runE(opts)
-				return
+				return runE(opts)
 			}
-			err = listRun(opts)
-			return
+
+			return opts.run()
 		},
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)
 	cmd.PersistentFlags().StringP("group", "g", "", "Select a group or subgroup. Ignored if a repository argument is set.")
-	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
-	cmd.Flags().IntVarP(&opts.PerPage, "per-page", "P", 20, "Number of items to list per page.")
-	cmd.Flags().IntVarP(&opts.Page, "page", "p", 1, "Page number.")
+	cmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json.")
+	cmd.Flags().IntVarP(&opts.perPage, "per-page", "P", 20, "Number of items to list per page.")
+	cmd.Flags().IntVarP(&opts.page, "page", "p", 1, "Page number.")
 
 	return cmd
 }
 
-func listRun(opts *ListOpts) error {
-	color := opts.IO.Color()
-	httpClient, err := opts.HTTPClient()
+func (o *options) complete(cmd *cobra.Command) error {
+	group, err := flag.GroupOverride(cmd)
+	if err != nil {
+		return err
+	}
+	o.group = group
+
+	return nil
+}
+
+func (o *options) run() error {
+	color := o.io.Color()
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
@@ -84,16 +88,16 @@ func listRun(opts *ListOpts) error {
 	table := tableprinter.NewTablePrinter()
 	table.AddRow("KEY", "PROTECTED", "MASKED", "EXPANDED", "SCOPE", "DESCRIPTION")
 
-	if opts.Group != "" {
-		opts.IO.Logf("Listing variables for the %s group:\n\n", color.Bold(opts.Group))
-		createVarOpts := &gitlab.ListGroupVariablesOptions{Page: opts.Page, PerPage: opts.PerPage}
-		variables, err := api.ListGroupVariables(httpClient, opts.Group, createVarOpts)
+	if o.group != "" {
+		o.io.Logf("Listing variables for the %s group:\n\n", color.Bold(o.group))
+		createVarOpts := &gitlab.ListGroupVariablesOptions{Page: o.page, PerPage: o.perPage}
+		variables, err := api.ListGroupVariables(httpClient, o.group, createVarOpts)
 		if err != nil {
 			return err
 		}
-		if opts.OutputFormat == "json" {
+		if o.outputFormat == "json" {
 			varListJSON, _ := json.Marshal(variables)
-			fmt.Fprintln(opts.IO.StdOut, string(varListJSON))
+			fmt.Fprintln(o.io.StdOut, string(varListJSON))
 
 		} else {
 			for _, variable := range variables {
@@ -101,19 +105,19 @@ func listRun(opts *ListOpts) error {
 			}
 		}
 	} else {
-		repo, err := opts.BaseRepo()
+		repo, err := o.baseRepo()
 		if err != nil {
 			return err
 		}
-		opts.IO.Logf("Listing variables for the %s project:\n\n", color.Bold(repo.FullName()))
-		createVarOpts := &gitlab.ListProjectVariablesOptions{Page: opts.Page, PerPage: opts.PerPage}
+		o.io.Logf("Listing variables for the %s project:\n\n", color.Bold(repo.FullName()))
+		createVarOpts := &gitlab.ListProjectVariablesOptions{Page: o.page, PerPage: o.perPage}
 		variables, err := api.ListProjectVariables(httpClient, repo.FullName(), createVarOpts)
 		if err != nil {
 			return err
 		}
-		if opts.OutputFormat == "json" {
+		if o.outputFormat == "json" {
 			varListJSON, _ := json.Marshal(variables)
-			fmt.Fprintln(opts.IO.StdOut, string(varListJSON))
+			fmt.Fprintln(o.io.StdOut, string(varListJSON))
 		} else {
 			for _, variable := range variables {
 				table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, variable.EnvironmentScope, variable.Description)
@@ -121,8 +125,8 @@ func listRun(opts *ListOpts) error {
 		}
 	}
 
-	if opts.OutputFormat != "json" {
-		fmt.Fprint(opts.IO.StdOut, table.String())
+	if o.outputFormat != "json" {
+		fmt.Fprint(o.io.StdOut, table.String())
 	}
 	return nil
 }

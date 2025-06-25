@@ -13,22 +13,24 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type AddOpts struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	Title     string
-	Key       string
-	ExpiresAt string
-	CanPush   bool
+	title     string
+	key       string
+	expiresAt string
+	canPush   bool
 
-	KeyFile string
+	keyFile string
 }
 
 func NewCmdAdd(f cmdutils.Factory) *cobra.Command {
-	opts := &AddOpts{
-		IO: f.IO(),
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 	cmd := &cobra.Command{
 		Use:   "add [key-file]",
@@ -50,43 +52,48 @@ func NewCmdAdd(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
-
-			if len(args) == 0 {
-				if opts.IO.IsOutputTTY() && opts.IO.IsInTTY {
-					return &cmdutils.FlagError{Err: errors.New("missing key file")}
-				}
-				opts.KeyFile = "-"
-			} else {
-				opts.KeyFile = args[0]
+			if err := opts.complete(args); err != nil {
+				return err
 			}
 
-			return addRun(opts)
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Title, "title", "t", "", "New deploy key's title.")
-	cmd.Flags().BoolVarP(&opts.CanPush, "can-push", "c", false, "If true, deploy keys can be used for pushing code to the repository.")
-	cmd.Flags().StringVarP(&opts.ExpiresAt, "expires-at", "e", "", "The expiration date of the deploy key, using the ISO-8601 format: YYYY-MM-DDTHH:MM:SSZ.")
+	cmd.Flags().StringVarP(&opts.title, "title", "t", "", "New deploy key's title.")
+	cmd.Flags().BoolVarP(&opts.canPush, "can-push", "c", false, "If true, deploy keys can be used for pushing code to the repository.")
+	cmd.Flags().StringVarP(&opts.expiresAt, "expires-at", "e", "", "The expiration date of the deploy key, using the ISO-8601 format: YYYY-MM-DDTHH:MM:SSZ.")
 
 	_ = cmd.MarkFlagRequired("title")
 
 	return cmd
 }
 
-func addRun(opts *AddOpts) error {
-	httpClient, err := opts.HTTPClient()
+func (o *options) complete(args []string) error {
+	if len(args) == 0 {
+		if o.io.IsOutputTTY() && o.io.IsInTTY {
+			return &cmdutils.FlagError{Err: errors.New("missing key file")}
+		}
+		o.keyFile = "-"
+	} else {
+		o.keyFile = args[0]
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
 	var keyFileReader io.Reader
-	if opts.KeyFile == "-" {
-		keyFileReader = opts.IO.In
-		defer opts.IO.In.Close()
+	if o.keyFile == "-" {
+		keyFileReader = o.io.In
+		defer o.io.In.Close()
 	} else {
-		f, err := os.Open(opts.KeyFile)
+		f, err := os.Open(o.keyFile)
 		if err != nil {
 			return err
 		}
@@ -100,23 +107,23 @@ func addRun(opts *AddOpts) error {
 		return cmdutils.WrapError(err, "failed to read deploy key file.")
 	}
 
-	opts.Key = string(keyInBytes)
+	o.key = string(keyInBytes)
 
-	baseRepo, err := opts.BaseRepo()
+	baseRepo, err := o.baseRepo()
 	if err != nil {
 		return err
 	}
 
-	err = UploadDeployKey(httpClient, baseRepo.FullName(), opts.Title, opts.Key, opts.CanPush, opts.ExpiresAt)
+	err = UploadDeployKey(httpClient, baseRepo.FullName(), o.title, o.key, o.canPush, o.expiresAt)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to add new deploy key.")
 	}
 
-	if opts.IO.IsOutputTTY() {
-		cs := opts.IO.Color()
-		opts.IO.Logf("%s New deploy key added.\n", cs.GreenCheck())
+	if o.io.IsOutputTTY() {
+		cs := o.io.Color()
+		o.io.Logf("%s New deploy key added.\n", cs.GreenCheck())
 	} else {
-		opts.IO.Logf("New deploy key added.\n")
+		o.io.Logf("New deploy key added.\n")
 	}
 
 	return nil

@@ -14,21 +14,22 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
-type GetOps struct {
-	HTTPClient func() (*gitlab.Client, error)
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
+type options struct {
+	httpClient func() (*gitlab.Client, error)
+	io         *iostreams.IOStreams
+	baseRepo   func() (glrepo.Interface, error)
 
-	Scope        string
-	Key          string
-	Group        string
-	OutputFormat string
-	JSONOutput   bool
+	scope        string
+	key          string
+	group        string
+	outputFormat string
 }
 
-func NewCmdGet(f cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Command {
-	opts := &GetOps{
-		IO: f.IO(),
+func NewCmdGet(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -40,69 +41,75 @@ func NewCmdGet(f cmdutils.Factory, runE func(opts *GetOps) error) *cobra.Command
 			$ glab variable get -g GROUP VAR_KEY
 			$ glab variable get -s SCOPE VAR_KEY
 		`),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			opts.HTTPClient = f.HttpClient
-			opts.BaseRepo = f.BaseRepo
+		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.complete(args)
 
-			opts.Key = args[0]
-
-			if !variableutils.IsValidKey(opts.Key) {
-				err = cmdutils.FlagError{Err: fmt.Errorf("invalid key provided.\n%s", variableutils.ValidKeyMsg)}
-				return
+			if err := opts.validate(); err != nil {
+				return err
 			}
 
 			if runE != nil {
-				err = runE(opts)
-				return
+				return runE(opts)
 			}
-			err = getRun(opts)
-			return
+			return opts.run()
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Scope, "scope", "s", "*", "The environment_scope of the variable. Values: all (*), or specific environments.")
-	cmd.Flags().StringVarP(&opts.Group, "group", "g", "", "Get variable for a group.")
-	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "F", "text", "Format output as: text, json.")
+	cmd.Flags().StringVarP(&opts.scope, "scope", "s", "*", "The environment_scope of the variable. Values: all (*), or specific environments.")
+	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "Get variable for a group.")
+	cmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json.")
 	return cmd
 }
 
-func getRun(opts *GetOps) error {
-	httpClient, err := opts.HTTPClient()
+func (o *options) complete(args []string) {
+	o.key = args[0]
+}
+
+func (o *options) validate() error {
+	if !variableutils.IsValidKey(o.key) {
+		return cmdutils.FlagError{Err: fmt.Errorf("invalid key provided.\n%s", variableutils.ValidKeyMsg)}
+	}
+
+	return nil
+}
+
+func (o *options) run() error {
+	httpClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
 	var variableValue string
 
-	if opts.Group != "" {
-		variable, err := api.GetGroupVariable(httpClient, opts.Group, opts.Key, opts.Scope)
+	if o.group != "" {
+		variable, err := api.GetGroupVariable(httpClient, o.group, o.key, o.scope)
 		if err != nil {
 			return err
 		}
-		if opts.OutputFormat == "json" {
+		if o.outputFormat == "json" {
 			varJSON, _ := json.Marshal(variable)
 			fmt.Println(string(varJSON))
 		}
 		variableValue = variable.Value
 	} else {
-		baseRepo, err := opts.BaseRepo()
+		baseRepo, err := o.baseRepo()
 		if err != nil {
 			return err
 		}
 
-		variable, err := api.GetProjectVariable(httpClient, baseRepo.FullName(), opts.Key, opts.Scope)
+		variable, err := api.GetProjectVariable(httpClient, baseRepo.FullName(), o.key, o.scope)
 		if err != nil {
 			return err
 		}
-		if opts.OutputFormat == "json" {
+		if o.outputFormat == "json" {
 			varJSON, _ := json.Marshal(variable)
-			fmt.Fprintln(opts.IO.StdOut, string(varJSON))
+			fmt.Fprintln(o.io.StdOut, string(varJSON))
 		}
 		variableValue = variable.Value
 	}
 
-	if opts.OutputFormat != "json" {
-		fmt.Fprint(opts.IO.StdOut, variableValue)
+	if o.outputFormat != "json" {
+		fmt.Fprint(o.io.StdOut, variableValue)
 	}
 	return nil
 }

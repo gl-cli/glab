@@ -19,15 +19,15 @@ func Test_NewCmdGet(t *testing.T) {
 	tests := []struct {
 		name     string
 		cli      string
-		wants    GetOps
+		wants    options
 		wantsErr bool
 	}{
 		{
 			name:     "good key",
 			cli:      "good_key",
 			wantsErr: false,
-			wants: GetOps{
-				Key: "good_key",
+			wants: options{
+				key: "good_key",
 			},
 		},
 		{
@@ -43,37 +43,37 @@ func Test_NewCmdGet(t *testing.T) {
 		{
 			name: "good key",
 			cli:  "-g group good_key",
-			wants: GetOps{
-				Key:   "good_key",
-				Group: "group",
+			wants: options{
+				key:   "good_key",
+				group: "group",
 			},
 			wantsErr: false,
 		},
 		{
 			name: "good key, with scope",
 			cli:  "-s foo -g group good_key",
-			wants: GetOps{
-				Key:   "good_key",
-				Group: "group",
-				Scope: "foo",
+			wants: options{
+				key:   "good_key",
+				group: "group",
+				scope: "foo",
 			},
 			wantsErr: false,
 		},
 		{
 			name: "good key, with default scope",
 			cli:  "-g group good_key",
-			wants: GetOps{
-				Key:   "good_key",
-				Group: "group",
-				Scope: "*",
+			wants: options{
+				key:   "good_key",
+				group: "group",
+				scope: "*",
 			},
 			wantsErr: false,
 		},
 		{
 			name: "bad key",
 			cli:  "-g group bad-key",
-			wants: GetOps{
-				Group: "group",
+			wants: options{
+				group: "group",
 			},
 			wantsErr: true,
 		},
@@ -94,8 +94,8 @@ func Test_NewCmdGet(t *testing.T) {
 			argv, err := shlex.Split(test.cli)
 			assert.NoError(t, err)
 
-			var gotOpts *GetOps
-			cmd := NewCmdGet(f, func(opts *GetOps) error {
+			var gotOpts *options
+			cmd := NewCmdGet(f, func(opts *options) error {
 				gotOpts = opts
 				return nil
 			})
@@ -111,8 +111,8 @@ func Test_NewCmdGet(t *testing.T) {
 			}
 			assert.NoError(t, err)
 
-			assert.Equal(t, test.wants.Key, gotOpts.Key)
-			assert.Equal(t, test.wants.Group, gotOpts.Group)
+			assert.Equal(t, test.wants.key, gotOpts.key)
+			assert.Equal(t, test.wants.group, gotOpts.group)
 		})
 	}
 }
@@ -148,20 +148,20 @@ func Test_getRun_project(t *testing.T) {
 
 	io, _, stdout, _ := iostreams.Test()
 
-	opts := &GetOps{
-		HTTPClient: func() (*gitlab.Client, error) {
+	opts := &options{
+		httpClient: func() (*gitlab.Client, error) {
 			a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 			return a.Lab(), nil
 		},
-		BaseRepo: func() (glrepo.Interface, error) {
+		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo")
 		},
-		IO:  io,
-		Key: "TEST_VAR",
+		io:  io,
+		key: "TEST_VAR",
 	}
-	_, _ = opts.HTTPClient()
+	_, _ = opts.httpClient()
 
-	err := getRun(opts)
+	err := opts.run()
 	assert.NoError(t, err)
 	assert.Equal(t, varContent, stdout.String())
 }

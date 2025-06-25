@@ -16,21 +16,21 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
 
-type DeleteOpts struct {
-	ForceDelete bool
-	RepoName    string
-	Args        []string
+type options struct {
+	forceDelete bool
+	repoName    string
+	args        []string
 
-	IO       *iostreams.IOStreams
-	Lab      func() (*gitlab.Client, error)
-	BaseRepo func() (glrepo.Interface, error)
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
 }
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
-	opts := &DeleteOpts{
-		IO:       f.IO(),
-		Lab:      f.HttpClient,
-		BaseRepo: f.BaseRepo,
+	opts := &options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
 	}
 
 	projectCreateCmd := &cobra.Command{
@@ -38,10 +38,6 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		Short: `Delete an existing repository on GitLab.`,
 		Long:  ``,
 		Args:  cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.Args = args
-			return deleteRun(opts)
-		},
 		Example: heredoc.Doc(`
 			# Delete a personal repository.
 			$ glab repo delete dotfiles
@@ -51,24 +47,28 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			$ glab repo delete mygroup/dotfiles
 			$ glab repo delete myorg/mynamespace/dotfiles
 	  `),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.args = args
+			return opts.run()
+		},
 	}
 
-	projectCreateCmd.Flags().BoolVarP(&opts.ForceDelete, "yes", "y", false, "Skip the confirmation prompt and immediately delete the repository.")
+	projectCreateCmd.Flags().BoolVarP(&opts.forceDelete, "yes", "y", false, "Skip the confirmation prompt and immediately delete the repository.")
 
 	return projectCreateCmd
 }
 
-func deleteRun(opts *DeleteOpts) error {
-	labClient, err := opts.Lab()
+func (o *options) run() error {
+	labClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	baseRepo, baseRepoErr := opts.BaseRepo() // don't handle error yet
-	if len(opts.Args) == 1 {
-		opts.RepoName = opts.Args[0]
+	baseRepo, baseRepoErr := o.baseRepo() // don't handle error yet
+	if len(o.args) == 1 {
+		o.repoName = o.args[0]
 
-		if !strings.ContainsRune(opts.RepoName, '/') {
+		if !strings.ContainsRune(o.repoName, '/') {
 			namespace := ""
 			if baseRepoErr == nil {
 				namespace = baseRepo.RepoOwner()
@@ -79,40 +79,40 @@ func deleteRun(opts *DeleteOpts) error {
 				}
 				namespace = currentUser.Username
 			}
-			opts.RepoName = fmt.Sprintf("%s/%s", namespace, opts.RepoName)
+			o.repoName = fmt.Sprintf("%s/%s", namespace, o.repoName)
 		}
 	} else {
 		if baseRepoErr != nil {
 			return baseRepoErr
 		}
-		opts.RepoName = baseRepo.FullName()
+		o.repoName = baseRepo.FullName()
 	}
 
-	if !opts.ForceDelete && !opts.IO.PromptEnabled() {
+	if !o.forceDelete && !o.io.PromptEnabled() {
 		return &cmdutils.FlagError{Err: fmt.Errorf("--yes or -y flag is required when not running interactively.")}
 	}
 
-	if !opts.ForceDelete && opts.IO.PromptEnabled() {
-		fmt.Fprintf(opts.IO.StdErr, "This action will permanently delete %s immediately, including its repositories and all content: issues and merge requests.\n\n", opts.RepoName)
-		err = prompt.Confirm(&opts.ForceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete %s?", opts.RepoName), false)
+	if !o.forceDelete && o.io.PromptEnabled() {
+		fmt.Fprintf(o.io.StdErr, "This action will permanently delete %s immediately, including its repositories and all content: issues and merge requests.\n\n", o.repoName)
+		err = prompt.Confirm(&o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete %s?", o.repoName), false)
 		if err != nil {
 			return err
 		}
 	}
 
-	if opts.ForceDelete {
-		if opts.IO.IsErrTTY && opts.IO.IsaTTY {
-			fmt.Fprintf(opts.IO.StdErr, "- Deleting project %s\n", opts.RepoName)
+	if o.forceDelete {
+		if o.io.IsErrTTY && o.io.IsaTTY {
+			fmt.Fprintf(o.io.StdErr, "- Deleting project %s\n", o.repoName)
 		}
-		resp, err := api.DeleteProject(labClient, opts.RepoName)
+		resp, err := api.DeleteProject(labClient, o.repoName)
 		if err != nil && resp == nil {
 			return err
 		}
 		if resp.StatusCode == http.StatusUnauthorized {
-			return fmt.Errorf("you are not authorized to delete %s.\nCheck your token used for glab. Make sure it has the `api` and `write_repository` scopes enabled.", opts.RepoName)
+			return fmt.Errorf("you are not authorized to delete %s.\nCheck your token used for glab. Make sure it has the `api` and `write_repository` scopes enabled.", o.repoName)
 		}
 		return err
 	}
-	fmt.Fprintln(opts.IO.StdErr, "aborted by user")
+	fmt.Fprintln(o.io.StdErr, "aborted by user")
 	return nil
 }
