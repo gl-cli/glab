@@ -64,6 +64,29 @@ func main() {
 			iostreams.WithStdout(iostreams.NewColorable(os.Stdout), iostreams.IsTerminal(os.Stdout)),
 			iostreams.WithStderr(iostreams.NewColorable(os.Stderr), iostreams.IsTerminal(os.Stderr)),
 			iostreams.WithPagerCommand(iostreams.PagerCommandFromEnv()),
+
+			// overwrite pager from env if set via config
+			func(i *iostreams.IOStreams) {
+				if pager, _ := cfg.Get("", "glab_pager"); pager != "" {
+					i.SetPager(pager)
+				}
+			},
+
+			// configure hyperlink display
+			func(i *iostreams.IOStreams) {
+				if forceHyperlinks := os.Getenv("FORCE_HYPERLINKS"); forceHyperlinks != "" && forceHyperlinks != "0" {
+					i.SetDisplayHyperlinks("always")
+				} else if displayHyperlinks, _ := cfg.Get("", "display_hyperlinks"); displayHyperlinks == "true" {
+					i.SetDisplayHyperlinks("auto")
+				}
+			},
+
+			// configure prompt
+			func(i *iostreams.IOStreams) {
+				if promptDisabled, _ := cfg.Get("", "no_prompt"); promptDisabled != "" {
+					i.SetPrompt(promptDisabled)
+				}
+			},
 		),
 		true,
 		cfg,
@@ -98,20 +121,6 @@ func main() {
 	if !debug {
 		debugModeCfg, _ := cfg.Get("", "debug")
 		debug = debugModeCfg == "true" || debugModeCfg == "1"
-	}
-
-	if pager, _ := cfg.Get("", "glab_pager"); pager != "" {
-		cmdFactory.IO().SetPager(pager)
-	}
-
-	if promptDisabled, _ := cfg.Get("", "no_prompt"); promptDisabled != "" {
-		cmdFactory.IO().SetPrompt(promptDisabled)
-	}
-
-	if forceHyperlinks := os.Getenv("FORCE_HYPERLINKS"); forceHyperlinks != "" && forceHyperlinks != "0" {
-		cmdFactory.IO().SetDisplayHyperlinks("always")
-	} else if displayHyperlinks, _ := cfg.Get("", "display_hyperlinks"); displayHyperlinks == "true" {
-		cmdFactory.IO().SetDisplayHyperlinks("auto")
 	}
 
 	var expandedArgs []string
