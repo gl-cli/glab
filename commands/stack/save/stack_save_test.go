@@ -45,6 +45,9 @@ func runSaveCommand(rt http.RoundTripper, t *testing.T, getText cmdutils.GetText
 }
 
 func TestSaveNewStack(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	tests := []struct {
 		desc          string
 		args          []string

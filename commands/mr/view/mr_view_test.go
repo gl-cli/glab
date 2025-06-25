@@ -225,6 +225,9 @@ func TestMRView(t *testing.T) {
 }
 
 func Test_rawMRPreview(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeNote1 := &gitlab.Note{}
 	fakeNote1.Author.Username = "bob"
 	fakeNote2 := &gitlab.Note{}

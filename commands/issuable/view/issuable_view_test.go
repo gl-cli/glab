@@ -265,6 +265,9 @@ func TestNewCmdView(t *testing.T) {
 }
 
 func Test_rawIssuePreview(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	issueType := string(issuable.TypeIssue)
 	incidentType := string(issuable.TypeIncident)
 

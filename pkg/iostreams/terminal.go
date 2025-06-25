@@ -13,19 +13,6 @@ import (
 	"golang.org/x/term"
 )
 
-var (
-	_isStdoutTerminal = false
-	checkedTerminal   = false
-)
-
-func isStdoutTerminal() bool {
-	if !checkedTerminal {
-		_isStdoutTerminal = IsTerminal(os.Stdout)
-		checkedTerminal = true
-	}
-	return _isStdoutTerminal
-}
-
 // IsTerminal reports whether the file descriptor is connected to a terminal
 var IsTerminal = func(f *os.File) bool {
 	return isatty.IsTerminal(f.Fd()) || IsCygwinTerminal(f)
