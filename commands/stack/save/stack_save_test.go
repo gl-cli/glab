@@ -24,7 +24,7 @@ import (
 )
 
 func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStreams, stdout *bytes.Buffer, stderr *bytes.Buffer, factory cmdutils.Factory) {
-	ios, _, stdout, stderr = cmdtest.InitIOStreams(isTTY, "")
+	ios, _, stdout, stderr = cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
 	factory = cmdtest.InitFactory(ios, rt)
 
@@ -364,7 +364,7 @@ func createFactoryWithConfig(key string, value string) cmdutils.Factory {
 
 	cfg := config.NewFromString(strconfig)
 
-	ios, _, _, _ := iostreams.Test()
+	ios, _, _, _ := cmdtest.TestIOStreams()
 
 	return &cmdtest.Factory{
 		IOStub: ios,

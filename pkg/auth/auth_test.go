@@ -50,7 +50,7 @@ func Test_GetAuthenticatedClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ios, _, _, _ := cmdtest.InitIOStreams(false, "")
+			ios, _, _, _ := cmdtest.TestIOStreams()
 			tc := gitlab_testing.NewTestClient(t)
 			f := cmdtest.InitFactory(ios, nil)
 			f.HttpClientStub = func() (*gitlab.Client, error) {

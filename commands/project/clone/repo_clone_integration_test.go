@@ -7,7 +7,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
@@ -19,7 +18,7 @@ func Test_repoClone_Integration(t *testing.T) {
 	glTestHost := test.GetHostOrSkip(t)
 	t.Setenv("GITLAB_HOST", glTestHost)
 
-	io, stdin, stdout, stderr := iostreams.Test()
+	io, stdin, stdout, stderr := cmdtest.TestIOStreams()
 	fac := &cmdtest.Factory{
 		IOStub: io,
 		ConfigStub: func() (config.Config, error) {
@@ -74,7 +73,7 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 	glTestHost := test.GetHostOrSkip(t)
 	t.Setenv("GITLAB_HOST", glTestHost)
 
-	io, stdin, stdout, stderr := iostreams.Test()
+	io, stdin, stdout, stderr := cmdtest.TestIOStreams()
 	fac := &cmdtest.Factory{
 		IOStub: io,
 		ConfigStub: func() (config.Config, error) {

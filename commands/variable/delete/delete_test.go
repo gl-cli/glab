@@ -9,7 +9,6 @@ import (
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"go.uber.org/mock/gomock"
 
 	"github.com/google/shlex"
@@ -59,7 +58,7 @@ func Test_NewCmdDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, _, _, _ := iostreams.Test()
+			io, _, _, _ := cmdtest.TestIOStreams()
 			f := &cmdtest.Factory{
 				IOStub: io,
 				HttpClientStub: func() (*gitlab.Client, error) {
@@ -166,7 +165,7 @@ func Test_deleteRun(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, _ = tt.opts.httpClient()
 
-			io, _, stdout, _ := iostreams.Test()
+			io, _, stdout, _ := cmdtest.TestIOStreams()
 			tt.opts.io = io
 
 			err := tt.opts.run()

@@ -1,6 +1,7 @@
 package cmdutils
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"testing"
@@ -728,7 +729,8 @@ func Test_UsersPrompt(t *testing.T) {
 			})
 
 			var got []string
-			io, _, _, stderr := iostreams.Test()
+			stderr := &bytes.Buffer{}
+			io := iostreams.New(iostreams.WithStderr(stderr, false))
 
 			err := UsersPrompt(&got, &gitlab.Client{}, repoRemote, io, tC.minimumAccessLevel, "some users")
 			if tC.expectedError != "" {
@@ -924,7 +926,8 @@ func Test_MilestonesPromptNoPrompts(t *testing.T) {
 	}
 
 	var got int
-	io, _, _, stderr := iostreams.Test()
+	stderr := &bytes.Buffer{}
+	io := iostreams.New(iostreams.WithStderr(stderr, false))
 
 	err := MilestonesPrompt(&got, &gitlab.Client{}, repoRemote, io)
 	if err != nil {
@@ -952,7 +955,7 @@ func TestMilestonesPromptFailures(t *testing.T) {
 	}
 
 	var got int
-	io, _, _, _ := iostreams.Test()
+	io := iostreams.New()
 
 	err := MilestonesPrompt(&got, &gitlab.Client{}, repoRemote, io)
 	if err == nil {

@@ -8,8 +8,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/test"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
 	"gitlab.com/gitlab-org/cli/pkg/utils"
@@ -60,7 +58,7 @@ func Test_IssueCreate_Integration(t *testing.T) {
 		}, nil
 	}
 
-	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	f := cmdtest.StubFactory(glTestHost+"/cli-automated-testing/test", io)
 
 	cmd := NewCmdCreate(f)
@@ -130,7 +128,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 		}, nil
 	}
 
-	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	f := cmdtest.StubFactory(glTestHost+"/cli-automated-testing/test", io)
 
 	oldCreateRun := createRun

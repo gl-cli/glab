@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 
 	"github.com/MakeNowJust/heredoc/v2"
 )
@@ -146,7 +146,7 @@ func Test_helperRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, stdin, stdout, stderr := iostreams.Test()
+			io, stdin, stdout, stderr := cmdtest.TestIOStreams()
 			fmt.Fprint(stdin, tt.input)
 			opts := &tt.opts
 			opts.io = io

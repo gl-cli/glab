@@ -1,6 +1,7 @@
 package oauth2
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -37,7 +38,8 @@ func TestHandleAuthRedirect(t *testing.T) {
 		"client_id":            "321",
 	}
 
-	ios, _, _, _ := iostreams.Test()
+	stderr := &bytes.Buffer{}
+	ios := iostreams.New(iostreams.WithStderr(stderr, false))
 
 	tokenCh := handleAuthRedirect(ios, "localhost", "123", hostname, "http", "abc", "validstate")
 	defer close(tokenCh)

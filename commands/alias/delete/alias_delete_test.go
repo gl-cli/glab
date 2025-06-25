@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -57,7 +56,7 @@ func TestAliasDelete(t *testing.T) {
 
 			cfg := config.NewFromString(tt.config)
 
-			ios, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(tt.isTTY), iostreams.WithStderrIsTTY(tt.isTTY))
+			ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 			factoryConf := &cmdtest.Factory{
 				IOStub: ios,

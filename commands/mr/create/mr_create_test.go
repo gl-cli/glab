@@ -23,7 +23,7 @@ import (
 )
 
 func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string, letItFail bool) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 
 	factory := cmdtest.InitFactory(ios, rt)

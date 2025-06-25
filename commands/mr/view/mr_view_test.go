@@ -40,7 +40,7 @@ hosts:
     token: OTOKEN
 `, "")()
 
-	io, _, stdout, stderr = iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, stdout, stderr = cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	stubFactory, _ = cmdtest.StubFactoryWithConfig("", io)
 
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
@@ -273,7 +273,7 @@ func Test_rawMRPreview(t *testing.T) {
 		},
 	}
 
-	io, _, _, _ = iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, _, _ = cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 	tests := []struct {
 		name  string

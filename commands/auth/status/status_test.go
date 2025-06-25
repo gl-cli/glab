@@ -12,7 +12,6 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 func Test_NewCmdStatus(t *testing.T) {
@@ -189,7 +188,7 @@ hosts:
 	_, _ = client("", "gitlab.com")
 
 	for _, tt := range tests {
-		io, _, stdout, stderr := iostreams.Test()
+		io, _, stdout, stderr := cmdtest.TestIOStreams()
 		tt.opts.config = func() (config.Config, error) {
 			return configs, nil
 		}
@@ -288,7 +287,7 @@ gl.io
 	t.Setenv("GITLAB_TOKEN", "")
 	configs, err := config.ParseConfig("config.yml")
 	assert.Nil(t, err)
-	io, _, stdout, stderr := iostreams.Test()
+	io, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	client := func(token, hostname string) (*api.Client, error) {
 		return cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
@@ -320,7 +319,7 @@ git_protocol: ssh
 
 	configs, err := config.ParseConfig("config.yml")
 	assert.Nil(t, err)
-	io, _, stdout, _ := iostreams.Test()
+	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	opts := &options{
 		config: func() (config.Config, error) {

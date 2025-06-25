@@ -1,8 +1,6 @@
 package iostreams
 
 import (
-	"bytes"
-	"io"
 	"os"
 	"testing"
 
@@ -169,18 +167,6 @@ func Test_HelperFunctions(t *testing.T) {
 				assert.False(t, ios.promptDisabled)
 			})
 		})
-	})
-
-	t.Run("IOTest()", func(t *testing.T) {
-		ios, in, out, err := Test()
-
-		assert.Equal(t, ios.In, io.NopCloser(in))
-		assert.Equal(t, ios.StdOut, out)
-		assert.Equal(t, ios.StdErr, err)
-
-		assert.Equal(t, in, &bytes.Buffer{})
-		assert.Equal(t, out, &bytes.Buffer{})
-		assert.Equal(t, err, &bytes.Buffer{})
 	})
 }
 

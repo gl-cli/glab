@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/spf13/cobra"
 
 	"github.com/google/shlex"
@@ -117,7 +115,7 @@ func TestNewCmdClone(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			io, stdin, stdout, stderr := iostreams.Test()
+			io, stdin, stdout, stderr := cmdtest.TestIOStreams()
 			fac := &cmdtest.Factory{IOStub: io}
 
 			var opts *options

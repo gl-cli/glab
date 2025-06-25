@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/require"
 
@@ -31,7 +29,7 @@ hosts:
     token: OTOKEN
 `, "")()
 
-	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 
 	oldUnsubscribeMR := api.UnsubscribeFromMR

@@ -8,8 +8,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/test"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/google/shlex"
 
 	"github.com/acarl005/stripansi"
@@ -93,7 +91,7 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 		},
 	}
 
-	ios, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	f := cmdtest.StubFactory(glTestHost+"/cli-automated-testing/test", ios)
 
 	cmd := NewCmdUpdate(f)

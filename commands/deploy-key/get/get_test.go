@@ -13,7 +13,7 @@ import (
 )
 
 func runCommand(rt http.RoundTripper, keyId string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(false, "")
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.InitFactory(ios, rt)
 	_, _ = factory.HttpClient()
 	cmd := NewCmdGet(factory)

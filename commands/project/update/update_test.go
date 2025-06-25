@@ -110,7 +110,7 @@ func TestUpdateCmd(t *testing.T) {
 				}
 			}
 
-			ios, _, stdout, stderr := cmdtest.InitIOStreams(true, "")
+			ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 			factory := cmdtest.InitFactory(ios, fakeHTTP)
 			factory.BaseRepoStub = func() (glrepo.Interface, error) {

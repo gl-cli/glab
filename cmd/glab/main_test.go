@@ -1,15 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"net"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"go.uber.org/goleak"
 )
@@ -86,9 +84,7 @@ x lookup https://gitlab.com/api/v4:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			streams, _, _, _ := iostreams.Test()
-			out := &bytes.Buffer{}
-			streams.StdErr = out
+			streams, _, _, out := cmdtest.TestIOStreams()
 			printError(streams, tt.args.err, tt.args.cmd, tt.args.debug)
 			if gotOut := out.String(); gotOut != tt.wantOut {
 				t.Errorf("printError() = %q, want %q", gotOut, tt.wantOut)

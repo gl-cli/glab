@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
@@ -64,7 +63,7 @@ func makeTestFactory() (factory cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
 		MatchURL: httpmock.PathAndQuerystring,
 	}
 
-	io, _, _, _ := iostreams.Test()
+	io, _, _, _ := cmdtest.TestIOStreams()
 
 	client := func(token, hostname string) (*api.Client, error) {
 		return cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)

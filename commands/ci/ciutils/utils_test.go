@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
 
@@ -256,7 +255,7 @@ func TestGetJobId(t *testing.T) {
 				)
 			}
 
-			ios, _, _, _ := iostreams.Test()
+			ios, _, _, _ := cmdtest.TestIOStreams()
 			f := cmdtest.InitFactory(ios, fakeHTTP)
 
 			_, _ = f.HttpClient()
@@ -418,7 +417,7 @@ func TestTraceJob(t *testing.T) {
 				)
 			}
 
-			ios, _, _, _ := iostreams.Test()
+			ios, _, _, _ := cmdtest.TestIOStreams()
 			f := cmdtest.InitFactory(ios, fakeHTTP)
 
 			_, _ = f.HttpClient()

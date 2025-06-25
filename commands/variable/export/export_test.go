@@ -12,7 +12,6 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 func Test_NewCmdExport(t *testing.T) {
@@ -57,7 +56,7 @@ func Test_NewCmdExport(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			io, _, _, _ := iostreams.Test()
+			io, _, _, _ := cmdtest.TestIOStreams()
 			f := &cmdtest.Factory{
 				IOStub: io,
 			}
@@ -136,7 +135,7 @@ func Test_exportRun_project(t *testing.T) {
 		},
 	}
 
-	io, _, stdout, _ := iostreams.Test()
+	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	tests := []struct {
 		scope          string
@@ -409,7 +408,7 @@ func Test_exportRun_group(t *testing.T) {
 		},
 	}
 
-	io, _, stdout, _ := iostreams.Test()
+	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	tests := []struct {
 		scope          string

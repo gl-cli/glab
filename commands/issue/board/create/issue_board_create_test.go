@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"github.com/acarl005/stripansi"
@@ -52,7 +50,7 @@ func TestNewCmdCreate(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test", io)
 

@@ -26,7 +26,7 @@ type TestRef struct {
 }
 
 func setupTestFactory(rt http.RoundTripper) (cmdutils.Factory, *options) {
-	ios, _, _, _ := cmdtest.InitIOStreams(false, "")
+	ios, _, _, _ := cmdtest.TestIOStreams()
 
 	f := cmdtest.InitFactory(ios, rt)
 

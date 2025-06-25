@@ -11,8 +11,8 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -176,7 +176,7 @@ func TestMrRebase(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err := runCommand(fakeHTTP, false, tc.cli)
+			output, err := runCommand(fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `mr rebase %s`: %v", tc.cli, err) {
 				out := output.String()

@@ -14,8 +14,8 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -69,7 +69,7 @@ func TestReleaseView(t *testing.T) {
 			fakeHTTP.RegisterResponder(tc.httpMock.method, tc.httpMock.path,
 				httpmock.NewFileResponse(tc.httpMock.status, tc.httpMock.bodyFile))
 
-			output, err := runCommand(fakeHTTP, false, tc.cli)
+			output, err := runCommand(fakeHTTP, tc.cli)
 
 			out := output.String()
 			timeRE := regexp.MustCompile(`\d+ years`)

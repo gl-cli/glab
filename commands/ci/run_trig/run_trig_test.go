@@ -19,8 +19,8 @@ type ResponseJSON struct {
 	Ref   string `json:"ref"`
 }
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -102,7 +102,7 @@ func TestCIRun(t *testing.T) {
 				},
 			)
 
-			output, _ := runCommand(fakeHTTP, false, tc.cli)
+			output, _ := runCommand(fakeHTTP, tc.cli)
 
 			out := output.String()
 

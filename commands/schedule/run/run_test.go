@@ -13,7 +13,6 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
@@ -25,7 +24,7 @@ hosts:
     token: OTOKEN
 `, "")()
 
-	io, _, Stderr, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 
 	api.RunSchedule = func(client *gitlab.Client, repo string, schedule int, opts ...gitlab.RequestOptionFunc) error {
@@ -69,7 +68,7 @@ hosts:
 				}
 			}
 
-			out := stripansi.Strip(Stderr.String())
+			out := stripansi.Strip(stdout.String())
 
 			for _, msg := range tc.ExpectedMsg {
 				assert.Contains(t, out, msg)

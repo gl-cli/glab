@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -96,7 +95,7 @@ func TestConfigGet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(tt.isTTY), iostreams.WithStderrIsTTY(tt.isTTY))
+			io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isTTY))
 
 			f := &cmdtest.Factory{
 				ConfigStub: func() (config.Config, error) {
@@ -152,7 +151,7 @@ func TestConfigSet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(tt.isTTY), iostreams.WithStderrIsTTY(tt.isTTY))
+			io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isTTY))
 
 			f := &cmdtest.Factory{
 				ConfigStub: func() (config.Config, error) {

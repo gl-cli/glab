@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
 
@@ -50,7 +49,7 @@ func TestAliasList(t *testing.T) {
 
 			cfg := config.NewFromString(tt.config)
 
-			ios, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(tt.isaTTy), iostreams.WithStderrIsTTY(tt.isaTTy))
+			ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isaTTy))
 
 			factoryConf := &cmdtest.Factory{
 				ConfigStub: func() (config.Config, error) {

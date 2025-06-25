@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
@@ -71,7 +69,7 @@ func Test_DisplayMR(t *testing.T) {
 			outputToTTY: false,
 		},
 	}
-	streams, _, _, _ := iostreams.Test()
+	streams, _, _, _ := cmdtest.TestIOStreams()
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
 			got := DisplayMR(streams.Color(), tC.mr, tC.outputToTTY)
@@ -396,7 +394,7 @@ func Test_getMRForBranchPrompt(t *testing.T) {
 }
 
 func Test_MRFromArgsWithOpts(t *testing.T) {
-	ios, _, _, _ := iostreams.Test()
+	ios, _, _, _ := cmdtest.TestIOStreams()
 	ios.SetPrompt("false")
 
 	// Create base factory for tests
@@ -531,7 +529,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 }
 
 func Test_DisplayAllMRs(t *testing.T) {
-	streams, _, _, _ := iostreams.Test()
+	streams, _, _, _ := cmdtest.TestIOStreams()
 	mrs := []*gitlab.BasicMergeRequest{
 		{
 			IID:          1,
@@ -870,7 +868,7 @@ User One	aaa	👍
 
 	for _, scenario := range scenarios {
 		t.Run(scenario.name, func(t *testing.T) {
-			streams, _, stdout, _ := iostreams.Test()
+			streams, _, stdout, _ := cmdtest.TestIOStreams()
 
 			PrintMRApprovalState(streams, scenario.approvalState)
 			assert.Equal(t, scenario.expected, stdout.String())
