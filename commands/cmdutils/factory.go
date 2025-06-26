@@ -27,6 +27,7 @@ type Factory interface {
 	Branch() (string, error)
 	IO() *iostreams.IOStreams
 	DefaultHostname() string
+	BuildInfo() api.BuildInfo
 }
 
 type DefaultFactory struct {
@@ -191,4 +192,8 @@ func (f *DefaultFactory) Branch() (string, error) {
 
 func (f *DefaultFactory) IO() *iostreams.IOStreams {
 	return f.io
+}
+
+func (f *DefaultFactory) BuildInfo() api.BuildInfo {
+	return f.buildInfo
 }

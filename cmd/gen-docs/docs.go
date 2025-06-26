@@ -45,7 +45,7 @@ func main() {
 	}
 
 	ioStream, _, _, _ := cmdtest.TestIOStreams()
-	glabCli := commands.NewCmdRoot(&factory{io: ioStream}, "", "")
+	glabCli := commands.NewCmdRoot(&factory{io: ioStream})
 	glabCli.DisableAutoGenTag = true
 	if *manpage {
 		if err := genManPage(glabCli, *path); err != nil {
@@ -297,4 +297,8 @@ func (f *factory) IO() *iostreams.IOStreams {
 
 func (f *factory) DefaultHostname() string {
 	return glinstance.DefaultHostname
+}
+
+func (f *factory) BuildInfo() api.BuildInfo {
+	return api.BuildInfo{}
 }

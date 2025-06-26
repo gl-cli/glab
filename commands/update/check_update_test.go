@@ -8,20 +8,28 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 )
 
 func runCommand(rt http.RoundTripper, version string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, rt)
+
+	tc, err := cmdtest.TestClient(&http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)
+	if err != nil {
+		return nil, err
+	}
+
+	factory := cmdtest.NewTestFactory(ios, cmdtest.WithGitLabClient(tc.Lab()), cmdtest.WithBuildInfo(api.BuildInfo{Version: version}))
 	_, _ = factory.HttpClient()
 
-	cmd := NewCheckUpdateCmd(factory, version)
+	cmd := NewCheckUpdateCmd(factory)
 
 	defer config.StubWriteConfig(io.Discard, io.Discard)()
 	return cmdtest.ExecuteCommand(cmd, "", stdout, stderr)
@@ -191,7 +199,7 @@ func TestCheckUpdate_NoRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Nil(t, CheckUpdate(nil, "1.1.1", true, tt.previousCommand))
+			assert.Nil(t, CheckUpdate(nil, true, tt.previousCommand))
 		})
 	}
 }

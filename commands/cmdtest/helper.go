@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -169,6 +170,7 @@ type Factory struct {
 	ConfigStub     func() config.Config
 	BranchStub     func() (string, error)
 	IOStub         *iostreams.IOStreams
+	BuildInfoStub  api.BuildInfo
 
 	repoOverride string
 }
@@ -212,6 +214,10 @@ func (f *Factory) DefaultHostname() string {
 	return glinstance.DefaultHostname
 }
 
+func (f *Factory) BuildInfo() api.BuildInfo {
+	return f.BuildInfoStub
+}
+
 func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *Factory {
 	return &Factory{
 		IOStub: ios,
@@ -238,6 +244,7 @@ func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *Factory {
 		BranchStub: func() (string, error) {
 			return "main", nil
 		},
+		BuildInfoStub: api.BuildInfo{Version: "test", Commit: "test", Platform: runtime.GOOS, Architecture: runtime.GOARCH},
 	}
 }
 
@@ -311,6 +318,13 @@ func WithBranch(branch string) FactoryOption {
 	}
 }
 
+// WithBuildInfo configures the Factory build information
+func WithBuildInfo(buildInfo api.BuildInfo) FactoryOption {
+	return func(f *Factory) {
+		f.BuildInfoStub = buildInfo
+	}
+}
+
 // NewTestFactory creates a Factory configured for testing with the given options
 func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 	// Create a default factory
@@ -328,6 +342,7 @@ func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 		BranchStub: func() (string, error) {
 			return "main", nil
 		},
+		BuildInfoStub: api.BuildInfo{Version: "test", Commit: "test", Platform: runtime.GOOS, Architecture: runtime.GOARCH},
 	}
 
 	// Apply all options
@@ -359,6 +374,7 @@ func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdEx
 		BranchStub: func() (string, error) {
 			return "main", nil
 		},
+		BuildInfoStub: api.BuildInfo{Version: "test", Commit: "test", Platform: runtime.GOOS, Architecture: runtime.GOARCH},
 	}
 
 	// Apply all options

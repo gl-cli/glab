@@ -85,7 +85,7 @@ func main() {
 		),
 		true,
 		cfg,
-		api.BuildInfo{Version: version, Platform: platform, Architecture: runtime.GOARCH},
+		api.BuildInfo{Version: version, Commit: commit, Platform: platform, Architecture: runtime.GOARCH},
 	)
 
 	if !cmdFactory.IO().ColorEnabled() {
@@ -108,7 +108,7 @@ func main() {
 		}
 	}
 
-	rootCmd := commands.NewCmdRoot(cmdFactory, version, commit)
+	rootCmd := commands.NewCmdRoot(cmdFactory)
 
 	// Set Debug mode from config if not previously set by debugMode
 	if !debug {
@@ -209,7 +209,7 @@ func main() {
 	}
 
 	if shouldCheck {
-		if err := update.CheckUpdate(cmdFactory, version, true, argCommand); err != nil {
+		if err := update.CheckUpdate(cmdFactory, true, argCommand); err != nil {
 			printError(cmdFactory.IO(), err, rootCmd, debug)
 		}
 	}

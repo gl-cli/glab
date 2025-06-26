@@ -24,7 +24,7 @@ const (
 
 var commandAliases = []string{"update"}
 
-func NewCheckUpdateCmd(f cmdutils.Factory, version string) *cobra.Command {
+func NewCheckUpdateCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   commandUse,
 		Short: "Check for latest glab releases.",
@@ -37,14 +37,14 @@ func NewCheckUpdateCmd(f cmdutils.Factory, version string) *cobra.Command {
 		`),
 		Aliases: commandAliases,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return CheckUpdate(f, version, false, "")
+			return CheckUpdate(f, false, "")
 		},
 	}
 
 	return cmd
 }
 
-func CheckUpdate(f cmdutils.Factory, version string, silentSuccess bool, previousCommand string) error {
+func CheckUpdate(f cmdutils.Factory, silentSuccess bool, previousCommand string) error {
 	if shouldSkipUpdate(previousCommand) {
 		return nil
 	}
@@ -83,6 +83,8 @@ func CheckUpdate(f cmdutils.Factory, version string, silentSuccess bool, previou
 	}
 	latestRelease := releases[0]
 	releaseURL := fmt.Sprintf("%s/-/releases/%s", defaultProjectURL, latestRelease.TagName)
+
+	version := f.BuildInfo().Version
 
 	c := f.IO().Color()
 	if isOlderVersion(latestRelease.Name, version) {

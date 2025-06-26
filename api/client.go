@@ -34,7 +34,7 @@ const (
 )
 
 type BuildInfo struct {
-	Version, Platform, Architecture string
+	Version, Commit, Platform, Architecture string
 }
 
 // Client represents an argument to NewClient
