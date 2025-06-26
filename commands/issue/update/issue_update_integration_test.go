@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/google/shlex"
@@ -16,6 +17,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func TestNewCmdUpdate_Integration(t *testing.T) {
@@ -91,8 +93,11 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 		},
 	}
 
+	cfg, err := config.Init()
+	require.NoError(t, err)
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	f := cmdtest.StubFactory(t, glTestHost+"/cli-automated-testing/test", ios)
+	f := cmdutils.NewFactory(ios, false, cfg)
+	f.RepoOverride(glTestHost + "/cli-automated-testing/test")
 
 	cmd := NewCmdUpdate(f)
 	cmd.Flags().StringP("repo", "R", "", "")

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
@@ -15,9 +16,11 @@ import (
 	"github.com/acarl005/stripansi"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func Test_IssueCreate_Integration(t *testing.T) {
@@ -58,8 +61,11 @@ func Test_IssueCreate_Integration(t *testing.T) {
 		}, nil
 	}
 
-	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	f := cmdtest.StubFactory(t, glTestHost+"/cli-automated-testing/test", io)
+	cfg, err := config.Init()
+	require.NoError(t, err)
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
+	f := cmdutils.NewFactory(ios, false, cfg)
+	f.RepoOverride(glTestHost + "/cli-automated-testing/test")
 
 	cmd := NewCmdCreate(f)
 	cmd.Flags().StringP("repo", "R", "", "")
@@ -77,7 +83,7 @@ func Test_IssueCreate_Integration(t *testing.T) {
 	}
 
 	cli := strings.Join(cliStr, " ")
-	_, err := cmdtest.RunCommand(cmd, cli)
+	_, err = cmdtest.RunCommand(cmd, cli)
 	assert.Nil(t, err)
 
 	out := stripansi.Strip(stdout.String())
@@ -128,8 +134,11 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 		}, nil
 	}
 
-	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	f := cmdtest.StubFactory(t, glTestHost+"/cli-automated-testing/test", io)
+	cfg, err := config.Init()
+	require.NoError(t, err)
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
+	f := cmdutils.NewFactory(ios, false, cfg)
+	f.RepoOverride(glTestHost + "/cli-automated-testing/test")
 
 	oldCreateRun := createRun
 
@@ -154,7 +163,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 	}
 
 	cli := strings.Join(cliStr, " ")
-	_, err := cmdtest.RunCommand(cmd, cli)
+	_, err = cmdtest.RunCommand(cmd, cli)
 	assert.Contains(t, err.Error(), "fail on purpose")
 
 	out := stripansi.Strip(stdout.String())

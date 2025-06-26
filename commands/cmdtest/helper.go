@@ -21,7 +21,6 @@ import (
 	"github.com/google/shlex"
 	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
-	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -429,19 +428,6 @@ func Eq(t *testing.T, got any, expected any) {
 	if !reflect.DeepEqual(got, expected) {
 		t.Errorf("expected: %v, got: %v", expected, got)
 	}
-}
-
-func StubFactory(t *testing.T, repo string, io *iostreams.IOStreams) cmdutils.Factory {
-	t.Helper()
-
-	cfg, err := config.Init()
-	require.NoError(t, err)
-	f := cmdutils.NewFactory(io, false, cfg)
-	if repo != "" {
-		f.RepoOverride(repo)
-	}
-
-	return f
 }
 
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {
