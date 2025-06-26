@@ -1,16 +1,36 @@
+version: "2"
+
 run:
-    timeout: 5m
     modules-download-mode: readonly
 
 linters:
-    disable-all: true
+    default: none
     enable:
         - errcheck
-        - gofumpt
-        - goimports
-        - gosimple
         - govet
         - ineffassign
         - staticcheck
-        - typecheck
         - unused
+    exclusions:
+      presets:
+          - comments
+          - common-false-positives
+          - legacy
+          - std-error-handling
+    settings:
+      staticcheck:
+        checks:
+          - all
+          - -QF*
+          - -ST1003
+          - -ST1005
+          - -ST1008
+          - -ST1012
+          - -ST1016
+          - -ST1018
+          - -ST1023
+
+formatters:
+    enable:
+        - gofumpt
+        - goimports

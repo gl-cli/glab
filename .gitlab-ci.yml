@@ -1,6 +1,6 @@
 variables:
   GO_VERSION: "1.24.4"
-  GOLANGCI_LINT_VERSION: 'v1.64.5'
+  GOLANGCI_LINT_VERSION: '2.1.6'
   GITLAB_ADVANCED_SAST_ENABLED: 'true'
 
 # run the pipeline only on MRs, tags, and default branch
@@ -94,13 +94,14 @@ lint_commit:
       when: always
 
 lint:
-  image: ${GITLAB_DEPENDENCY_PROXY}golangci/golangci-lint:$GOLANGCI_LINT_VERSION
+  image: ${GITLAB_DEPENDENCY_PROXY}golangci/golangci-lint:v$GOLANGCI_LINT_VERSION
   stage: test
   script:
     # Write the code coverage report to gl-code-quality-report.json
     # and print linting issues to stdout in the format: path/to/file:line description
     # add `--issues-exit-code 0` to ignore linting issues
-    - golangci-lint run --print-issued-lines=false --out-format code-climate:gl-code-quality-report.json,line-number
+    - golangci-lint run --output.text.path=stdout --output.text.colors=false --output.text.print-issued-lines=false --output.code-climate.path=gl-code-quality-report.json
+
   artifacts:
     reports:
       codequality: gl-code-quality-report.json

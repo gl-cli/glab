@@ -9,7 +9,6 @@ import (
 	"github.com/google/shlex"
 
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	cmdTestUtils "gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
@@ -113,8 +112,8 @@ func TestNewCmdReleaseList(t *testing.T) {
 		},
 	}
 
-	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdTestUtils.WithTestIOStreamsAsTTY(true))
-	f := cmdtest.NewTestFactory(io, cmdtest.WithBaseRepo("cli-automated-testing", "test"))
+	io, _, stdout, stderr := cmdTestUtils.TestIOStreams(cmdTestUtils.WithTestIOStreamsAsTTY(true))
+	f := cmdTestUtils.NewTestFactory(io, cmdTestUtils.WithBaseRepo("cli-automated-testing", "test"))
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
