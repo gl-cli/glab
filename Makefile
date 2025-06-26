@@ -123,13 +123,14 @@ test: bin/gotestsum ## Run tests
 	$(GOTEST) --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
 
 .PHONY: test-race
+test-race: TEST_FORMAT ?= short
 test-race: SHELL = /bin/bash # set environment variables to ensure consistent test behavior
 test-race: VISUAL=
 test-race: EDITOR=
 test-race: PAGER=
 test-race: export CI_PROJECT_PATH=$(shell git remote get-url origin)
 test-race: bin/gotestsum ## Run tests with race detection
-	$(GOTEST) -- -race ./...
+	$(GOTEST) --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic -race $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
 
 ifdef HASGOCILINT
 bin/golangci-lint:
