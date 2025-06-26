@@ -83,7 +83,7 @@ func Test_IssueCreate_Integration(t *testing.T) {
 	}
 
 	cli := strings.Join(cliStr, " ")
-	_, err = cmdtest.RunCommand(cmd, cli)
+	_, err = cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 	assert.Nil(t, err)
 
 	out := stripansi.Strip(stdout.String())
@@ -165,7 +165,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 	}
 
 	cli := strings.Join(cliStr, " ")
-	_, err = cmdtest.RunCommand(cmd, cli)
+	_, err = cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 	assert.Contains(t, err.Error(), "fail on purpose")
 
 	out := stripansi.Strip(stdout.String())
@@ -185,7 +185,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 
 	newcli := strings.Join(newCliStr, " ")
 
-	_, newerr := cmdtest.RunCommand(cmd, newcli)
+	_, newerr := cmdtest.ExecuteCommand(cmd, newcli, stdout, stderr)
 	assert.Nil(t, newerr)
 
 	newout := stripansi.Strip(stdout.String())

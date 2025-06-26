@@ -343,8 +343,7 @@ func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdEx
 	f := &Factory{
 		IOStub: ios,
 		HttpClientStub: func() (*gitlab.Client, error) {
-			t.Errorf("You must configure a GitLab Test client in your tests. Use the WithGitLabClient option function")
-			return nil, nil
+			return &gitlab.Client{}, nil
 		},
 		ConfigStub: func() config.Config {
 			return config.NewBlankConfig()

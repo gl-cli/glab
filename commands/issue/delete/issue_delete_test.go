@@ -5,10 +5,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 )
 
 func TestMain(m *testing.M) {
@@ -68,19 +70,21 @@ func TestNewCmdDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-			f := cmdtest.NewTestFactory(io)
-
-			cmd := NewCmdDelete(f)
-
-			cmd.Flags().StringP("repo", "R", "", "")
+			exec := cmdtest.SetupCmdForTest(
+				t,
+				func(f cmdutils.Factory) *cobra.Command {
+					cmd := NewCmdDelete(f)
+					cmd.Flags().StringP("repo", "R", "", "")
+					return cmd
+				},
+			)
 
 			cli := strings.Join(tt.args, " ")
 			t.Log(cli)
-			_, err := cmdtest.RunCommand(cmd, cli)
+			cmdOut, err := exec(cli)
 			if !tt.wantErr {
 				assert.Nil(t, err)
-				tt.assertFunc(t, stdout.String(), stderr.String())
+				tt.assertFunc(t, cmdOut.OutBuf.String(), cmdOut.ErrBuf.String())
 			} else {
 				assert.NotNil(t, err)
 			}

@@ -205,11 +205,8 @@ func TestNewCmdView(t *testing.T) {
 			io.IsErrTTY = tt.isTTY
 			cmd := NewCmdView(f, tt.viewIssueType)
 			cmdutils.EnableRepoOverride(cmd, f)
-			_, err := cmdtest.RunCommand(cmd, fmt.Sprintf("%d -c -s -R cli-automated-testing/test", tt.issueID))
-			if err != nil {
-				t.Error(err)
-				return
-			}
+			_, err := cmdtest.ExecuteCommand(cmd, fmt.Sprintf("%d -c -s -R cli-automated-testing/test", tt.issueID), stdout, stderr)
+			require.NoError(t, err)
 
 			out := stripansi.Strip(stdout.String())
 			outErr := stripansi.Strip(stderr.String())
