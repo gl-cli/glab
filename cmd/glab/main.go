@@ -88,25 +88,7 @@ func main() {
 		api.BuildInfo{Version: version, Commit: commit, Platform: platform, Architecture: runtime.GOARCH},
 	)
 
-	if !cmdFactory.IO().ColorEnabled() {
-		surveyCore.DisableColor = true
-	} else {
-		// Override survey's choice of color for default values
-		// For default values for e.g. `Input` prompts, Survey uses the literal "white" color,
-		// which makes no sense on dark terminals and is literally invisible on light backgrounds.
-		// This overrides Survey to output a gray color for 256-color terminals and "default" for basic terminals.
-		surveyCore.TemplateFuncsWithColor["color"] = func(style string) string {
-			switch style {
-			case "white":
-				if cmdFactory.IO().Is256ColorSupported() {
-					return fmt.Sprintf("\x1b[%d;5;%dm", 38, 242)
-				}
-				return ansi.ColorCode("default")
-			default:
-				return ansi.ColorCode(style)
-			}
-		}
-	}
+	setupSurveyCore(cmdFactory.IO())
 
 	rootCmd := commands.NewCmdRoot(cmdFactory)
 
@@ -242,6 +224,28 @@ func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, deb
 
 	if cmd != nil {
 		cmd.Print("\n")
+	}
+}
+
+func setupSurveyCore(io *iostreams.IOStreams) {
+	if !io.ColorEnabled() {
+		surveyCore.DisableColor = true
+	} else {
+		// Override survey's choice of color for default values
+		// For default values for e.g. `Input` prompts, Survey uses the literal "white" color,
+		// which makes no sense on dark terminals and is literally invisible on light backgrounds.
+		// This overrides Survey to output a gray color for 256-color terminals and "default" for basic terminals.
+		surveyCore.TemplateFuncsWithColor["color"] = func(style string) string {
+			switch style {
+			case "white":
+				if io.Is256ColorSupported() {
+					return fmt.Sprintf("\x1b[%d;5;%dm", 38, 242)
+				}
+				return ansi.ColorCode("default")
+			default:
+				return ansi.ColorCode(style)
+			}
+		}
 	}
 }
 
