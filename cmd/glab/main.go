@@ -36,18 +36,15 @@ var (
 	commit string
 	// platform is set dynamically at build
 	platform = runtime.GOOS
+
+	// debugMode is set dynamically at build and can be overridden by
+	// the configuration file or environment variable
+	// sets to "true" or "false" or "1" or "0" as string
+	debugMode = "false"
 )
 
-// debug is set dynamically at build and can be overridden by
-// the configuration file or environment variable
-// sets to "true" or "false" or "1" or "0" as string
-var debugMode = "false"
-
-// debug is parsed boolean of debugMode
-var debug bool
-
 func main() {
-	debug = debugMode == "true" || debugMode == "1"
+	debug := debugMode == "true" || debugMode == "1"
 
 	// Initialize configuration
 	cfg, err := config.Init()
