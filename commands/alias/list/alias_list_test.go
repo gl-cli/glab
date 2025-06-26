@@ -50,9 +50,7 @@ func TestAliasList(t *testing.T) {
 
 			cfg := config.NewFromString(tt.config)
 
-			ios, _, stdout, stderr := iostreams.Test()
-			ios.IsaTTY = tt.isaTTy
-			ios.IsErrTTY = tt.isaTTy
+			ios, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(tt.isaTTy), iostreams.WithStderrIsTTY(tt.isaTTy))
 
 			factoryConf := &cmdtest.Factory{
 				ConfigStub: func() (config.Config, error) {

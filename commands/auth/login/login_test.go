@@ -204,10 +204,7 @@ func Test_NewCmdLogin(t *testing.T) {
 			d := t.TempDir()
 			t.Setenv("GLAB_CONFIG_DIR", d)
 
-			io, stdin, _, _ := iostreams.Test()
-			io.IsaTTY = true
-			io.IsErrTTY = true
-			io.IsInTTY = tt.stdinTTY
+			io, stdin, _, _ := iostreams.Test(iostreams.WithStdinIsTTY(tt.stdinTTY), iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 			f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test", io)
 
 			if tt.stdin != "" {

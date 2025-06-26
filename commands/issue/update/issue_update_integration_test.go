@@ -93,9 +93,7 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 		},
 	}
 
-	ios, _, stdout, stderr := iostreams.Test()
-	ios.IsaTTY = true
-	ios.IsErrTTY = true
+	ios, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 	f := cmdtest.StubFactory(glTestHost+"/cli-automated-testing/test", ios)
 
 	cmd := NewCmdUpdate(f)

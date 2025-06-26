@@ -133,10 +133,7 @@ func RunCommand(cmd *cobra.Command, cli string, stds ...*bytes.Buffer) (*test.Cm
 }
 
 func InitIOStreams(isTTY bool, doHyperlinks string) (*iostreams.IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
-	ios, stdin, stdout, stderr := iostreams.Test()
-	ios.IsaTTY = isTTY
-	ios.IsInTTY = isTTY
-	ios.IsErrTTY = isTTY
+	ios, stdin, stdout, stderr := iostreams.Test(iostreams.WithStdinIsTTY(isTTY), iostreams.WithStdoutIsTTY(isTTY), iostreams.WithStderrIsTTY(isTTY))
 
 	if doHyperlinks != "" {
 		ios.SetDisplayHyperlinks(doHyperlinks)

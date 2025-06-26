@@ -29,8 +29,6 @@ func Test_getValue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			io, stdin, _, _ := iostreams.Test()
 
-			io.IsInTTY = false
-
 			_, err := stdin.WriteString(tt.stdin)
 			assert.NoError(t, err)
 

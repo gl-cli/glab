@@ -65,9 +65,6 @@ func makeTestFactory() (factory cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
 	}
 
 	io, _, _, _ := iostreams.Test()
-	io.IsaTTY = false
-	io.IsInTTY = false
-	io.IsErrTTY = false
 
 	client := func(token, hostname string) (*api.Client, error) {
 		return cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)

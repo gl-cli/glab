@@ -10,11 +10,6 @@ import (
 	"github.com/mgutz/ansi"
 )
 
-var (
-	_isColorEnabled = true
-	checkedNoColor  = false
-)
-
 type ColorPalette struct {
 	// Magenta outputs ANSI color if stdout is a tty
 	Magenta func(string) string
@@ -35,15 +30,16 @@ type ColorPalette struct {
 }
 
 func (s *IOStreams) Color() *ColorPalette {
+	colorEnabled := s.ColorEnabled()
 	return &ColorPalette{
-		Magenta: makeColorFunc("magenta"),
-		Cyan:    makeColorFunc("cyan"),
-		Red:     makeColorFunc("red"),
-		Yellow:  makeColorFunc("yellow"),
-		Blue:    makeColorFunc("blue"),
-		Green:   makeColorFunc("green"),
-		Gray:    makeColorFunc("black+h"),
-		Bold:    makeColorFunc("default+b"),
+		Magenta: makeColorFunc(colorEnabled, "magenta"),
+		Cyan:    makeColorFunc(colorEnabled, "cyan"),
+		Red:     makeColorFunc(colorEnabled, "red"),
+		Yellow:  makeColorFunc(colorEnabled, "yellow"),
+		Blue:    makeColorFunc(colorEnabled, "blue"),
+		Green:   makeColorFunc(colorEnabled, "green"),
+		Gray:    makeColorFunc(colorEnabled, "black+h"),
+		Bold:    makeColorFunc(colorEnabled, "default+b"),
 	}
 }
 
@@ -55,8 +51,8 @@ func NewColorable(out io.Writer) io.Writer {
 	return out
 }
 
-func makeColorFunc(color string) func(string) string {
-	isColorfulOutput := isColorEnabled() && isStdoutTerminal()
+func makeColorFunc(colorEnabled bool, color string) func(string) string {
+	isColorfulOutput := colorEnabled && isStdoutTerminal()
 
 	if isColorfulOutput && color == "black+h" && Is256ColorSupported() {
 		return func(t string) string {
@@ -73,17 +69,27 @@ func makeColorFunc(color string) func(string) string {
 	}
 }
 
-func isColorEnabled() bool {
-	if !checkedNoColor {
-		_, _isColorEnabled = os.LookupEnv("NO_COLOR")
-		_isColorEnabled = !_isColorEnabled // Revert the value NO_COLOR disables color
+// detectIsColorEnabled determines whether color output should be enabled based on environment variables.
+// It follows the NO_COLOR specification (https://no-color.org/) with an override mechanism:
+//
+// - If NO_COLOR environment variable exists (with any value), color is disabled by default
+// - If COLOR_ENABLED is set to "1" or "true", it overrides NO_COLOR and forces color to be enabled
+// - If NO_COLOR doesn't exist, color is enabled by default
+//
+// This allows users to disable color globally with NO_COLOR while still providing an escape hatch
+// via COLOR_ENABLED for specific use cases.
+func detectIsColorEnabled() bool {
+	// Check if NO_COLOR environment variable exists (any value disables color)
+	_, noColorVarExists := os.LookupEnv("NO_COLOR")
 
-		if !_isColorEnabled {
-			_isColorEnabled = os.Getenv("COLOR_ENABLED") == "1" || os.Getenv("COLOR_ENABLED") == "true"
-		}
-		checkedNoColor = true
+	// If NO_COLOR exists, check if COLOR_ENABLED explicitly overrides it
+	if noColorVarExists {
+		colorEnabled := os.Getenv("COLOR_ENABLED")
+		return colorEnabled == "1" || colorEnabled == "true"
 	}
-	return _isColorEnabled
+
+	// If NO_COLOR doesn't exist, color is enabled by default
+	return true
 }
 
 func Is256ColorSupported() bool {

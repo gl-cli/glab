@@ -40,9 +40,7 @@ hosts:
     token: OTOKEN
 `, "")()
 
-	io, _, stdout, stderr = iostreams.Test()
-	io.IsaTTY = true
-	io.IsErrTTY = true
+	io, _, stdout, stderr = iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 	stubFactory, _ = cmdtest.StubFactoryWithConfig("", io)
 
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
@@ -272,6 +270,8 @@ func Test_rawMRPreview(t *testing.T) {
 		},
 	}
 
+	io, _, _, _ = iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+
 	tests := []struct {
 		name  string
 		opts  *options
@@ -281,7 +281,9 @@ func Test_rawMRPreview(t *testing.T) {
 	}{
 		{
 			"mr_default",
-			&options{},
+			&options{
+				io: io,
+			},
 			mr,
 			notes,
 			[]string{
@@ -302,6 +304,7 @@ func Test_rawMRPreview(t *testing.T) {
 		{
 			"mr_show_comments_no_comments",
 			&options{
+				io:             io,
 				showComments:   true,
 				showSystemLogs: true,
 			},
@@ -327,6 +330,7 @@ func Test_rawMRPreview(t *testing.T) {
 		{
 			"mr_with_comments_and_notes",
 			&options{
+				io:             io,
 				showComments:   true,
 				showSystemLogs: true,
 			},

@@ -37,6 +37,8 @@ type IOStreams struct {
 	backgroundColor string
 
 	displayHyperlinks string
+
+	isColorEnabled bool
 }
 
 var controlCharRegEx = regexp.MustCompile(`(\x1b\[)((?:(\d*)(;*))*)([A-Z,a-l,n-z])`)
@@ -62,13 +64,12 @@ func Init() *IOStreams {
 		IsErrTTY:          stderrIsTTY,
 		is256ColorEnabled: Is256ColorSupported(),
 		displayHyperlinks: "never",
+		isColorEnabled:    detectIsColorEnabled() && stdoutIsTTY && stderrIsTTY,
 	}
 
 	if stdin, ok := ioStream.In.(*os.File); ok {
 		ioStream.IsInTTY = IsTerminal(stdin)
 	}
-
-	_isColorEnabled = isColorEnabled() && stdoutIsTTY && stderrIsTTY
 
 	return ioStream
 }
@@ -85,7 +86,7 @@ func (s *IOStreams) PromptEnabled() bool {
 }
 
 func (s *IOStreams) ColorEnabled() bool {
-	return isColorEnabled() && s.IsaTTY && s.IsErrTTY
+	return s.isColorEnabled
 }
 
 func (s *IOStreams) Is256ColorSupported() bool {
@@ -275,14 +276,44 @@ func (s *IOStreams) Hyperlink(displayText, targetURL string) string {
 	return openSequence + displayText + closeSequence
 }
 
-func Test() (streams *IOStreams, in *bytes.Buffer, out *bytes.Buffer, errOut *bytes.Buffer) {
-	in = &bytes.Buffer{}
-	out = &bytes.Buffer{}
-	errOut = &bytes.Buffer{}
-	streams = &IOStreams{
+func Test(options ...IOStreamsTestOption) (*IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
+	in := &bytes.Buffer{}
+	out := &bytes.Buffer{}
+	errOut := &bytes.Buffer{}
+	streams := &IOStreams{
 		In:     io.NopCloser(in),
 		StdOut: out,
 		StdErr: errOut,
 	}
-	return
+
+	// Apply options
+	for _, option := range options {
+		option(streams)
+	}
+
+	// depends on option functions
+	streams.isColorEnabled = detectIsColorEnabled() && streams.IsaTTY && streams.IsErrTTY
+
+	return streams, in, out, errOut
+}
+
+// IOStreamsTestOption represents a function that configures a Client
+type IOStreamsTestOption func(*IOStreams)
+
+func WithStdinIsTTY(stdinIsTTY bool) IOStreamsTestOption {
+	return func(i *IOStreams) {
+		i.IsInTTY = stdinIsTTY
+	}
+}
+
+func WithStdoutIsTTY(stdoutIsTTY bool) IOStreamsTestOption {
+	return func(i *IOStreams) {
+		i.IsaTTY = stdoutIsTTY
+	}
+}
+
+func WithStderrIsTTY(stderrIsTTY bool) IOStreamsTestOption {
+	return func(i *IOStreams) {
+		i.IsErrTTY = stderrIsTTY
+	}
 }
