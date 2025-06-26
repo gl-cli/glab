@@ -25,9 +25,7 @@ hosts:
     token: OTOKEN
 `, "")()
 
-	io, _, Stderr, stderr := iostreams.Test()
-	io.IsaTTY = true
-	io.IsErrTTY = true
+	io, _, Stderr, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 
 	api.RunSchedule = func(client *gitlab.Client, repo string, schedule int, opts ...gitlab.RequestOptionFunc) error {

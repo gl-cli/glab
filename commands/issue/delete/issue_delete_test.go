@@ -68,9 +68,7 @@ func TestNewCmdDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, _, stdout, stderr := iostreams.Test()
-			io.IsaTTY = true
-			io.IsErrTTY = true
+			io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 			f := cmdtest.StubFactory("", io)
 
 			cmd := NewCmdDelete(f)

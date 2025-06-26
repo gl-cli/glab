@@ -18,9 +18,7 @@ import (
 )
 
 func runCommand(rt http.RoundTripper, issuableID string, issueType issuable.IssueType) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
-	ios.IsaTTY = true
-	ios.IsErrTTY = true
+	ios, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 
 	factory := &cmdtest.Factory{
 		IOStub: ios,

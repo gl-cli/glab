@@ -114,9 +114,7 @@ func TestNewCmdReleaseList(t *testing.T) {
 		},
 	}
 
-	io, _, stdout, stderr := iostreams.Test()
-	io.IsaTTY = true
-	io.IsErrTTY = true
+	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 	f := cmdTestUtils.StubFactory("https://gitlab.com/cli-automated-testing/test", io)
 
 	for _, tt := range tests {

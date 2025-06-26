@@ -54,9 +54,7 @@ func TestAliasDelete(t *testing.T) {
 
 			cfg := config.NewFromString(tt.config)
 
-			ios, _, stdout, stderr := iostreams.Test()
-			ios.IsaTTY = tt.isTTY
-			ios.IsErrTTY = tt.isTTY
+			ios, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(tt.isTTY), iostreams.WithStderrIsTTY(tt.isTTY))
 
 			factoryConf := &cmdtest.Factory{
 				IOStub: ios,

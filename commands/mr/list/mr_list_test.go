@@ -34,10 +34,7 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *op
 }
 
 func TestNewCmdList(t *testing.T) {
-	ios, _, _, _ := iostreams.Test()
-	ios.IsaTTY = true
-	ios.IsInTTY = true
-	ios.IsErrTTY = true
+	ios, _, _, _ := iostreams.Test(iostreams.WithStdinIsTTY(true), iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)

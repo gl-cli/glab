@@ -168,7 +168,6 @@ func Test_deleteRun(t *testing.T) {
 
 			io, _, stdout, _ := iostreams.Test()
 			tt.opts.io = io
-			io.IsInTTY = false
 
 			err := tt.opts.run()
 			assert.NoError(t, err)

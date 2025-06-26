@@ -52,9 +52,7 @@ func TestNewCmdCreate(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	io, _, stdout, stderr := iostreams.Test()
-	io.IsaTTY = true
-	io.IsErrTTY = true
+	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 
 	f := cmdtest.StubFactory("https://gitlab.com/cli-automated-testing/test", io)
 

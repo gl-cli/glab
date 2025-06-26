@@ -32,9 +32,7 @@ hosts:
     username: monalisa
     token: OTOKEN
 `, "")()
-	io, _, stdout, stderr := iostreams.Test()
-	io.IsaTTY = true
-	io.IsErrTTY = true
+	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 	oldUpdateMr := api.UpdateMR
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")

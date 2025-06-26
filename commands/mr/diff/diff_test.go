@@ -68,10 +68,7 @@ func Test_NewCmdDiff(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ios, _, _, _ := iostreams.Test()
-			ios.IsaTTY = tt.isTTY
-			ios.IsInTTY = tt.isTTY
-			ios.IsErrTTY = tt.isTTY
+			ios, _, _, _ := iostreams.Test(iostreams.WithStdinIsTTY(tt.isTTY), iostreams.WithStdoutIsTTY(tt.isTTY), iostreams.WithStderrIsTTY(tt.isTTY))
 
 			f := &cmdtest.Factory{
 				IOStub: ios,

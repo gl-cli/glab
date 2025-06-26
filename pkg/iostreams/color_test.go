@@ -9,43 +9,31 @@ import (
 )
 
 func Test_isColorEnabled(t *testing.T) {
-	preRun := func() {
-		checkedNoColor = false // Reset it before each run
-	}
-
 	t.Run("default", func(t *testing.T) {
-		preRun()
-
-		got := isColorEnabled()
+		got := detectIsColorEnabled()
 		assert.True(t, got)
 	})
 
 	t.Run("NO_COLOR", func(t *testing.T) {
-		preRun()
-
 		t.Setenv("NO_COLOR", "")
 
-		got := isColorEnabled()
+		got := detectIsColorEnabled()
 		assert.False(t, got)
 	})
 
 	t.Run("COLOR_ENABLED == 1", func(t *testing.T) {
-		preRun()
-
 		t.Setenv("NO_COLOR", "")
 		t.Setenv("COLOR_ENABLED", "1")
 
-		got := isColorEnabled()
+		got := detectIsColorEnabled()
 		assert.True(t, got)
 	})
 
 	t.Run("COLOR_ENABLED == true", func(t *testing.T) {
-		preRun()
-
 		t.Setenv("NO_COLOR", "")
 		t.Setenv("COLOR_ENABLED", "true")
 
-		got := isColorEnabled()
+		got := detectIsColorEnabled()
 		assert.True(t, got)
 	})
 }
@@ -80,17 +68,11 @@ func Test_makeColorFunc(t *testing.T) {
 			// This setting needs to be forced for these tests to check colors properly.
 			_isStdoutTerminal = true
 
-			if tt.colorEnabled {
-				t.Setenv("COLOR_ENABLED", "true")
-			} else {
-				t.Setenv("NO_COLOR", "true")
-			}
-
 			if tt.is256color {
 				t.Setenv("TERM", "xterm-256color")
 			}
 
-			fn := makeColorFunc(tt.color)
+			fn := makeColorFunc(tt.colorEnabled, tt.color)
 			got := fn("text")
 
 			require.Equal(t, tt.want, got)

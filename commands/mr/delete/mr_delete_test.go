@@ -30,9 +30,7 @@ hosts:
     username: monalisa
     token: OTOKEN
 `, "")()
-	io, _, stdout, stderr := iostreams.Test()
-	io.IsaTTY = true
-	io.IsErrTTY = true
+	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
 	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 	oldDeleteMR := api.DeleteMR
 

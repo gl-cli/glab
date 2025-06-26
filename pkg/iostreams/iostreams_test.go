@@ -134,38 +134,6 @@ func Test_HelperFunctions(t *testing.T) {
 		})
 	})
 
-	t.Run("ColorEnabled()", func(t *testing.T) {
-		t.Run("true", func(t *testing.T) {
-			ios := *ios
-
-			ios.IsaTTY = true
-			ios.IsErrTTY = true
-			checkedNoColor = false
-			got := ios.ColorEnabled()
-			assert.True(t, got)
-		})
-		t.Run("false", func(t *testing.T) {
-			t.Run("IsaTTY=false", func(t *testing.T) {
-				ios := *ios
-
-				ios.IsaTTY = false
-				ios.IsErrTTY = true
-				checkedNoColor = false
-				got := ios.ColorEnabled()
-				assert.False(t, got)
-			})
-			t.Run("IsErrTTY=false", func(t *testing.T) {
-				ios := *ios
-
-				ios.IsaTTY = true
-				ios.IsErrTTY = false
-				checkedNoColor = false
-				got := ios.ColorEnabled()
-				assert.False(t, got)
-			})
-		})
-	})
-
 	t.Run("SetPrompt()", func(t *testing.T) {
 		t.Run("disabled", func(t *testing.T) {
 			t.Run("true", func(t *testing.T) {
