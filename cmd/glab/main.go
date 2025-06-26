@@ -44,8 +44,6 @@ var (
 )
 
 func main() {
-	debug := debugMode == "true" || debugMode == "1"
-
 	// Initialize configuration
 	cfg, err := config.Init()
 	if err != nil {
@@ -53,6 +51,14 @@ func main() {
 		os.Exit(2)
 	}
 
+	// Set Debug mode from config if not previously set by debugMode
+	debug := debugMode == "true" || debugMode == "1"
+	if !debug {
+		debugModeCfg, _ := cfg.Get("", "debug")
+		debug = debugModeCfg == "true" || debugModeCfg == "1"
+	}
+
+	// Initialize factory and iostreams
 	cmdFactory := cmdutils.NewFactory(
 		iostreams.New(
 			iostreams.WithStdin(os.Stdin, iostreams.IsTerminal(os.Stdin)),
@@ -91,12 +97,6 @@ func main() {
 	setupSurveyCore(cmdFactory.IO())
 
 	rootCmd := commands.NewCmdRoot(cmdFactory)
-
-	// Set Debug mode from config if not previously set by debugMode
-	if !debug {
-		debugModeCfg, _ := cfg.Get("", "debug")
-		debug = debugModeCfg == "true" || debugModeCfg == "1"
-	}
 
 	var expandedArgs []string
 	if len(os.Args) > 0 {
