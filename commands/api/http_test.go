@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 )
@@ -251,7 +252,7 @@ hosts:
 		},
 	}
 	for _, tt := range tests {
-		httpClient, err := api.TestClient(client, "OTOKEN", tt.args.host, tt.isGraphQL)
+		httpClient, err := cmdtest.TestClient(client, "OTOKEN", tt.args.host, tt.isGraphQL)
 		assert.Nil(t, err)
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := httpRequest(httpClient, tt.args.method, tt.args.p, tt.args.params, tt.args.headers)

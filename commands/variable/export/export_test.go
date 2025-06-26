@@ -9,7 +9,6 @@ import (
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -339,7 +338,7 @@ func Test_exportRun_project(t *testing.T) {
 			)
 			opts := &options{
 				httpClient: func() (*gitlab.Client, error) {
-					a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
+					a, _ := cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 					return a.Lab(), nil
 				},
 				baseRepo: func() (glrepo.Interface, error) {
@@ -612,7 +611,7 @@ func Test_exportRun_group(t *testing.T) {
 			)
 			opts := &options{
 				httpClient: func() (*gitlab.Client, error) {
-					a, _ := api.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
+					a, _ := cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 					return a.Lab(), nil
 				},
 				baseRepo: func() (glrepo.Interface, error) {

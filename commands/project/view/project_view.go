@@ -20,7 +20,7 @@ import (
 
 type options struct {
 	projectID    string
-	apiClient    *gitlab.Client
+	gitlabClient *gitlab.Client
 	web          bool
 	outputFormat string
 	branch       string
@@ -30,6 +30,7 @@ type options struct {
 	io            *iostreams.IOStreams
 	repo          glrepo.Interface
 	config        config.Config
+	apiClient     func(repoHost string, cfg config.Config) (*api.Client, error)
 	httpClient    func() (*gitlab.Client, error)
 	baseRepo      func() (glrepo.Interface, error)
 	branchFactory func() (string, error)
@@ -40,6 +41,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		io:            f.IO(),
 		baseRepo:      f.BaseRepo,
 		branchFactory: f.Branch,
+		apiClient:     f.ApiClient,
 		httpClient:    f.HttpClient,
 	}
 
@@ -102,11 +104,11 @@ func (o *options) complete(args []string) error {
 		o.repo = baseRepo
 
 		// Configure client to have host of current repository
-		client, err := api.NewClientWithCfg(o.repo.RepoHost(), o.config, false)
+		client, err := o.apiClient(o.repo.RepoHost(), o.config)
 		if err != nil {
 			return err
 		}
-		o.apiClient = client.Lab()
+		o.gitlabClient = client.Lab()
 
 		if o.branch == "" {
 			o.branch, _ = o.branchFactory()
@@ -132,11 +134,11 @@ func (o *options) complete(args []string) error {
 			return err
 		}
 		o.repo = repo
-		client, err := api.NewClientWithCfg(o.repo.RepoHost(), o.config, false)
+		client, err := o.apiClient(o.repo.RepoHost(), o.config)
 		if err != nil {
 			return err
 		}
-		o.apiClient = client.Lab()
+		o.gitlabClient = client.Lab()
 	}
 
 	browser, _ := o.config.Get(o.repo.RepoHost(), "browser")
@@ -147,7 +149,7 @@ func (o *options) complete(args []string) error {
 }
 
 func (o *options) run() error {
-	project, err := o.repo.Project(o.apiClient)
+	project, err := o.repo.Project(o.gitlabClient)
 	if err != nil {
 		return cmdutils.WrapError(err, "Failed to retrieve project information.")
 	}
@@ -204,7 +206,7 @@ func getReadmeFile(opts *options, project *gitlab.Project) (*gitlab.File, error)
 		opts.branch = readmeRef
 	}
 
-	readmeFile, err := api.GetFile(opts.apiClient, project.PathWithNamespace, readmeFileName, opts.branch)
+	readmeFile, err := api.GetFile(opts.gitlabClient, project.PathWithNamespace, readmeFileName, opts.branch)
 	if err != nil {
 		return nil, cmdutils.WrapError(err, fmt.Sprintf("Failed to retrieve README file on the %s branch.", opts.branch))
 	}

@@ -183,7 +183,7 @@ hosts:
 	`))
 
 	client := func(token, hostname string) (*api.Client, error) {
-		return api.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
+		return cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
 	}
 	// FIXME: something fishy is occurring here as without making a first call to client function, httpMock does not work
 	_, _ = client("", "gitlab.com")
@@ -195,6 +195,9 @@ hosts:
 		}
 		tt.opts.io = io
 		tt.opts.httpClientOverride = client
+		tt.opts.apiClient = func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return client("", repoHost)
+		}
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.envVar {
 				t.Setenv("GITLAB_TOKEN", "foo")
@@ -288,7 +291,7 @@ gl.io
 	io, _, stdout, stderr := iostreams.Test()
 
 	client := func(token, hostname string) (*api.Client, error) {
-		return api.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
+		return cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
 	}
 	// FIXME: something fishy is occurring here as without making a first call to client function, httpMock does not work
 	_, _ = client("", "gitlab.com")
@@ -296,6 +299,9 @@ gl.io
 	opts := &options{
 		config: func() (config.Config, error) {
 			return configs, nil
+		},
+		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return client("", repoHost)
 		},
 		httpClientOverride: client,
 		io:                 io,
@@ -319,6 +325,9 @@ git_protocol: ssh
 	opts := &options{
 		config: func() (config.Config, error) {
 			return configs, nil
+		},
+		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return nil, nil
 		},
 		io: io,
 	}

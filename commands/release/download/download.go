@@ -28,6 +28,7 @@ type options struct {
 	dir        string
 
 	io         *iostreams.IOStreams
+	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
 	httpClient func() (*gitlab.Client, error)
 	baseRepo   func() (glrepo.Interface, error)
 	config     func() (config.Config, error)
@@ -36,6 +37,7 @@ type options struct {
 func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
+		apiClient:  f.ApiClient,
 		httpClient: f.HttpClient,
 		baseRepo:   f.BaseRepo,
 		config:     f.Config,
@@ -159,7 +161,7 @@ func (o *options) run() error {
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), o.tagName)
 
-	c, err := api.NewClientWithCfg(repo.RepoHost(), cfg, false)
+	c, err := o.apiClient(repo.RepoHost(), cfg)
 	if err != nil {
 		return err
 	}

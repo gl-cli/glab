@@ -341,9 +341,6 @@ var CreatePipeline = func(client *gitlab.Client, projectID any, opts *gitlab.Cre
 }
 
 var CreateMergeRequestPipeline = func(client *gitlab.Client, projectID interface{}, mr int) (*gitlab.PipelineInfo, error) {
-	if client == nil {
-		client = apiClient.Lab()
-	}
 	pipe, _, err := client.MergeRequests.CreateMergeRequestPipeline(projectID, mr)
 	return pipe, err
 }

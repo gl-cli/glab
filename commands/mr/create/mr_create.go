@@ -70,6 +70,7 @@ type options struct {
 	config     func() (config.Config, error)    `json:"-"`
 	baseRepo   func() (glrepo.Interface, error) `json:"-"`
 	headRepo   func() (glrepo.Interface, error) `json:"-"`
+	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
 
 	// SourceProject is the Project we create the merge request in and where we push our branch
 	// it is the project we have permission to push so most likely one's fork
@@ -88,6 +89,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		config:     f.Config,
 		baseRepo:   f.BaseRepo,
 		headRepo:   ResolvedHeadRepo(f),
+		apiClient:  f.ApiClient,
 	}
 
 	mrCreateCmd := &cobra.Command{
@@ -203,8 +205,8 @@ func (o *options) validate(cmd *cobra.Command) error {
 	return nil
 }
 
-func parseIssue(apiClient *gitlab.Client, opts *options) (*gitlab.Issue, error) {
-	issue, _, err := issueutils.IssueFromArg(apiClient, opts.baseRepo, opts.RelatedIssue)
+func parseIssue(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), gitlabClient *gitlab.Client, opts *options) (*gitlab.Issue, error) {
+	issue, _, err := issueutils.IssueFromArg(apiClientFunc, gitlabClient, opts.baseRepo, opts.RelatedIssue)
 	if err != nil {
 		return nil, err
 	}
@@ -324,7 +326,7 @@ func (o *options) run() error {
 	}
 
 	if o.RelatedIssue != "" {
-		issue, err := parseIssue(labClient, o)
+		issue, err := parseIssue(o.apiClient, labClient, o)
 		if err != nil {
 			return err
 		}

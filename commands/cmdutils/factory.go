@@ -18,6 +18,7 @@ import (
 // Safe for concurrent use.
 type Factory interface {
 	RepoOverride(repo string)
+	ApiClient(repoHost string, cfg config.Config) (*api.Client, error)
 	HttpClient() (*gitlab.Client, error)
 	BaseRepo() (glrepo.Interface, error)
 	Remotes() (glrepo.Remotes, error)
@@ -57,11 +58,20 @@ func (f *DefaultFactory) RepoOverride(repo string) {
 	f.repoOverride = repo
 }
 
+func (f *DefaultFactory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {
+	c, err := api.NewClientWithCfg(repoHost, cfg, false)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
 func (f *DefaultFactory) HttpClient() (*gitlab.Client, error) {
 	cfg, err := f.Config()
 	if err != nil {
 		return nil, err
 	}
+
 	f.mu.Lock()
 	override := f.repoOverride
 	f.mu.Unlock()
@@ -80,7 +90,13 @@ func (f *DefaultFactory) HttpClient() (*gitlab.Client, error) {
 			repo = remotes[0]
 		}
 	}
-	return LabClientFunc(repo.RepoHost(), cfg, false)
+
+	c, err := api.NewClientWithCfg(repo.RepoHost(), cfg, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Lab(), nil
 }
 
 func (f *DefaultFactory) BaseRepo() (glrepo.Interface, error) {
@@ -101,10 +117,11 @@ func (f *DefaultFactory) BaseRepo() (glrepo.Interface, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpClient, err := LabClientFunc(remotes[0].RepoHost(), cfg, false)
+	ac, err := api.NewClientWithCfg(remotes[0].RepoHost(), cfg, false)
 	if err != nil {
 		return nil, err
 	}
+	httpClient := ac.Lab()
 	repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, "")
 	if err != nil {
 		return nil, err
@@ -149,12 +166,4 @@ func (f *DefaultFactory) Branch() (string, error) {
 
 func (f *DefaultFactory) IO() *iostreams.IOStreams {
 	return f.io
-}
-
-func LabClientFunc(repoHost string, cfg config.Config, isGraphQL bool) (*gitlab.Client, error) {
-	c, err := api.NewClientWithCfg(repoHost, cfg, isGraphQL)
-	if err != nil {
-		return nil, err
-	}
-	return c.Lab(), nil
 }

@@ -56,7 +56,7 @@ func TestNewCmdList(t *testing.T) {
 	factory := &cmdtest.Factory{
 		IOStub: ios,
 		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
+			a, err := cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
 			if err != nil {
 				return nil, err
 			}

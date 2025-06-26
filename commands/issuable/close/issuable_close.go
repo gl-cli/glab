@@ -43,12 +43,12 @@ func NewCmdClose(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
+			gitlabClient, err := f.HttpClient()
 			if err != nil {
 				return err
 			}
 
-			issues, repo, err := issueutils.IssuesFromArgs(apiClient, f.BaseRepo, args)
+			issues, repo, err := issueutils.IssuesFromArgs(f.ApiClient, gitlabClient, f.BaseRepo, args)
 			if err != nil {
 				return err
 			}
@@ -66,7 +66,7 @@ func NewCmdClose(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 				}
 
 				fmt.Fprintf(f.IO().StdOut, "- %s...\n", closingMessage[issueType])
-				issue, err := api.UpdateIssue(apiClient, repo.FullName(), issue.IID, l)
+				issue, err := api.UpdateIssue(gitlabClient, repo.FullName(), issue.IID, l)
 				if err != nil {
 					return err
 				}

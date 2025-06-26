@@ -17,7 +17,7 @@ Create or run a new CI/CD pipeline.
 
 The `--branch` option is available for all pipeline types.
 
-The options for variables are incompatible with merge request pipelines. 
+The options for variables are incompatible with merge request pipelines.
 If used with merge request pipelines, the command fails with a message like `ERROR: if any flags in the group [output output-format] are set none of the others can be`
 
 ```plaintext

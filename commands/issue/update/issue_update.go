@@ -58,11 +58,11 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				return &cmdutils.FlagError{Err: errors.New("--public and --confidential can't be used together.")}
 			}
 
-			apiClient, err := f.HttpClient()
+			gitlabClient, err := f.HttpClient()
 			if err != nil {
 				return err
 			}
-			issue, repo, err := issueutils.IssueFromArg(apiClient, f.BaseRepo, args[0])
+			issue, repo, err := issueutils.IssueFromArg(f.ApiClient, gitlabClient, f.BaseRepo, args[0])
 			if err != nil {
 				return err
 			}
@@ -96,11 +96,11 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				if m == "-" {
 
 					// Fetch the current issue and description
-					apiClient, err := f.HttpClient()
+					gitlabClient, err := f.HttpClient()
 					if err != nil {
 						return err
 					}
-					issue, _, err := issueutils.IssueFromArg(apiClient, f.BaseRepo, args[0])
+					issue, _, err := issueutils.IssueFromArg(f.ApiClient, gitlabClient, f.BaseRepo, args[0])
 					if err != nil {
 						return err
 					}
@@ -137,7 +137,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			}
 			if ok := cmd.Flags().Changed("milestone"); ok {
 				if m, _ := cmd.Flags().GetString("milestone"); m != "" || m == "0" {
-					mID, err := cmdutils.ParseMilestone(apiClient, repo, m)
+					mID, err := cmdutils.ParseMilestone(gitlabClient, repo, m)
 					if err != nil {
 						return err
 					}
@@ -155,16 +155,16 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			}
 			if ua != nil {
 				if len(ua.ToReplace) != 0 {
-					l.AssigneeIDs, actions, err = ua.UsersFromReplaces(apiClient, actions)
+					l.AssigneeIDs, actions, err = ua.UsersFromReplaces(gitlabClient, actions)
 					if err != nil {
 						return err
 					}
 				} else if len(ua.ToAdd) != 0 || len(ua.ToRemove) != 0 {
-					issue, err := api.GetIssue(apiClient, repo.FullName(), issue.IID)
+					issue, err := api.GetIssue(gitlabClient, repo.FullName(), issue.IID)
 					if err != nil {
 						return err
 					}
-					l.AssigneeIDs, actions, err = ua.UsersFromAddRemove(issue.Assignees, nil, apiClient, actions)
+					l.AssigneeIDs, actions, err = ua.UsersFromAddRemove(issue.Assignees, nil, gitlabClient, actions)
 					if err != nil {
 						return err
 					}
@@ -173,7 +173,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 
 			fmt.Fprintf(out, "- Updating issue #%d\n", issue.IID)
 
-			issue, err = api.UpdateIssue(apiClient, repo.FullName(), issue.IID, l)
+			issue, err = api.UpdateIssue(gitlabClient, repo.FullName(), issue.IID, l)
 			if err != nil {
 				return err
 			}

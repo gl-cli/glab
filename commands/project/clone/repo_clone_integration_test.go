@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
@@ -23,6 +24,9 @@ func Test_repoClone_Integration(t *testing.T) {
 		IOStub: io,
 		ConfigStub: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
+		},
+		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return api.NewClientWithCfg(repoHost, cfg, false)
 		},
 	}
 
@@ -75,6 +79,9 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 		IOStub: io,
 		ConfigStub: func() (config.Config, error) {
 			return config.NewBlankConfig(), nil
+		},
+		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return api.NewClientWithCfg(repoHost, cfg, false)
 		},
 	}
 

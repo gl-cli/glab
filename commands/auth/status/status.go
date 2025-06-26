@@ -20,13 +20,15 @@ type options struct {
 
 	httpClientOverride func(token, hostname string) (*api.Client, error) // used in tests to mock http client
 	io                 *iostreams.IOStreams
+	apiClient          func(repoHost string, cfg config.Config) (*api.Client, error)
 	config             func() (config.Config, error)
 }
 
 func NewCmdStatus(f cmdutils.Factory, runE func(*options) error) *cobra.Command {
 	opts := &options{
-		io:     f.IO(),
-		config: f.Config,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config,
 	}
 
 	cmd := &cobra.Command{
@@ -83,7 +85,7 @@ func (o *options) run() error {
 		}
 
 		token, tokenSource, _ := cfg.GetWithSource(instance, "token", false)
-		apiClient, err := api.NewClientWithCfg(instance, cfg, false)
+		apiClient, err := o.apiClient(instance, cfg)
 		if o.httpClientOverride != nil {
 			apiClient, _ = o.httpClientOverride(token, instance)
 		}

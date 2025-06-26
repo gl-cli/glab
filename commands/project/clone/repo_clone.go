@@ -128,7 +128,7 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 			if err != nil {
 				return err
 			}
-			opts.apiClient, err = api.NewClientWithCfg(opts.host, cfg, false)
+			opts.apiClient, err = f.ApiClient(opts.host, cfg)
 			if err != nil {
 				return err
 			}

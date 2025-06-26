@@ -70,7 +70,7 @@ func makeTestFactory() (factory cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
 	io.IsErrTTY = false
 
 	client := func(token, hostname string) (*api.Client, error) {
-		return api.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
+		return cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
 	}
 
 	// FIXME as mentioned in ./commands/auth/status/status_test.go,

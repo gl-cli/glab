@@ -27,12 +27,12 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			var err error
 			c := f.IO().Color()
 
-			apiClient, err := f.HttpClient()
+			gitlabClient, err := f.HttpClient()
 			if err != nil {
 				return err
 			}
 
-			issues, repo, err := issueutils.IssuesFromArgs(apiClient, f.BaseRepo, args)
+			issues, repo, err := issueutils.IssuesFromArgs(f.ApiClient, gitlabClient, f.BaseRepo, args)
 			if err != nil {
 				return err
 			}
@@ -42,7 +42,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 					fmt.Fprintf(f.IO().StdErr, "- Deleting issue #%d.\n", issue.IID)
 				}
 
-				err := api.DeleteIssue(apiClient, repo.FullName(), issue.IID)
+				err := api.DeleteIssue(gitlabClient, repo.FullName(), issue.IID)
 				if err != nil {
 					return err
 				}

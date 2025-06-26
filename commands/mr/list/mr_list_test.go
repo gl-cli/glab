@@ -15,7 +15,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -46,7 +45,7 @@ func TestNewCmdList(t *testing.T) {
 	factory := &cmdtest.Factory{
 		IOStub: ios,
 		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := api.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
+			a, err := cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
 			if err != nil {
 				return nil, err
 			}
