@@ -163,7 +163,8 @@ func TestNewCmdCreate_tty(t *testing.T) {
 		return
 	}
 
-	assert.Contains(t, cmdtest.FirstLine([]byte(output.String())), "!12 myMRtitle (feat-new-mr)")
+	outputLines := strings.SplitN(output.String(), "\n", 2)
+	assert.Contains(t, outputLines[0], "!12 myMRtitle (feat-new-mr)")
 	assert.Contains(t, output.Stderr(), "\nCreating merge request for feat-new-mr into master in OWNER/REPO\n\n")
 	assert.Contains(t, output.String(), "https://gitlab.com/OWNER/REPO/-/merge_requests/12")
 }
@@ -249,7 +250,8 @@ func TestNewCmdCreate_RelatedIssue(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	assert.Contains(t, cmdtest.FirstLine([]byte(output.String())), `!12 Draft: Resolve "this is a issue title" (feat-new-mr)`)
+	outputLines := strings.SplitN(output.String(), "\n", 2)
+	assert.Contains(t, outputLines[0], `!12 Draft: Resolve "this is a issue title" (feat-new-mr)`)
 	assert.Contains(t, output.Stderr(), "\nCreating draft merge request for feat-new-mr into master in OWNER/REPO\n\n")
 	assert.Contains(t, output.String(), "https://gitlab.com/OWNER/REPO/-/merge_requests/12")
 }
@@ -429,7 +431,9 @@ func TestNewCmdCreate_RelatedIssueWithTitleAndDescription(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	assert.Contains(t, cmdtest.FirstLine([]byte(output.String())), "!12 my custom MR title (feat-new-mr)")
+
+	outputLines := strings.SplitN(output.String(), "\n", 2)
+	assert.Contains(t, outputLines[0], "!12 my custom MR title (feat-new-mr)")
 	assert.Contains(t, output.Stderr(), "\nCreating draft merge request for feat-new-mr into master in OWNER/REPO\n\n")
 	assert.Contains(t, output.String(), "https://gitlab.com/OWNER/REPO/-/merge_requests/12")
 }
@@ -669,8 +673,9 @@ func Test_MRCreate_With_Recover_Integration(t *testing.T) {
 		return
 	}
 
+	outputLines := strings.SplitN(newOutput.String(), "\n", 2)
 	require.NoError(t, newErr)
-	assert.Contains(t, cmdtest.FirstLine([]byte(newOutput.String())), "Recovered create options from file")
+	assert.Contains(t, outputLines[0], "Recovered create options from file")
 	assert.Contains(t, newOutput.String(), "!12 myMRtitle (feat-new-mr)")
 	assert.Contains(t, newOutput.Stderr(), "\nCreating merge request for feat-new-mr into master in OWNER/REPO\n\n")
 	assert.Contains(t, newOutput.String(), "https://gitlab.com/OWNER/REPO/-/merge_requests/12")

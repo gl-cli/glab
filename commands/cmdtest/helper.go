@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -414,13 +413,6 @@ func CopyTestRepo(log fatalLogger, name string) string {
 		}
 	}
 	return dest
-}
-
-func FirstLine(output []byte) string {
-	if i := bytes.IndexAny(output, "\n"); i >= 0 {
-		return strings.ReplaceAll(string(output)[0:i], "PASS", "")
-	}
-	return string(output)
 }
 
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {

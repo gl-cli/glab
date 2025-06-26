@@ -89,7 +89,9 @@ func Test_IssueCreate_Integration(t *testing.T) {
 	out := stripansi.Strip(stdout.String())
 	outErr := stripansi.Strip(stderr.String())
 	expectedOut := fmt.Sprintf("#1 myissuetitle (%s)", utils.TimeToPrettyTimeAgo(timer))
-	assert.Equal(t, expectedOut, cmdtest.FirstLine([]byte(out)))
+	outputLines := strings.SplitN(out, "\n", 2)
+	assert.Contains(t, outputLines[0], expectedOut)
+	assert.Equal(t, expectedOut, outputLines[0])
 	assert.Equal(t, "- Creating issue in cli-automated-testing/test\n", outErr)
 	assert.Contains(t, out, glTestHost+"/cli-automated-testing/test/-/issues/1")
 
