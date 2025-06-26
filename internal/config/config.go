@@ -443,7 +443,7 @@ func (c *fileConfig) Hosts() ([]string, error) {
 		hostnames = append(hostnames, entry.Host)
 	}
 
-	sort.SliceStable(hostnames, func(i, j int) bool { return hostnames[i] == glinstance.Default() })
+	sort.SliceStable(hostnames, func(i, j int) bool { return hostnames[i] == glinstance.DefaultHostname })
 
 	return hostnames, nil
 }

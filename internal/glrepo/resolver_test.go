@@ -7,6 +7,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 
 	"github.com/hashicorp/go-multierror"
@@ -109,7 +110,7 @@ func Test_ResolveRemotesToRepos(t *testing.T) {
 
 	// Test the normal and most expected usage
 	t.Run("simple", func(t *testing.T) {
-		r, err := ResolveRemotesToRepos(rem.remotes, rem.apiClient, "")
+		r, err := ResolveRemotesToRepos(rem.remotes, rem.apiClient, "", glinstance.DefaultHostname)
 		assert.Nil(t, err)
 
 		assert.Equal(t, rem.apiClient, r.apiClient)
@@ -127,7 +128,7 @@ func Test_ResolveRemotesToRepos(t *testing.T) {
 	t.Run("baseOverride", func(t *testing.T) {
 		expectedBaseOverride := NewWithHost("profclems", "glab", "gitlab.com")
 
-		r, err := ResolveRemotesToRepos(rem.remotes, rem.apiClient, "gitlab.com/profclems/glab")
+		r, err := ResolveRemotesToRepos(rem.remotes, rem.apiClient, "gitlab.com/profclems/glab", glinstance.DefaultHostname)
 		assert.Nil(t, err)
 
 		assert.Equal(t, expectedBaseOverride.FullName(), r.baseOverride.FullName())
@@ -146,7 +147,7 @@ func Test_ResolveRemotesToRepos(t *testing.T) {
 
 	// Test the usage of baseOverride when it is passed an invalid value
 	t.Run("baseOverrideFail", func(t *testing.T) {
-		r, err := ResolveRemotesToRepos(rem.remotes, rem.apiClient, "badValue")
+		r, err := ResolveRemotesToRepos(rem.remotes, rem.apiClient, "badValue", glinstance.DefaultHostname)
 		assert.EqualError(t, err, `expected the "[HOST/]OWNER/[NAMESPACE/]REPO" format, got "badValue"`)
 
 		assert.Equal(t, rem.apiClient, r.apiClient)

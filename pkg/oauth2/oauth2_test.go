@@ -133,9 +133,9 @@ func TestClientID(t *testing.T) {
 	}{
 		{
 			name:             "managed",
-			hostname:         glinstance.Default(),
+			hostname:         glinstance.DefaultHostname,
 			configClientID:   "",
-			expectedClientID: glinstance.DefaultClientID(),
+			expectedClientID: glinstance.DefaultClientID,
 		},
 		{
 			name:             "self-managed-complete",

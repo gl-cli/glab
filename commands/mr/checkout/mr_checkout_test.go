@@ -10,6 +10,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -31,7 +32,7 @@ func runCommand(rt http.RoundTripper, branch string, cli string) (*test.CmdOut, 
 					Resolved: "base",
 					PushURL:  pu,
 				},
-				Repo: glrepo.New("OWNER", "REPO"),
+				Repo: glrepo.New("OWNER", "REPO", glinstance.DefaultHostname),
 			},
 			{
 				Remote: &git.Remote{
@@ -39,7 +40,7 @@ func runCommand(rt http.RoundTripper, branch string, cli string) (*test.CmdOut, 
 					Resolved: "base",
 					PushURL:  pu,
 				},
-				Repo: glrepo.New("monalisa", "REPO"),
+				Repo: glrepo.New("monalisa", "REPO", glinstance.DefaultHostname),
 			},
 		}, nil
 	}

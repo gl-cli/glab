@@ -27,22 +27,24 @@ type options struct {
 	browser      string
 	glamourStyle string
 
-	io            *iostreams.IOStreams
-	repo          glrepo.Interface
-	config        config.Config
-	apiClient     func(repoHost string, cfg config.Config) (*api.Client, error)
-	httpClient    func() (*gitlab.Client, error)
-	baseRepo      func() (glrepo.Interface, error)
-	branchFactory func() (string, error)
+	io              *iostreams.IOStreams
+	repo            glrepo.Interface
+	config          config.Config
+	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	httpClient      func() (*gitlab.Client, error)
+	baseRepo        func() (glrepo.Interface, error)
+	branchFactory   func() (string, error)
+	defaultHostname string
 }
 
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := options{
-		io:            f.IO(),
-		baseRepo:      f.BaseRepo,
-		branchFactory: f.Branch,
-		apiClient:     f.ApiClient,
-		httpClient:    f.HttpClient,
+		io:              f.IO(),
+		baseRepo:        f.BaseRepo,
+		branchFactory:   f.Branch,
+		apiClient:       f.ApiClient,
+		httpClient:      f.HttpClient,
+		defaultHostname: f.DefaultHostname(),
 	}
 
 	projectViewCmd := &cobra.Command{
@@ -125,7 +127,7 @@ func (o *options) complete(args []string) error {
 		}
 
 		// Get the repo full name from the ProjectID which can be a full URL or a group/repo format
-		repo, err := glrepo.FromFullName(o.projectID)
+		repo, err := glrepo.FromFullName(o.projectID, o.defaultHostname)
 		if err != nil {
 			return err
 		}

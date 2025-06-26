@@ -25,7 +25,7 @@ func Test_repoClone_Integration(t *testing.T) {
 			return config.NewBlankConfig()
 		},
 		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
-			return api.NewClientWithCfg(repoHost, cfg, false, "glab test client")
+			return api.NewClientWithCfg("https", repoHost, cfg, false, "glab test client")
 		},
 	}
 
@@ -80,7 +80,7 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 			return config.NewBlankConfig()
 		},
 		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
-			return api.NewClientWithCfg(repoHost, cfg, false, "glab test client")
+			return api.NewClientWithCfg("https", repoHost, cfg, false, "glab test client")
 		},
 	}
 

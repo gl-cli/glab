@@ -18,7 +18,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
 type options struct {
@@ -121,7 +120,7 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 				return runE(opts, ctxOpts)
 			}
 
-			opts.host = glinstance.OverridableDefault()
+			opts.host = f.DefaultHostname()
 			opts.archivedSet = cmd.Flags().Changed("archived")
 
 			cfg := opts.config()

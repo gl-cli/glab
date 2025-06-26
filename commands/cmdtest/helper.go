@@ -15,6 +15,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/google/shlex"
@@ -186,7 +187,7 @@ func (f *Factory) HttpClient() (*gitlab.Client, error) {
 
 func (f *Factory) BaseRepo() (glrepo.Interface, error) {
 	if f.repoOverride != "" {
-		return glrepo.FromFullName(f.repoOverride)
+		return glrepo.FromFullName(f.repoOverride, glinstance.DefaultHostname)
 	}
 	return f.BaseRepoStub()
 }
@@ -207,6 +208,10 @@ func (f *Factory) IO() *iostreams.IOStreams {
 	return f.IOStub
 }
 
+func (f *Factory) DefaultHostname() string {
+	return glinstance.DefaultHostname
+}
+
 func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *Factory {
 	return &Factory{
 		IOStub: ios,
@@ -218,7 +223,7 @@ func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *Factory {
 			return a, nil
 		},
 		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := TestClient(&http.Client{Transport: rt}, "", "", false)
+			a, err := TestClient(&http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)
 			if err != nil {
 				return nil, err
 			}
@@ -228,7 +233,7 @@ func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *Factory {
 			return config.NewBlankConfig()
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
+			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
 		},
 		BranchStub: func() (string, error) {
 			return "main", nil
@@ -292,7 +297,7 @@ func WithBranchError(err error) FactoryOption {
 func WithBaseRepo(owner, repo string) FactoryOption {
 	return func(f *Factory) {
 		f.BaseRepoStub = func() (glrepo.Interface, error) {
-			return glrepo.New(owner, repo), nil
+			return glrepo.New(owner, repo, glinstance.DefaultHostname), nil
 		}
 	}
 }
@@ -318,7 +323,7 @@ func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 			return config.NewBlankConfig()
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
+			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
 		},
 		BranchStub: func() (string, error) {
 			return "main", nil
@@ -349,7 +354,7 @@ func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdEx
 			return config.NewBlankConfig()
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
+			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
 		},
 		BranchStub: func() (string, error) {
 			return "main", nil
@@ -415,7 +420,17 @@ func CopyTestRepo(log fatalLogger, name string) string {
 }
 
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {
-	testClient, err := api.NewClient(host, token, isGraphQL, false, false, "glab test client", api.WithInsecureSkipVerify(true), api.WithProtocol("https"), api.WithHTTPClient(httpClient))
+	testClient, err := api.NewClient(
+		host,
+		token,
+		isGraphQL,
+		false,
+		false,
+		"glab test client",
+		api.WithInsecureSkipVerify(true),
+		api.WithProtocol(glinstance.DefaultProtocol),
+		api.WithHTTPClient(httpClient),
+	)
 	if err != nil {
 		return nil, err
 	}

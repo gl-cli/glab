@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
 func Test_issueMetadataFromURL(t *testing.T) {
@@ -89,11 +90,11 @@ func Test_issueMetadataFromURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			id, repo := issueMetadataFromURL(tt.str)
+			id, repo := issueMetadataFromURL(tt.str, glinstance.DefaultHostname)
 			require.Equal(t, tt.want, id)
 
 			if tt.want != 0 && tt.path != "" {
-				expectedRepo, err := glrepo.FromFullName(tt.path)
+				expectedRepo, err := glrepo.FromFullName(tt.path, glinstance.DefaultHostname)
 				require.NoError(t, err)
 				require.Equal(t, expectedRepo, repo)
 			}

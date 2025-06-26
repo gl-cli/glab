@@ -29,6 +29,7 @@ type options struct {
 	httpClient       *gitlab.Client
 	config           func() config.Config
 	baseRepoFactory  func() (glrepo.Interface, error)
+	defaultHostname  string
 }
 
 func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
@@ -37,6 +38,7 @@ func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 		apiClient:        f.ApiClient,
 		gitlabClientFunc: f.HttpClient,
 		config:           f.Config,
+		defaultHostname:  f.DefaultHostname(),
 	}
 
 	projectMirrorCmd := &cobra.Command{
@@ -69,7 +71,7 @@ func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 
 func (o *options) complete(args []string) error {
 	if len(args) > 0 {
-		baseRepo, err := glrepo.FromFullName(args[0])
+		baseRepo, err := glrepo.FromFullName(args[0], o.defaultHostname)
 		if err != nil {
 			return err
 		}

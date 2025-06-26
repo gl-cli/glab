@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 )
 
@@ -68,7 +69,7 @@ func Test_NewCmdDelete(t *testing.T) {
 					return tc.Client, nil
 				},
 				BaseRepoStub: func() (glrepo.Interface, error) {
-					return glrepo.New("OWNER", "REPO"), nil
+					return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
 				},
 			}
 
@@ -116,7 +117,7 @@ func Test_deleteRun(t *testing.T) {
 		return a.Lab(), nil
 	}
 	baseRepo := func() (glrepo.Interface, error) {
-		return glrepo.FromFullName("owner/repo")
+		return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 	}
 
 	tests := []struct {

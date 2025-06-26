@@ -21,6 +21,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 )
 
@@ -89,13 +90,13 @@ func makeTestFactory() (factory cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
 			return a.Lab(), err
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
+			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
 		},
 		RemotesStub: func() (glrepo.Remotes, error) {
 			return glrepo.Remotes{
 				{
 					Remote: &git.Remote{Name: "origin"},
-					Repo:   glrepo.New("OWNER", "REPO"),
+					Repo:   glrepo.New("OWNER", "REPO", glinstance.DefaultHostname),
 				},
 			}, nil
 		},

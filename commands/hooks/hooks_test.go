@@ -12,6 +12,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
 func Test_sendTelemetryData(t *testing.T) {
@@ -70,7 +71,7 @@ func Test_sendTelemetryData(t *testing.T) {
 					return tc.Client, nil
 				},
 				BaseRepoStub: func() (glrepo.Interface, error) {
-					return glrepo.New("OWNER", "REPO"), nil
+					return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
 				},
 			}
 

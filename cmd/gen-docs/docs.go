@@ -18,6 +18,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
@@ -292,4 +293,8 @@ func (f *factory) Branch() (string, error) {
 
 func (f *factory) IO() *iostreams.IOStreams {
 	return f.io
+}
+
+func (f *factory) DefaultHostname() string {
+	return glinstance.DefaultHostname
 }

@@ -108,7 +108,7 @@ func getRepoFromProjectID(projectID string, f cmdutils.Factory) (glrepo.Interfac
 		}
 
 		// Get the repo full name from the ProjectID which can be a full URL or a group/repo format
-		return glrepo.FromFullName(projectID)
+		return glrepo.FromFullName(projectID, f.DefaultHostname())
 	}
 }
 

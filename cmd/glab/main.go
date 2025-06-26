@@ -24,9 +24,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/update"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -92,8 +90,6 @@ func main() {
 		cfg,
 		api.BuildInfo{Version: version, Platform: platform, Architecture: runtime.GOARCH},
 	)
-
-	maybeOverrideDefaultHost(cmdFactory, cfg)
 
 	if !cmdFactory.IO().ColorEnabled() {
 		surveyCore.DisableColor = true
@@ -249,24 +245,6 @@ func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, deb
 
 	if cmd != nil {
 		cmd.Print("\n")
-	}
-}
-
-func maybeOverrideDefaultHost(f cmdutils.Factory, cfg config.Config) {
-	baseRepo, err := f.BaseRepo()
-	if err == nil {
-		glinstance.OverrideDefault(baseRepo.RepoHost())
-	}
-
-	// Fetch the custom host config from env vars, then local config.yml, then global config,yml.
-	customGLHost, _ := cfg.Get("", "host")
-	if customGLHost != "" {
-		if utils.IsValidURL(customGLHost) {
-			var protocol string
-			customGLHost, protocol = glinstance.StripHostProtocol(customGLHost)
-			glinstance.OverrideDefaultProtocol(protocol)
-		}
-		glinstance.OverrideDefault(customGLHost)
 	}
 }
 

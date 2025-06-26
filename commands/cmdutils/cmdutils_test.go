@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/acarl005/stripansi"
@@ -485,7 +486,7 @@ func Test_ParseMilestoneTitleIsID(t *testing.T) {
 		return nil, fmt.Errorf("We shouldn't have reached here")
 	}
 
-	got, err := ParseMilestone(&gitlab.Client{}, glrepo.New("foo", "bar"), title)
+	got, err := ParseMilestone(&gitlab.Client{}, glrepo.New("foo", "bar", glinstance.DefaultHostname), title)
 	if err != nil {
 		t.Errorf("ParseMilestone() unexpected error = %s", err)
 	}
@@ -503,7 +504,7 @@ func Test_ParseMilestoneAPIFail(t *testing.T) {
 		return nil, fmt.Errorf("API call failed in api.MilestoneByTitle().")
 	}
 
-	_, err := ParseMilestone(&gitlab.Client{}, glrepo.New("foo", "bar"), title)
+	_, err := ParseMilestone(&gitlab.Client{}, glrepo.New("foo", "bar", glinstance.DefaultHostname), title)
 	if err == nil {
 		t.Errorf("ParseMilestone() expected error")
 	}
@@ -525,7 +526,7 @@ func Test_ParseMilestoneTitleToID(t *testing.T) {
 			nil
 	}
 
-	got, err := ParseMilestone(&gitlab.Client{}, glrepo.New("foo", "bar"), milestoneTitle)
+	got, err := ParseMilestone(&gitlab.Client{}, glrepo.New("foo", "bar", glinstance.DefaultHostname), milestoneTitle)
 	if err != nil {
 		t.Errorf("ParseMilestone() unexpected error = %s", err)
 	}
@@ -624,7 +625,7 @@ func Test_PickMetadata(t *testing.T) {
 
 func Test_UsersPrompt(t *testing.T) {
 	// mock glrepo.Remote object
-	repo := glrepo.New("foo", "bar")
+	repo := glrepo.New("foo", "bar", glinstance.DefaultHostname)
 	remote := &git.Remote{
 		Name:     "test",
 		Resolved: "base",
@@ -840,7 +841,7 @@ func Test_MilestonesPrompt(t *testing.T) {
 	}
 
 	// mock glrepo.Remote object
-	repo := glrepo.New("foo", "bar")
+	repo := glrepo.New("foo", "bar", glinstance.DefaultHostname)
 	remote := &git.Remote{
 		Name:     "test",
 		Resolved: "base",
@@ -915,7 +916,7 @@ func Test_MilestonesPromptNoPrompts(t *testing.T) {
 	}
 
 	// mock glrepo.Remote object
-	repo := glrepo.New("foo", "bar")
+	repo := glrepo.New("foo", "bar", glinstance.DefaultHostname)
 	remote := &git.Remote{
 		Name:     "test",
 		Resolved: "base",
@@ -944,7 +945,7 @@ func TestMilestonesPromptFailures(t *testing.T) {
 	}
 
 	// mock glrepo.Remote object
-	repo := glrepo.New("foo", "bar")
+	repo := glrepo.New("foo", "bar", glinstance.DefaultHostname)
 	remote := &git.Remote{
 		Name:     "test",
 		Resolved: "base",
@@ -1036,7 +1037,7 @@ func Test_IDsFromUsers(t *testing.T) {
 
 func Test_LabelsPromptAPIFail(t *testing.T) {
 	// mock glrepo.Remote object
-	repo := glrepo.New("foo", "bar")
+	repo := glrepo.New("foo", "bar", glinstance.DefaultHostname)
 	remote := &git.Remote{
 		Name:     "test",
 		Resolved: "base",
@@ -1058,7 +1059,7 @@ func Test_LabelsPromptAPIFail(t *testing.T) {
 
 func Test_LabelsPromptPromptsFail(t *testing.T) {
 	// mock glrepo.Remote object
-	repo := glrepo.New("foo", "bar")
+	repo := glrepo.New("foo", "bar", glinstance.DefaultHostname)
 	remote := &git.Remote{
 		Name:     "test",
 		Resolved: "base",
@@ -1119,7 +1120,7 @@ func Test_LabelsPromptPromptsFail(t *testing.T) {
 
 func Test_LabelsPromptMultiSelect(t *testing.T) {
 	// mock glrepo.Remote object
-	repo := glrepo.New("foo", "bar")
+	repo := glrepo.New("foo", "bar", glinstance.DefaultHostname)
 	remote := &git.Remote{
 		Name:     "test",
 		Resolved: "base",
@@ -1199,7 +1200,7 @@ func Test_LabelsPromptMultiSelect(t *testing.T) {
 
 func Test_LabelsPromptAskQuestionWithInput(t *testing.T) {
 	// mock glrepo.Remote object
-	repo := glrepo.New("foo", "bar")
+	repo := glrepo.New("foo", "bar", glinstance.DefaultHostname)
 	remote := &git.Remote{
 		Name:     "test",
 		Resolved: "base",

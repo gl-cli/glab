@@ -38,11 +38,12 @@ type options struct {
 	notes []*gitlab.Note
 	issue *gitlab.Issue
 
-	io         *iostreams.IOStreams
-	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
-	httpClient func() (*gitlab.Client, error)
-	config     func() config.Config
-	baseRepo   func() (glrepo.Interface, error)
+	io              *iostreams.IOStreams
+	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	httpClient      func() (*gitlab.Client, error)
+	config          func() config.Config
+	baseRepo        func() (glrepo.Interface, error)
+	defaultHostname string
 }
 
 func NewCmdView(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {
@@ -53,11 +54,12 @@ func NewCmdView(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 	}
 
 	opts := &options{
-		io:         f.IO(),
-		apiClient:  f.ApiClient,
-		httpClient: f.HttpClient,
-		config:     f.Config,
-		baseRepo:   f.BaseRepo,
+		io:              f.IO(),
+		apiClient:       f.ApiClient,
+		httpClient:      f.HttpClient,
+		config:          f.Config,
+		baseRepo:        f.BaseRepo,
+		defaultHostname: f.DefaultHostname(),
 	}
 	issueViewCmd := &cobra.Command{
 		Use:     "view <id>",
@@ -94,7 +96,7 @@ func (o *options) run(issueType issuable.IssueType, args []string) error {
 	}
 	cfg := o.config()
 
-	issue, baseRepo, err := issueutils.IssueFromArg(o.apiClient, gitlabClient, o.baseRepo, args[0])
+	issue, baseRepo, err := issueutils.IssueFromArg(o.apiClient, gitlabClient, o.baseRepo, o.defaultHostname, args[0])
 	if err != nil {
 		return err
 	}

@@ -79,10 +79,6 @@ func (c *Client) Token() string {
 	return c.token
 }
 
-func (c *Client) SetProtocol(protocol string) {
-	c.protocol = protocol
-}
-
 var secureCipherSuites = []uint16{
 	tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 	tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
@@ -106,7 +102,7 @@ func tlsConfig(host string, allowInsecure bool) *tls.Config {
 // NewClient initializes a api client for use throughout glab.
 func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken bool, userAgent string, options ...ClientOption) (*Client, error) {
 	client := &Client{
-		protocol:   "https",
+		protocol:   glinstance.DefaultProtocol,
 		AuthType:   NoToken,
 		host:       host,
 		token:      token,
@@ -231,11 +227,7 @@ func WithHTTPClient(httpClient *http.Client) ClientOption {
 }
 
 // NewClientWithCfg initializes the global api with the config data
-func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool, userAgent string) (*Client, error) {
-	if repoHost == "" {
-		repoHost = glinstance.OverridableDefault()
-	}
-
+func NewClientWithCfg(protocol, repoHost string, cfg config.Config, isGraphQL bool, userAgent string) (*Client, error) {
 	apiHost, _ := cfg.Get(repoHost, "api_host")
 	if apiHost == "" {
 		apiHost = repoHost
@@ -297,10 +289,6 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool, userAg
 
 // NewLab initializes the GitLab Client
 func (c *Client) NewLab() error {
-	if c.host == "" {
-		c.host = glinstance.OverridableDefault()
-	}
-
 	var baseURL string
 	if c.isGraphQL {
 		baseURL = glinstance.GraphQLEndpoint(c.host, c.protocol)

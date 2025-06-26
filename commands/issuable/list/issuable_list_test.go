@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
@@ -63,7 +64,7 @@ func TestNewCmdList(t *testing.T) {
 			return config.NewBlankConfig()
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
+			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
 		},
 	}
 	t.Run("Issue_NewCmdList", func(t *testing.T) {

@@ -42,7 +42,7 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 				return err
 			}
 
-			issues, repo, err := issueutils.IssuesFromArgs(f.ApiClient, gitlabClient, f.BaseRepo, args)
+			issues, repo, err := issueutils.IssuesFromArgs(f.ApiClient, gitlabClient, f.BaseRepo, f.DefaultHostname(), args)
 			if err != nil {
 				return err
 			}

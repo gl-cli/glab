@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
@@ -29,7 +30,7 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 			return a.Lab(), err
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
+			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
 		},
 	}
 

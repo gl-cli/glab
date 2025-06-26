@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -193,7 +194,7 @@ hosts:
 				t.Fatalf("got error %q", err)
 			}
 
-			repo, err := FromURL(u)
+			repo, err := FromURL(u, glinstance.DefaultHostname)
 			if err != nil {
 				if tt.err == nil {
 					t.Fatalf("got error %q", err)
@@ -345,7 +346,7 @@ hosts:
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := FromFullName(tt.input)
+			r, err := FromFullName(tt.input, glinstance.DefaultHostname)
 			if tt.wantErr != nil {
 				if err == nil {
 					t.Fatalf("no error in result, expected %v", tt.wantErr)

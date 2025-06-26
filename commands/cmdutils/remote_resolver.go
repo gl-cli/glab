@@ -13,9 +13,10 @@ import (
 )
 
 type remoteResolver struct {
-	readRemotes   func() (git.RemoteSet, error)
-	getConfig     func() config.Config
-	urlTranslator func(*url.URL) *url.URL
+	readRemotes     func() (git.RemoteSet, error)
+	getConfig       func() config.Config
+	urlTranslator   func(*url.URL) *url.URL
+	defaultHostname string
 }
 
 func (rr *remoteResolver) Resolver(hostOverride string) func() (glrepo.Remotes, error) {
@@ -41,12 +42,12 @@ func (rr *remoteResolver) Resolver(hostOverride string) func() (glrepo.Remotes, 
 		if sshTranslate == nil {
 			sshTranslate = git.ParseSSHConfig().Translator()
 		}
-		resolvedRemotes := glrepo.TranslateRemotes(gitRemotes, sshTranslate)
+		resolvedRemotes := glrepo.TranslateRemotes(gitRemotes, sshTranslate, rr.defaultHostname)
 
 		cfg := rr.getConfig()
 
 		knownHosts := map[string]bool{}
-		knownHosts[glinstance.Default()] = true
+		knownHosts[glinstance.DefaultHostname] = true
 		if authenticatedHosts, err := cfg.Hosts(); err == nil {
 			for _, h := range authenticatedHosts {
 				knownHosts[h] = true

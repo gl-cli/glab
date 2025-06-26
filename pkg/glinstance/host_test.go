@@ -50,29 +50,6 @@ func TestIsSelfHosted(t *testing.T) {
 	}
 }
 
-func TestOverridableDefault(t *testing.T) {
-	oldOverride := hostnameOverride
-	t.Cleanup(func() {
-		hostnameOverride = oldOverride
-	})
-
-	host := OverridableDefault()
-	if host != "gitlab.com" {
-		t.Errorf("expected gitlab.com, got %q", host)
-	}
-
-	OverrideDefault("example.org")
-
-	host = OverridableDefault()
-	if host != "example.org" {
-		t.Errorf("expected example.org, got %q", host)
-	}
-	host = Default()
-	if host != "gitlab.com" {
-		t.Errorf("expected gitlab.com, got %q", host)
-	}
-}
-
 func TestNormalizeHostname(t *testing.T) {
 	tests := []struct {
 		host string
@@ -124,21 +101,25 @@ func TestAPIEndpoint(t *testing.T) {
 		want     string
 	}{
 		{
-			host: "gitlab.com",
-			want: "https://gitlab.com/api/v4/",
+			host:     "gitlab.com",
+			protocol: "https",
+			want:     "https://gitlab.com/api/v4/",
 		},
 		{
-			host:    "fake-host.com",
-			apiHost: "api.fake-host.com",
-			want:    "https://api.fake-host.com/api/v4/",
+			host:     "fake-host.com",
+			protocol: "https",
+			apiHost:  "api.fake-host.com",
+			want:     "https://api.fake-host.com/api/v4/",
 		},
 		{
-			host: "staging.gitlab.com",
-			want: "https://staging.gitlab.com/api/v4/",
+			host:     "staging.gitlab.com",
+			protocol: "https",
+			want:     "https://staging.gitlab.com/api/v4/",
 		},
 		{
-			host: "ghe.io",
-			want: "https://ghe.io/api/v4/",
+			host:     "ghe.io",
+			protocol: "https",
+			want:     "https://ghe.io/api/v4/",
 		},
 		{
 			host:     "salsa.debian.com",
@@ -179,7 +160,7 @@ func TestDefault(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Default(); got != tt.want {
+			if got := DefaultHostname; got != tt.want {
 				t.Errorf("Default() = %v, want %v", got, tt.want)
 			}
 		})

@@ -33,7 +33,7 @@ func oAuthClientID(cfg config.Config, hostname string) (string, error) {
 		}
 		return clientID, nil
 	}
-	return glinstance.DefaultClientID(), nil
+	return glinstance.DefaultClientID, nil
 }
 
 func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (string, error) {
