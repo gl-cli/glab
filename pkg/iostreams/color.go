@@ -30,16 +30,16 @@ type ColorPalette struct {
 }
 
 func (s *IOStreams) Color() *ColorPalette {
-	colorEnabled := s.ColorEnabled()
+	isColorfulOutput := s.ColorEnabled() && s.IsaTTY
 	return &ColorPalette{
-		Magenta: makeColorFunc(colorEnabled, "magenta"),
-		Cyan:    makeColorFunc(colorEnabled, "cyan"),
-		Red:     makeColorFunc(colorEnabled, "red"),
-		Yellow:  makeColorFunc(colorEnabled, "yellow"),
-		Blue:    makeColorFunc(colorEnabled, "blue"),
-		Green:   makeColorFunc(colorEnabled, "green"),
-		Gray:    makeColorFunc(colorEnabled, "black+h"),
-		Bold:    makeColorFunc(colorEnabled, "default+b"),
+		Magenta: makeColorFunc(isColorfulOutput, "magenta"),
+		Cyan:    makeColorFunc(isColorfulOutput, "cyan"),
+		Red:     makeColorFunc(isColorfulOutput, "red"),
+		Yellow:  makeColorFunc(isColorfulOutput, "yellow"),
+		Blue:    makeColorFunc(isColorfulOutput, "blue"),
+		Green:   makeColorFunc(isColorfulOutput, "green"),
+		Gray:    makeColorFunc(isColorfulOutput, "black+h"),
+		Bold:    makeColorFunc(isColorfulOutput, "default+b"),
 	}
 }
 
@@ -51,9 +51,7 @@ func NewColorable(out io.Writer) io.Writer {
 	return out
 }
 
-func makeColorFunc(colorEnabled bool, color string) func(string) string {
-	isColorfulOutput := colorEnabled && isStdoutTerminal()
-
+func makeColorFunc(isColorfulOutput bool, color string) func(string) string {
 	if isColorfulOutput && color == "black+h" && Is256ColorSupported() {
 		return func(t string) string {
 			return fmt.Sprintf("\x1b[%d;5;%dm%s\x1b[m", 38, 242, t)

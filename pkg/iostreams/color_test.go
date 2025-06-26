@@ -1,7 +1,6 @@
 package iostreams
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,34 +42,36 @@ func Test_makeColorFunc(t *testing.T) {
 		name         string
 		color        string
 		colorEnabled bool
-		is256color   bool
+		term         string
 		want         string
 	}{
 		{
-			"gray",
-			"black+h",
-			true,
-			false,
-			"text",
+			name:         "gray 16 colors",
+			color:        "black+h",
+			colorEnabled: true,
+			term:         "xterm-16color",
+			want:         "\x1b[0;90mtext\x1b[0m",
 		},
 		{
-			"gray_256",
-			"black+h",
-			true,
-			true,
-			fmt.Sprintf("\x1b[38;5;242m%s\x1b[m", "text"),
+			name:         "gray 256 colors",
+			color:        "black+h",
+			colorEnabled: true,
+			term:         "xterm-256color",
+			want:         "\x1b[38;5;242mtext\x1b[m",
+		},
+		{
+			name:         "no colors",
+			color:        "black+h",
+			colorEnabled: false,
+			term:         "",
+			want:         "text",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Tests do not output to the "terminal" so they ignore colors in the output.
-			// This setting needs to be forced for these tests to check colors properly.
-			_isStdoutTerminal = true
-
-			if tt.is256color {
-				t.Setenv("TERM", "xterm-256color")
-			}
+			t.Setenv("COLORTERM", "")
+			t.Setenv("TERM", tt.term)
 
 			fn := makeColorFunc(tt.colorEnabled, tt.color)
 			got := fn("text")

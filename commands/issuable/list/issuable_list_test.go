@@ -83,6 +83,9 @@ func TestNewCmdList(t *testing.T) {
 }
 
 func TestIssueList_tty(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -212,6 +215,9 @@ func TestIssueList_filterByIteration(t *testing.T) {
 }
 
 func TestIssueList_tty_withIssueType(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -293,6 +299,9 @@ func makeHyperlink(linkText, targetURL string) string {
 }
 
 func TestIssueList_hyperlinks(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	noHyperlinkCells := [][]string{
 		{"#6", "OWNER/REPO/issues/6", "Issue one", "(foo, bar)", "about X years ago"},
 		{"#7", "OWNER/REPO/issues/7", "Issue two", "(fooz, baz)", "about X years ago"},

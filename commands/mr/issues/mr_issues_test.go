@@ -27,6 +27,9 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, err
 }
 
 func TestMergeRequestClosesIssues_byID(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -63,6 +66,9 @@ func TestMergeRequestClosesIssues_byID(t *testing.T) {
 }
 
 func TestMergeRequestClosesIssues_currentBranch(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := &httpmock.Mocker{
 		MatchURL: httpmock.PathAndQuerystring,
 	}

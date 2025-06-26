@@ -18,7 +18,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewCmdDelete(t *testing.T) {
-	t.Parallel()
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	oldDeleteMR := api.DeleteMR
 
 	api.DeleteIssue = func(client *gitlab.Client, projectID any, issueID int) error {

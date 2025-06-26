@@ -119,6 +119,9 @@ func TestMergeRequestList_tty(t *testing.T) {
 ]
 `))
 
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	output, err := runCommand(fakeHTTP, true, "", nil, "")
 	if err != nil {
 		t.Errorf("error running command `issue list`: %v", err)
@@ -135,6 +138,9 @@ func TestMergeRequestList_tty(t *testing.T) {
 }
 
 func TestMergeRequestList_tty_withFlags(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	t.Run("repo", func(t *testing.T) {
 		fakeHTTP := httpmock.New()
 		defer fakeHTTP.Verify(t)
@@ -264,6 +270,9 @@ func makeHyperlink(linkText, targetURL string) string {
 }
 
 func TestMergeRequestList_hyperlinks(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	noHyperlinkCells := [][]string{
 		{"!6", "OWNER/REPO/merge_requests/6", "MergeRequest one", "(master) ← (test1)"},
 		{"!7", "OWNER/REPO/merge_requests/7", "MergeRequest two", "(master) ← (test2)"},
@@ -383,6 +392,9 @@ func TestMergeRequestList_hyperlinks(t *testing.T) {
 }
 
 func TestMergeRequestList_labels(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	type labelTest struct {
 		cli           string
 		expectedQuery string
@@ -465,6 +477,9 @@ func TestMrListJSON(t *testing.T) {
 }
 
 func TestMergeRequestList_GroupAndReviewer(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -514,6 +529,9 @@ func TestMergeRequestList_GroupAndReviewer(t *testing.T) {
 }
 
 func TestMergeRequestList_GroupAndAssignee(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -564,6 +582,9 @@ func TestMergeRequestList_GroupAndAssignee(t *testing.T) {
 }
 
 func TestMergeRequestList_GroupWithAssigneeAndReviewer(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
@@ -644,6 +665,9 @@ func TestMergeRequestList_GroupWithAssigneeAndReviewer(t *testing.T) {
 }
 
 func TestMergeRequestList_SortAndOrderBy(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := &httpmock.Mocker{
 		MatchURL: httpmock.PathAndQuerystring,
 	}

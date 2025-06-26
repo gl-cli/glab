@@ -67,6 +67,9 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string, let
 }
 
 func TestNewCmdCreate_tty(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := &httpmock.Mocker{
 		MatchURL: httpmock.PathAndQuerystring,
 	}
@@ -166,6 +169,9 @@ func TestNewCmdCreate_tty(t *testing.T) {
 }
 
 func TestNewCmdCreate_RelatedIssue(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -342,6 +348,9 @@ func TestNewCmdCreate_TemplateFromCommitMessages(t *testing.T) {
 }
 
 func TestNewCmdCreate_RelatedIssueWithTitleAndDescription(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -565,6 +574,9 @@ func TestGenerateMRCompareURL(t *testing.T) {
 }
 
 func Test_MRCreate_With_Recover_Integration(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 

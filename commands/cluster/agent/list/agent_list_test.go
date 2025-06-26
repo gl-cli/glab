@@ -15,6 +15,9 @@ import (
 
 func TestAgentList(t *testing.T) {
 	// GIVEN
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	tc := gitlab_testing.NewTestClient(t)
 	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentList, cmdtest.WithGitLabClient(tc.Client))
 
@@ -54,6 +57,9 @@ func TestAgentList(t *testing.T) {
 
 func TestAgentList_Pagination(t *testing.T) {
 	// GIVEN
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	tc := gitlab_testing.NewTestClient(t)
 	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentList, cmdtest.WithGitLabClient(tc.Client))
 

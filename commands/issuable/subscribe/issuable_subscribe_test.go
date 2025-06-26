@@ -81,6 +81,9 @@ func mockIssuableSubscribe(fakeHTTP *httpmock.Mocker, id int, issueType string, 
 }
 
 func TestIssuableSubscribe(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
 	t.Run("issue_subscribe", func(t *testing.T) {
 		iid := 1
 		fakeHTTP := httpmock.New()
