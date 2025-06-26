@@ -214,7 +214,7 @@ func TestMRView(t *testing.T) {
 		out := stripansi.Strip(stdout.String())
 		outErr := stripansi.Strip(stderr.String())
 
-		cmdtest.Eq(t, outErr, "")
+		assert.Equal(t, "", outErr)
 		t.Helper()
 		var r *regexp.Regexp
 		for _, l := range expectedOutputs {

@@ -423,13 +423,6 @@ func FirstLine(output []byte) string {
 	return string(output)
 }
 
-func Eq(t *testing.T, got any, expected any) {
-	t.Helper()
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("expected: %v, got: %v", expected, got)
-	}
-}
-
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {
 	testClient, err := api.NewClient(host, token, isGraphQL, false, false, api.WithInsecureSkipVerify(true), api.WithProtocol("https"), api.WithHTTPClient(httpClient))
 	if err != nil {

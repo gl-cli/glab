@@ -231,7 +231,7 @@ func TestNewCmdView(t *testing.T) {
 				}
 			} else {
 				if viewIncidentWithIssueID {
-					cmdtest.Eq(t, outErr, wantErrorMsg)
+					assert.Equal(t, wantErrorMsg, outErr)
 				} else {
 					expectedOutputs := []string{
 						fmt.Sprintf(`title:\t%s`, testIssuable.title),
@@ -245,7 +245,7 @@ func TestNewCmdView(t *testing.T) {
 						testIssuable.description,
 					}
 
-					cmdtest.Eq(t, outErr, "")
+					assert.Equal(t, "", outErr)
 					t.Helper()
 					var r *regexp.Regexp
 					for _, l := range expectedOutputs {

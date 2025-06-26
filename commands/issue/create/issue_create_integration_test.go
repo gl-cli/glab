@@ -89,8 +89,8 @@ func Test_IssueCreate_Integration(t *testing.T) {
 	out := stripansi.Strip(stdout.String())
 	outErr := stripansi.Strip(stderr.String())
 	expectedOut := fmt.Sprintf("#1 myissuetitle (%s)", utils.TimeToPrettyTimeAgo(timer))
-	cmdtest.Eq(t, cmdtest.FirstLine([]byte(out)), expectedOut)
-	cmdtest.Eq(t, outErr, "- Creating issue in cli-automated-testing/test\n")
+	assert.Equal(t, expectedOut, cmdtest.FirstLine([]byte(out)))
+	assert.Equal(t, "- Creating issue in cli-automated-testing/test\n", outErr)
 	assert.Contains(t, out, glTestHost+"/cli-automated-testing/test/-/issues/1")
 
 	api.CreateIssue = oldCreateIssue
@@ -192,7 +192,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 
 	assert.Contains(t, newout, expectedOut)
 	assert.Contains(t, newout, "Recovered create options from file.")
-	cmdtest.Eq(t, newoutErr, "- Creating issue in cli-automated-testing/test\n")
+	assert.Equal(t, "- Creating issue in cli-automated-testing/test\n", newoutErr)
 	assert.Contains(t, newout, glTestHost+"/cli-automated-testing/test/-/issues/2")
 
 	api.CreateIssue = oldCreateIssue

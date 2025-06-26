@@ -167,11 +167,11 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
 
-		cmdtest.Eq(t, output.Stderr(), "")
-		cmdtest.Eq(t, output.String(), `No open issues match your search in OWNER/REPO.
+		assert.Equal(t, "", output.Stderr())
+		assert.Equal(t, output.String(), `No open issues match your search in OWNER/REPO.
 
 
-`)
+`, output.String())
 	})
 	t.Run("group", func(t *testing.T) {
 		fakeHTTP := httpmock.New()
@@ -185,11 +185,11 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
 
-		cmdtest.Eq(t, output.Stderr(), "")
-		cmdtest.Eq(t, output.String(), `No open issues match your search in GROUP.
+		assert.Equal(t, "", output.Stderr())
+		assert.Equal(t, `No open issues match your search in GROUP.
 
 
-`)
+`, output.String())
 	})
 }
 
@@ -207,11 +207,11 @@ func TestIssueList_filterByIteration(t *testing.T) {
 		t.Errorf("error running command `issue list`: %v", err)
 	}
 
-	cmdtest.Eq(t, output.Stderr(), "")
-	cmdtest.Eq(t, output.String(), `No open issues match your search in OWNER/REPO.
+	assert.Equal(t, "", output.Stderr())
+	assert.Equal(t, `No open issues match your search in OWNER/REPO.
 
 
-`)
+`, output.String())
 }
 
 func TestIssueList_tty_withIssueType(t *testing.T) {
@@ -273,11 +273,11 @@ func TestIssueList_tty_mine(t *testing.T) {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
 
-		cmdtest.Eq(t, output.Stderr(), "")
-		cmdtest.Eq(t, output.String(), `No issues match your search in OWNER/REPO.
+		assert.Equal(t, "", output.Stderr(), "")
+		assert.Equal(t, `No issues match your search in OWNER/REPO.
 
 
-`)
+`, output.String())
 	})
 	t.Run("user does not exists", func(t *testing.T) {
 		fakeHTTP := httpmock.New()
@@ -289,8 +289,8 @@ func TestIssueList_tty_mine(t *testing.T) {
 		output, err := runCommand("issue", fakeHTTP, true, "--mine -A", nil, "")
 		assert.NotNil(t, err)
 
-		cmdtest.Eq(t, output.Stderr(), "")
-		cmdtest.Eq(t, output.String(), "")
+		assert.Equal(t, "", output.Stderr())
+		assert.Equal(t, "", output.String())
 	})
 }
 
@@ -591,7 +591,7 @@ func TestIssueList_epicIssues(t *testing.T) {
 				return
 			}
 
-			cmdtest.Eq(t, output.Stderr(), "")
+			assert.Equal(t, "", output.Stderr())
 
 			gotIDs, err := strToIntSlice(output.String())
 			if err != nil {
