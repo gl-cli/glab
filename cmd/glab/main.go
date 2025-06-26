@@ -105,7 +105,7 @@ func main() {
 
 	cmd, _, err := rootCmd.Traverse(expandedArgs)
 
-	checkForTelemetryHook(cfg, cmdFactory, cmd)
+	setupTelemetryHook(cfg, cmdFactory, cmd)
 
 	if err != nil || cmd == rootCmd {
 		originalArgs := expandedArgs
@@ -249,7 +249,7 @@ func setupSurveyCore(io *iostreams.IOStreams) {
 	}
 }
 
-func checkForTelemetryHook(cfg config.Config, f cmdutils.Factory, cmd *cobra.Command) {
+func setupTelemetryHook(cfg config.Config, f cmdutils.Factory, cmd *cobra.Command) {
 	if hooks.IsTelemetryEnabled(cfg) {
 		cobra.OnFinalize(hooks.AddTelemetryHook(f, cmd))
 	}
