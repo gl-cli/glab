@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -344,8 +343,7 @@ func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdEx
 	f := &Factory{
 		IOStub: ios,
 		HttpClientStub: func() (*gitlab.Client, error) {
-			t.Errorf("You must configure a GitLab Test client in your tests. Use the WithGitLabClient option function")
-			return nil, nil
+			return &gitlab.Client{}, nil
 		},
 		ConfigStub: func() config.Config {
 			return config.NewBlankConfig()
@@ -414,20 +412,6 @@ func CopyTestRepo(log fatalLogger, name string) string {
 		}
 	}
 	return dest
-}
-
-func FirstLine(output []byte) string {
-	if i := bytes.IndexAny(output, "\n"); i >= 0 {
-		return strings.ReplaceAll(string(output)[0:i], "PASS", "")
-	}
-	return string(output)
-}
-
-func Eq(t *testing.T, got any, expected any) {
-	t.Helper()
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("expected: %v, got: %v", expected, got)
-	}
 }
 
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {

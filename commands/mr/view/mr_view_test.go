@@ -168,16 +168,11 @@ func TestMRView(t *testing.T) {
 		cmd := NewCmdView(f)
 		cmdutils.EnableRepoOverride(cmd, f)
 
-		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R cli-automated-testing/test")
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		cmdOut, err := cmdtest.ExecuteCommand(cmd, "13 -c -s -R cli-automated-testing/test", stdout, stderr)
+		require.NoError(t, err)
 
-		out := stripansi.Strip(stdout.String())
-		outErr := stripansi.Strip(stderr.String())
-		stdout.Reset()
-		stderr.Reset()
+		out := stripansi.Strip(cmdOut.OutBuf.String())
+		outErr := stripansi.Strip(cmdOut.ErrBuf.String())
 
 		require.Contains(t, out, "mrTitle !13")
 		require.Equal(t, outErr, "")
@@ -192,11 +187,11 @@ func TestMRView(t *testing.T) {
 		cmd := NewCmdView(f)
 		cmdutils.EnableRepoOverride(cmd, f)
 
-		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R cli-automated-testing/test")
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		cmdOut, err := cmdtest.ExecuteCommand(cmd, "13 -c -s -R cli-automated-testing/test", stdout, stderr)
+		require.NoError(t, err)
+
+		out := stripansi.Strip(cmdOut.OutBuf.String())
+		outErr := stripansi.Strip(cmdOut.ErrBuf.String())
 
 		expectedOutputs := []string{
 			`title:\tmrTitle`,
@@ -211,10 +206,7 @@ func TestMRView(t *testing.T) {
 			`mrBody`,
 		}
 
-		out := stripansi.Strip(stdout.String())
-		outErr := stripansi.Strip(stderr.String())
-
-		cmdtest.Eq(t, outErr, "")
+		assert.Equal(t, "", outErr)
 		t.Helper()
 		var r *regexp.Regexp
 		for _, l := range expectedOutputs {

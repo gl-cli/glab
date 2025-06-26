@@ -156,11 +156,11 @@ func TestMergeRequestList_tty_withFlags(t *testing.T) {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
 
-		cmdtest.Eq(t, output.Stderr(), "")
-		cmdtest.Eq(t, output.String(), `No open merge requests match your search in OWNER/REPO.
+		assert.Equal(t, "", output.Stderr())
+		assert.Equal(t, `No open merge requests match your search in OWNER/REPO.
 
 
-`)
+`, output.String())
 	})
 	t.Run("group", func(t *testing.T) {
 		fakeHTTP := httpmock.New()
@@ -174,10 +174,10 @@ func TestMergeRequestList_tty_withFlags(t *testing.T) {
 			t.Errorf("error running command `mr list`: %v", err)
 		}
 
-		cmdtest.Eq(t, output.Stderr(), "")
-		cmdtest.Eq(t, output.String(), `No open merge requests available on GROUP.
+		assert.Equal(t, "", output.Stderr())
+		assert.Equal(t, `No open merge requests available on GROUP.
 
-`)
+`, output.String())
 	})
 
 	t.Run("draft", func(t *testing.T) {

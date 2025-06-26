@@ -22,12 +22,12 @@ func TestAskGit_Integration(t *testing.T) {
 
 	cfg, err := config.Init()
 	require.NoError(t, err)
-	io, _, stdout, _ := cmdtest.TestIOStreams()
+	io, _, stdout, stderr := cmdtest.TestIOStreams()
 	f := cmdutils.NewFactory(io, false, cfg)
 
 	cmd := NewCmdAsk(f)
 	cli := "--git how to create a branch"
-	_, err = cmdtest.RunCommand(cmd, cli)
+	_, err = cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 
 	out := stdout.String()
 

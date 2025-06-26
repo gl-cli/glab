@@ -7,6 +7,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"github.com/acarl005/stripansi"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -50,16 +51,19 @@ func TestNewCmdCreate(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-
-	f := cmdtest.NewTestFactory(io)
-
-	cmd := NewCmdCreate(f)
-	cmdutils.EnableRepoOverride(cmd, f)
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := cmdtest.RunCommand(cmd, tc.arg)
+			exec := cmdtest.SetupCmdForTest(
+				t,
+				func(f cmdutils.Factory) *cobra.Command {
+					cmd := NewCmdCreate(f)
+					cmdutils.EnableRepoOverride(cmd, f)
+					return cmd
+				},
+			)
+
+			cmdOut, err := exec(tc.arg)
 			if tc.wantErr {
 				require.Error(t, err)
 				return
@@ -67,10 +71,10 @@ func TestNewCmdCreate(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			out := stripansi.Strip(stdout.String())
+			out := stripansi.Strip(cmdOut.OutBuf.String())
 
 			assert.Contains(t, out, tc.want)
-			assert.Contains(t, stderr.String(), "")
+			assert.Contains(t, cmdOut.ErrBuf.String(), "")
 		})
 	}
 }

@@ -83,14 +83,16 @@ func Test_IssueCreate_Integration(t *testing.T) {
 	}
 
 	cli := strings.Join(cliStr, " ")
-	_, err = cmdtest.RunCommand(cmd, cli)
+	_, err = cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 	assert.Nil(t, err)
 
 	out := stripansi.Strip(stdout.String())
 	outErr := stripansi.Strip(stderr.String())
 	expectedOut := fmt.Sprintf("#1 myissuetitle (%s)", utils.TimeToPrettyTimeAgo(timer))
-	cmdtest.Eq(t, cmdtest.FirstLine([]byte(out)), expectedOut)
-	cmdtest.Eq(t, outErr, "- Creating issue in cli-automated-testing/test\n")
+	outputLines := strings.SplitN(out, "\n", 2)
+	assert.Contains(t, outputLines[0], expectedOut)
+	assert.Equal(t, expectedOut, outputLines[0])
+	assert.Equal(t, "- Creating issue in cli-automated-testing/test\n", outErr)
 	assert.Contains(t, out, glTestHost+"/cli-automated-testing/test/-/issues/1")
 
 	api.CreateIssue = oldCreateIssue
@@ -163,7 +165,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 	}
 
 	cli := strings.Join(cliStr, " ")
-	_, err = cmdtest.RunCommand(cmd, cli)
+	_, err = cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 	assert.Contains(t, err.Error(), "fail on purpose")
 
 	out := stripansi.Strip(stdout.String())
@@ -183,7 +185,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 
 	newcli := strings.Join(newCliStr, " ")
 
-	_, newerr := cmdtest.RunCommand(cmd, newcli)
+	_, newerr := cmdtest.ExecuteCommand(cmd, newcli, stdout, stderr)
 	assert.Nil(t, newerr)
 
 	newout := stripansi.Strip(stdout.String())
@@ -192,7 +194,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 
 	assert.Contains(t, newout, expectedOut)
 	assert.Contains(t, newout, "Recovered create options from file.")
-	cmdtest.Eq(t, newoutErr, "- Creating issue in cli-automated-testing/test\n")
+	assert.Equal(t, "- Creating issue in cli-automated-testing/test\n", newoutErr)
 	assert.Contains(t, newout, glTestHost+"/cli-automated-testing/test/-/issues/2")
 
 	api.CreateIssue = oldCreateIssue

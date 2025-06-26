@@ -205,11 +205,8 @@ func TestNewCmdView(t *testing.T) {
 			io.IsErrTTY = tt.isTTY
 			cmd := NewCmdView(f, tt.viewIssueType)
 			cmdutils.EnableRepoOverride(cmd, f)
-			_, err := cmdtest.RunCommand(cmd, fmt.Sprintf("%d -c -s -R cli-automated-testing/test", tt.issueID))
-			if err != nil {
-				t.Error(err)
-				return
-			}
+			_, err := cmdtest.ExecuteCommand(cmd, fmt.Sprintf("%d -c -s -R cli-automated-testing/test", tt.issueID), stdout, stderr)
+			require.NoError(t, err)
 
 			out := stripansi.Strip(stdout.String())
 			outErr := stripansi.Strip(stderr.String())
@@ -231,7 +228,7 @@ func TestNewCmdView(t *testing.T) {
 				}
 			} else {
 				if viewIncidentWithIssueID {
-					cmdtest.Eq(t, outErr, wantErrorMsg)
+					assert.Equal(t, wantErrorMsg, outErr)
 				} else {
 					expectedOutputs := []string{
 						fmt.Sprintf(`title:\t%s`, testIssuable.title),
@@ -245,7 +242,7 @@ func TestNewCmdView(t *testing.T) {
 						testIssuable.description,
 					}
 
-					cmdtest.Eq(t, outErr, "")
+					assert.Equal(t, "", outErr)
 					t.Helper()
 					var r *regexp.Regexp
 					for _, l := range expectedOutputs {
