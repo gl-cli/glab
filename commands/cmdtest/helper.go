@@ -309,9 +309,7 @@ func WithBranch(branch string) FactoryOption {
 }
 
 // NewTestFactory creates a Factory configured for testing with the given options
-func NewTestFactory(t *testing.T, ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
-	t.Helper()
-
+func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 	// Create a default factory
 	f := &Factory{
 		IOStub: ios,
@@ -444,19 +442,6 @@ func StubFactory(t *testing.T, repo string, io *iostreams.IOStreams) cmdutils.Fa
 	}
 
 	return f
-}
-
-func StubFactoryWithConfig(repo string, io *iostreams.IOStreams) (cmdutils.Factory, error) {
-	cfg, err := config.ParseConfig("config.yml")
-	if err != nil {
-		return nil, err
-	}
-	f := cmdutils.NewFactory(io, false, cfg)
-	if repo != "" {
-		f.RepoOverride(repo)
-	}
-
-	return f, nil
 }
 
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {

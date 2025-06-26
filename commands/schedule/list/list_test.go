@@ -3,6 +3,7 @@ package list
 import (
 	"testing"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/acarl005/stripansi"
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -13,18 +14,16 @@ import (
 )
 
 func Test_ScheduleList(t *testing.T) {
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-`, "")()
-
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
+	f := cmdtest.NewTestFactory(io, cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
+		hosts:
+		  gitlab.com:
+		    username: monalisa
+		    token: OTOKEN
+	`))))
 
 	api.GetSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {
-		_, err := stubFactory.BaseRepo()
+		_, err := f.BaseRepo()
 		if err != nil {
 			return nil, err
 		}
@@ -43,8 +42,8 @@ hosts:
 		}, nil
 	}
 
-	cmd := NewCmdList(stubFactory)
-	cmdutils.EnableRepoOverride(cmd, stubFactory)
+	cmd := NewCmdList(f)
+	cmdutils.EnableRepoOverride(cmd, f)
 
 	t.Run("Schedule exists", func(t *testing.T) {
 		_, err := cmd.ExecuteC()
@@ -60,15 +59,13 @@ hosts:
 }
 
 func Test_NoScheduleList(t *testing.T) {
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-`, "")()
-
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
+	stubFactory := cmdtest.NewTestFactory(io, cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
+		hosts:
+		  gitlab.com:
+		    username: monalisa
+		    token: OTOKEN
+	`))))
 
 	api.GetSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {
 		_, err := stubFactory.BaseRepo()

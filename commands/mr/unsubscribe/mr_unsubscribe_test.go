@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/require"
 
@@ -22,15 +23,14 @@ func TestMain(m *testing.M) {
 
 func TestNewCmdUnsubscribe(t *testing.T) {
 	t.Parallel()
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-`, "")()
 
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
+	f := cmdtest.NewTestFactory(io, cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
+		hosts:
+		  gitlab.com:
+		    username: monalisa
+		    token: OTOKEN
+	`))))
 
 	oldUnsubscribeMR := api.UnsubscribeFromMR
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
@@ -38,7 +38,7 @@ hosts:
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" || mrID == 0 {
 			return nil, fmt.Errorf("error expected")
 		}
-		repo, err := stubFactory.BaseRepo()
+		repo, err := f.BaseRepo()
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +66,7 @@ hosts:
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
-		repo, err := stubFactory.BaseRepo()
+		repo, err := f.BaseRepo()
 		if err != nil {
 			return nil, err
 		}
@@ -113,7 +113,7 @@ hosts:
 		},
 	}
 
-	cmd := NewCmdUnsubscribe(stubFactory)
+	cmd := NewCmdUnsubscribe(f)
 	cmd.Flags().StringP("repo", "R", "", "")
 
 	for _, tc := range testCases {

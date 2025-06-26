@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -22,14 +23,17 @@ func TestMain(m *testing.M) {
 }
 
 func Test_deleteMergeRequest(t *testing.T) {
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-`, "")()
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
+	f := cmdtest.NewTestFactory(
+		io,
+		cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
+			hosts:
+			  gitlab.com:
+			    username: monalisa
+			    token: OTOKEN
+	    `))),
+		cmdtest.WithBranch("master"),
+	)
 	oldDeleteMR := api.DeleteMR
 
 	api.DeleteMR = func(client *gitlab.Client, projectID any, mrID int) error {
@@ -43,7 +47,7 @@ hosts:
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
-		repo, err := stubFactory.BaseRepo()
+		repo, err := f.BaseRepo()
 		if err != nil {
 			return nil, err
 		}
@@ -112,7 +116,7 @@ hosts:
 		},
 	}
 
-	cmd := NewCmdDelete(stubFactory)
+	cmd := NewCmdDelete(f)
 
 	cmd.Flags().StringP("repo", "R", "", "")
 

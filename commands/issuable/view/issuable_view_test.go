@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/acarl005/stripansi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -26,10 +27,10 @@ import (
 )
 
 var (
-	stubFactory cmdutils.Factory
-	stdout      *bytes.Buffer
-	stderr      *bytes.Buffer
-	io          *iostreams.IOStreams
+	f      cmdutils.Factory
+	stdout *bytes.Buffer
+	stderr *bytes.Buffer
+	io     *iostreams.IOStreams
 )
 
 type issuableData struct {
@@ -61,22 +62,20 @@ var testIssuables = map[int]issuableData{
 }
 
 func TestMain(m *testing.M) {
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-`, "")()
-
 	io, _, stdout, stderr = cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	stubFactory, _ = cmdtest.StubFactoryWithConfig("", io)
+	f = cmdtest.NewTestFactory(io, cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
+		hosts:
+		  gitlab.com:
+		    username: monalisa
+		    token: OTOKEN
+	`))))
 
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
 	api.GetIssue = func(client *gitlab.Client, projectID any, issueID int) (*gitlab.Issue, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
-		repo, err := stubFactory.BaseRepo()
+		repo, err := f.BaseRepo()
 		if err != nil {
 			return nil, err
 		}
@@ -120,8 +119,8 @@ hosts:
 }
 
 func TestNewCmdView_web_numberArg(t *testing.T) {
-	cmd := NewCmdView(stubFactory, issuable.TypeIncident)
-	cmdutils.EnableRepoOverride(cmd, stubFactory)
+	cmd := NewCmdView(f, issuable.TypeIncident)
+	cmdutils.EnableRepoOverride(cmd, f)
 
 	var seenCmd *exec.Cmd
 	restoreCmd := run.SetPrepareCmd(func(cmd *exec.Cmd) run.Runnable {
@@ -204,8 +203,8 @@ func TestNewCmdView(t *testing.T) {
 
 			io.IsaTTY = tt.isTTY
 			io.IsErrTTY = tt.isTTY
-			cmd := NewCmdView(stubFactory, tt.viewIssueType)
-			cmdutils.EnableRepoOverride(cmd, stubFactory)
+			cmd := NewCmdView(f, tt.viewIssueType)
+			cmdutils.EnableRepoOverride(cmd, f)
 			_, err := cmdtest.RunCommand(cmd, fmt.Sprintf("%d -c -s -R cli-automated-testing/test", tt.issueID))
 			if err != nil {
 				t.Error(err)
@@ -508,7 +507,7 @@ func Test_assigneesList(t *testing.T) {
 }
 
 func TestIssueViewJSON(t *testing.T) {
-	cmd := NewCmdView(stubFactory, issuable.TypeIssue)
+	cmd := NewCmdView(f, issuable.TypeIssue)
 
 	output, err := cmdtest.ExecuteCommand(cmd, "1 -F json", stdout, stderr)
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/acarl005/stripansi"
 	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -26,29 +27,32 @@ import (
 )
 
 var (
-	stubFactory cmdutils.Factory
-	stdout      *bytes.Buffer
-	stderr      *bytes.Buffer
-	io          *iostreams.IOStreams
+	f      cmdutils.Factory
+	stdout *bytes.Buffer
+	stderr *bytes.Buffer
+	io     *iostreams.IOStreams
 )
 
 func TestMain(m *testing.M) {
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-`, "")()
-
 	io, _, stdout, stderr = cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	stubFactory, _ = cmdtest.StubFactoryWithConfig("", io)
+	client, _ := gitlab.NewClient("")
+	f = cmdtest.NewTestFactory(
+		io,
+		cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
+			hosts:
+			  gitlab.com:
+			    username: monalisa
+			    token: OTOKEN
+		`))),
+		cmdtest.WithGitLabClient(client),
+	)
 
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
 	api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
-		repo, err := stubFactory.BaseRepo()
+		repo, err := f.BaseRepo()
 		if err != nil {
 			return nil, err
 		}
@@ -94,8 +98,8 @@ hosts:
 }
 
 func TestMRView_web_numberArg(t *testing.T) {
-	cmd := NewCmdView(stubFactory)
-	cmdutils.EnableRepoOverride(cmd, stubFactory)
+	cmd := NewCmdView(f)
+	cmdutils.EnableRepoOverride(cmd, f)
 
 	var seenCmd *exec.Cmd
 	restoreCmd := run.SetPrepareCmd(func(cmd *exec.Cmd) run.Runnable {
@@ -161,8 +165,8 @@ func TestMRView(t *testing.T) {
 	}
 
 	t.Run("show", func(t *testing.T) {
-		cmd := NewCmdView(stubFactory)
-		cmdutils.EnableRepoOverride(cmd, stubFactory)
+		cmd := NewCmdView(f)
+		cmdutils.EnableRepoOverride(cmd, f)
 
 		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R cli-automated-testing/test")
 		if err != nil {
@@ -185,8 +189,8 @@ func TestMRView(t *testing.T) {
 		io.IsaTTY = false
 		io.IsErrTTY = false
 
-		cmd := NewCmdView(stubFactory)
-		cmdutils.EnableRepoOverride(cmd, stubFactory)
+		cmd := NewCmdView(f)
+		cmdutils.EnableRepoOverride(cmd, f)
 
 		_, err := cmdtest.RunCommand(cmd, "13 -c -s -R cli-automated-testing/test")
 		if err != nil {
@@ -496,7 +500,7 @@ func Test_reviewersList(t *testing.T) {
 }
 
 func TestMrViewJSON(t *testing.T) {
-	cmd := NewCmdView(stubFactory)
+	cmd := NewCmdView(f)
 	stdout.Reset()
 	stderr.Reset()
 

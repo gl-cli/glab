@@ -52,7 +52,7 @@ func TestNewCmdCreate(t *testing.T) {
 	}
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
-	f := cmdtest.NewTestFactory(t, io)
+	f := cmdtest.NewTestFactory(io)
 
 	cmd := NewCmdCreate(f)
 	cmdutils.EnableRepoOverride(cmd, f)

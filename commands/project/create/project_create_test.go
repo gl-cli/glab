@@ -3,6 +3,7 @@ package create
 import (
 	"testing"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/acarl005/stripansi"
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -20,16 +21,15 @@ func TestMain(m *testing.M) {
 
 func Test_projectCreateCmd(t *testing.T) {
 	t.Parallel()
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-no_prompt: true
-`, "")()
 
 	io, _, stdout, stderr := cmdtest.TestIOStreams()
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
+	f := cmdtest.NewTestFactory(io, cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
+		hosts:
+		  gitlab.com:
+		    username: monalisa
+		    token: OTOKEN
+		no_prompt: true
+	`))))
 	// to skip creation of local project directory, set prompt to false
 
 	api.CreateProject = func(client *gitlab.Client, opts *gitlab.CreateProjectOptions) (*gitlab.Project, error) {
@@ -66,8 +66,8 @@ no_prompt: true
 		},
 	}
 
-	cmd := NewCmdCreate(stubFactory)
-	cmdutils.EnableRepoOverride(cmd, stubFactory)
+	cmd := NewCmdCreate(f)
+	cmdutils.EnableRepoOverride(cmd, f)
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
