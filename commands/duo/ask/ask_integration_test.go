@@ -3,7 +3,6 @@ package ask
 import (
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 	"gitlab.com/gitlab-org/cli/test"
 
@@ -18,7 +17,7 @@ func TestAskGit_Integration(t *testing.T) {
 	restore := prompt.StubConfirm(false)
 	defer restore()
 
-	io, _, stdout, _ := iostreams.Test()
+	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	f := cmdtest.StubFactory("", io)
 

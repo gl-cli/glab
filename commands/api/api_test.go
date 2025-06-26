@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
@@ -25,7 +24,7 @@ import (
 )
 
 func Test_NewCmdApi(t *testing.T) {
-	ios, _, _, _ := iostreams.Test()
+	ios, _, _, _ := cmdtest.TestIOStreams()
 	f := cmdtest.StubFactory("", ios)
 
 	tests := []struct {
@@ -379,7 +378,7 @@ func Test_apiRun(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ios, _, stdout, stderr := iostreams.Test()
+			ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 			tt.options.io = ios
 			tt.options.config = config.NewBlankConfig()
@@ -419,7 +418,7 @@ func Test_apiRun(t *testing.T) {
 }
 
 func Test_apiRun_paginationREST(t *testing.T) {
-	ios, _, stdout, stderr := iostreams.Test()
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	requestCount := 0
 	responses := []*http.Response{
@@ -478,7 +477,7 @@ func Test_apiRun_paginationREST(t *testing.T) {
 }
 
 func Test_apiRun_paginationGraphQL(t *testing.T) {
-	ios, _, stdout, stderr := iostreams.Test()
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	requestCount := 0
 	responses := []*http.Response{
@@ -584,7 +583,7 @@ func Test_apiRun_inputFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ios, stdin, _, _ := iostreams.Test()
+			ios, stdin, _, _ := cmdtest.TestIOStreams()
 			resp := &http.Response{StatusCode: http.StatusNoContent}
 
 			inputFile := tt.inputFile
@@ -642,7 +641,7 @@ func Test_apiRun_inputFile(t *testing.T) {
 }
 
 func Test_parseFields(t *testing.T) {
-	ios, stdin, _, _ := iostreams.Test()
+	ios, stdin, _, _ := cmdtest.TestIOStreams()
 	fmt.Fprint(stdin, "pasted contents")
 
 	opts := options{
@@ -686,7 +685,7 @@ func Test_magicFieldValue(t *testing.T) {
 	f.Close()
 	t.Cleanup(func() { os.Remove(f.Name()) })
 
-	ios, _, _, _ := iostreams.Test()
+	ios, _, _, _ := cmdtest.TestIOStreams()
 
 	type args struct {
 		v    string

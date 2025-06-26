@@ -14,12 +14,8 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func runCommand(
-	mockCmd git.GitRunner,
-	args string,
-	t *testing.T,
-) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(true, "")
+func runCommand(mockCmd git.GitRunner, args string, t *testing.T) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 	factory := cmdtest.InitFactory(ios, nil)
 

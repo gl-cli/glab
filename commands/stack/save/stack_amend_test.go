@@ -60,7 +60,7 @@ func Test_stackAmendCmd(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
-			ios, _, _, _ := cmdtest.InitIOStreams(true, "")
+			ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 			f := cmdtest.InitFactory(ios, nil)
 
 			dir := git.InitGitRepoWithCommit(t)

@@ -10,7 +10,6 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 func Test_ScheduleList(t *testing.T) {
@@ -21,7 +20,7 @@ hosts:
     token: OTOKEN
 `, "")()
 
-	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 
 	api.GetSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {
@@ -68,7 +67,7 @@ hosts:
     token: OTOKEN
 `, "")()
 
-	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 
 	api.GetSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {

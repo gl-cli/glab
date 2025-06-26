@@ -12,8 +12,8 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -160,7 +160,7 @@ func TestMrTodo(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err := runCommand(fakeHTTP, false, tc.cli)
+			output, err := runCommand(fakeHTTP, tc.cli)
 			if tc.expectedError != nil {
 				assert.Equal(t, tc.expectedError, err, "error expected when running command `mr todo %s`", tc.cli)
 				return

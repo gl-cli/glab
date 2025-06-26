@@ -12,7 +12,6 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 func TestMain(m *testing.M) {
@@ -29,7 +28,7 @@ hosts:
 no_prompt: true
 `, "")()
 
-	io, _, stdout, stderr := iostreams.Test()
+	io, _, stdout, stderr := cmdtest.TestIOStreams()
 	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 	// to skip creation of local project directory, set prompt to false
 

@@ -14,7 +14,6 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
@@ -81,7 +80,7 @@ func mockAllResponses(t *testing.T, fakeHTTP *httpmock.Mocker) {
 }
 
 func runCommand(rt http.RoundTripper, issuableID string, issueType issuable.IssueType) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := &cmdtest.Factory{
 		IOStub: ios,

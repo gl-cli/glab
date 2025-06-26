@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 
 	"github.com/spf13/cobra"
 
@@ -46,7 +46,7 @@ func TestNewCmdCompletion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, _, stdout, stderr := iostreams.Test()
+			io, _, stdout, stderr := cmdtest.TestIOStreams()
 
 			completeCmd := NewCmdCompletion(io)
 			rootCmd := &cobra.Command{Use: "glab"}

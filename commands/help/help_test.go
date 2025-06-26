@@ -4,8 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/alias"
@@ -87,7 +85,7 @@ USAGE
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			streams, _, _, _ := iostreams.Test()
+			streams, _, _, _ := cmdtest.TestIOStreams()
 			old := os.Stdout // keep backup of the real stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w

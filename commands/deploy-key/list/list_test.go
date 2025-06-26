@@ -12,8 +12,8 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.InitFactory(ios, rt)
 	_, _ = factory.HttpClient()
 	cmd := NewCmdList(factory)
@@ -82,7 +82,7 @@ func TestDeployKeyList(t *testing.T) {
 					httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err := runCommand(fakeHTTP, false)
+			output, err := runCommand(fakeHTTP)
 
 			if assert.NoErrorf(t, err, "error running command `deploy-key list %s`: %v", err) {
 				out := output.String()

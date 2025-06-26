@@ -18,7 +18,7 @@ import (
 )
 
 func runCommand(rt http.RoundTripper, isTTY bool, cli string, stub bool, repoHost string) (*test.CmdOut, error, func()) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
 	factory := cmdtest.InitFactory(ios, rt)
 

@@ -7,8 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
@@ -68,7 +66,7 @@ func Test_NewCmdDiff(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ios, _, _, _ := iostreams.Test(iostreams.WithStdinIsTTY(tt.isTTY), iostreams.WithStdoutIsTTY(tt.isTTY), iostreams.WithStderrIsTTY(tt.isTTY))
+			ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isTTY))
 
 			f := &cmdtest.Factory{
 				IOStub: ios,
@@ -104,7 +102,7 @@ func Test_NewCmdDiff(t *testing.T) {
 }
 
 func runCommand(rt http.RoundTripper, remotes glrepo.Remotes, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
 	factory := cmdtest.InitFactory(ios, rt)
 	_, _ = factory.HttpClient()

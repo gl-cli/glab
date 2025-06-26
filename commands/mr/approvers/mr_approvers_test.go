@@ -7,8 +7,6 @@ import (
 	"github.com/google/shlex"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
@@ -19,7 +17,7 @@ import (
 )
 
 func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := &cmdtest.Factory{
 		IOStub: ios,

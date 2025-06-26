@@ -8,12 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
 func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.InitFactory(ios, rt)
 
 	_, _ = factory.HttpClient()

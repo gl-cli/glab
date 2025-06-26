@@ -62,7 +62,7 @@ func Test_sendTelemetryData(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tc := gitlab_testing.NewTestClient(t)
-			ios, _, _, _ := cmdtest.InitIOStreams(true, "")
+			ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 			f := &cmdtest.Factory{
 				IOStub: ios,

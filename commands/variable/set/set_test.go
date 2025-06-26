@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
@@ -150,7 +149,7 @@ func Test_NewCmdSet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, _, _, _ := iostreams.Test()
+			io, _, _, _ := cmdtest.TestIOStreams()
 			f := &cmdtest.Factory{
 				IOStub: io,
 			}
@@ -208,7 +207,7 @@ func Test_setRun_project(t *testing.T) {
 		`),
 	)
 
-	io, _, stdout, _ := iostreams.Test()
+	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	opts := &options{
 		httpClient: func() (*gitlab.Client, error) {
@@ -248,7 +247,7 @@ func Test_setRun_group(t *testing.T) {
 		`),
 	)
 
-	io, _, stdout, _ := iostreams.Test()
+	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	opts := &options{
 		httpClient: func() (*gitlab.Client, error) {

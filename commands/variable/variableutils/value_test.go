@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 )
 
 func Test_getValue(t *testing.T) {
@@ -27,7 +27,7 @@ func Test_getValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, stdin, _, _ := iostreams.Test()
+			io, stdin, _, _ := cmdtest.TestIOStreams()
 
 			_, err := stdin.WriteString(tt.stdin)
 			assert.NoError(t, err)

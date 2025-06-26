@@ -1,8 +1,6 @@
 package iostreams
 
 import (
-	"bytes"
-	"io"
 	"os"
 	"testing"
 
@@ -28,7 +26,12 @@ func Test_HelperFunctions(t *testing.T) {
 		t.Run("PAGER=", func(t *testing.T) {
 			t.Setenv("PAGER", "")
 
-			got := Init()
+			got := New(
+				WithStdin(os.Stdin, IsTerminal(os.Stdin)),
+				WithStdout(NewColorable(os.Stdout), IsTerminal(os.Stdout)),
+				WithStderr(NewColorable(os.Stderr), IsTerminal(os.Stderr)),
+				WithPagerCommand(PagerCommandFromEnv()),
+			)
 
 			assert.Equal(t, ios.In, got.In)
 			assert.Equal(t, ios.IsaTTY, got.IsaTTY)
@@ -40,7 +43,12 @@ func Test_HelperFunctions(t *testing.T) {
 		t.Run("GLAB_PAGER=", func(t *testing.T) {
 			t.Setenv("GLAB_PAGER", "more")
 
-			got := Init()
+			got := New(
+				WithStdin(os.Stdin, IsTerminal(os.Stdin)),
+				WithStdout(NewColorable(os.Stdout), IsTerminal(os.Stdout)),
+				WithStderr(NewColorable(os.Stderr), IsTerminal(os.Stderr)),
+				WithPagerCommand(PagerCommandFromEnv()),
+			)
 
 			assert.Equal(t, ios.In, got.In)
 			assert.Equal(t, ios.IsaTTY, got.IsaTTY)
@@ -159,18 +167,6 @@ func Test_HelperFunctions(t *testing.T) {
 				assert.False(t, ios.promptDisabled)
 			})
 		})
-	})
-
-	t.Run("IOTest()", func(t *testing.T) {
-		ios, in, out, err := Test()
-
-		assert.Equal(t, ios.In, io.NopCloser(in))
-		assert.Equal(t, ios.StdOut, out)
-		assert.Equal(t, ios.StdErr, err)
-
-		assert.Equal(t, in, &bytes.Buffer{})
-		assert.Equal(t, out, &bytes.Buffer{})
-		assert.Equal(t, err, &bytes.Buffer{})
 	})
 }
 

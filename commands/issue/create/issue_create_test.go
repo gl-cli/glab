@@ -35,8 +35,8 @@ func TestGenerateIssueWebURL(t *testing.T) {
 	assert.Equal(t, expectedUrl, u)
 }
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -71,7 +71,7 @@ func TestIssueCreateWhenIssuesDisabled(t *testing.T) {
 
 	cli := `--title "test title" --description "test description"`
 
-	output, err := runCommand(fakeHTTP, false, cli)
+	output, err := runCommand(fakeHTTP, cli)
 	assert.NotNil(t, err)
 	assert.Empty(t, output.String())
 	assert.Equal(t, "Issues are disabled for project \"OWNER/REPO\" or require project membership. "+

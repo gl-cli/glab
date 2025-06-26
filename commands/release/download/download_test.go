@@ -11,7 +11,6 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 func doesFileExist(fileName string) bool {
@@ -55,7 +54,7 @@ func Test_downloadAssets(t *testing.T) {
 			fullUrl := assetUrl + tt.filename
 			fakeHTTP.RegisterResponder(http.MethodGet, fullUrl, httpmock.NewStringResponse(http.StatusOK, `test_data`))
 
-			io, _, _, _ := iostreams.Test()
+			io, _, _, _ := cmdtest.TestIOStreams()
 
 			release := &upload.ReleaseAsset{
 				Name: &tt.filename,

@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/stretchr/testify/assert"
@@ -12,7 +11,7 @@ import (
 )
 
 func runCommand(cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.InitFactory(ios, nil)
 
 	_, _ = factory.HttpClient()

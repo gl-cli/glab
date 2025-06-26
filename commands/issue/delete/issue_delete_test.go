@@ -5,8 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
@@ -70,7 +68,7 @@ func TestNewCmdDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+			io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 			f := cmdtest.StubFactory("", io)
 
 			cmd := NewCmdDelete(f)

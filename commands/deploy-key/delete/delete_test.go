@@ -62,7 +62,7 @@ func Test_DeployKeyRemove(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			out, err := runCommand(fakeHTTP, false, tc.cli)
+			out, err := runCommand(fakeHTTP, tc.cli)
 			if tc.wantErr {
 				if assert.Error(t, err) {
 					require.Equal(t, tc.wantStderr, err.Error())
@@ -78,8 +78,8 @@ func Test_DeployKeyRemove(t *testing.T) {
 	}
 }
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.InitFactory(ios, rt)
 	_, _ = factory.HttpClient()
 	cmd := NewCmdDelete(factory)

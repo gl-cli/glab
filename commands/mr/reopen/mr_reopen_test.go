@@ -12,8 +12,8 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -127,7 +127,7 @@ func TestMrReopen(t *testing.T) {
 				},
 			)
 
-			output, err := runCommand(fakeHTTP, false, tc.cli)
+			output, err := runCommand(fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `mr reopen %s`: %v", tc.cli, err) {
 				out := output.String()

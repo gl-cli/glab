@@ -17,8 +17,8 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, branch string, cli string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 
 	factory := cmdtest.InitFactory(ios, rt)
@@ -248,7 +248,7 @@ func TestMrCheckout(t *testing.T) {
 				cs.Stub(stub)
 			}
 
-			output, err := runCommand(fakeHTTP, tc.branch, false, tc.commandArgs)
+			output, err := runCommand(fakeHTTP, tc.branch, tc.commandArgs)
 
 			if assert.NoErrorf(t, err, "error running command `mr checkout %s`: %v", tc.commandArgs, err) {
 				assert.Empty(t, output.String())

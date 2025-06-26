@@ -15,11 +15,20 @@ func TestMain(m *testing.M) {
 	cmdtest.InitTest(m, "")
 }
 
+func setupIOStreams() *iostreams.IOStreams {
+	return iostreams.New(
+		iostreams.WithStdin(os.Stdin, iostreams.IsTerminal(os.Stdin)),
+		iostreams.WithStdout(iostreams.NewColorable(os.Stdout), iostreams.IsTerminal(os.Stdout)),
+		iostreams.WithStderr(iostreams.NewColorable(os.Stderr), iostreams.IsTerminal(os.Stderr)),
+		iostreams.WithPagerCommand(iostreams.PagerCommandFromEnv()),
+	)
+}
+
 func TestRootVersion(t *testing.T) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	rootCmd := NewCmdRoot(cmdutils.NewFactory(iostreams.Init(), false), "v1.0.0", "abcdefgh")
+	rootCmd := NewCmdRoot(cmdutils.NewFactory(setupIOStreams(), false), "v1.0.0", "abcdefgh")
 	assert.Nil(t, rootCmd.Flag("version").Value.Set("true"))
 	assert.Nil(t, rootCmd.Execute())
 
@@ -32,7 +41,7 @@ func TestRootNoArg(t *testing.T) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	rootCmd := NewCmdRoot(cmdutils.NewFactory(iostreams.Init(), false), "v1.0.0", "abcdefgh")
+	rootCmd := NewCmdRoot(cmdutils.NewFactory(setupIOStreams(), false), "v1.0.0", "abcdefgh")
 	assert.Nil(t, rootCmd.Execute())
 
 	out := test.ReturnBuffer(old, r, w)

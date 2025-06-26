@@ -10,8 +10,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
@@ -21,7 +19,7 @@ import (
 )
 
 func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := iostreams.Test()
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.InitFactory(ios, rt)
 
 	_, _ = factory.HttpClient()

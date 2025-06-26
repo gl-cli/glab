@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/google/shlex"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -32,7 +30,7 @@ hosts:
     username: monalisa
     token: OTOKEN
 `, "")()
-	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
 	oldUpdateMr := api.UpdateMR
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")

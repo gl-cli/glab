@@ -7,13 +7,12 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewCmdCI(t *testing.T) {
-	ioStrm, stdin, stdout, stderr := iostreams.Test()
+	ioStrm, stdin, stdout, stderr := cmdtest.TestIOStreams()
 
 	cmd := NewCmdCI(&cmdtest.Factory{
 		IOStub: ioStrm,

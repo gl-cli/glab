@@ -6,11 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-
 	"github.com/google/shlex"
 
 	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	cmdTestUtils "gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
@@ -114,7 +113,7 @@ func TestNewCmdReleaseList(t *testing.T) {
 		},
 	}
 
-	io, _, stdout, stderr := iostreams.Test(iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdTestUtils.WithTestIOStreamsAsTTY(true))
 	f := cmdTestUtils.StubFactory("https://gitlab.com/cli-automated-testing/test", io)
 
 	for _, tt := range tests {

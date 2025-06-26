@@ -13,8 +13,8 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, args string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, args string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -91,7 +91,7 @@ The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing
 				cs.Stub(cmdShowResult)
 			}
 
-			output, err := runCommand(fakeHTTP, false, "git list 10 commits")
+			output, err := runCommand(fakeHTTP, "git list 10 commits")
 			require.Nil(t, err)
 
 			require.Equal(t, output.String(), tc.expectedResult)
@@ -137,7 +137,7 @@ func TestFailedHttpResponse(t *testing.T) {
 			response := httpmock.NewStringResponse(tc.code, tc.response)
 			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/ai/llm/git_command", response)
 
-			_, err := runCommand(fakeHTTP, false, "git list 10 commits")
+			_, err := runCommand(fakeHTTP, "git list 10 commits")
 			require.NotNil(t, err)
 			require.Contains(t, err.Error(), tc.expectedMsg)
 		})

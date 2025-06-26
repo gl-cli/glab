@@ -12,8 +12,8 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -84,7 +84,7 @@ func TestProjectDelete(t *testing.T) {
 			fakeHTTP.RegisterResponder(tc.httpMock.method, tc.httpMock.path,
 				httpmock.NewStringResponse(tc.httpMock.status, tc.httpMock.body))
 
-			output, err := runCommand(fakeHTTP, true, tc.cli)
+			output, err := runCommand(fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `project delete %s`: %v", tc.cli, err) {
 				assert.Equal(t, tc.expectedOutput, output.Stderr())

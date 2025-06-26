@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -135,7 +135,7 @@ func TestProjectFork(t *testing.T) {
 				cs.Stub(stub)
 			}
 
-			output, err := runCommand(fakeHTTP, false, tc.commandArgs)
+			output, err := runCommand(fakeHTTP, tc.commandArgs)
 
 			if assert.NoErrorf(t, err, "error running command `project fork %s`: %v", tc.commandArgs, err) {
 				assert.Empty(t, output.String())

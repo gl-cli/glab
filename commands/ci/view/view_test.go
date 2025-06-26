@@ -1151,7 +1151,7 @@ func Test_handleNavigation(t *testing.T) {
 }
 
 func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error, func()) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(true, "")
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 	factory := cmdtest.InitFactory(ios, rt)
 

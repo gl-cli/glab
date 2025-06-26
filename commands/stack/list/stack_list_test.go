@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 func TestStackList(t *testing.T) {
 	// GIVEN
-	io, _, out, _ := iostreams.Test()
+	io, _, out, _ := cmdtest.TestIOStreams()
 	stack := git.Stack{
 		Refs: map[string]git.StackRef{
 			"abc": {SHA: "abc", Prev: "", Next: "123", Branch: "abc", Description: "entry 1"},

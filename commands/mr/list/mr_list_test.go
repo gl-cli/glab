@@ -22,7 +22,7 @@ import (
 )
 
 func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *options) error, doHyperlinks string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, doHyperlinks)
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY), iostreams.WithDisplayHyperLinks(doHyperlinks))
 	factory := cmdtest.InitFactory(ios, rt)
 
 	// TODO: shouldn't be there but the stub doesn't work without it
@@ -34,7 +34,7 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *op
 }
 
 func TestNewCmdList(t *testing.T) {
-	ios, _, _, _ := iostreams.Test(iostreams.WithStdinIsTTY(true), iostreams.WithStdoutIsTTY(true), iostreams.WithStderrIsTTY(true))
+	ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)

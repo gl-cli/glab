@@ -15,6 +15,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands"
+	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -42,7 +43,7 @@ func main() {
 		fatal(err)
 	}
 
-	ioStream, _, _, _ := iostreams.Test()
+	ioStream, _, _, _ := cmdtest.TestIOStreams()
 	glabCli := commands.NewCmdRoot(&factory{io: ioStream}, "", "")
 	glabCli.DisableAutoGenTag = true
 	if *manpage {

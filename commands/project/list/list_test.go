@@ -11,8 +11,8 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, args string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.InitIOStreams(isTTY, "")
+func runCommand(rt http.RoundTripper, args string) (*test.CmdOut, error) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.InitFactory(ios, rt)
 
@@ -304,7 +304,7 @@ func TestProjectList(t *testing.T) {
 					httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err := runCommand(fakeHTTP, false, tc.args)
+			output, err := runCommand(fakeHTTP, tc.args)
 
 			if assert.NoErrorf(t, err, "error running command `project list %s`: %v", tc.args, err) {
 				out := output.String()

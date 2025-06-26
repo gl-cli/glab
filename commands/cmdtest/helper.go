@@ -132,14 +132,33 @@ func RunCommand(cmd *cobra.Command, cli string, stds ...*bytes.Buffer) (*test.Cm
 	}, err
 }
 
-func InitIOStreams(isTTY bool, doHyperlinks string) (*iostreams.IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
-	ios, stdin, stdout, stderr := iostreams.Test(iostreams.WithStdinIsTTY(isTTY), iostreams.WithStdoutIsTTY(isTTY), iostreams.WithStderrIsTTY(isTTY))
-
-	if doHyperlinks != "" {
-		ios.SetDisplayHyperlinks(doHyperlinks)
+// WithTestIOStreamsAsTTY sets stdin, stdout and stderr as TTY
+// By default they are not treated as TTYs. This will overwrite the behavior
+// for the three of them. If you only want to set a specific one,
+// use iostreams.WithStdin, iostreams.WithStdout or iostreams.WithStderr.
+func WithTestIOStreamsAsTTY(asTTY bool) iostreams.IOStreamsOption {
+	return func(i *iostreams.IOStreams) {
+		i.IsInTTY = asTTY
+		i.IsaTTY = asTTY
+		i.IsErrTTY = asTTY
 	}
+}
 
-	return ios, stdin, stdout, stderr
+func TestIOStreams(options ...iostreams.IOStreamsOption) (*iostreams.IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
+	in := &bytes.Buffer{}
+	out := &bytes.Buffer{}
+	errOut := &bytes.Buffer{}
+
+	opts := []iostreams.IOStreamsOption{
+		iostreams.WithStdin(io.NopCloser(in), false),
+		iostreams.WithStdout(out, false),
+		iostreams.WithStderr(errOut, false),
+	}
+	opts = append(opts, options...)
+
+	ios := iostreams.New(opts...)
+
+	return ios, in, out, errOut
 }
 
 type Factory struct {
@@ -329,7 +348,7 @@ func NewTestFactory(t *testing.T, ios *iostreams.IOStreams, opts ...FactoryOptio
 func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdExecFunc {
 	t.Helper()
 
-	ios, _, stdout, stderr := InitIOStreams(true, "")
+	ios, _, stdout, stderr := TestIOStreams(WithTestIOStreamsAsTTY(true))
 
 	// Create a default factory
 	f := &Factory{
