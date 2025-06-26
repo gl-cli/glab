@@ -37,18 +37,14 @@ func NewCheckUpdateCmd(f cmdutils.Factory) *cobra.Command {
 		`),
 		Aliases: commandAliases,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return CheckUpdate(f, false, "")
+			return CheckUpdate(f, false)
 		},
 	}
 
 	return cmd
 }
 
-func CheckUpdate(f cmdutils.Factory, silentSuccess bool, previousCommand string) error {
-	if shouldSkipUpdate(previousCommand) {
-		return nil
-	}
-
+func CheckUpdate(f cmdutils.Factory, silentSuccess bool) error {
 	moreThan24hAgo, err := checkLastUpdate(f)
 	if err != nil {
 		return err
@@ -106,7 +102,7 @@ func CheckUpdate(f cmdutils.Factory, silentSuccess bool, previousCommand string)
 // or it’s Completion, so it doesn’t take a noticably long time
 // to start new shells and we don’t encourage users setting
 // `check_update` to false in the config.
-func shouldSkipUpdate(previousCommand string) bool {
+func ShouldSkipUpdate(previousCommand string) bool {
 	isCheckUpdate := previousCommand == commandUse || utils.PresentInStringSlice(commandAliases, previousCommand)
 	isCompletion := previousCommand == "completion"
 
