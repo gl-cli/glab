@@ -14,7 +14,6 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/mr/mrutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/auth"
 	"gitlab.com/gitlab-org/cli/pkg/git"
@@ -27,14 +26,12 @@ type options struct {
 	labClient *gitlab.Client
 	baseRepo  func() (glrepo.Interface, error)
 	remotes   func() (glrepo.Remotes, error)
-	config    func() (config.Config, error)
 }
 
 func NewCmdReorderStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
 	opts := &options{
 		io:       f.IO(),
 		remotes:  f.Remotes,
-		config:   f.Config,
 		baseRepo: f.BaseRepo,
 	}
 

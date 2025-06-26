@@ -51,21 +51,46 @@ var debug bool
 func main() {
 	debug = debugMode == "true" || debugMode == "1"
 
+	// Initialize configuration
+	cfg, err := config.Init()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to read configuration:  %s\n", err)
+		os.Exit(2)
+	}
+
 	cmdFactory := cmdutils.NewFactory(
 		iostreams.New(
 			iostreams.WithStdin(os.Stdin, iostreams.IsTerminal(os.Stdin)),
 			iostreams.WithStdout(iostreams.NewColorable(os.Stdout), iostreams.IsTerminal(os.Stdout)),
 			iostreams.WithStderr(iostreams.NewColorable(os.Stderr), iostreams.IsTerminal(os.Stderr)),
 			iostreams.WithPagerCommand(iostreams.PagerCommandFromEnv()),
+
+			// overwrite pager from env if set via config
+			func(i *iostreams.IOStreams) {
+				if pager, _ := cfg.Get("", "glab_pager"); pager != "" {
+					i.SetPager(pager)
+				}
+			},
+
+			// configure hyperlink display
+			func(i *iostreams.IOStreams) {
+				if forceHyperlinks := os.Getenv("FORCE_HYPERLINKS"); forceHyperlinks != "" && forceHyperlinks != "0" {
+					i.SetDisplayHyperlinks("always")
+				} else if displayHyperlinks, _ := cfg.Get("", "display_hyperlinks"); displayHyperlinks == "true" {
+					i.SetDisplayHyperlinks("auto")
+				}
+			},
+
+			// configure prompt
+			func(i *iostreams.IOStreams) {
+				if promptDisabled, _ := cfg.Get("", "no_prompt"); promptDisabled != "" {
+					i.SetPrompt(promptDisabled)
+				}
+			},
 		),
 		true,
+		cfg,
 	)
-
-	cfg, err := cmdFactory.Config()
-	if err != nil {
-		cmdFactory.IO().Logf("failed to read configuration:  %s\n", err)
-		os.Exit(2)
-	}
 
 	api.SetUserAgent(version, platform, runtime.GOARCH)
 	maybeOverrideDefaultHost(cmdFactory, cfg)
@@ -96,20 +121,6 @@ func main() {
 	if !debug {
 		debugModeCfg, _ := cfg.Get("", "debug")
 		debug = debugModeCfg == "true" || debugModeCfg == "1"
-	}
-
-	if pager, _ := cfg.Get("", "glab_pager"); pager != "" {
-		cmdFactory.IO().SetPager(pager)
-	}
-
-	if promptDisabled, _ := cfg.Get("", "no_prompt"); promptDisabled != "" {
-		cmdFactory.IO().SetPrompt(promptDisabled)
-	}
-
-	if forceHyperlinks := os.Getenv("FORCE_HYPERLINKS"); forceHyperlinks != "" && forceHyperlinks != "0" {
-		cmdFactory.IO().SetDisplayHyperlinks("always")
-	} else if displayHyperlinks, _ := cfg.Get("", "display_hyperlinks"); displayHyperlinks == "true" {
-		cmdFactory.IO().SetDisplayHyperlinks("auto")
 	}
 
 	var expandedArgs []string

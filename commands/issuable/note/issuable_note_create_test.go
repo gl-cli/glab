@@ -21,8 +21,8 @@ func runCommand(rt http.RoundTripper, cli string, issueType issuable.IssueType) 
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	factory := cmdtest.InitFactory(ios, rt)
 	factory.BranchStub = git.CurrentBranch
-	factory.ConfigStub = func() (config.Config, error) {
-		return config.NewFromString("editor: vi"), nil
+	factory.ConfigStub = func() config.Config {
+		return config.NewFromString("editor: vi")
 	}
 
 	// TODO: shouldn't be there but the stub doesn't work without it

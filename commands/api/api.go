@@ -168,7 +168,7 @@ func NewCmdApi(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 		},
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.config, _ = f.Config()
+			opts.config = f.Config()
 
 			opts.complete(cmd, args)
 

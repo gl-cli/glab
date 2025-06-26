@@ -13,7 +13,6 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils"
 	"gitlab.com/gitlab-org/cli/commands/release/releaseutils/upload"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
@@ -28,7 +27,6 @@ type options struct {
 	io         *iostreams.IOStreams
 	httpClient func() (*gitlab.Client, error)
 	baseRepo   func() (glrepo.Interface, error)
-	config     func() (config.Config, error)
 }
 
 func NewCmdUpload(f cmdutils.Factory) *cobra.Command {
@@ -36,7 +34,6 @@ func NewCmdUpload(f cmdutils.Factory) *cobra.Command {
 		io:         f.IO(),
 		httpClient: f.HttpClient,
 		baseRepo:   f.BaseRepo,
-		config:     f.Config,
 	}
 
 	cmd := &cobra.Command{

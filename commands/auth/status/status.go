@@ -21,7 +21,7 @@ type options struct {
 	httpClientOverride func(token, hostname string) (*api.Client, error) // used in tests to mock http client
 	io                 *iostreams.IOStreams
 	apiClient          func(repoHost string, cfg config.Config) (*api.Client, error)
-	config             func() (config.Config, error)
+	config             func() config.Config
 }
 
 func NewCmdStatus(f cmdutils.Factory, runE func(*options) error) *cobra.Command {
@@ -56,10 +56,7 @@ func NewCmdStatus(f cmdutils.Factory, runE func(*options) error) *cobra.Command 
 
 func (o *options) run() error {
 	c := o.io.Color()
-	cfg, err := o.config()
-	if err != nil {
-		return err
-	}
+	cfg := o.config()
 
 	stderr := o.io.StdErr
 

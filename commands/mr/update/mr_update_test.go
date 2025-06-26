@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -24,14 +25,13 @@ func TestMain(m *testing.M) {
 }
 
 func TestUpdateMergeRequest(t *testing.T) {
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-`, "")()
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
+	f := cmdtest.NewTestFactory(io, cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
+		hosts:
+		  gitlab.com:
+		    username: monalisa
+		    token: OTOKEN
+	`))))
 	oldUpdateMr := api.UpdateMR
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
 	toggle := false
@@ -40,7 +40,7 @@ hosts:
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" || mrID == 0 {
 			return nil, fmt.Errorf("error expected")
 		}
-		repo, err := stubFactory.BaseRepo()
+		repo, err := f.BaseRepo()
 		if err != nil {
 			return nil, err
 		}
@@ -75,7 +75,7 @@ hosts:
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
-		repo, err := stubFactory.BaseRepo()
+		repo, err := f.BaseRepo()
 		if err != nil {
 			return nil, err
 		}
@@ -164,8 +164,8 @@ hosts:
 
 	cumulativePreviousOutputLen := 0
 	for _, tc := range testCases {
-		cmd := NewCmdUpdate(stubFactory)
-		cmdutils.EnableRepoOverride(cmd, stubFactory)
+		cmd := NewCmdUpdate(f)
+		cmdutils.EnableRepoOverride(cmd, f)
 		t.Run(tc.Name, func(t *testing.T) {
 			argv, err := shlex.Split(tc.Args)
 			if err != nil {

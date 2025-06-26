@@ -56,8 +56,8 @@ func (o *options) complete(cmd *cobra.Command) error {
 
 func runCommand(cli string, runE func(opts *options) error, doHyperlinks string) error {
 	factory := &cmdtest.Factory{
-		ConfigStub: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
+		ConfigStub: func() config.Config {
+			return config.NewBlankConfig()
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil

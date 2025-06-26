@@ -43,7 +43,7 @@ type options struct {
 
 	io        *iostreams.IOStreams
 	apiClient *api.Client
-	config    func() (config.Config, error)
+	config    func() config.Config
 
 	currentUser *gitlab.User
 }
@@ -124,14 +124,12 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 			opts.host = glinstance.OverridableDefault()
 			opts.archivedSet = cmd.Flags().Changed("archived")
 
-			cfg, err := opts.config()
+			cfg := opts.config()
+			apiClient, err := f.ApiClient(opts.host, cfg)
 			if err != nil {
 				return err
 			}
-			opts.apiClient, err = f.ApiClient(opts.host, cfg)
-			if err != nil {
-				return err
-			}
+			opts.apiClient = apiClient
 
 			opts.currentUser, err = api.CurrentUser(opts.apiClient.Lab())
 			if err != nil {

@@ -31,7 +31,7 @@ type options struct {
 	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
 	httpClient func() (*gitlab.Client, error)
 	baseRepo   func() (glrepo.Interface, error)
-	config     func() (config.Config, error)
+	config     func() config.Config
 }
 
 func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
@@ -87,10 +87,7 @@ func (o *options) run() error {
 	if err != nil {
 		return err
 	}
-	cfg, err := o.config()
-	if err != nil {
-		return err
-	}
+	cfg := o.config()
 	repo, err := o.baseRepo()
 	if err != nil {
 		return err

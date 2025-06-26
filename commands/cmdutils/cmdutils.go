@@ -94,11 +94,8 @@ func ListGitLabTemplates(tmplType string) ([]string, error) {
 	return files, nil
 }
 
-func GetEditor(cf func() (config.Config, error)) (string, error) {
-	cfg, err := cf()
-	if err != nil {
-		return "", fmt.Errorf("could not read config: %w", err)
-	}
+func GetEditor(cf func() config.Config) (string, error) {
+	cfg := cf()
 	// will search in the order glab_editor, visual, editor first from the env before the config file
 	editorCommand, _ := cfg.Get("", "editor")
 

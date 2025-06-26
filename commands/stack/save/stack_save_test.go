@@ -368,8 +368,8 @@ func createFactoryWithConfig(key string, value string) cmdutils.Factory {
 
 	return &cmdtest.Factory{
 		IOStub: ios,
-		ConfigStub: func() (config.Config, error) {
-			return cfg, nil
+		ConfigStub: func() config.Config {
+			return cfg
 		},
 	}
 }

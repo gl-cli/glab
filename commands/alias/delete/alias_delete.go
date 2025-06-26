@@ -12,7 +12,7 @@ import (
 )
 
 type options struct {
-	config func() (config.Config, error)
+	config func() config.Config
 	name   string
 	io     *iostreams.IOStreams
 }
@@ -43,10 +43,7 @@ func (o *options) complete(args []string) {
 
 func (o *options) run() error {
 	c := o.io.Color()
-	cfg, err := o.config()
-	if err != nil {
-		return err
-	}
+	cfg := o.config()
 
 	aliasCfg, err := cfg.Aliases()
 	if err != nil {

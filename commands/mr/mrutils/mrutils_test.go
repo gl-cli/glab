@@ -398,7 +398,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 	ios.SetPrompt("false")
 
 	// Create base factory for tests
-	baseFactory := cmdtest.NewTestFactory(t, ios,
+	baseFactory := cmdtest.NewTestFactory(ios,
 		cmdtest.WithBaseRepo("foo", "bar"),
 		cmdtest.WithBranch("main"),
 	)
@@ -466,7 +466,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 
 	t.Run("fail", func(t *testing.T) {
 		t.Run("HttpClient", func(t *testing.T) {
-			f := cmdtest.NewTestFactory(t, ios,
+			f := cmdtest.NewTestFactory(ios,
 				cmdtest.WithHttpClientError(errors.New("failed to create HttpClient")),
 				cmdtest.WithBaseRepo("foo", "bar"),
 				cmdtest.WithBranch("main"),
@@ -478,7 +478,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.EqualError(t, err, "failed to create HttpClient")
 		})
 		t.Run("BaseRepo", func(t *testing.T) {
-			f := cmdtest.NewTestFactory(t, ios,
+			f := cmdtest.NewTestFactory(ios,
 				cmdtest.WithBaseRepoError(errors.New("failed to create glrepo.Interface")),
 				cmdtest.WithBranch("main"),
 			)
@@ -489,7 +489,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.EqualError(t, err, "failed to create glrepo.Interface")
 		})
 		t.Run("Branch", func(t *testing.T) {
-			f := cmdtest.NewTestFactory(t, ios,
+			f := cmdtest.NewTestFactory(ios,
 				cmdtest.WithBaseRepo("foo", "bar"),
 				cmdtest.WithBranchError(errors.New("failed to get branch")),
 			)

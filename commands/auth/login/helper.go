@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/spf13/cobra"
@@ -14,23 +15,17 @@ import (
 
 const tokenUser = "oauth2"
 
-type configExt interface {
-	Get(string, string) (string, error)
-}
-
 type options struct {
 	io     *iostreams.IOStreams
-	config func() (configExt, error)
+	config func() config.Config
 
 	operation string
 }
 
 func NewCmdCredential(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io: f.IO(),
-		config: func() (configExt, error) {
-			return f.Config()
-		},
+		io:     f.IO(),
+		config: f.Config,
 	}
 
 	cmd := &cobra.Command{
@@ -105,10 +100,7 @@ func (o *options) run() error {
 		return cmdutils.SilentError
 	}
 
-	cfg, err := o.config()
-	if err != nil {
-		return err
-	}
+	cfg := o.config()
 
 	gotToken, _ := cfg.Get(expectedParams["host"], "token")
 

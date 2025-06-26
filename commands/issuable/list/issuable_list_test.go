@@ -59,8 +59,8 @@ func TestNewCmdList(t *testing.T) {
 			}
 			return a.Lab(), err
 		},
-		ConfigStub: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
+		ConfigStub: func() config.Config {
+			return config.NewBlankConfig()
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
 			return glrepo.New("OWNER", "REPO"), nil

@@ -30,7 +30,7 @@ type options struct {
 
 	io         *iostreams.IOStreams
 	httpClient func() (*gitlab.Client, error)
-	config     func() (config.Config, error)
+	config     func() config.Config
 }
 
 type MRWithNotes struct {
@@ -90,7 +90,7 @@ func (o *options) run(f cmdutils.Factory, args []string) error {
 	// and show approval state or it will fail silently
 	mrApprovals, _ := api.GetMRApprovalState(apiClient, baseRepo.FullName(), mr.IID)
 
-	cfg, _ := o.config()
+	cfg := o.config()
 
 	if o.openInBrowser { // open in browser if --web flag is specified
 		if o.io.IsOutputTTY() {

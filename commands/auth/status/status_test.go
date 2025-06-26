@@ -189,8 +189,8 @@ hosts:
 
 	for _, tt := range tests {
 		io, _, stdout, stderr := cmdtest.TestIOStreams()
-		tt.opts.config = func() (config.Config, error) {
-			return configs, nil
+		tt.opts.config = func() config.Config {
+			return configs
 		}
 		tt.opts.io = io
 		tt.opts.httpClientOverride = client
@@ -296,8 +296,8 @@ gl.io
 	_, _ = client("", "gitlab.com")
 
 	opts := &options{
-		config: func() (config.Config, error) {
-			return configs, nil
+		config: func() config.Config {
+			return configs
 		},
 		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
 			return client("", repoHost)
@@ -322,8 +322,8 @@ git_protocol: ssh
 	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	opts := &options{
-		config: func() (config.Config, error) {
-			return configs, nil
+		config: func() config.Config {
+			return configs
 		},
 		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
 			return nil, nil

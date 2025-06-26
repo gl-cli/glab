@@ -67,11 +67,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 			$ glab repo view https://gitlab.company.org/user/repo.git
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := f.Config()
-			if err != nil {
-				return err
-			}
-			opts.config = cfg
+			opts.config = f.Config()
 
 			if err := opts.complete(args); err != nil {
 				return nil

@@ -23,7 +23,7 @@ type options struct {
 	io         *iostreams.IOStreams
 	httpClient func() (*gitlab.Client, error)
 	baseRepo   func() (glrepo.Interface, error)
-	config     func() (config.Config, error)
+	config     func() config.Config
 }
 
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
@@ -78,7 +78,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	cfg, _ := o.config()
+	cfg := o.config()
 
 	var resp *gitlab.Response
 	var release *gitlab.Release

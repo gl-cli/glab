@@ -16,7 +16,7 @@ import (
 
 type options struct {
 	io     *iostreams.IOStreams
-	config func() (config.Config, error)
+	config func() config.Config
 
 	name      string
 	expansion string
@@ -89,10 +89,7 @@ func (o *options) complete(cmd *cobra.Command, args []string) {
 
 func (o *options) run() error {
 	c := o.io.Color()
-	cfg, err := o.config()
-	if err != nil {
-		return err
-	}
+	cfg := o.config()
 
 	aliasCfg, err := cfg.Aliases()
 	if err != nil {

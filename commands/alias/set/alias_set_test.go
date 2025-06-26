@@ -19,8 +19,8 @@ func runCommand(cfg config.Config, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 	factoryConf := &cmdtest.Factory{
-		ConfigStub: func() (config.Config, error) {
-			return cfg, nil
+		ConfigStub: func() config.Config {
+			return cfg
 		},
 		IOStub: ios,
 	}

@@ -67,7 +67,7 @@ type options struct {
 	branch     func() (string, error)           `json:"-"`
 	remotes    func() (glrepo.Remotes, error)   `json:"-"`
 	httpClient func() (*gitlab.Client, error)   `json:"-"`
-	config     func() (config.Config, error)    `json:"-"`
+	config     func() config.Config             `json:"-"`
 	baseRepo   func() (glrepo.Interface, error) `json:"-"`
 	headRepo   func() (glrepo.Interface, error) `json:"-"`
 	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
@@ -745,10 +745,7 @@ func previewMR(opts *options) error {
 		return err
 	}
 
-	cfg, err := opts.config()
-	if err != nil {
-		return err
-	}
+	cfg := opts.config()
 
 	openURL, err := generateMRCompareURL(opts)
 	if err != nil {
@@ -840,10 +837,7 @@ func repoRemote(opts *options, repo glrepo.Interface, project *gitlab.Project, r
 	}
 	repoRemote, _ := remotes.FindByRepo(repo.RepoOwner(), repo.RepoName())
 	if repoRemote == nil {
-		cfg, err := opts.config()
-		if err != nil {
-			return nil, err
-		}
+		cfg := opts.config()
 		gitProtocol, _ := cfg.Get(repo.RepoHost(), "git_protocol")
 		repoURL := glrepo.RemoteURL(project, gitProtocol)
 

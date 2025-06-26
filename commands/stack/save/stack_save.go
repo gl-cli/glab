@@ -212,10 +212,7 @@ func generateStackSha(message string, title string, author string, timestamp tim
 }
 
 func createShaBranch(f cmdutils.Factory, sha string, title string) (string, error) {
-	cfg, err := f.Config()
-	if err != nil {
-		return "", fmt.Errorf("could not retrieve config file: %v", err)
-	}
+	cfg := f.Config()
 
 	prefix, err := cfg.Get("", "branch_prefix")
 	if err != nil {

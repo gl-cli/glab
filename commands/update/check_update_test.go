@@ -326,11 +326,11 @@ func Test_checkLastUpdate(t *testing.T) {
 			defer config.StubWriteConfig(&mainBuf, io.Discard)()
 
 			f := &cmdtest.Factory{
-				ConfigStub: func() (config.Config, error) {
+				ConfigStub: func() config.Config {
 					if tt.lastUpdate != "" {
-						return config.NewFromString(fmt.Sprintf("last_update_check_timestamp: %s", tt.lastUpdate)), nil
+						return config.NewFromString(fmt.Sprintf("last_update_check_timestamp: %s", tt.lastUpdate))
 					}
-					return config.NewBlankConfig(), nil
+					return config.NewBlankConfig()
 				},
 			}
 

@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/acarl005/stripansi"
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
@@ -17,18 +18,16 @@ import (
 )
 
 func Test_ScheduleRun(t *testing.T) {
-	defer config.StubConfig(`---
-hosts:
-  gitlab.com:
-    username: monalisa
-    token: OTOKEN
-`, "")()
-
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	stubFactory, _ := cmdtest.StubFactoryWithConfig("", io)
+	f := cmdtest.NewTestFactory(io, cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
+		hosts:
+		  gitlab.com:
+		    username: monalisa
+		    token: OTOKEN
+	`))))
 
 	api.RunSchedule = func(client *gitlab.Client, repo string, schedule int, opts ...gitlab.RequestOptionFunc) error {
-		_, err := stubFactory.BaseRepo()
+		_, err := f.BaseRepo()
 		if err != nil {
 			return err
 		}
@@ -49,8 +48,8 @@ hosts:
 		},
 	}
 
-	cmd := NewCmdRun(stubFactory)
-	cmdutils.EnableRepoOverride(cmd, stubFactory)
+	cmd := NewCmdRun(f)
+	cmdutils.EnableRepoOverride(cmd, f)
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {

@@ -22,33 +22,25 @@ type Factory interface {
 	HttpClient() (*gitlab.Client, error)
 	BaseRepo() (glrepo.Interface, error)
 	Remotes() (glrepo.Remotes, error)
-	Config() (config.Config, error)
+	Config() config.Config
 	Branch() (string, error)
 	IO() *iostreams.IOStreams
 }
 
 type DefaultFactory struct {
 	io           *iostreams.IOStreams
+	config       config.Config
 	resolveRepos bool
 
 	mu           sync.Mutex // protects the fields below
 	repoOverride string
-	cachedConfig config.Config
-	configError  error
 }
 
-func NewFactory(io *iostreams.IOStreams, resolveRepos bool) *DefaultFactory {
+func NewFactory(io *iostreams.IOStreams, resolveRepos bool, cfg config.Config) *DefaultFactory {
 	return &DefaultFactory{
 		io:           io,
+		config:       cfg,
 		resolveRepos: resolveRepos,
-	}
-}
-
-func NewFactoryWithConfig(io *iostreams.IOStreams, resolveRepos bool, cfg config.Config) *DefaultFactory {
-	return &DefaultFactory{
-		io:           io,
-		resolveRepos: resolveRepos,
-		cachedConfig: cfg,
 	}
 }
 
@@ -67,16 +59,14 @@ func (f *DefaultFactory) ApiClient(repoHost string, cfg config.Config) (*api.Cli
 }
 
 func (f *DefaultFactory) HttpClient() (*gitlab.Client, error) {
-	cfg, err := f.Config()
-	if err != nil {
-		return nil, err
-	}
+	cfg := f.Config()
 
 	f.mu.Lock()
 	override := f.repoOverride
 	f.mu.Unlock()
 	var repo glrepo.Interface
 	if override != "" {
+		var err error
 		repo, err = glrepo.FromFullName(override)
 		if err != nil {
 			return nil, err // return the error if repo was overridden.
@@ -113,10 +103,7 @@ func (f *DefaultFactory) BaseRepo() (glrepo.Interface, error) {
 	if !f.resolveRepos {
 		return remotes[0], nil
 	}
-	cfg, err := f.Config()
-	if err != nil {
-		return nil, err
-	}
+	cfg := f.Config()
 	ac, err := api.NewClientWithCfg(remotes[0].RepoHost(), cfg, false)
 	if err != nil {
 		return nil, err
@@ -146,14 +133,8 @@ func (f *DefaultFactory) Remotes() (glrepo.Remotes, error) {
 	return fn()
 }
 
-func (f *DefaultFactory) Config() (config.Config, error) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	if f.cachedConfig != nil || f.configError != nil {
-		return f.cachedConfig, f.configError
-	}
-	f.cachedConfig, f.configError = config.Init()
-	return f.cachedConfig, f.configError
+func (f *DefaultFactory) Config() config.Config {
+	return f.config
 }
 
 func (f *DefaultFactory) Branch() (string, error) {

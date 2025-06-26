@@ -8,10 +8,7 @@ import (
 )
 
 func GetAuthenticatedClient(f cmdutils.Factory) (*gitlab.Client, error) {
-	glConfig, err := f.Config()
-	if err != nil {
-		return nil, fmt.Errorf("error getting glab configuration: %v", err)
-	}
+	glConfig := f.Config()
 
 	instances, err := glConfig.Hosts()
 	if err != nil || len(instances) == 0 {

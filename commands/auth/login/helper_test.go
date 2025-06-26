@@ -5,17 +5,18 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/config"
 
 	"github.com/MakeNowJust/heredoc/v2"
 )
 
-type tinyConfig map[string]string
-
-func (c tinyConfig) Get(host, key string) (string, error) {
-	return c[fmt.Sprintf("%s:%s", host, key)], nil
-}
-
 func Test_helperRun(t *testing.T) {
+	// NOTE: we have to remove the values for the possible token env variables, because it'll take precedence over the config.
+	// See config.EnvKeyEquivalence function.
+	t.Setenv("GITLAB_TOKEN", "")
+	t.Setenv("GITLAB_ACCESS_TOKEN", "")
+	t.Setenv("OAUTH_TOKEN", "")
+
 	tests := []struct {
 		name       string
 		opts       options
@@ -28,12 +29,14 @@ func Test_helperRun(t *testing.T) {
 			name: "host only, credentials found",
 			opts: options{
 				operation: "get",
-				config: func() (configExt, error) {
-					return tinyConfig{
-						"_source":           "/Users/monalisa/.config/glab/config.yml",
-						"example.com:user":  "monalisa",
-						"example.com:token": "OTOKEN",
-					}, nil
+				config: func() config.Config {
+					return config.NewFromString(heredoc.Doc(`
+						_source: "/Users/monalisa/.config/glab/config.yml"
+						hosts:
+						  example.com:
+						    user: "monalisa"
+						    token: "OTOKEN"
+					`))
 				},
 			},
 			input: heredoc.Doc(`
@@ -53,12 +56,14 @@ func Test_helperRun(t *testing.T) {
 			name: "host plus user",
 			opts: options{
 				operation: "get",
-				config: func() (configExt, error) {
-					return tinyConfig{
-						"_source":           "/Users/monalisa/.config/glab/config.yml",
-						"example.com:user":  "monalisa",
-						"example.com:token": "OTOKEN",
-					}, nil
+				config: func() config.Config {
+					return config.NewFromString(heredoc.Doc(`
+						_source: "/Users/monalisa/.config/glab/config.yml"
+						hosts:
+						  example.com:
+						    user: "monalisa"
+						    token: "OTOKEN"
+					`))
 				},
 			},
 			input: heredoc.Doc(`
@@ -79,12 +84,14 @@ func Test_helperRun(t *testing.T) {
 			name: "url input",
 			opts: options{
 				operation: "get",
-				config: func() (configExt, error) {
-					return tinyConfig{
-						"_source":           "/Users/monalisa/.config/glab/config.yml",
-						"example.com:user":  "monalisa",
-						"example.com:token": "OTOKEN",
-					}, nil
+				config: func() config.Config {
+					return config.NewFromString(heredoc.Doc(`
+						_source: "/Users/monalisa/.config/glab/config.yml"
+						hosts:
+						  example.com:
+						    user: "monalisa"
+						    token: "OTOKEN"
+					`))
 				},
 			},
 			input: heredoc.Doc(`
@@ -103,11 +110,13 @@ func Test_helperRun(t *testing.T) {
 			name: "host only, no credentials found",
 			opts: options{
 				operation: "get",
-				config: func() (configExt, error) {
-					return tinyConfig{
-						"_source":          "/Users/monalisa/.config/glab/config.yml",
-						"example.com:user": "monalisa",
-					}, nil
+				config: func() config.Config {
+					return config.NewFromString(heredoc.Doc(`
+						_source: "/Users/monalisa/.config/glab/config.yml"
+						hosts:
+						  example.com:
+						    user: "monalisa"
+					`))
 				},
 			},
 			input: heredoc.Doc(`
@@ -122,11 +131,13 @@ func Test_helperRun(t *testing.T) {
 			name: "token from env",
 			opts: options{
 				operation: "get",
-				config: func() (configExt, error) {
-					return tinyConfig{
-						"_source":           "GITLAB_TOKEN",
-						"example.com:token": "OTOKEN",
-					}, nil
+				config: func() config.Config {
+					return config.NewFromString(heredoc.Doc(`
+						_source: "GITLAB_TOKEN"
+						hosts:
+						  example.com:
+						    token: "OTOKEN"
+					`))
 				},
 			},
 			input: heredoc.Doc(`

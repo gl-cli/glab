@@ -60,8 +60,8 @@ func TestAliasDelete(t *testing.T) {
 
 			factoryConf := &cmdtest.Factory{
 				IOStub: ios,
-				ConfigStub: func() (config.Config, error) {
-					return cfg, nil
+				ConfigStub: func() config.Config {
+					return cfg
 				},
 			}
 

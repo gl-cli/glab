@@ -78,8 +78,8 @@ func makeTestFactory() (factory cmdutils.Factory, fakeHTTP *httpmock.Mocker) {
 
 	factory = &cmdtest.Factory{
 		IOStub: io,
-		ConfigStub: func() (config.Config, error) {
-			return config.NewBlankConfig(), nil
+		ConfigStub: func() config.Config {
+			return config.NewBlankConfig()
 		},
 		HttpClientStub: func() (*gitlab.Client, error) {
 			a, err := client("xxxx", "gitlab.com")

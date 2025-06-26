@@ -59,10 +59,7 @@ func NewCmdConfigGet(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := f.Config()
-			if err != nil {
-				return err
-			}
+			cfg := f.Config()
 
 			val, err := cfg.Get(hostname, args[0])
 			if err != nil {
@@ -99,14 +96,12 @@ Specifying the '--hostname' flag also saves in the global configuration file.
 - glab config set check_update false --global`),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := f.Config()
-			if err != nil {
-				return err
-			}
+			cfg := f.Config()
 
 			localCfg, _ := cfg.Local()
 
 			key, value := args[0], args[1]
+			var err error
 			if isGlobal || hostname != "" {
 				err = cfg.Set(hostname, key, value)
 			} else {

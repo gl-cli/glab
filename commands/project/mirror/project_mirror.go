@@ -27,7 +27,7 @@ type options struct {
 	apiClient        func(repoHost string, cfg config.Config) (*api.Client, error)
 	gitlabClientFunc func() (*gitlab.Client, error)
 	httpClient       *gitlab.Client
-	config           func() (config.Config, error)
+	config           func() config.Config
 	baseRepoFactory  func() (glrepo.Interface, error)
 }
 
@@ -79,10 +79,7 @@ func (o *options) complete(args []string) error {
 			if o.httpClient != nil {
 				return o.httpClient, nil
 			}
-			cfg, err := o.config()
-			if err != nil {
-				return nil, err
-			}
+			cfg := o.config()
 			c, err := o.apiClient(o.baseRepo.RepoHost(), cfg)
 			if err != nil {
 				return nil, err
