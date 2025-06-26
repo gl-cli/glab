@@ -33,11 +33,9 @@ const (
 	PrivateToken
 )
 
-type glabInstall struct {
-	version, platform, architecture string
+type BuildInfo struct {
+	Version, Platform, Architecture string
 }
-
-var currentGlabInstall glabInstall
 
 // Client represents an argument to NewClient
 type Client struct {
@@ -62,18 +60,12 @@ type Client struct {
 	isOauth2      bool
 	isJobToken    bool
 	allowInsecure bool
+
+	userAgent string
 }
 
-func (i glabInstall) UserAgent() string {
-	return fmt.Sprintf("glab/%s (%s, %s)", i.version, i.platform, i.architecture)
-}
-
-func SetUserAgent(version string, platform string, architecture string) {
-	currentGlabInstall = glabInstall{
-		version:      version,
-		platform:     platform,
-		architecture: architecture,
-	}
+func (i BuildInfo) UserAgent() string {
+	return fmt.Sprintf("glab/%s (%s, %s)", i.Version, i.Platform, i.Architecture)
 }
 
 func (c *Client) HTTPClient() *http.Client {
@@ -112,7 +104,7 @@ func tlsConfig(host string, allowInsecure bool) *tls.Config {
 }
 
 // NewClient initializes a api client for use throughout glab.
-func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken bool, options ...ClientOption) (*Client, error) {
+func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken bool, userAgent string, options ...ClientOption) (*Client, error) {
 	client := &Client{
 		protocol:   "https",
 		AuthType:   NoToken,
@@ -121,6 +113,7 @@ func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken boo
 		isGraphQL:  isGraphQL,
 		isOauth2:   isOAuth2,
 		isJobToken: isJobToken,
+		userAgent:  userAgent,
 	}
 
 	// Apply options
@@ -238,7 +231,7 @@ func WithHTTPClient(httpClient *http.Client) ClientOption {
 }
 
 // NewClientWithCfg initializes the global api with the config data
-func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (*Client, error) {
+func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool, userAgent string) (*Client, error) {
 	if repoHost == "" {
 		repoHost = glinstance.OverridableDefault()
 	}
@@ -294,7 +287,7 @@ func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool) (*Clie
 		options = append(options, WithProtocol(apiProtocol))
 	}
 
-	client, err := NewClient(apiHost, authToken, isGraphQL, isOAuth2, isJobToken, options...)
+	client, err := NewClient(apiHost, authToken, isGraphQL, isOAuth2, isJobToken, userAgent, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +321,7 @@ func (c *Client) NewLab() error {
 	if err != nil {
 		return fmt.Errorf("failed to initialize GitLab client: %v", err)
 	}
-	c.gitlabClient.UserAgent = currentGlabInstall.UserAgent()
+	c.gitlabClient.UserAgent = c.userAgent
 
 	if c.token != "" {
 		if c.isOauth2 {

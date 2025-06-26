@@ -31,16 +31,18 @@ type DefaultFactory struct {
 	io           *iostreams.IOStreams
 	config       config.Config
 	resolveRepos bool
+	buildInfo    api.BuildInfo
 
 	mu           sync.Mutex // protects the fields below
 	repoOverride string
 }
 
-func NewFactory(io *iostreams.IOStreams, resolveRepos bool, cfg config.Config) *DefaultFactory {
+func NewFactory(io *iostreams.IOStreams, resolveRepos bool, cfg config.Config, buildInfo api.BuildInfo) *DefaultFactory {
 	return &DefaultFactory{
 		io:           io,
 		config:       cfg,
 		resolveRepos: resolveRepos,
+		buildInfo:    buildInfo,
 	}
 }
 
@@ -51,7 +53,7 @@ func (f *DefaultFactory) RepoOverride(repo string) {
 }
 
 func (f *DefaultFactory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {
-	c, err := api.NewClientWithCfg(repoHost, cfg, false)
+	c, err := api.NewClientWithCfg(repoHost, cfg, false, f.buildInfo.UserAgent())
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +83,7 @@ func (f *DefaultFactory) HttpClient() (*gitlab.Client, error) {
 		}
 	}
 
-	c, err := api.NewClientWithCfg(repo.RepoHost(), cfg, false)
+	c, err := api.NewClientWithCfg(repo.RepoHost(), cfg, false, f.buildInfo.UserAgent())
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +106,7 @@ func (f *DefaultFactory) BaseRepo() (glrepo.Interface, error) {
 		return remotes[0], nil
 	}
 	cfg := f.Config()
-	ac, err := api.NewClientWithCfg(remotes[0].RepoHost(), cfg, false)
+	ac, err := api.NewClientWithCfg(remotes[0].RepoHost(), cfg, false, f.buildInfo.UserAgent())
 	if err != nil {
 		return nil, err
 	}

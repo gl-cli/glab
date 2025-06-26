@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -28,7 +29,7 @@ func TestRootVersion(t *testing.T) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	rootCmd := NewCmdRoot(cmdutils.NewFactory(setupIOStreams(), false, nil), "v1.0.0", "abcdefgh")
+	rootCmd := NewCmdRoot(cmdutils.NewFactory(setupIOStreams(), false, nil, api.BuildInfo{}), "v1.0.0", "abcdefgh")
 	assert.Nil(t, rootCmd.Flag("version").Value.Set("true"))
 	assert.Nil(t, rootCmd.Execute())
 
@@ -41,7 +42,7 @@ func TestRootNoArg(t *testing.T) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	rootCmd := NewCmdRoot(cmdutils.NewFactory(setupIOStreams(), false, nil), "v1.0.0", "abcdefgh")
+	rootCmd := NewCmdRoot(cmdutils.NewFactory(setupIOStreams(), false, nil, api.BuildInfo{}), "v1.0.0", "abcdefgh")
 	assert.Nil(t, rootCmd.Execute())
 
 	out := test.ReturnBuffer(old, r, w)

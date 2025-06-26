@@ -3,6 +3,7 @@ package ask
 import (
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 	"gitlab.com/gitlab-org/cli/test"
@@ -23,7 +24,7 @@ func TestAskGit_Integration(t *testing.T) {
 	cfg, err := config.Init()
 	require.NoError(t, err)
 	io, _, stdout, stderr := cmdtest.TestIOStreams()
-	f := cmdutils.NewFactory(io, false, cfg)
+	f := cmdutils.NewFactory(io, false, cfg, api.BuildInfo{})
 
 	cmd := NewCmdAsk(f)
 	cli := "--git how to create a branch"

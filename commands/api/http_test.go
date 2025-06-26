@@ -2,14 +2,12 @@ package api
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
@@ -100,9 +98,6 @@ hosts:
 `, "")()
 	test.ClearEnvironmentVariables(t)
 
-	api.SetUserAgent("v1.2.3", "darwin", "arm64")
-	versionString := "glab/v1.2.3 (darwin, arm64)"
-
 	client := &http.Client{}
 	client.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
 		t.Log("Tsti")
@@ -147,7 +142,7 @@ hosts:
 				method:  http.MethodGet,
 				u:       "https://gitlab.com/api/v4/projects/gitlab-com%2Fwww-gitlab-com",
 				body:    "",
-				headers: fmt.Sprintf("Private-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
+				headers: "Private-Token: OTOKEN\r\nUser-Agent: glab test client\r\n",
 			},
 		},
 		{
@@ -165,7 +160,7 @@ hosts:
 				method:  http.MethodGet,
 				u:       "https://gitlab.com/api/v4/projects/gitlab-com%2Fwww-gitlab-com",
 				body:    "",
-				headers: fmt.Sprintf("Private-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
+				headers: "Private-Token: OTOKEN\r\nUser-Agent: glab test client\r\n",
 			},
 		},
 		{
@@ -185,7 +180,7 @@ hosts:
 				method:  http.MethodGet,
 				u:       "https://gitlab.com/api/v4/projects/gitlab-com%2Fwww-gitlab-com?a=b",
 				body:    "",
-				headers: fmt.Sprintf("Private-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
+				headers: "Private-Token: OTOKEN\r\nUser-Agent: glab test client\r\n",
 			},
 		},
 		{
@@ -205,7 +200,7 @@ hosts:
 				method:  http.MethodPost,
 				u:       "https://gitlab.com/api/graphql/",
 				body:    `{"variables":{"a":"b"}}`,
-				headers: fmt.Sprintf("Content-Type: application/json; charset=utf-8\r\nPrivate-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
+				headers: "Content-Type: application/json; charset=utf-8\r\nPrivate-Token: OTOKEN\r\nUser-Agent: glab test client\r\n",
 			},
 		},
 		{
@@ -226,7 +221,7 @@ hosts:
 				method:  http.MethodPost,
 				u:       "https://gitlab.com/api/v4/projects",
 				body:    `CUSTOM`,
-				headers: fmt.Sprintf("Accept: application/json\r\nContent-Type: text/plain\r\nPrivate-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
+				headers: "Accept: application/json\r\nContent-Type: text/plain\r\nPrivate-Token: OTOKEN\r\nUser-Agent: glab test client\r\n",
 			},
 		},
 		{
@@ -247,7 +242,7 @@ hosts:
 				method:  http.MethodPost,
 				u:       "https://gitlab.com/api/v4/projects",
 				body:    `{"scopes":["api","read_api"]}`,
-				headers: fmt.Sprintf("Accept: application/json\r\nContent-Type: application/json\r\nPrivate-Token: OTOKEN\r\nUser-Agent: %s\r\n", versionString),
+				headers: "Accept: application/json\r\nContent-Type: application/json\r\nPrivate-Token: OTOKEN\r\nUser-Agent: glab test client\r\n",
 			},
 		},
 	}

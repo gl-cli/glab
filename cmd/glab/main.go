@@ -90,9 +90,9 @@ func main() {
 		),
 		true,
 		cfg,
+		api.BuildInfo{Version: version, Platform: platform, Architecture: runtime.GOARCH},
 	)
 
-	api.SetUserAgent(version, platform, runtime.GOARCH)
 	maybeOverrideDefaultHost(cmdFactory, cfg)
 
 	if !cmdFactory.IO().ColorEnabled() {

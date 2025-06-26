@@ -415,7 +415,7 @@ func CopyTestRepo(log fatalLogger, name string) string {
 }
 
 func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {
-	testClient, err := api.NewClient(host, token, isGraphQL, false, false, api.WithInsecureSkipVerify(true), api.WithProtocol("https"), api.WithHTTPClient(httpClient))
+	testClient, err := api.NewClient(host, token, isGraphQL, false, false, "glab test client", api.WithInsecureSkipVerify(true), api.WithProtocol("https"), api.WithHTTPClient(httpClient))
 	if err != nil {
 		return nil, err
 	}
