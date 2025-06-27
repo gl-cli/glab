@@ -79,7 +79,7 @@ func NewCmdSyncStack(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 }
 
 func (o *options) run(f cmdutils.Factory, gr git.GitRunner) error {
-	client, err := auth.GetAuthenticatedClient(f)
+	client, err := auth.GetAuthenticatedClient(f.Config(), f.HttpClient, f.IO())
 	if err != nil {
 		return fmt.Errorf("error authorizing with GitLab: %v", err)
 	}

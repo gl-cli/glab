@@ -11,6 +11,7 @@ linters:
         - ineffassign
         - staticcheck
         - unused
+        - depguard
     exclusions:
       presets:
           - comments
@@ -29,6 +30,18 @@ linters:
           - -ST1016
           - -ST1018
           - -ST1023
+      depguard:
+        rules:
+          cmdutils-only-in-commands:
+            files:
+              - "**/*.go"
+              - "!**/cmd/glab/*.go"
+              - "!**/internal/testing/cmdtest/*.go"
+              - "!**/internal/commands/*.go"
+              - "!**/internal/commands/**/*.go"
+            deny:
+              - pkg: "gitlab.com/gitlab-org/cli/internal/cmdutils"
+                desc: "internal/cmdutils should only be imported from packages under internal/commands/"
 
 formatters:
     enable:

@@ -91,7 +91,7 @@ func (o *options) run(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor) e
 		return fmt.Errorf("no updates needed")
 	}
 
-	client, err := auth.GetAuthenticatedClient(f)
+	client, err := auth.GetAuthenticatedClient(f.Config(), f.HttpClient, f.IO())
 	if err != nil {
 		return fmt.Errorf("error authorizing with GitLab: %v", err)
 	}
