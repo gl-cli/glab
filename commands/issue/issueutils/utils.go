@@ -67,7 +67,7 @@ func IssueState(c *iostreams.ColorPalette, i *gitlab.Issue) (issueID string) {
 	return
 }
 
-func IssuesFromArgs(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), gitlabClient *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), args []string) ([]*gitlab.Issue, glrepo.Interface, error) {
+func IssuesFromArgs(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), gitlabClient *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), defaultHostname string, args []string) ([]*gitlab.Issue, glrepo.Interface, error) {
 	var baseRepo glrepo.Interface
 
 	if len(args) <= 1 {
@@ -75,7 +75,7 @@ func IssuesFromArgs(apiClientFunc func(repoHost string, cfg config.Config) (*api
 			args = strings.Split(args[0], ",")
 		}
 		if len(args) <= 1 {
-			issue, repo, err := IssueFromArg(apiClientFunc, gitlabClient, baseRepoFn, args[0])
+			issue, repo, err := IssueFromArg(apiClientFunc, gitlabClient, baseRepoFn, defaultHostname, args[0])
 			if err != nil {
 				return nil, nil, err
 			}
@@ -89,7 +89,7 @@ func IssuesFromArgs(apiClientFunc func(repoHost string, cfg config.Config) (*api
 	for i, arg := range args {
 		i, arg := i, arg
 		errGroup.Go(func() error {
-			issue, repo, err := IssueFromArg(apiClientFunc, gitlabClient, baseRepoFn, arg)
+			issue, repo, err := IssueFromArg(apiClientFunc, gitlabClient, baseRepoFn, defaultHostname, arg)
 			if err != nil {
 				return err
 			}
@@ -104,8 +104,8 @@ func IssuesFromArgs(apiClientFunc func(repoHost string, cfg config.Config) (*api
 	return issues, baseRepo, nil
 }
 
-func IssueFromArg(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), client *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), arg string) (*gitlab.Issue, glrepo.Interface, error) {
-	issueIID, baseRepo := issueMetadataFromURL(arg)
+func IssueFromArg(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), client *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), defaultHostname, arg string) (*gitlab.Issue, glrepo.Interface, error) {
+	issueIID, baseRepo := issueMetadataFromURL(arg, defaultHostname)
 	if issueIID == 0 {
 		var err error
 		issueIID, err = strconv.Atoi(strings.TrimPrefix(arg, "#"))
@@ -149,7 +149,7 @@ func IssueFromArg(apiClientFunc func(repoHost string, cfg config.Config) (*api.C
 //		GROUP/SUBGROUP/../../REPO/-/issues/incident/id
 var issueURLPathRE = regexp.MustCompile(`^(/(?:[^-][^/]+/){2,})+(?:-/)?issues/(?:incident/)?(\d+)$`)
 
-func issueMetadataFromURL(s string) (int, glrepo.Interface) {
+func issueMetadataFromURL(s, defaultHostname string) (int, glrepo.Interface) {
 	u, err := url.Parse(s)
 	if err != nil {
 		return 0, nil
@@ -170,7 +170,7 @@ func issueMetadataFromURL(s string) (int, glrepo.Interface) {
 	}
 	u.Path = m[1]
 
-	repo, err := glrepo.FromURL(u)
+	repo, err := glrepo.FromURL(u, defaultHostname)
 	if err != nil {
 		return 0, nil
 	}

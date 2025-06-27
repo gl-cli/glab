@@ -9,6 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
 type options struct {
@@ -60,7 +61,7 @@ func runCommand(cli string, runE func(opts *options) error, doHyperlinks string)
 			return config.NewBlankConfig()
 		},
 		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO"), nil
+			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
 		},
 	}
 

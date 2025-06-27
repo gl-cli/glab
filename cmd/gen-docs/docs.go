@@ -18,6 +18,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
@@ -44,7 +45,7 @@ func main() {
 	}
 
 	ioStream, _, _, _ := cmdtest.TestIOStreams()
-	glabCli := commands.NewCmdRoot(&factory{io: ioStream}, "", "")
+	glabCli := commands.NewCmdRoot(&factory{io: ioStream})
 	glabCli.DisableAutoGenTag = true
 	if *manpage {
 		if err := genManPage(glabCli, *path); err != nil {
@@ -292,4 +293,12 @@ func (f *factory) Branch() (string, error) {
 
 func (f *factory) IO() *iostreams.IOStreams {
 	return f.io
+}
+
+func (f *factory) DefaultHostname() string {
+	return glinstance.DefaultHostname
+}
+
+func (f *factory) BuildInfo() api.BuildInfo {
+	return api.BuildInfo{}
 }

@@ -24,7 +24,7 @@ const (
 
 var commandAliases = []string{"update"}
 
-func NewCheckUpdateCmd(f cmdutils.Factory, version string) *cobra.Command {
+func NewCheckUpdateCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   commandUse,
 		Short: "Check for latest glab releases.",
@@ -37,18 +37,14 @@ func NewCheckUpdateCmd(f cmdutils.Factory, version string) *cobra.Command {
 		`),
 		Aliases: commandAliases,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return CheckUpdate(f, version, false, "")
+			return CheckUpdate(f, false)
 		},
 	}
 
 	return cmd
 }
 
-func CheckUpdate(f cmdutils.Factory, version string, silentSuccess bool, previousCommand string) error {
-	if shouldSkipUpdate(previousCommand) {
-		return nil
-	}
-
+func CheckUpdate(f cmdutils.Factory, silentSuccess bool) error {
 	moreThan24hAgo, err := checkLastUpdate(f)
 	if err != nil {
 		return err
@@ -84,6 +80,8 @@ func CheckUpdate(f cmdutils.Factory, version string, silentSuccess bool, previou
 	latestRelease := releases[0]
 	releaseURL := fmt.Sprintf("%s/-/releases/%s", defaultProjectURL, latestRelease.TagName)
 
+	version := f.BuildInfo().Version
+
 	c := f.IO().Color()
 	if isOlderVersion(latestRelease.Name, version) {
 		fmt.Fprintf(f.IO().StdErr, "%s %s -> %s\n%s\n",
@@ -104,7 +102,7 @@ func CheckUpdate(f cmdutils.Factory, version string, silentSuccess bool, previou
 // or it’s Completion, so it doesn’t take a noticably long time
 // to start new shells and we don’t encourage users setting
 // `check_update` to false in the config.
-func shouldSkipUpdate(previousCommand string) bool {
+func ShouldSkipUpdate(previousCommand string) bool {
 	isCheckUpdate := previousCommand == commandUse || utils.PresentInStringSlice(commandAliases, previousCommand)
 	isCompletion := previousCommand == "completion"
 

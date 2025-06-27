@@ -39,7 +39,7 @@ import (
 )
 
 // NewCmdRoot is the main root/parent command
-func NewCmdRoot(f cmdutils.Factory, version, commit string) *cobra.Command {
+func NewCmdRoot(f cmdutils.Factory) *cobra.Command {
 	c := f.IO().Color()
 	rootCmd := &cobra.Command{
 		Use:           "glab <command> <subcommand> [flags]",
@@ -112,7 +112,8 @@ func NewCmdRoot(f cmdutils.Factory, version, commit string) *cobra.Command {
 		return &cmdutils.FlagError{Err: err}
 	})
 
-	formattedVersion := versionCmd.Scheme(version, commit)
+	buildInfo := f.BuildInfo()
+	formattedVersion := versionCmd.Scheme(buildInfo.Version, buildInfo.Commit)
 	rootCmd.SetVersionTemplate(formattedVersion)
 	rootCmd.Version = formattedVersion
 
@@ -120,8 +121,8 @@ func NewCmdRoot(f cmdutils.Factory, version, commit string) *cobra.Command {
 	rootCmd.AddCommand(aliasCmd.NewCmdAlias(f))
 	rootCmd.AddCommand(configCmd.NewCmdConfig(f))
 	rootCmd.AddCommand(completionCmd.NewCmdCompletion(f.IO()))
-	rootCmd.AddCommand(versionCmd.NewCmdVersion(f.IO(), version, commit))
-	rootCmd.AddCommand(updateCmd.NewCheckUpdateCmd(f, version))
+	rootCmd.AddCommand(versionCmd.NewCmdVersion(f))
+	rootCmd.AddCommand(updateCmd.NewCheckUpdateCmd(f))
 	rootCmd.AddCommand(authCmd.NewCmdAuth(f))
 
 	rootCmd.AddCommand(changelogCmd.NewCmdChangelog(f))

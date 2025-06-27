@@ -96,7 +96,7 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 	cfg, err := config.Init()
 	require.NoError(t, err)
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	f := cmdutils.NewFactory(ios, false, cfg)
+	f := cmdutils.NewFactory(ios, false, cfg, api.BuildInfo{})
 	f.RepoOverride(glTestHost + "/cli-automated-testing/test")
 
 	cmd := NewCmdUpdate(f)

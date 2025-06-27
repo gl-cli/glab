@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 )
 
@@ -215,7 +216,7 @@ func Test_setRun_project(t *testing.T) {
 			return a.Lab(), nil
 		},
 		baseRepo: func() (glrepo.Interface, error) {
-			return glrepo.FromFullName("owner/repo")
+			return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 		},
 		io:    io,
 		key:   "NEW_VARIABLE",
@@ -255,7 +256,7 @@ func Test_setRun_group(t *testing.T) {
 			return a.Lab(), nil
 		},
 		baseRepo: func() (glrepo.Interface, error) {
-			return glrepo.FromFullName("owner/repo")
+			return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 		},
 		io:    io,
 		key:   "NEW_VARIABLE",

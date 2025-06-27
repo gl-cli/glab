@@ -12,6 +12,7 @@ import (
 	glab_api "gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"go.uber.org/mock/gomock"
 
@@ -955,7 +956,7 @@ func setupCmdExec(t *testing.T) (execFunc, *MockAPI, *MockWriter, *MockWriter, *
 				IsErrTTY: true,
 			},
 			HttpClientStub: func() (*gitlab.Client, error) { return nil /* unused */, nil },
-			BaseRepoStub:   func() (glrepo.Interface, error) { return glrepo.New("OWNER", "REPO"), nil },
+			BaseRepoStub:   func() (glrepo.Interface, error) { return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil },
 		},
 		func() error { return nil },
 		func(*gitlab.Client, any) API { return mockAPI },

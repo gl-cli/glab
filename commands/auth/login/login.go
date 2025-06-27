@@ -25,9 +25,10 @@ import (
 )
 
 type LoginOptions struct {
-	IO        *iostreams.IOStreams
-	Config    func() config.Config
-	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	IO              *iostreams.IOStreams
+	Config          func() config.Config
+	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	defaultHostname string
 
 	Interactive bool
 
@@ -46,9 +47,10 @@ var opts *LoginOptions
 
 func NewCmdLogin(f cmdutils.Factory) *cobra.Command {
 	opts = &LoginOptions{
-		IO:        f.IO(),
-		Config:    f.Config,
-		apiClient: f.ApiClient,
+		IO:              f.IO(),
+		Config:          f.Config,
+		apiClient:       f.ApiClient,
+		defaultHostname: f.DefaultHostname(),
 	}
 
 	var tokenStdin bool
@@ -115,7 +117,7 @@ func NewCmdLogin(f cmdutils.Factory) *cobra.Command {
 			}
 
 			if !opts.Interactive && opts.Hostname == "" {
-				opts.Hostname = glinstance.Default()
+				opts.Hostname = glinstance.DefaultHostname
 			}
 
 			if opts.Interactive && (opts.ApiHost != "" || opts.ApiProtocol != "" || opts.GitProtocol != "") {
@@ -233,7 +235,6 @@ func loginRun(opts *LoginOptions) error {
 		apiHostname = opts.ApiHost
 	}
 
-	defaultHostname := glinstance.OverridableDefault()
 	isSelfHosted := false
 
 	if hostname == "" {
@@ -241,7 +242,7 @@ func loginRun(opts *LoginOptions) error {
 		err := survey.AskOne(&survey.Select{
 			Message: "What GitLab instance do you want to sign in to?",
 			Options: []string{
-				defaultHostname,
+				opts.defaultHostname,
 				"GitLab Self-Managed or GitLab Dedicated instance",
 			},
 		}, &hostType)
@@ -251,7 +252,7 @@ func loginRun(opts *LoginOptions) error {
 
 		isSelfHosted = hostType == 1
 
-		hostname = defaultHostname
+		hostname = opts.defaultHostname
 		apiHostname = hostname
 		if isSelfHosted {
 			err := survey.AskOne(&survey.Input{
@@ -466,13 +467,9 @@ func hostnameValidator(v any) error {
 }
 
 func getAccessTokenTip(hostname string) string {
-	glHostname := hostname
-	if glHostname == "" {
-		glHostname = glinstance.OverridableDefault()
-	}
 	return fmt.Sprintf(`
 	Tip: generate a personal access token at https://%s/-/user_settings/personal_access_tokens?scopes=api,write_repository.
-	The minimum required scopes are 'api' and 'write_repository'.`, glHostname)
+	The minimum required scopes are 'api' and 'write_repository'.`, hostname)
 }
 
 func showTokenPrompt(io *iostreams.IOStreams, hostname string) (string, error) {

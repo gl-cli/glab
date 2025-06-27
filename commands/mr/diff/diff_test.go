@@ -14,6 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
@@ -112,7 +113,7 @@ func runCommand(rt http.RoundTripper, remotes glrepo.Remotes, isTTY bool, cli st
 			return glrepo.Remotes{
 				{
 					Remote: &git.Remote{Name: "origin"},
-					Repo:   glrepo.New("OWNER", "REPO"),
+					Repo:   glrepo.New("OWNER", "REPO", glinstance.DefaultHostname),
 				},
 			}, nil
 		}

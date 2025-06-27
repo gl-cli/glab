@@ -24,9 +24,7 @@ import (
 	"gitlab.com/gitlab-org/cli/commands/update"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -38,19 +36,14 @@ var (
 	commit string
 	// platform is set dynamically at build
 	platform = runtime.GOOS
+
+	// debugMode is set dynamically at build and can be overridden by
+	// the configuration file or environment variable
+	// sets to "true" or "false" or "1" or "0" as string
+	debugMode = "false"
 )
 
-// debug is set dynamically at build and can be overridden by
-// the configuration file or environment variable
-// sets to "true" or "false" or "1" or "0" as string
-var debugMode = "false"
-
-// debug is parsed boolean of debugMode
-var debug bool
-
 func main() {
-	debug = debugMode == "true" || debugMode == "1"
-
 	// Initialize configuration
 	cfg, err := config.Init()
 	if err != nil {
@@ -58,6 +51,14 @@ func main() {
 		os.Exit(2)
 	}
 
+	// Set Debug mode from config if not previously set by debugMode
+	debug := debugMode == "true" || debugMode == "1"
+	if !debug {
+		debugModeCfg, _ := cfg.Get("", "debug")
+		debug = debugModeCfg == "true" || debugModeCfg == "1"
+	}
+
+	// Initialize factory and iostreams
 	cmdFactory := cmdutils.NewFactory(
 		iostreams.New(
 			iostreams.WithStdin(os.Stdin, iostreams.IsTerminal(os.Stdin)),
@@ -90,47 +91,20 @@ func main() {
 		),
 		true,
 		cfg,
+		api.BuildInfo{Version: version, Commit: commit, Platform: platform, Architecture: runtime.GOARCH},
 	)
 
-	api.SetUserAgent(version, platform, runtime.GOARCH)
-	maybeOverrideDefaultHost(cmdFactory, cfg)
+	setupSurveyCore(cmdFactory.IO())
 
-	if !cmdFactory.IO().ColorEnabled() {
-		surveyCore.DisableColor = true
-	} else {
-		// Override survey's choice of color for default values
-		// For default values for e.g. `Input` prompts, Survey uses the literal "white" color,
-		// which makes no sense on dark terminals and is literally invisible on light backgrounds.
-		// This overrides Survey to output a gray color for 256-color terminals and "default" for basic terminals.
-		surveyCore.TemplateFuncsWithColor["color"] = func(style string) string {
-			switch style {
-			case "white":
-				if cmdFactory.IO().Is256ColorSupported() {
-					return fmt.Sprintf("\x1b[%d;5;%dm", 38, 242)
-				}
-				return ansi.ColorCode("default")
-			default:
-				return ansi.ColorCode(style)
-			}
-		}
-	}
-
-	rootCmd := commands.NewCmdRoot(cmdFactory, version, commit)
-
-	// Set Debug mode from config if not previously set by debugMode
-	if !debug {
-		debugModeCfg, _ := cfg.Get("", "debug")
-		debug = debugModeCfg == "true" || debugModeCfg == "1"
-	}
-
+	// Setup command
 	var expandedArgs []string
 	if len(os.Args) > 0 {
 		expandedArgs = os.Args[1:]
 	}
-
+	rootCmd := commands.NewCmdRoot(cmdFactory)
 	cmd, _, err := rootCmd.Traverse(expandedArgs)
 
-	checkForTelemetryHook(cfg, cmdFactory, cmd)
+	setupTelemetryHook(cfg, cmdFactory, cmd)
 
 	if err != nil || cmd == rootCmd {
 		originalArgs := expandedArgs
@@ -195,30 +169,9 @@ func main() {
 	var argCommand string
 	if expandedArgs != nil {
 		argCommand = expandedArgs[0]
-	} else {
-		argCommand = ""
 	}
-
-	shouldCheck := false
-
-	// GLAB_CHECK_UPDATE has higher priority than the check_update configuration value
-	if envVal, ok := os.LookupEnv("GLAB_CHECK_UPDATE"); ok {
-		if checkUpdate, err := strconv.ParseBool(envVal); err == nil {
-			shouldCheck = checkUpdate
-		}
-	} else {
-		// Fall back to config value if env var not set
-		if checkUpdate, _ := cfg.Get("", "check_update"); checkUpdate != "" {
-			if parsed, err := strconv.ParseBool(checkUpdate); err == nil {
-				shouldCheck = parsed
-			}
-		}
-	}
-
-	if shouldCheck {
-		if err := update.CheckUpdate(cmdFactory, version, true, argCommand); err != nil {
-			printError(cmdFactory.IO(), err, rootCmd, debug)
-		}
+	if !update.ShouldSkipUpdate(argCommand) {
+		checkForUpdate(cmdFactory, rootCmd, debug)
 	}
 }
 
@@ -252,26 +205,54 @@ func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, deb
 	}
 }
 
-func maybeOverrideDefaultHost(f cmdutils.Factory, cfg config.Config) {
-	baseRepo, err := f.BaseRepo()
-	if err == nil {
-		glinstance.OverrideDefault(baseRepo.RepoHost())
-	}
-
-	// Fetch the custom host config from env vars, then local config.yml, then global config,yml.
-	customGLHost, _ := cfg.Get("", "host")
-	if customGLHost != "" {
-		if utils.IsValidURL(customGLHost) {
-			var protocol string
-			customGLHost, protocol = glinstance.StripHostProtocol(customGLHost)
-			glinstance.OverrideDefaultProtocol(protocol)
+func setupSurveyCore(io *iostreams.IOStreams) {
+	if !io.ColorEnabled() {
+		surveyCore.DisableColor = true
+	} else {
+		// Override survey's choice of color for default values
+		// For default values for e.g. `Input` prompts, Survey uses the literal "white" color,
+		// which makes no sense on dark terminals and is literally invisible on light backgrounds.
+		// This overrides Survey to output a gray color for 256-color terminals and "default" for basic terminals.
+		surveyCore.TemplateFuncsWithColor["color"] = func(style string) string {
+			switch style {
+			case "white":
+				if io.Is256ColorSupported() {
+					return fmt.Sprintf("\x1b[%d;5;%dm", 38, 242)
+				}
+				return ansi.ColorCode("default")
+			default:
+				return ansi.ColorCode(style)
+			}
 		}
-		glinstance.OverrideDefault(customGLHost)
 	}
 }
 
-func checkForTelemetryHook(cfg config.Config, f cmdutils.Factory, cmd *cobra.Command) {
+func setupTelemetryHook(cfg config.Config, f cmdutils.Factory, cmd *cobra.Command) {
 	if hooks.IsTelemetryEnabled(cfg) {
 		cobra.OnFinalize(hooks.AddTelemetryHook(f, cmd))
+	}
+}
+
+func checkForUpdate(f cmdutils.Factory, rootCmd *cobra.Command, debug bool) {
+	shouldCheck := false
+
+	// GLAB_CHECK_UPDATE has higher priority than the check_update configuration value
+	if envVal, ok := os.LookupEnv("GLAB_CHECK_UPDATE"); ok {
+		if checkUpdate, err := strconv.ParseBool(envVal); err == nil {
+			shouldCheck = checkUpdate
+		}
+	} else {
+		// Fall back to config value if env var not set
+		if checkUpdate, _ := f.Config().Get("", "check_update"); checkUpdate != "" {
+			if parsed, err := strconv.ParseBool(checkUpdate); err == nil {
+				shouldCheck = parsed
+			}
+		}
+	}
+
+	if shouldCheck {
+		if err := update.CheckUpdate(f, true); err != nil {
+			printError(f.IO(), err, rootCmd, debug)
+		}
 	}
 }

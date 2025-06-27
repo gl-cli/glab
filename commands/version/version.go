@@ -4,19 +4,20 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 
 	"github.com/spf13/cobra"
 )
 
-func NewCmdVersion(s *iostreams.IOStreams, version, commit string) *cobra.Command {
+func NewCmdVersion(f cmdutils.Factory) *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:     "version",
 		Short:   "Show version information for glab.",
 		Long:    ``,
 		Aliases: []string{"v"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Fprint(s.StdOut, Scheme(version, commit))
+			buildInfo := f.BuildInfo()
+			fmt.Fprint(f.IO().StdOut, Scheme(buildInfo.Version, buildInfo.Commit))
 			return nil
 		},
 	}

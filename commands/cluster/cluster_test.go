@@ -8,6 +8,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/test"
 )
@@ -22,7 +23,7 @@ func TestNewCmdCluster(t *testing.T) {
 			StdOut: os.Stdout,
 		},
 		HttpClientStub: func() (*gitlab.Client, error) { return nil, nil },
-		BaseRepoStub:   func() (glrepo.Interface, error) { return glrepo.New("OWNER", "REPO"), nil },
+		BaseRepoStub:   func() (glrepo.Interface, error) { return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil },
 	}).Execute())
 
 	out := test.ReturnBuffer(old, r, w)

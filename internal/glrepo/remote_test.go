@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 )
 
 func eq(t *testing.T, got any, expected any) {
@@ -19,9 +20,9 @@ func eq(t *testing.T, got any, expected any) {
 
 func TestFindByName(t *testing.T) {
 	list := Remotes{
-		&Remote{Remote: &git.Remote{Name: "mona"}, Repo: New("monalisa", "myfork")},
-		&Remote{Remote: &git.Remote{Name: "origin"}, Repo: New("monalisa", "octo-cat")},
-		&Remote{Remote: &git.Remote{Name: "upstream"}, Repo: New("hubot", "tools")},
+		&Remote{Remote: &git.Remote{Name: "mona"}, Repo: New("monalisa", "myfork", glinstance.DefaultHostname)},
+		&Remote{Remote: &git.Remote{Name: "origin"}, Repo: New("monalisa", "octo-cat", glinstance.DefaultHostname)},
+		&Remote{Remote: &git.Remote{Name: "upstream"}, Repo: New("hubot", "tools", glinstance.DefaultHostname)},
 	}
 
 	r, err := list.FindByName("upstream", "origin")
@@ -59,7 +60,7 @@ func TestTranslateRemotes(t *testing.T) {
 	identityURL := func(u *url.URL) *url.URL {
 		return u
 	}
-	result := TranslateRemotes(gitRemotes, identityURL)
+	result := TranslateRemotes(gitRemotes, identityURL, glinstance.DefaultHostname)
 
 	if len(result) != 2 {
 		t.Errorf("got %d results", len(result))

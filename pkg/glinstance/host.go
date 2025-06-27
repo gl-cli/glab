@@ -7,63 +7,15 @@ import (
 )
 
 const (
-	defaultHostname = "gitlab.com"
-	defaultProtocol = "https"
-	defaultClientId = "41d48f9422ebd655dd9cf2947d6979681dfaddc6d0c56f7628f6ada59559af1e"
+	DefaultHostname = "gitlab.com"
+	DefaultProtocol = "https"
+	DefaultClientID = "41d48f9422ebd655dd9cf2947d6979681dfaddc6d0c56f7628f6ada59559af1e"
 )
-
-var (
-	hostnameOverride string
-	protocolOverride string
-)
-
-// Default returns the host name of the default GitLab instance
-func Default() string {
-	return defaultHostname
-}
-
-// DefaultProtocol returns the protocol of the default GitLab instance
-func DefaultProtocol() string {
-	return defaultProtocol
-}
-
-func DefaultClientID() string {
-	return defaultClientId
-}
-
-// OverridableDefault is like Default, except it is overridable by the GITLAB_HOST environment variable
-func OverridableDefault() string {
-	if hostnameOverride != "" {
-		return hostnameOverride
-	}
-	return Default()
-}
-
-// OverridableDefaultProtocol is like DefaultProtocol, except it is overridable by the protocol found in
-// the value of the GITLAB_HOST environment variable if a fully qualified URL is given as value
-func OverridableDefaultProtocol() string {
-	if protocolOverride != "" {
-		return protocolOverride
-	}
-	return DefaultProtocol()
-}
-
-// OverrideDefault overrides the value returned from OverridableDefault. This should only ever be
-// called from the main runtime path, not tests.
-func OverrideDefault(newhost string) {
-	hostnameOverride = newhost
-}
-
-// OverrideDefaultProtocol overrides the value returned from OverridableDefaultProtocol. This should only ever be
-// called from the main runtime path, not tests.
-func OverrideDefaultProtocol(newProtocol string) {
-	protocolOverride = newProtocol
-}
 
 // IsSelfHosted reports whether a non-normalized host name looks like a GitLab Self-Managed instance
 // staging.gitlab.com is considered self-managed
 func IsSelfHosted(h string) bool {
-	return NormalizeHostname(h) != Default()
+	return NormalizeHostname(h) != DefaultHostname
 }
 
 // NormalizeHostname returns the canonical host name of a GitLab instance
@@ -87,10 +39,6 @@ func StripHostProtocol(h string) (hostname, protocol string) {
 
 // APIEndpoint returns the REST API endpoint prefix for a GitLab instance :)
 func APIEndpoint(hostname, protocol string, apiHost string) string {
-	if protocol == "" {
-		protocol = OverridableDefaultProtocol()
-	}
-
 	if apiHost != "" {
 		hostname = apiHost
 	}

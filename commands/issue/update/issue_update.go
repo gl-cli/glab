@@ -62,7 +62,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			issue, repo, err := issueutils.IssueFromArg(f.ApiClient, gitlabClient, f.BaseRepo, args[0])
+			issue, repo, err := issueutils.IssueFromArg(f.ApiClient, gitlabClient, f.BaseRepo, f.DefaultHostname(), args[0])
 			if err != nil {
 				return err
 			}
@@ -100,7 +100,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 					if err != nil {
 						return err
 					}
-					issue, _, err := issueutils.IssueFromArg(f.ApiClient, gitlabClient, f.BaseRepo, args[0])
+					issue, _, err := issueutils.IssueFromArg(f.ApiClient, gitlabClient, f.BaseRepo, f.DefaultHostname(), args[0])
 					if err != nil {
 						return err
 					}

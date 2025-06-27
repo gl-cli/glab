@@ -34,13 +34,14 @@ type options struct {
 	// if false current git repo will be cloned
 	currentDirIsParent bool
 
-	repoToFork glrepo.Interface
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
-	remotes    func() (glrepo.Remotes, error)
-	config     func() config.Config
-	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
-	httpClient func() (*gitlab.Client, error)
+	repoToFork      glrepo.Interface
+	io              *iostreams.IOStreams
+	baseRepo        func() (glrepo.Interface, error)
+	remotes         func() (glrepo.Remotes, error)
+	config          func() config.Config
+	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	httpClient      func() (*gitlab.Client, error)
+	defaultHostname string
 }
 
 func NewCmdFork(f cmdutils.Factory) *cobra.Command {
@@ -51,6 +52,7 @@ func NewCmdFork(f cmdutils.Factory) *cobra.Command {
 		config:             f.Config,
 		apiClient:          f.ApiClient,
 		httpClient:         f.HttpClient,
+		defaultHostname:    f.DefaultHostname(),
 		currentDirIsParent: true,
 	}
 	forkCmd := &cobra.Command{
@@ -98,12 +100,12 @@ func (o *options) run() error {
 			if err != nil {
 				return fmt.Errorf("invalid argument: %w", err)
 			}
-			o.repoToFork, err = glrepo.FromURL(u)
+			o.repoToFork, err = glrepo.FromURL(u, o.defaultHostname)
 			if err != nil {
 				return fmt.Errorf("invalid argument: %w", err)
 			}
 		} else {
-			o.repoToFork, err = glrepo.FromFullName(o.repo)
+			o.repoToFork, err = glrepo.FromFullName(o.repo, o.defaultHostname)
 			if err != nil {
 				return fmt.Errorf("argument error: %w", err)
 			}

@@ -18,18 +18,19 @@ import (
 // unusually large number of git remotes
 const maxRemotesForLookup = 5
 
-func ResolveRemotesToRepos(remotes Remotes, client *gitlab.Client, base string) (*ResolvedRemotes, error) {
+func ResolveRemotesToRepos(remotes Remotes, client *gitlab.Client, base, defaultHostname string) (*ResolvedRemotes, error) {
 	sort.Stable(remotes)
 
 	result := &ResolvedRemotes{
-		remotes:   remotes,
-		apiClient: client,
+		remotes:         remotes,
+		apiClient:       client,
+		defaultHostname: defaultHostname,
 	}
 
 	var baseOverride Interface
 	if base != "" {
 		var err error
-		baseOverride, err = FromFullName(base)
+		baseOverride, err = FromFullName(base, defaultHostname)
 		if err != nil {
 			return result, err
 		}
@@ -59,10 +60,11 @@ func resolveNetwork(result *ResolvedRemotes) error {
 }
 
 type ResolvedRemotes struct {
-	baseOverride Interface
-	remotes      Remotes
-	network      []gitlab.Project
-	apiClient    *gitlab.Client
+	baseOverride    Interface
+	remotes         Remotes
+	network         []gitlab.Project
+	apiClient       *gitlab.Client
+	defaultHostname string
 }
 
 func (r *ResolvedRemotes) BaseRepo(interactive bool) (Interface, error) {
@@ -71,28 +73,28 @@ func (r *ResolvedRemotes) BaseRepo(interactive bool) (Interface, error) {
 	}
 
 	// if any of the remotes already has a resolution, respect that
-	for _, r := range r.remotes {
-		if r.Resolved == "base" {
-			return r, nil
-		} else if strings.HasPrefix(r.Resolved, "base:") {
-			repo, err := FromFullName(strings.TrimPrefix(r.Resolved, "base:"))
+	for _, remote := range r.remotes {
+		if remote.Resolved == "base" {
+			return remote, nil
+		} else if strings.HasPrefix(remote.Resolved, "base:") {
+			repo, err := FromFullName(strings.TrimPrefix(remote.Resolved, "base:"), r.defaultHostname)
 			if err != nil {
 				return nil, err
 			}
-			return NewWithHost(repo.RepoOwner(), repo.RepoName(), r.RepoHost()), nil
-		} else if r.Resolved != "" && !strings.HasPrefix(r.Resolved, "head") {
+			return NewWithHost(repo.RepoOwner(), repo.RepoName(), remote.RepoHost()), nil
+		} else if remote.Resolved != "" && !strings.HasPrefix(remote.Resolved, "head") {
 			// Backward compatibility kludge for remote-less resolutions created before
 			// BaseRepo started creating resolutions prefixed with `base:`
-			repo, err := FromFullName(r.Resolved)
+			repo, err := FromFullName(remote.Resolved, r.defaultHostname)
 			if err != nil {
 				return nil, err
 			}
 			// Rewrite resolution, ignore the error as this will keep working
 			// in the future we might add a warning that we couldn't rewrite
 			// it for compatibility
-			_ = git.SetRemoteResolution(r.Name, "base:"+r.Resolved)
+			_ = git.SetRemoteResolution(remote.Name, "base:"+remote.Resolved)
 
-			return NewWithHost(repo.RepoOwner(), repo.RepoName(), r.RepoHost()), nil
+			return NewWithHost(repo.RepoOwner(), repo.RepoName(), remote.RepoHost()), nil
 		}
 	}
 
@@ -145,7 +147,7 @@ func (r *ResolvedRemotes) BaseRepo(interactive bool) (Interface, error) {
 
 	// determine corresponding git remote
 	selectedRepo := repoMap[baseName]
-	selectedRepoInfo, _ := FromFullName(selectedRepo.HTTPURLToRepo)
+	selectedRepoInfo, _ := FromFullName(selectedRepo.HTTPURLToRepo, r.defaultHostname)
 	resolution := "base"
 	remote, _ := r.RemoteForRepo(selectedRepoInfo)
 	if remote == nil {
@@ -165,15 +167,15 @@ func (r *ResolvedRemotes) HeadRepo(interactive bool) (Interface, error) {
 	}
 
 	// if any of the remotes already has a resolution, respect that
-	for _, r := range r.remotes {
-		if r.Resolved == "head" {
-			return r, nil
-		} else if strings.HasPrefix(r.Resolved, "head:") {
-			repo, err := FromFullName(strings.TrimPrefix(r.Resolved, "head:"))
+	for _, remote := range r.remotes {
+		if remote.Resolved == "head" {
+			return remote, nil
+		} else if strings.HasPrefix(remote.Resolved, "head:") {
+			repo, err := FromFullName(strings.TrimPrefix(remote.Resolved, "head:"), r.defaultHostname)
 			if err != nil {
 				return nil, err
 			}
-			return NewWithHost(repo.RepoOwner(), repo.RepoName(), r.RepoHost()), nil
+			return NewWithHost(repo.RepoOwner(), repo.RepoName(), remote.RepoHost()), nil
 		}
 	}
 
@@ -212,7 +214,7 @@ func (r *ResolvedRemotes) HeadRepo(interactive bool) (Interface, error) {
 			// We cannot prompt so get the first repo that is a fork
 			for _, repo := range repoNames {
 				if repoMap[repo].ForkedFromProject != nil {
-					selectedRepoInfo, _ := FromFullName((repoMap[repo].HTTPURLToRepo))
+					selectedRepoInfo, _ := FromFullName((repoMap[repo].HTTPURLToRepo), r.defaultHostname)
 					remote, _ := r.RemoteForRepo(selectedRepoInfo)
 					return remote, nil
 				}
@@ -234,7 +236,7 @@ func (r *ResolvedRemotes) HeadRepo(interactive bool) (Interface, error) {
 
 	// determine corresponding git remote
 	selectedRepo := repoMap[headName]
-	selectedRepoInfo, _ := FromFullName(selectedRepo.HTTPURLToRepo)
+	selectedRepoInfo, _ := FromFullName(selectedRepo.HTTPURLToRepo, r.defaultHostname)
 	resolution := "head"
 	remote, _ := r.RemoteForRepo(selectedRepoInfo)
 	if remote == nil {

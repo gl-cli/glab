@@ -10,6 +10,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
@@ -28,7 +29,7 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string, stub bool, repoHos
 
 	factory.BaseRepoStub = func() (glrepo.Interface, error) {
 		if repoHost == "" {
-			return glrepo.New("OWNER", "REPO"), nil
+			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
 		} else {
 			return glrepo.NewWithHost("OWNER", "REPO", repoHost), nil
 		}

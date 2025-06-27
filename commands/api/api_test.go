@@ -17,6 +17,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
@@ -728,7 +729,7 @@ func Test_magicFieldValue(t *testing.T) {
 				opts: &options{
 					io: ios,
 					baseRepo: func() (glrepo.Interface, error) {
-						return glrepo.New("gitlab-com", "www-gitlab-com"), nil
+						return glrepo.New("gitlab-com", "www-gitlab-com", glinstance.DefaultHostname), nil
 					},
 				},
 			},
@@ -821,7 +822,7 @@ func Test_fillPlaceholders(t *testing.T) {
 				value: "projects/:namespace%2F:repo/releases",
 				opts: &options{
 					baseRepo: func() (glrepo.Interface, error) {
-						return glrepo.New("gitlab-com", "www-gitlab-com"), nil
+						return glrepo.New("gitlab-com", "www-gitlab-com", glinstance.DefaultHostname), nil
 					},
 				},
 			},
@@ -834,7 +835,7 @@ func Test_fillPlaceholders(t *testing.T) {
 				value: "projects/glab-cli%2Ftest/branches/:branch/.../.../",
 				opts: &options{
 					baseRepo: func() (glrepo.Interface, error) {
-						return glrepo.New("glab-cli", "test"), nil
+						return glrepo.New("glab-cli", "test", glinstance.DefaultHostname), nil
 					},
 					branch: func() (string, error) {
 						return "master", nil
@@ -850,7 +851,7 @@ func Test_fillPlaceholders(t *testing.T) {
 				value: "projects/:fullpath/branches/:branch",
 				opts: &options{
 					baseRepo: func() (glrepo.Interface, error) {
-						return glrepo.New("glab-cli", "test"), nil
+						return glrepo.New("glab-cli", "test", glinstance.DefaultHostname), nil
 					},
 					branch: func() (string, error) {
 						return "", git.ErrNotOnAnyBranch

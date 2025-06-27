@@ -63,14 +63,15 @@ type options struct {
 	recover       bool
 	signoff       bool
 
-	io         *iostreams.IOStreams             `json:"-"`
-	branch     func() (string, error)           `json:"-"`
-	remotes    func() (glrepo.Remotes, error)   `json:"-"`
-	httpClient func() (*gitlab.Client, error)   `json:"-"`
-	config     func() config.Config             `json:"-"`
-	baseRepo   func() (glrepo.Interface, error) `json:"-"`
-	headRepo   func() (glrepo.Interface, error) `json:"-"`
-	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
+	io              *iostreams.IOStreams             `json:"-"`
+	branch          func() (string, error)           `json:"-"`
+	remotes         func() (glrepo.Remotes, error)   `json:"-"`
+	httpClient      func() (*gitlab.Client, error)   `json:"-"`
+	config          func() config.Config             `json:"-"`
+	baseRepo        func() (glrepo.Interface, error) `json:"-"`
+	headRepo        func() (glrepo.Interface, error) `json:"-"`
+	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	defaultHostname string
 
 	// SourceProject is the Project we create the merge request in and where we push our branch
 	// it is the project we have permission to push so most likely one's fork
@@ -82,14 +83,15 @@ type options struct {
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		branch:     f.Branch,
-		remotes:    f.Remotes,
-		httpClient: f.HttpClient,
-		config:     f.Config,
-		baseRepo:   f.BaseRepo,
-		headRepo:   ResolvedHeadRepo(f),
-		apiClient:  f.ApiClient,
+		io:              f.IO(),
+		branch:          f.Branch,
+		remotes:         f.Remotes,
+		httpClient:      f.HttpClient,
+		config:          f.Config,
+		baseRepo:        f.BaseRepo,
+		headRepo:        ResolvedHeadRepo(f),
+		apiClient:       f.ApiClient,
+		defaultHostname: f.DefaultHostname(),
 	}
 
 	mrCreateCmd := &cobra.Command{
@@ -206,7 +208,7 @@ func (o *options) validate(cmd *cobra.Command) error {
 }
 
 func parseIssue(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), gitlabClient *gitlab.Client, opts *options) (*gitlab.Issue, error) {
-	issue, _, err := issueutils.IssueFromArg(apiClientFunc, gitlabClient, opts.baseRepo, opts.RelatedIssue)
+	issue, _, err := issueutils.IssueFromArg(apiClientFunc, gitlabClient, opts.baseRepo, opts.defaultHostname, opts.RelatedIssue)
 	if err != nil {
 		return nil, err
 	}
@@ -810,7 +812,7 @@ func ResolvedHeadRepo(f cmdutils.Factory) func() (glrepo.Interface, error) {
 		if err != nil {
 			return nil, err
 		}
-		repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, "")
+		repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, "", f.DefaultHostname())
 		if err != nil {
 			return nil, err
 		}
@@ -825,7 +827,7 @@ func ResolvedHeadRepo(f cmdutils.Factory) func() (glrepo.Interface, error) {
 
 func headRepoOverride(opts *options, repo string) error {
 	opts.headRepo = func() (glrepo.Interface, error) {
-		return glrepo.FromFullName(repo)
+		return glrepo.FromFullName(repo, opts.defaultHostname)
 	}
 	return nil
 }
