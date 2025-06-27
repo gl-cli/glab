@@ -23,10 +23,6 @@ type Stub struct {
 	body      string
 }
 
-func MatchAny(*http.Request) bool {
-	return true
-}
-
 func newRequest(method, path string, match matchType) Matcher {
 	return func(req *http.Request) bool {
 		if !strings.EqualFold(req.Method, method) {

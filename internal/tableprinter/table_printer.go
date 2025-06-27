@@ -100,13 +100,6 @@ func (t *TablePrinter) SetTTYSeparator(s string) {
 	t.TTYSeparator = s
 }
 
-// SetNonTTYSeparator sets the separator for the columns in the table for non-ttys
-func SetNonTTYSeparator(s string) { tp.SetNonTTYSeparator(s) }
-
-func (t *TablePrinter) SetNonTTYSeparator(s string) {
-	t.NonTTYSeparator = s
-}
-
 func (t *TablePrinter) makeRow() {
 	if t.Rows == nil {
 		t.Rows = make([]*TableRow, 1)

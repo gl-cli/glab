@@ -123,12 +123,6 @@ func (as *AskStubber) StubOne(value any) {
 	})
 }
 
-func (as *AskStubber) StubOneDefault() {
-	as.StubOnes = append(as.StubOnes, &PromptStub{
-		Default: true,
-	})
-}
-
 func (as *AskStubber) Stub(stubbedQuestions []*QuestionStub) {
 	// A call to .Ask takes a list of questions; a stub is then a list of questions in the same order.
 	as.Stubs = append(as.Stubs, stubbedQuestions)

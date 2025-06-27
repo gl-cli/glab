@@ -237,20 +237,3 @@ func TestIsValidURL(t *testing.T) {
 		})
 	}
 }
-
-func TestPtr(t *testing.T) {
-	tests := []struct {
-		name string
-		val  any
-	}{
-		{"string", "GitLab"},
-		{"int", 503},
-		{"float", 50.3},
-		{"time", time.Now()},
-		{"struct", struct{}{}},
-	}
-
-	for _, tt := range tests {
-		require.Equal(t, Ptr(tt.val), &tt.val, "TestPtr() got = %s want = %s")
-	}
-}

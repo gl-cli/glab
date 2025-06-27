@@ -86,19 +86,6 @@ var secureCipherSuites = []uint16{
 	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 }
 
-func tlsConfig(host string, allowInsecure bool) *tls.Config {
-	config := &tls.Config{
-		MinVersion:         tls.VersionTLS12,
-		InsecureSkipVerify: allowInsecure,
-	}
-
-	if host == "gitlab.com" {
-		config.CipherSuites = secureCipherSuites
-	}
-
-	return config
-}
-
 // NewClient initializes a api client for use throughout glab.
 func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken bool, userAgent string, options ...ClientOption) (*Client, error) {
 	client := &Client{

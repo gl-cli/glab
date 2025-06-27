@@ -69,37 +69,6 @@ type Ref struct {
 	Name string
 }
 
-// TrackingRef represents a ref for a remote tracking branch
-type TrackingRef struct {
-	RemoteName string
-	BranchName string
-}
-
-func (r TrackingRef) String() string {
-	return "refs/remotes/" + r.RemoteName + "/" + r.BranchName
-}
-
-// ShowRefs resolves fully-qualified refs to commit hashes
-func ShowRefs(ref ...string) ([]Ref, error) {
-	args := append([]string{"show-ref", "--verify", "--"}, ref...)
-	showRef := exec.Command("git", args...)
-	output, err := run.PrepareCmd(showRef).Output()
-
-	var refs []Ref
-	for _, line := range outputLines(output) {
-		parts := strings.SplitN(line, " ", 2)
-		if len(parts) < 2 {
-			continue
-		}
-		refs = append(refs, Ref{
-			Hash: parts[0],
-			Name: parts[1],
-		})
-	}
-
-	return refs, err
-}
-
 // CurrentBranch reads the checked-out branch for the git repository
 func CurrentBranch() (string, error) {
 	refCmd := GitCommand("symbolic-ref", "--quiet", "--short", "HEAD")
@@ -174,24 +143,6 @@ func GitUserName() ([]byte, error) {
 type Commit struct {
 	Sha   string
 	Title string
-}
-
-func LatestCommit(ref string) (*Commit, error) {
-	logCmd := GitCommand("show", "-s", "--format=%h %s", ref)
-	output, err := run.PrepareCmd(logCmd).Output()
-	if err != nil {
-		return &Commit{}, err
-	}
-	commit := &Commit{}
-	split := strings.SplitN(string(output), " ", 2)
-	if len(split) != 2 {
-		return commit, fmt.Errorf("could not find commit for %s.", ref)
-	}
-	commit = &Commit{
-		Sha:   split[0],
-		Title: split[1],
-	}
-	return commit, nil
 }
 
 func Commits(baseRef, headRef string) ([]*Commit, error) {
@@ -295,12 +246,6 @@ func DeleteLocalBranch(branch string, gr GitRunner) error {
 	}
 
 	return nil
-}
-
-func HasLocalBranch(branch string) bool {
-	configCmd := GitCommand("rev-parse", "--verify", "refs/heads/"+branch)
-	_, err := run.PrepareCmd(configCmd).Output()
-	return err == nil
 }
 
 func CheckoutBranch(branch string, gr GitRunner) error {

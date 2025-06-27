@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bytes"
 	"fmt"
 	"net/url"
 	"path/filepath"
@@ -193,20 +192,6 @@ func IsValidURL(toTest string) bool {
 	return true
 }
 
-func ByteToHumanReadableFormat(b int) string {
-	const unit = 1000
-	if b < unit {
-		return fmt.Sprintf("%dB", b)
-	}
-	div, exp := unit, 0
-	for n := b / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f%cB",
-		float64(b)/float64(div), "kMGTPE"[exp])
-}
-
 // Map transfers the elements of its first argument using the result of the second fn(e)
 func Map[T1, T2 any](elems []T1, fn func(T1) T2) []T2 {
 	r := make([]T2, len(elems))
@@ -216,16 +201,4 @@ func Map[T1, T2 any](elems []T1, fn func(T1) T2) []T2 {
 	}
 
 	return r
-}
-
-// Ptr takes any value and returns a pointer to that value
-func Ptr[T any](v T) *T {
-	return &v
-}
-
-func FirstLine(output []byte) string {
-	if i := bytes.IndexAny(output, "\n"); i >= 0 {
-		return string(output)[0:i]
-	}
-	return string(output)
 }
