@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/mgutz/ansi"

@@ -16,7 +16,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 

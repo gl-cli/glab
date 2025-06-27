@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"

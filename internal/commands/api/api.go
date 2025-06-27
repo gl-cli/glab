@@ -16,7 +16,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"

@@ -9,7 +9,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
 	"github.com/MakeNowJust/heredoc/v2"

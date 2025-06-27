@@ -14,7 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 
 	"github.com/google/shlex"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"

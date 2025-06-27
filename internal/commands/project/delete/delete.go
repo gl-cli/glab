@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"

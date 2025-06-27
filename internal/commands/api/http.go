@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 )
 
 const (

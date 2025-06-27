@@ -7,7 +7,7 @@ import (
 	"slices"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	glab_api "gitlab.com/gitlab-org/cli/api"
+	glab_api "gitlab.com/gitlab-org/cli/internal/api"
 	"gopkg.in/yaml.v3"
 )
 

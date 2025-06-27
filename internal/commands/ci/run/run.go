@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"

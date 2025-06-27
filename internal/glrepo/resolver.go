@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 

@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/shlex"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	glab_api "gitlab.com/gitlab-org/cli/api"
+	glab_api "gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"

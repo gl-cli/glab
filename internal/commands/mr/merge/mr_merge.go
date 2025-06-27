@@ -14,7 +14,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/avast/retry-go/v4"
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 

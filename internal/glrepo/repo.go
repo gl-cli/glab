@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
 

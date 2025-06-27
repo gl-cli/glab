@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	glab_api "gitlab.com/gitlab-org/cli/api"
+	glab_api "gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"

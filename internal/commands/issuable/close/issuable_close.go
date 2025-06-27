@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"

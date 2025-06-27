@@ -13,7 +13,7 @@ import (
 	"github.com/acarl005/stripansi"
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 

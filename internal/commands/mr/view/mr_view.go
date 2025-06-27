@@ -8,7 +8,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	issuableView "gitlab.com/gitlab-org/cli/internal/commands/issuable/view"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"

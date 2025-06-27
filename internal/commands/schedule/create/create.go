@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
