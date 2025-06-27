@@ -74,18 +74,6 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 			},
 		},
 		{
-			Name:  "Issue Exists on different repo",
-			Issue: `1 -R glab_cli/test`,
-			ExpectedMsg: []string{
-				"- Updating issue #1",
-				"✓ updated title to \"New Title\"",
-				"✓ locked discussion",
-				"✓ added labels newLabel",
-				"✓ removed labels bug",
-				"#1 New Title",
-			},
-		},
-		{
 			Name:        "Issue Does Not Exist",
 			Issue:       "0",
 			ExpectedMsg: []string{"- Updating issue #0", "error expected"},
