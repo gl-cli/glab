@@ -104,7 +104,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "Create a group access token. Ignored if a user or repository argument is set.")
 	cmd.Flags().StringVarP(&opts.user, "user", "U", "", "Create a personal access token. For the current user, use @me.")
 	cmd.Flags().StringVarP(&opts.description, "description", "", "description", "Sets the token's description.")
-	cmd.Flags().DurationVarP(&opts.duration, "duration", "D", time.Duration(30*24*time.Hour), "Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h.")
+	cmd.Flags().DurationVarP(&opts.duration, "duration", "D", 30*24*time.Hour, "Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h.")
 	cmd.Flags().VarP(&opts.expireAt, "expires-at", "E", "Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used.")
 	cmd.Flags().StringSliceVarP(&opts.scopes, "scope", "S", []string{"read_repository"}, "Scopes for the token. For a list, see https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes.")
 	cmd.Flags().VarP(&opts.accessLevel, "access-level", "A", "Access level of the token: one of 'guest', 'reporter', 'developer', 'maintainer', 'owner'.")

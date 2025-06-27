@@ -229,5 +229,5 @@ func createShaBranch(f cmdutils.Factory, sha string, title string) (string, erro
 	branchTitle := []string{prefix, title, sha}
 
 	branch := strings.Join(branchTitle, "-")
-	return string(branch), nil
+	return branch, nil
 }

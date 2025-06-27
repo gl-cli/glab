@@ -100,7 +100,7 @@ func TestFileLimitExceeded(t *testing.T) {
 	reader, err := toByteReader(zip.Name())
 	require.NoError(t, err)
 
-	err = readZip(reader, os.TempDir(), int64(defaultZIPReadLimit), 50)
+	err = readZip(reader, os.TempDir(), defaultZIPReadLimit, 50)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "zip archive includes too many files")
 }
