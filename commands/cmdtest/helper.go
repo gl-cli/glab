@@ -255,6 +255,15 @@ type CmdFunc func(cmdutils.Factory) *cobra.Command
 // FactoryOption is a function that configures a Factory
 type FactoryOption func(f *Factory)
 
+// WithApiClient configures the Factory with a specific API client
+func WithApiClient(client *api.Client) FactoryOption {
+	return func(f *Factory) {
+		f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return client, nil
+		}
+	}
+}
+
 // WithGitLabClient configures the Factory with a specific GitLab client
 func WithGitLabClient(client *gitlab.Client) FactoryOption {
 	return func(f *Factory) {

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
@@ -55,21 +56,21 @@ func CheckUpdate(f cmdutils.Factory, silentSuccess bool) error {
 	}
 
 	// We set the project to the `glab` project to check for `glab` updates
-	f.RepoOverride(defaultProjectURL)
-	repo, err := f.BaseRepo()
+	repo, err := glrepo.FromFullName(defaultProjectURL, f.DefaultHostname())
 	if err != nil {
 		return err
 	}
-	apiClient, err := f.HttpClient()
+	apiClient, err := f.ApiClient(repo.RepoHost(), f.Config())
 	if err != nil {
 		return err
 	}
+	gitlabClient := apiClient.Lab()
 
 	// Since the `gitlab.com/gitlab-org/cli` is public, we remove the token
 	// for this single request. When users have a `GITLAB_TOKEN` set with a
 	// token for GitLab Self-Managed or GitLab Dedicated, we shouldn't use it
 	// to authenticate to gitlab.com.
-	releases, _, err := apiClient.Releases.ListReleases(
+	releases, _, err := gitlabClient.Releases.ListReleases(
 		repo.FullName(), &gitlab.ListReleasesOptions{ListOptions: gitlab.ListOptions{Page: 1, PerPage: 1}}, gitlab.WithToken(gitlab.PrivateToken, ""))
 	if err != nil {
 		return fmt.Errorf("failed checking for glab updates: %s", err.Error())
