@@ -63,7 +63,7 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 	}{
 		{
 			Name:  "Issue Exists",
-			Issue: `1 -t "New Title" -d "A new description" --lock-discussion -l newLabel --unlabel bug`,
+			Issue: fmt.Sprintf(`-R %s/cli-automated-testing/test 1 -t "New Title" -d "A new description" --lock-discussion -l newLabel --unlabel bug`, glTestHost),
 			ExpectedMsg: []string{
 				"- Updating issue #1",
 				"✓ updated title to \"New Title\"",
@@ -97,10 +97,9 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 	require.NoError(t, err)
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	f := cmdutils.NewFactory(ios, false, cfg, api.BuildInfo{})
-	f.RepoOverride(glTestHost + "/cli-automated-testing/test")
 
 	cmd := NewCmdUpdate(f)
-	cmd.Flags().StringP("repo", "R", "", "")
+	cmdutils.EnableRepoOverride(cmd, f)
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {

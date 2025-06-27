@@ -65,10 +65,9 @@ func Test_IssueCreate_Integration(t *testing.T) {
 	require.NoError(t, err)
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	f := cmdutils.NewFactory(ios, false, cfg, api.BuildInfo{})
-	f.RepoOverride(glTestHost + "/cli-automated-testing/test")
 
 	cmd := NewCmdCreate(f)
-	cmd.Flags().StringP("repo", "R", "", "")
+	cmdutils.EnableRepoOverride(cmd, f)
 
 	cliStr := []string{
 		"-t", "myissuetitle",
@@ -140,7 +139,6 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 	require.NoError(t, err)
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	f := cmdutils.NewFactory(ios, false, cfg, api.BuildInfo{})
-	f.RepoOverride(glTestHost + "/cli-automated-testing/test")
 
 	oldCreateRun := createRun
 
@@ -150,7 +148,7 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 	}
 
 	cmd := NewCmdCreate(f)
-	cmd.Flags().StringP("repo", "R", "", "")
+	cmdutils.EnableRepoOverride(cmd, f)
 
 	cliStr := []string{
 		"-t", "myissuetitle",
