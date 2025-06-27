@@ -26,6 +26,7 @@ type options struct {
 
 	group        string
 	outputFormat string
+	instance     bool
 }
 
 func NewCmdList(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
@@ -43,6 +44,7 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *options) error) *cobra.Comma
 		Args:    cobra.ExactArgs(0),
 		Example: heredoc.Doc(`
 			$ glab variable list
+			$ glab variable list -i
 			$ glab variable list --per-page 100 --page 1
 			$ glab variable list --group gitlab-org
 			$ glab variable list --group gitlab-org --per-page 100
@@ -66,6 +68,7 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *options) error) *cobra.Comma
 	cmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json.")
 	cmd.Flags().IntVarP(&opts.perPage, "per-page", "P", 20, "Number of items to list per page.")
 	cmd.Flags().IntVarP(&opts.page, "page", "p", 1, "Page number.")
+	cmd.Flags().BoolVarP(&opts.instance, "instance", "i", false, "Display instance variables.")
 
 	return cmd
 }
@@ -113,6 +116,22 @@ func (o *options) run() error {
 		} else {
 			for _, variable := range variables {
 				table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, variable.EnvironmentScope, variable.Description)
+			}
+		}
+	} else if o.instance {
+		o.io.Logf("Listing variables for the instance\n\n")
+		listOpts := &gitlab.ListInstanceVariablesOptions{Page: o.page, PerPage: o.perPage}
+		variables, _, err := client.InstanceVariables.ListVariables(listOpts)
+		if err != nil {
+			return err
+		}
+		if o.outputFormat == "json" {
+			varListJSON, _ := json.Marshal(variables)
+			fmt.Fprintln(o.io.StdOut, string(varListJSON))
+
+		} else {
+			for _, variable := range variables {
+				table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, "", variable.Description)
 			}
 		}
 	} else {
