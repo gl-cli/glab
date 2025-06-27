@@ -43,6 +43,13 @@ linters:
               - pkg: "gitlab.com/gitlab-org/cli/internal/cmdutils"
                 desc: "internal/cmdutils should only be imported from packages under internal/commands/"
 
+          no-testing-in-production:
+            files:
+              - "!$test"
+            deny:
+              - pkg: "gitlab.com/gitlab-org/cli/internal/testing/**"
+                desc: "Testing utilities should only be used in test files"
+
 formatters:
     enable:
         - gofumpt
