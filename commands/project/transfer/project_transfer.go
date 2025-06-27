@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
 func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
@@ -20,18 +21,30 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 
+			var gitlabClient *gitlab.Client
+			var repo glrepo.Interface
 			if len(args) != 0 {
-				f.RepoOverride(args[0])
-			}
+				// repository is coming from command args, not -R
+				repo, err = glrepo.FromFullName(args[0], f.DefaultHostname())
+				if err != nil {
+					return err
+				}
 
-			apiClient, err := f.HttpClient()
-			if err != nil {
-				return err
-			}
+				apiClient, err := f.ApiClient(repo.RepoHost(), f.Config())
+				if err != nil {
+					return err
+				}
 
-			repo, err := f.BaseRepo()
-			if err != nil {
-				return err
+				gitlabClient = apiClient.Lab()
+			} else {
+				gitlabClient, err = f.HttpClient()
+				if err != nil {
+					return err
+				}
+				repo, err = f.BaseRepo()
+				if err != nil {
+					return err
+				}
 			}
 
 			dontPromptForConfirmation, err := cmd.Flags().GetBool("yes")
@@ -69,7 +82,7 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 			opt := &gitlab.TransferProjectOptions{}
 			opt.Namespace = targetNamespace
 
-			project, _, err := apiClient.Projects.TransferProject(repo.FullName(), opt)
+			project, _, err := gitlabClient.Projects.TransferProject(repo.FullName(), opt)
 			if err != nil {
 				return err
 			}

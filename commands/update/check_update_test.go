@@ -26,7 +26,12 @@ func runCommand(rt http.RoundTripper, version string) (*test.CmdOut, error) {
 		return nil, err
 	}
 
-	factory := cmdtest.NewTestFactory(ios, cmdtest.WithGitLabClient(tc.Lab()), cmdtest.WithBuildInfo(api.BuildInfo{Version: version}))
+	factory := cmdtest.NewTestFactory(
+		ios,
+		cmdtest.WithApiClient(tc),
+		cmdtest.WithGitLabClient(tc.Lab()),
+		cmdtest.WithBuildInfo(api.BuildInfo{Version: version}),
+	)
 	_, _ = factory.HttpClient()
 
 	cmd := NewCheckUpdateCmd(factory)
