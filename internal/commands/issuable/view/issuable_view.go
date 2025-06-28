@@ -166,16 +166,15 @@ func assigneesList(opts *options) string {
 	return strings.Join(assignees, ", ")
 }
 
-func issueState(opts *options, c *iostreams.ColorPalette) (state string) {
-	if opts.issue.State == "opened" {
-		state = c.Green("open")
-	} else if opts.issue.State == "locked" {
-		state = c.Blue(opts.issue.State)
-	} else {
-		state = c.Red(opts.issue.State)
+func issueState(opts *options, c *iostreams.ColorPalette) string {
+	switch {
+	case opts.issue.State == "opened":
+		return c.Green("open")
+	case opts.issue.State == "locked":
+		return c.Blue(opts.issue.State)
+	default:
+		return c.Red(opts.issue.State)
 	}
-
-	return
 }
 
 func printTTYIssuePreview(opts *options) {

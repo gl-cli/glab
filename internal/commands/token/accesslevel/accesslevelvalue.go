@@ -38,7 +38,8 @@ func (a *AccessLevel) String() string {
 	return fmt.Sprintf("%d", a.Value)
 }
 
-func (a *AccessLevel) Set(value string) (err error) {
+func (a *AccessLevel) Set(value string) error {
+	var err error
 	*a, err = CreateAccessLevelFromString(value)
 	return err
 }

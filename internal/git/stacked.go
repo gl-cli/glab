@@ -49,9 +49,8 @@ func SetLocalConfig(key, value string) error {
 	return nil
 }
 
-func GetCurrentStackTitle() (title string, err error) {
-	title, err = Config("glab.currentstack")
-	return
+func GetCurrentStackTitle() (string, error) {
+	return Config("glab.currentstack")
 }
 
 func AddStackRefDir(dir string) (string, error) {
@@ -144,7 +143,7 @@ func UpdateStackRefFile(title string, s StackRef) error {
 	return nil
 }
 
-func GetStacks() (stacks []Stack, err error) {
+func GetStacks() ([]Stack, error) {
 	topLevelDir, err := ToplevelDir()
 	if err != nil {
 		return nil, err
@@ -154,11 +153,12 @@ func GetStacks() (stacks []Stack, err error) {
 	if err != nil {
 		return nil, err
 	}
+	var stacks []Stack
 	for _, v := range entries {
 		if !v.IsDir() {
 			continue
 		}
 		stacks = append(stacks, Stack{Title: v.Name()})
 	}
-	return
+	return stacks, nil
 }

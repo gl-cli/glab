@@ -156,16 +156,15 @@ func reviewersList(mr *gitlab.MergeRequest) string {
 	return strings.Join(reviewers, ", ")
 }
 
-func mrState(c *iostreams.ColorPalette, mr *gitlab.MergeRequest) (mrState string) {
-	if mr.State == "opened" {
-		mrState = c.Green("open")
-	} else if mr.State == "merged" {
-		mrState = c.Blue(mr.State)
-	} else {
-		mrState = c.Red(mr.State)
+func mrState(c *iostreams.ColorPalette, mr *gitlab.MergeRequest) string {
+	switch mr.State {
+	case "opened":
+		return c.Green("open")
+	case "merged":
+		return c.Blue(mr.State)
+	default:
+		return c.Red(mr.State)
 	}
-
-	return mrState
 }
 
 func printTTYMRPreview(opts *options, mr *gitlab.MergeRequest, mrApprovals *gitlab.MergeRequestApprovalState, notes []*gitlab.Note) {

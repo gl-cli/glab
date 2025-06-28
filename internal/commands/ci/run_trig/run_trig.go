@@ -17,7 +17,7 @@ import (
 
 var envVariables = []string{}
 
-func parseVarArg(s string) (key string, val string, err error) {
+func parseVarArg(s string) (string, string, error) {
 	// From https://pkg.go.dev/strings#Split:
 	//
 	// > If s does not contain sep and sep is not empty,

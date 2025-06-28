@@ -31,18 +31,18 @@ func IsTelemetryEnabled(cfg config.Config) bool {
 }
 
 // parseCommand parses a command string and returns components
-func parseCommand(parts []string) (command, subcommand, fullCommand string) {
+func parseCommand(parts []string) (string, string, string) {
 	if len(parts) < 2 {
 		return "", "", ""
 	}
 
 	// glab is always the first value, command is the next
-	command = parts[1]
+	command := parts[1]
 
 	subcommandParts := parts[2:]
-	subcommand = strings.Join(subcommandParts, " ")
+	subcommand := strings.Join(subcommandParts, " ")
 
-	fullCommand = command
+	fullCommand := command
 	if subcommand != "" {
 		fullCommand += " " + subcommand
 	}

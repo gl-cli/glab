@@ -103,10 +103,8 @@ type ConfigEntry struct {
 	Index     int
 }
 
-func (cm *ConfigMap) FindEntry(key string) (ce *ConfigEntry, err error) {
-	err = nil
-
-	ce = &ConfigEntry{}
+func (cm *ConfigMap) FindEntry(key string) (*ConfigEntry, error) {
+	ce := &ConfigEntry{}
 
 	topLevelKeys := cm.Root.Content
 	for i, v := range topLevelKeys {
@@ -116,7 +114,7 @@ func (cm *ConfigMap) FindEntry(key string) (ce *ConfigEntry, err error) {
 			if i+1 < len(topLevelKeys) {
 				ce.ValueNode = topLevelKeys[i+1]
 			}
-			return
+			return ce, nil
 		}
 	}
 
@@ -178,9 +176,9 @@ func (c *fileConfig) Get(hostname, key string) (string, error) {
 	return val, err
 }
 
-func (c *fileConfig) GetWithSource(hostname, key string, searchENVVars bool) (value, source string, err error) {
+func (c *fileConfig) GetWithSource(hostname, key string, searchENVVars bool) (string, string, error) {
 	if searchENVVars {
-		value, source = GetFromEnvWithSource(key)
+		value, source := GetFromEnvWithSource(key)
 		if value != "" {
 			return value, source, nil
 		}
@@ -218,10 +216,10 @@ func (c *fileConfig) GetWithSource(hostname, key string, searchENVVars bool) (va
 		}
 	}
 
-	source = ConfigFile()
+	source := ConfigFile()
 
 	l, _ := c.Local()
-	value, err = l.GetStringValue(key)
+	value, err := l.GetStringValue(key)
 
 	if (err != nil && isNotFoundError(err)) || value == "" {
 		value, err = c.GetStringValue(key)
@@ -499,21 +497,19 @@ func (c *fileConfig) parseHosts(hostsEntry *yaml.Node) ([]*HostConfig, error) {
 // GetFromEnv is just a wrapper for os.GetEnv but checks for matching names used in previous glab versions and
 // retrieves the value of the environment if any of the matching names have been set.
 // It returns the value, which will be empty if the variable is not present.
-func GetFromEnv(key string) (value string) {
-	value, _ = GetFromEnvWithSource(key)
-	return
+func GetFromEnv(key string) string {
+	value, _ := GetFromEnvWithSource(key)
+	return value
 }
 
 // GetFromEnvWithSource works like GetFromEnv but also returns the name of the environment variable that was
 // set as the source.
-func GetFromEnvWithSource(key string) (value, source string) {
+func GetFromEnvWithSource(key string) (string, string) {
 	envEq := EnvKeyEquivalence(key)
 	for _, e := range envEq {
 		if val := os.Getenv(e); val != "" {
-			value = val
-			source = e
-			break
+			return val, e
 		}
 	}
-	return
+	return "", ""
 }

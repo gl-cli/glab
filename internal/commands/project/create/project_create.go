@@ -261,15 +261,16 @@ func initialiseRepo(projectPath, remoteURL string) error {
 	return nil
 }
 
-func projectPathFromArgs(args []string, defaultHostname string) (host, namespace, project string) {
+func projectPathFromArgs(args []string, defaultHostname string) (string, string, string) {
 	// sanitize input by removing trailing "/"
-	project = strings.TrimSuffix(args[0], "/")
+	project := strings.TrimSuffix(args[0], "/")
 
+	var host, namespace string
 	if strings.Contains(project, "/") {
 		pp, _ := glrepo.FromFullName(project, defaultHostname)
 		host = pp.RepoHost()
 		project = pp.RepoName()
 		namespace = pp.RepoNamespace()
 	}
-	return
+	return host, namespace, project
 }

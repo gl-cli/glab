@@ -25,8 +25,9 @@ func NormalizeHostname(h string) string {
 }
 
 // StripHostProtocol strips the url protocol and returns the hostname and the protocol
-func StripHostProtocol(h string) (hostname, protocol string) {
-	hostname = NormalizeHostname(h)
+func StripHostProtocol(h string) (string, string) {
+	hostname := NormalizeHostname(h)
+	var protocol string
 	if strings.HasPrefix(hostname, "http://") {
 		protocol = "http"
 	} else {
@@ -34,7 +35,7 @@ func StripHostProtocol(h string) (hostname, protocol string) {
 	}
 	hostname = strings.TrimPrefix(hostname, protocol)
 	hostname = strings.Trim(hostname, ":/")
-	return
+	return hostname, protocol
 }
 
 // APIEndpoint returns the REST API endpoint prefix for a GitLab instance :)

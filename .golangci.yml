@@ -10,6 +10,7 @@ linters:
         - errcheck
         - govet
         - ineffassign
+        - nonamedreturns
         - staticcheck
         - unconvert
         - unparam

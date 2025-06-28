@@ -18,32 +18,31 @@ import (
 // ExpandAlias processes argv to see if it should be rewritten according to a user's aliases. The
 // second return value indicates whether the alias should be executed in a new shell process instead
 // of running gh itself.
-func ExpandAlias(cfg config.Config, args []string, findShFunc func() (string, error)) (expanded []string, isShell bool, err error) {
+func ExpandAlias(cfg config.Config, args []string, findShFunc func() (string, error)) ([]string, bool, error) {
 	if len(args) < 2 {
 		// the command is lacking a subcommand
-		return
+		return nil, false, nil
 	}
-	expanded = args[1:]
+	expanded := args[1:]
 
 	aliases, err := cfg.Aliases()
 	if err != nil {
-		return
+		return expanded, false, err
 	}
 
 	expansion, ok := aliases.Get(args[1])
 	if !ok {
-		return
+		return expanded, false, nil
 	}
 
 	if strings.HasPrefix(expansion, "!") {
-		isShell = true
+		isShell := true
 		if findShFunc == nil {
 			findShFunc = findSh
 		}
 		shPath, shErr := findShFunc()
 		if shErr != nil {
-			err = shErr
-			return
+			return nil, false, shErr
 		}
 
 		expanded = []string{shPath, "-c", expansion[1:]}
@@ -53,7 +52,7 @@ func ExpandAlias(cfg config.Config, args []string, findShFunc func() (string, er
 			expanded = append(expanded, args[2:]...)
 		}
 
-		return
+		return expanded, isShell, nil
 	}
 
 	var extraArgs []string
@@ -66,18 +65,17 @@ func ExpandAlias(cfg config.Config, args []string, findShFunc func() (string, er
 	}
 	lingeringRE := regexp.MustCompile(`\$\d`)
 	if lingeringRE.MatchString(expansion) {
-		err = fmt.Errorf("not enough arguments for alias: %s", expansion)
-		return
+		return nil, false, fmt.Errorf("not enough arguments for alias: %s", expansion)
 	}
 
 	var newArgs []string
 	newArgs, err = shlex.Split(expansion)
 	if err != nil {
-		return
+		return nil, false, err
 	}
 
 	expanded = append(newArgs, extraArgs...)
-	return
+	return expanded, false, nil
 }
 
 func findSh() (string, error) {

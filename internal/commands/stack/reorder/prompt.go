@@ -11,7 +11,8 @@ import (
 )
 
 // parseReorderFile removes comments and trims space for all non-comment lines
-func parseReorderFile(input string) (branches []string, err error) {
+func parseReorderFile(input string) ([]string, error) {
+	branches := []string{}
 	for line := range strings.SplitSeq(input, "\n") {
 		if strings.HasPrefix(line, "#") {
 			continue
@@ -26,12 +27,11 @@ func parseReorderFile(input string) (branches []string, err error) {
 		if (len(branchLine) == 1) || hasComment(branchLine) {
 			branches = append(branches, strings.TrimSpace(branchLine[0]))
 		} else {
-			return []string{},
-				fmt.Errorf("improperly formatted reorder file: unexpected content after branch name on line %q", line)
+			return []string{}, fmt.Errorf("improperly formatted reorder file: unexpected content after branch name on line %q", line)
 		}
 
 	}
-	return
+	return branches, nil
 }
 
 func promptForOrder(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, stack git.Stack, branch string) ([]string, error) {

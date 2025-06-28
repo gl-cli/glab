@@ -73,7 +73,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			- glab token list --user johndoe
 		`,
 		),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(cmd); err != nil {
 				return err
 			}

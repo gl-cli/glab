@@ -494,14 +494,15 @@ func (n *navigator) Navigate(jobs []*ViewJob, event *tcell.EventKey) *ViewJob {
 	return jobs[n.idx]
 }
 
-func stageBounds(jobs []*ViewJob, s string) (l, u int) {
+func stageBounds(jobs []*ViewJob, s string) (int, int) {
 	if len(jobs) <= 1 {
 		return 0, 0
 	}
+	var l, u int
 	p := jobs[0].Stage
 	for i, v := range jobs {
 		if v.Stage != s && u != 0 {
-			return
+			return l, u
 		}
 		if v.Stage != p {
 			l = i
@@ -511,19 +512,20 @@ func stageBounds(jobs []*ViewJob, s string) (l, u int) {
 			u = i
 		}
 	}
-	return
+	return l, u
 }
 
-func adjacentStages(jobs []*ViewJob, s string) (p, n string) {
+func adjacentStages(jobs []*ViewJob, s string) (string, string) {
 	if len(jobs) == 0 {
 		return "", ""
 	}
-	p = jobs[0].Stage
+	p := jobs[0].Stage
 
+	var n string
 	for _, v := range jobs {
 		if v.Stage != s && n != "" {
 			n = v.Stage
-			return
+			return p, n
 		}
 		if v.Stage == s {
 			n = "cur"
@@ -533,7 +535,7 @@ func adjacentStages(jobs []*ViewJob, s string) (p, n string) {
 		}
 	}
 	n = jobs[len(jobs)-1].Stage
-	return
+	return p, n
 }
 
 func jobsView(

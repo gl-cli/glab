@@ -62,7 +62,7 @@ func NewCmdFork(f cmdutils.Factory) *cobra.Command {
 			$ glab repo fork namespace/repo --clone
 		`),
 		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(cmd, args)
 
 			return opts.run()

@@ -62,7 +62,9 @@ func DisplayRelease(io *iostreams.IOStreams, r *gitlab.Release, repo glrepo.Inte
 	)
 }
 
-func AssetsFromArgs(args []string) (assets []*upload.ReleaseFile, err error) {
+func AssetsFromArgs(args []string) ([]*upload.ReleaseFile, error) {
+	// assets := make([]*upload.ReleaseFile, 0, len(args))
+	var assets []*upload.ReleaseFile
 	for _, arg := range args {
 		var label string
 		var linkType string
@@ -78,9 +80,9 @@ func AssetsFromArgs(args []string) (assets []*upload.ReleaseFile, err error) {
 		}
 
 		var fi os.FileInfo
-		fi, err = os.Stat(fn)
+		fi, err := os.Stat(fn)
 		if err != nil {
-			return
+			return assets, err
 		}
 
 		if label == "" {
@@ -105,7 +107,7 @@ func AssetsFromArgs(args []string) (assets []*upload.ReleaseFile, err error) {
 
 		assets = append(assets, rf)
 	}
-	return
+	return assets, nil
 }
 
 func CreateReleaseAssets(io *iostreams.IOStreams, client *gitlab.Client, assetFiles []*upload.ReleaseFile, assetLinks []*upload.ReleaseAsset, repoName string, tagName string) error {

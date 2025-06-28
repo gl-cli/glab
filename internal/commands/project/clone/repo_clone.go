@@ -253,7 +253,7 @@ func groupClone(opts *options, ctxOpts *ContextOpts) error {
 	return nil
 }
 
-func cloneRun(opts *options, ctxOpts *ContextOpts) (err error) {
+func cloneRun(opts *options, ctxOpts *ContextOpts) error {
 	if !git.IsValidURL(ctxOpts.Repo) {
 		// Assuming that repo is a project ID if it is an integer
 		if _, err := strconv.ParseInt(ctxOpts.Repo, 10, 64); err != nil {
@@ -263,10 +263,11 @@ func cloneRun(opts *options, ctxOpts *ContextOpts) (err error) {
 			}
 		}
 		if ctxOpts.Project == nil {
-			ctxOpts.Project, err = api.GetProject(opts.apiClient.Lab(), ctxOpts.Repo)
+			p, err := api.GetProject(opts.apiClient.Lab(), ctxOpts.Repo)
 			if err != nil {
-				return
+				return err
 			}
+			ctxOpts.Project = p
 		}
 		ctxOpts.Repo = glrepo.RemoteURL(ctxOpts.Project, opts.protocol)
 	} else if !strings.HasSuffix(ctxOpts.Repo, ".git") {
@@ -277,9 +278,9 @@ func cloneRun(opts *options, ctxOpts *ContextOpts) (err error) {
 		namespacedDir := ctxOpts.Project.PathWithNamespace
 		opts.dir = namespacedDir
 	}
-	_, err = git.RunClone(ctxOpts.Repo, opts.dir, opts.gitFlags)
+	_, err := git.RunClone(ctxOpts.Repo, opts.dir, opts.gitFlags)
 	if err != nil {
-		return
+		return err
 	}
 	// Cloned project was a fork belonging to the user; user is
 	// treating fork's ssh/https url as origin. Add upstream as remote pointing
@@ -300,5 +301,5 @@ func cloneRun(opts *options, ctxOpts *ContextOpts) (err error) {
 			}
 		}
 	}
-	return
+	return nil
 }

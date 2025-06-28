@@ -21,7 +21,7 @@ func isPossibleProtocol(u string) bool {
 }
 
 // ParseURL normalizes git remote urls
-func ParseURL(rawURL string) (u *url.URL, err error) {
+func ParseURL(rawURL string) (*url.URL, error) {
 	if !isPossibleProtocol(rawURL) &&
 		strings.ContainsRune(rawURL, ':') &&
 		// not a Windows path
@@ -30,9 +30,9 @@ func ParseURL(rawURL string) (u *url.URL, err error) {
 		rawURL = "ssh://" + strings.Replace(rawURL, ":", "/", 1)
 	}
 
-	u, err = url.Parse(rawURL)
+	u, err := url.Parse(rawURL)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	if u.Scheme == "git+ssh" {
@@ -40,7 +40,7 @@ func ParseURL(rawURL string) (u *url.URL, err error) {
 	}
 
 	if u.Scheme != "ssh" {
-		return
+		return u, nil
 	}
 
 	if strings.HasPrefix(u.Path, "//") {
@@ -51,7 +51,7 @@ func ParseURL(rawURL string) (u *url.URL, err error) {
 		u.Host = u.Host[0:idx]
 	}
 
-	return
+	return u, nil
 }
 
 // IsValidUrl tests a string to determine if it is a valid Git url or not.

@@ -164,11 +164,12 @@ func PresentInIntSlice(hay []int, needle int) bool {
 
 // CommonElementsInStringSlice takes 2 Slices of Strings and returns a Third Slice
 // that is the common elements between the first 2 Slices.
-func CommonElementsInStringSlice(s1 []string, s2 []string) (arr []string) {
+func CommonElementsInStringSlice(s1 []string, s2 []string) []string {
 	hash := make(map[string]bool)
 	for x := range s1 {
 		hash[s1[x]] = true
 	}
+	var arr []string
 	for i := range s2 {
 		if hash[s2[i]] {
 			arr = append(arr, s2[i])

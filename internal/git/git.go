@@ -208,13 +208,14 @@ type BranchConfig struct {
 }
 
 // ReadBranchConfig parses the `branch.BRANCH.(remote|merge)` part of git config
-func ReadBranchConfig(branch string) (cfg BranchConfig) {
+func ReadBranchConfig(branch string) BranchConfig {
 	prefix := regexp.QuoteMeta(fmt.Sprintf("branch.%s.", branch))
 	configCmd := GitCommand("config", "--get-regexp", fmt.Sprintf("^%s(remote|merge)$", prefix))
 	output, err := run.PrepareCmd(configCmd).Output()
 	if err != nil {
-		return
+		return BranchConfig{}
 	}
+	cfg := BranchConfig{}
 	for _, line := range outputLines(output) {
 		parts := strings.SplitN(line, " ", 2)
 		if len(parts) < 2 {
@@ -236,7 +237,7 @@ func ReadBranchConfig(branch string) (cfg BranchConfig) {
 			cfg.MergeRef = parts[1]
 		}
 	}
-	return
+	return cfg
 }
 
 func DeleteLocalBranch(branch string, gr GitRunner) error {
@@ -263,7 +264,7 @@ func CheckoutNewBranch(branch string) error {
 	return err
 }
 
-func RunClone(cloneURL string, target string, args []string) (cloneDir string, err error) {
+func RunClone(cloneURL string, target string, args []string) (string, error) {
 	cloneArgs := append(args, cloneURL)
 
 	// If the args contain an explicit target, pass it to clone
@@ -281,7 +282,7 @@ func RunClone(cloneURL string, target string, args []string) (cloneDir string, e
 	cloneCmd.Stdout = os.Stdout
 	cloneCmd.Stderr = os.Stderr
 
-	err = run.PrepareCmd(cloneCmd).Run()
+	err := run.PrepareCmd(cloneCmd).Run()
 	return target, err
 }
 
@@ -373,7 +374,8 @@ func Remotes() (RemoteSet, error) {
 	return remotes, nil
 }
 
-func parseRemotes(gitRemotes []string) (remotes RemoteSet) {
+func parseRemotes(gitRemotes []string) RemoteSet {
+	remotes := RemoteSet{}
 	for _, r := range gitRemotes {
 		match := remoteRE.FindStringSubmatch(r)
 		if match == nil {
@@ -407,7 +409,7 @@ func parseRemotes(gitRemotes []string) (remotes RemoteSet) {
 			rem.PushURL = u
 		}
 	}
-	return
+	return remotes
 }
 
 // AddRemote adds a new git remote and auto-fetches objects from it
@@ -510,13 +512,12 @@ func outputContainsLine(output []byte, needle string) bool {
 	return slices.Contains(outputLines(output), needle)
 }
 
-func RunCmd(args []string) (err error) {
+func RunCmd(args []string) error {
 	gitCmd := GitCommand(args...)
 	gitCmd.Stdout = os.Stdout
 	gitCmd.Stderr = os.Stderr
 
-	err = run.PrepareCmd(gitCmd).Run()
-	return
+	return run.PrepareCmd(gitCmd).Run()
 }
 
 // DescribeByTags gives a description of the current object.

@@ -98,13 +98,12 @@ func gitCredentialHelperKey(hostname, protocol string) string {
 	return fmt.Sprintf("credential.%s://%s.helper", protocol, hostname)
 }
 
-func gitCredentialHelper(hostname, protocol string) (helper string, err error) {
-	helper, err = git.Config(gitCredentialHelperKey(hostname, protocol))
+func gitCredentialHelper(hostname, protocol string) (string, error) {
+	helper, err := git.Config(gitCredentialHelperKey(hostname, protocol))
 	if helper != "" {
-		return
+		return helper, err
 	}
-	helper, err = git.Config("credential.helper")
-	return
+	return git.Config("credential.helper")
 }
 
 func isOurCredentialHelper(cmd string) bool {

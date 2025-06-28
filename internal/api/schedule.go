@@ -63,8 +63,8 @@ var EditScheduleVariable = func(client *gitlab.Client, repo string, scheduleId i
 	return nil
 }
 
-var DeleteScheduleVariable = func(client *gitlab.Client, repo string, scheduleId int, variableKey string, opts ...gitlab.RequestOptionFunc) (err error) {
-	_, _, err = client.PipelineSchedules.DeletePipelineScheduleVariable(repo, scheduleId, variableKey, opts...)
+var DeleteScheduleVariable = func(client *gitlab.Client, repo string, scheduleId int, variableKey string, opts ...gitlab.RequestOptionFunc) error {
+	_, _, err := client.PipelineSchedules.DeletePipelineScheduleVariable(repo, scheduleId, variableKey, opts...)
 	if err != nil {
 		return fmt.Errorf("deleting scheduled pipeline status: %w", err)
 	}
@@ -72,8 +72,8 @@ var DeleteScheduleVariable = func(client *gitlab.Client, repo string, scheduleId
 	return nil
 }
 
-var DeleteSchedule = func(client *gitlab.Client, scheduleId int, repo string, opts ...gitlab.RequestOptionFunc) (err error) {
-	_, err = client.PipelineSchedules.DeletePipelineSchedule(repo, scheduleId, opts...)
+var DeleteSchedule = func(client *gitlab.Client, scheduleId int, repo string, opts ...gitlab.RequestOptionFunc) error {
+	_, err := client.PipelineSchedules.DeletePipelineSchedule(repo, scheduleId, opts...)
 	if err != nil {
 		return fmt.Errorf("deleting scheduled pipeline status: %w", err)
 	}

@@ -305,7 +305,7 @@ func (o *options) run() error {
 	return nil
 }
 
-func processResponse(resp *http.Response, opts *options, headersOutputStream io.Writer) (endCursor string, err error) {
+func processResponse(resp *http.Response, opts *options, headersOutputStream io.Writer) (string, error) {
 	if opts.showResponseHeaders {
 		fmt.Fprintln(headersOutputStream, resp.Proto, resp.Status)
 		printHeaders(headersOutputStream, resp.Header, opts.io.ColorEnabled())
@@ -313,7 +313,7 @@ func processResponse(resp *http.Response, opts *options, headersOutputStream io.
 	}
 
 	if resp.StatusCode == http.StatusNoContent {
-		return
+		return "", nil
 	}
 	var responseBody io.Reader = resp.Body
 
@@ -321,9 +321,10 @@ func processResponse(resp *http.Response, opts *options, headersOutputStream io.
 
 	var serverError string
 	if isJSON && (opts.requestPath == "graphql" || resp.StatusCode >= http.StatusBadRequest) {
+		var err error
 		responseBody, serverError, err = parseErrorResponse(responseBody, resp.StatusCode)
 		if err != nil {
-			return
+			return "", err
 		}
 	}
 
@@ -334,6 +335,7 @@ func processResponse(resp *http.Response, opts *options, headersOutputStream io.
 		responseBody = io.TeeReader(responseBody, bodyCopy)
 	}
 
+	var err error
 	if isJSON && opts.io.ColorEnabled() {
 		out := &bytes.Buffer{}
 		_, err = io.Copy(out, responseBody)
@@ -345,24 +347,22 @@ func processResponse(resp *http.Response, opts *options, headersOutputStream io.
 		_, err = io.Copy(opts.io.StdOut, responseBody)
 	}
 	if err != nil {
-		return
+		return "", err
 	}
 
 	if serverError != "" {
 		fmt.Fprintf(opts.io.StdErr, "glab: %s\n", serverError)
-		err = cmdutils.SilentError
-		return
+		return "", cmdutils.SilentError
 	} else if resp.StatusCode > 299 {
 		fmt.Fprintf(opts.io.StdErr, "glab: HTTP %d\n", resp.StatusCode)
-		err = cmdutils.SilentError
-		return
+		return "", cmdutils.SilentError
 	}
 
 	if isGraphQLPaginate {
-		endCursor = findEndCursor(bodyCopy)
+		return findEndCursor(bodyCopy), nil
 	}
 
-	return
+	return "", nil
 }
 
 var placeholderRE = regexp.MustCompile(`:(group/:namespace/:repo|namespace/:repo|fullpath|id|user|username|group|namespace|repo|branch)\b`)

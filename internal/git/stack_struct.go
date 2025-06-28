@@ -182,12 +182,13 @@ func (s *Stack) Iter() iter.Seq[StackRef] {
 	}
 }
 
-func (s *Stack) Branches() (branches []string) {
+func (s *Stack) Branches() []string {
+	branches := []string{}
 	for ref := range s.Iter() {
 		branches = append(branches, ref.Branch)
 	}
 
-	return
+	return branches
 }
 
 // Iter2 returns an iterator like Iter, but includes an index
@@ -207,7 +208,7 @@ func (s *Stack) Iter2() iter.Seq2[int, StackRef] {
 	}
 }
 
-func (s *Stack) BaseBranch(gr GitRunner) (branch string, err error) {
+func (s *Stack) BaseBranch(gr GitRunner) (string, error) {
 	root, err := StackRootDir(s.Title)
 	if err != nil {
 		return "", fmt.Errorf("could not determine stack root: %w", err)
@@ -238,7 +239,7 @@ func (s *Stack) BaseBranch(gr GitRunner) (branch string, err error) {
 		return "", fmt.Errorf("could not get remote data: %w", err)
 	}
 
-	branch, err = ParseDefaultBranch([]byte(defBranchOutput))
+	branch, err := ParseDefaultBranch([]byte(defBranchOutput))
 	if err != nil {
 		return "", fmt.Errorf("could not parse default branch from remote data: %w", err)
 	}

@@ -58,13 +58,13 @@ func DisplayIssue(c *iostreams.ColorPalette, i *gitlab.Issue, isTTY bool) string
 	}
 }
 
-func IssueState(c *iostreams.ColorPalette, i *gitlab.Issue) (issueID string) {
-	if i.State == "opened" {
-		issueID = c.Green(fmt.Sprintf("#%d", i.IID))
-	} else {
-		issueID = c.Red(fmt.Sprintf("#%d", i.IID))
+func IssueState(c *iostreams.ColorPalette, i *gitlab.Issue) string {
+	switch {
+	case i.State == "opened":
+		return c.Green(fmt.Sprintf("#%d", i.IID))
+	default:
+		return c.Red(fmt.Sprintf("#%d", i.IID))
 	}
-	return
 }
 
 func IssuesFromArgs(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), gitlabClient *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), defaultHostname string, args []string) ([]*gitlab.Issue, glrepo.Interface, error) {

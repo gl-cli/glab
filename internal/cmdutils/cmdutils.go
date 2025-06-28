@@ -142,7 +142,7 @@ func EditorPrompt(response *string, question, templateContent, editorCommand str
 
 type GetTextUsingEditor func(editor, tmpFileName, content string) (string, error)
 
-func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote) (err error) {
+func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote) error {
 	labelOpts := &api.ListLabelsOptions{}
 	labelOpts.PerPage = 100
 	labels, err := api.ListLabels(apiClient, repoRemote.FullName(), labelOpts)
@@ -177,7 +177,7 @@ func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glre
 	return nil
 }
 
-func MilestonesPrompt(response *int, apiClient *gitlab.Client, repoRemote *glrepo.Remote, io *iostreams.IOStreams) (err error) {
+func MilestonesPrompt(response *int, apiClient *gitlab.Client, repoRemote *glrepo.Remote, io *iostreams.IOStreams) error {
 	var milestoneOptions []string
 	milestoneMap := map[string]int{}
 
@@ -228,7 +228,7 @@ var GroupMemberLevel = map[int]string{
 // for the remote referenced by the `*glrepo.Remote`.
 //
 // `role` will appear on the prompt to keep the user informed of the reason of the selection.
-func UsersPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote, io *iostreams.IOStreams, minimumAccessLevel int, role string) (err error) {
+func UsersPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote, io *iostreams.IOStreams, minimumAccessLevel int, role string) error {
 	var userOptions []string
 	userMap := map[string]string{}
 
