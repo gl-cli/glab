@@ -62,16 +62,16 @@ func mockIssuableGet(fakeHTTP *httpmock.Mocker, id int, issueType string, subscr
 	)
 }
 
-func mockIssuableSubscribe(fakeHTTP *httpmock.Mocker, id int, issueType string, subscribed bool) {
+func mockIssuableSubscribe(fakeHTTP *httpmock.Mocker, id int, issueType string) {
 	fakeHTTP.RegisterResponder(http.MethodPost, fmt.Sprintf("/projects/OWNER/REPO/issues/%d/subscribe", id),
 		func(req *http.Request) (*http.Response, error) {
 			resp, _ := httpmock.NewStringResponse(http.StatusOK, fmt.Sprintf(`{
 				"id": %d,
 				"iid": %d,
-				"subscribed": %t,
+				"subscribed": true,
 				"issue_type": "%s",
 				"created_at": "2023-05-02T10:51:26.371Z"
-			}`, id, id, subscribed, issueType))(req)
+			}`, id, id, issueType))(req)
 
 			return resp, nil
 		},
@@ -87,7 +87,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		fakeHTTP := httpmock.New()
 
 		mockIssuableGet(fakeHTTP, iid, string(issuable.TypeIssue), false)
-		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIssue), true)
+		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIssue))
 
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
@@ -105,7 +105,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		fakeHTTP := httpmock.New()
 
 		mockIssuableGet(fakeHTTP, iid, string(issuable.TypeIncident), false)
-		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIncident), true)
+		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIncident))
 
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
 
@@ -123,7 +123,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		fakeHTTP := httpmock.New()
 
 		mockIssuableGet(fakeHTTP, iid, string(issuable.TypeIncident), false)
-		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIncident), true)
+		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIncident))
 
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
@@ -141,7 +141,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		fakeHTTP := httpmock.New()
 
 		mockIssuableGet(fakeHTTP, iid, string(issuable.TypeIssue), false)
-		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIssue), true)
+		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIssue))
 
 		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
 

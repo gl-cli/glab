@@ -55,7 +55,7 @@ func (o *options) complete(cmd *cobra.Command) error {
 	return nil
 }
 
-func runCommand(cli string, runE func(opts *options) error, doHyperlinks string) error {
+func runCommand(cli string, runE func(opts *options) error) error {
 	factory := &cmdtest.Factory{
 		ConfigStub: func() config.Config {
 			return config.NewBlankConfig()
@@ -81,7 +81,7 @@ func TestGroupOverride(t *testing.T) {
 		err := runCommand("--group GROUP/OVERRIDE", func(opts *options) error {
 			gotOpts = opts
 			return nil
-		}, "")
+		})
 
 		assert.NoError(t, err)
 		gotGroup := gotOpts.group
@@ -97,7 +97,7 @@ func TestGroupOverride(t *testing.T) {
 		err := runCommand("", func(opts *options) error {
 			gotOpts = opts
 			return nil
-		}, "")
+		})
 
 		assert.NoError(t, err)
 		gotGroup := gotOpts.group
@@ -111,7 +111,7 @@ func TestGroupOverride(t *testing.T) {
 		err := runCommand("--repo OWNER2/REPO2", func(opts *options) error {
 			gotOpts = opts
 			return nil
-		}, "")
+		})
 
 		assert.NoError(t, err)
 		gotGroup := gotOpts.group
@@ -128,7 +128,7 @@ func TestGroupOverride(t *testing.T) {
 		err := runCommand("", func(opts *options) error {
 			gotOpts = opts
 			return nil
-		}, "")
+		})
 
 		assert.NoError(t, err)
 		gotGroup := gotOpts.group
@@ -145,7 +145,7 @@ func TestGroupOverride(t *testing.T) {
 		err := runCommand("--repo OWNER2/REPO2 --group GROUP/OVERRIDE", func(opts *options) error {
 			gotOpts = opts
 			return nil
-		}, "")
+		})
 
 		assert.NoError(t, err)
 		gotGroup := gotOpts.group

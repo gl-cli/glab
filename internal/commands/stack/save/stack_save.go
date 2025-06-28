@@ -53,7 +53,7 @@ func NewCmdSaveStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetT
 			s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 
 			// git add files
-			_, err = addFiles(args[0:])
+			err = addFiles(args[0:])
 			if err != nil {
 				return fmt.Errorf("error adding files: %v", err)
 			}
@@ -162,29 +162,28 @@ func checkForChanges() error {
 	return nil
 }
 
-func addFiles(args []string) (files []string, err error) {
+// addFiles adds files to git (git add args...)
+func addFiles(args []string) error {
 	if len(args) == 0 {
 		args = []string{"."}
 	}
 
 	for _, file := range args {
-		_, err = os.Stat(file)
+		_, err := os.Stat(file)
 		if err != nil {
-			return
+			return err
 		}
-
-		files = append(files, file)
 	}
 
 	cmdargs := append([]string{"add"}, args...)
 	gitCmd := git.GitCommand(cmdargs...)
 
-	_, err = run.PrepareCmd(gitCmd).Output()
+	_, err := run.PrepareCmd(gitCmd).Output()
 	if err != nil {
-		return []string{}, fmt.Errorf("error running Git add: %v", err)
+		return fmt.Errorf("error running Git add: %v", err)
 	}
 
-	return files, err
+	return err
 }
 
 func commitFiles(message string) (string, error) {

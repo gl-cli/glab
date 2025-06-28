@@ -230,7 +230,7 @@ func GenMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 		buf.WriteString(fmt.Sprintf("```console\n%s\n```\n", cmd.Example))
 	}
 
-	if err := printOptions(buf, cmd, name); err != nil {
+	if err := printOptions(buf, cmd); err != nil {
 		return err
 	}
 
@@ -241,7 +241,7 @@ func GenMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 }
 
 // adapted from: github.com/spf13/cobra/blob/main/doc/md_docs.go
-func printOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
+func printOptions(buf *bytes.Buffer, cmd *cobra.Command) error {
 	flags := cmd.NonInheritedFlags()
 	flags.SetOutput(buf)
 	if flags.HasAvailableFlags() {

@@ -113,7 +113,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				repoOverride = repoFromEnv
 			}
 			if repoOverride != "" {
-				_ = headRepoOverride(opts, repoOverride)
+				headRepoOverride(opts, repoOverride)
 			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -825,11 +825,10 @@ func ResolvedHeadRepo(f cmdutils.Factory) func() (glrepo.Interface, error) {
 	}
 }
 
-func headRepoOverride(opts *options, repo string) error {
+func headRepoOverride(opts *options, repo string) {
 	opts.headRepo = func() (glrepo.Interface, error) {
 		return glrepo.FromFullName(repo, opts.defaultHostname)
 	}
-	return nil
 }
 
 func repoRemote(opts *options, repo glrepo.Interface, project *gitlab.Project, remoteName string) (*glrepo.Remote, error) {

@@ -320,7 +320,7 @@ func Test_updateMRs(t *testing.T) {
 			fakeHTTP := gitmock.SetupMocks(tt.args.httpMocks)
 			defer fakeHTTP.Verify(t)
 
-			_, factory := setupTestFactory(fakeHTTP, false)
+			factory := setupTestFactory(fakeHTTP, false)
 
 			err = updateMRs(factory, tt.args.newStack, tt.args.oldStack)
 

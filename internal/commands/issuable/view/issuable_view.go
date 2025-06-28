@@ -142,13 +142,16 @@ func (o *options) run(issueType issuable.IssueType, args []string) error {
 		return err
 	}
 	defer o.io.StopPager()
-	if o.outputFormat == "json" {
-		return printJSONIssue(o)
+
+	switch {
+	case o.outputFormat == "json":
+		printJSONIssue(o)
+	case o.io.IsErrTTY && o.io.IsaTTY:
+		printTTYIssuePreview(o)
+	default:
+		printRawIssuePreview(o)
 	}
-	if o.io.IsErrTTY && o.io.IsaTTY {
-		return printTTYIssuePreview(o)
-	}
-	return printRawIssuePreview(o)
+	return nil
 }
 
 func labelsList(opts *options) string {
@@ -175,7 +178,7 @@ func issueState(opts *options, c *iostreams.ColorPalette) (state string) {
 	return
 }
 
-func printTTYIssuePreview(opts *options) error {
+func printTTYIssuePreview(opts *options) {
 	c := opts.io.Color()
 	issueTimeAgo := utils.TimeToPrettyTimeAgo(*opts.issue.CreatedAt)
 	// Header
@@ -241,14 +244,10 @@ func printTTYIssuePreview(opts *options) error {
 	}
 
 	fmt.Fprintf(opts.io.StdOut, c.Gray("\nView this %s on GitLab: %s\n"), *opts.issue.IssueType, opts.issue.WebURL)
-
-	return nil
 }
 
-func printRawIssuePreview(opts *options) error {
+func printRawIssuePreview(opts *options) {
 	fmt.Fprint(opts.io.StdOut, rawIssuePreview(opts))
-
-	return nil
 }
 
 func rawIssuePreview(opts *options) string {
@@ -302,7 +301,7 @@ func RawIssuableNotes(notes []*gitlab.Note, showComments bool, showSystemLogs bo
 	return out
 }
 
-func printJSONIssue(opts *options) error {
+func printJSONIssue(opts *options) {
 	// var notes []gitlab.Note
 	if opts.showComments {
 
@@ -313,5 +312,4 @@ func printJSONIssue(opts *options) error {
 		issueJSON, _ := json.Marshal(opts.issue)
 		fmt.Fprintln(opts.io.StdOut, string(issueJSON))
 	}
-	return nil
 }

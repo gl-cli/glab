@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func runCommand(mockCmd git.GitRunner, args string, t *testing.T) (*test.CmdOut, error) {
+func runCommand(mockCmd git.GitRunner, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 	factory := cmdtest.InitFactory(ios, nil)
@@ -78,7 +78,7 @@ func TestCreateNewStack(t *testing.T) {
 				})
 			}
 
-			output, err := runCommand(mockCmd, tc.branch, t)
+			output, err := runCommand(mockCmd, tc.branch)
 			require.Nil(t, err)
 
 			require.Equal(t, "New stack created with title \""+tc.expectedBranch+"\".\n", output.String())

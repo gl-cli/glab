@@ -16,23 +16,22 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	git_testing "gitlab.com/gitlab-org/cli/internal/git/testing"
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 	"go.uber.org/mock/gomock"
 )
 
-func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStreams, stdout *bytes.Buffer, stderr *bytes.Buffer, factory cmdutils.Factory) {
-	ios, _, stdout, stderr = cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
+func setupTestFactory(rt http.RoundTripper, isTTY bool) (*bytes.Buffer, *bytes.Buffer, cmdutils.Factory) {
+	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
-	factory = cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.InitFactory(ios, rt)
 
-	return
+	return stdout, stderr, factory
 }
 
 func runSaveCommand(rt http.RoundTripper, t *testing.T, getText cmdutils.GetTextUsingEditor, isTTY bool, args string) (*test.CmdOut, error) {
-	_, stdout, stderr, factory := setupTestFactory(rt, isTTY)
+	stdout, stderr, factory := setupTestFactory(rt, isTTY)
 
 	ctrl := gomock.NewController(t)
 	mockCmd := git_testing.NewMockGitRunner(ctrl)
@@ -165,7 +164,7 @@ func Test_addFiles(t *testing.T) {
 
 			createTemporaryFiles(t, dir, tc.expected)
 
-			_, err = addFiles(tc.args)
+			err = addFiles(tc.args)
 			require.Nil(t, err)
 
 			gitCmd := git.GitCommand("status", "--short", "-u")
@@ -243,7 +242,7 @@ func Test_commitFiles(t *testing.T) {
 			dir := git.InitGitRepoWithCommit(t)
 
 			createTemporaryFiles(t, dir, []string{"yo", "test"})
-			_, err := addFiles([]string{"."})
+			err := addFiles([]string{"."})
 			require.Nil(t, err)
 
 			got, err := commitFiles(tt.message)

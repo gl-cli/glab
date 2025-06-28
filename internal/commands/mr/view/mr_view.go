@@ -125,13 +125,15 @@ func (o *options) run(f cmdutils.Factory, args []string) error {
 	}
 	defer o.io.StopPager()
 
-	if o.outputFormat == "json" {
-		return printJSONMR(o, mr, notes)
+	switch {
+	case o.outputFormat == "json":
+		printJSONMR(o, mr, notes)
+	case o.io.IsOutputTTY():
+		printTTYMRPreview(o, mr, mrApprovals, notes)
+	default:
+		printRawMRPreview(o, mr, notes)
 	}
-	if o.io.IsOutputTTY() {
-		return printTTYMRPreview(o, mr, mrApprovals, notes)
-	}
-	return printRawMRPreview(o, mr, notes)
+	return nil
 }
 
 func labelsList(mr *gitlab.MergeRequest) string {
@@ -166,7 +168,7 @@ func mrState(c *iostreams.ColorPalette, mr *gitlab.MergeRequest) (mrState string
 	return mrState
 }
 
-func printTTYMRPreview(opts *options, mr *gitlab.MergeRequest, mrApprovals *gitlab.MergeRequestApprovalState, notes []*gitlab.Note) error {
+func printTTYMRPreview(opts *options, mr *gitlab.MergeRequest, mrApprovals *gitlab.MergeRequestApprovalState, notes []*gitlab.Note) {
 	c := opts.io.Color()
 	out := opts.io.StdOut
 	mrTimeAgo := utils.TimeToPrettyTimeAgo(*mr.CreatedAt)
@@ -267,14 +269,10 @@ func printTTYMRPreview(opts *options, mr *gitlab.MergeRequest, mrApprovals *gitl
 
 	fmt.Fprintln(out)
 	fmt.Fprintf(out, c.Gray("View this merge request on GitLab: %s\n"), mr.WebURL)
-
-	return nil
 }
 
-func printRawMRPreview(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) error {
+func printRawMRPreview(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) {
 	fmt.Fprint(opts.io.StdOut, rawMRPreview(opts, mr, notes))
-
-	return nil
 }
 
 func rawMRPreview(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) string {
@@ -304,7 +302,7 @@ func rawMRPreview(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) 
 	return out
 }
 
-func printJSONMR(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) error {
+func printJSONMR(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) {
 	if opts.showComments {
 		extendedMR := MRWithNotes{mr, notes}
 		mrJSON, _ := json.Marshal(extendedMR)
@@ -313,5 +311,4 @@ func printJSONMR(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) e
 		mrJSON, _ := json.Marshal(mr)
 		fmt.Fprintln(opts.io.StdOut, string(mrJSON))
 	}
-	return nil
 }

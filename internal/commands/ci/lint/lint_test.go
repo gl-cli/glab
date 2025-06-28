@@ -101,7 +101,7 @@ func Test_lintRun(t *testing.T) {
 			_, filename, _, _ := runtime.Caller(0)
 			args := path.Join(path.Dir(filename), "testdata", tt.testFile)
 
-			result, err := runCommand(t, fakeHTTP, args, tt.showHaveBaseRepo)
+			result, err := runCommand(fakeHTTP, args, tt.showHaveBaseRepo)
 			if tt.wantErr {
 				require.Contains(t, err.Error(), tt.errMsg)
 				return
@@ -113,7 +113,7 @@ func Test_lintRun(t *testing.T) {
 	}
 }
 
-func runCommand(t *testing.T, rt http.RoundTripper, cli string, showHaveBaseRepo bool) (*test.CmdOut, error) {
+func runCommand(rt http.RoundTripper, cli string, showHaveBaseRepo bool) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.InitFactory(ios, rt)

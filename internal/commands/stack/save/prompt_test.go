@@ -87,7 +87,7 @@ func Test_promptForCommit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			isTTY := !tt.noTTY
-			_, _, _, factory := setupTestFactory(nil, isTTY)
+			_, _, factory := setupTestFactory(nil, isTTY)
 			prompts := []string{}
 			getText := getMockEditor(tt.input, &prompts)
 			got, err := promptForCommit(factory, getText, tt.defaultValue)

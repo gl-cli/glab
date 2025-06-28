@@ -934,7 +934,7 @@ func TestAgentBootstrap_HappyPath_WithoutFlux(t *testing.T) {
 
 type execFunc func(cli string) error
 
-func setupCmdExec(t *testing.T) (execFunc, *MockAPI, *MockWriter, *MockWriter, *MockKubectlWrapper, *MockFluxWrapper) {
+func setupCmdExec(t *testing.T) (execFunc, *MockAPI, *MockWriter, *MockWriter, *MockKubectlWrapper, *MockFluxWrapper) { // nolint:unparam
 	t.Helper()
 
 	ctrl := gomock.NewController(t)

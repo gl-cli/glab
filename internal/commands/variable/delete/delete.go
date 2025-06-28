@@ -47,7 +47,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 
-			if err := opts.validate(cmd, args); err != nil {
+			if err := opts.validate(cmd); err != nil {
 				return err
 			}
 
@@ -65,7 +65,7 @@ func (o *options) complete(args []string) {
 	o.key = args[0]
 }
 
-func (o *options) validate(cmd *cobra.Command, args []string) error {
+func (o *options) validate(cmd *cobra.Command) error {
 	if !variableutils.IsValidKey(o.key) {
 		return cmdutils.FlagError{Err: fmt.Errorf("invalid key provided.\n%s", variableutils.ValidKeyMsg)}
 	}

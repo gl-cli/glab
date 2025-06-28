@@ -102,21 +102,18 @@ func Test_NewCmdDiff(t *testing.T) {
 	}
 }
 
-func runCommand(rt http.RoundTripper, remotes glrepo.Remotes, isTTY bool, cli string) (*test.CmdOut, error) {
+func runCommand(rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
 	factory := cmdtest.InitFactory(ios, rt)
 
 	factory.RemotesStub = func() (glrepo.Remotes, error) {
-		if remotes == nil {
-			return glrepo.Remotes{
-				{
-					Remote: &git.Remote{Name: "origin"},
-					Repo:   glrepo.New("OWNER", "REPO", glinstance.DefaultHostname),
-				},
-			}, nil
-		}
-		return remotes, nil
+		return glrepo.Remotes{
+			{
+				Remote: &git.Remote{Name: "origin"},
+				Repo:   glrepo.New("OWNER", "REPO", glinstance.DefaultHostname),
+			},
+		}, nil
 	}
 	factory.BranchStub = func() (string, error) {
 		return "feature", nil
@@ -151,7 +148,7 @@ func TestMRDiff_raw(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/123/raw_diffs`,
 		httpmock.NewStringResponse(http.StatusOK, rawDiff))
 
-	output, err := runCommand(fakeHTTP, nil, false, "123 --raw")
+	output, err := runCommand(fakeHTTP, false, "123 --raw")
 	require.NoError(t, err)
 	assert.Equal(t, rawDiff, output.String())
 	assert.Empty(t, output.Stderr())
@@ -166,7 +163,7 @@ func TestPRDiff_no_current_mr(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER/REPO/merge_requests?per_page=30&source_branch=feature`,
 		httpmock.NewStringResponse(http.StatusOK, `[]`))
 
-	_, err := runCommand(fakeHTTP, nil, false, "")
+	_, err := runCommand(fakeHTTP, false, "")
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -184,7 +181,7 @@ func TestMRDiff_argument_not_found(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, `/projects/OWNER/REPO/merge_requests/123/versions`,
 		httpmock.NewStringResponse(http.StatusNotFound, `{"message":"404 Not Found"}`))
 
-	output, err := runCommand(fakeHTTP, nil, false, "123")
+	output, err := runCommand(fakeHTTP, false, "123")
 	if err == nil {
 		t.Fatal("expected error", err)
 	}
@@ -214,7 +211,7 @@ func TestMRDiff_notty(t *testing.T) {
 		MRGetResponse())
 
 	testDiff := DiffTest(fakeHTTP)
-	output, err := runCommand(fakeHTTP, nil, false, "")
+	output, err := runCommand(fakeHTTP, false, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -243,7 +240,7 @@ func TestMRDiff_tty(t *testing.T) {
 		MRGetResponse())
 
 	DiffTest(fakeHTTP)
-	output, err := runCommand(fakeHTTP, nil, true, "")
+	output, err := runCommand(fakeHTTP, true, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -342,7 +339,7 @@ func TestMRDiff_no_diffs_found(t *testing.T) {
 
 	EmptyDiffsTest(fakeHTTP)
 
-	_, err := runCommand(fakeHTTP, nil, false, "")
+	_, err := runCommand(fakeHTTP, false, "")
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}

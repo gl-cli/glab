@@ -142,7 +142,7 @@ func Test_line(t *testing.T) {
 	}
 }
 
-func testbox(x, y, w, h int) *tview.TextView {
+func testbox(x, y, w, h int) *tview.TextView { // nolint:unparam
 	b := tview.NewTextView()
 	b.
 		SetBackgroundColor(tcell.ColorDefault).

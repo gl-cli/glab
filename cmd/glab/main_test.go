@@ -95,7 +95,7 @@ x lookup https://gitlab.com/api/v4:
 
 // Test started when the test binary is started
 // and calls the main function
-func TestGlab(t *testing.T) {
+func TestGlab(t *testing.T) { // nolint:unparam
 	main()
 }
 

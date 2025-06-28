@@ -8,7 +8,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
@@ -44,7 +43,7 @@ func Test_promptForReorder(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			isTTY := !tt.args.noTTY
-			_, factory := setupTestFactory(nil, isTTY)
+			factory := setupTestFactory(nil, isTTY)
 
 			prompts := []string{}
 			getText := getMockEditor(tt.args.input, &prompts)
@@ -139,7 +138,7 @@ func Test_parseReorderFile(t *testing.T) {
 	}
 }
 
-func setupTestFactory(rt http.RoundTripper, isTTY bool) (*iostreams.IOStreams, cmdutils.Factory) {
+func setupTestFactory(rt http.RoundTripper, isTTY bool) cmdutils.Factory {
 	ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
 	f := cmdtest.InitFactory(ios, rt)
@@ -148,7 +147,7 @@ func setupTestFactory(rt http.RoundTripper, isTTY bool) (*iostreams.IOStreams, c
 		return glrepo.TestProject("stack_guy", "stackproject"), nil
 	}
 
-	return ios, f
+	return f
 }
 
 func getMockEditor(input string, prompts *[]string) cmdutils.GetTextUsingEditor {

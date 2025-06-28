@@ -79,7 +79,7 @@ func amendFunc(f cmdutils.Factory, args []string, getText cmdutils.GetTextUsingE
 	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 
 	// git add files
-	_, err = addFiles(args[0:])
+	err = addFiles(args[0:])
 	if err != nil {
 		return "", fmt.Errorf("error adding files: %v", err)
 	}
