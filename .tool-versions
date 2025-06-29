@@ -1,8 +1,8 @@
 golang 1.24.4
-golangci-lint 1.64.8
+golangci-lint 2.2.0
 
 # For linting Go code
-golangci-lint 2.1.6
+golangci-lint 2.2.0
 
 # For linting documentation
 markdownlint-cli2 0.18.1
