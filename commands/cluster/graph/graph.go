@@ -101,6 +101,8 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 
 		This command only supports personal and project access tokens for authentication.
 		`+"The token should have at least the `Developer` role in the agent project and the `read_api` and `k8s_proxy` scopes."+`
+		The user should be allowed to access the agent project.
+		See <https://docs.gitlab.com/user/clusters/agent/user_access/>. 
 		%s`, "`object_selector_expression`", objSelExprHelp, "`resource_selector_expression`", resSelExprHelp, text.ExperimentalString),
 		Example: heredoc.Doc(`
 		# Run the default query for agent 123
