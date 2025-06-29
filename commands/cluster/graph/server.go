@@ -135,6 +135,10 @@ func (s *server) buildGraph(ctx context.Context, srcC <-chan dataError[jsonWatch
 					return
 				}
 				s.logWarnings(src.data.Warnings)
+				if src.data.Error != nil {
+					sendErr(done, resp, src.data.Error)
+					return
+				}
 				err = b.applyActions(src.data.Actions)
 				if err != nil {
 					sendErr(done, resp, err)

@@ -60,6 +60,7 @@ type rootsSelector struct {
 type jsonWatchGraphResponse struct {
 	Actions  []jsonWatchGraphAction  `json:"actions,omitempty"`
 	Warnings []jsonWatchGraphWarning `json:"warnings,omitempty"`
+	Error    *jsonWatchGraphError    `json:"error,omitempty"`
 }
 
 type jsonWatchGraphAction struct {
@@ -118,4 +119,14 @@ type jsonWatchGraphWarning struct {
 	Type       string         `json:"t"`
 	Message    string         `json:"m"`
 	Attributes map[string]any `json:"a,omitempty"`
+}
+
+type jsonWatchGraphError struct {
+	Code    uint16 `json:"code"`
+	CodeStr string `json:"code_string"`
+	Reason  string `json:"reason"`
+}
+
+func (e *jsonWatchGraphError) Error() string {
+	return fmt.Sprintf("%s (%d): %s", e.CodeStr, e.Code, e.Reason)
 }
