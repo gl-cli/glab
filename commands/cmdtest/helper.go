@@ -175,8 +175,9 @@ type Factory struct {
 	repoOverride string
 }
 
-func (f *Factory) RepoOverride(repo string) {
+func (f *Factory) RepoOverride(repo string) error {
 	f.repoOverride = repo
+	return nil
 }
 
 func (f *Factory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {
@@ -339,6 +340,9 @@ func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 	// Create a default factory
 	f := &Factory{
 		IOStub: ios,
+		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
+			return &api.Client{}, nil
+		},
 		HttpClientStub: func() (*gitlab.Client, error) {
 			return &gitlab.Client{}, nil
 		},
@@ -444,7 +448,13 @@ func CopyTestRepo(log fatalLogger, name string) string {
 	return dest
 }
 
-func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*api.Client, error) {
+func TestClient(httpClient *http.Client, token, host string, isGraphQL bool, options ...api.ClientOption) (*api.Client, error) {
+	opts := []api.ClientOption{
+		api.WithInsecureSkipVerify(true),
+		api.WithProtocol(glinstance.DefaultProtocol),
+		api.WithHTTPClient(httpClient),
+	}
+	opts = append(opts, options...)
 	testClient, err := api.NewClient(
 		host,
 		token,
@@ -452,9 +462,7 @@ func TestClient(httpClient *http.Client, token, host string, isGraphQL bool) (*a
 		false,
 		false,
 		"glab test client",
-		api.WithInsecureSkipVerify(true),
-		api.WithProtocol(glinstance.DefaultProtocol),
-		api.WithHTTPClient(httpClient),
+		opts...,
 	)
 	if err != nil {
 		return nil, err

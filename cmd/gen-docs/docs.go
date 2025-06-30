@@ -264,7 +264,8 @@ type factory struct {
 	io *iostreams.IOStreams
 }
 
-func (f *factory) RepoOverride(repo string) {
+func (f *factory) RepoOverride(repo string) error {
+	return nil
 }
 
 func (f *factory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {

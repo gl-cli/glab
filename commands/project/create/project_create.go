@@ -86,23 +86,18 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 			return err
 		}
 	}
-	apiClient, err := f.HttpClient()
-	if err != nil {
-		return err
-	}
 
+	var gitlabClient *gitlab.Client
 	if len(args) == 1 {
 		var host string
 		host, namespace, projectPath = projectPathFromArgs(args, f.DefaultHostname())
-		if host != "" {
-			cfg := f.Config()
-			client, err := f.ApiClient(host, cfg)
-			if err != nil {
-				return err
-			}
-			apiClient = client.Lab()
+		client, err := f.ApiClient(host, f.Config())
+		if err != nil {
+			return err
 		}
-		user, err := api.CurrentUser(apiClient)
+		gitlabClient = client.Lab()
+
+		user, err := api.CurrentUser(gitlabClient)
 		if err != nil {
 			return err
 		}
@@ -116,6 +111,12 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 		}
 		projectPath = path.Base(projectPath)
 		isPath = true
+
+		c, err := f.ApiClient(f.DefaultHostname(), f.Config())
+		if err != nil {
+			return err
+		}
+		gitlabClient = c.Lab()
 	}
 
 	group, err := cmd.Flags().GetString("group")
@@ -127,7 +128,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 	}
 
 	if namespace != "" {
-		group, err := api.GetGroup(apiClient, namespace)
+		group, err := api.GetGroup(gitlabClient, namespace)
 		if err != nil {
 			return fmt.Errorf("could not find group or namespace %s: %v", namespace, err)
 		}
@@ -173,7 +174,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 		opts.NamespaceID = &namespaceID
 	}
 
-	project, err := api.CreateProject(apiClient, opts)
+	project, err := api.CreateProject(gitlabClient, opts)
 
 	greenCheck := c.Green("✓")
 

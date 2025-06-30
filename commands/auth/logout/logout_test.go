@@ -18,7 +18,6 @@ import (
 func runCommand(f cmdutils.Factory, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	factory := cmdtest.InitFactory(ios, nil)
-	_, _ = factory.HttpClient()
 	factory.ConfigStub = f.Config
 
 	cmd := NewCmdLogout(factory)

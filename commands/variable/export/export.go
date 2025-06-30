@@ -14,14 +14,16 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/flag"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	io        *iostreams.IOStreams
+	baseRepo  func() (glrepo.Interface, error)
 
 	group        string
 	outputFormat string
@@ -42,9 +44,10 @@ func marshalJson(variables any) ([]byte, error) {
 
 func NewCmdExport(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
+		baseRepo:  f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -97,19 +100,22 @@ func (o *options) run() error {
 		out = o.io.StdOut
 	}
 
-	httpClient, err := o.httpClient()
+	// NOTE: this command can not only be used for projects,
+	// so we have to manually check for the base repo, it it doesn't exist,
+	// we bootstrap the client with the default hostname.
+	var repoHost string
+	if baseRepo, err := o.baseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+	apiClient, err := o.apiClient(repoHost, o.config)
 	if err != nil {
 		return err
 	}
-
-	repo, err := o.baseRepo()
-	if err != nil {
-		return err
-	}
+	client := apiClient.Lab()
 
 	if o.group != "" {
 		createVarOpts := &gitlab.ListGroupVariablesOptions{Page: o.page, PerPage: o.perPage}
-		groupVariables, err := api.ListGroupVariables(httpClient, o.group, createVarOpts)
+		groupVariables, err := api.ListGroupVariables(client, o.group, createVarOpts)
 		if err != nil {
 			return err
 		}
@@ -123,8 +129,12 @@ func (o *options) run() error {
 		return printGroupVariables(groupVariables, o, out)
 
 	} else {
+		repo, err := o.baseRepo()
+		if err != nil {
+			return err
+		}
 		createVarOpts := &gitlab.ListProjectVariablesOptions{Page: o.page, PerPage: o.perPage}
-		projectVariables, err := api.ListProjectVariables(httpClient, repo.FullName(), createVarOpts)
+		projectVariables, err := api.ListProjectVariables(client, repo.FullName(), createVarOpts)
 		if err != nil {
 			return err
 		}

@@ -226,6 +226,14 @@ func WithHTTPClient(httpClient *http.Client) ClientOption {
 	}
 }
 
+// WithHTTPClient configures the HTTP client
+func WithGitLabClient(client *gitlab.Client) ClientOption {
+	return func(c *Client) error {
+		c.gitlabClient = client
+		return nil
+	}
+}
+
 // NewClientWithCfg initializes the global api with the config data
 func NewClientWithCfg(protocol, repoHost string, cfg config.Config, isGraphQL bool, userAgent string) (*Client, error) {
 	apiHost, _ := cfg.Get(repoHost, "api_host")
@@ -289,6 +297,10 @@ func NewClientWithCfg(protocol, repoHost string, cfg config.Config, isGraphQL bo
 
 // NewLab initializes the GitLab Client
 func (c *Client) NewLab() error {
+	if c.gitlabClient != nil {
+		return nil
+	}
+
 	var baseURL string
 	if c.isGraphQL {
 		baseURL = glinstance.GraphQLEndpoint(c.host, c.protocol)

@@ -26,7 +26,7 @@ func EnableRepoOverride(cmd *cobra.Command, f Factory) {
 			repoOverride = repoFromEnv
 		}
 		if repoOverride != "" {
-			f.RepoOverride(repoOverride)
+			return f.RepoOverride(repoOverride)
 		}
 		return nil
 	}
@@ -53,7 +53,7 @@ func AddGlobalRepoOverride(cmd *cobra.Command, f Factory) {
 			repoOverride = repoFromEnv
 		}
 		if repoOverride != "" {
-			f.RepoOverride(repoOverride)
+			return f.RepoOverride(repoOverride)
 		}
 		return nil
 	}

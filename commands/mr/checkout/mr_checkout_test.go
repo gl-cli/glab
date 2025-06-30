@@ -49,8 +49,6 @@ func runCommand(rt http.RoundTripper, branch string, cli string) (*test.CmdOut, 
 		return branch, nil
 	}
 
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdCheckout(factory)
 
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)

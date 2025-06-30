@@ -34,8 +34,6 @@ func runCommand(rt http.RoundTripper, issuableID string, issueType issuable.Issu
 		},
 	}
 
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdSubscribe(factory, issueType)
 
 	argv, err := shlex.Split(issuableID)

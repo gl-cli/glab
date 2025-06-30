@@ -14,8 +14,6 @@ func runCommand(cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.InitFactory(ios, nil)
 
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdArchive(factory)
 
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)

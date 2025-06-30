@@ -11,7 +11,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -383,6 +382,9 @@ func Test_apiRun(t *testing.T) {
 
 			tt.options.io = ios
 			tt.options.config = config.NewBlankConfig()
+			tt.options.baseRepo = func() (glrepo.Interface, error) {
+				return nil, fmt.Errorf("not supposed to be called")
+			}
 			tt.options.apiClient = func(repoHost string, cfg config.Config) (*api.Client, error) {
 				var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
 					resp := tt.httpResponse
@@ -394,13 +396,6 @@ func Test_apiRun(t *testing.T) {
 					return nil, err
 				}
 				return a, nil
-			}
-			tt.options.httpClient = func() (*gitlab.Client, error) {
-				a, err := tt.options.apiClient("", nil)
-				if err != nil {
-					return nil, err
-				}
-				return a.Lab(), nil
 			}
 
 			err := tt.options.run()
@@ -455,8 +450,8 @@ func Test_apiRun_paginationREST(t *testing.T) {
 	options := options{
 		io:     ios,
 		config: config.NewBlankConfig(),
-		httpClient: func() (*gitlab.Client, error) {
-			return a.Lab(), nil
+		baseRepo: func() (glrepo.Interface, error) {
+			return nil, fmt.Errorf("not supposed to be called")
 		},
 		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
 			return a, nil
@@ -521,8 +516,8 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 	options := options{
 		io:     ios,
 		config: config.NewBlankConfig(),
-		httpClient: func() (*gitlab.Client, error) {
-			return a.Lab(), nil
+		baseRepo: func() (glrepo.Interface, error) {
+			return nil, fmt.Errorf("not supposed to be called")
 		},
 		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
 			return a, nil
@@ -619,8 +614,8 @@ func Test_apiRun_inputFile(t *testing.T) {
 
 				io:     ios,
 				config: config.NewBlankConfig(),
-				httpClient: func() (*gitlab.Client, error) {
-					return a.Lab(), nil
+				baseRepo: func() (glrepo.Interface, error) {
+					return nil, fmt.Errorf("not supposed to be called")
 				},
 				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
 					return a, nil

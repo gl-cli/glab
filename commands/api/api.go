@@ -21,7 +21,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	jsonPretty "github.com/tidwall/pretty"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -31,11 +30,10 @@ import (
 type options struct {
 	io *iostreams.IOStreams
 
-	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
-	branch     func() (string, error)
-	config     config.Config
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	baseRepo  func() (glrepo.Interface, error)
+	branch    func() (string, error)
+	config    config.Config
 
 	hostname            string
 	requestMethod       string
@@ -52,11 +50,10 @@ type options struct {
 
 func NewCmdApi(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 	opts := options{
-		io:         f.IO(),
-		apiClient:  f.ApiClient,
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
-		branch:     f.Branch,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		baseRepo:  f.BaseRepo,
+		branch:    f.Branch,
 	}
 
 	cmd := &cobra.Command{
@@ -253,11 +250,6 @@ func (o *options) run() error {
 		}
 	}
 
-	httpClient, err := o.httpClient()
-	if err != nil {
-		return err
-	}
-
 	headersOutputStream := o.io.StdOut
 	if o.silent {
 		o.io.StdOut = io.Discard
@@ -269,12 +261,13 @@ func (o *options) run() error {
 		defer o.io.StopPager()
 	}
 
-	host := httpClient.BaseURL().Host
-	if o.hostname != "" {
-		host = o.hostname
+	// NOTE: check if repository is available
+	br, err := o.baseRepo()
+	var repoHost string
+	if err == nil {
+		repoHost = br.RepoHost()
 	}
-
-	client, err := o.apiClient(host, o.config)
+	client, err := o.apiClient(repoHost, o.config)
 	if err != nil {
 		return err
 	}
@@ -380,38 +373,69 @@ func fillPlaceholders(value string, opts *options) (string, error) {
 		return value, nil
 	}
 
-	baseRepo, err := opts.baseRepo()
-	if err != nil {
-		return value, err
-	}
-
+	var err error
 	filled := placeholderRE.ReplaceAllStringFunc(value, func(m string) string {
 		switch m {
 		case ":id":
-			h, _ := opts.httpClient()
-			project, e := baseRepo.Project(h)
+			baseRepo, baseRepoErr := opts.baseRepo()
+			if baseRepoErr != nil {
+				err = baseRepoErr
+				return ""
+			}
+
+			h, _ := opts.apiClient(baseRepo.RepoHost(), opts.config)
+			project, e := baseRepo.Project(h.Lab())
 			if e == nil && project != nil {
 				return strconv.Itoa(project.ID)
 			}
 			err = e
 			return ""
 		case ":group/:namespace/:repo", ":fullpath":
+			baseRepo, baseRepoErr := opts.baseRepo()
+			if baseRepoErr != nil {
+				err = baseRepoErr
+				return ""
+			}
 			return url.PathEscape(baseRepo.FullName())
 		case ":namespace/:repo":
+			baseRepo, baseRepoErr := opts.baseRepo()
+			if baseRepoErr != nil {
+				err = baseRepoErr
+				return ""
+			}
+
 			return url.PathEscape(baseRepo.RepoNamespace() + "/" + baseRepo.RepoName())
 		case ":group":
+			baseRepo, baseRepoErr := opts.baseRepo()
+			if baseRepoErr != nil {
+				err = baseRepoErr
+				return ""
+			}
+
 			return baseRepo.RepoGroup()
 		case ":user", ":username":
-			h, _ := opts.httpClient()
-			u, e := api.CurrentUser(h)
+			h, _ := opts.apiClient("", opts.config)
+			u, e := api.CurrentUser(h.Lab())
 			if e == nil && u != nil {
 				return u.Username
 			}
 			err = e
 			return m
 		case ":namespace":
+			baseRepo, baseRepoErr := opts.baseRepo()
+			if baseRepoErr != nil {
+				err = baseRepoErr
+				return ""
+			}
+
 			return baseRepo.RepoNamespace()
 		case ":repo":
+			baseRepo, baseRepoErr := opts.baseRepo()
+			if baseRepoErr != nil {
+				err = baseRepoErr
+				return ""
+			}
+
 			return baseRepo.RepoName()
 		case ":branch":
 			branch, e := opts.branch()

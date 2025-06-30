@@ -32,9 +32,6 @@ func runCommand(command string, rt http.RoundTripper, isTTY bool, cli string, ru
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY), iostreams.WithDisplayHyperLinks(doHyperlinks))
 	factory := cmdtest.InitFactory(ios, rt)
 
-	// TODO: shouldn't be there but the stub doesn't work without it
-	_, _ = factory.HttpClient()
-
 	issueType := issuable.TypeIssue
 	if command == "incident" {
 		issueType = issuable.TypeIncident

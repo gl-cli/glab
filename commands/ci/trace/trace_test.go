@@ -16,8 +16,6 @@ func runCommand(rt http.RoundTripper, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.InitFactory(ios, rt)
 
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdTrace(factory)
 
 	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)

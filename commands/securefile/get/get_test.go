@@ -87,7 +87,6 @@ func Test_SecurefileGet(t *testing.T) {
 func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.InitFactory(ios, rt)
-	_, _ = factory.HttpClient()
 	cmd := NewCmdGet(factory)
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }

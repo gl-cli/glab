@@ -18,23 +18,13 @@ import (
 // unusually large number of git remotes
 const maxRemotesForLookup = 5
 
-func ResolveRemotesToRepos(remotes Remotes, client *gitlab.Client, base, defaultHostname string) (*ResolvedRemotes, error) {
+func ResolveRemotesToRepos(remotes Remotes, client *gitlab.Client, defaultHostname string) (*ResolvedRemotes, error) {
 	sort.Stable(remotes)
 
 	result := &ResolvedRemotes{
 		remotes:         remotes,
 		apiClient:       client,
 		defaultHostname: defaultHostname,
-	}
-
-	var baseOverride Interface
-	if base != "" {
-		var err error
-		baseOverride, err = FromFullName(base, defaultHostname)
-		if err != nil {
-			return result, err
-		}
-		result.baseOverride = baseOverride
 	}
 
 	return result, nil
@@ -60,7 +50,6 @@ func resolveNetwork(result *ResolvedRemotes) error {
 }
 
 type ResolvedRemotes struct {
-	baseOverride    Interface
 	remotes         Remotes
 	network         []gitlab.Project
 	apiClient       *gitlab.Client
@@ -68,10 +57,6 @@ type ResolvedRemotes struct {
 }
 
 func (r *ResolvedRemotes) BaseRepo(interactive bool) (Interface, error) {
-	if r.baseOverride != nil {
-		return r.baseOverride, nil
-	}
-
 	// if any of the remotes already has a resolution, respect that
 	for _, remote := range r.remotes {
 		if remote.Resolved == "base" {
@@ -162,10 +147,6 @@ func (r *ResolvedRemotes) BaseRepo(interactive bool) (Interface, error) {
 }
 
 func (r *ResolvedRemotes) HeadRepo(interactive bool) (Interface, error) {
-	if r.baseOverride != nil {
-		return r.baseOverride, nil
-	}
-
 	// if any of the remotes already has a resolution, respect that
 	for _, remote := range r.remotes {
 		if remote.Resolved == "head" {

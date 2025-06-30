@@ -812,7 +812,7 @@ func ResolvedHeadRepo(f cmdutils.Factory) func() (glrepo.Interface, error) {
 		if err != nil {
 			return nil, err
 		}
-		repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, "", f.DefaultHostname())
+		repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, f.DefaultHostname())
 		if err != nil {
 			return nil, err
 		}

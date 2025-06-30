@@ -9,9 +9,9 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 )
@@ -21,16 +21,18 @@ type options struct {
 	repoName    string
 	args        []string
 
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
+	io        *iostreams.IOStreams
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	baseRepo  func() (glrepo.Interface, error)
 }
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
+		baseRepo:  f.BaseRepo,
 	}
 
 	projectCreateCmd := &cobra.Command{
@@ -59,10 +61,11 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run() error {
-	labClient, err := o.httpClient()
+	c, err := o.apiClient("", o.config)
 	if err != nil {
 		return err
 	}
+	gitlabClient := c.Lab()
 
 	baseRepo, baseRepoErr := o.baseRepo() // don't handle error yet
 	if len(o.args) == 1 {
@@ -73,7 +76,7 @@ func (o *options) run() error {
 			if baseRepoErr == nil {
 				namespace = baseRepo.RepoOwner()
 			} else {
-				currentUser, err := api.CurrentUser(labClient)
+				currentUser, err := api.CurrentUser(gitlabClient)
 				if err != nil {
 					return err
 				}
@@ -104,7 +107,7 @@ func (o *options) run() error {
 		if o.io.IsErrTTY && o.io.IsaTTY {
 			fmt.Fprintf(o.io.StdErr, "- Deleting project %s\n", o.repoName)
 		}
-		resp, err := api.DeleteProject(labClient, o.repoName)
+		resp, err := api.DeleteProject(gitlabClient, o.repoName)
 		if err != nil && resp == nil {
 			return err
 		}

@@ -40,6 +40,7 @@ type options struct {
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := options{
 		io:              f.IO(),
+		config:          f.Config(),
 		baseRepo:        f.BaseRepo,
 		branchFactory:   f.Branch,
 		apiClient:       f.ApiClient,
@@ -69,10 +70,8 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 			$ glab repo view https://gitlab.company.org/user/repo.git
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.config = f.Config()
-
 			if err := opts.complete(args); err != nil {
-				return nil
+				return err
 			}
 
 			return opts.run()

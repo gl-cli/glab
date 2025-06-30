@@ -18,9 +18,6 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	factory := cmdtest.InitFactory(ios, rt)
 	factory.BranchStub = func() (string, error) { return "current_branch", nil }
 
-	// TODO: shouldn't be there but the stub doesn't work without it
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdIssues(factory)
 
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)

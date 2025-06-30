@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 
@@ -20,14 +22,16 @@ type options struct {
 	page         int
 	search       string
 	outputFormat string
-	httpClient   func() (*gitlab.Client, error)
+	apiClient    func(repoHost string, cfg config.Config) (*api.Client, error)
+	config       config.Config
 	io           *iostreams.IOStreams
 }
 
 func NewCmdSearch(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
 	}
 
 	projectSearchCmd := &cobra.Command{
@@ -43,8 +47,6 @@ func NewCmdSearch(f cmdutils.Factory) *cobra.Command {
 			$ glab project lookup -s "title"
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.httpClient = f.HttpClient
-
 			return opts.run()
 		},
 	}
@@ -59,15 +61,16 @@ func NewCmdSearch(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	c, err := o.apiClient("", o.config)
 	if err != nil {
 		return err
 	}
+	gitlabClient := c.Lab()
 	listOpts := gitlab.ListOptions{
 		Page:    o.page,
 		PerPage: o.perPage,
 	}
-	projects, _, err := apiClient.Search.Projects(o.search, &gitlab.SearchOptions{ListOptions: listOpts})
+	projects, _, err := gitlabClient.Search.Projects(o.search, &gitlab.SearchOptions{ListOptions: listOpts})
 	if err != nil {
 		return err
 	}

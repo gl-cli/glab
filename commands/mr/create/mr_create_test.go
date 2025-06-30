@@ -52,9 +52,6 @@ func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string, let
 		return branch, nil
 	}
 
-	// TODO: shouldn't be there but the stub doesn't work without it
-	_, _ = factory.HttpClient()
-
 	if letItFail {
 		factory.HttpClientStub = func() (*gitlab.Client, error) {
 			return nil, errors.New("fail on purpose")

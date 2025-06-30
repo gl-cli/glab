@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -25,9 +25,6 @@ import (
 func runCommand(rt http.RoundTripper, isTTY bool, cli string, runE func(opts *options) error, doHyperlinks string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY), iostreams.WithDisplayHyperLinks(doHyperlinks))
 	factory := cmdtest.InitFactory(ios, rt)
-
-	// TODO: shouldn't be there but the stub doesn't work without it
-	_, _ = factory.HttpClient()
 
 	cmd := NewCmdList(factory, runE)
 
@@ -42,12 +39,12 @@ func TestNewCmdList(t *testing.T) {
 
 	factory := &cmdtest.Factory{
 		IOStub: ios,
-		HttpClientStub: func() (*gitlab.Client, error) {
+		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
 			a, err := cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
 			if err != nil {
 				return nil, err
 			}
-			return a.Lab(), err
+			return a, err
 		},
 		ConfigStub: func() config.Config {
 			return config.NewBlankConfig()

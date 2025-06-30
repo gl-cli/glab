@@ -22,8 +22,6 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 		return "current-branch", nil
 	}
 
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdRevoke(factory)
 
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)

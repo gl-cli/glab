@@ -21,9 +21,6 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	factory := cmdtest.InitFactory(ios, rt)
 	factory.BranchStub = git.CurrentBranch
 
-	// TODO: shouldn't be there but the stub doesn't work without it
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdNote(factory)
 
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)

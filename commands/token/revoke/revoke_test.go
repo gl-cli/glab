@@ -17,10 +17,6 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	factory := cmdtest.InitFactory(ios, rt)
 
-	if _, err := factory.HttpClient(); err != nil {
-		return nil, fmt.Errorf("failed to initialize HTTP client: %w", err)
-	}
-
 	cmd := NewCmdRevoke(factory)
 
 	if out, err := cmdtest.ExecuteCommand(cmd, cli, stdout, stderr); err != nil {

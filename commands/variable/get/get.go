@@ -6,18 +6,19 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/variable/variableutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	io        *iostreams.IOStreams
+	baseRepo  func() (glrepo.Interface, error)
 
 	scope        string
 	key          string
@@ -27,9 +28,10 @@ type options struct {
 
 func NewCmdGet(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
+		baseRepo:  f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -74,15 +76,23 @@ func (o *options) validate() error {
 }
 
 func (o *options) run() error {
-	httpClient, err := o.httpClient()
+	// NOTE: this command can not only be used for projects,
+	// so we have to manually check for the base repo, it it doesn't exist,
+	// we bootstrap the client with the default hostname.
+	var repoHost string
+	if baseRepo, err := o.baseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+	apiClient, err := o.apiClient(repoHost, o.config)
 	if err != nil {
 		return err
 	}
+	client := apiClient.Lab()
 
 	var variableValue string
 
 	if o.group != "" {
-		variable, err := api.GetGroupVariable(httpClient, o.group, o.key, o.scope)
+		variable, err := api.GetGroupVariable(client, o.group, o.key, o.scope)
 		if err != nil {
 			return err
 		}
@@ -97,7 +107,7 @@ func (o *options) run() error {
 			return err
 		}
 
-		variable, err := api.GetProjectVariable(httpClient, baseRepo.FullName(), o.key, o.scope)
+		variable, err := api.GetProjectVariable(client, baseRepo.FullName(), o.key, o.scope)
 		if err != nil {
 			return err
 		}

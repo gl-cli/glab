@@ -35,8 +35,6 @@ func runCommand(rt http.RoundTripper, isTTY bool, cli string, stub bool, repoHos
 		}
 	}
 
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdView(factory)
 
 	var restoreCmd func()

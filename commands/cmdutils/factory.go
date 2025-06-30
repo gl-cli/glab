@@ -9,6 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/pkg/dbg"
 	"gitlab.com/gitlab-org/cli/pkg/git"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -18,8 +19,11 @@ import (
 // Factory is a way to obtain core tools for the commands.
 // Safe for concurrent use.
 type Factory interface {
-	RepoOverride(repo string)
+	RepoOverride(repo string) error
 	ApiClient(repoHost string, cfg config.Config) (*api.Client, error)
+	// HttpClient returns an HTTP client that is initialize with the host from BaseRepo.
+	// You must only use HttpClient if your command is tied to a single repository,
+	// otherwise use ApiClient
 	HttpClient() (*gitlab.Client, error)
 	BaseRepo() (glrepo.Interface, error)
 	Remotes() (glrepo.Remotes, error)
@@ -38,8 +42,10 @@ type DefaultFactory struct {
 	defaultHostname string
 	defaultProtocol string
 
-	mu           sync.Mutex // protects the fields below
-	repoOverride string
+	mu sync.Mutex // protects the fields below
+	// cachedBaseRepo if set is the SSoT of the repository to use in BaseRepo(), HttpClient() and other factory function that require a repository.
+	// This is also being set for a repo override.
+	cachedBaseRepo glrepo.Interface
 }
 
 func NewFactory(io *iostreams.IOStreams, resolveRepos bool, cfg config.Config, buildInfo api.BuildInfo) *DefaultFactory {
@@ -74,10 +80,19 @@ func (f *DefaultFactory) DefaultHostname() string {
 	return f.defaultHostname
 }
 
-func (f *DefaultFactory) RepoOverride(repo string) {
+func (f *DefaultFactory) RepoOverride(repo string) error {
+	if repo == "" {
+		return nil
+	}
+
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	f.repoOverride = repo
+	baseRepo, err := glrepo.FromFullName(repo, f.defaultHostname)
+	if err != nil {
+		return err // return the error if repo was overridden.
+	}
+	f.cachedBaseRepo = baseRepo
+	return nil
 }
 
 func (f *DefaultFactory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {
@@ -92,35 +107,28 @@ func (f *DefaultFactory) ApiClient(repoHost string, cfg config.Config) (*api.Cli
 }
 
 func (f *DefaultFactory) HttpClient() (*gitlab.Client, error) {
-	cfg := f.Config()
-
-	f.mu.Lock()
-	override := f.repoOverride
-	f.mu.Unlock()
-	var repo glrepo.Interface
-	if override != "" {
-		var err error
-		repo, err = glrepo.FromFullName(override, f.defaultHostname)
-		if err != nil {
-			return nil, err // return the error if repo was overridden.
-		}
-	} else {
-		remotes, err := f.Remotes()
-		if err != nil {
-			// use default hostname if remote resolver fails
-			repo = glrepo.NewWithHost("", "", f.defaultHostname)
-		} else {
-			repo = remotes[0]
-		}
-	}
-
-	// TODO: is the code below even necessary? Can repo.RepoHost() be an empty string?!
-	repoHost := f.defaultHostname
-	if repo.RepoHost() != "" {
+	// TODO: the above code is a safety net for the factory changes introduced with
+	// https://gitlab.com/gitlab-org/cli/-/merge_requests/2181
+	// Eventually, we should make the factory independent of the repository a command
+	// uses and move that logic into a separate repository resolver.
+	// The factory should only be used to create things that to not have a state.
+	// Currently, the base repository is treated as state.
+	// Use the following code if you want to remove the safety net:
+	// repo, err := f.BaseRepo()
+	// if err != nil {
+	// 	return nil, err
+	// }
+	var repoHost string
+	repo, err := f.BaseRepo()
+	switch err {
+	case nil:
 		repoHost = repo.RepoHost()
+	default:
+		repoHost = f.defaultHostname
+		dbg.Debug("The current command request Factory.HttpClient() without being able to resolve a base repository. The command should probably use Factory.ApiClient() instead")
 	}
 
-	c, err := api.NewClientWithCfg(f.defaultProtocol, repoHost, cfg, false, f.buildInfo.UserAgent())
+	c, err := api.NewClientWithCfg(f.defaultProtocol, repoHost, f.config, false, f.buildInfo.UserAgent())
 	if err != nil {
 		return nil, err
 	}
@@ -130,37 +138,48 @@ func (f *DefaultFactory) HttpClient() (*gitlab.Client, error) {
 
 func (f *DefaultFactory) BaseRepo() (glrepo.Interface, error) {
 	f.mu.Lock()
-	override := f.repoOverride
-	f.mu.Unlock()
-	if override != "" {
-		return glrepo.FromFullName(override, f.defaultHostname)
+	defer f.mu.Unlock()
+
+	cachedBaseRepo := f.cachedBaseRepo
+	if cachedBaseRepo != nil {
+		return cachedBaseRepo, nil
 	}
+
+	baseRepo, err := f.resolveBaseRepoFromRemotes()
+	if err != nil {
+		return nil, err
+	}
+
+	// cache base repo
+	f.cachedBaseRepo = baseRepo
+	return f.cachedBaseRepo, nil
+}
+
+func (f *DefaultFactory) resolveBaseRepoFromRemotes() (glrepo.Interface, error) {
 	remotes, err := f.Remotes()
 	if err != nil {
 		return nil, err
 	}
+
 	if !f.resolveRepos {
 		return remotes[0], nil
 	}
-	cfg := f.Config()
-	// TODO: is the code below even necessary? Can repo.RepoHost() be an empty string?!
-	repoHost := f.defaultHostname
-	if remotes[0].RepoHost() != "" {
-		repoHost = remotes[0].RepoHost()
-	}
-	ac, err := api.NewClientWithCfg(f.defaultProtocol, repoHost, cfg, false, f.buildInfo.UserAgent())
+
+	ac, err := api.NewClientWithCfg(f.defaultProtocol, remotes[0].RepoHost(), f.config, false, f.buildInfo.UserAgent())
 	if err != nil {
 		return nil, err
 	}
-	httpClient := ac.Lab()
-	repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, "", f.defaultHostname)
+
+	repoContext, err := glrepo.ResolveRemotesToRepos(remotes, ac.Lab(), f.defaultHostname)
 	if err != nil {
 		return nil, err
 	}
+
 	baseRepo, err := repoContext.BaseRepo(f.io.PromptEnabled())
 	if err != nil {
 		return nil, err
 	}
+
 	return baseRepo, nil
 }
 

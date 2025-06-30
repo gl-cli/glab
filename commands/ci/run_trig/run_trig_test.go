@@ -28,8 +28,6 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 		return "custom-branch-123", nil
 	}
 
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdRunTrig(factory)
 
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)

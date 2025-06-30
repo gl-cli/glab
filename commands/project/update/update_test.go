@@ -117,7 +117,6 @@ func TestUpdateCmd(t *testing.T) {
 			factory.BaseRepoStub = func() (glrepo.Interface, error) {
 				return glrepo.New("user", "repo", glinstance.DefaultHostname), nil
 			}
-			_, _ = factory.HttpClient()
 
 			cmd := NewCmdUpdate(factory)
 			_, err := cmdtest.ExecuteCommand(cmd, test.args, stdout, stderr)

@@ -97,8 +97,6 @@ func runCommand(rt http.RoundTripper, issuableID string, issueType issuable.Issu
 		},
 	}
 
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdClose(factory, issueType)
 
 	argv, err := shlex.Split(issuableID)

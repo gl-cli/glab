@@ -7,6 +7,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/text"
 	"gopkg.in/yaml.v3"
@@ -20,8 +21,9 @@ type options struct {
 	agentPerPage   int
 	agentPage      int
 
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	io        *iostreams.IOStreams
 }
 
 type AgentConfig struct {
@@ -32,8 +34,9 @@ type AgentConfig struct {
 
 func NewCmdCheckManifestUsage(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
 	}
 	checkManifestUsageCmd := &cobra.Command{
 		Use:   "check_manifest_usage [flags]",
@@ -58,31 +61,31 @@ The output can be piped to a tab-separated value (TSV) file.
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	c, err := o.apiClient("", o.config)
 	if err != nil {
 		return err
 	}
+	client := c.Lab()
 
 	// new line
-	err = checkGroup(apiClient, o.group, o)
+	err = checkGroup(client, o.group, o)
 	if err != nil {
 		return err
 	}
 
 	if o.recursive {
 		var groups []*gitlab.Group
-		groups, _, err = listAllGroupsForGroup(apiClient, o.group)
+		groups, _, err = listAllGroupsForGroup(client, o.group)
 		if err != nil {
 			return err
 		}
 
 		for _, group := range groups {
-			err = checkGroup(apiClient, group.FullPath, o)
+			err = checkGroup(client, group.FullPath, o)
 			if err != nil {
 				return err
 			}
 		}
-
 	}
 
 	return nil
