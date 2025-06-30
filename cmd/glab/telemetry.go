@@ -1,4 +1,4 @@
-package hooks
+package main
 
 import (
 	"strconv"
@@ -12,14 +12,14 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/dbg"
 )
 
-func AddTelemetryHook(f cmdutils.Factory, cmd *cobra.Command) func() {
+func addTelemetryHook(f cmdutils.Factory, cmd *cobra.Command) func() {
 	return func() {
 		go sendTelemetryData(f, cmd)
 	}
 }
 
-// IsTelemetryEnabled checks if usage data is disabled via config or env var
-func IsTelemetryEnabled(cfg config.Config) bool {
+// isTelemetryEnabled checks if usage data is disabled via config or env var
+func isTelemetryEnabled(cfg config.Config) bool {
 	telemetryEnabled, _ := cfg.Get("", "telemetry")
 	enabled, err := strconv.ParseBool(telemetryEnabled)
 	if err != nil {
@@ -100,6 +100,6 @@ func sendTelemetryData(f cmdutils.Factory, cmd *cobra.Command) {
 		},
 	})
 	if err != nil {
-			f.IO().Logf("Could not send telemetry data: %s", err.Error())
+		f.IO().Logf("Could not send telemetry data: %s", err.Error())
 	}
 }

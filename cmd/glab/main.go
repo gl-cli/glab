@@ -20,7 +20,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands"
 	"gitlab.com/gitlab-org/cli/internal/commands/alias/expand"
 	"gitlab.com/gitlab-org/cli/internal/commands/help"
-	"gitlab.com/gitlab-org/cli/internal/commands/hooks"
 	"gitlab.com/gitlab-org/cli/internal/commands/update"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
@@ -228,8 +227,8 @@ func setupSurveyCore(io *iostreams.IOStreams) {
 }
 
 func setupTelemetryHook(cfg config.Config, f cmdutils.Factory, cmd *cobra.Command) {
-	if hooks.IsTelemetryEnabled(cfg) {
-		cobra.OnFinalize(hooks.AddTelemetryHook(f, cmd))
+	if isTelemetryEnabled(cfg) {
+		cobra.OnFinalize(addTelemetryHook(f, cmd))
 	}
 }
 
