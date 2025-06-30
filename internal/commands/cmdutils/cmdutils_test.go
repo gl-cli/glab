@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/acarl005/stripansi"
 	"github.com/stretchr/testify/assert"
@@ -15,8 +15,8 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/prompt"
 )
 
 func Test_ParseAssignees(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/charmbracelet/glamour"
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 // renderWithGlamour renders markdown text using Glamour
@@ -33,7 +33,7 @@ func renderWithGlamour(text string) string {
 	return strings.TrimSpace(renderedText)
 }
 
-// This code forked from the GitHub CLI at http://github.com/cli - cli/pkg/text/indent.go
+// This code forked from the GitHub CLI at http://github.com/cli - cli/internal/text/indent.go
 // https://github.com/cli/cli/blob/929e082c13909044e2585af292ae952c9ca6f25c/pkg/text/indent.go
 
 // MIT License

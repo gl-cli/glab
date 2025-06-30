@@ -9,11 +9,11 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/dbg"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/dbg"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 // Factory is a way to obtain core tools for the commands.

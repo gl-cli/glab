@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/prompt"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 )
 
 func Test_issueMetadataFromURL(t *testing.T) {

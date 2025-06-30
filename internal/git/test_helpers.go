@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/pkg/httpmock"
+	"gitlab.com/gitlab-org/cli/internal/httpmock"
 
 	"github.com/stretchr/testify/require"
 )

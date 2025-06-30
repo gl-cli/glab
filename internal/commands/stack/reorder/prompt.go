@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/internal/git"
 )
 
 // parseReorderFile removes comments and trims space for all non-comment lines

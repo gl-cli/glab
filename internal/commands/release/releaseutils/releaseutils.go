@@ -11,10 +11,10 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/release/releaseutils/upload"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
-	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/tableprinter"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )

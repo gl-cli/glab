@@ -4,9 +4,9 @@ import (
 	"net/url"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/tableprinter"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 const (

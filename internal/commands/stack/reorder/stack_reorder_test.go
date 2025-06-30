@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/internal/git"
 )
 
 func Test_matchBranchesToStack(t *testing.T) {

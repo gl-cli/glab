@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/ptr"
 	"oss.terrastruct.com/d2/d2graph"

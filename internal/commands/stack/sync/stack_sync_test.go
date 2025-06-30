@@ -8,8 +8,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	git_testing "gitlab.com/gitlab-org/cli/pkg/git/testing"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	git_testing "gitlab.com/gitlab-org/cli/internal/git/testing"
 	"go.uber.org/mock/gomock"
 )
 

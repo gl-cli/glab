@@ -11,7 +11,7 @@ import (
 
 	"github.com/charmbracelet/glamour"
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/pkg/browser"
+	"gitlab.com/gitlab-org/cli/internal/browser"
 )
 
 type MarkdownRenderOpts []glamour.TermRendererOption

@@ -5,7 +5,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/stretchr/testify/assert"

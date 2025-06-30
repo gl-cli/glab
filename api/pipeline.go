@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/internal/git"
 )
 
 var RetryPipeline = func(client *gitlab.Client, pid int, repo string) (*gitlab.Pipeline, error) {

@@ -8,8 +8,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
 func Test_promptForReorder(t *testing.T) {

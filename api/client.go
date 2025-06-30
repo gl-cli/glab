@@ -15,8 +15,8 @@ import (
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/oauth2"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/oauth2"
 
 	oauthz "golang.org/x/oauth2"
 )

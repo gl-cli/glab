@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/token/filter"
 
 	"gitlab.com/gitlab-org/cli/internal/commands/flag"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"

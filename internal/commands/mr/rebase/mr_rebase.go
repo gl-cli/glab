@@ -5,7 +5,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/spf13/cobra"
 )

@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
+	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 )
 
 // createTablePrinter creates a table printer for all given tokens with column headers and values aligned.

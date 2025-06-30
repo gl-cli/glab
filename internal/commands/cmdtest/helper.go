@@ -15,9 +15,9 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/google/shlex"
 	"github.com/otiai10/copy"

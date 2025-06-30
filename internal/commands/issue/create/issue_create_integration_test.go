@@ -9,9 +9,9 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/internal/prompt"
 
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	"github.com/acarl005/stripansi"
 	"github.com/pkg/errors"

@@ -8,7 +8,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/pkg/browser"
+	"gitlab.com/gitlab-org/cli/internal/browser"
 )
 
 func NewCmdConfig(f cmdutils.Factory) *cobra.Command {

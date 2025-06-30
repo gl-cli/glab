@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
 type options struct {

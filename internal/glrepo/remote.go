@@ -7,7 +7,7 @@ import (
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
-	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/internal/git"
 )
 
 // Remotes represents a set of git remotes

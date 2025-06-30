@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	git_testing "gitlab.com/gitlab-org/cli/pkg/git/testing"
+	git_testing "gitlab.com/gitlab-org/cli/internal/git/testing"
 	gomock "go.uber.org/mock/gomock"
 
 	"gitlab.com/gitlab-org/cli/internal/run"

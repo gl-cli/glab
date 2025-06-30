@@ -12,9 +12,9 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 // RemoteURL returns correct git clone URL of a repo

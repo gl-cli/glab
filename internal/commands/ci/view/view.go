@@ -16,9 +16,9 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/gdamore/tcell/v2"

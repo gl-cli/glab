@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
-	"gitlab.com/gitlab-org/cli/pkg/surveyext"
+	"gitlab.com/gitlab-org/cli/internal/prompt"
+	"gitlab.com/gitlab-org/cli/internal/surveyext"
 )
 
 type EditorOptions struct {

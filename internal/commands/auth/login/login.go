@@ -10,7 +10,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/commands/auth/authutils"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
@@ -20,8 +20,8 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/oauth2"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/oauth2"
 )
 
 type LoginOptions struct {

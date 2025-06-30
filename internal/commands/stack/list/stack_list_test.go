@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/internal/git"
 )
 
 func TestStackList(t *testing.T) {

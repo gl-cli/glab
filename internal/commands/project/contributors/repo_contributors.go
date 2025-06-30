@@ -3,15 +3,15 @@ package contributors
 import (
 	"fmt"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/tableprinter"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 type options struct {

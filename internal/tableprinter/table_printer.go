@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/pkg/text"
+	"gitlab.com/gitlab-org/cli/internal/text"
 )
 
 var tp *TablePrinter

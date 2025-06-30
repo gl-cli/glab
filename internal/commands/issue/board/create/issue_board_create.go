@@ -3,7 +3,7 @@ package create
 import (
 	"fmt"
 
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/internal/prompt"
 
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"

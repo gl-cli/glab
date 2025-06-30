@@ -7,16 +7,16 @@ import (
 	"time"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/pkg/dbg"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-	"gitlab.com/gitlab-org/cli/pkg/surveyext"
+	"gitlab.com/gitlab-org/cli/internal/dbg"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/surveyext"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/avast/retry-go/v4"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
+	"gitlab.com/gitlab-org/cli/internal/prompt"
 
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
 func GetValue(value string, ios *iostreams.IOStreams, args []string) (string, error) {

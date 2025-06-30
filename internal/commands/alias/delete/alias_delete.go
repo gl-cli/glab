@@ -3,7 +3,7 @@ package delete
 import (
 	"fmt"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 

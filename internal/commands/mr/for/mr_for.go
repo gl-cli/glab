@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/internal/git"
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"

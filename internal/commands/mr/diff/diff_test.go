@@ -13,9 +13,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/httpmock"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 

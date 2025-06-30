@@ -10,7 +10,7 @@ import (
 	"strings"
 	"syscall"
 
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	gitlab "gitlab.com/gitlab-org/api/client-go"

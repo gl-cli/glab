@@ -12,8 +12,8 @@ import (
 	glab_api "gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"

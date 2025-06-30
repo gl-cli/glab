@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/mgutz/ansi"
 
@@ -24,7 +24,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/update"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
+	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 
 	"github.com/spf13/cobra"
 )

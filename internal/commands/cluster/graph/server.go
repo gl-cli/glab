@@ -14,7 +14,7 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/pkg/browser"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"oss.terrastruct.com/d2/d2format"
 	"oss.terrastruct.com/d2/d2graph"
 	"oss.terrastruct.com/d2/d2layouts/d2dagrelayout"

@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/pkg/git"
+	"gitlab.com/gitlab-org/cli/internal/git"
 )
 
 func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {

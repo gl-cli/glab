@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/commands/release/releaseutils/upload"
-	"gitlab.com/gitlab-org/cli/pkg/httpmock"
+	"gitlab.com/gitlab-org/cli/internal/httpmock"
 )
 
 func doesFileExist(fileName string) bool {

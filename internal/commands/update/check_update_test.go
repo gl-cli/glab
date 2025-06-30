@@ -14,8 +14,8 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/httpmock"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/httpmock"
 )
 
 func runCommand(rt http.RoundTripper, version string) (*test.CmdOut, error) {

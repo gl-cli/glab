@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
 
@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/httpmock"
+	"gitlab.com/gitlab-org/cli/internal/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 

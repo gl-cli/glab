@@ -5,7 +5,7 @@ import (
 	"io"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
 // ConflictDirectAssetPathError is returned when both direct_asset_path and the deprecated filepath as specified for an asset link.

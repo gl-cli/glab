@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/mattn/go-isatty"
-	"gitlab.com/gitlab-org/cli/pkg/execext"
+	"gitlab.com/gitlab-org/cli/internal/execext"
 	"golang.org/x/term"
 )
 

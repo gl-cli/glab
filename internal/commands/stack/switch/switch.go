@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/text"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/text"
 )
 
 func NewCmdStackSwitch(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {

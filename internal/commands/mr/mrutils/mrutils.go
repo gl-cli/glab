@@ -8,15 +8,15 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/pkg/dbg"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/dbg"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
-	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
+	"gitlab.com/gitlab-org/cli/internal/prompt"
+	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 	"golang.org/x/sync/errgroup"
 )
 

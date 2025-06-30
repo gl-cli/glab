@@ -10,10 +10,10 @@ import (
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
-//go:generate go run go.uber.org/mock/mockgen@v0.4.0 -typed -destination=./git_interface_mock_for_test.go -package=git_mock gitlab.com/gitlab-org/cli/pkg/git_mock GitInterface
+//go:generate go run go.uber.org/mock/mockgen@v0.4.0 -typed -destination=./git_interface_mock_for_test.go -package=git_mock gitlab.com/gitlab-org/cli/internal/git_mock GitInterface
 
 const DefaultRemote = "origin"
 

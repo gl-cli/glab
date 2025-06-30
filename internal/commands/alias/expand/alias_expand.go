@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/pkg/execext"
+	"gitlab.com/gitlab-org/cli/internal/execext"
 
 	"github.com/google/shlex"
 	"gitlab.com/gitlab-org/cli/internal/config"

@@ -104,7 +104,7 @@ bin/gotestsum-${GOTESTSUM_VERSION}:
 	@mkdir -p bin
 	curl -L https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_${OS}_amd64.tar.gz | tar -zOxf - gotestsum > ./bin/gotestsum-${GOTESTSUM_VERSION} && chmod +x ./bin/gotestsum-${GOTESTSUM_VERSION}
 
-TEST_PKGS ?= ./pkg/... ./internal/... ./cmd/...
+TEST_PKGS ?= ./internal/... ./cmd/...
 .PHONY: test
 # NOTE: some tests require uncustomized environment variables for VISUAL, EDITOR, and PAGER to test
 # certain behaviors related to glab output preferences. Also, the CI_PROJECT_PATH environment variable

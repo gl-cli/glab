@@ -8,7 +8,7 @@ import (
 	"sort"
 
 	"github.com/zalando/go-keyring"
-	"gitlab.com/gitlab-org/cli/pkg/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gopkg.in/yaml.v3"
 )
 

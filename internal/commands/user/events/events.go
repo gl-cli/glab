@@ -10,7 +10,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 func NewCmdEvents(f cmdutils.Factory) *cobra.Command {

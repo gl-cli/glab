@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/pkg/httpmock"
+	"gitlab.com/gitlab-org/cli/internal/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 

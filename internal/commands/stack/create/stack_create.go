@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/prompt"
-	"gitlab.com/gitlab-org/cli/pkg/text"
-	"gitlab.com/gitlab-org/cli/pkg/utils"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/prompt"
+	"gitlab.com/gitlab-org/cli/internal/text"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"

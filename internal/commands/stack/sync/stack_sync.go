@@ -15,11 +15,11 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/create"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/pkg/auth"
-	"gitlab.com/gitlab-org/cli/pkg/dbg"
-	"gitlab.com/gitlab-org/cli/pkg/git"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
-	"gitlab.com/gitlab-org/cli/pkg/text"
+	"gitlab.com/gitlab-org/cli/internal/auth"
+	"gitlab.com/gitlab-org/cli/internal/dbg"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/text"
 )
 
 type options struct {

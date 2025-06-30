@@ -14,7 +14,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/kballard/go-shellquote"
-	"gitlab.com/gitlab-org/cli/pkg/execext"
+	"gitlab.com/gitlab-org/cli/internal/execext"
 )
 
 var (
