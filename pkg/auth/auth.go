@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 )
 
 func GetAuthenticatedClient(f cmdutils.Factory) (*gitlab.Client, error) {
