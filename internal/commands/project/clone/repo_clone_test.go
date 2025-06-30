@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
 func TestMain(m *testing.M) {

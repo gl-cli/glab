@@ -9,7 +9,7 @@ import (
 	gitlab_testing "gitlab.com/gitlab-org/api/client-go/testing"
 	"go.uber.org/mock/gomock"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"

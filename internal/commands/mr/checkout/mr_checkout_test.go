@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/git"

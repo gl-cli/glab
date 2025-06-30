@@ -9,7 +9,7 @@ import (
 	"github.com/google/shlex"
 
 	"gitlab.com/gitlab-org/cli/api"
-	cmdTestUtils "gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
+	cmdTestUtils "gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 
 	"github.com/acarl005/stripansi"

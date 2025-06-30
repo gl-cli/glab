@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/httpmock"
 	"gitlab.com/gitlab-org/cli/test"

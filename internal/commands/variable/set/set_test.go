@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"

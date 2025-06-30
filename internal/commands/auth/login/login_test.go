@@ -9,7 +9,7 @@ import (
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
 	"github.com/zalando/go-keyring"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
 func TestMain(m *testing.M) {

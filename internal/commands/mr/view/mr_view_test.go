@@ -21,7 +21,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	mainTest "gitlab.com/gitlab-org/cli/test"
 )
