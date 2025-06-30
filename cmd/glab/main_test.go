@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/commands/cmdtest"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"go.uber.org/goleak"
 )
 
@@ -95,7 +95,7 @@ x lookup https://gitlab.com/api/v4:
 
 // Test started when the test binary is started
 // and calls the main function
-func TestGlab(t *testing.T) {
+func TestGlab(t *testing.T) { // nolint:unparam
 	main()
 }
 

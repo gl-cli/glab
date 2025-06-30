@@ -10,21 +10,21 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/pkg/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/mgutz/ansi"
 
 	surveyCore "github.com/AlecAivazis/survey/v2/core"
-	"gitlab.com/gitlab-org/cli/commands"
-	"gitlab.com/gitlab-org/cli/commands/alias/expand"
-	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/commands/help"
-	"gitlab.com/gitlab-org/cli/commands/hooks"
-	"gitlab.com/gitlab-org/cli/commands/update"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands"
+	"gitlab.com/gitlab-org/cli/internal/commands/alias/expand"
+	"gitlab.com/gitlab-org/cli/internal/commands/help"
+	"gitlab.com/gitlab-org/cli/internal/commands/hooks"
+	"gitlab.com/gitlab-org/cli/internal/commands/update"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
+	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 
 	"github.com/spf13/cobra"
 )
