@@ -337,7 +337,6 @@ func WithBuildInfo(buildInfo api.BuildInfo) FactoryOption {
 
 // NewTestFactory creates a Factory configured for testing with the given options
 func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
-	// Create a default factory
 	f := &Factory{
 		IOStub: ios,
 		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
@@ -372,29 +371,7 @@ func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdEx
 
 	ios, _, stdout, stderr := TestIOStreams(WithTestIOStreamsAsTTY(true))
 
-	// Create a default factory
-	f := &Factory{
-		IOStub: ios,
-		HttpClientStub: func() (*gitlab.Client, error) {
-			return &gitlab.Client{}, nil
-		},
-		ConfigStub: func() config.Config {
-			return config.NewBlankConfig()
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-		BranchStub: func() (string, error) {
-			return "main", nil
-		},
-		BuildInfoStub: api.BuildInfo{Version: "test", Commit: "test", Platform: runtime.GOOS, Architecture: runtime.GOARCH},
-	}
-
-	// Apply all options
-	for _, opt := range opts {
-		opt(f)
-	}
-
+	f := NewTestFactory(ios, opts...)
 	return func(cli string) (*test.CmdOut, error) {
 		return ExecuteCommand(cmdFunc(f), cli, stdout, stderr)
 	}
