@@ -1,4 +1,4 @@
-package hooks
+package main
 
 import (
 	"testing"
@@ -217,7 +217,7 @@ func TestIsTelemetryEnabled(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			result := IsTelemetryEnabled(cfg)
+			result := isTelemetryEnabled(cfg)
 
 			require.Equal(t, tt.expectedResult, result)
 		})
