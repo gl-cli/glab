@@ -19,13 +19,15 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	io        *iostreams.IOStreams
+	baseRepo  func() (glrepo.Interface, error)
 
 	name         string
 	description  string
@@ -40,9 +42,10 @@ type options struct {
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
+		baseRepo:  f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -144,16 +147,25 @@ func (o *options) validate(cmd *cobra.Command) error {
 }
 
 func (o *options) run() error {
-	httpClient, err := o.httpClient()
+	// NOTE: this command can not only be used for projects,
+	// so we have to manually check for the base repo, it it doesn't exist,
+	// we bootstrap the client with the default hostname.
+	var repoHost string
+	if baseRepo, err := o.baseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+	apiClient, err := o.apiClient(repoHost, o.config)
 	if err != nil {
 		return err
 	}
+	client := apiClient.Lab()
+
 	var outputToken any
 	var outputTokenValue string
 	expirationDate := gitlab.ISOTime(o.expireAt)
 
 	if o.user != "" {
-		user, err := api.UserByName(httpClient, o.user)
+		user, err := api.UserByName(client, o.user)
 		if err != nil {
 			return err
 		}
@@ -162,7 +174,7 @@ func (o *options) run() error {
 			ListOptions: gitlab.ListOptions{PerPage: 100},
 			UserID:      &user.ID,
 		}
-		tokens, err := api.ListPersonalAccessTokens(httpClient, options)
+		tokens, err := api.ListPersonalAccessTokens(client, options)
 		if err != nil {
 			return err
 		}
@@ -174,7 +186,7 @@ func (o *options) run() error {
 		}
 
 		if o.user == "@me" {
-			token, err := api.CreatePersonalAccessTokenForCurrentUser(httpClient, o.name, o.scopes, time.Time(expirationDate))
+			token, err := api.CreatePersonalAccessTokenForCurrentUser(client, o.name, o.scopes, time.Time(expirationDate))
 			if err != nil {
 				return err
 			}
@@ -187,7 +199,7 @@ func (o *options) run() error {
 				ExpiresAt:   &expirationDate,
 				Scopes:      &o.scopes,
 			}
-			token, err := api.CreatePersonalAccessToken(httpClient, user.ID, createOptions)
+			token, err := api.CreatePersonalAccessToken(client, user.ID, createOptions)
 			if err != nil {
 				return err
 			}
@@ -197,7 +209,7 @@ func (o *options) run() error {
 	} else {
 		if o.group != "" {
 			listOptions := &gitlab.ListGroupAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListGroupAccessTokens(httpClient, o.group, listOptions)
+			tokens, err := api.ListGroupAccessTokens(client, o.group, listOptions)
 			if err != nil {
 				return err
 			}
@@ -215,7 +227,7 @@ func (o *options) run() error {
 				AccessLevel: &o.accessLevel.Value,
 				ExpiresAt:   &expirationDate,
 			}
-			token, err := api.CreateGroupAccessToken(httpClient, o.group, &options)
+			token, err := api.CreateGroupAccessToken(client, o.group, &options)
 			if err != nil {
 				return err
 			}
@@ -228,7 +240,7 @@ func (o *options) run() error {
 				return err
 			}
 			listOptions := &gitlab.ListProjectAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListProjectAccessTokens(httpClient, repo.FullName(), listOptions)
+			tokens, err := api.ListProjectAccessTokens(client, repo.FullName(), listOptions)
 			if err != nil {
 				return err
 			}
@@ -247,7 +259,7 @@ func (o *options) run() error {
 				AccessLevel: &o.accessLevel.Value,
 				ExpiresAt:   &expirationDate,
 			}
-			token, err := api.CreateProjectAccessToken(httpClient, repo.FullName(), &options)
+			token, err := api.CreateProjectAccessToken(client, repo.FullName(), &options)
 			if err != nil {
 				return err
 			}

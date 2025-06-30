@@ -110,45 +110,8 @@ func Test_ResolveRemotesToRepos(t *testing.T) {
 
 	// Test the normal and most expected usage
 	t.Run("simple", func(t *testing.T) {
-		r, err := ResolveRemotesToRepos(rem.remotes, rem.apiClient, "", glinstance.DefaultHostname)
+		r, err := ResolveRemotesToRepos(rem.remotes, rem.apiClient, glinstance.DefaultHostname)
 		assert.Nil(t, err)
-
-		assert.Equal(t, rem.apiClient, r.apiClient)
-
-		assert.Len(t, r.remotes, 1)
-
-		for i := range r.remotes {
-			assert.Equal(t, r.remotes[i].Name, rem.remotes[i].Name)
-			assert.Equal(t, r.remotes[i].Repo.FullName(), rem.remotes[i].Repo.FullName())
-			assert.Equal(t, r.remotes[i].Repo.RepoHost(), rem.remotes[i].Repo.RepoHost())
-		}
-	})
-
-	// Test the usage of baseOverride
-	t.Run("baseOverride", func(t *testing.T) {
-		expectedBaseOverride := NewWithHost("profclems", "glab", "gitlab.com")
-
-		r, err := ResolveRemotesToRepos(rem.remotes, rem.apiClient, "gitlab.com/profclems/glab", glinstance.DefaultHostname)
-		assert.Nil(t, err)
-
-		assert.Equal(t, expectedBaseOverride.FullName(), r.baseOverride.FullName())
-		assert.Equal(t, expectedBaseOverride.RepoHost(), r.baseOverride.RepoHost())
-
-		assert.Equal(t, rem.apiClient, r.apiClient)
-
-		assert.Len(t, r.remotes, 1)
-
-		for i := range r.remotes {
-			assert.Equal(t, r.remotes[i].Name, rem.remotes[i].Name)
-			assert.Equal(t, r.remotes[i].Repo.FullName(), rem.remotes[i].Repo.FullName())
-			assert.Equal(t, r.remotes[i].Repo.RepoHost(), rem.remotes[i].Repo.RepoHost())
-		}
-	})
-
-	// Test the usage of baseOverride when it is passed an invalid value
-	t.Run("baseOverrideFail", func(t *testing.T) {
-		r, err := ResolveRemotesToRepos(rem.remotes, rem.apiClient, "badValue", glinstance.DefaultHostname)
-		assert.EqualError(t, err, `expected the "[HOST/]OWNER/[NAMESPACE/]REPO" format, got "badValue"`)
 
 		assert.Equal(t, rem.apiClient, r.apiClient)
 
@@ -276,17 +239,6 @@ func Test_BaseRepo(t *testing.T) {
 		p := mockGitlabProject(projectID)
 		return &p, nil
 	}
-
-	t.Run("baseOverride", func(t *testing.T) {
-		localRem := rem()
-		localRem.baseOverride = NewWithHost("profclems", "glab", "gitlab.com")
-
-		got, err := localRem.BaseRepo(false)
-		assert.NoError(t, err)
-
-		assert.Equal(t, localRem.baseOverride.FullName(), got.FullName())
-		assert.Equal(t, localRem.baseOverride.RepoHost(), got.RepoHost())
-	})
 
 	t.Run("Resolved->base", func(t *testing.T) {
 		localRem := rem()
@@ -657,17 +609,6 @@ func Test_HeadRepo(t *testing.T) {
 		p := mockGitlabProject(projectID)
 		return &p, nil
 	}
-
-	t.Run("baseOverride", func(t *testing.T) {
-		localRem := rem()
-		localRem.baseOverride = NewWithHost("profclems", "glab", "gitlab.com")
-
-		got, err := localRem.HeadRepo(false)
-		assert.NoError(t, err)
-
-		assert.Equal(t, localRem.baseOverride.FullName(), got.FullName())
-		assert.Equal(t, localRem.baseOverride.RepoHost(), got.RepoHost())
-	})
 
 	t.Run("Resolved->head", func(t *testing.T) {
 		localRem := rem()

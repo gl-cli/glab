@@ -258,8 +258,6 @@ func TestGetJobId(t *testing.T) {
 			ios, _, _, _ := cmdtest.TestIOStreams()
 			f := cmdtest.InitFactory(ios, fakeHTTP)
 
-			_, _ = f.HttpClient()
-
 			apiClient, _ := f.HttpClient()
 			repo, _ := f.BaseRepo()
 
@@ -419,8 +417,6 @@ func TestTraceJob(t *testing.T) {
 
 			ios, _, _, _ := cmdtest.TestIOStreams()
 			f := cmdtest.InitFactory(ios, fakeHTTP)
-
-			_, _ = f.HttpClient()
 
 			apiClient, _ := f.HttpClient()
 			repo, _ := f.BaseRepo()

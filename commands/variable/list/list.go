@@ -11,17 +11,19 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/flag"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
-	page       int
-	perPage    int
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	io        *iostreams.IOStreams
+	baseRepo  func() (glrepo.Interface, error)
+	page      int
+	perPage   int
 
 	group        string
 	outputFormat string
@@ -29,9 +31,10 @@ type options struct {
 
 func NewCmdList(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
+		baseRepo:  f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -80,10 +83,19 @@ func (o *options) complete(cmd *cobra.Command) error {
 
 func (o *options) run() error {
 	color := o.io.Color()
-	httpClient, err := o.httpClient()
+
+	// NOTE: this command can not only be used for projects,
+	// so we have to manually check for the base repo, it it doesn't exist,
+	// we bootstrap the client with the default hostname.
+	var repoHost string
+	if baseRepo, err := o.baseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+	apiClient, err := o.apiClient(repoHost, o.config)
 	if err != nil {
 		return err
 	}
+	client := apiClient.Lab()
 
 	table := tableprinter.NewTablePrinter()
 	table.AddRow("KEY", "PROTECTED", "MASKED", "EXPANDED", "SCOPE", "DESCRIPTION")
@@ -91,7 +103,7 @@ func (o *options) run() error {
 	if o.group != "" {
 		o.io.Logf("Listing variables for the %s group:\n\n", color.Bold(o.group))
 		createVarOpts := &gitlab.ListGroupVariablesOptions{Page: o.page, PerPage: o.perPage}
-		variables, err := api.ListGroupVariables(httpClient, o.group, createVarOpts)
+		variables, err := api.ListGroupVariables(client, o.group, createVarOpts)
 		if err != nil {
 			return err
 		}
@@ -111,7 +123,7 @@ func (o *options) run() error {
 		}
 		o.io.Logf("Listing variables for the %s project:\n\n", color.Bold(repo.FullName()))
 		createVarOpts := &gitlab.ListProjectVariablesOptions{Page: o.page, PerPage: o.perPage}
-		variables, err := api.ListProjectVariables(httpClient, repo.FullName(), createVarOpts)
+		variables, err := api.ListProjectVariables(client, repo.FullName(), createVarOpts)
 		if err != nil {
 			return err
 		}

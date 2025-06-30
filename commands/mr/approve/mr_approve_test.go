@@ -34,8 +34,6 @@ func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 		},
 	}
 
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdApprove(factory)
 
 	argv, err := shlex.Split(cli)

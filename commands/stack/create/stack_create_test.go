@@ -19,8 +19,6 @@ func runCommand(mockCmd git.GitRunner, args string, t *testing.T) (*test.CmdOut,
 
 	factory := cmdtest.InitFactory(ios, nil)
 
-	_, _ = factory.HttpClient()
-
 	cmd := NewCmdCreateStack(factory, mockCmd)
 
 	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)

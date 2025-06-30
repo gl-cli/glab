@@ -19,10 +19,11 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 		Short: "View user events.",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
+			c, err := f.ApiClient("", f.Config())
 			if err != nil {
 				return err
 			}
+			client := c.Lab()
 
 			repo, err := f.BaseRepo()
 			if err != nil {
@@ -38,7 +39,7 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 				l.PerPage = p
 			}
 
-			events, err := api.CurrentUserEvents(apiClient, l)
+			events, err := api.CurrentUserEvents(client, l)
 			if err != nil {
 				return err
 			}
@@ -64,7 +65,7 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 			if lb, _ := cmd.Flags().GetBool("all"); lb {
 				projects := make(map[int]*gitlab.Project)
 				for _, e := range events {
-					project, err := api.GetProject(apiClient, e.ProjectID)
+					project, err := api.GetProject(client, e.ProjectID)
 					if err != nil {
 						return err
 					}
@@ -78,7 +79,7 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 				return nil
 			}
 
-			project, err := api.GetProject(apiClient, repo.FullName())
+			project, err := api.GetProject(client, repo.FullName())
 			if err != nil {
 				return err
 			}

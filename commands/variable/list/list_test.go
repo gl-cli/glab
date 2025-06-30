@@ -7,6 +7,7 @@ import (
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 func Test_NewCmdList(t *testing.T) {
@@ -68,6 +69,9 @@ func Test_NewCmdList(t *testing.T) {
 			io, _, _, _ := cmdtest.TestIOStreams()
 			f := &cmdtest.Factory{
 				IOStub: io,
+				ConfigStub: func() config.Config {
+					return config.NewBlankConfig()
+				},
 			}
 
 			io.IsInTTY = tt.stdinTTY

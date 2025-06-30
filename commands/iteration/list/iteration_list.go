@@ -8,6 +8,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
@@ -18,7 +19,8 @@ import (
 
 type options struct {
 	io           *iostreams.IOStreams
-	httpClient   func() (*gitlab.Client, error)
+	apiClient    func(repoHost string, cfg config.Config) (*api.Client, error)
+	config       config.Config
 	baseRepo     func() (glrepo.Interface, error)
 	group        string
 	page         int
@@ -28,9 +30,10 @@ type options struct {
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
+		baseRepo:  f.BaseRepo,
 	}
 
 	iterationListCmd := &cobra.Command{
@@ -58,14 +61,19 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	// NOTE: this command can not only be used for projects,
+	// so we have to manually check for the base repo, it it doesn't exist,
+	// we bootstrap the client with the default hostname.
+	var repoHost string
+	if baseRepo, err := o.baseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+	apiClient, err := o.apiClient(repoHost, o.config)
 	if err != nil {
 		return err
 	}
-	repo, err := o.baseRepo()
-	if err != nil {
-		return err
-	}
+	client := apiClient.Lab()
+
 	iterationApiOpts := &api.ListProjectIterationsOptions{}
 	iterationApiOpts.IncludeAncestors = gitlab.Ptr(true)
 
@@ -79,7 +87,7 @@ func (o *options) run() error {
 	var iterationBuilder strings.Builder
 
 	if o.group != "" {
-		iterations, err := api.ListGroupIterations(apiClient, o.group, iterationApiOpts)
+		iterations, err := api.ListGroupIterations(client, o.group, iterationApiOpts)
 		if err != nil {
 			return err
 		}
@@ -93,7 +101,11 @@ func (o *options) run() error {
 			}
 		}
 	} else {
-		iterations, err := api.ListProjectIterations(apiClient, repo.FullName(), iterationApiOpts)
+		repo, err := o.baseRepo()
+		if err != nil {
+			return err
+		}
+		iterations, err := api.ListProjectIterations(client, repo.FullName(), iterationApiOpts)
 		if err != nil {
 			return err
 		}

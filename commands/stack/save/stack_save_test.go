@@ -28,8 +28,6 @@ func setupTestFactory(rt http.RoundTripper, isTTY bool) (ios *iostreams.IOStream
 
 	factory = cmdtest.InitFactory(ios, rt)
 
-	_, _ = factory.HttpClient()
-
 	return
 }
 

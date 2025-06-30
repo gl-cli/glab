@@ -148,7 +148,6 @@ func setupTestFactory(rt http.RoundTripper, isTTY bool) (*iostreams.IOStreams, c
 		return glrepo.TestProject("stack_guy", "stackproject"), nil
 	}
 
-	_, _ = f.HttpClient()
 	return ios, f
 }
 

@@ -18,13 +18,15 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	io        *iostreams.IOStreams
+	baseRepo  func() (glrepo.Interface, error)
 
 	user         string
 	group        string
@@ -36,9 +38,10 @@ type options struct {
 
 func NewCmdRotate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
+		baseRepo:  f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -134,17 +137,26 @@ func (o *options) validate() error {
 }
 
 func (o *options) run() error {
-	httpClient, err := o.httpClient()
+	// NOTE: this command can not only be used for projects,
+	// so we have to manually check for the base repo, it it doesn't exist,
+	// we bootstrap the client with the default hostname.
+	var repoHost string
+	if baseRepo, err := o.baseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+	apiClient, err := o.apiClient(repoHost, o.config)
 	if err != nil {
 		return err
 	}
+	client := apiClient.Lab()
+
 	expirationDate := gitlab.ISOTime(o.expireAt)
 
 	var outputToken any
 	var outputTokenValue string
 
 	if o.user != "" {
-		user, err := api.UserByName(httpClient, o.user)
+		user, err := api.UserByName(client, o.user)
 		if err != nil {
 			return cmdutils.FlagError{Err: err}
 		}
@@ -153,7 +165,7 @@ func (o *options) run() error {
 			ListOptions: gitlab.ListOptions{PerPage: 100},
 			UserID:      &user.ID,
 		}
-		tokens, err := api.ListPersonalAccessTokens(httpClient, options)
+		tokens, err := api.ListPersonalAccessTokens(client, options)
 		if err != nil {
 			return err
 		}
@@ -172,7 +184,7 @@ func (o *options) run() error {
 		rotateOptions := &gitlab.RotatePersonalAccessTokenOptions{
 			ExpiresAt: &expirationDate,
 		}
-		if token, err = api.RotatePersonalAccessToken(httpClient, token.ID, rotateOptions); err != nil {
+		if token, err = api.RotatePersonalAccessToken(client, token.ID, rotateOptions); err != nil {
 			return err
 		}
 		outputToken = token
@@ -180,7 +192,7 @@ func (o *options) run() error {
 	} else {
 		if o.group != "" {
 			options := &gitlab.ListGroupAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListGroupAccessTokens(httpClient, o.group, options)
+			tokens, err := api.ListGroupAccessTokens(client, o.group, options)
 			if err != nil {
 				return err
 			}
@@ -200,7 +212,7 @@ func (o *options) run() error {
 			rotateOptions := &gitlab.RotateGroupAccessTokenOptions{
 				ExpiresAt: &expirationDate,
 			}
-			if token, err = api.RotateGroupAccessToken(httpClient, o.group, token.ID, rotateOptions); err != nil {
+			if token, err = api.RotateGroupAccessToken(client, o.group, token.ID, rotateOptions); err != nil {
 				return err
 			}
 			outputToken = token
@@ -211,7 +223,7 @@ func (o *options) run() error {
 				return err
 			}
 			options := &gitlab.ListProjectAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListProjectAccessTokens(httpClient, repo.FullName(), options)
+			tokens, err := api.ListProjectAccessTokens(client, repo.FullName(), options)
 			if err != nil {
 				return err
 			}
@@ -231,7 +243,7 @@ func (o *options) run() error {
 			rotateOptions := &gitlab.RotateProjectAccessTokenOptions{
 				ExpiresAt: &expirationDate,
 			}
-			if token, err = api.RotateProjectAccessToken(httpClient, repo.FullName(), token.ID, rotateOptions); err != nil {
+			if token, err = api.RotateProjectAccessToken(client, repo.FullName(), token.ID, rotateOptions); err != nil {
 				return err
 			}
 			outputToken = token

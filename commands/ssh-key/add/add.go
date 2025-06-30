@@ -7,16 +7,16 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	io        *iostreams.IOStreams
 
 	title     string
 	key       string
@@ -28,9 +28,9 @@ type options struct {
 
 func NewCmdAdd(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
 	}
 	cmd := &cobra.Command{
 		Use:   "add [key-file]",
@@ -80,10 +80,11 @@ func (o *options) complete(args []string) error {
 }
 
 func (o *options) run() error {
-	httpClient, err := o.httpClient()
+	c, err := o.apiClient("", o.config)
 	if err != nil {
 		return err
 	}
+	client := c.Lab()
 
 	var keyFileReader io.Reader
 	if o.keyFile == "-" {
@@ -106,7 +107,7 @@ func (o *options) run() error {
 
 	o.key = string(keyInBytes)
 
-	err = UploadSSHKey(httpClient, o.title, o.key, o.usageType, o.expiresAt)
+	err = UploadSSHKey(client, o.title, o.key, o.usageType, o.expiresAt)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to add new SSH public key.")
 	}

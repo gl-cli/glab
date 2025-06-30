@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -140,6 +141,9 @@ func Test_NewCmdUpdate(t *testing.T) {
 			io, _, _, _ := cmdtest.TestIOStreams()
 			f := &cmdtest.Factory{
 				IOStub: io,
+				ConfigStub: func() config.Config {
+					return config.NewBlankConfig()
+				},
 			}
 
 			io.IsInTTY = tt.stdinTTY
@@ -196,19 +200,19 @@ func Test_updateRun_project(t *testing.T) {
 	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	opts := &options{
-		httpClient: func() (*gitlab.Client, error) {
+		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
 			a, _ := cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
-			return a.Lab(), nil
+			return a, nil
 		},
 		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 		},
-		io:    io,
-		key:   "TEST_VARIABLE",
-		value: "foo",
-		scope: "*",
+		config: config.NewBlankConfig(),
+		io:     io,
+		key:    "TEST_VARIABLE",
+		value:  "foo",
+		scope:  "*",
 	}
-	_, _ = opts.httpClient()
 
 	err := opts.run()
 	assert.NoError(t, err)
@@ -234,19 +238,19 @@ func Test_updateRun_group(t *testing.T) {
 	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	opts := &options{
-		httpClient: func() (*gitlab.Client, error) {
+		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
 			a, _ := cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
-			return a.Lab(), nil
+			return a, nil
 		},
 		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 		},
-		io:    io,
-		key:   "TEST_VARIABLE",
-		value: "blargh",
-		group: "mygroup",
+		config: config.NewBlankConfig(),
+		io:     io,
+		key:    "TEST_VARIABLE",
+		value:  "blargh",
+		group:  "mygroup",
 	}
-	_, _ = opts.httpClient()
 
 	err := opts.run()
 	assert.NoError(t, err)

@@ -9,6 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
 	"gitlab.com/gitlab-org/cli/api"
@@ -58,9 +59,10 @@ type ListOptions struct {
 	OutputFormat   string
 	Output         string
 
-	IO         *iostreams.IOStreams
-	BaseRepo   func() (glrepo.Interface, error)
-	HTTPClient func() (*gitlab.Client, error)
+	IO        *iostreams.IOStreams
+	BaseRepo  func() (glrepo.Interface, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
 
 	JSONOutput bool
 }
@@ -68,6 +70,9 @@ type ListOptions struct {
 func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error, issueType issuable.IssueType) *cobra.Command {
 	opts := &ListOptions{
 		IO:        f.IO(),
+		BaseRepo:  f.BaseRepo,
+		apiClient: f.ApiClient,
+		config:    f.Config(),
 		IssueType: string(issueType),
 	}
 
@@ -84,10 +89,6 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error, issueTyp
 		`, issueType)),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// support repo override
-			opts.BaseRepo = f.BaseRepo
-			opts.HTTPClient = f.HttpClient
-
 			if len(opts.Labels) != 0 && len(opts.NotLabels) != 0 {
 				return cmdutils.FlagError{
 					Err: errors.New("flags --label and --not-label are mutually exclusive."),
@@ -189,15 +190,18 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error, issueTyp
 }
 
 func listRun(opts *ListOptions) error {
-	apiClient, err := opts.HTTPClient()
+	// NOTE: this command can not only be used for projects,
+	// so we have to manually check for the base repo, it it doesn't exist,
+	// we bootstrap the client with the default hostname.
+	var repoHost string
+	if baseRepo, err := opts.BaseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+	apiClient, err := opts.apiClient(repoHost, opts.config)
 	if err != nil {
 		return err
 	}
-
-	repo, err := opts.BaseRepo()
-	if err != nil {
-		return err
-	}
+	client := apiClient.Lab()
 
 	listOpts := &gitlab.ListProjectIssuesOptions{
 		State: gitlab.Ptr(opts.State),
@@ -211,7 +215,7 @@ func listRun(opts *ListOptions) error {
 	}
 
 	if opts.Assignee != "" {
-		uid, err := userID(apiClient, opts.Assignee)
+		uid, err := userID(client, opts.Assignee)
 		if err != nil {
 			return err
 		}
@@ -220,7 +224,7 @@ func listRun(opts *ListOptions) error {
 	}
 
 	if opts.NotAssignee != "" {
-		uid, err := userID(apiClient, opts.NotAssignee)
+		uid, err := userID(client, opts.NotAssignee)
 		if err != nil {
 			return err
 		}
@@ -228,7 +232,7 @@ func listRun(opts *ListOptions) error {
 	}
 
 	if opts.Author != "" {
-		uid, err := userID(apiClient, opts.Author)
+		uid, err := userID(client, opts.Author)
 		if err != nil {
 			return err
 		}
@@ -236,7 +240,7 @@ func listRun(opts *ListOptions) error {
 	}
 
 	if opts.NotAuthor != "" {
-		uid, err := userID(apiClient, opts.NotAuthor)
+		uid, err := userID(client, opts.NotAuthor)
 		if err != nil {
 			return err
 		}
@@ -284,27 +288,32 @@ func listRun(opts *ListOptions) error {
 
 	var issues []*gitlab.Issue
 	title := utils.NewListTitle(fmt.Sprintf("%s %s", opts.TitleQualifier, issueType))
-	title.RepoName = repo.FullName()
 	switch {
 	case opts.Epic != 0:
-		issues, err = listEpicIssues(apiClient, opts, listOpts)
+		issues, err = listEpicIssues(client, opts, listOpts)
 		if err != nil {
 			return err
 		}
 		title.RepoName = fmt.Sprintf("%s&%d", opts.Group, opts.Epic)
 
 	case opts.Group != "":
-		issues, err = api.ListGroupIssues(apiClient, opts.Group, api.ProjectListIssueOptionsToGroup(listOpts))
+		issues, err = api.ListGroupIssues(client, opts.Group, api.ProjectListIssueOptionsToGroup(listOpts))
 		if err != nil {
 			return err
 		}
 		title.RepoName = opts.Group
 
 	default:
-		issues, err = api.ListProjectIssues(apiClient, repo.FullName(), listOpts)
+		repo, err := opts.BaseRepo()
 		if err != nil {
 			return err
 		}
+
+		issues, err = api.ListProjectIssues(client, repo.FullName(), listOpts)
+		if err != nil {
+			return err
+		}
+		title.RepoName = repo.FullName()
 	}
 
 	title.Page = listOpts.Page
@@ -336,7 +345,7 @@ func listRun(opts *ListOptions) error {
 	}
 	defer opts.IO.StopPager()
 
-	fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title.Describe(), issueutils.DisplayIssueList(opts.IO, issues, repo.FullName()))
+	fmt.Fprintf(opts.IO.StdOut, "%s\n%s\n", title.Describe(), issueutils.DisplayIssueList(opts.IO, issues, title.RepoName))
 	return nil
 }
 

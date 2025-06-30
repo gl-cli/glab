@@ -9,17 +9,18 @@ import (
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	io        *iostreams.IOStreams
 
 	keyID   int
 	perPage int
@@ -28,9 +29,9 @@ type options struct {
 
 func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
 	}
 	cmd := &cobra.Command{
 		Use:   "get <key-id>",
@@ -79,12 +80,13 @@ func (o *options) complete(args []string) error {
 }
 
 func (o *options) run() error {
-	httpClient, err := o.httpClient()
+	c, err := o.apiClient("", o.config)
 	if err != nil {
 		return err
 	}
+	client := c.Lab()
 
-	key, _, err := httpClient.Users.GetSSHKey(o.keyID)
+	key, _, err := client.Users.GetSSHKey(o.keyID)
 	if err != nil {
 		return cmdutils.WrapError(err, "getting SSH key.")
 	}
@@ -104,12 +106,13 @@ func keySelectPrompt(opts *options) (int, error) {
 		Page:    opts.page,
 	}
 
-	httpClient, err := opts.httpClient()
+	c, err := opts.apiClient("", opts.config)
 	if err != nil {
 		return 0, err
 	}
+	client := c.Lab()
 
-	keys, response, err := httpClient.Users.ListSSHKeys(sshKeyListOptions)
+	keys, response, err := client.Users.ListSSHKeys(sshKeyListOptions)
 	if err != nil {
 		return 0, cmdutils.WrapError(err, "Retrieving list of SSH keys to prompt with.")
 	}

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -29,14 +31,16 @@ type options struct {
 	archivedSet      bool
 	user             string
 
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
+	io        *iostreams.IOStreams
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
 }
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
 	}
 	repoListCmd := &cobra.Command{
 		Use:   "list",
@@ -79,19 +83,20 @@ func (o *options) run() error {
 	var err error
 	c := o.io.Color()
 
-	apiClient, err := o.httpClient()
+	apiClient, err := o.apiClient("", o.config)
 	if err != nil {
 		return err
 	}
+	gitlabClient := apiClient.Lab()
 
 	var projects []*gitlab.Project
 	var resp *gitlab.Response
 	if len(o.group) > 0 {
-		projects, resp, err = listAllProjectsForGroup(apiClient, *o)
+		projects, resp, err = listAllProjectsForGroup(gitlabClient, *o)
 	} else if o.user != "" {
-		projects, resp, err = listAllProjectsForUser(apiClient, *o)
+		projects, resp, err = listAllProjectsForUser(gitlabClient, *o)
 	} else {
-		projects, resp, err = listAllProjects(apiClient, *o)
+		projects, resp, err = listAllProjects(gitlabClient, *o)
 	}
 
 	if err != nil {

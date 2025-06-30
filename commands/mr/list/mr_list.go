@@ -7,6 +7,7 @@ import (
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
 	"gitlab.com/gitlab-org/cli/api"
@@ -54,16 +55,18 @@ type options struct {
 	sort    string
 	orderBy string
 
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
-	httpClient func() (*gitlab.Client, error)
+	io        *iostreams.IOStreams
+	baseRepo  func() (glrepo.Interface, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
 }
 
 func NewCmdList(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		baseRepo:   f.BaseRepo,
-		httpClient: f.HttpClient,
+		io:        f.IO(),
+		baseRepo:  f.BaseRepo,
+		apiClient: f.ApiClient,
+		config:    f.Config(),
 	}
 
 	mrListCmd := &cobra.Command{
@@ -161,15 +164,18 @@ func (o *options) complete(cmd *cobra.Command) error {
 func (o *options) run() error {
 	var mergeRequests []*gitlab.BasicMergeRequest
 
-	apiClient, err := o.httpClient()
+	// NOTE: this command can not only be used for projects,
+	// so we have to manually check for the base repo, it it doesn't exist,
+	// we bootstrap the client with the default hostname.
+	var repoHost string
+	if baseRepo, err := o.baseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+	apiClient, err := o.apiClient(repoHost, o.config)
 	if err != nil {
 		return err
 	}
-
-	repo, err := o.baseRepo()
-	if err != nil {
-		return err
-	}
+	client := apiClient.Lab()
 
 	l := &gitlab.ListProjectMergeRequestsOptions{
 		State: gitlab.Ptr(o.state),
@@ -185,7 +191,7 @@ func (o *options) run() error {
 	}
 
 	if o.author != "" {
-		u, err := api.UserByName(apiClient, o.author)
+		u, err := api.UserByName(client, o.author)
 		if err != nil {
 			return err
 		}
@@ -247,7 +253,7 @@ func (o *options) run() error {
 
 	assigneeIds := make([]int, 0)
 	if len(o.assignee) > 0 {
-		users, err := api.UsersByNames(apiClient, o.assignee)
+		users, err := api.UsersByNames(client, o.assignee)
 		if err != nil {
 			return err
 		}
@@ -258,7 +264,7 @@ func (o *options) run() error {
 
 	reviewerIds := make([]int, 0)
 	if len(o.reviewer) > 0 {
-		users, err := api.UsersByNames(apiClient, o.reviewer)
+		users, err := api.UsersByNames(client, o.reviewer)
 		if err != nil {
 			return err
 		}
@@ -267,13 +273,19 @@ func (o *options) run() error {
 		}
 	}
 	title := utils.NewListTitle(o.titleQualifier + " merge request")
-	title.RepoName = repo.FullName()
 
 	if o.group != "" {
-		mergeRequests, err = api.ListGroupMRs(apiClient, o.group, api.ProjectListMROptionsToGroup(l), api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
+		mergeRequests, err = api.ListGroupMRs(client, o.group, api.ProjectListMROptionsToGroup(l), api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
 		title.RepoName = o.group
 	} else {
-		mergeRequests, err = api.ListMRs(apiClient, repo.FullName(), l, api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
+		var repo glrepo.Interface
+		repo, err = o.baseRepo()
+		if err != nil {
+			return err
+		}
+
+		title.RepoName = repo.FullName()
+		mergeRequests, err = api.ListMRs(client, repo.FullName(), l, api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
 	}
 	if err != nil {
 		return err

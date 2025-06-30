@@ -4,17 +4,18 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/tableprinter"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	io        *iostreams.IOStreams
 
 	// Pagination
 	page    int
@@ -25,9 +26,9 @@ type options struct {
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
 	}
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -50,16 +51,17 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run() error {
-	httpClient, err := o.httpClient()
+	c, err := o.apiClient("", o.config)
 	if err != nil {
 		return err
 	}
+	client := c.Lab()
 
 	sshKeyListOptions := &gitlab.ListSSHKeysOptions{
 		Page:    o.page,
 		PerPage: o.perPage,
 	}
-	keys, _, err := httpClient.Users.ListSSHKeys(sshKeyListOptions)
+	keys, _, err := client.Users.ListSSHKeys(sshKeyListOptions)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to get SSH keys.")
 	}

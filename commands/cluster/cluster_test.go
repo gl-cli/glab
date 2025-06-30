@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
@@ -24,6 +25,7 @@ func TestNewCmdCluster(t *testing.T) {
 		},
 		HttpClientStub: func() (*gitlab.Client, error) { return nil, nil },
 		BaseRepoStub:   func() (glrepo.Interface, error) { return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil },
+		ConfigStub:     func() config.Config { return config.NewBlankConfig() },
 	}).Execute())
 
 	out := test.ReturnBuffer(old, r, w)

@@ -40,7 +40,6 @@ type options struct {
 	remotes         func() (glrepo.Remotes, error)
 	config          func() config.Config
 	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
-	httpClient      func() (*gitlab.Client, error)
 	defaultHostname string
 }
 
@@ -51,7 +50,6 @@ func NewCmdFork(f cmdutils.Factory) *cobra.Command {
 		remotes:            f.Remotes,
 		config:             f.Config,
 		apiClient:          f.ApiClient,
-		httpClient:         f.HttpClient,
 		defaultHostname:    f.DefaultHostname(),
 		currentDirIsParent: true,
 	}

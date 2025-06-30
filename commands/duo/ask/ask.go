@@ -8,7 +8,9 @@ import (
 	"regexp"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/prompt"
@@ -16,7 +18,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 	"github.com/spf13/cobra"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 type request struct {
@@ -38,10 +39,11 @@ type result struct {
 }
 
 type opts struct {
-	Prompt     string
-	IO         *iostreams.IOStreams
-	HttpClient func() (*gitlab.Client, error)
-	Git        bool
+	Prompt    string
+	IO        *iostreams.IOStreams
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	Git       bool
 }
 
 var (
@@ -61,8 +63,9 @@ const (
 
 func NewCmdAsk(f cmdutils.Factory) *cobra.Command {
 	opts := &opts{
-		IO:         f.IO(),
-		HttpClient: f.HttpClient,
+		IO:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
 	}
 
 	duoAskCmd := &cobra.Command{
@@ -111,10 +114,11 @@ func (opts *opts) Result() (*result, error) {
 	opts.IO.StartSpinner(spinnerText)
 	defer opts.IO.StopSpinner("")
 
-	client, err := opts.HttpClient()
+	c, err := opts.apiClient("", opts.config)
 	if err != nil {
 		return nil, cmdutils.WrapError(err, "failed to get HTTP client.")
 	}
+	client := c.Lab()
 
 	body := request{Prompt: opts.Prompt, Model: vertexAI}
 	request, err := client.NewRequest(http.MethodPost, gitCmdAPIPath, body, nil)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
@@ -19,7 +20,7 @@ func TestMrCmd_noARgs(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	assert.Nil(t, NewCmdMR(&cmdtest.Factory{}).Execute())
+	assert.Nil(t, NewCmdMR(&cmdtest.Factory{ConfigStub: func() config.Config { return config.NewBlankConfig() }}).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

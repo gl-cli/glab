@@ -9,7 +9,9 @@ import (
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/glinstance"
 	"gitlab.com/gitlab-org/cli/pkg/httpmock"
@@ -60,6 +62,9 @@ func Test_NewCmdExport(t *testing.T) {
 			io, _, _, _ := cmdtest.TestIOStreams()
 			f := &cmdtest.Factory{
 				IOStub: io,
+				ConfigStub: func() config.Config {
+					return config.NewBlankConfig()
+				},
 			}
 
 			argv, err := shlex.Split(test.cli)
@@ -337,20 +342,19 @@ func Test_exportRun_project(t *testing.T) {
 				httpmock.NewJSONResponse(http.StatusOK, mockProjectVariables),
 			)
 			opts := &options{
-				httpClient: func() (*gitlab.Client, error) {
-					a, _ := cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
-					return a.Lab(), nil
+				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+					return cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 				},
 				baseRepo: func() (glrepo.Interface, error) {
 					return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 				},
+				config:       config.NewBlankConfig(),
 				io:           io,
 				page:         1,
 				perPage:      10,
 				outputFormat: test.format,
 				scope:        test.scope,
 			}
-			_, _ = opts.httpClient()
 
 			err := opts.run()
 			assert.NoError(t, err)
@@ -610,13 +614,13 @@ func Test_exportRun_group(t *testing.T) {
 				httpmock.NewJSONResponse(http.StatusOK, mockGroupVariables),
 			)
 			opts := &options{
-				httpClient: func() (*gitlab.Client, error) {
-					a, _ := cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
-					return a.Lab(), nil
+				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+					return cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
 				},
 				baseRepo: func() (glrepo.Interface, error) {
 					return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 				},
+				config:       config.NewBlankConfig(),
 				io:           io,
 				page:         1,
 				perPage:      10,
@@ -624,7 +628,6 @@ func Test_exportRun_group(t *testing.T) {
 				scope:        test.scope,
 				group:        "group",
 			}
-			_, _ = opts.httpClient()
 
 			err := opts.run()
 			assert.NoError(t, err)

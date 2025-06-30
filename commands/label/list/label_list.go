@@ -8,6 +8,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 	"gitlab.com/gitlab-org/cli/pkg/utils"
@@ -18,7 +19,8 @@ import (
 
 type options struct {
 	io           *iostreams.IOStreams
-	httpClient   func() (*gitlab.Client, error)
+	apiClient    func(repoHost string, cfg config.Config) (*api.Client, error)
+	config       config.Config
 	baseRepo     func() (glrepo.Interface, error)
 	group        string
 	page         int
@@ -28,9 +30,10 @@ type options struct {
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
+		baseRepo:  f.BaseRepo,
 	}
 
 	labelListCmd := &cobra.Command{
@@ -61,15 +64,18 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 func (o *options) run() error {
 	var err error
 
-	apiClient, err := o.httpClient()
+	// NOTE: this command can not only be used for projects,
+	// so we have to manually check for the base repo, it it doesn't exist,
+	// we bootstrap the client with the default hostname.
+	var repoHost string
+	if baseRepo, err := o.baseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+	apiClient, err := o.apiClient(repoHost, o.config)
 	if err != nil {
 		return err
 	}
-
-	repo, err := o.baseRepo()
-	if err != nil {
-		return err
-	}
+	client := apiClient.Lab()
 
 	labelApiOpts := &api.ListLabelsOptions{}
 	labelApiOpts.WithCounts = gitlab.Ptr(true)
@@ -84,7 +90,7 @@ func (o *options) run() error {
 	var labelBuilder strings.Builder
 
 	if o.group != "" {
-		labels, err := api.ListGroupLabels(apiClient, o.group, labelApiOpts)
+		labels, err := api.ListGroupLabels(client, o.group, labelApiOpts)
 		if err != nil {
 			return err
 		}
@@ -98,7 +104,12 @@ func (o *options) run() error {
 			}
 		}
 	} else {
-		labels, err := api.ListLabels(apiClient, repo.FullName(), labelApiOpts)
+		repo, err := o.baseRepo()
+		if err != nil {
+			return err
+		}
+
+		labels, err := api.ListLabels(client, repo.FullName(), labelApiOpts)
 		if err != nil {
 			return err
 		}

@@ -106,7 +106,6 @@ func runCommand(rt http.RoundTripper, remotes glrepo.Remotes, isTTY bool, cli st
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
 	factory := cmdtest.InitFactory(ios, rt)
-	_, _ = factory.HttpClient()
 
 	factory.RemotesStub = func() (glrepo.Remotes, error) {
 		if remotes == nil {

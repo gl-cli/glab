@@ -8,17 +8,18 @@ import (
 	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdutils"
 	"gitlab.com/gitlab-org/cli/commands/variable/variableutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/pkg/iostreams"
 
 	"github.com/spf13/cobra"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	config    config.Config
+	io        *iostreams.IOStreams
+	baseRepo  func() (glrepo.Interface, error)
 
 	key   string
 	scope string
@@ -27,9 +28,10 @@ type options struct {
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:        f.IO(),
+		apiClient: f.ApiClient,
+		config:    f.Config(),
+		baseRepo:  f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -77,19 +79,28 @@ func (o *options) validate(cmd *cobra.Command, args []string) error {
 
 func (o *options) run() error {
 	c := o.io.Color()
-	httpClient, err := o.httpClient()
-	if err != nil {
-		return err
-	}
 
-	baseRepo, err := o.baseRepo()
+	// NOTE: this command can not only be used for projects,
+	// so we have to manually check for the base repo, it it doesn't exist,
+	// we bootstrap the client with the default hostname.
+	var repoHost string
+	if baseRepo, err := o.baseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+	apiClient, err := o.apiClient(repoHost, o.config)
 	if err != nil {
 		return err
 	}
+	client := apiClient.Lab()
 
 	if o.group == "" {
 		// Delete project-level variable
-		err = api.DeleteProjectVariable(httpClient, baseRepo.FullName(), o.key, o.scope)
+		baseRepo, err := o.baseRepo()
+		if err != nil {
+			return err
+		}
+
+		err = api.DeleteProjectVariable(client, baseRepo.FullName(), o.key, o.scope)
 		if err != nil {
 			return err
 		}
@@ -97,7 +108,7 @@ func (o *options) run() error {
 		fmt.Fprintf(o.io.StdOut, "%s Deleted variable %s with scope %s for %s.\n", c.GreenCheck(), o.key, o.scope, baseRepo.FullName())
 	} else {
 		// Delete group-level variable
-		err = api.DeleteGroupVariable(httpClient, o.group, o.key)
+		err = api.DeleteGroupVariable(client, o.group, o.key)
 		if err != nil {
 			return err
 		}

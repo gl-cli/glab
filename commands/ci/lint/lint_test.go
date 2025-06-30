@@ -124,9 +124,6 @@ func runCommand(t *testing.T, rt http.RoundTripper, cli string, showHaveBaseRepo
 		}
 	}
 
-	_, err := factory.HttpClient()
-	require.Nil(t, err)
-
 	cmd := NewCmdLint(factory)
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }

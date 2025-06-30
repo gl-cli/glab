@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"testing"
 
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
+	"gitlab.com/gitlab-org/cli/api"
 	"gitlab.com/gitlab-org/cli/commands/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"go.uber.org/mock/gomock"
 
@@ -62,14 +63,17 @@ func Test_NewCmdDelete(t *testing.T) {
 			io, _, _, _ := cmdtest.TestIOStreams()
 			f := &cmdtest.Factory{
 				IOStub: io,
-				HttpClientStub: func() (*gitlab.Client, error) {
+				ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
 					tc := gitlabtesting.NewTestClient(t)
 					tc.MockProjectVariables.EXPECT().RemoveVariable(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 					tc.MockGroupVariables.EXPECT().RemoveVariable(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-					return tc.Client, nil
+					return cmdtest.TestClient(&http.Client{}, "", repoHost, false, api.WithGitLabClient(tc.Client))
 				},
 				BaseRepoStub: func() (glrepo.Interface, error) {
 					return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
+				},
+				ConfigStub: func() config.Config {
+					return config.NewBlankConfig()
 				},
 			}
 
@@ -112,9 +116,9 @@ func Test_deleteRun(t *testing.T) {
 		httpmock.NewStringResponse(http.StatusNoContent, " "),
 	)
 
-	httpClient := func() (*gitlab.Client, error) {
+	apiClient := func(repoHost string, cfg config.Config) (*api.Client, error) {
 		a, _ := cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
-		return a.Lab(), nil
+		return a, nil
 	}
 	baseRepo := func() (glrepo.Interface, error) {
 		return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
@@ -129,10 +133,11 @@ func Test_deleteRun(t *testing.T) {
 		{
 			name: "delete project variable no scope",
 			opts: options{
-				httpClient: httpClient,
-				baseRepo:   baseRepo,
-				key:        "TEST_VAR",
-				scope:      "*",
+				apiClient: apiClient,
+				config:    config.NewBlankConfig(),
+				baseRepo:  baseRepo,
+				key:       "TEST_VAR",
+				scope:     "*",
 			},
 			wantsErr:    false,
 			wantsOutput: "✓ Deleted variable TEST_VAR with scope * for owner/repo.\n",
@@ -140,10 +145,11 @@ func Test_deleteRun(t *testing.T) {
 		{
 			name: "delete project variable with stage scope",
 			opts: options{
-				httpClient: httpClient,
-				baseRepo:   baseRepo,
-				key:        "TEST_VAR",
-				scope:      "stage",
+				apiClient: apiClient,
+				config:    config.NewBlankConfig(),
+				baseRepo:  baseRepo,
+				key:       "TEST_VAR",
+				scope:     "stage",
 			},
 			wantsErr:    false,
 			wantsOutput: "✓ Deleted variable TEST_VAR with scope stage for owner/repo.\n",
@@ -151,11 +157,12 @@ func Test_deleteRun(t *testing.T) {
 		{
 			name: "delete group variable",
 			opts: options{
-				httpClient: httpClient,
-				baseRepo:   baseRepo,
-				key:        "TEST_VAR",
-				scope:      "",
-				group:      "testGroup",
+				apiClient: apiClient,
+				config:    config.NewBlankConfig(),
+				baseRepo:  baseRepo,
+				key:       "TEST_VAR",
+				scope:     "",
+				group:     "testGroup",
 			},
 			wantsErr:    false,
 			wantsOutput: "✓ Deleted variable TEST_VAR for group testGroup.\n",
@@ -164,8 +171,6 @@ func Test_deleteRun(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _ = tt.opts.httpClient()
-
 			io, _, stdout, _ := cmdtest.TestIOStreams()
 			tt.opts.io = io
 
