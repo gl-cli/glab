@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
 	"github.com/stretchr/testify/assert"
@@ -11,10 +12,12 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, args string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+	)
 
 	cmd := NewCmdList(factory)
 
@@ -302,7 +305,7 @@ func TestProjectList(t *testing.T) {
 					httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err := runCommand(fakeHTTP, tc.args)
+			output, err := runCommand(t, fakeHTTP, tc.args)
 
 			if assert.NoErrorf(t, err, "error running command `project list %s`: %v", tc.args, err) {
 				out := output.String()

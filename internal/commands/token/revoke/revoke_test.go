@@ -8,22 +8,19 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, rt)
-
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+	)
 	cmd := NewCmdRevoke(factory)
-
-	if out, err := cmdtest.ExecuteCommand(cmd, cli, stdout, stderr); err != nil {
-		return nil, fmt.Errorf("error running command %s '%s', %s", cmd.Aliases[0], cli, err)
-	} else {
-		return out, nil
-	}
+	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
 var userResponse = heredoc.Doc(`
@@ -104,7 +101,7 @@ func TestRevokePersonalAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/personal_access_tokens/10183862",
 		httpmock.NewStringResponse(http.StatusOK, personalAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--user @me --output json my-pat")
+	output, err := runCommand(t, fakeHTTP, "--user @me --output json my-pat")
 	if err != nil {
 		t.Error(err)
 		return
@@ -133,7 +130,7 @@ func TestRevokePersonalAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/personal_access_tokens/10183862",
 		httpmock.NewStringResponse(http.StatusOK, personalAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--user @me my-pat")
+	output, err := runCommand(t, fakeHTTP, "--user @me my-pat")
 	if err != nil {
 		t.Error(err)
 		return
@@ -168,7 +165,7 @@ func TestRevokeGroupAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/groups/GROUP/access_tokens/10190772",
 		httpmock.NewStringResponse(http.StatusOK, groupAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--group GROUP my-group-token --output json")
+	output, err := runCommand(t, fakeHTTP, "--group GROUP my-group-token --output json")
 	if err != nil {
 		t.Error(err)
 		return
@@ -197,7 +194,7 @@ func TestRevokeGroupAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/groups/GROUP/access_tokens/10190772",
 		httpmock.NewStringResponse(http.StatusOK, groupAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--group GROUP my-group-token")
+	output, err := runCommand(t, fakeHTTP, "--group GROUP my-group-token")
 	if err != nil {
 		t.Error(err)
 		return
@@ -233,7 +230,7 @@ func TestRevokeProjectAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/access_tokens/10191548",
 		httpmock.NewStringResponse(http.StatusOK, projectAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--output json my-project-token")
+	output, err := runCommand(t, fakeHTTP, "--output json my-project-token")
 	if err != nil {
 		t.Error(err)
 		return
@@ -262,7 +259,7 @@ func TestRevokeProjectAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/access_tokens/10191548",
 		httpmock.NewStringResponse(http.StatusOK, projectAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "my-project-token")
+	output, err := runCommand(t, fakeHTTP, "my-project-token")
 	if err != nil {
 		t.Error(err)
 		return

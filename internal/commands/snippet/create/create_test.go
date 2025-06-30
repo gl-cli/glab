@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
@@ -150,7 +151,7 @@ func TestSnippetCreate(t *testing.T) {
 				fakeHTTP.RegisterResponder(tc.mock.method, tc.mock.path, httpmock.NewStringResponse(tc.mock.status, tc.mock.body))
 			}
 
-			out, err := runCommand(fakeHTTP, tc.command)
+			out, err := runCommand(t, fakeHTTP, tc.command)
 			if tc.wantErr != nil {
 				require.EqualError(t, err, tc.wantErr.Error())
 			} else {
@@ -168,9 +169,11 @@ func TestSnippetCreate(t *testing.T) {
 	}
 }
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 	cmd := NewCmdCreate(factory)
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }

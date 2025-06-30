@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -13,10 +14,12 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, args string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+	)
 
 	cmd := NewCmdAsk(factory)
 
@@ -89,7 +92,7 @@ The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing
 				cs.Stub(cmdShowResult)
 			}
 
-			output, err := runCommand(fakeHTTP, "git list 10 commits")
+			output, err := runCommand(t, fakeHTTP, "git list 10 commits")
 			require.Nil(t, err)
 
 			require.Equal(t, output.String(), tc.expectedResult)
@@ -135,7 +138,7 @@ func TestFailedHttpResponse(t *testing.T) {
 			response := httpmock.NewStringResponse(tc.code, tc.response)
 			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/ai/llm/git_command", response)
 
-			_, err := runCommand(fakeHTTP, "git list 10 commits")
+			_, err := runCommand(t, fakeHTTP, "git list 10 commits")
 			require.NotNil(t, err)
 			require.Contains(t, err.Error(), tc.expectedMsg)
 		})

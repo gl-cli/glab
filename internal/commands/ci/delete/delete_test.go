@@ -13,14 +13,17 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	cmd := NewCmdDelete(factory)
 
@@ -36,7 +39,7 @@ func TestCIDelete(t *testing.T) {
 	)
 
 	pipelineId := "11111111"
-	output, err := runCommand(fakeHTTP, pipelineId)
+	output, err := runCommand(t, fakeHTTP, pipelineId)
 	if err != nil {
 		t.Errorf("error running command `ci delete %s`: %v", pipelineId, err)
 	}
@@ -58,7 +61,7 @@ func TestCIDeleteNonExistingPipeline(t *testing.T) {
 	)
 
 	pipelineId := "11111111"
-	output, err := runCommand(fakeHTTP, pipelineId)
+	output, err := runCommand(t, fakeHTTP, pipelineId)
 
 	require.Error(t, err)
 
@@ -72,7 +75,7 @@ func TestCIDeleteWithWrongArgument(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	pipelineId := "test"
-	output, err := runCommand(fakeHTTP, pipelineId)
+	output, err := runCommand(t, fakeHTTP, pipelineId)
 
 	require.Error(t, err)
 
@@ -123,7 +126,7 @@ func TestCIDeleteByStatus(t *testing.T) {
 	)
 
 	args := "--status=success"
-	output, err := runCommand(fakeHTTP, args)
+	output, err := runCommand(t, fakeHTTP, args)
 	require.NoError(t, err)
 
 	out := output.String()
@@ -141,7 +144,7 @@ func TestCIDeleteByStatusFailsWithArgument(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	args := "--status=success 11111111"
-	output, err := runCommand(fakeHTTP, args)
+	output, err := runCommand(t, fakeHTTP, args)
 	assert.EqualError(t, err, "either a status filter or a pipeline ID must be passed, but not both.")
 
 	assert.Empty(t, output.String())
@@ -154,7 +157,7 @@ func TestCIDeleteWithoutFilterFailsWithoutArgument(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	pipelineId := ""
-	output, err := runCommand(fakeHTTP, pipelineId)
+	output, err := runCommand(t, fakeHTTP, pipelineId)
 	assert.EqualError(t, err, "accepts 1 arg(s), received 0")
 
 	assert.Empty(t, output.String())
@@ -173,7 +176,7 @@ func TestCIDeleteMultiple(t *testing.T) {
 	)
 
 	pipelineId := "11111111,22222222"
-	output, err := runCommand(fakeHTTP, pipelineId)
+	output, err := runCommand(t, fakeHTTP, pipelineId)
 	if err != nil {
 		t.Errorf("error running command `ci delete %s`: %v", pipelineId, err)
 	}
@@ -192,7 +195,7 @@ func TestCIDryRunDeleteNothing(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	args := "--dry-run 11111111,22222222"
-	output, err := runCommand(fakeHTTP, args)
+	output, err := runCommand(t, fakeHTTP, args)
 	if err != nil {
 		t.Errorf("error running command `ci delete %s`: %v", args, err)
 	}
@@ -242,7 +245,7 @@ func TestCIDeletedDryRunWithFilterDoesNotDelete(t *testing.T) {
 	`))
 
 	args := "--dry-run --status=success"
-	output, err := runCommand(fakeHTTP, args)
+	output, err := runCommand(t, fakeHTTP, args)
 	require.NoError(t, err)
 
 	out := output.String()
@@ -282,7 +285,7 @@ func TestCIDeleteBySource(t *testing.T) {
 	)
 
 	args := "--source=push"
-	output, err := runCommand(fakeHTTP, args)
+	output, err := runCommand(t, fakeHTTP, args)
 	require.NoError(t, err)
 
 	out := output.String()
@@ -316,7 +319,7 @@ func TestExtractPipelineIDsFromFlagsWithError(t *testing.T) {
 		httpmock.NewStringResponse(http.StatusForbidden, `{message: 403 Forbidden}`))
 
 	args := "--status=success"
-	output, err := runCommand(fakeHTTP, args)
+	output, err := runCommand(t, fakeHTTP, args)
 	require.Error(t, err)
 
 	out := output.String()

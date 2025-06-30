@@ -18,11 +18,14 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, branch string, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, branch string, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithBranch(branch),
+	)
 
 	factory.RemotesStub = func() (glrepo.Remotes, error) {
 		return glrepo.Remotes{
@@ -43,10 +46,6 @@ func runCommand(rt http.RoundTripper, branch string, cli string) (*test.CmdOut, 
 				Repo: glrepo.New("monalisa", "REPO", glinstance.DefaultHostname),
 			},
 		}, nil
-	}
-
-	factory.BranchStub = func() (string, error) {
-		return branch, nil
 	}
 
 	cmd := NewCmdCheckout(factory)
@@ -247,7 +246,7 @@ func TestMrCheckout(t *testing.T) {
 				cs.Stub(stub)
 			}
 
-			output, err := runCommand(fakeHTTP, tc.branch, tc.commandArgs)
+			output, err := runCommand(t, fakeHTTP, tc.branch, tc.commandArgs)
 
 			if assert.NoErrorf(t, err, "error running command `mr checkout %s`: %v", tc.commandArgs, err) {
 				assert.Empty(t, output.String())

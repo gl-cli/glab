@@ -61,7 +61,7 @@ func Test_stackAmendCmd(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
 			ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-			f := cmdtest.InitFactory(ios, nil)
+					f := cmdtest.NewTestFactory(ios)
 
 			dir := git.InitGitRepoWithCommit(t)
 			err := git.SetLocalConfig("glab.currentstack", "cool-test-feature")

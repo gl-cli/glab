@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
 	"github.com/stretchr/testify/assert"
@@ -19,10 +20,11 @@ type ResponseJSON struct {
 	Ref   string `json:"ref"`
 }
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	factory.BranchStub = func() (string, error) {
 		return "custom-branch-123", nil
@@ -100,7 +102,7 @@ func TestCIRun(t *testing.T) {
 				},
 			)
 
-			output, _ := runCommand(fakeHTTP, tc.cli)
+			output, _ := runCommand(t, fakeHTTP, tc.cli)
 
 			out := output.String()
 

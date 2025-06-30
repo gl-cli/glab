@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/git"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
@@ -43,7 +42,7 @@ func Test_promptForReorder(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			isTTY := !tt.args.noTTY
-			factory := setupTestFactory(nil, isTTY)
+					factory := setupTestFactory(t, nil, isTTY)
 
 			prompts := []string{}
 			getText := getMockEditor(tt.args.input, &prompts)
@@ -138,14 +137,13 @@ func Test_parseReorderFile(t *testing.T) {
 	}
 }
 
-func setupTestFactory(rt http.RoundTripper, isTTY bool) cmdutils.Factory {
+func setupTestFactory(t *testing.T, rt http.RoundTripper, isTTY bool) cmdutils.Factory {
 	ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
-	f := cmdtest.InitFactory(ios, rt)
-
-	f.BaseRepoStub = func() (glrepo.Interface, error) {
-		return glrepo.TestProject("stack_guy", "stackproject"), nil
-	}
+	f := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", "gitlab.com", false).Lab()),
+		cmdtest.WithBaseRepo("stack_guy", "stackproject"),
+	)
 
 	return f
 }

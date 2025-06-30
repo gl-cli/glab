@@ -9,16 +9,14 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
 
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(f cmdutils.Factory, args string) (*test.CmdOut, error) {
+func runCommand(cfg config.Config, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, nil)
-	factory.ConfigStub = f.Config
+	factory := cmdtest.NewTestFactory(ios, cmdtest.WithConfig(cfg))
 
 	cmd := NewCmdLogout(factory)
 	// workaround for CI
@@ -55,22 +53,21 @@ func Test_NewCmdLogout(t *testing.T) {
 
 			token := "xxxxxxxx"
 
-			f := &cmdtest.Factory{
-				ConfigStub: func() config.Config {
-					return config.NewFromString(heredoc.Docf(`
+			cfg := config.NewFromString(heredoc.Docf(
+				`
 					hosts:
 					  gitlab.something.com:
 					    token: %[1]s
 					  gitlab.example.com:
 					    token: %[1]s
-					`, token))
-				},
-			}
+				`,
+				token,
+			))
 
 			// removing the environment variable so CI does not interfere
 			t.Setenv("GITLAB_TOKEN", "")
 
-			output, err := runCommand(f, fmt.Sprintf("--hostname %s", tt.hostname))
+			output, err := runCommand(cfg, fmt.Sprintf("--hostname %s", tt.hostname))
 
 			if tt.wantErr {
 				assert.Error(t, err)

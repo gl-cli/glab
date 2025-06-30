@@ -7,17 +7,20 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, rt)
-
+	tc := cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(tc),
+		cmdtest.WithGitLabClient(tc.Lab()),
+	)
 	cmd := NewCmdList(factory)
-
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
@@ -49,7 +52,7 @@ func TestLabelList(t *testing.T) {
 	]
 	`))
 
-	output, err := runCommand(fakeHTTP, "")
+	output, err := runCommand(t, fakeHTTP, "")
 	if err != nil {
 		t.Errorf("error running command `label list`: %v", err)
 	}
@@ -105,7 +108,7 @@ func TestLabelListJSON(t *testing.T) {
   }
 ]`))
 
-	output, err := runCommand(fakeHTTP, "-F json")
+	output, err := runCommand(t, fakeHTTP, "-F json")
 	if err != nil {
 		t.Errorf("error running command `label list -F json`: %v", err)
 	}
@@ -143,7 +146,7 @@ func TestGroupLabelList(t *testing.T) {
 	`))
 
 	flags := "--group foo"
-	output, err := runCommand(fakeHTTP, flags)
+	output, err := runCommand(t, fakeHTTP, flags)
 	if err != nil {
 		t.Errorf("error running command `label list %s`: %v", flags, err)
 	}

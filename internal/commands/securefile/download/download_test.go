@@ -70,7 +70,7 @@ func Test_SecurefileDownload(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewFileResponse(mock.status, "testdata/localfile.txt"))
 			}
 
-			out, err := runCommand(fakeHTTP, tc.cli)
+			out, err := runCommand(t, fakeHTTP, tc.cli)
 			if tc.wantErr {
 				if assert.Error(t, err) {
 					require.Equal(t, tc.wantStderr, err.Error())
@@ -94,9 +94,11 @@ func Test_SecurefileDownload(t *testing.T) {
 	}
 }
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", "gitlab.com", false).Lab()),
+	)
 	cmd := NewCmdDownload(factory)
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }

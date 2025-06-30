@@ -7,14 +7,18 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(cli string, rt http.RoundTripper) (*test.CmdOut, error) {
+func runCommand(t *testing.T, cli string, rt http.RoundTripper) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(
+		ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	cmd := NewCmdGenerate(factory)
 
@@ -36,7 +40,7 @@ func TestChangelogGenerate(t *testing.T) {
 			"notes": "## 1.0.0 (2023-04-02)\n\n### FirstName LastName firstname@lastname.com (1 changes)\n\n- [inital commit](gitlab-org/cli@somehash ([merge request](gitlab-org/cli!1))\n"
 		}`))
 
-	output, err := runCommand("--version 1.0.0", fakeHTTP)
+	output, err := runCommand(t, "--version 1.0.0", fakeHTTP)
 	require.Nil(t, err)
 
 	assert.Empty(t, output.Stderr())
@@ -75,7 +79,7 @@ func TestChangelogGenerateWithError(t *testing.T) {
 			fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/37777023/repository/changelog?version=1.0.0",
 				httpmock.NewStringResponse(v.httpStatus, v.httpMsgJSON))
 
-			_, err := runCommand("--version 1.0.0", fakeHTTP)
+			_, err := runCommand(t, "--version 1.0.0", fakeHTTP)
 
 			require.NotNil(t, err)
 			require.Equal(t, v.errorMsg, err.Error())

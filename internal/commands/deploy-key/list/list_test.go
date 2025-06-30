@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
 	"github.com/stretchr/testify/assert"
@@ -12,9 +13,11 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 	cmd := NewCmdList(factory)
 	return cmdtest.ExecuteCommand(cmd, "", stdout, stderr)
 }
@@ -81,7 +84,7 @@ func TestDeployKeyList(t *testing.T) {
 					httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err := runCommand(fakeHTTP)
+			output, err := runCommand(t, fakeHTTP)
 
 			if assert.NoErrorf(t, err, "error running command `deploy-key list %s`: %v", err) {
 				out := output.String()

@@ -23,11 +23,13 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, branch string, isTTY bool, cli string, letItFail bool) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, branch string, isTTY bool, cli string, letItFail bool) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 	factory.RemotesStub = func() (glrepo.Remotes, error) {
 		return glrepo.Remotes{
 			{
@@ -152,7 +154,7 @@ func TestNewCmdCreate_tty(t *testing.T) {
 
 	t.Log(cli)
 
-	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli, false)
+	output, err := runCommand(t, fakeHTTP, "feat-new-mr", true, cli, false)
 	if err != nil {
 		if errors.Is(err, cmdutils.SilentError) {
 			t.Errorf("Unexpected error: %q", output.Stderr())
@@ -240,7 +242,7 @@ func TestNewCmdCreate_RelatedIssue(t *testing.T) {
 
 	t.Log(cli)
 
-	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli, false)
+	output, err := runCommand(t, fakeHTTP, "feat-new-mr", true, cli, false)
 	if err != nil {
 		if errors.Is(err, cmdutils.SilentError) {
 			t.Errorf("Unexpected error: %q", output.Stderr())
@@ -337,7 +339,7 @@ func TestNewCmdCreate_TemplateFromCommitMessages(t *testing.T) {
 
 	t.Log(cli)
 
-	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli, false)
+	output, err := runCommand(t, fakeHTTP, "feat-new-mr", true, cli, false)
 	if err != nil {
 		if errors.Is(err, cmdutils.SilentError) {
 			t.Errorf("Unexpected error: %q", output.Stderr())
@@ -421,7 +423,7 @@ func TestNewCmdCreate_RelatedIssueWithTitleAndDescription(t *testing.T) {
 
 	t.Log(cli)
 
-	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli, false)
+	output, err := runCommand(t, fakeHTTP, "feat-new-mr", true, cli, false)
 	if err != nil {
 		if errors.Is(err, cmdutils.SilentError) {
 			t.Errorf("Unexpected error: %q", output.Stderr())
@@ -440,7 +442,7 @@ func TestMRCreate_nontty_insufficient_flags(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	_, err := runCommand(fakeHTTP, "test-br", false, "", false)
+	_, err := runCommand(t, fakeHTTP, "test-br", false, "", false)
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -650,7 +652,7 @@ func Test_MRCreate_With_Recover_Integration(t *testing.T) {
 
 	t.Log(cli)
 
-	output, err := runCommand(fakeHTTP, "feat-new-mr", true, cli, true)
+	output, err := runCommand(t, fakeHTTP, "feat-new-mr", true, cli, true)
 
 	outErr := output.Stderr()
 
@@ -662,7 +664,7 @@ func Test_MRCreate_With_Recover_Integration(t *testing.T) {
 
 	newCli := strings.Join(newCliStr, " ")
 
-	newOutput, newErr := runCommand(fakeHTTP, "feat-new-mr", true, newCli, false)
+	newOutput, newErr := runCommand(t, fakeHTTP, "feat-new-mr", true, newCli, false)
 	if newErr != nil {
 		if errors.Is(err, cmdutils.SilentError) {
 			t.Errorf("Unexpected error: %q", newOutput.Stderr())

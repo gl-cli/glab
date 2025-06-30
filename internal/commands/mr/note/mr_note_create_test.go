@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
@@ -16,9 +17,12 @@ func TestMain(m *testing.M) {
 	cmdtest.InitTest(m, "mr_note_create_test")
 }
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, rt)
+
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 	factory.BranchStub = git.CurrentBranch
 
 	cmd := NewCmdNote(factory)
@@ -54,7 +58,7 @@ func Test_NewCmdNote(t *testing.T) {
 	`))
 
 		// glab mr note 1 --message "Here is my note"
-		output, err := runCommand(fakeHTTP, `1 --message "Here is my note"`)
+		output, err := runCommand(t, fakeHTTP, `1 --message "Here is my note"`)
 		if err != nil {
 			t.Error(err)
 			return
@@ -72,7 +76,7 @@ func Test_NewCmdNote(t *testing.T) {
 	`))
 
 		// glab mr note 1 --message "Here is my note"
-		_, err := runCommand(fakeHTTP, `122`)
+		_, err := runCommand(t, fakeHTTP, `122`)
 		assert.NotNil(t, err)
 		assert.Equal(t, "failed to get merge request 122: 404 Not Found", err.Error())
 	})
@@ -100,7 +104,7 @@ func Test_NewCmdNote_error(t *testing.T) {
 	`))
 
 		// glab mr note 1 --message "Here is my note"
-		_, err := runCommand(fakeHTTP, `1 -m "Some message"`)
+		_, err := runCommand(t, fakeHTTP, `1 -m "Some message"`)
 		assert.NotNil(t, err)
 		assert.Equal(t, "POST https://gitlab.com/api/v4/projects/OWNER%2FREPO/merge_requests/1/notes: 401 {message: Unauthorized}", err.Error())
 	})
@@ -137,7 +141,7 @@ func Test_mrNoteCreate_prompt(t *testing.T) {
 		as.StubOne("some note message")
 
 		// glab mr note 1
-		output, err := runCommand(fakeHTTP, `1`)
+		output, err := runCommand(t, fakeHTTP, `1`)
 		if err != nil {
 			t.Error(err)
 			return
@@ -161,7 +165,7 @@ func Test_mrNoteCreate_prompt(t *testing.T) {
 		as.StubOne("")
 
 		// glab mr note 1
-		_, err := runCommand(fakeHTTP, `1`)
+		_, err := runCommand(t, fakeHTTP, `1`)
 		if err == nil {
 			t.Error("expected error")
 			return
@@ -198,7 +202,7 @@ func Test_mrNoteCreate_no_duplicate(t *testing.T) {
 		as.StubOne("some note message")
 
 		// glab mr note 1
-		output, err := runCommand(fakeHTTP, `1 --unique`)
+		output, err := runCommand(t, fakeHTTP, `1 --unique`)
 		if err != nil {
 			t.Error(err)
 			return

@@ -22,6 +22,7 @@ import (
 	"github.com/google/shlex"
 	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -448,4 +449,12 @@ func TestClient(httpClient *http.Client, token, host string, isGraphQL bool, opt
 		testClient.AuthType = api.PrivateToken
 	}
 	return testClient, nil
+}
+
+func MustTestClient(t *testing.T, httpClient *http.Client, token, host string, isGraphQL bool, options ...api.ClientOption) *api.Client {
+	t.Helper()
+
+	tc, err := TestClient(httpClient, token, host, isGraphQL, options...)
+	require.NoError(t, err)
+	return tc
 }

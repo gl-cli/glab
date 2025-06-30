@@ -6,14 +6,17 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+	)
 
 	cmd := NewCmdList(factory)
 
@@ -43,7 +46,7 @@ func TestIterationList(t *testing.T) {
 	]
 	`))
 
-	output, err := runCommand(fakeHTTP, "")
+	output, err := runCommand(t, fakeHTTP, "")
 	if err != nil {
 		t.Errorf("error running command `iteration list`: %v", err)
 	}
@@ -96,7 +99,7 @@ func TestIterationListJSON(t *testing.T) {
   }
 ]`))
 
-	output, err := runCommand(fakeHTTP, "-F json")
+	output, err := runCommand(t, fakeHTTP, "-F json")
 	if err != nil {
 		t.Errorf("error running command `iteration list -F json`: %v", err)
 	}

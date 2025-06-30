@@ -22,9 +22,11 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string, doHyperlinks string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, isTTY bool, cli string, doHyperlinks string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY), iostreams.WithDisplayHyperLinks(doHyperlinks))
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+	)
 
 	cmd := NewCmdList(factory, nil)
 
@@ -120,7 +122,7 @@ func TestMergeRequestList_tty(t *testing.T) {
 	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
 	t.Setenv("NO_COLOR", "true")
 
-	output, err := runCommand(fakeHTTP, true, "", "")
+	output, err := runCommand(t, fakeHTTP, true, "", "")
 	if err != nil {
 		t.Errorf("error running command `issue list`: %v", err)
 	}
@@ -149,7 +151,7 @@ func TestMergeRequestList_tty_withFlags(t *testing.T) {
 		fakeHTTP.RegisterResponder(http.MethodGet, "/users",
 			httpmock.NewStringResponse(http.StatusOK, `[{"id": 1, "iid": 1, "username": "john_smith"}]`))
 
-		output, err := runCommand(fakeHTTP, true, "--opened -P1 -p100 -a someuser -l bug -m1", "")
+		output, err := runCommand(t, fakeHTTP, true, "--opened -P1 -p100 -a someuser -l bug -m1", "")
 		if err != nil {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
@@ -167,7 +169,7 @@ func TestMergeRequestList_tty_withFlags(t *testing.T) {
 		fakeHTTP.RegisterResponder(http.MethodGet, "/groups/GROUP/merge_requests",
 			httpmock.NewStringResponse(http.StatusOK, `[]`))
 
-		output, err := runCommand(fakeHTTP, true, "--group GROUP", "")
+		output, err := runCommand(t, fakeHTTP, true, "--group GROUP", "")
 		if err != nil {
 			t.Errorf("error running command `mr list`: %v", err)
 		}
@@ -228,7 +230,7 @@ func TestMergeRequestList_tty_withFlags(t *testing.T) {
 				}
 			]`))
 
-		output, err := runCommand(fakeHTTP, true, "--draft", "")
+		output, err := runCommand(t, fakeHTTP, true, "--draft", "")
 		if err != nil {
 			t.Errorf("error running command `mr list`: %v", err)
 		}
@@ -253,7 +255,7 @@ func TestMergeRequestList_tty_withFlags(t *testing.T) {
 			httpmock.NewStringResponse(http.StatusOK, `[
 			]`))
 
-		output, err := runCommand(fakeHTTP, true, "--not-draft", "")
+		output, err := runCommand(t, fakeHTTP, true, "--not-draft", "")
 		if err != nil {
 			t.Errorf("error running command `mr list`: %v", err)
 		}
@@ -363,7 +365,7 @@ func TestMergeRequestList_hyperlinks(t *testing.T) {
 				doHyperlinks = "auto"
 			}
 
-			output, err := runCommand(fakeHTTP, test.isTTY, "", doHyperlinks)
+			output, err := runCommand(t, fakeHTTP, test.isTTY, "", doHyperlinks)
 			if err != nil {
 				t.Errorf("error running command `mr list`: %v", err)
 			}
@@ -435,7 +437,7 @@ func TestMergeRequestList_labels(t *testing.T) {
 		  }
 		]
 		`))
-			output, err := runCommand(fakeHTTP, true, test.cli, "")
+			output, err := runCommand(t, fakeHTTP, true, test.cli, "")
 			if err != nil {
 				t.Errorf("error running command `issue list %s`: %v", test.cli, err)
 			}
@@ -454,7 +456,7 @@ func TestMrListJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/merge_requests?page=1&per_page=30&state=opened",
 		httpmock.NewFileResponse(http.StatusOK, "./testdata/mrList.json"))
 
-	output, err := runCommand(fakeHTTP, true, "-F json", "")
+	output, err := runCommand(t, fakeHTTP, true, "-F json", "")
 	if err != nil {
 		t.Errorf("error running command `mr list -F json`: %v", err)
 	}
@@ -509,7 +511,7 @@ func TestMergeRequestList_GroupAndReviewer(t *testing.T) {
 ]
 `))
 
-	output, err := runCommand(fakeHTTP, true, "--group GROUP --reviewer @me", "")
+	output, err := runCommand(t, fakeHTTP, true, "--group GROUP --reviewer @me", "")
 	if err != nil {
 		t.Errorf("error running command `mr list`: %v", err)
 	}
@@ -562,7 +564,7 @@ func TestMergeRequestList_GroupAndAssignee(t *testing.T) {
 ]
 `))
 
-	output, err := runCommand(fakeHTTP, true, "--group GROUP --assignee @me", "")
+	output, err := runCommand(t, fakeHTTP, true, "--group GROUP --assignee @me", "")
 	if err != nil {
 		t.Errorf("error running command `mr list`: %v", err)
 	}
@@ -643,7 +645,7 @@ func TestMergeRequestList_GroupWithAssigneeAndReviewer(t *testing.T) {
 ]
 `))
 
-	output, err := runCommand(fakeHTTP, true, "--group GROUP --reviewer=some.user --assignee=other.user", "")
+	output, err := runCommand(t, fakeHTTP, true, "--group GROUP --reviewer=some.user --assignee=other.user", "")
 	if err != nil {
 		t.Errorf("error running command `mr list`: %v", err)
 	}
@@ -715,7 +717,7 @@ func TestMergeRequestList_SortAndOrderBy(t *testing.T) {
 				}
 	]`))
 
-	output, err := runCommand(fakeHTTP, true, "--order created_at --sort desc", "")
+	output, err := runCommand(t, fakeHTTP, true, "--order created_at --sort desc", "")
 	if err != nil {
 		t.Errorf("error running command `mr list`: %v", err)
 	}

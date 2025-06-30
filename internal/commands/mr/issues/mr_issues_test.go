@@ -13,10 +13,12 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, rt)
-	factory.BranchStub = func() (string, error) { return "current_branch", nil }
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", "gitlab.com", false).Lab()),
+		cmdtest.WithBranch("current_branch"),
+	)
 
 	cmd := NewCmdIssues(factory)
 
@@ -43,7 +45,7 @@ func TestMergeRequestClosesIssues_byID(t *testing.T) {
 		httpmock.NewFileResponse(http.StatusOK, "./testdata/closesIssuesList.json"))
 
 	cli := "123"
-	output, err := runCommand(fakeHTTP, cli)
+	output, err := runCommand(t, fakeHTTP, cli)
 	if err != nil {
 		t.Errorf("error running command `mr issues %s`: %v", cli, err)
 	}
@@ -94,7 +96,7 @@ func TestMergeRequestClosesIssues_currentBranch(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/merge_requests/123/closes_issues",
 		httpmock.NewFileResponse(http.StatusOK, "./testdata/closesIssuesList.json"))
 
-	output, err := runCommand(fakeHTTP, "")
+	output, err := runCommand(t, fakeHTTP, "")
 	if err != nil {
 		t.Errorf("error running command `mr issues`: %v", err)
 	}

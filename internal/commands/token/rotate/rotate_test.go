@@ -8,22 +8,19 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, rt)
-
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+	)
 	cmd := NewCmdRotate(factory)
-
-	if out, err := cmdtest.ExecuteCommand(cmd, cli, stdout, stderr); err != nil {
-		return nil, fmt.Errorf("error running command %s '%s', %s", cmd.Aliases[0], cli, err)
-	} else {
-		return out, nil
-	}
+	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
 var userResponse = heredoc.Doc(`
@@ -106,7 +103,7 @@ func TestRotatePersonalAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/personal_access_tokens/10183862/rotate",
 		httpmock.NewStringResponse(http.StatusOK, personalAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--user @me --output json my-pat")
+	output, err := runCommand(t, fakeHTTP, "--user @me --output json my-pat")
 	if err != nil {
 		t.Error(err)
 		return
@@ -137,7 +134,7 @@ func TestRotatePersonalAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/personal_access_tokens/10183862/rotate",
 		httpmock.NewStringResponse(http.StatusOK, personalAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--user @me my-pat")
+	output, err := runCommand(t, fakeHTTP, "--user @me my-pat")
 	if err != nil {
 		t.Error(err)
 		return
@@ -172,7 +169,7 @@ func TestRotateGroupAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/groups/GROUP/access_tokens/10190772/rotate",
 		httpmock.NewStringResponse(http.StatusOK, groupAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--group GROUP my-group-token --output json")
+	output, err := runCommand(t, fakeHTTP, "--group GROUP my-group-token --output json")
 	if err != nil {
 		t.Error(err)
 		return
@@ -201,7 +198,7 @@ func TestRotateGroupAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/groups/GROUP/access_tokens/10190772/rotate",
 		httpmock.NewStringResponse(http.StatusOK, groupAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--group GROUP my-group-token")
+	output, err := runCommand(t, fakeHTTP, "--group GROUP my-group-token")
 	if err != nil {
 		t.Error(err)
 		return
@@ -237,7 +234,7 @@ func TestRotateProjectAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/access_tokens/10191548/rotate",
 		httpmock.NewStringResponse(http.StatusOK, projectAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--output json my-project-token")
+	output, err := runCommand(t, fakeHTTP, "--output json my-project-token")
 	if err != nil {
 		t.Error(err)
 		return
@@ -266,7 +263,7 @@ func TestRotateProjectAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/access_tokens/10191548/rotate",
 		httpmock.NewStringResponse(http.StatusOK, projectAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "my-project-token")
+	output, err := runCommand(t, fakeHTTP, "my-project-token")
 	if err != nil {
 		t.Error(err)
 		return

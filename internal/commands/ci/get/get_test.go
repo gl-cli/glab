@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
 	"github.com/stretchr/testify/assert"
@@ -13,10 +14,11 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, args string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	cmd := NewCmdGet(factory)
 
@@ -497,7 +499,7 @@ updated:	2023-10-10 00:00:00 +0000 UTC
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, body))
 			}
 
-			output, err := runCommand(fakeHTTP, tc.args)
+			output, err := runCommand(t, fakeHTTP, tc.args)
 			require.Nil(t, err)
 			var expectedOut string
 			var expectedOutBytes []byte
@@ -563,7 +565,7 @@ func TestCIGetJSON(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, body))
 			}
 
-			output, err := runCommand(fakeHTTP, tc.args)
+			output, err := runCommand(t, fakeHTTP, tc.args)
 			require.Nil(t, err)
 			var expectedOut string
 			var expectedOutBytes []byte
