@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 )
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {

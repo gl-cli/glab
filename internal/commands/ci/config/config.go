@@ -1,8 +1,8 @@
 package config
 
 import (
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	ConfigCompileCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/config/compile"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 
 	"github.com/spf13/cobra"
 )

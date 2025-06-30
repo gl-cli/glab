@@ -3,7 +3,7 @@ package snippet
 import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/snippet/create"
 )
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	jobArtifactCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/artifact"
 	ciCancelCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/cancel"
 	ciConfigCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/config"
@@ -19,7 +20,6 @@ import (
 	ciTraceCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/trace"
 	jobPlayCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/trigger"
 	ciViewCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/view"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 
 	"github.com/spf13/cobra"
 )

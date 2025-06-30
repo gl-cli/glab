@@ -3,7 +3,7 @@ package publish
 import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	publishCatalogCmd "gitlab.com/gitlab-org/cli/internal/commands/project/publish/catalog"
 )
 

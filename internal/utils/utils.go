@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/charmbracelet/glamour"
-	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/internal/browser"
+	"gitlab.com/gitlab-org/cli/internal/run"
 )
 
 type MarkdownRenderOpts []glamour.TermRendererOption

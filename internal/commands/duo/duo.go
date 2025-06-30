@@ -1,7 +1,7 @@
 package duo
 
 import (
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	duoAskCmd "gitlab.com/gitlab-org/cli/internal/commands/duo/ask"
 
 	"github.com/spf13/cobra"

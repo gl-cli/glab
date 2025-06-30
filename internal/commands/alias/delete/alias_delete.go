@@ -5,7 +5,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/config"

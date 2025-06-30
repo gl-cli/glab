@@ -8,7 +8,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 
 	"github.com/spf13/cobra"

@@ -1,7 +1,7 @@
 package job
 
 import (
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/job/artifact"
 
 	"github.com/spf13/cobra"

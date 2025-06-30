@@ -2,7 +2,7 @@ package incident
 
 import (
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	incidentCloseCmd "gitlab.com/gitlab-org/cli/internal/commands/incident/close"
 	incidentListCmd "gitlab.com/gitlab-org/cli/internal/commands/incident/list"

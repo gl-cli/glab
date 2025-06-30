@@ -1,7 +1,7 @@
 package project
 
 import (
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	repoCmdArchive "gitlab.com/gitlab-org/cli/internal/commands/project/archive"
 	repoCmdClone "gitlab.com/gitlab-org/cli/internal/commands/project/clone"
 	repoCmdContributors "gitlab.com/gitlab-org/cli/internal/commands/project/contributors"

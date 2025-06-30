@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 )
 
 // cleanDescription removes comments and trims space for all non-comment lines

@@ -6,7 +6,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"

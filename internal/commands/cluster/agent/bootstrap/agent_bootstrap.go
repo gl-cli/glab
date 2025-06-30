@@ -8,7 +8,7 @@ import (
 	"os/exec"
 
 	glab_api "gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"

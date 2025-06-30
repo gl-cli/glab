@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/internal/httpmock"
+	"gitlab.com/gitlab-org/cli/internal/run"
 
 	"github.com/stretchr/testify/require"
 )

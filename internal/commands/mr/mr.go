@@ -2,7 +2,7 @@ package mr
 
 import (
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	mrApproveCmd "gitlab.com/gitlab-org/cli/internal/commands/mr/approve"
 	mrApproversCmd "gitlab.com/gitlab-org/cli/internal/commands/mr/approvers"
 	mrCheckoutCmd "gitlab.com/gitlab-org/cli/internal/commands/mr/checkout"

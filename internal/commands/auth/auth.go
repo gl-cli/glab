@@ -2,11 +2,11 @@ package auth
 
 import (
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	cmdGenerate "gitlab.com/gitlab-org/cli/internal/commands/auth/generate"
 	authLoginCmd "gitlab.com/gitlab-org/cli/internal/commands/auth/login"
 	authLogoutCmd "gitlab.com/gitlab-org/cli/internal/commands/auth/logout"
 	authStatusCmd "gitlab.com/gitlab-org/cli/internal/commands/auth/status"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 )
 
 func NewCmdAuth(f cmdutils.Factory) *cobra.Command {

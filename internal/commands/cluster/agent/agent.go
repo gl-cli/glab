@@ -2,12 +2,12 @@ package agent
 
 import (
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	agentBootstrapCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/bootstrap"
 	checkManifestUsageCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/check_manifest_usage"
 	agentGetTokenCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/get_token"
 	agentListCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/list"
 	agentUpdateKubeconfigCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/update_kubeconfig"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 )
 
 func NewCmdAgent(f cmdutils.Factory) *cobra.Command {

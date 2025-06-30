@@ -1,8 +1,8 @@
 package trace
 
 import (
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"

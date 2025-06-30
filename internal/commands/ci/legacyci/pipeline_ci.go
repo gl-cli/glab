@@ -4,10 +4,10 @@
 package legacyci
 
 import (
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	ciLintCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/lint"
 	ciTraceCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/trace"
 	ciViewCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/view"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"

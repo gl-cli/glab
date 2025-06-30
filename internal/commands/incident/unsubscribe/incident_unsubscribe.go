@@ -1,7 +1,7 @@
 package unsubscribe
 
 import (
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 
 	issuableUnsubscribeCmd "gitlab.com/gitlab-org/cli/internal/commands/issuable/unsubscribe"

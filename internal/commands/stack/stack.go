@@ -1,7 +1,7 @@
 package stack
 
 import (
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	stackCreateCmd "gitlab.com/gitlab-org/cli/internal/commands/stack/create"
 	stackListCmd "gitlab.com/gitlab-org/cli/internal/commands/stack/list"
 	stackMoveCmd "gitlab.com/gitlab-org/cli/internal/commands/stack/navigate"

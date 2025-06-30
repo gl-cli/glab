@@ -1,10 +1,10 @@
 package alias
 
 import (
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	deleteCmd "gitlab.com/gitlab-org/cli/internal/commands/alias/delete"
 	listCmd "gitlab.com/gitlab-org/cli/internal/commands/alias/list"
 	setCmd "gitlab.com/gitlab-org/cli/internal/commands/alias/set"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 
 	"github.com/spf13/cobra"
 )

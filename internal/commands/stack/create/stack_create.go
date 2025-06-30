@@ -13,7 +13,7 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 )
 
 var longString = `Create a new stacked diff. Adds metadata to your "./.git/stacked" directory.

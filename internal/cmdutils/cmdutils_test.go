@@ -14,8 +14,8 @@ import (
 	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/api"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 )
 
@@ -1376,7 +1376,7 @@ func TestListGitLabTemplates(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			git.ToplevelDir = func() (string, error) { return "../../../test/testdata", nil }
+			git.ToplevelDir = func() (string, error) { return "../../test/testdata", nil }
 			gotTemplates, gotErr := ListGitLabTemplates(test.give)
 			require.Equal(t, test.wantErr, (gotErr != nil))
 			assert.EqualValues(t, test.wantTemplates, gotTemplates, "Templates got didn't match")

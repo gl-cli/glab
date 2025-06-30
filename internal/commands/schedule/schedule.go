@@ -7,7 +7,7 @@ import (
 	scheduleRunCmd "gitlab.com/gitlab-org/cli/internal/commands/schedule/run"
 	scheduleUpdateCmd "gitlab.com/gitlab-org/cli/internal/commands/schedule/update"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/spf13/cobra"
 )

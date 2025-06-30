@@ -9,8 +9,8 @@ import (
 	"github.com/google/shlex"
 
 	"gitlab.com/gitlab-org/cli/api"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	cmdTestUtils "gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 
 	"github.com/acarl005/stripansi"
 	"github.com/stretchr/testify/assert"

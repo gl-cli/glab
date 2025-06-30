@@ -2,7 +2,7 @@ package issue
 
 import (
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	issueBoardCmd "gitlab.com/gitlab-org/cli/internal/commands/issue/board"
 	issueCloseCmd "gitlab.com/gitlab-org/cli/internal/commands/issue/close"
 	issueCreateCmd "gitlab.com/gitlab-org/cli/internal/commands/issue/create"

@@ -2,7 +2,7 @@ package user
 
 import (
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	userEventsCmd "gitlab.com/gitlab-org/cli/internal/commands/user/events"
 )
 

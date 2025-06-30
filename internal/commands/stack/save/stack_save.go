@@ -10,13 +10,13 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/briandowns/spinner"
-	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/internal/text"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 )
 
 var description string

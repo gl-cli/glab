@@ -14,8 +14,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
-	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
 	"github.com/MakeNowJust/heredoc/v2"
 

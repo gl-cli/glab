@@ -2,8 +2,8 @@ package changelog
 
 import (
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	changelogGenerateCmd "gitlab.com/gitlab-org/cli/internal/commands/changelog/generate"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 )
 
 func NewCmdChangelog(f cmdutils.Factory) *cobra.Command {

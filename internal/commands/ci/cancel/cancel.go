@@ -2,9 +2,9 @@ package cancel
 
 import (
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	cancelJobCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/cancel/job"
 	cancelPipelineCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/cancel/pipeline"
-	"gitlab.com/gitlab-org/cli/internal/commands/cmdutils"
 )
 
 func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
