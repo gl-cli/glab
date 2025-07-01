@@ -220,36 +220,6 @@ func (f *Factory) BuildInfo() api.BuildInfo {
 	return f.BuildInfoStub
 }
 
-func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *Factory {
-	return &Factory{
-		IOStub: ios,
-		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
-			a, err := TestClient(&http.Client{Transport: rt}, "", repoHost, false)
-			if err != nil {
-				return nil, err
-			}
-			return a, nil
-		},
-		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := TestClient(&http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		ConfigStub: func() config.Config {
-			return config.NewBlankConfig()
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-		BranchStub: func() (string, error) {
-			return "main", nil
-		},
-		BuildInfoStub: api.BuildInfo{Version: "test", Commit: "test", Platform: runtime.GOOS, Architecture: runtime.GOARCH},
-	}
-}
-
 type CmdExecFunc func(cli string) (*test.CmdOut, error)
 
 type CmdFunc func(cmdutils.Factory) *cobra.Command
