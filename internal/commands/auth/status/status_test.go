@@ -182,7 +182,7 @@ hosts:
 	`))
 
 	client := func(token, hostname string) (*api.Client, error) {
-		return cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
+		return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, token, hostname, false), nil
 	}
 	// FIXME: something fishy is occurring here as without making a first call to client function, httpMock does not work
 	_, _ = client("", "gitlab.com")
@@ -290,7 +290,7 @@ gl.io
 	io, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	client := func(token, hostname string) (*api.Client, error) {
-		return cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
+		return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, token, hostname, false), nil
 	}
 	// FIXME: something fishy is occurring here as without making a first call to client function, httpMock does not work
 	_, _ = client("", "gitlab.com")

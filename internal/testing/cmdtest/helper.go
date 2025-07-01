@@ -396,7 +396,9 @@ func CopyTestRepo(log fatalLogger, name string) string {
 	return dest
 }
 
-func TestClient(httpClient *http.Client, token, host string, isGraphQL bool, options ...api.ClientOption) (*api.Client, error) {
+func NewTestApiClient(t *testing.T, httpClient *http.Client, token, host string, isGraphQL bool, options ...api.ClientOption) *api.Client {
+	t.Helper()
+
 	opts := []api.ClientOption{
 		api.WithInsecureSkipVerify(true),
 		api.WithProtocol(glinstance.DefaultProtocol),
@@ -412,19 +414,9 @@ func TestClient(httpClient *http.Client, token, host string, isGraphQL bool, opt
 		"glab test client",
 		opts...,
 	)
-	if err != nil {
-		return nil, err
-	}
+	require.NoError(t, err)
 	if token != "" {
 		testClient.AuthType = api.PrivateToken
 	}
-	return testClient, nil
-}
-
-func NewTestApiClient(t *testing.T, httpClient *http.Client, token, host string, isGraphQL bool, options ...api.ClientOption) *api.Client {
-	t.Helper()
-
-	tc, err := TestClient(httpClient, token, host, isGraphQL, options...)
-	require.NoError(t, err)
-	return tc
+	return testClient
 }

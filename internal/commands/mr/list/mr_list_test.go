@@ -42,11 +42,7 @@ func TestNewCmdList(t *testing.T) {
 	factory := &cmdtest.Factory{
 		IOStub: ios,
 		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
-			a, err := cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
-			if err != nil {
-				return nil, err
-			}
-			return a, err
+			return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", "", false), nil
 		},
 		ConfigStub: func() config.Config {
 			return config.NewBlankConfig()

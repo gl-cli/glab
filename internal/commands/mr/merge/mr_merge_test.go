@@ -10,29 +10,17 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
-	factory := &cmdtest.Factory{
-		IOStub: ios,
-		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := cmdtest.TestClient(&http.Client{Transport: rt}, "", "", false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-	}
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "", false).Lab()),
+		cmdtest.WithBaseRepo("OWNER", "REPO"),
+	)
 
 	cmd := NewCmdMerge(factory)
 
@@ -60,7 +48,7 @@ func TestMrApprove(t *testing.T) {
 		httpmock.NewFileResponse(http.StatusOK, "./testdata/mergedMr.json"))
 
 	mrID := "123"
-	output, err := runCommand(fakeHTTP, mrID)
+	output, err := runCommand(t, fakeHTTP, mrID)
 	if assert.NoErrorf(t, err, "error running command `mr merge %s`", mrID) {
 		out := output.String()
 

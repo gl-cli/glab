@@ -68,7 +68,7 @@ func Test_SecurefileGet(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-					out, err := runCommand(t, fakeHTTP, tc.cli)
+			out, err := runCommand(t, fakeHTTP, tc.cli)
 			if tc.wantErr {
 				if assert.Error(t, err) {
 					require.Equal(t, tc.wantStderr, err.Error())
