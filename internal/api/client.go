@@ -168,8 +168,45 @@ func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken boo
 			},
 		}
 	}
-	err := client.NewLab()
+	err := client.initializeGitLabClient()
 	return client, err
+}
+
+func (c *Client) initializeGitLabClient() error {
+	if c.gitlabClient != nil {
+		return nil
+	}
+
+	var baseURL string
+	if c.isGraphQL {
+		baseURL = glinstance.GraphQLEndpoint(c.host, c.protocol)
+	} else {
+		baseURL = glinstance.APIEndpoint(c.host, c.protocol, "")
+	}
+
+	var err error
+	if c.isOauth2 {
+		ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: c.token})
+		c.gitlabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
+	} else if c.isJobToken {
+		c.gitlabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
+	} else {
+		c.gitlabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to initialize GitLab client: %v", err)
+	}
+	c.gitlabClient.UserAgent = c.userAgent
+
+	if c.token != "" {
+		if c.isOauth2 {
+			c.AuthType = OAuthToken
+		} else {
+			c.AuthType = PrivateToken
+		}
+	}
+	return nil
 }
 
 // WithCustomCA configures the client to use a custom CA certificate
@@ -277,54 +314,8 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	return NewClient(apiHost, authToken, isGraphQL, isOAuth2, isJobToken, userAgent, options...)
 }
 
-// NewLab initializes the GitLab Client
-func (c *Client) NewLab() error {
-	if c.gitlabClient != nil {
-		return nil
-	}
-
-	var baseURL string
-	if c.isGraphQL {
-		baseURL = glinstance.GraphQLEndpoint(c.host, c.protocol)
-	} else {
-		baseURL = glinstance.APIEndpoint(c.host, c.protocol, "")
-	}
-
-	var err error
-	if c.isOauth2 {
-		ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: c.token})
-		c.gitlabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-	} else if c.isJobToken {
-		c.gitlabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-	} else {
-		c.gitlabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-	}
-
-	if err != nil {
-		return fmt.Errorf("failed to initialize GitLab client: %v", err)
-	}
-	c.gitlabClient.UserAgent = c.userAgent
-
-	if c.token != "" {
-		if c.isOauth2 {
-			c.AuthType = OAuthToken
-		} else {
-			c.AuthType = PrivateToken
-		}
-	}
-	return nil
-}
-
 // Lab returns the initialized GitLab client.
-// Initializes a new GitLab Client if not initialized but error is ignored
 func (c *Client) Lab() *gitlab.Client {
-	if c.gitlabClient != nil {
-		return c.gitlabClient
-	}
-	err := c.NewLab()
-	if err != nil {
-		c.gitlabClient = &gitlab.Client{}
-	}
 	return c.gitlabClient
 }
 
