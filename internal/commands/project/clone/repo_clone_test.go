@@ -116,7 +116,7 @@ func TestNewCmdClone(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			io, stdin, stdout, stderr := cmdtest.TestIOStreams()
-			fac := &cmdtest.Factory{IOStub: io}
+			fac := cmdtest.NewTestFactory(io)
 
 			var opts *options
 			var ctxOpts *ContextOpts

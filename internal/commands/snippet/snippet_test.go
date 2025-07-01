@@ -14,7 +14,7 @@ func TestCmdSnippet_noArgs(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	assert.Nil(t, NewCmdSnippet(&cmdtest.Factory{}).Execute())
+	assert.Nil(t, NewCmdSnippet(cmdtest.NewTestFactory(nil)).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

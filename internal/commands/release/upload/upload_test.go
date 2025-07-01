@@ -178,7 +178,7 @@ func TestReleaseUpload_WithAssetsLinksJSON(t *testing.T) {
 				},
 			)
 
-					output, err := runCommand(t, fakeHTTP, tt.cli)
+			output, err := runCommand(t, fakeHTTP, tt.cli)
 
 			if assert.NoErrorf(t, err, "error running command `release upload %s`: %v", tt.cli, err) {
 				assert.Contains(t, output.Stderr(), tt.expectedOutput)

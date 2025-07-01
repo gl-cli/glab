@@ -130,7 +130,7 @@ func Test_ScheduleEdit(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-					out, err := runCommand(t, fakeHTTP, tc.cli)
+			out, err := runCommand(t, fakeHTTP, tc.cli)
 
 			for _, msg := range tc.ExpectedMsg {
 				require.Contains(t, out.String(), msg)

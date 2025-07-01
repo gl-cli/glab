@@ -334,14 +334,16 @@ func Test_checkLastUpdate(t *testing.T) {
 			mainBuf := bytes.Buffer{}
 			defer config.StubWriteConfig(&mainBuf, io.Discard)()
 
-			f := &cmdtest.Factory{
-				ConfigStub: func() config.Config {
-					if tt.lastUpdate != "" {
-						return config.NewFromString(fmt.Sprintf("last_update_check_timestamp: %s", tt.lastUpdate))
+			f := cmdtest.NewTestFactory(nil,
+				func(f *cmdtest.Factory) {
+					f.ConfigStub = func() config.Config {
+						if tt.lastUpdate != "" {
+							return config.NewFromString(fmt.Sprintf("last_update_check_timestamp: %s", tt.lastUpdate))
+						}
+						return config.NewBlankConfig()
 					}
-					return config.NewBlankConfig()
 				},
-			}
+			)
 
 			result, err := checkLastUpdate(f)
 

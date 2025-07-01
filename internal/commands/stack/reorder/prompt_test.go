@@ -42,7 +42,7 @@ func Test_promptForReorder(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			isTTY := !tt.args.noTTY
-					factory := setupTestFactory(t, nil, isTTY)
+			factory := setupTestFactory(t, nil, isTTY)
 
 			prompts := []string{}
 			getText := getMockEditor(tt.args.input, &prompts)

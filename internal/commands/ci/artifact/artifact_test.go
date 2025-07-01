@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 
 	"github.com/google/shlex"
@@ -66,7 +65,7 @@ func makeTestFactory(t *testing.T) (cmdutils.Factory, *httpmock.Mocker) {
 
 	io, _, _, _ := cmdtest.TestIOStreams()
 
-	client := func(token, hostname string) (*api.Client, error) {
+	client := func(token, hostname string) (*api.Client, error) { // nolint:unparam
 		return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, token, hostname, false), nil
 	}
 
@@ -77,33 +76,27 @@ func makeTestFactory(t *testing.T) (cmdutils.Factory, *httpmock.Mocker) {
 		return nil, nil
 	}
 
-	factory := &cmdtest.Factory{
-		IOStub: io,
-		ConfigStub: func() config.Config {
-			return config.NewBlankConfig()
-		},
-		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := client("xxxx", "gitlab.com")
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-		RemotesStub: func() (glrepo.Remotes, error) {
-			return glrepo.Remotes{
-				{
-					Remote: &git.Remote{Name: "origin"},
-					Repo:   glrepo.New("OWNER", "REPO", glinstance.DefaultHostname),
-				},
-			}, nil
-		},
-		BranchStub: func() (string, error) {
-			return "feature", nil
-		},
+	a, err := client("xxxx", "gitlab.com")
+	if err != nil {
+		return nil, nil
 	}
+
+	factory := cmdtest.NewTestFactory(io,
+		cmdtest.WithConfig(config.NewBlankConfig()),
+		cmdtest.WithGitLabClient(a.Lab()),
+		cmdtest.WithBaseRepo("OWNER", "REPO"),
+		func(f *cmdtest.Factory) {
+			f.RemotesStub = func() (glrepo.Remotes, error) {
+				return glrepo.Remotes{
+					{
+						Remote: &git.Remote{Name: "origin"},
+						Repo:   glrepo.New("OWNER", "REPO", glinstance.DefaultHostname),
+					},
+				}, nil
+			}
+		},
+		cmdtest.WithBranch("feature"),
+	)
 
 	return factory, fakeHTTP
 }

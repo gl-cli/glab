@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
@@ -17,7 +16,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
@@ -39,18 +37,11 @@ func TestNewCmdList(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	factory := &cmdtest.Factory{
-		IOStub: ios,
-		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
-			return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", "", false), nil
-		},
-		ConfigStub: func() config.Config {
-			return config.NewBlankConfig()
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-	}
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", "", false)),
+		cmdtest.WithConfig(config.NewBlankConfig()),
+		cmdtest.WithBaseRepo("OWNER", "REPO"),
+	)
 	t.Run("MergeRequest_NewCmdList", func(t *testing.T) {
 		gotOpts := &options{}
 		err := NewCmdList(factory, func(opts *options) error {

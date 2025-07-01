@@ -14,7 +14,7 @@ func Test_Release(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	cmd := NewCmdRelease(&cmdtest.Factory{})
+	cmd := NewCmdRelease(cmdtest.NewTestFactory(nil))
 	assert.NotNil(t, cmd.Root())
 	assert.Nil(t, cmd.Execute())
 

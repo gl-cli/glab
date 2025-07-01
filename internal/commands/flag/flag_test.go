@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
@@ -56,14 +55,11 @@ func (o *options) complete(cmd *cobra.Command) error {
 }
 
 func runCommand(cli string, runE func(opts *options) error) error {
-	factory := &cmdtest.Factory{
-		ConfigStub: func() config.Config {
-			return config.NewBlankConfig()
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-	}
+	ios, _, _, _ := cmdtest.TestIOStreams()
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithConfig(config.NewBlankConfig()),
+		cmdtest.WithBaseRepo("OWNER", "REPO"),
+	)
 
 	cmd := NewDummyCmd(factory, runE)
 

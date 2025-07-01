@@ -58,14 +58,11 @@ func TestAliasDelete(t *testing.T) {
 
 			ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
-			factoryConf := &cmdtest.Factory{
-				IOStub: ios,
-				ConfigStub: func() config.Config {
-					return cfg
-				},
-			}
+			factory := cmdtest.NewTestFactory(ios,
+				cmdtest.WithConfig(cfg),
+			)
 
-			cmd := NewCmdDelete(factoryConf)
+			cmd := NewCmdDelete(factory)
 
 			argv, err := shlex.Split(tt.cli)
 			require.NoError(t, err)

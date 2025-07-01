@@ -99,7 +99,7 @@ func TestProjectContributors(t *testing.T) {
 			fakeHTTP.RegisterResponder(tc.httpMock.method, tc.httpMock.path,
 				httpmock.NewFileResponse(tc.httpMock.status, tc.httpMock.bodyFile))
 
-							output, err := runCommand(t, fakeHTTP, tc.cli)
+			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `project contributors %s`: %v", tc.cli, err) {
 				assert.Equal(t, tc.expectedOutput, output.String())

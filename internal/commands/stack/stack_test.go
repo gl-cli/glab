@@ -15,7 +15,7 @@ func TestStackCmd(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	assert.Nil(t, NewCmdStack(&cmdtest.Factory{}).Execute())
+	assert.Nil(t, NewCmdStack(cmdtest.NewTestFactory(nil)).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

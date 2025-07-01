@@ -141,7 +141,7 @@ func TestPublishCatalog(t *testing.T) {
 				)
 			}
 
-					output, err := runCommand(t, fakeHTTP, tc.tagName)
+			output, err := runCommand(t, fakeHTTP, tc.tagName)
 
 			if tc.wantErr {
 				assert.Error(t, err)

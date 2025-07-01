@@ -139,12 +139,7 @@ func Test_NewCmdUpdate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			io, _, _, _ := cmdtest.TestIOStreams()
-			f := &cmdtest.Factory{
-				IOStub: io,
-				ConfigStub: func() config.Config {
-					return config.NewBlankConfig()
-				},
-			}
+			f := cmdtest.NewTestFactory(io)
 
 			io.IsInTTY = tt.stdinTTY
 

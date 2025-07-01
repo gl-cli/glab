@@ -365,10 +365,5 @@ func createFactoryWithConfig(key string, value string) cmdutils.Factory {
 
 	ios, _, _, _ := cmdtest.TestIOStreams()
 
-	return &cmdtest.Factory{
-		IOStub: ios,
-		ConfigStub: func() config.Config {
-			return cfg
-		},
-	}
+	return cmdtest.NewTestFactory(ios, cmdtest.WithConfig(cfg))
 }

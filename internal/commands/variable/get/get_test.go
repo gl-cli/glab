@@ -87,12 +87,7 @@ func Test_NewCmdGet(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			io, _, _, _ := cmdtest.TestIOStreams()
-			f := &cmdtest.Factory{
-				IOStub: io,
-				ConfigStub: func() config.Config {
-					return config.NewBlankConfig()
-				},
-			}
+			f := cmdtest.NewTestFactory(io)
 
 			argv, err := shlex.Split(test.cli)
 			assert.NoError(t, err)

@@ -69,9 +69,7 @@ func Test_NewCmdDiff(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isTTY))
 
-			f := &cmdtest.Factory{
-				IOStub: ios,
-			}
+			f := cmdtest.NewTestFactory(ios)
 
 			var opts *options
 			cmd := NewCmdDiff(f, func(o *options) error {
