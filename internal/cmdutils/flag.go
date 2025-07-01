@@ -1,4 +1,4 @@
-package flag
+package cmdutils
 
 import (
 	"github.com/spf13/cobra"
