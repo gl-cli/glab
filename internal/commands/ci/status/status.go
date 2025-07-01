@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/internal/dbg"
@@ -80,7 +80,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 			repoName := repo.FullName()
 			dbg.Debug("Repository:", repoName)
 
-			runningPipeline, err := api.GetLatestPipeline(apiClient, repoName, branch)
+			runningPipeline, _, err := apiClient.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
 			if err != nil {
 				redCheck := c.Red("✘")
 				fmt.Fprintf(f.IO().StdOut, "%s No pipelines running or available on branch: %s\n", redCheck, branch)
@@ -93,7 +93,9 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 			writer.Start()
 			defer writer.Stop()
 			for {
-				jobs, err := api.GetPipelineJobs(apiClient, runningPipeline.ID, repoName)
+				jobs, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.Job, *gitlab.Response, error) {
+					return apiClient.Jobs.ListPipelineJobs(repoName, runningPipeline.ID, &gitlab.ListJobsOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}, p)
+				})
 				if err != nil {
 					return err
 				}
@@ -136,7 +138,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 				fmt.Fprintf(writer.Newline(), "Pipeline state: %s\n\n", runningPipeline.Status)
 
 				if (runningPipeline.Status == "pending" || runningPipeline.Status == "running") && live {
-					runningPipeline, err = api.GetLatestPipeline(apiClient, repoName, branch)
+					runningPipeline, _, err = apiClient.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
 					if err != nil {
 						return err
 					}
@@ -157,11 +159,11 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 							IO:        f.IO(),
 						})
 					} else if answer == "Retry" {
-						_, err = api.RetryPipeline(apiClient, runningPipeline.ID, repoName)
+						_, _, err := apiClient.Pipelines.RetryPipelineBuild(repoName, runningPipeline.ID)
 						if err != nil {
 							return err
 						}
-						runningPipeline, err = api.GetLatestPipeline(apiClient, repoName, branch)
+						runningPipeline, _, err = apiClient.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
 						if err != nil {
 							return err
 						}

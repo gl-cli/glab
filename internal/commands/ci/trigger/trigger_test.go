@@ -25,6 +25,8 @@ func runCommand(t *testing.T, rt http.RoundTripper, args string) (*test.CmdOut, 
 }
 
 func TestCiTrigger(t *testing.T) {
+	t.Parallel()
+
 	type httpMock struct {
 		method string
 		path   string

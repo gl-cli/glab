@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/git"
 
@@ -95,7 +95,15 @@ func lintRun(f cmdutils.Factory, path string) error {
 
 	fmt.Fprintln(f.IO().StdOut, "Validating...")
 
-	lint, err := api.ProjectNamespaceLint(apiClient, projectID, string(content), ref, dryRun, includeJobs)
+	lint, _, err := apiClient.Validate.ProjectNamespaceLint(
+		projectID,
+		&gitlab.ProjectNamespaceLintOptions{
+			Content:     gitlab.Ptr(string(content)),
+			DryRun:      gitlab.Ptr(dryRun),
+			Ref:         gitlab.Ptr(ref),
+			IncludeJobs: gitlab.Ptr(includeJobs),
+		},
+	)
 	if err != nil {
 		return err
 	}

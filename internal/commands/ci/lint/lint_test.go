@@ -18,6 +18,8 @@ import (
 )
 
 func Test_lintRun(t *testing.T) {
+	t.Parallel()
+
 	type httpMock struct {
 		method string
 		path   string

@@ -3,7 +3,6 @@ package trigger
 import (
 	"fmt"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 
@@ -68,7 +67,7 @@ func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 				return nil
 			}
 
-			job, err := api.PlayPipelineJob(apiClient, jobID, repo.FullName())
+			job, _, err := apiClient.Jobs.PlayJob(repo.FullName(), jobID, &gitlab.PlayJobOptions{})
 			if err != nil {
 				return cmdutils.WrapError(err, fmt.Sprintf("Could not trigger job with ID: %d", jobID))
 			}

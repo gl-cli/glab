@@ -303,38 +303,6 @@ var PipelineJobsWithSha = func(client *gitlab.Client, pid any, sha string) ([]*g
 	return PipelineJobsWithID(client, pid, pipelines[0].ID)
 }
 
-var ProjectNamespaceLint = func(client *gitlab.Client, projectID int, content string, ref string, dryRun bool, includeJobs bool) (*gitlab.ProjectLintResult, error) {
-	c, _, err := client.Validate.ProjectNamespaceLint(
-		projectID,
-		&gitlab.ProjectNamespaceLintOptions{
-			Content:     &content,
-			DryRun:      &dryRun,
-			Ref:         &ref,
-			IncludeJobs: &includeJobs,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return c, nil
-}
-
-var DeletePipeline = func(client *gitlab.Client, projectID any, pipeID int) error {
-	_, err := client.Pipelines.DeletePipeline(projectID, pipeID)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-var ListProjectPipelines = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectPipelinesOptions) ([]*gitlab.PipelineInfo, error) {
-	pipes, _, err := client.Pipelines.ListProjectPipelines(projectID, opts)
-	if err != nil {
-		return pipes, err
-	}
-	return pipes, nil
-}
-
 var CreatePipeline = func(client *gitlab.Client, projectID any, opts *gitlab.CreatePipelineOptions) (*gitlab.Pipeline, error) {
 	pipe, _, err := client.Pipelines.CreatePipeline(projectID, opts)
 	return pipe, err

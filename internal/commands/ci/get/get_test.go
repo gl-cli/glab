@@ -48,6 +48,7 @@ type testCase struct {
 
 func TestCIGet(t *testing.T) {
 	t.Parallel()
+
 	tests := []testCase{
 		{
 			name: "when get is called on an existing pipeline",

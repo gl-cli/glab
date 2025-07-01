@@ -179,7 +179,7 @@ func (o *options) run() error {
 
 	projectID := repo.FullName()
 
-	commit, err := api.GetCommit(apiClient, projectID, o.refName)
+	commit, _, err := apiClient.Commits.GetCommit(projectID, o.refName, nil)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ func (o *options) run() error {
 		return utils.OpenInBrowser(webURL, browser)
 	}
 
-	p, err := api.GetSinglePipeline(apiClient, commit.LastPipeline.ID, projectID)
+	p, _, err := apiClient.Pipelines.GetPipeline(projectID, commit.LastPipeline.ID)
 	if err != nil {
 		return fmt.Errorf("Can't get pipeline #%d info: %s", commit.LastPipeline.ID, err)
 	}
@@ -310,7 +310,7 @@ func inputCapture(
 						}
 						root.RemovePage("logs-" + curJob.Name)
 						app.ForceDraw()
-						job, err := api.CancelPipelineJob(apiClient, projectID, curJob.ID)
+						job, _, err := apiClient.Jobs.CancelJob(projectID, curJob.ID)
 						if err != nil {
 							app.Stop()
 							log.Fatal(err)

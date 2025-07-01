@@ -1,56 +1,35 @@
 package pipeline
 
 import (
-	"net/http"
 	"testing"
 
-	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
-	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(t *testing.T, rt http.RoundTripper, args string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
-	)
-
-	cmd := NewCmdCancel(factory)
-
-	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
-}
-
 func TestCIPipelineCancelWithoutArgument(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	pipelineId := ""
-	output, err := runCommand(t, fakeHTTP, pipelineId)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdCancel)
+
+	out, err := exec("")
 	assert.EqualError(t, err, "You must pass a pipeline ID.")
 
-	assert.Empty(t, output.String())
-	assert.Empty(t, output.Stderr())
+	assert.Empty(t, out.OutBuf.String())
+	assert.Empty(t, out.ErrBuf.String())
 }
 
 func TestCIDryRunDeleteNothing(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	args := "--dry-run 11111111,22222222"
-	output, err := runCommand(t, fakeHTTP, args)
-	if err != nil {
-		t.Errorf("error running command `ci cancel pipeline %s`: %v", args, err)
-	}
+	exec := cmdtest.SetupCmdForTest(t, NewCmdCancel)
 
-	out := output.String()
+	out, err := exec("--dry-run 11111111,22222222")
+	require.NoError(t, err)
 
-	assert.Contains(t, heredoc.Doc(`
-	• Pipeline #11111111 will be canceled.
-	• Pipeline #22222222 will be canceled.
-	`), out)
-	assert.Empty(t, output.Stderr())
+	stdout := out.OutBuf.String()
+	assert.Contains(t, stdout, "Pipeline #11111111 will be canceled.")
+	assert.Contains(t, stdout, "Pipeline #22222222 will be canceled.")
+	assert.Empty(t, out.ErrBuf.String())
 }

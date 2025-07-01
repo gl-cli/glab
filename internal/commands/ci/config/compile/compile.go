@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -65,7 +65,15 @@ func compileRun(f cmdutils.Factory, path string) error {
 		return fmt.Errorf("reading CI/CD configuration at %s: %w", path, err)
 	}
 
-	compiledResult, err := api.ProjectNamespaceLint(apiClient, project.ID, string(content), "", false, false)
+	compiledResult, _, err := apiClient.Validate.ProjectNamespaceLint(
+		project.ID,
+		&gitlab.ProjectNamespaceLintOptions{
+			Content:     gitlab.Ptr(string(content)),
+			DryRun:      gitlab.Ptr(false),
+			Ref:         gitlab.Ptr(""),
+			IncludeJobs: gitlab.Ptr(false),
+		},
+	)
 	if err != nil {
 		return err
 	}
