@@ -80,17 +80,19 @@ func (o *options) run() error {
 	labelApiOpts := &api.ListLabelsOptions{}
 	labelApiOpts.WithCounts = gitlab.Ptr(true)
 
-	if p := o.page; p != 0 {
-		labelApiOpts.Page = p
+	if o.page != 0 {
+		labelApiOpts.Page = o.page
 	}
-	if pp := o.perPage; pp != 0 {
-		labelApiOpts.PerPage = pp
+	if o.perPage != 0 {
+		labelApiOpts.PerPage = o.perPage
+	} else {
+		labelApiOpts.PerPage = api.DefaultListLimit
 	}
 
 	var labelBuilder strings.Builder
 
 	if o.group != "" {
-		labels, err := api.ListGroupLabels(client, o.group, labelApiOpts)
+		labels, _, err := client.GroupLabels.ListGroupLabels(o.group, labelApiOpts.ListGroupLabelsOptions())
 		if err != nil {
 			return err
 		}
@@ -109,7 +111,7 @@ func (o *options) run() error {
 			return err
 		}
 
-		labels, err := api.ListLabels(client, repo.FullName(), labelApiOpts)
+		labels, _, err := client.Labels.ListLabels(repo.FullName(), labelApiOpts.ListLabelsOptions())
 		if err != nil {
 			return err
 		}

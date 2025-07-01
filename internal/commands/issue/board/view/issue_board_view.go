@@ -74,11 +74,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 
 			// list the groups that are ancestors to project:
 			// https://docs.gitlab.com/api/projects/#list-groups
-			projectGroups, err := api.ListProjectsGroups(
-				apiClient,
-				project.ID,
-				&gitlab.ListProjectGroupOptions{},
-			)
+			projectGroups, _, err := apiClient.Projects.ListProjectsGroups(project.ID, &gitlab.ListProjectGroupOptions{})
 			if err != nil {
 				return err
 			}
@@ -339,11 +335,7 @@ func mapBoardData(
 }
 
 func getProjectIssueBoards() ([]*gitlab.IssueBoard, error) {
-	projectIssueBoards, err := api.ListIssueBoards(
-		apiClient,
-		repo.FullName(),
-		&gitlab.ListIssueBoardsOptions{},
-	)
+	projectIssueBoards, _, err := apiClient.Boards.ListIssueBoards(repo.FullName(), &gitlab.ListIssueBoardsOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("retrieving issue board: %w", err)
 	}
@@ -356,11 +348,7 @@ func getGroupIssueBoards(
 ) ([]*gitlab.GroupIssueBoard, error) {
 	projectGroupIssueBoards := []*gitlab.GroupIssueBoard{}
 	for _, projectGroup := range projectGroups {
-		groupIssueBoards, err := api.ListGroupIssueBoards(
-			gitlabClient,
-			projectGroup.ID,
-			&gitlab.ListGroupIssueBoardsOptions{},
-		)
+		groupIssueBoards, _, err := gitlabClient.GroupIssueBoards.ListGroupIssueBoards(projectGroup.ID, &gitlab.ListGroupIssueBoardsOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("retrieving issue board: %w", err)
 		}
@@ -374,16 +362,14 @@ func getBoardLists(board boardMeta) ([]*gitlab.BoardList, error) {
 	var err error
 
 	if board.group != nil {
-		boardLists, err = api.GetGroupIssueBoardLists(apiClient, board.group.ID,
-			board.id, &gitlab.ListGroupIssueBoardListsOptions{})
+		boardLists, _, err = apiClient.GroupIssueBoards.ListGroupIssueBoardLists(board.group.ID, board.id, &gitlab.ListGroupIssueBoardListsOptions{})
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if board.group == nil {
-		boardLists, err = api.GetIssueBoardLists(apiClient, repo.FullName(),
-			board.id, &gitlab.GetIssueBoardListsOptions{})
+		boardLists, _, err = apiClient.Boards.GetIssueBoardLists(repo.FullName(), board.id, &gitlab.GetIssueBoardListsOptions{})
 		if err != nil {
 			return nil, err
 		}
@@ -415,7 +401,10 @@ func getBoardLists(board boardMeta) ([]*gitlab.BoardList, error) {
 
 func getGroupBoardIssues(groupID int, opts *issueBoardViewOptions) ([]*gitlab.Issue, error) {
 	reqOpts := opts.getListGroupIssueOptions()
-	issues, err := api.ListGroupIssues(apiClient, groupID, reqOpts)
+	if reqOpts.PerPage == 0 {
+		reqOpts.PerPage = api.DefaultListLimit
+	}
+	issues, _, err := apiClient.Issues.ListGroupIssues(groupID, reqOpts)
 	if err != nil {
 		return nil, fmt.Errorf("retrieving list issues: %w", err)
 	}
@@ -424,7 +413,10 @@ func getGroupBoardIssues(groupID int, opts *issueBoardViewOptions) ([]*gitlab.Is
 
 func getProjectBoardIssues(opts *issueBoardViewOptions) ([]*gitlab.Issue, error) {
 	reqOpts := opts.getListProjectIssueOptions()
-	issues, err := api.ListProjectIssues(apiClient, repo.FullName(), reqOpts)
+	if reqOpts.PerPage == 0 {
+		reqOpts.PerPage = api.DefaultListLimit
+	}
+	issues, _, err := apiClient.Issues.ListProjectIssues(repo.FullName(), reqOpts)
 	if err != nil {
 		return nil, fmt.Errorf("retrieving list issues: %w", err)
 	}

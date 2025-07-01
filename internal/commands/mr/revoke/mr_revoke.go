@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 
@@ -53,7 +52,7 @@ func NewCmdRevoke(f cmdutils.Factory) *cobra.Command {
 
 				fmt.Fprintf(f.IO().StdOut, "- Revoking approval for merge request !%d...\n", mr.IID)
 
-				err = api.UnapproveMR(apiClient, repo.FullName(), mr.IID)
+				_, err := apiClient.MergeRequestApprovals.UnapproveMergeRequest(repo.FullName(), mr.IID)
 				if err != nil {
 					return err
 				}

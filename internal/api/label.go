@@ -24,22 +24,8 @@ func (opts *ListLabelsOptions) ListGroupLabelsOptions() *gitlab.ListGroupLabelsO
 	return groupOpts
 }
 
-var CreateLabel = func(client *gitlab.Client, projectID any, opts *gitlab.CreateLabelOptions) (*gitlab.Label, error) {
-	label, _, err := client.Labels.CreateLabel(projectID, opts)
-	if err != nil {
-		return nil, err
-	}
-	return label, nil
-}
-
-var DeleteLabel = func(client *gitlab.Client, projectID any, label string, opts *gitlab.DeleteLabelOptions) error {
-	_, err := client.Labels.DeleteLabel(projectID, label, opts)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
+// ListLabels returns a list of project labels
+// Attention: this is a global variable and may be overridden in tests.
 var ListLabels = func(client *gitlab.Client, projectID any, opts *ListLabelsOptions) ([]*gitlab.Label, error) {
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
@@ -50,16 +36,4 @@ var ListLabels = func(client *gitlab.Client, projectID any, opts *ListLabelsOpti
 		return nil, err
 	}
 	return label, nil
-}
-
-var ListGroupLabels = func(client *gitlab.Client, groupID any, opts *ListLabelsOptions) ([]*gitlab.GroupLabel, error) {
-	if opts.PerPage == 0 {
-		opts.PerPage = DefaultListLimit
-	}
-
-	labels, _, err := client.GroupLabels.ListGroupLabels(groupID, opts.ListGroupLabelsOptions())
-	if err != nil {
-		return nil, err
-	}
-	return labels, nil
 }

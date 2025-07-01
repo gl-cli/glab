@@ -142,19 +142,12 @@ func (o *options) run() error {
 }
 
 func (o *options) createPushMirror() error {
-	var pm *gitlab.ProjectMirror
-	var err error
-	pushOptions := api.CreatePushMirrorOptions{
-		Url:                   o.url,
-		Enabled:               o.enabled,
-		OnlyProtectedBranches: o.protectedBranchesOnly,
-		KeepDivergentRefs:     o.allowDivergence,
-	}
-	pm, err = api.CreatePushMirror(
-		o.httpClient,
-		o.projectID,
-		&pushOptions,
-	)
+	pm, _, err := o.httpClient.ProjectMirrors.AddProjectMirror(o.projectID, &gitlab.AddProjectMirrorOptions{
+		URL:                   gitlab.Ptr(o.url),
+		Enabled:               gitlab.Ptr(o.enabled),
+		OnlyProtectedBranches: gitlab.Ptr(o.protectedBranchesOnly),
+		KeepDivergentRefs:     gitlab.Ptr(o.allowDivergence),
+	})
 	if err != nil {
 		return cmdutils.WrapError(err, "Failed to create push mirror.")
 	}
@@ -168,16 +161,11 @@ func (o *options) createPushMirror() error {
 }
 
 func (o *options) createPullMirror() error {
-	pullOptions := api.CreatePullMirrorOptions{
-		Url:                   o.url,
-		Enabled:               o.enabled,
-		OnlyProtectedBranches: o.protectedBranchesOnly,
-	}
-	err := api.CreatePullMirror(
-		o.httpClient,
-		o.projectID,
-		&pullOptions,
-	)
+	_, _, err := o.httpClient.Projects.EditProject(o.projectID, &gitlab.EditProjectOptions{
+		ImportURL:                   gitlab.Ptr(o.url),
+		Mirror:                      gitlab.Ptr(o.enabled),
+		OnlyMirrorProtectedBranches: gitlab.Ptr(o.protectedBranchesOnly),
+	})
 	if err != nil {
 		return cmdutils.WrapError(err, "Failed to create pull mirror.")
 	}

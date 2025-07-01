@@ -128,7 +128,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 	}
 
 	if namespace != "" {
-		group, err := api.GetGroup(gitlabClient, namespace)
+		group, _, err := gitlabClient.Groups.GetGroup(namespace, &gitlab.GetGroupOptions{})
 		if err != nil {
 			return fmt.Errorf("could not find group or namespace %s: %v", namespace, err)
 		}

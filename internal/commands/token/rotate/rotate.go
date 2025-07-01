@@ -164,7 +164,9 @@ func (o *options) run() error {
 			ListOptions: gitlab.ListOptions{PerPage: 100},
 			UserID:      &user.ID,
 		}
-		tokens, err := api.ListPersonalAccessTokens(client, options)
+		tokens, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.PersonalAccessToken, *gitlab.Response, error) {
+			return client.PersonalAccessTokens.ListPersonalAccessTokens(options, p)
+		})
 		if err != nil {
 			return err
 		}
@@ -183,7 +185,7 @@ func (o *options) run() error {
 		rotateOptions := &gitlab.RotatePersonalAccessTokenOptions{
 			ExpiresAt: &expirationDate,
 		}
-		if token, err = api.RotatePersonalAccessToken(client, token.ID, rotateOptions); err != nil {
+		if token, _, err = client.PersonalAccessTokens.RotatePersonalAccessToken(token.ID, rotateOptions); err != nil {
 			return err
 		}
 		outputToken = token
@@ -191,7 +193,9 @@ func (o *options) run() error {
 	} else {
 		if o.group != "" {
 			options := &gitlab.ListGroupAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListGroupAccessTokens(client, o.group, options)
+			tokens, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.GroupAccessToken, *gitlab.Response, error) {
+				return client.GroupAccessTokens.ListGroupAccessTokens(o.group, options, p)
+			})
 			if err != nil {
 				return err
 			}
@@ -211,7 +215,7 @@ func (o *options) run() error {
 			rotateOptions := &gitlab.RotateGroupAccessTokenOptions{
 				ExpiresAt: &expirationDate,
 			}
-			if token, err = api.RotateGroupAccessToken(client, o.group, token.ID, rotateOptions); err != nil {
+			if token, _, err = client.GroupAccessTokens.RotateGroupAccessToken(o.group, token.ID, rotateOptions); err != nil {
 				return err
 			}
 			outputToken = token
@@ -222,7 +226,9 @@ func (o *options) run() error {
 				return err
 			}
 			options := &gitlab.ListProjectAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListProjectAccessTokens(client, repo.FullName(), options)
+			tokens, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.ProjectAccessToken, *gitlab.Response, error) {
+				return client.ProjectAccessTokens.ListProjectAccessTokens(repo.FullName(), options, p)
+			})
 			if err != nil {
 				return err
 			}
@@ -242,7 +248,7 @@ func (o *options) run() error {
 			rotateOptions := &gitlab.RotateProjectAccessTokenOptions{
 				ExpiresAt: &expirationDate,
 			}
-			if token, err = api.RotateProjectAccessToken(client, repo.FullName(), token.ID, rotateOptions); err != nil {
+			if token, _, err = client.ProjectAccessTokens.RotateProjectAccessToken(repo.FullName(), token.ID, rotateOptions); err != nil {
 				return err
 			}
 			outputToken = token

@@ -60,6 +60,28 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	return iterationListCmd
 }
 
+type listProjectIterationsOptions struct {
+	IncludeAncestors *bool
+	PerPage          int
+	Page             int
+}
+
+func (opts *listProjectIterationsOptions) listProjectIterationsOptions() *gitlab.ListProjectIterationsOptions {
+	projectOpts := &gitlab.ListProjectIterationsOptions{}
+	projectOpts.IncludeAncestors = opts.IncludeAncestors
+	projectOpts.PerPage = opts.PerPage
+	projectOpts.Page = opts.Page
+	return projectOpts
+}
+
+func (opts *listProjectIterationsOptions) listGroupIterationsOptions() *gitlab.ListGroupIterationsOptions {
+	groupOpts := &gitlab.ListGroupIterationsOptions{}
+	groupOpts.IncludeAncestors = opts.IncludeAncestors
+	groupOpts.PerPage = opts.PerPage
+	groupOpts.Page = opts.Page
+	return groupOpts
+}
+
 func (o *options) run() error {
 	// NOTE: this command can not only be used for projects,
 	// so we have to manually check for the base repo, it it doesn't exist,
@@ -74,20 +96,22 @@ func (o *options) run() error {
 	}
 	client := apiClient.Lab()
 
-	iterationApiOpts := &api.ListProjectIterationsOptions{}
+	iterationApiOpts := &listProjectIterationsOptions{}
 	iterationApiOpts.IncludeAncestors = gitlab.Ptr(true)
 
-	if p := o.page; p != 0 {
-		iterationApiOpts.Page = p
+	if o.page != 0 {
+		iterationApiOpts.Page = o.page
 	}
-	if pp := o.perPage; pp != 0 {
-		iterationApiOpts.PerPage = pp
+	if o.perPage != 0 {
+		iterationApiOpts.PerPage = o.perPage
+	} else {
+		iterationApiOpts.PerPage = api.DefaultListLimit
 	}
 
 	var iterationBuilder strings.Builder
 
 	if o.group != "" {
-		iterations, err := api.ListGroupIterations(client, o.group, iterationApiOpts)
+		iterations, _, err := client.GroupIterations.ListGroupIterations(o.group, iterationApiOpts.listGroupIterationsOptions())
 		if err != nil {
 			return err
 		}
@@ -105,7 +129,7 @@ func (o *options) run() error {
 		if err != nil {
 			return err
 		}
-		iterations, err := api.ListProjectIterations(client, repo.FullName(), iterationApiOpts)
+		iterations, _, err := client.ProjectIterations.ListProjectIterations(repo.FullName(), iterationApiOpts.listProjectIterationsOptions())
 		if err != nil {
 			return err
 		}

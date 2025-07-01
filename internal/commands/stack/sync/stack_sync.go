@@ -10,7 +10,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/auth"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/create"
@@ -316,7 +315,7 @@ func createMR(client *gitlab.Client, opts *options, ref *git.StackRef, gr git.Gi
 		TargetProjectID:    gitlab.Ptr(targetProject.ID),
 	}
 
-	mr, err := api.CreateMR(client, opts.source.FullName(), l)
+	mr, _, err := client.MergeRequests.CreateMergeRequest(opts.source.FullName(), l)
 	if err != nil {
 		return &gitlab.MergeRequest{}, fmt.Errorf("error creating merge request with the API: %v", err)
 	}

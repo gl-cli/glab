@@ -133,7 +133,7 @@ func checkManifestUsageInProject(apiClient *gitlab.Client, opts *options, projec
 	opts.io.StartSpinner(fmt.Sprintf("Checking project %s for agents.\n", project.PathWithNamespace))
 	defer opts.io.StopSpinner("")
 
-	agents, err := api.ListAgents(apiClient, project.ID, &gitlab.ListAgentsOptions{
+	agents, _, err := apiClient.ClusterAgents.ListAgents(project.ID, &gitlab.ListAgentsOptions{
 		Page:    opts.agentPage,
 		PerPage: opts.agentPerPage,
 	})

@@ -274,7 +274,7 @@ func (o *options) run() error {
 	title := utils.NewListTitle(o.titleQualifier + " merge request")
 
 	if o.group != "" {
-		mergeRequests, err = api.ListGroupMRs(client, o.group, api.ProjectListMROptionsToGroup(l), api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
+		mergeRequests, err = api.ListGroupMRs(client, o.group, projectListMROptionsToGroup(l), api.WithMRAssignees(assigneeIds), api.WithMRReviewers(reviewerIds))
 		title.RepoName = o.group
 	} else {
 		var repo glrepo.Interface
@@ -305,4 +305,33 @@ func (o *options) run() error {
 		fmt.Fprintf(o.io.StdOut, "%s\n%s\n", title.Describe(), mrutils.DisplayAllMRs(o.io, mergeRequests))
 	}
 	return nil
+}
+
+func projectListMROptionsToGroup(l *gitlab.ListProjectMergeRequestsOptions) *gitlab.ListGroupMergeRequestsOptions {
+	return &gitlab.ListGroupMergeRequestsOptions{
+		ListOptions:            l.ListOptions,
+		State:                  l.State,
+		OrderBy:                l.OrderBy,
+		Sort:                   l.Sort,
+		Milestone:              l.Milestone,
+		View:                   l.View,
+		Labels:                 l.Labels,
+		NotLabels:              l.NotLabels,
+		WithLabelsDetails:      l.WithLabelsDetails,
+		WithMergeStatusRecheck: l.WithMergeStatusRecheck,
+		CreatedAfter:           l.CreatedAfter,
+		CreatedBefore:          l.CreatedBefore,
+		UpdatedAfter:           l.UpdatedAfter,
+		UpdatedBefore:          l.UpdatedBefore,
+		Scope:                  l.Scope,
+		AuthorID:               l.AuthorID,
+		AssigneeID:             l.AssigneeID,
+		ReviewerID:             l.ReviewerID,
+		ReviewerUsername:       l.ReviewerUsername,
+		MyReactionEmoji:        l.MyReactionEmoji,
+		SourceBranch:           l.SourceBranch,
+		TargetBranch:           l.TargetBranch,
+		Search:                 l.Search,
+		WIP:                    l.WIP,
+	}
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 )
@@ -31,7 +30,7 @@ func NewCmdApprovers(f cmdutils.Factory) *cobra.Command {
 
 			fmt.Fprintf(f.IO().StdOut, "\nListing merge request !%d eligible approvers:\n", mr.IID)
 
-			mrApprovals, err := api.GetMRApprovalState(apiClient, repo.FullName(), mr.IID)
+			mrApprovals, _, err := apiClient.MergeRequestApprovals.GetApprovalState(repo.FullName(), mr.IID)
 			if err != nil {
 				return err
 			}

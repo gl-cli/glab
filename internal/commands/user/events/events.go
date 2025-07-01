@@ -39,7 +39,11 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 				l.PerPage = p
 			}
 
-			events, err := api.CurrentUserEvents(client, l)
+			if l.PerPage == 0 {
+				l.PerPage = api.DefaultListLimit
+			}
+
+			events, _, err := client.Events.ListCurrentUserContributionEvents(l)
 			if err != nil {
 				return err
 			}

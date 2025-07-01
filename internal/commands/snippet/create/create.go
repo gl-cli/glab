@@ -10,7 +10,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/dbg"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -150,7 +149,7 @@ func (o *options) run() error {
 	var snippet *gitlab.Snippet
 	if o.personal {
 		fmt.Fprintln(o.io.StdErr, "- Creating snippet in personal space")
-		snippet, err = api.CreateSnippet(client, &gitlab.CreateSnippetOptions{
+		snippet, _, err = client.Snippets.CreateSnippet(&gitlab.CreateSnippetOptions{
 			Title:       &o.title,
 			Description: &o.description,
 			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(o.visibility)),
@@ -158,7 +157,7 @@ func (o *options) run() error {
 		})
 	} else {
 		fmt.Fprintln(o.io.StdErr, "- Creating snippet in", repo.FullName())
-		snippet, err = api.CreateProjectSnippet(client, repo.FullName(), &gitlab.CreateProjectSnippetOptions{
+		snippet, _, err = client.ProjectSnippets.CreateSnippet(repo.FullName(), &gitlab.CreateProjectSnippetOptions{
 			Title:       &o.title,
 			Description: &o.description,
 			Visibility:  gitlab.Ptr(gitlab.VisibilityValue(o.visibility)),

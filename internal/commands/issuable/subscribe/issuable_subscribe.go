@@ -3,14 +3,18 @@ package subscribe
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/api"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
 )
+
+// errIssuableUserAlreadySubscribed received when trying to subscribe to an issue the user is already subscribed to
+var errIssuableUserAlreadySubscribed = errors.New("you are already subscribed to this issue")
 
 var subscribingMessage = map[issuable.IssueType]string{
 	issuable.TypeIssue:    "Subscribing to issue",
@@ -64,9 +68,9 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 					)
 				}
 
-				issue, err := api.SubscribeToIssue(gitlabClient, repo.FullName(), issue.IID, nil)
+				issue, err := subscribe(gitlabClient, repo.FullName(), issue.IID)
 				if err != nil {
-					if errors.Is(err, api.ErrIssuableUserAlreadySubscribed) {
+					if errors.Is(err, errIssuableUserAlreadySubscribed) {
 						fmt.Fprintf(
 							f.IO().StdOut,
 							"%s You are already subscribed to this %s.\n\n",
@@ -86,4 +90,19 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 	}
 
 	return issueSubscribeCmd
+}
+
+func subscribe(client *gitlab.Client, projectID any, issueID int) (*gitlab.Issue, error) {
+	issue, resp, err := client.Issues.SubscribeToIssue(projectID, issueID)
+	if err != nil {
+		if resp != nil {
+			// If the user is already subscribed to the issue, the status code 304 is returned.
+			if resp.StatusCode == http.StatusNotModified {
+				return nil, errIssuableUserAlreadySubscribed
+			}
+		}
+		return issue, err
+	}
+
+	return issue, nil
 }

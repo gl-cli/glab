@@ -130,7 +130,9 @@ func (o *options) run() error {
 			ListOptions: gitlab.ListOptions{PerPage: 100},
 			UserID:      &user.ID,
 		}
-		tokens, err := api.ListPersonalAccessTokens(client, options)
+		tokens, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.PersonalAccessToken, *gitlab.Response, error) {
+			return client.PersonalAccessTokens.ListPersonalAccessTokens(options, p)
+		})
 		if err != nil {
 			return err
 		}
@@ -146,7 +148,7 @@ func (o *options) run() error {
 		default:
 			return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", o.name)}
 		}
-		if err = api.RevokePersonalAccessToken(client, token.ID); err != nil {
+		if _, err = client.PersonalAccessTokens.RevokePersonalAccessToken(token.ID); err != nil {
 			return err
 		}
 		token.Revoked = true
@@ -155,7 +157,9 @@ func (o *options) run() error {
 	} else {
 		if o.group != "" {
 			options := &gitlab.ListGroupAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListGroupAccessTokens(client, o.group, options)
+			tokens, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.GroupAccessToken, *gitlab.Response, error) {
+				return client.GroupAccessTokens.ListGroupAccessTokens(o.group, options, p)
+			})
 			if err != nil {
 				return err
 			}
@@ -172,7 +176,7 @@ func (o *options) run() error {
 				return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", o.name)}
 			}
 
-			if err = api.RevokeGroupAccessToken(client, o.group, token.ID); err != nil {
+			if _, err = client.GroupAccessTokens.RevokeGroupAccessToken(o.group, token.ID); err != nil {
 				return err
 			}
 			token.Revoked = true
@@ -184,7 +188,9 @@ func (o *options) run() error {
 				return err
 			}
 			options := &gitlab.ListProjectAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListProjectAccessTokens(client, repo.FullName(), options)
+			tokens, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.ProjectAccessToken, *gitlab.Response, error) {
+				return client.ProjectAccessTokens.ListProjectAccessTokens(repo.FullName(), options, p)
+			})
 			if err != nil {
 				return err
 			}
@@ -201,7 +207,7 @@ func (o *options) run() error {
 				return cmdutils.FlagError{Err: fmt.Errorf("multiple tokens found with the name '%v'. Use the ID instead.", o.name)}
 			}
 
-			if err = api.RevokeProjectAccessToken(client, repo.FullName(), token.ID); err != nil {
+			if _, err := client.ProjectAccessTokens.RevokeProjectAccessToken(repo.FullName(), token.ID); err != nil {
 				return err
 			}
 			token.Revoked = true

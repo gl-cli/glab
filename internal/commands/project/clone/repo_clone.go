@@ -130,7 +130,7 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 			}
 			opts.apiClient = apiClient
 
-			opts.currentUser, err = api.CurrentUser(opts.apiClient.Lab())
+			opts.currentUser, _, err = opts.apiClient.Lab().Users.CurrentUser()
 			if err != nil {
 				return err
 			}
@@ -169,67 +169,60 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 	return repoCloneCmd
 }
 
-func listProjects(opts *options, ListGroupProjectOpts *gitlab.ListGroupProjectsOptions) ([]*gitlab.Project, error) {
-	var projects []*gitlab.Project
-	hasRemaining := true
-
-	for hasRemaining {
-		currentPage, resp, err := api.ListGroupProjects(opts.apiClient.Lab(), opts.groupName, ListGroupProjectOpts)
-		if err != nil {
-			return nil, err
-		}
-		if len(currentPage) == 0 {
-			fmt.Fprintf(opts.io.StdErr, "Group %q does not have any projects.\n", opts.groupName)
-			return nil, cmdutils.SilentError
-		}
-
-		projects = append(projects, currentPage...)
-
-		ListGroupProjectOpts.Page = resp.NextPage
-		hasRemaining = opts.paginate && resp.CurrentPage != resp.TotalPages
-	}
-
-	return projects, nil
-}
-
 func groupClone(opts *options, ctxOpts *ContextOpts) error {
 	c := opts.io.Color()
-	ListGroupProjectOpts := &gitlab.ListGroupProjectsOptions{}
+	listOpts := &gitlab.ListGroupProjectsOptions{}
 	if !opts.withShared {
-		ListGroupProjectOpts.WithShared = gitlab.Ptr(false)
+		listOpts.WithShared = gitlab.Ptr(false)
 	}
 	if opts.withMREnabled {
-		ListGroupProjectOpts.WithMergeRequestsEnabled = gitlab.Ptr(true)
+		listOpts.WithMergeRequestsEnabled = gitlab.Ptr(true)
 	}
 	if opts.withIssuesEnabled {
-		ListGroupProjectOpts.WithIssuesEnabled = gitlab.Ptr(true)
+		listOpts.WithIssuesEnabled = gitlab.Ptr(true)
 	}
 	if opts.owned {
-		ListGroupProjectOpts.Owned = gitlab.Ptr(true)
+		listOpts.Owned = gitlab.Ptr(true)
 	}
 	if opts.archivedSet {
-		ListGroupProjectOpts.Archived = gitlab.Ptr(opts.archived)
+		listOpts.Archived = gitlab.Ptr(opts.archived)
 	}
 	if opts.includeSubgroups {
 		includeSubGroups := true
-		ListGroupProjectOpts.IncludeSubGroups = &includeSubGroups
+		listOpts.IncludeSubGroups = &includeSubGroups
 	}
 	if opts.visibility != "" {
-		ListGroupProjectOpts.Visibility = gitlab.Ptr(gitlab.VisibilityValue(opts.visibility))
+		listOpts.Visibility = gitlab.Ptr(gitlab.VisibilityValue(opts.visibility))
 	}
 
-	ListGroupProjectOpts.PerPage = 100
+	listOpts.PerPage = 100
 	if opts.paginate {
-		ListGroupProjectOpts.PerPage = 30
+		listOpts.PerPage = 30
 	}
 	if opts.perPage != 0 {
-		ListGroupProjectOpts.PerPage = opts.perPage
+		listOpts.PerPage = opts.perPage
 	}
 	if opts.page != 0 {
-		ListGroupProjectOpts.Page = opts.page
+		listOpts.Page = opts.page
 	}
 
-	projects, err := listProjects(opts, ListGroupProjectOpts)
+	var projects []*gitlab.Project
+	var err error
+	if opts.paginate {
+		projects, err = gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.Project, *gitlab.Response, error) {
+			return opts.apiClient.Lab().Groups.ListGroupProjects(opts.groupName, listOpts, p)
+		})
+	} else {
+		projects, _, err = opts.apiClient.Lab().Groups.ListGroupProjects(opts.groupName, listOpts)
+	}
+	if err != nil {
+		return err
+	}
+	if len(projects) == 0 {
+		fmt.Fprintf(opts.io.StdErr, "Group %q does not have any projects.\n", opts.groupName)
+		return cmdutils.SilentError
+	}
+
 	var finalOutput []string
 	for _, project := range projects {
 		ctxOpt := *ctxOpts

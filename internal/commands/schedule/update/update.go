@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -109,7 +108,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 
 			// skip API call if no changes are made
 			if opts.Active != nil || opts.Description != nil || opts.Ref != nil || opts.Cron != nil || opts.CronTimezone != nil {
-				_, err := api.EditSchedule(apiClient, repo.FullName(), scheduleId, opts)
+				_, _, err := apiClient.PipelineSchedules.EditPipelineSchedule(repo.FullName(), scheduleId, opts)
 				if err != nil {
 					return err
 				}
@@ -117,7 +116,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 
 			// create variables
 			for _, v := range variablePairsToCreate {
-				err = api.CreateScheduleVariable(apiClient, repo.FullName(), scheduleId, &gitlab.CreatePipelineScheduleVariableOptions{
+				_, _, err := apiClient.PipelineSchedules.CreatePipelineScheduleVariable(repo.FullName(), scheduleId, &gitlab.CreatePipelineScheduleVariableOptions{
 					Key:   &v[0],
 					Value: &v[1],
 				})
@@ -128,7 +127,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 
 			// update variables
 			for _, v := range variablePairsToUpdate {
-				err = api.EditScheduleVariable(apiClient, repo.FullName(), scheduleId, v[0], &gitlab.EditPipelineScheduleVariableOptions{
+				_, _, err := apiClient.PipelineSchedules.EditPipelineScheduleVariable(repo.FullName(), scheduleId, v[0], &gitlab.EditPipelineScheduleVariableOptions{
 					Value: &v[1],
 				})
 				if err != nil {
@@ -138,7 +137,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 
 			// delete variables
 			for _, v := range variablesToDelete {
-				err = api.DeleteScheduleVariable(apiClient, repo.FullName(), scheduleId, v)
+				_, _, err := apiClient.PipelineSchedules.DeletePipelineScheduleVariable(repo.FullName(), scheduleId, v)
 				if err != nil {
 					return err
 				}

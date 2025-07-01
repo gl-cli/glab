@@ -88,7 +88,7 @@ func (o *options) run(f cmdutils.Factory, args []string) error {
 	// does not provide the necessary ability to determine if this value was present or not in the response JSON
 	// since Project.ApprovalsBeforeMerge is a non-pointer type. Because of this, this step will either succeed
 	// and show approval state or it will fail silently
-	mrApprovals, _ := api.GetMRApprovalState(apiClient, baseRepo.FullName(), mr.IID)
+	mrApprovals, _, err := apiClient.MergeRequestApprovals.GetApprovalState(baseRepo.FullName(), mr.IID) //nolint:ineffassign,staticcheck
 
 	cfg := o.config()
 

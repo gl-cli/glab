@@ -9,7 +9,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/agentutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -80,7 +79,7 @@ func (o *options) run() error {
 	}
 
 	// Retrieve metadata of the instance to determine KAS URL
-	metadata, err := api.GetMetadata(apiClient)
+	metadata, _, err := apiClient.Metadata.GetMetadata()
 	if err != nil {
 		return err
 	}
@@ -94,13 +93,13 @@ func (o *options) run() error {
 
 	// Retrieve agent information, most importantly its name to use it as context name.
 	repoFullName := repo.FullName()
-	agent, err := api.GetAgent(apiClient, repoFullName, o.agentID)
+	agent, _, err := apiClient.ClusterAgents.GetAgent(repoFullName, int(o.agentID)) // FIXME remove cast
 	if err != nil {
 		return err
 	}
 
 	// Retrieve user information
-	user, err := api.CurrentUser(apiClient)
+	user, _, err := apiClient.Users.CurrentUser()
 	if err != nil {
 		return err
 	}

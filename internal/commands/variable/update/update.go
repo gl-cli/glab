@@ -140,7 +140,7 @@ func (o *options) run() error {
 			Description:      gitlab.Ptr(o.description),
 		}
 
-		_, err = api.UpdateGroupVariable(client, o.group, o.key, updateGroupVarOpts)
+		_, _, err = client.GroupVariables.UpdateVariable(o.group, o.key, updateGroupVarOpts)
 		if err != nil {
 			return err
 		}
@@ -162,10 +162,10 @@ func (o *options) run() error {
 		Protected:        gitlab.Ptr(o.protected),
 		Raw:              gitlab.Ptr(o.raw),
 		EnvironmentScope: gitlab.Ptr(o.scope),
+		Filter:           &gitlab.VariableFilter{EnvironmentScope: o.scope},
 		Description:      gitlab.Ptr(o.description),
 	}
-
-	_, err = api.UpdateProjectVariable(client, baseRepo.FullName(), o.key, updateProjectVarOpts)
+	_, _, err = client.ProjectVariables.UpdateVariable(baseRepo.FullName(), o.key, updateProjectVarOpts)
 	if err != nil {
 		return err
 	}

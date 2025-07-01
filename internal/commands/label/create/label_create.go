@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/api"
 
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -48,7 +47,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			if s, _ := cmd.Flags().GetString("description"); s != "" {
 				l.Description = gitlab.Ptr(s)
 			}
-			label, err := api.CreateLabel(apiClient, repo.FullName(), l)
+			label, _, err := apiClient.Labels.CreateLabel(repo.FullName(), l)
 			if err != nil {
 				return err
 			}

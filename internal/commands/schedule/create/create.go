@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -52,7 +51,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			l.CronTimezone = &cronTimeZone
 			l.Active = &active
 
-			err, schedule := api.CreateSchedule(apiClient, repo.FullName(), l)
+			schedule, _, err := apiClient.PipelineSchedules.CreatePipelineSchedule(repo.FullName(), l)
 			if err != nil {
 				return err
 			}
@@ -64,7 +63,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				}
 				variable.Key = &split[0]
 				variable.Value = &split[1]
-				err = api.CreateScheduleVariable(apiClient, repo.FullName(), schedule.ID, variable)
+				_, _, err := apiClient.PipelineSchedules.CreatePipelineScheduleVariable(repo.FullName(), schedule.ID, variable)
 				if err != nil {
 					return err
 				}

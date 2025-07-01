@@ -135,7 +135,7 @@ func (o *options) run() error {
 		forkOpts.Path = gitlab.Ptr(o.path)
 	}
 
-	forkedProject, err := api.ForkProject(labClient, o.repoToFork.FullName(), forkOpts)
+	forkedProject, _, err := labClient.Projects.ForkProject(o.repoToFork.FullName(), forkOpts)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -70,11 +69,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	if err != nil {
-		return err
-	}
-
-	err = api.DeleteSchedule(apiClient, o.scheduleID, repo.FullName())
+	_, err = apiClient.PipelineSchedules.DeletePipelineSchedule(repo.FullName(), o.scheduleID)
 	if err != nil {
 		return err
 	}

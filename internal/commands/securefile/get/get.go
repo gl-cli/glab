@@ -7,7 +7,6 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 )
 
@@ -41,7 +40,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 				return fmt.Errorf("Secure file ID must be an integer: %s", args[0])
 			}
 
-			file, err := api.GetSecureFile(apiClient, repo.FullName(), fileID)
+			file, _, err := apiClient.SecureFiles.ShowSecureFileDetails(repo.FullName(), fileID)
 			if err != nil {
 				return fmt.Errorf("Error getting secure file: %v", err)
 			}

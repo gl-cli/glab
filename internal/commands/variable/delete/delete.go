@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/variable/variableutils"
@@ -100,7 +101,9 @@ func (o *options) run() error {
 			return err
 		}
 
-		err = api.DeleteProjectVariable(client, baseRepo.FullName(), o.key, o.scope)
+		_, err = client.ProjectVariables.RemoveVariable(baseRepo.FullName(), o.key, &gitlab.RemoveProjectVariableOptions{
+			Filter: &gitlab.VariableFilter{EnvironmentScope: o.scope},
+		})
 		if err != nil {
 			return err
 		}
@@ -108,7 +111,7 @@ func (o *options) run() error {
 		fmt.Fprintf(o.io.StdOut, "%s Deleted variable %s with scope %s for %s.\n", c.GreenCheck(), o.key, o.scope, baseRepo.FullName())
 	} else {
 		// Delete group-level variable
-		err = api.DeleteGroupVariable(client, o.group, o.key)
+		_, err := client.GroupVariables.RemoveVariable(o.group, o.key, nil)
 		if err != nil {
 			return err
 		}

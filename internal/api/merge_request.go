@@ -1,33 +1,13 @@
 package api
 
 import (
-	"errors"
-	"net/http"
 	"sort"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-var ErrTodoExists = errors.New("To-do already exists.")
-
-var ApproveMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ApproveMergeRequestOptions) (*gitlab.MergeRequestApprovals, error) {
-	mr, _, err := client.MergeRequestApprovals.ApproveMergeRequest(projectID, mrID, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return mr, nil
-}
-
-var GetMRApprovalState = func(client *gitlab.Client, projectID any, mrID int, opts ...gitlab.RequestOptionFunc) (*gitlab.MergeRequestApprovalState, error) {
-	mrApprovals, _, err := client.MergeRequestApprovals.GetApprovalState(projectID, mrID, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	return mrApprovals, nil
-}
-
+// GetMR returns an MR
+// Attention: this is a global variable and may be overridden in tests.
 var GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 	mr, _, err := client.MergeRequests.GetMergeRequest(projectID, mrID, opts)
 	if err != nil {
@@ -54,7 +34,7 @@ var GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.Ge
 //	groupMRs, err := api.ListGroupMRs(client, "my-group", &gitlab.ListGroupMergeRequestsOptions{},
 //		api.WithMRAssignees([]int{123}),
 //		api.WithMRReviewers([]int{456, 789}))
-var ListGroupMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListGroupMergeRequestsOptions, listOpts ...CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
+func ListGroupMRs(client *gitlab.Client, projectID any, opts *gitlab.ListGroupMergeRequestsOptions, listOpts ...CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 	composedListOpts := composeCliListMROptions(listOpts...)
 	assigneeIds, reviewerIds := composedListOpts.assigneeIds, composedListOpts.reviewerIds
 
@@ -65,7 +45,7 @@ var ListGroupMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListG
 	}
 }
 
-var listGroupMRsBase = func(client *gitlab.Client, groupID any, opts *gitlab.ListGroupMergeRequestsOptions) ([]*gitlab.BasicMergeRequest, error) {
+func listGroupMRsBase(client *gitlab.Client, groupID any, opts *gitlab.ListGroupMergeRequestsOptions) ([]*gitlab.BasicMergeRequest, error) {
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -77,7 +57,7 @@ var listGroupMRsBase = func(client *gitlab.Client, groupID any, opts *gitlab.Lis
 	return mrs, nil
 }
 
-var listGroupMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID any, opts *gitlab.ListGroupMergeRequestsOptions, assigneeIds []int, reviewerIds []int) ([]*gitlab.BasicMergeRequest, error) {
+func listGroupMRsWithAssigneesOrReviewers(client *gitlab.Client, projectID any, opts *gitlab.ListGroupMergeRequestsOptions, assigneeIds []int, reviewerIds []int) ([]*gitlab.BasicMergeRequest, error) {
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -117,35 +97,6 @@ var listGroupMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID
 	return mrs, nil
 }
 
-var ProjectListMROptionsToGroup = func(l *gitlab.ListProjectMergeRequestsOptions) *gitlab.ListGroupMergeRequestsOptions {
-	return &gitlab.ListGroupMergeRequestsOptions{
-		ListOptions:            l.ListOptions,
-		State:                  l.State,
-		OrderBy:                l.OrderBy,
-		Sort:                   l.Sort,
-		Milestone:              l.Milestone,
-		View:                   l.View,
-		Labels:                 l.Labels,
-		NotLabels:              l.NotLabels,
-		WithLabelsDetails:      l.WithLabelsDetails,
-		WithMergeStatusRecheck: l.WithMergeStatusRecheck,
-		CreatedAfter:           l.CreatedAfter,
-		CreatedBefore:          l.CreatedBefore,
-		UpdatedAfter:           l.UpdatedAfter,
-		UpdatedBefore:          l.UpdatedBefore,
-		Scope:                  l.Scope,
-		AuthorID:               l.AuthorID,
-		AssigneeID:             l.AssigneeID,
-		ReviewerID:             l.ReviewerID,
-		ReviewerUsername:       l.ReviewerUsername,
-		MyReactionEmoji:        l.MyReactionEmoji,
-		SourceBranch:           l.SourceBranch,
-		TargetBranch:           l.TargetBranch,
-		Search:                 l.Search,
-		WIP:                    l.WIP,
-	}
-}
-
 // ListMRs retrieves merge requests for a given project with optional filtering by assignees or reviewers.
 //
 // Parameters:
@@ -163,6 +114,8 @@ var ProjectListMROptionsToGroup = func(l *gitlab.ListProjectMergeRequestsOptions
 //	mrs, err := api.ListMRs(client, "my-group", &gitlab.ListProjectMergeRequestsOptions{},
 //		api.WithMRAssignees([]int{123, 456}),
 //		api.WithMRReviewers([]int{789}))
+//
+// Attention: this is a global variable and may be overridden in tests.
 var ListMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions, listOpts ...CliListMROption) ([]*gitlab.BasicMergeRequest, error) {
 	composedListOpts := composeCliListMROptions(listOpts...)
 	assigneeIds, reviewerIds := composedListOpts.assigneeIds, composedListOpts.reviewerIds
@@ -226,6 +179,8 @@ var listMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID any,
 	return mrs, nil
 }
 
+// UpdateMR updates an MR
+// Attention: this is a global variable and may be overridden in tests.
 var UpdateMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.UpdateMergeRequestOptions) (*gitlab.MergeRequest, error) {
 	mr, _, err := client.MergeRequests.UpdateMergeRequest(projectID, mrID, opts)
 	if err != nil {
@@ -235,6 +190,8 @@ var UpdateMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab
 	return mr, nil
 }
 
+// UpdateMR updates an MR
+// Attention: this is a global variable and may be overridden in tests.
 var DeleteMR = func(client *gitlab.Client, projectID any, mrID int) error {
 	_, err := client.MergeRequests.DeleteMergeRequest(projectID, mrID)
 	if err != nil {
@@ -244,42 +201,8 @@ var DeleteMR = func(client *gitlab.Client, projectID any, mrID int) error {
 	return nil
 }
 
-var MergeMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.AcceptMergeRequestOptions) (*gitlab.MergeRequest, *gitlab.Response, error) {
-	mrs, resp, err := client.MergeRequests.AcceptMergeRequest(projectID, mrID, opts)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return mrs, resp, nil
-}
-
-var CreateMR = func(client *gitlab.Client, projectID any, opts *gitlab.CreateMergeRequestOptions) (*gitlab.MergeRequest, error) {
-	mr, _, err := client.MergeRequests.CreateMergeRequest(projectID, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return mr, nil
-}
-
-var GetMRLinkedIssues = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetIssuesClosedOnMergeOptions) ([]*gitlab.Issue, error) {
-	mrIssues, _, err := client.MergeRequests.GetIssuesClosedOnMerge(projectID, mrID, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return mrIssues, nil
-}
-
-var CreateMRNote = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.CreateMergeRequestNoteOptions) (*gitlab.Note, error) {
-	note, _, err := client.Notes.CreateMergeRequestNote(projectID, mrID, opts)
-	if err != nil {
-		return note, err
-	}
-
-	return note, nil
-}
-
+// ListMRNotes returns a list of merge request notes
+// Attention: this is a global variable and may be overridden in tests.
 var ListMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
@@ -293,24 +216,8 @@ var ListMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *git
 	return notes, nil
 }
 
-var RebaseMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.RebaseMergeRequestOptions) error {
-	_, err := client.MergeRequests.RebaseMergeRequest(projectID, mrID, opts)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var UnapproveMR = func(client *gitlab.Client, projectID any, mrID int) error {
-	_, err := client.MergeRequestApprovals.UnapproveMergeRequest(projectID, mrID)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
+// SubscribeToMR subscribes to an MR
+// Attention: this is a global variable and may be overridden in tests.
 var SubscribeToMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
 	mr, _, err := client.MergeRequests.SubscribeToMergeRequest(projectID, mrID, opts)
 	if err != nil {
@@ -320,22 +227,10 @@ var SubscribeToMR = func(client *gitlab.Client, projectID any, mrID int, opts gi
 	return mr, nil
 }
 
+// UnsubscribeFromMR unsubscribes from an MR
+// Attention: this is a global variable and may be overridden in tests.
 var UnsubscribeFromMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
 	mr, _, err := client.MergeRequests.UnsubscribeFromMergeRequest(projectID, mrID, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return mr, nil
-}
-
-var MRTodo = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.Todo, error) {
-	mr, resp, err := client.MergeRequests.CreateTodo(projectID, mrID, opts)
-
-	if resp.StatusCode == http.StatusNotModified {
-		return nil, ErrTodoExists
-	}
-
 	if err != nil {
 		return nil, err
 	}
