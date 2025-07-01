@@ -274,12 +274,7 @@ func NewClientWithCfg(protocol, repoHost string, cfg config.Config, isGraphQL bo
 		options = append(options, WithProtocol(apiProtocol))
 	}
 
-	client, err := NewClient(apiHost, authToken, isGraphQL, isOAuth2, isJobToken, userAgent, options...)
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
+	return NewClient(apiHost, authToken, isGraphQL, isOAuth2, isJobToken, userAgent, options...)
 }
 
 // NewLab initializes the GitLab Client
