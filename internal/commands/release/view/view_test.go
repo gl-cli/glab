@@ -18,7 +18,7 @@ import (
 func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
 	)
 	cmd := NewCmdView(factory)
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
@@ -82,11 +82,11 @@ func TestReleaseView(t *testing.T) {
 
 											ASSETS
 											test asset	https://gitlab.com/OWNER/REPO/-/releases/0.0.1/downloads/test_asset
-											
+
 											SOURCES
 											https://gitlab.com/OWNER/REPO/-/archive/0.0.1/REPO-0.0.1.zip
-											
-											
+
+
 											View this release on GitLab at https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 											`), out)
 				assert.Empty(t, output.Stderr())

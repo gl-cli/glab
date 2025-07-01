@@ -23,7 +23,7 @@ func runCommand(t *testing.T, rt http.RoundTripper, branch string, cli string) (
 	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
 		cmdtest.WithBranch(branch),
 	)
 

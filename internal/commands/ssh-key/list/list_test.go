@@ -15,7 +15,7 @@ import (
 func runCommand(t *testing.T, rt http.RoundTripper) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithApiClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
 	)
 	cmd := NewCmdList(factory)
 	return cmdtest.ExecuteCommand(cmd, "", stdout, stderr)

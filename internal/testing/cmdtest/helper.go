@@ -421,7 +421,7 @@ func TestClient(httpClient *http.Client, token, host string, isGraphQL bool, opt
 	return testClient, nil
 }
 
-func MustTestClient(t *testing.T, httpClient *http.Client, token, host string, isGraphQL bool, options ...api.ClientOption) *api.Client {
+func NewTestApiClient(t *testing.T, httpClient *http.Client, token, host string, isGraphQL bool, options ...api.ClientOption) *api.Client {
 	t.Helper()
 
 	tc, err := TestClient(httpClient, token, host, isGraphQL, options...)

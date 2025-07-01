@@ -26,10 +26,10 @@ func runCommand(t *testing.T, rt http.RoundTripper, isTTY bool, cli string, stub
 	factory := cmdtest.NewTestFactory(ios,
 		func(f *cmdtest.Factory) {
 			f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
-				return cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", repoHost, false), nil
+				return cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", repoHost, false), nil
 			}
 		},
-		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
 		cmdtest.WithBranch("#current-branch"),
 		func(f *cmdtest.Factory) {
 			f.BaseRepoStub = func() (glrepo.Interface, error) {

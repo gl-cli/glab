@@ -258,7 +258,7 @@ func TestGetJobId(t *testing.T) {
 
 			ios, _, _, _ := cmdtest.TestIOStreams()
 			f := cmdtest.NewTestFactory(ios,
-				cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false).Lab()),
+				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false).Lab()),
 			)
 
 			apiClient, _ := f.HttpClient()
@@ -420,7 +420,7 @@ func TestTraceJob(t *testing.T) {
 
 			ios, _, _, _ := cmdtest.TestIOStreams()
 			f := cmdtest.NewTestFactory(ios,
-				cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false).Lab()),
+				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false).Lab()),
 			)
 
 			apiClient, _ := f.HttpClient()

@@ -26,7 +26,7 @@ func setupTestFactory(t *testing.T, rt http.RoundTripper, isTTY bool) (*bytes.Bu
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.MustTestClient(t, &http.Client{Transport: rt}, "", "gitlab.com", false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "gitlab.com", false).Lab()),
 	)
 
 	return stdout, stderr, factory

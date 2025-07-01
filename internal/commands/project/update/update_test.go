@@ -112,7 +112,7 @@ func TestUpdateCmd(t *testing.T) {
 
 			ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
-			c := cmdtest.MustTestClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false)
+			c := cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false)
 			factory := cmdtest.NewTestFactory(ios,
 				cmdtest.WithBaseRepo("user", "repo"),
 				cmdtest.WithApiClient(c),
