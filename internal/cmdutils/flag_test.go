@@ -1,14 +1,19 @@
-package flag
+package cmdutils
 
 import (
+	"bytes"
+	"io"
 	"testing"
 
+	"github.com/google/shlex"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
 type options struct {
@@ -16,7 +21,46 @@ type options struct {
 	baseRepo func() (glrepo.Interface, error)
 }
 
-func NewDummyCmd(f cmdutils.Factory, runE func(opts *options) error) *cobra.Command {
+type dummyFactory struct {
+	baseRepo glrepo.Interface
+}
+
+func (f *dummyFactory) RepoOverride(repo string) error {
+	baseRepo, err := glrepo.FromFullName(repo, glinstance.DefaultHostname)
+	if err != nil {
+		return err
+	}
+	f.baseRepo = baseRepo
+	return nil
+}
+
+func (f *dummyFactory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {
+	return nil, nil
+}
+
+func (f *dummyFactory) HttpClient() (*gitlab.Client, error) { return nil, nil }
+
+func (f *dummyFactory) BaseRepo() (glrepo.Interface, error) {
+	if f.baseRepo != nil {
+		return f.baseRepo, nil
+	}
+
+	return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
+}
+
+func (f *dummyFactory) Remotes() (glrepo.Remotes, error) { return nil, nil }
+
+func (f *dummyFactory) Config() config.Config { return config.NewBlankConfig() }
+
+func (f *dummyFactory) Branch() (string, error) { return "", nil }
+
+func (f *dummyFactory) IO() *iostreams.IOStreams { return nil }
+
+func (f *dummyFactory) DefaultHostname() string { return "" }
+
+func (f *dummyFactory) BuildInfo() api.BuildInfo { return api.BuildInfo{} }
+
+func NewDummyCmd(f Factory, runE func(opts *options) error) *cobra.Command {
 	opts := &options{
 		baseRepo: f.BaseRepo,
 	}
@@ -38,7 +82,7 @@ func NewDummyCmd(f cmdutils.Factory, runE func(opts *options) error) *cobra.Comm
 			return nil
 		},
 	}
-	cmdutils.EnableRepoOverride(cmd, f)
+	EnableRepoOverride(cmd, f)
 	cmd.PersistentFlags().StringP("group", "g", "", "Select another group or it's subgroups")
 
 	return cmd
@@ -55,15 +99,19 @@ func (o *options) complete(cmd *cobra.Command) error {
 }
 
 func runCommand(cli string, runE func(opts *options) error) error {
-	ios, _, _, _ := cmdtest.TestIOStreams()
-	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithConfig(config.NewBlankConfig()),
-		cmdtest.WithBaseRepo("OWNER", "REPO"),
-	)
+	cmd := NewDummyCmd(&dummyFactory{}, runE)
 
-	cmd := NewDummyCmd(factory, runE)
+	argv, err := shlex.Split(cli)
+	if err != nil {
+		return err
+	}
 
-	_, err := cmdtest.ExecuteCommand(cmd, cli, nil, nil)
+	cmd.SetArgs(argv)
+	cmd.SetIn(&bytes.Buffer{})
+	cmd.SetOut(io.Discard)
+	cmd.SetErr(io.Discard)
+
+	_, err = cmd.ExecuteC()
 	return err
 }
 

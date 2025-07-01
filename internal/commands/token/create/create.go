@@ -9,7 +9,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/token/expirationdate"
 	"gitlab.com/gitlab-org/cli/internal/commands/token/filter"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/flag"
 	"gitlab.com/gitlab-org/cli/internal/commands/token/accesslevel"
 
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -117,7 +116,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 func (o *options) complete(cmd *cobra.Command, args []string) error {
 	o.name = args[0]
 
-	if group, err := flag.GroupOverride(cmd); err != nil {
+	if group, err := cmdutils.GroupOverride(cmd); err != nil {
 		return err
 	} else {
 		o.group = group

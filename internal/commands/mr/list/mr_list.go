@@ -12,7 +12,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/commands/flag"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 
@@ -152,7 +151,7 @@ func (o *options) complete(cmd *cobra.Command) error {
 		o.titleQualifier = "open"
 	}
 
-	group, err := flag.GroupOverride(cmd)
+	group, err := cmdutils.GroupOverride(cmd)
 	if err != nil {
 		return err
 	}

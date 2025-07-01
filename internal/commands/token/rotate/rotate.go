@@ -10,7 +10,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/token/expirationdate"
 	"gitlab.com/gitlab-org/cli/internal/commands/token/filter"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/flag"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -107,7 +106,7 @@ func (o *options) complete(cmd *cobra.Command, args []string) error {
 		o.name = name
 	}
 
-	if group, err := flag.GroupOverride(cmd); err != nil {
+	if group, err := cmdutils.GroupOverride(cmd); err != nil {
 		return err
 	} else {
 		o.group = group

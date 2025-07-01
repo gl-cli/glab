@@ -14,7 +14,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/commands/flag"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
 	"gitlab.com/gitlab-org/cli/internal/utils"
@@ -117,7 +116,7 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error, issueTyp
 				opts.TitleQualifier = "open"
 			}
 
-			group, err := flag.GroupOverride(cmd)
+			group, err := cmdutils.GroupOverride(cmd)
 			if err != nil {
 				return err
 			}

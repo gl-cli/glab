@@ -12,7 +12,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/commands/flag"
 	"gitlab.com/gitlab-org/cli/internal/commands/token/accesslevel"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -93,7 +92,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) complete(cmd *cobra.Command) error {
-	group, err := flag.GroupOverride(cmd)
+	group, err := cmdutils.GroupOverride(cmd)
 	if err != nil {
 		return err
 	}

@@ -13,7 +13,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/commands/flag"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -85,7 +84,7 @@ func NewCmdExport(f cmdutils.Factory, runE func(opts *options) error) *cobra.Com
 }
 
 func (o *options) complete(cmd *cobra.Command) error {
-	group, err := flag.GroupOverride(cmd)
+	group, err := cmdutils.GroupOverride(cmd)
 	if err != nil {
 		return err
 	}
