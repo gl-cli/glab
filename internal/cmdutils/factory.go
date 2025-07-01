@@ -99,7 +99,7 @@ func (f *DefaultFactory) ApiClient(repoHost string, cfg config.Config) (*api.Cli
 	if repoHost == "" {
 		repoHost = f.defaultHostname
 	}
-	c, err := api.NewClientWithCfg(repoHost, cfg, false, f.buildInfo.UserAgent())
+	c, err := api.NewClientFromConfig(repoHost, cfg, false, f.buildInfo.UserAgent())
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (f *DefaultFactory) HttpClient() (*gitlab.Client, error) {
 		dbg.Debug("The current command request Factory.HttpClient() without being able to resolve a base repository. The command should probably use Factory.ApiClient() instead")
 	}
 
-	c, err := api.NewClientWithCfg(repoHost, f.config, false, f.buildInfo.UserAgent())
+	c, err := api.NewClientFromConfig(repoHost, f.config, false, f.buildInfo.UserAgent())
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (f *DefaultFactory) resolveBaseRepoFromRemotes() (glrepo.Interface, error) 
 		return remotes[0], nil
 	}
 
-	ac, err := api.NewClientWithCfg(remotes[0].RepoHost(), f.config, false, f.buildInfo.UserAgent())
+	ac, err := api.NewClientFromConfig(remotes[0].RepoHost(), f.config, false, f.buildInfo.UserAgent())
 	if err != nil {
 		return nil, err
 	}

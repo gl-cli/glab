@@ -221,8 +221,8 @@ func WithGitLabClient(client *gitlab.Client) ClientOption {
 	}
 }
 
-// NewClientWithCfg initializes the global api with the config data
-func NewClientWithCfg(repoHost string, cfg config.Config, isGraphQL bool, userAgent string) (*Client, error) {
+// NewClientFromConfig initializes the global api with the config data
+func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, userAgent string) (*Client, error) {
 	apiHost, _ := cfg.Get(repoHost, "api_host")
 	if apiHost == "" {
 		apiHost = repoHost
