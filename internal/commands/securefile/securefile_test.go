@@ -15,7 +15,7 @@ func Test_Securefile(t *testing.T) {
 	os.Stdout = w
 	defer func() { os.Stdout = old }()
 
-	assert.Nil(t, NewCmdSecurefile(&cmdtest.Factory{}).Execute())
+	assert.Nil(t, NewCmdSecurefile(cmdtest.NewTestFactory(nil)).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

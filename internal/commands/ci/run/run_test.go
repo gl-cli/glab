@@ -10,6 +10,7 @@ import (
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 
 	"gitlab.com/gitlab-org/cli/internal/run"
@@ -24,10 +25,11 @@ type ResponseJSON struct {
 	Ref string `json:"ref"`
 }
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error, func()) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error, func()) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	factory.BranchStub = func() (string, error) {
 		return "custom-branch-123", nil
@@ -102,7 +104,7 @@ func TestCIRun(t *testing.T) {
 				},
 			)
 
-			output, err, restoreCmd := runCommand(fakeHTTP, tc.cli)
+			output, err, restoreCmd := runCommand(t, fakeHTTP, tc.cli)
 			defer restoreCmd()
 
 			assert.NoErrorf(t, err, "error running command `ci run %s`: %v", tc.cli, err)
@@ -218,7 +220,7 @@ func TestCIRunMrPipeline(t *testing.T) {
 					Value: "!1234 (my_branch_with_a_myriad_of_mrs) by @Chris Harms",
 				},
 			})
-			output, err, restoreCmd := runCommand(fakeHTTP, tc.cli)
+			output, err, restoreCmd := runCommand(t, fakeHTTP, tc.cli)
 			defer restoreCmd()
 
 			if tc.expectedErr == "" {

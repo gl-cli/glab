@@ -14,7 +14,7 @@ func TestIssueCmd(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	assert.Nil(t, NewCmdCancel(&cmdtest.Factory{}).Execute())
+	assert.Nil(t, NewCmdCancel(cmdtest.NewTestFactory(nil)).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

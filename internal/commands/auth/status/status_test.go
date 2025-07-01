@@ -43,7 +43,7 @@ func Test_NewCmdStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			f := &cmdtest.Factory{}
+			f := cmdtest.NewTestFactory(nil)
 
 			argv, err := shlex.Split(tt.cli)
 			assert.NoError(t, err)
@@ -181,8 +181,8 @@ hosts:
 		}
 	`))
 
-	client := func(token, hostname string) (*api.Client, error) {
-		return cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
+	client := func(token, hostname string) (*api.Client, error) { // nolint:unparam
+		return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, token, hostname, false), nil
 	}
 	// FIXME: something fishy is occurring here as without making a first call to client function, httpMock does not work
 	_, _ = client("", "gitlab.com")
@@ -289,8 +289,8 @@ gl.io
 	assert.Nil(t, err)
 	io, _, stdout, stderr := cmdtest.TestIOStreams()
 
-	client := func(token, hostname string) (*api.Client, error) {
-		return cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, token, hostname, false)
+	client := func(token, hostname string) (*api.Client, error) { // nolint:unparam
+		return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, token, hostname, false), nil
 	}
 	// FIXME: something fishy is occurring here as without making a first call to client function, httpMock does not work
 	_, _ = client("", "gitlab.com")

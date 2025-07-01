@@ -391,11 +391,7 @@ func Test_apiRun(t *testing.T) {
 					resp.Request = req
 					return resp, nil
 				}
-				a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
-				if err != nil {
-					return nil, err
-				}
-				return a, nil
+				return cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false), nil
 			}
 
 			err := tt.options.run()
@@ -445,8 +441,7 @@ func Test_apiRun_paginationREST(t *testing.T) {
 		requestCount++
 		return resp, nil
 	}
-	a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
-	require.NoError(t, err)
+	a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
 	options := options{
 		io:     ios,
 		config: config.NewBlankConfig(),
@@ -461,7 +456,7 @@ func Test_apiRun_paginationREST(t *testing.T) {
 		paginate:    true,
 	}
 
-	err = options.run()
+	err := options.run()
 	assert.NoError(t, err)
 
 	assert.Equal(t, `{"page":1}{"page":2}{"page":3}`, stdout.String(), "stdout")
@@ -511,8 +506,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 		requestCount++
 		return resp, nil
 	}
-	a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
-	require.NoError(t, err)
+	a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
 	options := options{
 		io:     ios,
 		config: config.NewBlankConfig(),
@@ -528,7 +522,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 		paginate:      true,
 	}
 
-	err = options.run()
+	err := options.run()
 	require.NoError(t, err)
 
 	assert.Contains(t, stdout.String(), `"page one"`)
@@ -605,8 +599,7 @@ func Test_apiRun_inputFile(t *testing.T) {
 				resp.Request = req
 				return resp, nil
 			}
-			a, err := cmdtest.TestClient(&http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
-			require.NoError(t, err)
+			a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
 			options := options{
 				requestPath:      "hello",
 				requestInputFile: inputFile,
@@ -622,7 +615,7 @@ func Test_apiRun_inputFile(t *testing.T) {
 				},
 			}
 
-			err = options.run()
+			err := options.run()
 			if err != nil {
 				t.Errorf("got error %v", err)
 			}

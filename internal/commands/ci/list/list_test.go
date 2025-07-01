@@ -10,15 +10,17 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, args string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	cmd := NewCmdList(factory)
 
@@ -59,7 +61,7 @@ func TestCiList(t *testing.T) {
 	]
 	`))
 
-	output, err := runCommand(fakeHTTP, "")
+	output, err := runCommand(t, fakeHTTP, "")
 	if err != nil {
 		t.Errorf("error running command `ci list`: %v", err)
 	}
@@ -86,7 +88,7 @@ func TestCiListJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/pipelines",
 		httpmock.NewFileResponse(http.StatusOK, "testdata/ciList.json"))
 
-	output, err := runCommand(fakeHTTP, "-F json")
+	output, err := runCommand(t, fakeHTTP, "-F json")
 	if err != nil {
 		t.Errorf("error running command `ci list -F json`: %v", err)
 	}

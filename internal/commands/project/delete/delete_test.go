@@ -5,17 +5,18 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
-
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-
+	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+	)
 
 	cmd := NewCmdDelete(factory)
 
@@ -82,7 +83,7 @@ func TestProjectDelete(t *testing.T) {
 			fakeHTTP.RegisterResponder(tc.httpMock.method, tc.httpMock.path,
 				httpmock.NewStringResponse(tc.httpMock.status, tc.httpMock.body))
 
-			output, err := runCommand(fakeHTTP, tc.cli)
+			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `project delete %s`: %v", tc.cli, err) {
 				assert.Equal(t, tc.expectedOutput, output.Stderr())

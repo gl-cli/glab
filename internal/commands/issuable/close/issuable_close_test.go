@@ -9,10 +9,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
-	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
@@ -80,22 +77,13 @@ func mockAllResponses(t *testing.T, fakeHTTP *httpmock.Mocker) {
 	)
 }
 
-func runCommand(rt http.RoundTripper, issuableID string, issueType issuable.IssueType) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, issuableID string, issueType issuable.IssueType) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
-	factory := &cmdtest.Factory{
-		IOStub: ios,
-		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := cmdtest.TestClient(&http.Client{Transport: rt}, "", "", false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-	}
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "", false).Lab()),
+		cmdtest.WithBaseRepo("OWNER", "REPO"),
+	)
 
 	cmd := NewCmdClose(factory, issueType)
 
@@ -171,7 +159,7 @@ func TestIssuableClose(t *testing.T) {
 		mockAllResponses(t, fakeHTTP)
 
 		t.Run(tt.name, func(t *testing.T) {
-			output, err := runCommand(fakeHTTP, fmt.Sprint(tt.iid), tt.issueType)
+			output, err := runCommand(t, fakeHTTP, fmt.Sprint(tt.iid), tt.issueType)
 			if tt.wantErr {
 				assert.Contains(t, err.Error(), tt.wantOutput)
 			} else {

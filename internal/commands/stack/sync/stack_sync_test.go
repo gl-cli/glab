@@ -8,6 +8,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	git_testing "gitlab.com/gitlab-org/cli/internal/git/testing"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/gitmock"
@@ -26,27 +27,31 @@ type TestRef struct {
 	state string
 }
 
-func setupTestFactory(rt http.RoundTripper) (cmdutils.Factory, *options) {
+func setupTestFactory(t *testing.T, rt http.RoundTripper) (cmdutils.Factory, *options) {
 	ios, _, _, _ := cmdtest.TestIOStreams()
 
-	f := cmdtest.InitFactory(ios, rt)
-
-	f.BaseRepoStub = func() (glrepo.Interface, error) {
-		return glrepo.TestProject("stack_guy", "stackproject"), nil
-	}
-
-	f.RemotesStub = func() (glrepo.Remotes, error) {
-		r := glrepo.Remotes{
-			&glrepo.Remote{
-				Remote: &git.Remote{
-					Name:     "origin",
-					Resolved: "head: gitlab.com/stack_guy/stackproject",
-				},
-				Repo: glrepo.TestProject("stack_guy", "stackproject"),
-			},
-		}
-		return r, nil
-	}
+	f := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+		func(f *cmdtest.Factory) {
+			f.BaseRepoStub = func() (glrepo.Interface, error) {
+				return glrepo.TestProject("stack_guy", "stackproject"), nil
+			}
+		},
+		func(f *cmdtest.Factory) {
+			f.RemotesStub = func() (glrepo.Remotes, error) {
+				r := glrepo.Remotes{
+					&glrepo.Remote{
+						Remote: &git.Remote{
+							Name:     "origin",
+							Resolved: "head: gitlab.com/stack_guy/stackproject",
+						},
+						Repo: glrepo.TestProject("stack_guy", "stackproject"),
+					},
+				}
+				return r, nil
+			}
+		},
+	)
 
 	client, _ := f.HttpClient()
 
@@ -209,7 +214,7 @@ func Test_stackSync(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockCmd := git_testing.NewMockGitRunner(ctrl)
 
-			f, opts := setupTestFactory(fakeHTTP)
+			f, opts := setupTestFactory(t, fakeHTTP)
 
 			err := git.SetConfig("glab.currentstack", tc.args.stack.title)
 			require.NoError(t, err)

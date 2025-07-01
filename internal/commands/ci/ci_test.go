@@ -53,7 +53,7 @@ func TestPipelineCmd(t *testing.T) {
 				errC <- buf.String()
 			}()
 
-			err := NewCmdCI(&cmdtest.Factory{}).Execute()
+			err := NewCmdCI(cmdtest.NewTestFactory(nil)).Execute()
 
 			// Rollbacking Stdout & Stderr
 			wOut.Close()

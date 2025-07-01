@@ -97,12 +97,9 @@ func TestConfigGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isTTY))
 
-			f := &cmdtest.Factory{
-				ConfigStub: func() config.Config {
-					return tt.config
-				},
-				IOStub: io,
-			}
+			f := cmdtest.NewTestFactory(io,
+				cmdtest.WithConfig(tt.config),
+			)
 
 			cmd := NewCmdConfigGet(f)
 			cmd.Flags().BoolP("help", "x", false, "")
@@ -153,12 +150,9 @@ func TestConfigSet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(tt.isTTY))
 
-			f := &cmdtest.Factory{
-				ConfigStub: func() config.Config {
-					return tt.config
-				},
-				IOStub: io,
-			}
+			f := cmdtest.NewTestFactory(io,
+				cmdtest.WithConfig(tt.config),
+			)
 
 			cmd := NewCmdConfigSet(f)
 			cmd.Flags().BoolP("help", "x", false, "")

@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
@@ -101,7 +102,7 @@ func Test_lintRun(t *testing.T) {
 			_, filename, _, _ := runtime.Caller(0)
 			args := path.Join(path.Dir(filename), "testdata", tt.testFile)
 
-			result, err := runCommand(fakeHTTP, args, tt.showHaveBaseRepo)
+			result, err := runCommand(t, fakeHTTP, args, tt.showHaveBaseRepo)
 			if tt.wantErr {
 				require.Contains(t, err.Error(), tt.errMsg)
 				return
@@ -113,10 +114,11 @@ func Test_lintRun(t *testing.T) {
 	}
 }
 
-func runCommand(rt http.RoundTripper, cli string, showHaveBaseRepo bool) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string, showHaveBaseRepo bool) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	if !showHaveBaseRepo {
 		factory.BaseRepoStub = func() (glrepo.Interface, error) {

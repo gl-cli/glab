@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
@@ -13,13 +14,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	factory := cmdtest.InitFactory(ios, rt)
-
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+	)
 	cmd := NewCmdFork(factory)
-
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
@@ -133,7 +133,7 @@ func TestProjectFork(t *testing.T) {
 				cs.Stub(stub)
 			}
 
-			output, err := runCommand(fakeHTTP, tc.commandArgs)
+			output, err := runCommand(t, fakeHTTP, tc.commandArgs)
 
 			if assert.NoErrorf(t, err, "error running command `project fork %s`: %v", tc.commandArgs, err) {
 				assert.Empty(t, output.String())

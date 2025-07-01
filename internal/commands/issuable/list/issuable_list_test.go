@@ -22,15 +22,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(command string, rt http.RoundTripper, isTTY bool, cli string, doHyperlinks string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, command string, rt http.RoundTripper, isTTY bool, cli string, doHyperlinks string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY), iostreams.WithDisplayHyperLinks(doHyperlinks))
-	factory := cmdtest.InitFactory(ios, rt)
+	c := cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(c),
+		cmdtest.WithGitLabClient(c.Lab()),
+	)
 
 	issueType := issuable.TypeIssue
 	if command == "incident" {
@@ -48,22 +50,9 @@ func TestNewCmdList(t *testing.T) {
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
-	factory := &cmdtest.Factory{
-		IOStub: ios,
-		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		ConfigStub: func() config.Config {
-			return config.NewBlankConfig()
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-	}
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 	t.Run("Issue_NewCmdList", func(t *testing.T) {
 		gotOpts := &ListOptions{}
 		err := NewCmdList(factory, func(opts *ListOptions) error {
@@ -90,7 +79,7 @@ func TestIssueList_tty(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
 		httpmock.NewFileResponse(http.StatusOK, "./testdata/issuableList.json"))
 
-	output, err := runCommand("issue", fakeHTTP, true, "", "")
+	output, err := runCommand(t, "issue", fakeHTTP, true, "", "")
 	if err != nil {
 		t.Errorf("error running command `issue list`: %v", err)
 	}
@@ -117,7 +106,7 @@ func TestIssueList_ids(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
 		httpmock.NewFileResponse(http.StatusOK, "./testdata/issuableList.json"))
 
-	output, err := runCommand("issue", fakeHTTP, true, "-F ids", "")
+	output, err := runCommand(t, "issue", fakeHTTP, true, "-F ids", "")
 	if err != nil {
 		t.Errorf("error running command `issue list -F ids`: %v", err)
 	}
@@ -135,7 +124,7 @@ func TestIssueList_urls(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
 		httpmock.NewFileResponse(http.StatusOK, "./testdata/issuableList.json"))
 
-	output, err := runCommand("issue", fakeHTTP, true, "-F urls", "")
+	output, err := runCommand(t, "issue", fakeHTTP, true, "-F urls", "")
 	if err != nil {
 		t.Errorf("error running command `issue list -F urls`: %v", err)
 	}
@@ -160,7 +149,7 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 		fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
 			httpmock.NewStringResponse(http.StatusOK, `[]`))
 
-		output, err := runCommand("issue", fakeHTTP, true, "--opened -P1 -p100 --confidential -a someuser -l bug -m1", "")
+		output, err := runCommand(t, "issue", fakeHTTP, true, "--opened -P1 -p100 --confidential -a someuser -l bug -m1", "")
 		if err != nil {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
@@ -178,7 +167,7 @@ func TestIssueList_tty_withFlags(t *testing.T) {
 		fakeHTTP.RegisterResponder(http.MethodGet, "/groups/GROUP/issues",
 			httpmock.NewStringResponse(http.StatusOK, `[]`))
 
-		output, err := runCommand("issue", fakeHTTP, true, "--group GROUP", "")
+		output, err := runCommand(t, "issue", fakeHTTP, true, "--group GROUP", "")
 		if err != nil {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
@@ -200,7 +189,7 @@ func TestIssueList_filterByIteration(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/issues?in=title%2Cdescription&iteration_id=9&page=1&per_page=30&state=opened",
 		httpmock.NewStringResponse(http.StatusOK, `[]`))
 
-	output, err := runCommand("issue", fakeHTTP, true, "--iteration 9", "")
+	output, err := runCommand(t, "issue", fakeHTTP, true, "--iteration 9", "")
 	if err != nil {
 		t.Errorf("error running command `issue list`: %v", err)
 	}
@@ -222,7 +211,7 @@ func TestIssueList_tty_withIssueType(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
 		httpmock.NewFileResponse(http.StatusOK, "./testdata/incidentList.json"))
 
-	output, err := runCommand("issue", fakeHTTP, true, "--issue-type=incident", "")
+	output, err := runCommand(t, "issue", fakeHTTP, true, "--issue-type=incident", "")
 	if err != nil {
 		t.Errorf("error running command `issue list`: %v", err)
 	}
@@ -246,7 +235,7 @@ func TestIncidentList_tty_withIssueType(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
 		httpmock.NewFileResponse(http.StatusOK, "./testdata/incidentList.json"))
 
-	output, err := runCommand("incident", fakeHTTP, true, "--issue-type=incident", "")
+	output, err := runCommand(t, "incident", fakeHTTP, true, "--issue-type=incident", "")
 	if err == nil {
 		t.Error("expected an `unknown flag: --issue-type` error, but got nothing")
 	}
@@ -266,7 +255,7 @@ func TestIssueList_tty_mine(t *testing.T) {
 		fakeHTTP.RegisterResponder(http.MethodGet, "/user",
 			httpmock.NewStringResponse(http.StatusOK, `{"username": "john_smith"}`))
 
-		output, err := runCommand("issue", fakeHTTP, true, "--mine -A", "")
+		output, err := runCommand(t, "issue", fakeHTTP, true, "--mine -A", "")
 		if err != nil {
 			t.Errorf("error running command `issue list`: %v", err)
 		}
@@ -284,7 +273,7 @@ func TestIssueList_tty_mine(t *testing.T) {
 		fakeHTTP.RegisterResponder(http.MethodGet, "/user",
 			httpmock.NewStringResponse(http.StatusNotFound, `{message: 404 Not found}`))
 
-		output, err := runCommand("issue", fakeHTTP, true, "--mine -A", "")
+		output, err := runCommand(t, "issue", fakeHTTP, true, "--mine -A", "")
 		assert.NotNil(t, err)
 
 		assert.Equal(t, "", output.Stderr())
@@ -353,7 +342,7 @@ func TestIssueList_hyperlinks(t *testing.T) {
 				doHyperlinks = "auto"
 			}
 
-			output, err := runCommand("issue", fakeHTTP, test.isTTY, "", doHyperlinks)
+			output, err := runCommand(t, "issue", fakeHTTP, test.isTTY, "", doHyperlinks)
 			if err != nil {
 				t.Errorf("error running command `issue list`: %v", err)
 			}
@@ -388,7 +377,7 @@ func TestIssueListJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues",
 		httpmock.NewFileResponse(http.StatusOK, "./testdata/issueListFull.json"))
 
-	output, err := runCommand("issue", fakeHTTP, true, "--output json", "")
+	output, err := runCommand(t, "issue", fakeHTTP, true, "--output json", "")
 	if err != nil {
 		t.Errorf("error running command `issue list -F json`: %v", err)
 	}
@@ -409,7 +398,7 @@ func TestIssueListJSON(t *testing.T) {
 }
 
 func TestIssueListMutualOutputFlags(t *testing.T) {
-	_, err := runCommand("issue", nil, true, "--output json --output-format ids", "")
+	_, err := runCommand(t, "issue", nil, true, "--output json --output-format ids", "")
 
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, "if any flags in the group [output output-format] are set none of the others can be; [output output-format] were all set")
@@ -581,7 +570,7 @@ func TestIssueList_epicIssues(t *testing.T) {
 				fakeHTTP.RegisterResponder(http.MethodGet, expectedURL, httpmock.NewJSONResponse(http.StatusOK, testdata))
 			}
 
-			output, err := runCommand("issue", fakeHTTP, true, tt.commandLine+` --output-format ids`, "")
+			output, err := runCommand(t, "issue", fakeHTTP, true, tt.commandLine+` --output-format ids`, "")
 			if tt.wantErr != "" {
 				assert.ErrorContains(t, err, tt.wantErr)
 			}

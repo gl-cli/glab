@@ -8,19 +8,19 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	git_testing "gitlab.com/gitlab-org/cli/internal/git/testing"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 	"go.uber.org/mock/gomock"
 )
 
-func runCommand(mockCmd git.GitRunner, args string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, mockCmd git.GitRunner, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-
-	factory := cmdtest.InitFactory(ios, nil)
-
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, nil, "", glinstance.DefaultHostname, false).Lab()),
+	)
 	cmd := NewCmdCreateStack(factory, mockCmd)
-
 	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
 }
 
@@ -78,7 +78,7 @@ func TestCreateNewStack(t *testing.T) {
 				})
 			}
 
-			output, err := runCommand(mockCmd, tc.branch)
+			output, err := runCommand(t, mockCmd, tc.branch)
 			require.Nil(t, err)
 
 			require.Equal(t, "New stack created with title \""+tc.expectedBranch+"\".\n", output.String())

@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -17,13 +18,12 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	factory := cmdtest.InitFactory(ios, rt)
-
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 	cmd := NewCmdPublishCatalog(factory)
-
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
@@ -141,7 +141,7 @@ func TestPublishCatalog(t *testing.T) {
 				)
 			}
 
-			output, err := runCommand(fakeHTTP, tc.tagName)
+			output, err := runCommand(t, fakeHTTP, tc.tagName)
 
 			if tc.wantErr {
 				assert.Error(t, err)

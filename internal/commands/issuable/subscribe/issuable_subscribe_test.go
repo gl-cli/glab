@@ -8,31 +8,19 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/require"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
-	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, issuableID string, issueType issuable.IssueType) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, issuableID string, issueType issuable.IssueType) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
-	factory := &cmdtest.Factory{
-		IOStub: ios,
-		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := cmdtest.TestClient(&http.Client{Transport: rt}, "", "", false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-	}
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "", false).Lab()),
+		cmdtest.WithBaseRepo("OWNER", "REPO"),
+	)
 
 	cmd := NewCmdSubscribe(factory, issueType)
 
@@ -89,7 +77,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		mockIssuableGet(fakeHTTP, iid, string(issuable.TypeIssue), false)
 		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIssue))
 
-		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
+		output, err := runCommand(t, fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
 		wantOutput := heredoc.Doc(`
 				- Subscribing to issue #1 in OWNER/REPO
@@ -107,7 +95,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		mockIssuableGet(fakeHTTP, iid, string(issuable.TypeIncident), false)
 		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIncident))
 
-		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
+		output, err := runCommand(t, fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
 
 		wantOutput := heredoc.Doc(`
 				- Subscribing to incident #2 in OWNER/REPO
@@ -125,7 +113,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		mockIssuableGet(fakeHTTP, iid, string(issuable.TypeIncident), false)
 		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIncident))
 
-		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
+		output, err := runCommand(t, fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
 		wantOutput := heredoc.Doc(`
 				- Subscribing to issue #2 in OWNER/REPO
@@ -143,7 +131,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		mockIssuableGet(fakeHTTP, iid, string(issuable.TypeIssue), false)
 		mockIssuableSubscribe(fakeHTTP, iid, string(issuable.TypeIssue))
 
-		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
+		output, err := runCommand(t, fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
 
 		wantOutput := "Incident not found, but an issue with the provided ID exists. Run `glab issue subscribe <id>` to subscribe.\n"
 		require.NoErrorf(t, err, "error running command `incident subscribe %d`", iid)
@@ -160,7 +148,7 @@ func TestIssuableSubscribe(t *testing.T) {
 			httpmock.NewStringResponse(http.StatusNotModified, ``),
 		)
 
-		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
+		output, err := runCommand(t, fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
 		wantOutput := heredoc.Doc(`
 				- Subscribing to issue #3 in OWNER/REPO
@@ -180,7 +168,7 @@ func TestIssuableSubscribe(t *testing.T) {
 			httpmock.NewStringResponse(http.StatusNotModified, ``),
 		)
 
-		output, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
+		output, err := runCommand(t, fakeHTTP, fmt.Sprint(iid), issuable.TypeIncident)
 
 		wantOutput := heredoc.Doc(`
 				- Subscribing to incident #3 in OWNER/REPO
@@ -198,7 +186,7 @@ func TestIssuableSubscribe(t *testing.T) {
 		)
 
 		iid := 404
-		_, err := runCommand(fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
+		_, err := runCommand(t, fakeHTTP, fmt.Sprint(iid), issuable.TypeIssue)
 
 		require.Contains(t, err.Error(), "404 Not Found")
 	})

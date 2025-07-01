@@ -14,9 +14,7 @@ import (
 func TestNewCmdCI(t *testing.T) {
 	ioStrm, stdin, stdout, stderr := cmdtest.TestIOStreams()
 
-	cmd := NewCmdCI(&cmdtest.Factory{
-		IOStub: ioStrm,
-	})
+	cmd := NewCmdCI(cmdtest.NewTestFactory(ioStrm))
 
 	cmd.SetIn(stdin)
 	cmd.SetOut(stdout)

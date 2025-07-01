@@ -25,7 +25,7 @@ func Test_downloadAssets(t *testing.T) {
 		MatchURL: httpmock.HostAndPath,
 	}
 
-	client, _ := cmdtest.TestClient(&http.Client{Transport: fakeHTTP}, "", "", false)
+	client := cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", "", false)
 
 	tests := []struct {
 		name     string

@@ -22,16 +22,18 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func setupTestFactory(rt http.RoundTripper, isTTY bool) (*bytes.Buffer, *bytes.Buffer, cmdutils.Factory) {
+func setupTestFactory(t *testing.T, rt http.RoundTripper, isTTY bool) (*bytes.Buffer, *bytes.Buffer, cmdutils.Factory) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "gitlab.com", false).Lab()),
+	)
 
 	return stdout, stderr, factory
 }
 
 func runSaveCommand(rt http.RoundTripper, t *testing.T, getText cmdutils.GetTextUsingEditor, isTTY bool, args string) (*test.CmdOut, error) {
-	stdout, stderr, factory := setupTestFactory(rt, isTTY)
+	stdout, stderr, factory := setupTestFactory(t, rt, isTTY)
 
 	ctrl := gomock.NewController(t)
 	mockCmd := git_testing.NewMockGitRunner(ctrl)
@@ -363,10 +365,5 @@ func createFactoryWithConfig(key string, value string) cmdutils.Factory {
 
 	ios, _, _, _ := cmdtest.TestIOStreams()
 
-	return &cmdtest.Factory{
-		IOStub: ios,
-		ConfigStub: func() config.Config {
-			return cfg
-		},
-	}
+	return cmdtest.NewTestFactory(ios, cmdtest.WithConfig(cfg))
 }

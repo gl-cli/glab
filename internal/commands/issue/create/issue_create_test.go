@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
@@ -35,10 +36,12 @@ func TestGenerateIssueWebURL(t *testing.T) {
 	assert.Equal(t, expectedUrl, u)
 }
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	cmd := NewCmdCreate(factory)
 
@@ -69,7 +72,7 @@ func TestIssueCreateWhenIssuesDisabled(t *testing.T) {
 
 	cli := `--title "test title" --description "test description"`
 
-	output, err := runCommand(fakeHTTP, cli)
+	output, err := runCommand(t, fakeHTTP, cli)
 	assert.NotNil(t, err)
 	assert.Empty(t, output.String())
 	assert.Equal(t, "Issues are disabled for project \"OWNER/REPO\" or require project membership. "+

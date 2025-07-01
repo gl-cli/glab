@@ -61,21 +61,17 @@ func Test_NewCmdDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			io, _, _, _ := cmdtest.TestIOStreams()
-			f := &cmdtest.Factory{
-				IOStub: io,
-				ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
-					tc := gitlabtesting.NewTestClient(t)
-					tc.MockProjectVariables.EXPECT().RemoveVariable(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-					tc.MockGroupVariables.EXPECT().RemoveVariable(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-					return cmdtest.TestClient(&http.Client{}, "", repoHost, false, api.WithGitLabClient(tc.Client))
+			f := cmdtest.NewTestFactory(io,
+				func(f *cmdtest.Factory) {
+					f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
+						tc := gitlabtesting.NewTestClient(t)
+						tc.MockProjectVariables.EXPECT().RemoveVariable(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+						tc.MockGroupVariables.EXPECT().RemoveVariable(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+						return cmdtest.NewTestApiClient(t, &http.Client{}, "", repoHost, false, api.WithGitLabClient(tc.Client)), nil
+					}
 				},
-				BaseRepoStub: func() (glrepo.Interface, error) {
-					return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-				},
-				ConfigStub: func() config.Config {
-					return config.NewBlankConfig()
-				},
-			}
+				cmdtest.WithBaseRepo("OWNER", "REPO"),
+			)
 
 			io.IsInTTY = tt.stdinTTY
 
@@ -117,8 +113,7 @@ func Test_deleteRun(t *testing.T) {
 	)
 
 	apiClient := func(repoHost string, cfg config.Config) (*api.Client, error) {
-		a, _ := cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
-		return a, nil
+		return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com", false), nil
 	}
 	baseRepo := func() (glrepo.Interface, error) {
 		return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)

@@ -1,18 +1,29 @@
 package archive
 
 import (
+	"net/http"
 	"strings"
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
-func runCommand(cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.InitFactory(ios, nil)
+	factory := cmdtest.NewTestFactory(ios,
+		func(f *cmdtest.Factory) {
+			f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
+				return cmdtest.NewTestApiClient(t, &http.Client{}, "", repoHost, false), nil
+			}
+		},
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	cmd := NewCmdArchive(factory)
 
@@ -57,7 +68,7 @@ func Test_repoArchive_Integration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmdArgs := []string{tt.args.repo, tt.args.dest, "--format", tt.args.format, "--sha", tt.args.sha}
-			out, err := runCommand(strings.Join(cmdArgs, " "))
+			out, err := runCommand(t, strings.Join(cmdArgs, " "))
 			if err != nil {
 				t.Log(err)
 				if !tt.wantErr {

@@ -6,17 +6,18 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, rt)
-
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+	)
 	cmd := NewCmdList(factory)
-
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
@@ -46,7 +47,7 @@ func TestListProjectAccessTokenAsText(t *testing.T) {
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, projectAccessTokenResponse))
-	output, err := runCommand(fakeHTTP, "")
+	output, err := runCommand(t, fakeHTTP, "")
 	if err != nil {
 		t.Errorf("error running command `token list`: %v", err)
 	}
@@ -66,7 +67,7 @@ func TestListProjectAccessTokenAsJSON(t *testing.T) {
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, projectAccessTokenResponse))
-	output, err := runCommand(fakeHTTP, "--output json")
+	output, err := runCommand(t, fakeHTTP, "--output json")
 	if err != nil {
 		t.Errorf("error running command `token list --output json`: %v", err)
 	}
@@ -99,7 +100,7 @@ func TestListGroupAccessTokenAsText(t *testing.T) {
 
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/groups/GROUP/access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, groupAccessTokenResponse))
-	output, err := runCommand(fakeHTTP, "--group GROUP")
+	output, err := runCommand(t, fakeHTTP, "--group GROUP")
 	if err != nil {
 		t.Errorf("error running command `token list --group GROUP`: %v", err)
 	}
@@ -120,7 +121,7 @@ func TestListGroupAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/groups/GROUP/access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, groupAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--group GROUP --output json")
+	output, err := runCommand(t, fakeHTTP, "--group GROUP --output json")
 	if err != nil {
 		t.Errorf("error running command `token list --group GROUP --output json`: %v", err)
 	}
@@ -234,7 +235,7 @@ func TestListPersonalAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/user",
 		httpmock.NewStringResponse(http.StatusOK, userResponse))
 
-	output, err := runCommand(fakeHTTP, "--user @me")
+	output, err := runCommand(t, fakeHTTP, "--user @me")
 	if err != nil {
 		t.Errorf("error running command `token list --user @me`: %v", err)
 	}
@@ -259,7 +260,7 @@ func TestListActivePersonalAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/user",
 		httpmock.NewStringResponse(http.StatusOK, userResponse))
 
-	output, err := runCommand(fakeHTTP, "--user @me --active")
+	output, err := runCommand(t, fakeHTTP, "--user @me --active")
 	if err != nil {
 		t.Errorf("error running command `token list --user @me`: %v", err)
 	}
@@ -282,7 +283,7 @@ func TestListPersonalAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/user",
 		httpmock.NewStringResponse(http.StatusOK, userResponse))
 
-	output, err := runCommand(fakeHTTP, "--user @me --output json")
+	output, err := runCommand(t, fakeHTTP, "--user @me --output json")
 	if err != nil {
 		t.Errorf("error running command `token list --user @me`: %v", err)
 	}
@@ -343,7 +344,7 @@ func TestListPersonalAccessTokenWithoutExpirationAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/user",
 		httpmock.NewStringResponse(http.StatusOK, userResponse))
 
-	output, err := runCommand(fakeHTTP, "--user @me")
+	output, err := runCommand(t, fakeHTTP, "--user @me")
 	if err != nil {
 		t.Errorf("error running command `token list --user @me`: %v", err)
 	}

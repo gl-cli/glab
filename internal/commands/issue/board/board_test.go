@@ -14,7 +14,7 @@ func TestNewCmdBoard(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	assert.Nil(t, NewCmdBoard(&cmdtest.Factory{}).Execute())
+	assert.Nil(t, NewCmdBoard(cmdtest.NewTestFactory(nil)).Execute())
 
 	out := test.ReturnBuffer(old, r, w)
 

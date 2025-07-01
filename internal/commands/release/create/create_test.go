@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -17,10 +18,12 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	cmd := NewCmdCreate(factory)
 
@@ -90,7 +93,7 @@ func TestReleaseCreate(t *testing.T) {
 				},
 			)
 
-			output, err := runCommand(fakeHTTP, tc.cli)
+			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `create %s`: %v", tc.cli, err) {
 				assert.Contains(t, output.Stderr(), `• Validating tag 0.0.1
@@ -198,7 +201,7 @@ func TestReleaseCreateWithFiles(t *testing.T) {
 				},
 			)
 
-			output, err := runCommand(fakeHTTP, tc.cli)
+			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `create %s`: %v", tc.cli, err) {
 				assert.Contains(t, output.Stderr(), `• Validating tag 0.0.1
@@ -300,7 +303,7 @@ func TestReleaseCreate_WithAssetsLinksJSON(t *testing.T) {
 				},
 			)
 
-			output, err := runCommand(fakeHTTP, tt.cli)
+			output, err := runCommand(t, fakeHTTP, tt.cli)
 
 			if assert.NoErrorf(t, err, "error running command `create %s`: %v", tt.cli, err) {
 				assert.Contains(t, output.Stderr(), tt.expectedOutput)
@@ -413,7 +416,7 @@ func TestReleaseCreateWithPublishToCatalog(t *testing.T) {
 				)
 			}
 
-			output, err := runCommand(fakeHTTP, tc.cli)
+			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -474,7 +477,7 @@ func TestReleaseCreate_NoUpdate(t *testing.T) {
 					}`))
 			}
 
-			output, err := runCommand(fakeHTTP, tc.cli)
+			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -559,7 +562,7 @@ func TestReleaseCreate_MilestoneClosing(t *testing.T) {
 				tt.extraHttpStubs(fakeHTTP)
 			}
 
-			output, err := runCommand(fakeHTTP, tt.cli)
+			output, err := runCommand(t, fakeHTTP, tt.cli)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -663,7 +666,7 @@ func TestReleaseCreate_ExperimentalNotes(t *testing.T) {
 					})
 			}
 
-			output, err := runCommand(fakeHTTP, tt.cli)
+			output, err := runCommand(t, fakeHTTP, tt.cli)
 
 			if tt.wantErr {
 				require.Error(t, err)

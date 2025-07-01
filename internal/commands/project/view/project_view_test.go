@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -18,22 +20,27 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, isTTY bool, cli string, stub bool, repoHost string) (*test.CmdOut, error, func()) {
+func runCommand(t *testing.T, rt http.RoundTripper, isTTY bool, cli string, stub bool, repoHost string) (*test.CmdOut, error, func()) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
-	factory := cmdtest.InitFactory(ios, rt)
-
-	factory.BranchStub = func() (string, error) {
-		return "#current-branch", nil
-	}
-
-	factory.BaseRepoStub = func() (glrepo.Interface, error) {
-		if repoHost == "" {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		} else {
-			return glrepo.NewWithHost("OWNER", "REPO", repoHost), nil
-		}
-	}
+	factory := cmdtest.NewTestFactory(ios,
+		func(f *cmdtest.Factory) {
+			f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
+				return cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", repoHost, false), nil
+			}
+		},
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithBranch("#current-branch"),
+		func(f *cmdtest.Factory) {
+			f.BaseRepoStub = func() (glrepo.Interface, error) {
+				if repoHost == "" {
+					return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
+				} else {
+					return glrepo.NewWithHost("OWNER", "REPO", repoHost), nil
+				}
+			}
+		},
+	)
 
 	cmd := NewCmdView(factory)
 
@@ -561,7 +568,7 @@ func TestProjectView(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err, restoreCmd := runCommand(fakeHTTP, tc.isTTY, tc.cli, tc.stub, tc.repoHost)
+			output, err, restoreCmd := runCommand(t, fakeHTTP, tc.isTTY, tc.cli, tc.stub, tc.repoHost)
 			if restoreCmd != nil {
 				defer restoreCmd()
 			}

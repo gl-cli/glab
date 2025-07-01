@@ -2,28 +2,24 @@ package create
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, rt)
-
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+	)
 	cmd := NewCmdCreate(factory)
-
-	if out, err := cmdtest.ExecuteCommand(cmd, cli, stdout, stderr); err != nil {
-		return nil, fmt.Errorf("error running command %s '%s', %s", cmd.Aliases[0], cli, err)
-	} else {
-		return out, nil
-	}
+	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
 var personalAccessTokenResponse = heredoc.Doc(`
@@ -156,7 +152,7 @@ func TestCreateOwnPersonalAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/user/personal_access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, personalAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--user @me --scope k8s_proxy --output json my-pat")
+	output, err := runCommand(t, fakeHTTP, "--user @me --scope k8s_proxy --output json my-pat")
 	if err != nil {
 		t.Error(err)
 		return
@@ -187,7 +183,7 @@ func TestCreateOwnPersonalAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/user/personal_access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, personalAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--user @me --scope k8s_proxy my-pat")
+	output, err := runCommand(t, fakeHTTP, "--user @me --scope k8s_proxy my-pat")
 	if err != nil {
 		t.Error(err)
 		return
@@ -210,7 +206,7 @@ func TestCreateOtherPersonalAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/users/2/personal_access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, personalAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--user janedoe --scope read_registry --output json your-pat")
+	output, err := runCommand(t, fakeHTTP, "--user janedoe --scope read_registry --output json your-pat")
 	if err != nil {
 		t.Error(err)
 		return
@@ -241,7 +237,7 @@ func TestCreateOtherPersonalAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/users/2/personal_access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, personalAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--user janedoe --scope read_registry your-pat")
+	output, err := runCommand(t, fakeHTTP, "--user janedoe --scope read_registry your-pat")
 	if err != nil {
 		t.Error(err)
 		return
@@ -276,7 +272,7 @@ func TestCreateGroupAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/groups/GROUP/access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, groupAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--group GROUP --output json --access-level developer --scope read_registry --scope read_repository my-group-token")
+	output, err := runCommand(t, fakeHTTP, "--group GROUP --output json --access-level developer --scope read_registry --scope read_repository my-group-token")
 	if err != nil {
 		t.Error(err)
 		return
@@ -305,7 +301,7 @@ func TestCreateGroupAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/groups/GROUP/access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, groupAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--group GROUP --output text --access-level developer --scope read_registry --scope read_repository my-group-token")
+	output, err := runCommand(t, fakeHTTP, "--group GROUP --output text --access-level developer --scope read_registry --scope read_repository my-group-token")
 	if err != nil {
 		t.Error(err)
 		return
@@ -341,7 +337,7 @@ func TestCreateProjectAccessTokenAsJSON(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, projectAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--output json --access-level developer --scope read_repository --scope api my-project-token")
+	output, err := runCommand(t, fakeHTTP, "--output json --access-level developer --scope read_repository --scope api my-project-token")
 	if err != nil {
 		t.Error(err)
 		return
@@ -370,7 +366,7 @@ func TestCreateProjectAccessTokenAsText(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/projects/OWNER/REPO/access_tokens",
 		httpmock.NewStringResponse(http.StatusOK, projectAccessTokenResponse))
 
-	output, err := runCommand(fakeHTTP, "--output text --access-level developer --scope read_repository --scope api my-project-token")
+	output, err := runCommand(t, fakeHTTP, "--output text --access-level developer --scope read_repository --scope api my-project-token")
 	if err != nil {
 		t.Error(err)
 		return

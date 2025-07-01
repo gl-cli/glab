@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
@@ -256,7 +257,9 @@ func TestGetJobId(t *testing.T) {
 			}
 
 			ios, _, _, _ := cmdtest.TestIOStreams()
-			f := cmdtest.InitFactory(ios, fakeHTTP)
+			f := cmdtest.NewTestFactory(ios,
+				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false).Lab()),
+			)
 
 			apiClient, _ := f.HttpClient()
 			repo, _ := f.BaseRepo()
@@ -416,7 +419,9 @@ func TestTraceJob(t *testing.T) {
 			}
 
 			ios, _, _, _ := cmdtest.TestIOStreams()
-			f := cmdtest.InitFactory(ios, fakeHTTP)
+			f := cmdtest.NewTestFactory(ios,
+				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false).Lab()),
+			)
 
 			apiClient, _ := f.HttpClient()
 			repo, _ := f.BaseRepo()

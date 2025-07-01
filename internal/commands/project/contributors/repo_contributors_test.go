@@ -7,6 +7,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -14,13 +15,12 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	factory := cmdtest.InitFactory(ios, rt)
-
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 	cmd := NewCmdContributors(factory)
-
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
@@ -99,7 +99,7 @@ func TestProjectContributors(t *testing.T) {
 			fakeHTTP.RegisterResponder(tc.httpMock.method, tc.httpMock.path,
 				httpmock.NewFileResponse(tc.httpMock.status, tc.httpMock.bodyFile))
 
-			output, err := runCommand(fakeHTTP, tc.cli)
+			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `project contributors %s`: %v", tc.cli, err) {
 				assert.Equal(t, tc.expectedOutput, output.String())

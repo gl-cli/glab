@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 
 	"github.com/gdamore/tcell/v2"
@@ -1150,10 +1151,11 @@ func Test_handleNavigation(t *testing.T) {
 	}
 }
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error, func()) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error, func()) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-
-	factory := cmdtest.InitFactory(ios, rt)
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 
 	cmd := NewCmdView(factory)
 
@@ -1217,7 +1219,7 @@ func TestCIView(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err, restoreCmd := runCommand(fakeHTTP, tc.cli)
+			output, err, restoreCmd := runCommand(t, fakeHTTP, tc.cli)
 			defer restoreCmd()
 
 			if assert.NoErrorf(t, err, "error running command `ci view %s`: %v", tc.cli, err) {

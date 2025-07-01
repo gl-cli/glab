@@ -18,13 +18,10 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 )
 
-func runCommand(rt http.RoundTripper, version string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, version string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
-	tc, err := cmdtest.TestClient(&http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)
-	if err != nil {
-		return nil, err
-	}
+	tc := cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)
 
 	factory := cmdtest.NewTestFactory(
 		ios,
@@ -90,7 +87,7 @@ func TestNewCheckUpdateCmd(t *testing.T) {
 				},
 			)
 
-			output, err := runCommand(fakeHTTP, tt.args.version)
+			output, err := runCommand(t, fakeHTTP, tt.args.version)
 
 			assert.Nil(t, err)
 			assert.Empty(t, output.String())
@@ -112,7 +109,7 @@ func TestNewCheckUpdateCmd_error(t *testing.T) {
 				}
 			`))
 
-	output, err := runCommand(fakeHTTP, "1.11.0")
+	output, err := runCommand(t, fakeHTTP, "1.11.0")
 
 	assert.NotNil(t, err)
 	assert.Equal(t, `failed checking for glab updates: 404 Not Found`, err.Error())
@@ -129,7 +126,7 @@ func TestNewCheckUpdateCmd_no_release(t *testing.T) {
 	fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/gitlab-org/cli/releases?page=1&per_page=1`,
 		httpmock.NewStringResponse(http.StatusOK, `[]`))
 
-	output, err := runCommand(fakeHTTP, "1.11.0")
+	output, err := runCommand(t, fakeHTTP, "1.11.0")
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "no release found for glab.", err.Error())
@@ -337,14 +334,16 @@ func Test_checkLastUpdate(t *testing.T) {
 			mainBuf := bytes.Buffer{}
 			defer config.StubWriteConfig(&mainBuf, io.Discard)()
 
-			f := &cmdtest.Factory{
-				ConfigStub: func() config.Config {
-					if tt.lastUpdate != "" {
-						return config.NewFromString(fmt.Sprintf("last_update_check_timestamp: %s", tt.lastUpdate))
+			f := cmdtest.NewTestFactory(nil,
+				func(f *cmdtest.Factory) {
+					f.ConfigStub = func() config.Config {
+						if tt.lastUpdate != "" {
+							return config.NewFromString(fmt.Sprintf("last_update_check_timestamp: %s", tt.lastUpdate))
+						}
+						return config.NewBlankConfig()
 					}
-					return config.NewBlankConfig()
 				},
-			}
+			)
 
 			result, err := checkLastUpdate(f)
 

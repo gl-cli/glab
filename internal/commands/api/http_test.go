@@ -247,8 +247,7 @@ hosts:
 		},
 	}
 	for _, tt := range tests {
-		httpClient, err := cmdtest.TestClient(client, "OTOKEN", tt.args.host, tt.isGraphQL)
-		assert.Nil(t, err)
+		httpClient := cmdtest.NewTestApiClient(t, client, "OTOKEN", tt.args.host, tt.isGraphQL)
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := httpRequest(httpClient, tt.args.method, tt.args.p, tt.args.params, tt.args.headers)
 			if (err != nil) != tt.wantErr {

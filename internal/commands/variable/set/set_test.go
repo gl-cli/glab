@@ -152,12 +152,7 @@ func Test_NewCmdSet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			io, _, _, _ := cmdtest.TestIOStreams()
-			f := &cmdtest.Factory{
-				IOStub: io,
-				ConfigStub: func() config.Config {
-					return config.NewBlankConfig()
-				},
-			}
+			f := cmdtest.NewTestFactory(io)
 
 			io.IsInTTY = tt.stdinTTY
 
@@ -216,7 +211,7 @@ func Test_setRun_project(t *testing.T) {
 
 	opts := &options{
 		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
-			return cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
+			return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com", false), nil
 		},
 		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
@@ -255,7 +250,7 @@ func Test_setRun_group(t *testing.T) {
 
 	opts := &options{
 		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
-			return cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
+			return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com", false), nil
 		},
 		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)

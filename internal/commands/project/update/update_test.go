@@ -6,7 +6,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 )
@@ -113,10 +112,12 @@ func TestUpdateCmd(t *testing.T) {
 
 			ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
-			factory := cmdtest.InitFactory(ios, fakeHTTP)
-			factory.BaseRepoStub = func() (glrepo.Interface, error) {
-				return glrepo.New("user", "repo", glinstance.DefaultHostname), nil
-			}
+			c := cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false)
+			factory := cmdtest.NewTestFactory(ios,
+				cmdtest.WithBaseRepo("user", "repo"),
+				cmdtest.WithApiClient(c),
+				cmdtest.WithGitLabClient(c.Lab()),
+			)
 
 			cmd := NewCmdUpdate(factory)
 			_, err := cmdtest.ExecuteCommand(cmd, test.args, stdout, stderr)

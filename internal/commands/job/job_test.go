@@ -53,7 +53,7 @@ func TestJobCmd(t *testing.T) {
 				errC <- buf.String()
 			}()
 
-			err := NewCmdJob(&cmdtest.Factory{}).Execute()
+			err := NewCmdJob(cmdtest.NewTestFactory(nil)).Execute()
 
 			// Rollbacking Stdout & Stderr
 			wOut.Close()

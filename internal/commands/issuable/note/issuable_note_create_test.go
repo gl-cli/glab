@@ -10,20 +10,19 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string, issueType issuable.IssueType) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string, issueType issuable.IssueType) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
-	factory := cmdtest.InitFactory(ios, rt)
-	factory.BranchStub = git.CurrentBranch
-	factory.ConfigStub = func() config.Config {
-		return config.NewFromString("editor: vi")
-	}
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithConfig(config.NewFromString("editor: vi")),
+	)
 
 	cmd := NewCmdNote(factory, issueType)
 
@@ -69,7 +68,7 @@ func Test_NewCmdNote(t *testing.T) {
 
 			// glab issue note 1 --message "Here is my note"
 			// glab incident note 1 --message "Here is my note"
-			output, err := runCommand(fakeHTTP, `1 --message "Here is my note"`, cc.issueType)
+			output, err := runCommand(t, fakeHTTP, `1 --message "Here is my note"`, cc.issueType)
 			if err != nil {
 				t.Error(err)
 				return
@@ -88,7 +87,7 @@ func Test_NewCmdNote(t *testing.T) {
 
 			// glab issue note 1 --message "Here is my note"
 			// glab incident note 1 --message "Here is my note"
-			_, err := runCommand(fakeHTTP, `122`, cc.issueType)
+			_, err := runCommand(t, fakeHTTP, `122`, cc.issueType)
 			assert.NotNil(t, err)
 			assert.Equal(t, "404 Not Found", err.Error())
 		})
@@ -128,7 +127,7 @@ func Test_NewCmdNote_error(t *testing.T) {
 
 			// glab issue note 1 --message "Here is my note"
 			// glab incident note 1 --message "Here is my note"
-			_, err := runCommand(fakeHTTP, `1 -m "Some message"`, cc.issueType)
+			_, err := runCommand(t, fakeHTTP, `1 -m "Some message"`, cc.issueType)
 			assert.NotNil(t, err)
 			assert.Equal(t, "POST https://gitlab.com/api/v4/projects/OWNER%2FREPO/issues/1/notes: 401 {message: Unauthorized}", err.Error())
 		})
@@ -145,7 +144,7 @@ func Test_NewCmdNote_error(t *testing.T) {
 				}
 			`))
 
-		output, err := runCommand(fakeHTTP, `1 -m "Some message"`, issuable.TypeIncident)
+		output, err := runCommand(t, fakeHTTP, `1 -m "Some message"`, issuable.TypeIncident)
 		assert.Nil(t, err)
 		assert.Equal(t, "Incident not found, but an issue with the provided ID exists. Run `glab issue comment <id>` to comment.\n", output.String())
 	})
@@ -193,7 +192,7 @@ func Test_IssuableNoteCreate_prompt(t *testing.T) {
 
 			// glab issue note 1
 			// glab incident note 1
-			output, err := runCommand(fakeHTTP, `1`, cc.issueType)
+			output, err := runCommand(t, fakeHTTP, `1`, cc.issueType)
 
 			// get the editor used
 			notePrompt := *as.AskOnes[0]
@@ -238,7 +237,7 @@ func Test_IssuableNoteCreate_prompt(t *testing.T) {
 				defer teardown()
 				as.StubOne(tt.message)
 
-				_, err := runCommand(fakeHTTP, `1`, cc.issueType)
+				_, err := runCommand(t, fakeHTTP, `1`, cc.issueType)
 				if err == nil {
 					t.Error("expected error")
 					return

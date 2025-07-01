@@ -66,7 +66,7 @@ func TestRootHelpFunc(t *testing.T) {
 		{
 			name: "alias",
 			args: args{
-				command: alias.NewCmdAlias(&cmdtest.Factory{}),
+				command: alias.NewCmdAlias(cmdtest.NewTestFactory(nil)),
 			},
 			wantOut: `Create, list, and delete aliases.
 
@@ -77,7 +77,7 @@ USAGE
 		{
 			name: "test nested alias cmd",
 			args: args{
-				command: set.NewCmdSet(&cmdtest.Factory{}),
+				command: set.NewCmdSet(cmdtest.NewTestFactory(nil)),
 				args:    []string{"set", "-h"},
 			},
 			wantOut: "USAGE\n  alias set <alias name> '<command>' [flags]\n\nFLAGS\n  -s, --shell ",
@@ -92,7 +92,7 @@ USAGE
 			cmd := tt.args.command
 			if len(tt.args.args) > 0 {
 				// falsify a parent command
-				alias.NewCmdAlias(&cmdtest.Factory{}).AddCommand(cmd)
+				alias.NewCmdAlias(cmdtest.NewTestFactory(streams)).AddCommand(cmd)
 			}
 			RootHelpFunc(streams.Color(), cmd, tt.args.args)
 
@@ -114,7 +114,7 @@ func TestRootUsageFunc(t *testing.T) {
 	}{
 		{
 			args: args{
-				command: alias.NewCmdAlias(&cmdtest.Factory{}),
+				command: alias.NewCmdAlias(cmdtest.NewTestFactory(nil)),
 			},
 			wantErr: false,
 		},

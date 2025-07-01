@@ -60,12 +60,7 @@ func Test_NewCmdExport(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			io, _, _, _ := cmdtest.TestIOStreams()
-			f := &cmdtest.Factory{
-				IOStub: io,
-				ConfigStub: func() config.Config {
-					return config.NewBlankConfig()
-				},
-			}
+			f := cmdtest.NewTestFactory(io)
 
 			argv, err := shlex.Split(test.cli)
 			assert.NoError(t, err)
@@ -343,7 +338,7 @@ func Test_exportRun_project(t *testing.T) {
 			)
 			opts := &options{
 				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
-					return cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
+					return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com", false), nil
 				},
 				baseRepo: func() (glrepo.Interface, error) {
 					return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
@@ -615,7 +610,7 @@ func Test_exportRun_group(t *testing.T) {
 			)
 			opts := &options{
 				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
-					return cmdtest.TestClient(&http.Client{Transport: reg}, "", "gitlab.com", false)
+					return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com", false), nil
 				},
 				baseRepo: func() (glrepo.Interface, error) {
 					return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)

@@ -19,15 +19,13 @@ func Test_repoClone_Integration(t *testing.T) {
 	t.Setenv("GITLAB_HOST", glTestHost)
 
 	io, stdin, stdout, stderr := cmdtest.TestIOStreams()
-	fac := &cmdtest.Factory{
-		IOStub: io,
-		ConfigStub: func() config.Config {
-			return config.NewBlankConfig()
+	fac := cmdtest.NewTestFactory(io,
+		func(f *cmdtest.Factory) {
+			f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
+				return api.NewClientWithCfg("https", repoHost, cfg, false, "glab test client")
+			}
 		},
-		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
-			return api.NewClientWithCfg("https", repoHost, cfg, false, "glab test client")
-		},
-	}
+	)
 
 	cs, restore := test.InitCmdStubber()
 	// git clone
@@ -74,15 +72,13 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 	t.Setenv("GITLAB_HOST", glTestHost)
 
 	io, stdin, stdout, stderr := cmdtest.TestIOStreams()
-	fac := &cmdtest.Factory{
-		IOStub: io,
-		ConfigStub: func() config.Config {
-			return config.NewBlankConfig()
+	fac := cmdtest.NewTestFactory(io,
+		func(f *cmdtest.Factory) {
+			f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
+				return api.NewClientWithCfg("https", repoHost, cfg, false, "glab test client")
+			}
 		},
-		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
-			return api.NewClientWithCfg("https", repoHost, cfg, false, "glab test client")
-		},
-	}
+	)
 
 	cs, restore := test.InitCmdStubber()
 	for range expectedRepoUrls {

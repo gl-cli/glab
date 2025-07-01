@@ -4,23 +4,21 @@ import (
 	"net/http"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-
 	"github.com/MakeNowJust/heredoc/v2"
-
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
-	factory := cmdtest.InitFactory(ios, rt)
-
-	factory.BranchStub = func() (string, error) {
-		return "current-branch", nil
-	}
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithBranch("current-branch"),
+	)
 
 	cmd := NewCmdRevoke(factory)
 
@@ -128,7 +126,7 @@ func TestMrRevoke(t *testing.T) {
 				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
 			}
 
-			output, err := runCommand(fakeHTTP, tc.cli)
+			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `mr revoke %s`: %v", tc.cli, err) {
 				out := output.String()

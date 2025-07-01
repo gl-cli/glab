@@ -6,20 +6,18 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
-
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-
+	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	factory := cmdtest.InitFactory(ios, rt)
-
+	factory := cmdtest.NewTestFactory(ios,
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+	)
 	cmd := NewCmdUpload(factory)
-
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }
 
@@ -103,7 +101,7 @@ func TestReleaseUpload(t *testing.T) {
 				},
 			)
 
-			output, err := runCommand(fakeHTTP, tc.cli)
+			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `release upload %s`: %v", tc.cli, err) {
 				assert.Contains(t, output.Stderr(), `• Validating tag repo=OWNER/REPO tag=0.0.1
@@ -180,7 +178,7 @@ func TestReleaseUpload_WithAssetsLinksJSON(t *testing.T) {
 				},
 			)
 
-			output, err := runCommand(fakeHTTP, tt.cli)
+			output, err := runCommand(t, fakeHTTP, tt.cli)
 
 			if assert.NoErrorf(t, err, "error running command `release upload %s`: %v", tt.cli, err) {
 				assert.Contains(t, output.Stderr(), tt.expectedOutput)

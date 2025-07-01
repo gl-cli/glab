@@ -22,6 +22,7 @@ import (
 	"github.com/google/shlex"
 	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -219,36 +220,6 @@ func (f *Factory) BuildInfo() api.BuildInfo {
 	return f.BuildInfoStub
 }
 
-func InitFactory(ios *iostreams.IOStreams, rt http.RoundTripper) *Factory {
-	return &Factory{
-		IOStub: ios,
-		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
-			a, err := TestClient(&http.Client{Transport: rt}, "", repoHost, false)
-			if err != nil {
-				return nil, err
-			}
-			return a, nil
-		},
-		HttpClientStub: func() (*gitlab.Client, error) {
-			a, err := TestClient(&http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)
-			if err != nil {
-				return nil, err
-			}
-			return a.Lab(), err
-		},
-		ConfigStub: func() config.Config {
-			return config.NewBlankConfig()
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-		BranchStub: func() (string, error) {
-			return "main", nil
-		},
-		BuildInfoStub: api.BuildInfo{Version: "test", Commit: "test", Platform: runtime.GOOS, Architecture: runtime.GOARCH},
-	}
-}
-
 type CmdExecFunc func(cli string) (*test.CmdOut, error)
 
 type CmdFunc func(cmdutils.Factory) *cobra.Command
@@ -337,7 +308,6 @@ func WithBuildInfo(buildInfo api.BuildInfo) FactoryOption {
 
 // NewTestFactory creates a Factory configured for testing with the given options
 func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
-	// Create a default factory
 	f := &Factory{
 		IOStub: ios,
 		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
@@ -372,29 +342,7 @@ func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdEx
 
 	ios, _, stdout, stderr := TestIOStreams(WithTestIOStreamsAsTTY(true))
 
-	// Create a default factory
-	f := &Factory{
-		IOStub: ios,
-		HttpClientStub: func() (*gitlab.Client, error) {
-			return &gitlab.Client{}, nil
-		},
-		ConfigStub: func() config.Config {
-			return config.NewBlankConfig()
-		},
-		BaseRepoStub: func() (glrepo.Interface, error) {
-			return glrepo.New("OWNER", "REPO", glinstance.DefaultHostname), nil
-		},
-		BranchStub: func() (string, error) {
-			return "main", nil
-		},
-		BuildInfoStub: api.BuildInfo{Version: "test", Commit: "test", Platform: runtime.GOOS, Architecture: runtime.GOARCH},
-	}
-
-	// Apply all options
-	for _, opt := range opts {
-		opt(f)
-	}
-
+	f := NewTestFactory(ios, opts...)
 	return func(cli string) (*test.CmdOut, error) {
 		return ExecuteCommand(cmdFunc(f), cli, stdout, stderr)
 	}
@@ -448,7 +396,9 @@ func CopyTestRepo(log fatalLogger, name string) string {
 	return dest
 }
 
-func TestClient(httpClient *http.Client, token, host string, isGraphQL bool, options ...api.ClientOption) (*api.Client, error) {
+func NewTestApiClient(t *testing.T, httpClient *http.Client, token, host string, isGraphQL bool, options ...api.ClientOption) *api.Client {
+	t.Helper()
+
 	opts := []api.ClientOption{
 		api.WithInsecureSkipVerify(true),
 		api.WithProtocol(glinstance.DefaultProtocol),
@@ -464,11 +414,9 @@ func TestClient(httpClient *http.Client, token, host string, isGraphQL bool, opt
 		"glab test client",
 		opts...,
 	)
-	if err != nil {
-		return nil, err
-	}
+	require.NoError(t, err)
 	if token != "" {
 		testClient.AuthType = api.PrivateToken
 	}
-	return testClient, nil
+	return testClient
 }
