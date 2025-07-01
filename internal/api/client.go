@@ -319,11 +319,6 @@ func (c *Client) Lab() *gitlab.Client {
 	return c.gitlabClient
 }
 
-// BaseURL returns a copy of the BaseURL
-func (c *Client) BaseURL() *url.URL {
-	return c.Lab().BaseURL()
-}
-
 func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, headers []string, bodyIsJSON bool) (*http.Request, error) {
 	req, err := http.NewRequest(method, baseURL.String(), body)
 	if err != nil {
