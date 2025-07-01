@@ -1,52 +1,45 @@
 package generate
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
-	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
-	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(t *testing.T, cli string, rt http.RoundTripper) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.NewTestFactory(
-		ios,
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+func TestChangelogGenerate(t *testing.T) {
+	tc := gitlabtesting.NewTestClient(t)
+	gomock.InOrder(
+		tc.MockProjects.EXPECT().
+			GetProject("OWNER/REPO", gomock.Any()).
+			Return(&gitlab.Project{ID: 37777023}, nil, nil),
+		tc.MockRepositories.EXPECT().
+			GenerateChangelogData(37777023, gitlab.GenerateChangelogDataOptions{Version: gitlab.Ptr("1.0.0")}).
+			Return(&gitlab.ChangelogData{
+				Notes: "## 1.0.0 (2023-04-02)\n\n### FirstName LastName firstname@lastname.com (1 changes)\n\n- [inital commit](gitlab-org/cli@somehash ([merge request](gitlab-org/cli!1))\n",
+			}, nil, nil),
 	)
 
-	cmd := NewCmdGenerate(factory)
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		NewCmdGenerate,
+		cmdtest.WithGitLabClient(tc.Client),
+	)
 
-	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
-}
-
-func TestChangelogGenerate(t *testing.T) {
-	fakeHTTP := &httpmock.Mocker{MatchURL: httpmock.PathAndQuerystring}
-	defer fakeHTTP.Verify(t)
-
-	// Mock the project ID
-	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO?license=true&with_custom_attributes=true",
-		httpmock.NewStringResponse(http.StatusOK, `{ "id": 37777023 }`))
-
-	// Mock the acutal changelog API call
-	// TODO: mock the other optional attributes that we can pass to the endpoint.
-	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/37777023/repository/changelog?version=1.0.0",
-		httpmock.NewStringResponse(http.StatusOK, `{
-			"notes": "## 1.0.0 (2023-04-02)\n\n### FirstName LastName firstname@lastname.com (1 changes)\n\n- [inital commit](gitlab-org/cli@somehash ([merge request](gitlab-org/cli!1))\n"
-		}`))
-
-	output, err := runCommand(t, "--version 1.0.0", fakeHTTP)
+	out, err := exec("--version 1.0.0")
 	require.Nil(t, err)
 
-	assert.Empty(t, output.Stderr())
+	assert.Empty(t, out.ErrBuf.String())
 
 	expectedStr := "## 1.0.0 (2023-04-02)\n\n### FirstName LastName firstname@lastname.com (1 changes)\n\n- [inital commit](gitlab-org/cli@somehash ([merge request](gitlab-org/cli!1))\n"
-	assert.Equal(t, expectedStr, output.String())
+	assert.Equal(t, expectedStr, out.OutBuf.String())
 }
 
 func TestChangelogGenerateWithError(t *testing.T) {
@@ -69,20 +62,24 @@ func TestChangelogGenerateWithError(t *testing.T) {
 
 	for name, v := range cases {
 		t.Run(name, func(t *testing.T) {
-			fakeHTTP := &httpmock.Mocker{MatchURL: httpmock.PathAndQuerystring}
-			defer fakeHTTP.Verify(t)
+			tc := gitlabtesting.NewTestClient(t)
+			gomock.InOrder(
+				tc.MockProjects.EXPECT().
+					GetProject("OWNER/REPO", gomock.Any()).
+					Return(&gitlab.Project{ID: 37777023}, nil, nil),
+				tc.MockRepositories.EXPECT().
+					GenerateChangelogData(37777023, gitlab.GenerateChangelogDataOptions{Version: gitlab.Ptr("1.0.0")}).
+					Return(nil, nil, errors.New(v.errorMsg)),
+			)
 
-			// Mock the project ID
-			fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO?license=true&with_custom_attributes=true",
-				httpmock.NewStringResponse(http.StatusOK, `{ "id": 37777023 }`))
+			exec := cmdtest.SetupCmdForTest(
+				t,
+				NewCmdGenerate,
+				cmdtest.WithGitLabClient(tc.Client),
+			)
 
-			fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/37777023/repository/changelog?version=1.0.0",
-				httpmock.NewStringResponse(v.httpStatus, v.httpMsgJSON))
-
-			_, err := runCommand(t, "--version 1.0.0", fakeHTTP)
-
+			_, err := exec("--version 1.0.0")
 			require.NotNil(t, err)
-			require.Equal(t, v.errorMsg, err.Error())
 		})
 	}
 }
