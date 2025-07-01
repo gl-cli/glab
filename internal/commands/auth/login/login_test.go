@@ -244,6 +244,8 @@ func Test_NewCmdLogin(t *testing.T) {
 }
 
 func Test_hostnameValidator(t *testing.T) {
+	t.Parallel()
+
 	testMap := make(map[string]string)
 	testMap["profclems"] = "glab"
 
@@ -330,6 +332,8 @@ func Test_hostnameValidator(t *testing.T) {
 }
 
 func Test_keyringLogin(t *testing.T) {
+	t.Parallel()
+
 	keyring.MockInit()
 
 	token, err := keyring.Get("glab:gitlab.com", "")

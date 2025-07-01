@@ -2,16 +2,19 @@ package status
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_NewCmdStatus(t *testing.T) {
@@ -160,32 +163,16 @@ hosts:
 		},
 	}
 
-	fakeHTTP := &httpmock.Mocker{
-		MatchURL: httpmock.HostAndPath,
-	}
-	defer fakeHTTP.Verify(t)
-
-	fakeHTTP.RegisterResponder(http.MethodGet, "https://gitlab.alpinelinux.org/api/v4/user", httpmock.NewStringResponse(http.StatusOK, `
-		{
-  			"username": "john_smith"
-		}
-	`))
-	fakeHTTP.RegisterResponder(http.MethodGet, "https://gitlab.foo.bar/api/v4/user", httpmock.NewStringResponse(http.StatusOK, `
-		{
-  			"username": "john_doe"
-		}
-	`))
-	fakeHTTP.RegisterResponder(http.MethodGet, "https://gitlab.env.bar/api/v4/user", httpmock.NewStringResponse(http.StatusOK, `
-		{
-  			"username": "john_doe"
-		}
-	`))
+	tc := gitlabtesting.NewTestClient(t)
+	gomock.InOrder(
+		tc.MockUsers.EXPECT().CurrentUser().Return(&gitlab.User{Username: "john_smith"}, nil, nil),
+		tc.MockUsers.EXPECT().CurrentUser().Return(&gitlab.User{Username: "john_doe"}, nil, nil),
+		tc.MockUsers.EXPECT().CurrentUser().Return(&gitlab.User{Username: "john_doe"}, nil, nil),
+	)
 
 	client := func(token, hostname string) (*api.Client, error) { // nolint:unparam
-		return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, token, hostname, false), nil
+		return cmdtest.NewTestApiClient(t, nil, token, hostname, false, api.WithGitLabClient(tc.Client)), nil
 	}
-	// FIXME: something fishy is occurring here as without making a first call to client function, httpMock does not work
-	_, _ = client("", "gitlab.com")
 
 	for _, tt := range tests {
 		io, _, stdout, stderr := cmdtest.TestIOStreams()
@@ -235,30 +222,18 @@ hosts:
     token:
 `, "")()
 
-	fakeHTTP := &httpmock.Mocker{
-		MatchURL: httpmock.HostAndPath,
-	}
-	defer fakeHTTP.Verify(t)
-
 	cfgFile := config.ConfigFile()
 
-	fakeHTTP.RegisterResponder(http.MethodGet, "https://gitlab.alpinelinux.org/api/v4/user", httpmock.NewStringResponse(http.StatusOK, `
-		{
-  			"username": "john_smith"
-		}
-	`))
+	tc := gitlabtesting.NewTestClient(t)
+	gomock.InOrder(
+		tc.MockUsers.EXPECT().CurrentUser().Return(&gitlab.User{Username: "john_smith"}, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusOK}}, nil),
+		tc.MockUsers.EXPECT().CurrentUser().Return(nil, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusUnauthorized}}, errors.New("GET https://another.host/api/v4/user: 401 {message: invalid token}")),
+		tc.MockUsers.EXPECT().CurrentUser().Return(nil, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusUnauthorized}}, errors.New("GET https://gl.io/api/v4/user: 401 {message: no token provided}")),
+	)
 
-	fakeHTTP.RegisterResponder(http.MethodGet, "https://another.host/api/v4/user?u=1", httpmock.NewStringResponse(http.StatusUnauthorized, `
-		{
-  			"message": "invalid token"
-		}
-	`))
-
-	fakeHTTP.RegisterResponder(http.MethodGet, "https://gl.io/api/v4/user?u=1", httpmock.NewStringResponse(http.StatusUnauthorized, `
-		{
-  			"message": "no token provided"
-		}
-	`))
+	client := func(token, hostname string) (*api.Client, error) { // nolint:unparam
+		return cmdtest.NewTestApiClient(t, nil, token, hostname, false, api.WithGitLabClient(tc.Client)), nil
+	}
 
 	expectedOutput := fmt.Sprintf(`gitlab.alpinelinux.org
   ✓ Logged in to gitlab.alpinelinux.org as john_smith (%s)
@@ -288,12 +263,6 @@ gl.io
 	configs, err := config.ParseConfig("config.yml")
 	assert.Nil(t, err)
 	io, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	client := func(token, hostname string) (*api.Client, error) { // nolint:unparam
-		return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, token, hostname, false), nil
-	}
-	// FIXME: something fishy is occurring here as without making a first call to client function, httpMock does not work
-	_, _ = client("", "gitlab.com")
 
 	opts := &options{
 		config: func() config.Config {

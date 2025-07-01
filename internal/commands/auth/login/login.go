@@ -287,7 +287,7 @@ func loginRun(opts *LoginOptions) error {
 			return err
 		}
 
-		user, err := api.CurrentUser(apiClient.Lab())
+		user, _, err := apiClient.Lab().Users.CurrentUser()
 		if err == nil {
 			username := user.Username
 			var keepGoing bool
@@ -425,7 +425,7 @@ func loginRun(opts *LoginOptions) error {
 		return err
 	}
 
-	user, err := api.CurrentUser(apiClient.Lab())
+	user, _, err := apiClient.Lab().Users.CurrentUser()
 	if err != nil {
 		return fmt.Errorf("error using API: %w", err)
 	}
