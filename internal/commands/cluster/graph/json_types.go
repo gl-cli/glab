@@ -108,7 +108,13 @@ type Arc struct {
 
 type jsonSetArc struct {
 	Arc
-	Attributes map[string]any `json:"a,omitempty"`
+	Attributes jsonArcAttrs `json:"a,omitempty"`
+}
+
+type jsonArcAttrs struct {
+	Controller              bool `json:"c,omitempty"`
+	BlockOwnerDeletion      bool `json:"b,omitempty"`
+	DestinationDoesNotExist bool `json:"e,omitempty"`
 }
 
 type jsonDeleteArc struct {
