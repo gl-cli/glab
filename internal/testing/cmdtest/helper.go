@@ -404,10 +404,12 @@ func NewTestApiClient(t *testing.T, httpClient *http.Client, token, host string,
 		api.WithBaseURL(glinstance.APIEndpoint(host, glinstance.DefaultProtocol, "")),
 		api.WithInsecureSkipVerify(true),
 		api.WithHTTPClient(httpClient),
-		api.WithAuthSource(gitlab.AccessTokenAuthSource{Token: token}),
 	}
 	opts = append(opts, options...)
-	testClient, err := api.NewClient(opts...)
+	testClient, err := api.NewClient(
+		func(*http.Client) gitlab.AuthSource { return gitlab.AccessTokenAuthSource{Token: token} },
+		opts...,
+	)
 	require.NoError(t, err)
 	return testClient
 }

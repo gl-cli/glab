@@ -76,8 +76,10 @@ var secureCipherSuites = []uint16{
 	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 }
 
+type newAuthSource func(c *http.Client) gitlab.AuthSource
+
 // NewClient initializes a api client for use throughout glab.
-func NewClient(options ...ClientOption) (*Client, error) {
+func NewClient(newAuthSource newAuthSource, options ...ClientOption) (*Client, error) {
 	client := &Client{}
 
 	// Apply options
@@ -153,6 +155,12 @@ func NewClient(options ...ClientOption) (*Client, error) {
 			},
 		}
 	}
+
+	// initialize the authentication source
+	// We need to delay this because sources like OAuth2 need a valid
+	// HTTP client to refresh the token.
+	client.authSource = newAuthSource(client.httpClient)
+
 	err := client.initializeGitLabClient()
 	return client, err
 }
@@ -217,14 +225,6 @@ func WithGitLabClient(client *gitlab.Client) ClientOption {
 	}
 }
 
-// WithAuthSource configures the authentication source for the GitLab client
-func WithAuthSource(source gitlab.AuthSource) ClientOption {
-	return func(c *Client) error {
-		c.authSource = source
-		return nil
-	}
-}
-
 // WithBaseURL configures the base URL for the GitLab instance
 func WithBaseURL(baseURL string) ClientOption {
 	return func(c *Client) error {
@@ -277,14 +277,21 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	}
 
 	// determine auth source
+	var newAuthSource newAuthSource
 	switch {
 	case isOAuth2:
-		ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: token})
-		options = append(options, WithAuthSource(gitlab.OAuthTokenSource{TokenSource: ts}))
+		newAuthSource = func(client *http.Client) gitlab.AuthSource {
+			ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: token})
+			return gitlab.OAuthTokenSource{TokenSource: ts}
+		}
 	case jobToken != "":
-		options = append(options, WithAuthSource(gitlab.JobTokenAuthSource{Token: jobToken}))
+		newAuthSource = func(*http.Client) gitlab.AuthSource {
+			return gitlab.JobTokenAuthSource{Token: jobToken}
+		}
 	default:
-		options = append(options, WithAuthSource(gitlab.AccessTokenAuthSource{Token: token}))
+		newAuthSource = func(*http.Client) gitlab.AuthSource {
+			return gitlab.AccessTokenAuthSource{Token: token}
+		}
 	}
 
 	var baseURL string
@@ -307,7 +314,7 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 		options = append(options, WithInsecureSkipVerify(skipTlsVerify))
 	}
 
-	return NewClient(options...)
+	return NewClient(newAuthSource, options...)
 }
 
 func NewHTTPRequest(ctx context.Context, c *Client, method string, baseURL *url.URL, body io.Reader, headers []string, bodyIsJSON bool) (*http.Request, error) {

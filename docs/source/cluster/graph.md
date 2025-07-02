@@ -55,7 +55,7 @@ to understand what is possible and how to do it.
 This command only supports personal and project access tokens for authentication.
 The token should have at least the `Developer` role in the agent project and the `read_api` and `k8s_proxy` scopes.
 The user should be allowed to access the agent project.
-See <https://docs.gitlab.com/user/clusters/agent/user_access/>. 
+See <https://docs.gitlab.com/user/clusters/agent/user_access/>.
 
 This feature is experimental. It might be broken or removed without any prior notice.
 Read more about what experimental features mean at
