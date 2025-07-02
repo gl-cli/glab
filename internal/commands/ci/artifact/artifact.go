@@ -33,7 +33,7 @@ func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			return jobArtifact.DownloadArtifacts(apiClient, repo, path, args[0], args[1])
+			return jobArtifact.DownloadArtifacts(apiClient, repo, path, false, args[0], args[1])
 		},
 		Deprecated: "use 'glab job artifact' instead.",
 	}

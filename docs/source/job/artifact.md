@@ -28,12 +28,14 @@ push
 ```console
 $ glab job artifact main build
 $ glab job artifact main deploy --path="artifacts/"
+$ glab job artifact main deploy --list-paths
 
 ```
 
 ## Options
 
 ```plaintext
+  -l, --list-paths    Print the paths of downloaded artifacts.
   -p, --path string   Path to download the artifact files. (default "./")
 ```
 
