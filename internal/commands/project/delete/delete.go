@@ -76,7 +76,7 @@ func (o *options) run() error {
 			if baseRepoErr == nil {
 				namespace = baseRepo.RepoOwner()
 			} else {
-				currentUser, err := api.CurrentUser(gitlabClient)
+				currentUser, _, err := gitlabClient.Users.CurrentUser()
 				if err != nil {
 					return err
 				}
@@ -107,7 +107,7 @@ func (o *options) run() error {
 		if o.io.IsErrTTY && o.io.IsaTTY {
 			fmt.Fprintf(o.io.StdErr, "- Deleting project %s\n", o.repoName)
 		}
-		resp, err := api.DeleteProject(gitlabClient, o.repoName)
+		resp, err := gitlabClient.Projects.DeleteProject(o.repoName, nil)
 		if err != nil && resp == nil {
 			return err
 		}

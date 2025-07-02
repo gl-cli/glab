@@ -25,6 +25,15 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/recovery"
 )
 
+var createIssue = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
+	issue, _, err := client.Issues.CreateIssue(projectID, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return issue, nil
+}
+
 type options struct {
 	Title       string   `json:"title,omitempty"`
 	Description string   `json:"description,omitempty"`
@@ -372,7 +381,7 @@ var createRun = func(opts *options) error {
 			issueCreateOpts.AssigneeIDs = cmdutils.IDsFromUsers(users)
 		}
 		fmt.Fprintln(opts.io.StdErr, "- Creating issue in", repo.FullName())
-		issue, err := api.CreateIssue(apiClient, repo.FullName(), issueCreateOpts)
+		issue, err := createIssue(apiClient, repo.FullName(), issueCreateOpts)
 		if err != nil {
 			return err
 		}
@@ -389,32 +398,28 @@ var createRun = func(opts *options) error {
 
 func postCreateActions(apiClient *gitlab.Client, issue *gitlab.Issue, opts *options, repo glrepo.Interface) error {
 	if len(opts.LinkedIssues) > 0 {
-		var err error
 		for _, targetIssueIID := range opts.LinkedIssues {
 			fmt.Fprintln(opts.io.StdErr, "- Linking to issue ", targetIssueIID)
-			issue, _, err = api.LinkIssues(apiClient, repo.FullName(), issue.IID, &gitlab.CreateIssueLinkOptions{
+			issueLink, _, err := apiClient.IssueLinks.CreateIssueLink(repo.FullName(), issue.IID, &gitlab.CreateIssueLinkOptions{
 				TargetIssueIID: gitlab.Ptr(strconv.Itoa(targetIssueIID)),
 				LinkType:       gitlab.Ptr(opts.IssueLinkType),
 			})
 			if err != nil {
 				return err
 			}
+			issue = issueLink.SourceIssue
 		}
 	}
 	if opts.TimeEstimate != "" {
 		fmt.Fprintln(opts.io.StdErr, "- Adding time estimate ", opts.TimeEstimate)
-		_, err := api.SetIssueTimeEstimate(apiClient, repo.FullName(), issue.IID, &gitlab.SetTimeEstimateOptions{
-			Duration: gitlab.Ptr(opts.TimeEstimate),
-		})
+		_, _, err := apiClient.Issues.SetTimeEstimate(repo.FullName(), issue.IID, &gitlab.SetTimeEstimateOptions{Duration: gitlab.Ptr(opts.TimeEstimate)})
 		if err != nil {
 			return err
 		}
 	}
 	if opts.TimeSpent != "" {
 		fmt.Fprintln(opts.io.StdErr, "- Adding time spent ", opts.TimeSpent)
-		_, err := api.AddIssueTimeSpent(apiClient, repo.FullName(), issue.IID, &gitlab.AddSpentTimeOptions{
-			Duration: gitlab.Ptr(opts.TimeSpent),
-		})
+		_, _, err := apiClient.Issues.AddSpentTime(repo.FullName(), issue.IID, &gitlab.AddSpentTimeOptions{Duration: gitlab.Ptr(opts.TimeSpent)})
 		if err != nil {
 			return err
 		}

@@ -6,7 +6,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 )
@@ -54,7 +53,7 @@ func NewCmdApprove(f cmdutils.Factory) *cobra.Command {
 				}
 
 				fmt.Fprintf(f.IO().StdOut, "- Approving merge request !%d\n", mr.IID)
-				_, err = api.ApproveMR(apiClient, repo.FullName(), mr.IID, opts)
+				_, _, err := apiClient.MergeRequestApprovals.ApproveMergeRequest(repo.FullName(), mr.IID, opts)
 				if err != nil {
 					return err
 				}

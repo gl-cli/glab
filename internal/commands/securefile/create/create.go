@@ -8,7 +8,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -78,7 +77,7 @@ func (o *options) run() error {
 		return fmt.Errorf("Unable to read file at %s: %w", o.inputFilePath, err)
 	}
 
-	err = api.CreateSecureFile(apiClient, repo.FullName(), o.fileName, reader)
+	_, _, err = apiClient.SecureFiles.CreateSecureFile(repo.FullName(), reader, &gitlab.CreateSecureFileOptions{Name: gitlab.Ptr(o.fileName)})
 	if err != nil {
 		return fmt.Errorf("Error creating secure file: %w", err)
 	}

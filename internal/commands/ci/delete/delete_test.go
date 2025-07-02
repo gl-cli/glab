@@ -1,302 +1,192 @@
 package delete
 
 import (
-	"net/http"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/spf13/pflag"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
+	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/MakeNowJust/heredoc/v2"
-
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
-	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
-	)
-
-	cmd := NewCmdDelete(factory)
-
-	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
-}
-
 func TestCIDelete(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/11111111",
-		httpmock.NewStringResponse(http.StatusNoContent, ""),
-	)
+	tc := gitlabtesting.NewTestClient(t)
+	tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, nil)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
 
-	pipelineId := "11111111"
-	output, err := runCommand(t, fakeHTTP, pipelineId)
-	if err != nil {
-		t.Errorf("error running command `ci delete %s`: %v", pipelineId, err)
-	}
+	out, err := exec("11111111")
+	require.NoError(t, err)
 
-	out := output.String()
-
-	assert.Equal(t, heredoc.Doc(`
-		✓ Pipeline #11111111 deleted successfully.
-		`), out)
-	assert.Empty(t, output.Stderr())
+	assert.Contains(t, out.OutBuf.String(), "Pipeline #11111111 deleted successfully.")
+	assert.Empty(t, out.ErrBuf.String())
 }
 
 func TestCIDeleteNonExistingPipeline(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/11111111",
-		httpmock.NewJSONResponse(http.StatusNotFound, "{message: 404 Not found}"),
-	)
+	tc := gitlabtesting.NewTestClient(t)
+	tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, errors.New(`{"message": "404 Not found"}`))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
 
-	pipelineId := "11111111"
-	output, err := runCommand(t, fakeHTTP, pipelineId)
-
+	out, err := exec("11111111")
 	require.Error(t, err)
-
-	out := output.String()
-
-	assert.Empty(t, out)
+	assert.Empty(t, out.OutBuf.String())
 }
 
 func TestCIDeleteWithWrongArgument(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	pipelineId := "test"
-	output, err := runCommand(t, fakeHTTP, pipelineId)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete)
 
+	out, err := exec("test")
 	require.Error(t, err)
-
-	out := output.String()
-
-	assert.Empty(t, out)
+	assert.Empty(t, out.OutBuf.String())
 }
 
 func TestCIDeleteByStatus(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/pipelines?status=success",
-		httpmock.NewStringResponse(http.StatusOK, `
-		[
-			{
-				"id": 11111111,
-				"iid": 3,
-				"project_id": 5,
-				"sha": "c366255c71600e17519e802850ddcf7105d3cf66",
-				"ref": "refs/merge-requests/1107/merge",
-				"status": "success",
-				"source": "merge_request_event",
-				"created_at": "2020-12-01T01:15:50.559Z",
-				"updated_at": "2020-12-01T01:36:41.737Z",
-				"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/710046436"
-			},
-			{
-				"id": 22222222,
-				"iid": 4,
-				"project_id": 5,
-				"sha": "c9a7c0d9351cd1e71d1c2ad8277f3bc7e3c47d1f",
-				"ref": "main",
-				"status": "success",
-				"source": "push",
-				"created_at": "2020-11-30T18:20:47.571Z",
-				"updated_at": "2020-11-30T18:39:40.092Z",
-				"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/709793838"
-			}
-	]
-	`))
-	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/11111111",
-		httpmock.NewStringResponse(http.StatusNoContent, ""),
+	tc := gitlabtesting.NewTestClient(t)
+	gomock.InOrder(
+		tc.MockPipelines.EXPECT().
+			ListProjectPipelines("OWNER/REPO", &gitlab.ListProjectPipelinesOptions{Status: gitlab.Ptr(gitlab.Success)}).
+			Return([]*gitlab.PipelineInfo{
+				{
+					ID: 11111111,
+				},
+				{
+					ID: 22222222,
+				},
+			}, &gitlab.Response{NextPage: 0}, nil),
+		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, nil),
+		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 22222222).Return(nil, nil),
 	)
-	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/22222222",
-		httpmock.NewStringResponse(http.StatusNoContent, ""),
-	)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
 
-	args := "--status=success"
-	output, err := runCommand(t, fakeHTTP, args)
+	out, err := exec("--status=success")
 	require.NoError(t, err)
 
-	out := output.String()
-
-	assert.Equal(t, heredoc.Doc(`
-		✓ Pipeline #11111111 deleted successfully.
-		✓ Pipeline #22222222 deleted successfully.
-		`), out)
-	assert.Empty(t, output.Stderr())
+	stdout := out.OutBuf.String()
+	assert.Contains(t, stdout, "Pipeline #11111111 deleted successfully.")
+	assert.Contains(t, stdout, "Pipeline #22222222 deleted successfully.")
+	assert.Empty(t, out.ErrBuf.String())
 }
 
 func TestCIDeleteByStatusFailsWithArgument(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	args := "--status=success 11111111"
-	output, err := runCommand(t, fakeHTTP, args)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete)
+	out, err := exec("--status=success 11111111")
 	assert.EqualError(t, err, "either a status filter or a pipeline ID must be passed, but not both.")
 
-	assert.Empty(t, output.String())
-	assert.Empty(t, output.Stderr())
+	assert.Empty(t, out.OutBuf.String())
+	assert.Empty(t, out.ErrBuf.String())
 }
 
 func TestCIDeleteWithoutFilterFailsWithoutArgument(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	pipelineId := ""
-	output, err := runCommand(t, fakeHTTP, pipelineId)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete)
+	out, err := exec("")
 	assert.EqualError(t, err, "accepts 1 arg(s), received 0")
 
-	assert.Empty(t, output.String())
-	assert.Empty(t, output.Stderr())
+	assert.Empty(t, out.OutBuf.String())
+	assert.Empty(t, out.ErrBuf.String())
 }
 
 func TestCIDeleteMultiple(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/11111111",
-		httpmock.NewStringResponse(http.StatusNoContent, ""),
+	tc := gitlabtesting.NewTestClient(t)
+	gomock.InOrder(
+		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, nil),
+		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 22222222).Return(nil, nil),
 	)
-	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/22222222",
-		httpmock.NewStringResponse(http.StatusNoContent, ""),
-	)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
 
-	pipelineId := "11111111,22222222"
-	output, err := runCommand(t, fakeHTTP, pipelineId)
-	if err != nil {
-		t.Errorf("error running command `ci delete %s`: %v", pipelineId, err)
-	}
+	out, err := exec("11111111,22222222")
+	require.NoError(t, err)
 
-	out := output.String()
-
-	assert.Equal(t, heredoc.Doc(`
-		✓ Pipeline #11111111 deleted successfully.
-		✓ Pipeline #22222222 deleted successfully.
-		`), out)
-	assert.Empty(t, output.Stderr())
+	stdout := out.OutBuf.String()
+	assert.Contains(t, stdout, "Pipeline #11111111 deleted successfully.")
+	assert.Contains(t, stdout, "Pipeline #22222222 deleted successfully.")
+	assert.Empty(t, out.ErrBuf.String())
 }
 
 func TestCIDryRunDeleteNothing(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	args := "--dry-run 11111111,22222222"
-	output, err := runCommand(t, fakeHTTP, args)
-	if err != nil {
-		t.Errorf("error running command `ci delete %s`: %v", args, err)
-	}
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete)
+	out, err := exec("--dry-run 11111111,22222222")
+	require.NoError(t, err)
 
-	out := output.String()
-
-	assert.Equal(t, heredoc.Doc(`
-		• Pipeline #11111111 will be deleted.
-		• Pipeline #22222222 will be deleted.
-		`), out)
-	assert.Empty(t, output.Stderr())
+	stdout := out.OutBuf.String()
+	assert.Contains(t, stdout, "Pipeline #11111111 will be deleted.")
+	assert.Contains(t, stdout, "Pipeline #22222222 will be deleted.")
+	assert.Empty(t, out.ErrBuf.String())
 }
 
 func TestCIDeletedDryRunWithFilterDoesNotDelete(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/pipelines?status=success",
-		httpmock.NewStringResponse(http.StatusOK, `
-		[
+	tc := gitlabtesting.NewTestClient(t)
+	tc.MockPipelines.EXPECT().
+		ListProjectPipelines("OWNER/REPO", &gitlab.ListProjectPipelinesOptions{Status: gitlab.Ptr(gitlab.Success)}).
+		Return([]*gitlab.PipelineInfo{
 			{
-				"id": 11111111,
-				"iid": 3,
-				"project_id": 5,
-				"sha": "c366255c71600e17519e802850ddcf7105d3cf66",
-				"ref": "refs/merge-requests/1107/merge",
-				"status": "success",
-				"source": "merge_request_event",
-				"created_at": "2020-12-01T01:15:50.559Z",
-				"updated_at": "2020-12-01T01:36:41.737Z",
-				"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/710046436"
+				ID: 11111111,
 			},
 			{
-				"id": 22222222,
-				"iid": 4,
-				"project_id": 5,
-				"sha": "c9a7c0d9351cd1e71d1c2ad8277f3bc7e3c47d1f",
-				"ref": "main",
-				"status": "success",
-				"source": "push",
-				"created_at": "2020-11-30T18:20:47.571Z",
-				"updated_at": "2020-11-30T18:39:40.092Z",
-				"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/709793838"
-			}
-	]
-	`))
+				ID: 22222222,
+			},
+		}, &gitlab.Response{NextPage: 0}, nil)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
 
-	args := "--dry-run --status=success"
-	output, err := runCommand(t, fakeHTTP, args)
+	out, err := exec("--dry-run --status=success")
 	require.NoError(t, err)
 
-	out := output.String()
-
-	assert.Equal(t, heredoc.Doc(`
-		• Pipeline #11111111 will be deleted.
-		• Pipeline #22222222 will be deleted.
-		`), out)
-	assert.Empty(t, output.Stderr())
+	stdout := out.OutBuf.String()
+	assert.Contains(t, stdout, "Pipeline #11111111 will be deleted.")
+	assert.Contains(t, stdout, "Pipeline #22222222 will be deleted.")
+	assert.Empty(t, out.ErrBuf.String())
 }
 
 func TestCIDeleteBySource(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/pipelines?source=push",
-		httpmock.NewStringResponse(http.StatusOK, `
-		[
-			{
-				"id": 22222222,
-				"iid": 4,
-				"project_id": 5,
-				"sha": "c9a7c0d9351cd1e71d1c2ad8277f3bc7e3c47d1f",
-				"ref": "main",
-				"status": "success",
-				"source": "push",
-				"created_at": "2020-11-30T18:20:47.571Z",
-				"updated_at": "2020-11-30T18:39:40.092Z",
-				"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/709793838"
-			}
-		]
-	`))
-
-	fakeHTTP.RegisterResponder(http.MethodDelete, "/api/v4/projects/OWNER/REPO/pipelines/22222222",
-		httpmock.NewStringResponse(http.StatusNoContent, ""),
+	tc := gitlabtesting.NewTestClient(t)
+	gomock.InOrder(
+		tc.MockPipelines.EXPECT().
+			ListProjectPipelines("OWNER/REPO", &gitlab.ListProjectPipelinesOptions{Source: gitlab.Ptr("push")}).
+			Return([]*gitlab.PipelineInfo{
+				{
+					ID: 22222222,
+				},
+			}, &gitlab.Response{NextPage: 0}, nil),
+		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 22222222).Return(nil, nil),
 	)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
 
-	args := "--source=push"
-	output, err := runCommand(t, fakeHTTP, args)
+	out, err := exec("--source=push")
 	require.NoError(t, err)
 
-	out := output.String()
-
-	assert.Equal(t, heredoc.Doc(`
-		✓ Pipeline #22222222 deleted successfully.
-		`), out)
-	assert.Empty(t, output.Stderr())
+	stdout := out.OutBuf.String()
+	assert.Contains(t, stdout, "Pipeline #22222222 deleted successfully.")
+	assert.Empty(t, out.ErrBuf.String())
 }
 
 func TestParseRawPipelineIDsCorrectly(t *testing.T) {
+	t.Parallel()
+
 	pipelineIDs, err := parseRawPipelineIDs("1,2,3")
 
 	require.NoError(t, err)
@@ -304,6 +194,8 @@ func TestParseRawPipelineIDsCorrectly(t *testing.T) {
 }
 
 func TestParseRawPipelineIDsWithError(t *testing.T) {
+	t.Parallel()
+
 	pipelineIDs, err := parseRawPipelineIDs("test")
 
 	require.Error(t, err)
@@ -311,24 +203,24 @@ func TestParseRawPipelineIDsWithError(t *testing.T) {
 }
 
 func TestExtractPipelineIDsFromFlagsWithError(t *testing.T) {
-	fakeHTTP := httpmock.New()
-	fakeHTTP.MatchURL = httpmock.PathAndQuerystring
-	defer fakeHTTP.Verify(t)
+	t.Parallel()
 
-	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/pipelines?status=success",
-		httpmock.NewStringResponse(http.StatusForbidden, `{message: 403 Forbidden}`))
+	tc := gitlabtesting.NewTestClient(t)
+	tc.MockPipelines.EXPECT().
+		ListProjectPipelines("OWNER/REPO", &gitlab.ListProjectPipelinesOptions{Status: gitlab.Ptr(gitlab.Success)}).
+		Return(nil, nil, errors.New(`{"message": "403 Forbidden"}`))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
 
-	args := "--status=success"
-	output, err := runCommand(t, fakeHTTP, args)
+	out, err := exec("--status=success")
 	require.Error(t, err)
 
-	out := output.String()
-
-	assert.Empty(t, out)
-	assert.Empty(t, output.Stderr())
+	assert.Empty(t, out.OutBuf.String())
+	assert.Empty(t, out.ErrBuf.String())
 }
 
 func TestOptsFromFlags(t *testing.T) {
+	t.Parallel()
+
 	flags := pflag.NewFlagSet("test-flagset", pflag.ContinueOnError)
 	SetupCommandFlags(flags)
 
@@ -345,6 +237,8 @@ func TestOptsFromFlags(t *testing.T) {
 }
 
 func TestOptsFromFlagsWithPagination(t *testing.T) {
+	t.Parallel()
+
 	flags := pflag.NewFlagSet("test-flagset", pflag.ContinueOnError)
 	SetupCommandFlags(flags)
 

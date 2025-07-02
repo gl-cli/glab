@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 
@@ -98,7 +97,7 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 			}
 			c.Token = &token
 
-			pipe, err := api.RunPipelineTrigger(apiClient, repo.FullName(), c)
+			pipe, _, err := apiClient.PipelineTriggers.RunPipelineTrigger(repo.FullName(), c)
 			if err != nil {
 				return err
 			}

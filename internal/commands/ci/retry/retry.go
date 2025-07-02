@@ -3,7 +3,6 @@ package retry
 import (
 	"fmt"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 
@@ -65,7 +64,7 @@ func NewCmdRetry(f cmdutils.Factory) *cobra.Command {
 				return nil
 			}
 
-			job, err := api.RetryPipelineJob(apiClient, jobID, repo.FullName())
+			job, _, err := apiClient.Jobs.RetryJob(repo.FullName(), jobID)
 			if err != nil {
 				return cmdutils.WrapError(err, fmt.Sprintf("Could not retry job with ID: %d", jobID))
 			}

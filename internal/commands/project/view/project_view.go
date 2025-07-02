@@ -117,7 +117,7 @@ func (o *options) complete(args []string) error {
 			if err != nil {
 				return err
 			}
-			currentUser, err := api.CurrentUser(apiClient)
+			currentUser, _, err := apiClient.Users.CurrentUser()
 			if err != nil {
 				return cmdutils.WrapError(err, "Failed to retrieve your current user.")
 			}
@@ -203,7 +203,7 @@ func getReadmeFile(opts *options, project *gitlab.Project) (*gitlab.File, error)
 		opts.branch = readmeRef
 	}
 
-	readmeFile, err := api.GetFile(opts.gitlabClient, project.PathWithNamespace, readmeFileName, opts.branch)
+	readmeFile, _, err := opts.gitlabClient.RepositoryFiles.GetFile(project.PathWithNamespace, readmeFileName, &gitlab.GetFileOptions{Ref: gitlab.Ptr(opts.branch)})
 	if err != nil {
 		return nil, cmdutils.WrapError(err, fmt.Sprintf("Failed to retrieve README file on the %s branch.", opts.branch))
 	}

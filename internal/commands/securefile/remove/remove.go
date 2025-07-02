@@ -7,7 +7,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -113,7 +112,7 @@ func (o *options) run() error {
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("fileID"), o.fileID)
 
-	err = api.RemoveSecureFile(apiClient, repo.FullName(), o.fileID)
+	_, err = apiClient.SecureFiles.RemoveSecureFile(repo.FullName(), o.fileID)
 	if err != nil {
 		return fmt.Errorf("Error removing secure file: %v", err)
 	}

@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
@@ -64,7 +63,7 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 }
 
 func saveFile(apiClient *gitlab.Client, repo glrepo.Interface, fileID int, path string) error {
-	contents, err := api.DownloadSecureFile(apiClient, repo.FullName(), fileID)
+	contents, _, err := apiClient.SecureFiles.DownloadSecureFile(repo.FullName(), fileID)
 	if err != nil {
 		return fmt.Errorf("Error downloading secure file: %v", err)
 	}

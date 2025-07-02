@@ -355,11 +355,11 @@ func (o *options) run() error {
 				Ref:    &o.TargetBranch,
 			}
 
-			_, err = api.CreateBranch(labClient, baseRepo.FullName(), branchOpts)
+			_, _, err = labClient.Branches.CreateBranch(baseRepo.FullName(), branchOpts)
 			if err != nil {
 				for branchErr, branchCount := err, 1; branchErr != nil; branchCount++ {
 					sourceBranch = fmt.Sprintf("%d-%s-%d", issue.IID, strings.ReplaceAll(strings.ToLower(issue.Title), " ", "-"), branchCount)
-					_, branchErr = api.CreateBranch(labClient, baseRepo.FullName(), branchOpts)
+					_, _, branchErr = labClient.Branches.CreateBranch(baseRepo.FullName(), branchOpts)
 				}
 			}
 			o.SourceBranch = sourceBranch
@@ -375,7 +375,7 @@ func (o *options) run() error {
 			if err = mrBodyAndTitle(o); err != nil {
 				return err
 			}
-			_, err = api.GetCommit(labClient, baseRepo.FullName(), o.TargetBranch)
+			_, _, err := labClient.Commits.GetCommit(baseRepo.FullName(), o.TargetBranch, nil)
 			if err != nil {
 				return fmt.Errorf("target branch %s does not exist on remote. Specify target branch with the --target-branch flag",
 					o.TargetBranch)
@@ -432,13 +432,13 @@ func (o *options) run() error {
 							return err
 						}
 						if o.signoff {
-							u, _ := api.CurrentUser(labClient)
+							u, _, _ := labClient.Users.CurrentUser()
 							templateContents += "Signed-off-by: " + u.Name + "<" + u.Email + ">"
 						}
 					} else if templateName == mrEmptyTemplate {
 						// blank merge request was choosen, leave templateContents empty
 						if o.signoff {
-							u, _ := api.CurrentUser(labClient)
+							u, _, _ := labClient.Users.CurrentUser()
 							templateContents += "Signed-off-by: " + u.Name + "<" + u.Email + ">"
 						}
 					} else {
@@ -514,7 +514,7 @@ func (o *options) run() error {
 			Ref:    &o.TargetBranch,
 		}
 		fmt.Fprintln(o.io.StdErr, "\nCreating related branch...")
-		branch, err := api.CreateBranch(labClient, headRepo.FullName(), lb)
+		branch, _, err := labClient.Branches.CreateBranch(headRepo.FullName(), lb)
 		if err == nil {
 			fmt.Fprintln(o.io.StdErr, "Branch created: ", branch.WebURL)
 		} else {
@@ -643,7 +643,7 @@ func (o *options) run() error {
 
 		// It is intentional that we create against the head repo, it is necessary
 		// for cross-repository merge requests
-		mr, err := api.CreateMR(labClient, headRepo.FullName(), mrCreateOpts)
+		mr, _, err := labClient.MergeRequests.CreateMergeRequest(headRepo.FullName(), mrCreateOpts)
 		if err != nil {
 			return err
 		}

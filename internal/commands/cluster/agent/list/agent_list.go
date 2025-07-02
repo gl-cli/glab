@@ -53,7 +53,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	agents, err := api.ListAgents(apiClient, repo.FullName(), &gitlab.ListAgentsOptions{
+	agents, _, err := apiClient.ClusterAgents.ListAgents(repo.FullName(), &gitlab.ListAgentsOptions{
 		Page:    int(o.page),
 		PerPage: int(o.perPage),
 	})

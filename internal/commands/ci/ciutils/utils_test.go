@@ -286,6 +286,8 @@ func TestGetJobId(t *testing.T) {
 }
 
 func TestParseCSVToIntSlice(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		input       string

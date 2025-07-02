@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/internal/utils"
@@ -101,7 +100,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 				l.UpdatedBefore = gitlab.Ptr(updatedBeforeTime)
 			}
 
-			pipes, err := api.ListProjectPipelines(apiClient, repo.FullName(), l)
+			pipes, _, err := apiClient.Pipelines.ListProjectPipelines(repo.FullName(), l)
 			if err != nil {
 				return err
 			}

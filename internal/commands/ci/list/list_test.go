@@ -28,6 +28,8 @@ func runCommand(t *testing.T, rt http.RoundTripper, args string) (*test.CmdOut, 
 }
 
 func TestCiList(t *testing.T) {
+	t.Parallel()
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -82,6 +84,8 @@ func TestCiList(t *testing.T) {
 }
 
 func TestCiListJSON(t *testing.T) {
+	t.Parallel()
+
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 

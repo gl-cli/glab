@@ -33,9 +33,9 @@ func TestNewCmdSubscribe(t *testing.T) {
 		    token: OTOKEN
 	`))))
 
-	oldSubscribeMR := api.SubscribeToMR
+	oldSubscribeMR := subscribeToMR
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.SubscribeToMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
+	subscribeToMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" || mrID == 0 {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -145,5 +145,5 @@ func TestNewCmdSubscribe(t *testing.T) {
 		})
 	}
 
-	api.SubscribeToMR = oldSubscribeMR
+	subscribeToMR = oldSubscribeMR
 }

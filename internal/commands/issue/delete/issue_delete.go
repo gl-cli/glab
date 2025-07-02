@@ -4,12 +4,21 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/api"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
 
 	"github.com/spf13/cobra"
 )
+
+var deleteIssue = func(client *gitlab.Client, projectID any, issueID int) error {
+	_, err := client.Issues.DeleteIssue(projectID, issueID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	issueDeleteCmd := &cobra.Command{
@@ -42,7 +51,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 					fmt.Fprintf(f.IO().StdErr, "- Deleting issue #%d.\n", issue.IID)
 				}
 
-				err := api.DeleteIssue(gitlabClient, repo.FullName(), issue.IID)
+				err := deleteIssue(gitlabClient, repo.FullName(), issue.IID)
 				if err != nil {
 					return err
 				}

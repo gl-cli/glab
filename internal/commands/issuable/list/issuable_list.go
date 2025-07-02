@@ -273,6 +273,8 @@ func listRun(opts *ListOptions) error {
 	if opts.PerPage != 0 {
 		listOpts.PerPage = opts.PerPage
 		opts.ListType = "search"
+	} else {
+		listOpts.PerPage = api.DefaultListLimit
 	}
 
 	issueType := "issue"
@@ -296,7 +298,7 @@ func listRun(opts *ListOptions) error {
 		title.RepoName = fmt.Sprintf("%s&%d", opts.Group, opts.Epic)
 
 	case opts.Group != "":
-		issues, err = api.ListGroupIssues(client, opts.Group, api.ProjectListIssueOptionsToGroup(listOpts))
+		issues, _, err = client.Issues.ListGroupIssues(opts.Group, projectListIssueOptionsToGroup(listOpts))
 		if err != nil {
 			return err
 		}
@@ -308,7 +310,7 @@ func listRun(opts *ListOptions) error {
 			return err
 		}
 
-		issues, err = api.ListProjectIssues(client, repo.FullName(), listOpts)
+		issues, _, err = client.Issues.ListProjectIssues(repo.FullName(), listOpts)
 		if err != nil {
 			return err
 		}
@@ -350,7 +352,7 @@ func listRun(opts *ListOptions) error {
 
 func userID(client *gitlab.Client, username string) (int, error) {
 	if username == "@me" {
-		me, err := api.CurrentUser(client)
+		me, _, err := client.Users.CurrentUser()
 		if err != nil {
 			return 0, err
 		}
@@ -507,4 +509,37 @@ func hasAnyLabel(issue *gitlab.Issue, labels []string) bool {
 	}
 
 	return false
+}
+
+func projectListIssueOptionsToGroup(l *gitlab.ListProjectIssuesOptions) *gitlab.ListGroupIssuesOptions {
+	var assigneeID *gitlab.AssigneeIDValue
+	if l.AssigneeID != nil {
+		assigneeID = gitlab.AssigneeID(*l.AssigneeID)
+	}
+	return &gitlab.ListGroupIssuesOptions{
+		ListOptions:        l.ListOptions,
+		State:              l.State,
+		Labels:             l.Labels,
+		NotLabels:          l.NotLabels,
+		WithLabelDetails:   l.WithLabelDetails,
+		IIDs:               l.IIDs,
+		Milestone:          l.Milestone,
+		Scope:              l.Scope,
+		AuthorID:           l.AuthorID,
+		NotAuthorID:        l.NotAuthorID,
+		AssigneeID:         assigneeID,
+		NotAssigneeID:      l.NotAssigneeID,
+		AssigneeUsername:   l.AssigneeUsername,
+		MyReactionEmoji:    l.MyReactionEmoji,
+		NotMyReactionEmoji: l.NotMyReactionEmoji,
+		OrderBy:            l.OrderBy,
+		Sort:               l.Sort,
+		Search:             l.Search,
+		In:                 l.In,
+		CreatedAfter:       l.CreatedAfter,
+		CreatedBefore:      l.CreatedBefore,
+		UpdatedAfter:       l.UpdatedAfter,
+		UpdatedBefore:      l.UpdatedBefore,
+		IssueType:          l.IssueType,
+	}
 }

@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/shlex"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	cmdTestUtils "gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
@@ -19,9 +18,9 @@ import (
 )
 
 func TestNewCmdReleaseList(t *testing.T) {
-	oldGetRelease := api.GetRelease
+	oldGetRelease := getRelease
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.GetRelease = func(client *gitlab.Client, projectID any, tag string) (*gitlab.Release, error) {
+	getRelease = func(client *gitlab.Client, projectID any, tag string) (*gitlab.Release, error) {
 		if projectID == "" || projectID == "WRONG_REPO" {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -45,8 +44,8 @@ func TestNewCmdReleaseList(t *testing.T) {
 		}, nil
 	}
 
-	oldListReleases := api.ListReleases
-	api.ListReleases = func(client *gitlab.Client, projectID any, opts *gitlab.ListReleasesOptions) ([]*gitlab.Release, error) {
+	oldListReleases := listReleases
+	listReleases = func(client *gitlab.Client, projectID any, opts *gitlab.ListReleasesOptions) ([]*gitlab.Release, error) {
 		if projectID == "" || projectID == "WRONG_REPO" {
 			return nil, errors.New("fatal: wrong Repository")
 		}
@@ -143,6 +142,6 @@ func TestNewCmdReleaseList(t *testing.T) {
 		})
 	}
 
-	api.GetRelease = oldGetRelease
-	api.ListReleases = oldListReleases
+	getRelease = oldGetRelease
+	listReleases = oldListReleases
 }

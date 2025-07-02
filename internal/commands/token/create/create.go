@@ -173,7 +173,9 @@ func (o *options) run() error {
 			ListOptions: gitlab.ListOptions{PerPage: 100},
 			UserID:      &user.ID,
 		}
-		tokens, err := api.ListPersonalAccessTokens(client, options)
+		tokens, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.PersonalAccessToken, *gitlab.Response, error) {
+			return client.PersonalAccessTokens.ListPersonalAccessTokens(options, p)
+		})
 		if err != nil {
 			return err
 		}
@@ -185,7 +187,11 @@ func (o *options) run() error {
 		}
 
 		if o.user == "@me" {
-			token, err := api.CreatePersonalAccessTokenForCurrentUser(client, o.name, o.scopes, time.Time(expirationDate))
+			token, _, err := client.Users.CreatePersonalAccessTokenForCurrentUser(&gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
+				Name:      gitlab.Ptr(o.name),
+				Scopes:    gitlab.Ptr(o.scopes),
+				ExpiresAt: gitlab.Ptr(expirationDate),
+			})
 			if err != nil {
 				return err
 			}
@@ -198,7 +204,7 @@ func (o *options) run() error {
 				ExpiresAt:   &expirationDate,
 				Scopes:      &o.scopes,
 			}
-			token, err := api.CreatePersonalAccessToken(client, user.ID, createOptions)
+			token, _, err := client.Users.CreatePersonalAccessToken(user.ID, createOptions)
 			if err != nil {
 				return err
 			}
@@ -208,7 +214,9 @@ func (o *options) run() error {
 	} else {
 		if o.group != "" {
 			listOptions := &gitlab.ListGroupAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListGroupAccessTokens(client, o.group, listOptions)
+			tokens, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.GroupAccessToken, *gitlab.Response, error) {
+				return client.GroupAccessTokens.ListGroupAccessTokens(o.group, listOptions, p)
+			})
 			if err != nil {
 				return err
 			}
@@ -219,14 +227,14 @@ func (o *options) run() error {
 				return cmdutils.FlagError{Err: fmt.Errorf("a group access token with the name %s already exists.", o.name)}
 			}
 
-			options := gitlab.CreateGroupAccessTokenOptions{
+			options := &gitlab.CreateGroupAccessTokenOptions{
 				Name:        &o.name,
 				Description: &o.description,
 				Scopes:      &o.scopes,
 				AccessLevel: &o.accessLevel.Value,
 				ExpiresAt:   &expirationDate,
 			}
-			token, err := api.CreateGroupAccessToken(client, o.group, &options)
+			token, _, err := client.GroupAccessTokens.CreateGroupAccessToken(o.group, options)
 			if err != nil {
 				return err
 			}
@@ -239,7 +247,9 @@ func (o *options) run() error {
 				return err
 			}
 			listOptions := &gitlab.ListProjectAccessTokensOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}
-			tokens, err := api.ListProjectAccessTokens(client, repo.FullName(), listOptions)
+			tokens, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.ProjectAccessToken, *gitlab.Response, error) {
+				return client.ProjectAccessTokens.ListProjectAccessTokens(repo.FullName(), listOptions, p)
+			})
 			if err != nil {
 				return err
 			}
@@ -251,14 +261,14 @@ func (o *options) run() error {
 				return cmdutils.FlagError{Err: fmt.Errorf("a project access token with name %s already exists.", o.name)}
 			}
 
-			options := gitlab.CreateProjectAccessTokenOptions{
+			options := &gitlab.CreateProjectAccessTokenOptions{
 				Name:        &o.name,
 				Description: &o.description,
 				Scopes:      &o.scopes,
 				AccessLevel: &o.accessLevel.Value,
 				ExpiresAt:   &expirationDate,
 			}
-			token, err := api.CreateProjectAccessToken(client, repo.FullName(), &options)
+			token, _, err := client.ProjectAccessTokens.CreateProjectAccessToken(repo.FullName(), options)
 			if err != nil {
 				return err
 			}

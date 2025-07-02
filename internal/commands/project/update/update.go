@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
@@ -65,7 +64,7 @@ func runUpdateProject(cmd *cobra.Command, f cmdutils.Factory, args []string) err
 		return err
 	}
 
-	project, err := api.UpdateProject(apiClient, repo.FullName(), opts)
+	project, _, err := apiClient.Projects.EditProject(repo.FullName(), opts)
 	if err != nil {
 		return fmt.Errorf("error updating project: %w", err)
 	}
@@ -99,7 +98,7 @@ func getRepoFromProjectID(projectID string, f cmdutils.Factory) (glrepo.Interfac
 			if err != nil {
 				return nil, err
 			}
-			currentUser, err := api.CurrentUser(apiClient)
+			currentUser, _, err := apiClient.Users.CurrentUser()
 			if err != nil {
 				return nil, cmdutils.WrapError(err, "Failed to retrieve your current user.")
 			}

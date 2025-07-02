@@ -19,6 +19,19 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
+var listMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
+	if opts.PerPage == 0 {
+		opts.PerPage = api.DefaultListLimit
+	}
+
+	notes, _, err := client.Notes.ListMergeRequestNotes(projectID, mrID, opts)
+	if err != nil {
+		return notes, err
+	}
+
+	return notes, nil
+}
+
 type options struct {
 	showComments   bool
 	showSystemLogs bool
@@ -88,7 +101,7 @@ func (o *options) run(f cmdutils.Factory, args []string) error {
 	// does not provide the necessary ability to determine if this value was present or not in the response JSON
 	// since Project.ApprovalsBeforeMerge is a non-pointer type. Because of this, this step will either succeed
 	// and show approval state or it will fail silently
-	mrApprovals, _ := api.GetMRApprovalState(apiClient, baseRepo.FullName(), mr.IID)
+	mrApprovals, _, err := apiClient.MergeRequestApprovals.GetApprovalState(baseRepo.FullName(), mr.IID) //nolint:ineffassign,staticcheck
 
 	cfg := o.config()
 
@@ -112,7 +125,7 @@ func (o *options) run(f cmdutils.Factory, args []string) error {
 			},
 		}
 
-		notes, err = api.ListMRNotes(apiClient, baseRepo.FullName(), mr.IID, l)
+		notes, err = listMRNotes(apiClient, baseRepo.FullName(), mr.IID, l)
 		if err != nil {
 			return err
 		}

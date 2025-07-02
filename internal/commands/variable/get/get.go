@@ -6,6 +6,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/variable/variableutils"
@@ -92,7 +93,9 @@ func (o *options) run() error {
 	var variableValue string
 
 	if o.group != "" {
-		variable, err := api.GetGroupVariable(client, o.group, o.key, o.scope)
+		variable, _, err := client.GroupVariables.GetVariable(o.group, o.key, &gitlab.GetGroupVariableOptions{
+			Filter: &gitlab.VariableFilter{EnvironmentScope: o.scope},
+		})
 		if err != nil {
 			return err
 		}
@@ -107,7 +110,9 @@ func (o *options) run() error {
 			return err
 		}
 
-		variable, err := api.GetProjectVariable(client, baseRepo.FullName(), o.key, o.scope)
+		variable, _, err := client.ProjectVariables.GetVariable(baseRepo.FullName(), o.key, &gitlab.GetProjectVariableOptions{
+			Filter: &gitlab.VariableFilter{EnvironmentScope: o.scope},
+		})
 		if err != nil {
 			return err
 		}

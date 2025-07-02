@@ -1,37 +1,30 @@
 package compile
 
 import (
-	"fmt"
-	"net/http"
+	"errors"
 	"path"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
-	"gitlab.com/gitlab-org/cli/test"
+	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_compileRun(t *testing.T) {
-	type httpMock struct {
-		method string
-		path   string
-		status int
-		body   string
-	}
+	t.Parallel()
 
 	tests := []struct {
-		name             string
-		testFile         string
-		StdOut           string
-		wantErr          bool
-		errMsg           string
-		httpMocks        []httpMock
-		showHaveBaseRepo bool
+		name                 string
+		testFile             string
+		StdOut               string
+		wantErr              bool
+		errMsg               string
+		expectedLintResponse *gitlab.ProjectLintResult
+		showHaveBaseRepo     bool
 	}{
 		{
 			name:             "with invalid path specified",
@@ -40,17 +33,6 @@ func Test_compileRun(t *testing.T) {
 			wantErr:          true,
 			errMsg:           "WRONG_PATH: no such file or directory",
 			showHaveBaseRepo: true,
-			httpMocks: []httpMock{
-				{
-					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO",
-					http.StatusOK,
-					`{
-						"id": 123,
-						"iid": 123
-					}`,
-				},
-			},
 		},
 		{
 			name:             "without base repo",
@@ -59,7 +41,6 @@ func Test_compileRun(t *testing.T) {
 			wantErr:          true,
 			errMsg:           "You must be in a GitLab project repository for this action: no base repository present",
 			showHaveBaseRepo: false,
-			httpMocks:        []httpMock{},
 		},
 		{
 			name:             "when a valid path is specified and yaml is valid",
@@ -68,62 +49,33 @@ func Test_compileRun(t *testing.T) {
 			wantErr:          false,
 			errMsg:           "",
 			showHaveBaseRepo: true,
-			httpMocks: []httpMock{
-				{
-					http.MethodGet,
-					"/api/v4/projects/OWNER/REPO",
-					http.StatusOK,
-					`{
-						"id": 123,
-						"iid": 123
-					}`,
-				},
-				{
-					http.MethodPost,
-					"/api/v4/projects/123/ci/lint",
-					http.StatusOK,
-					`{
-						"valid": true
-					}`,
-				},
+			expectedLintResponse: &gitlab.ProjectLintResult{
+				Valid: true,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fakeHTTP := httpmock.New()
-			defer fakeHTTP.Verify(t)
-
-			for _, mock := range tt.httpMocks {
-				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
+			tc := gitlabtesting.NewTestClient(t)
+			gomock.InOrder(
+				tc.MockProjects.EXPECT().GetProject("OWNER/REPO", gomock.Any()).Return(&gitlab.Project{ID: 123}, nil, nil).MaxTimes(1),
+				tc.MockValidate.EXPECT().ProjectNamespaceLint(123, gomock.Any()).Return(tt.expectedLintResponse, nil, nil).MaxTimes(1),
+			)
+			options := []cmdtest.FactoryOption{cmdtest.WithGitLabClient(tc.Client)}
+			if !tt.showHaveBaseRepo {
+				options = append(options, cmdtest.WithBaseRepoError(errors.New("no base repository present")))
 			}
+			exec := cmdtest.SetupCmdForTest(t, NewCmdConfigCompile, options...)
 
 			args := path.Join(cmdtest.ProjectPath, "test/testdata", tt.testFile)
-
-			result, err := runCommand(t, fakeHTTP, args, tt.showHaveBaseRepo)
+			out, err := exec(args)
 			if tt.wantErr {
 				require.Contains(t, err.Error(), tt.errMsg)
 				return
 			}
 			require.NoError(t, err)
 
-			assert.Equal(t, tt.StdOut, result.String())
+			assert.Equal(t, tt.StdOut, out.OutBuf.String())
 		})
 	}
-}
-
-func runCommand(t *testing.T, rt http.RoundTripper, cli string, showHaveBaseRepo bool) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
-	)
-
-	if !showHaveBaseRepo {
-		factory.BaseRepoStub = func() (glrepo.Interface, error) {
-			return nil, fmt.Errorf("no base repository present")
-		}
-	}
-
-	cmd := NewCmdConfigCompile(factory)
-	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
 }

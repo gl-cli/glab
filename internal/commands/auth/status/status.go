@@ -87,7 +87,7 @@ func (o *options) run() error {
 			apiClient, _ = o.httpClientOverride(token, instance)
 		}
 		if err == nil {
-			user, err := api.CurrentUser(apiClient.Lab())
+			user, _, err := apiClient.Lab().Users.CurrentUser()
 			if err != nil {
 				failedAuth = true
 				addMsg("%s %s: API call failed: %s", c.FailedIcon(), instance, err)

@@ -4,12 +4,23 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/http"
 	"slices"
+	"time"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	glab_api "gitlab.com/gitlab-org/cli/internal/api"
 	"gopkg.in/yaml.v3"
 )
+
+const (
+	commitAuthorName  = "glab"
+	commitAuthorEmail = "noreply@glab.gitlab.com"
+	// agentTokenLimit specifies the maximal amount of agent tokens that can be active per agent at any given time.
+	agentTokenLimit = 2
+)
+
+var agentNotFoundErr = errors.New("agent not found")
 
 var _ API = (*apiWrapper)(nil)
 
@@ -31,11 +42,30 @@ func (a *apiWrapper) GetDefaultBranch() (string, error) {
 }
 
 func (a *apiWrapper) GetAgentByName(name string) (*gitlab.Agent, error) {
-	return glab_api.GetAgentByName(a.client, a.projectID, name)
+	opts := &gitlab.ListAgentsOptions{
+		Page:    1,
+		PerPage: 100,
+	}
+
+	for agent, err := range gitlab.Scan2(func(p gitlab.PaginationOptionFunc) ([]*gitlab.Agent, *gitlab.Response, error) {
+		return a.client.ClusterAgents.ListAgents(a.projectID, opts, p)
+	}) {
+		if err != nil {
+			return nil, err
+		}
+
+		if agent.Name == name {
+			// found
+			return agent, nil
+		}
+	}
+
+	return nil, agentNotFoundErr
 }
 
 func (a *apiWrapper) RegisterAgent(name string) (*gitlab.Agent, error) {
-	return glab_api.RegisterAgent(a.client, a.projectID, name)
+	agent, _, err := a.client.ClusterAgents.RegisterAgent(a.projectID, &gitlab.RegisterAgentOptions{Name: gitlab.Ptr(name)})
+	return agent, err
 }
 
 type agentConfig struct {
@@ -57,7 +87,7 @@ type agentConfigProject struct {
 
 func (a *apiWrapper) ConfigureAgent(agent *gitlab.Agent, branch string) error {
 	configPath := fmt.Sprintf(".gitlab/agents/%s/config.yaml", agent.Name)
-	file, err := glab_api.GetFile(a.client, a.projectID, configPath, branch)
+	file, _, err := a.client.RepositoryFiles.GetFile(a.projectID, configPath, &gitlab.GetFileOptions{Ref: gitlab.Ptr(branch)})
 	if err != nil && !glab_api.Is404(err) {
 		return err
 	}
@@ -78,7 +108,14 @@ func (a *apiWrapper) ConfigureAgent(agent *gitlab.Agent, branch string) error {
 			return err
 		}
 
-		return glab_api.CreateFile(a.client, a.projectID, configPath, configuredContent, branch)
+		_, _, err = a.client.RepositoryFiles.CreateFile(a.projectID, configPath, &gitlab.CreateFileOptions{
+			Branch:        gitlab.Ptr(branch),
+			Content:       gitlab.Ptr(string(configuredContent)),
+			CommitMessage: gitlab.Ptr(fmt.Sprintf("Add %s via glab file sync", configPath)),
+			AuthorName:    gitlab.Ptr(commitAuthorName),
+			AuthorEmail:   gitlab.Ptr(commitAuthorEmail),
+		})
+		return err
 	} else {
 		content, err := base64.StdEncoding.DecodeString(file.Content)
 		if err != nil {
@@ -105,7 +142,14 @@ func (a *apiWrapper) ConfigureAgent(agent *gitlab.Agent, branch string) error {
 			return err
 		}
 
-		return glab_api.UpdateFile(a.client, a.projectID, configPath, configuredContent, branch)
+		_, _, err = a.client.RepositoryFiles.UpdateFile(a.projectID, configPath, &gitlab.UpdateFileOptions{
+			Branch:        gitlab.Ptr(branch),
+			Content:       gitlab.Ptr(string(configuredContent)),
+			CommitMessage: gitlab.Ptr(fmt.Sprintf("Update %s via glab file sync", configPath)),
+			AuthorName:    gitlab.Ptr(commitAuthorName),
+			AuthorEmail:   gitlab.Ptr(commitAuthorEmail),
+		})
+		return err
 	}
 }
 
@@ -135,16 +179,61 @@ func (a *apiWrapper) ConfigureEnvironment(agentID int, name string, kubernetesNa
 }
 
 func (a *apiWrapper) CreateAgentToken(agentID int) (*gitlab.AgentToken, error) {
-	token, _, err := glab_api.CreateAgentToken(a.client, a.projectID, agentID, true)
+	tokens, _, err := a.client.ClusterAgents.ListAgentTokens(a.projectID, agentID, &gitlab.ListAgentTokensOptions{PerPage: agentTokenLimit})
+	if err != nil {
+		return nil, err
+	}
+	if len(tokens) == agentTokenLimit {
+		slices.SortFunc(tokens, agentTokenSortFunc)
+		longestUnusedToken := tokens[0]
+
+		_, err := a.client.ClusterAgents.RevokeAgentToken(a.projectID, agentID, longestUnusedToken.ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// create new token
+	token, _, err := a.client.ClusterAgents.CreateAgentToken(a.projectID, agentID, &gitlab.CreateAgentTokenOptions{
+		Name:        gitlab.Ptr(fmt.Sprintf("glab-bootstrap-%d", time.Now().UTC().Unix())),
+		Description: gitlab.Ptr("Created by the `glab cluster agent bootstrap command"),
+	})
 	return token, err
 }
 
 func (a *apiWrapper) SyncFile(f file, branch string) error {
-	return glab_api.SyncFile(a.client, a.projectID, f.path, f.content, branch)
+	_, resp, err := a.client.RepositoryFiles.GetFileMetaData(a.projectID, f.path, &gitlab.GetFileMetaDataOptions{
+		Ref: gitlab.Ptr(branch),
+	})
+	if err != nil {
+		if resp.StatusCode != http.StatusNotFound {
+			return err
+		}
+
+		// file does not exist yet, lets create it
+		_, _, err := a.client.RepositoryFiles.CreateFile(a.projectID, f.path, &gitlab.CreateFileOptions{
+			Branch:        gitlab.Ptr(branch),
+			Content:       gitlab.Ptr(string(f.content)),
+			CommitMessage: gitlab.Ptr(fmt.Sprintf("Add %s via glab file sync", f.path)),
+			AuthorName:    gitlab.Ptr(commitAuthorName),
+			AuthorEmail:   gitlab.Ptr(commitAuthorEmail),
+		})
+		return err
+	}
+
+	// file already exists, lets update it
+	_, _, err = a.client.RepositoryFiles.UpdateFile(a.projectID, f.path, &gitlab.UpdateFileOptions{
+		Branch:        gitlab.Ptr(branch),
+		Content:       gitlab.Ptr(string(f.content)),
+		CommitMessage: gitlab.Ptr(fmt.Sprintf("Update %s via glab file sync", f.path)),
+		AuthorName:    gitlab.Ptr(commitAuthorName),
+		AuthorEmail:   gitlab.Ptr(commitAuthorEmail),
+	})
+	return err
 }
 
 func (a *apiWrapper) GetKASAddress() (string, error) {
-	metadata, err := glab_api.GetMetadata(a.client)
+	metadata, _, err := a.client.Metadata.GetMetadata()
 	if err != nil {
 		return "", err
 	}
@@ -174,4 +263,14 @@ func (a *apiWrapper) getEnvironmentByName(name string) (*gitlab.Environment, err
 	}
 
 	return envs[0], nil
+}
+
+func agentTokenSortFunc(a, b *gitlab.AgentToken) int {
+	if a.LastUsedAt == nil {
+		return 1
+	}
+	if b.LastUsedAt == nil {
+		return -1
+	}
+	return a.LastUsedAt.Compare(*b.LastUsedAt)
 }

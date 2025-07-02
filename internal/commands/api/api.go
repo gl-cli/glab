@@ -415,7 +415,7 @@ func fillPlaceholders(value string, opts *options) (string, error) {
 			return baseRepo.RepoGroup()
 		case ":user", ":username":
 			h, _ := opts.apiClient("", opts.config)
-			u, e := api.CurrentUser(h.Lab())
+			u, _, e := h.Lab().Users.CurrentUser()
 			if e == nil && u != nil {
 				return u.Username
 			}

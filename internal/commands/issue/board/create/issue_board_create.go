@@ -7,11 +7,21 @@ import (
 
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 )
 
-var boardName string
+var (
+	boardName string
+
+	createIssueBoard = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueBoardOptions) (*gitlab.IssueBoard, error) {
+		board, _, err := client.Boards.CreateIssueBoard(projectID, opts)
+		if err != nil {
+			return nil, err
+		}
+
+		return board, nil
+	}
+)
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	issueCmd := &cobra.Command{
@@ -51,7 +61,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 
 			fmt.Fprintln(out, "- Creating board")
 
-			issueBoard, err := api.CreateIssueBoard(apiClient, repo.FullName(), opts)
+			issueBoard, err := createIssueBoard(apiClient, repo.FullName(), opts)
 			if err != nil {
 				return err
 			}

@@ -3,8 +3,6 @@ package list
 import (
 	"fmt"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
-
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/release/releaseutils"
 	"gitlab.com/gitlab-org/cli/internal/utils"
@@ -12,6 +10,20 @@ import (
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
+
+var getRelease = func(client *gitlab.Client, projectID any, tag string) (*gitlab.Release, error) {
+	release, _, err := client.Releases.GetRelease(projectID, tag)
+	if err != nil {
+		return nil, err
+	}
+
+	return release, nil
+}
+
+var listReleases = func(client *gitlab.Client, projectID any, opts *gitlab.ListReleasesOptions) ([]*gitlab.Release, error) {
+	releases, _, err := client.Releases.ListReleases(projectID, opts)
+	return releases, err
+}
 
 func NewCmdReleaseList(f cmdutils.Factory) *cobra.Command {
 	releaseListCmd := &cobra.Command{
@@ -21,7 +33,7 @@ func NewCmdReleaseList(f cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"ls"},
 		Args:    cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return listReleases(f, cmd)
+			return run(f, cmd)
 		},
 	}
 
@@ -39,7 +51,7 @@ func NewCmdReleaseList(f cmdutils.Factory) *cobra.Command {
 	return releaseListCmd
 }
 
-func listReleases(factory cmdutils.Factory, cmd *cobra.Command) error {
+func run(factory cmdutils.Factory, cmd *cobra.Command) error {
 	l := &gitlab.ListReleasesOptions{}
 
 	page, _ := cmd.Flags().GetInt("page")
@@ -63,7 +75,7 @@ func listReleases(factory cmdutils.Factory, cmd *cobra.Command) error {
 	}
 
 	if tag != "" {
-		release, err := api.GetRelease(apiClient, repo.FullName(), tag)
+		release, err := getRelease(apiClient, repo.FullName(), tag)
 		if err != nil {
 			return err
 		}
@@ -81,7 +93,7 @@ func listReleases(factory cmdutils.Factory, cmd *cobra.Command) error {
 		fmt.Fprintln(factory.IO().StdOut, releaseutils.DisplayRelease(factory.IO(), release, repo))
 	} else {
 
-		releases, err := api.ListReleases(apiClient, repo.FullName(), l)
+		releases, err := listReleases(apiClient, repo.FullName(), l)
 		if err != nil {
 			return err
 		}

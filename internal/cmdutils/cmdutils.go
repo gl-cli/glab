@@ -31,6 +31,38 @@ const (
 	MergeRequestTemplate = "merge_request_templates"
 )
 
+var listLabels = func(client *gitlab.Client, projectID any, opts *gitlab.ListLabelsOptions) ([]*gitlab.Label, error) {
+	labels, _, err := client.Labels.ListLabels(projectID, opts)
+	return labels, err
+}
+
+var projectMilestoneByTitle = func(client *gitlab.Client, projectID any, name string) (*gitlab.Milestone, error) {
+	opts := &gitlab.ListMilestonesOptions{Title: gitlab.Ptr(name), IncludeParentMilestones: gitlab.Ptr(true)}
+
+	if opts.PerPage == 0 {
+		opts.PerPage = api.DefaultListLimit
+	}
+
+	milestones, _, err := client.Milestones.ListMilestones(projectID, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(milestones) != 1 {
+		return nil, fmt.Errorf("failed to find milestone by title: %s", name)
+	}
+
+	return milestones[0], nil
+}
+
+var listProjectMembers = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
+	members, _, err := client.ProjectMembers.ListAllProjectMembers(projectID, opts)
+	if err != nil {
+		return nil, err
+	}
+	return members, nil
+}
+
 // LoadGitLabTemplate finds and loads the GitLab template from the working git directory
 // Follows the format officially supported by GitLab
 // https://docs.gitlab.com/user/project/description_templates/#set-a-default-template-for-merge-requests-and-issues.
@@ -143,9 +175,9 @@ func EditorPrompt(response *string, question, templateContent, editorCommand str
 type GetTextUsingEditor func(editor, tmpFileName, content string) (string, error)
 
 func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote) error {
-	labelOpts := &api.ListLabelsOptions{}
+	labelOpts := &gitlab.ListLabelsOptions{}
 	labelOpts.PerPage = 100
-	labels, err := api.ListLabels(apiClient, repoRemote.FullName(), labelOpts)
+	labels, err := listLabels(apiClient, repoRemote.FullName(), labelOpts)
 	if err != nil {
 		return err
 	}
@@ -234,7 +266,7 @@ func UsersPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrep
 
 	lOpts := &gitlab.ListProjectMembersOptions{}
 	lOpts.PerPage = 100
-	members, err := api.ListProjectMembers(apiClient, repoRemote.FullName(), lOpts)
+	members, err := listProjectMembers(apiClient, repoRemote.FullName(), lOpts)
 	if err != nil {
 		return err
 	}
@@ -367,7 +399,7 @@ func ParseMilestone(apiClient *gitlab.Client, repo glrepo.Interface, milestoneTi
 		return milestoneID, nil
 	}
 
-	milestone, err := api.ProjectMilestoneByTitle(apiClient, repo.FullName(), milestoneTitle)
+	milestone, err := projectMilestoneByTitle(apiClient, repo.FullName(), milestoneTitle)
 	if err != nil {
 		return 0, err
 	}

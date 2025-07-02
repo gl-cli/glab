@@ -68,7 +68,7 @@ func (opts *ListMilestonesOptions) ListGroupMilestonesOptions() *gitlab.ListGrou
 	return groupOpts
 }
 
-var ListGroupMilestones = func(client *gitlab.Client, groupID any, opts *gitlab.ListGroupMilestonesOptions) ([]*gitlab.GroupMilestone, error) {
+func listGroupMilestones(client *gitlab.Client, groupID any, opts *gitlab.ListGroupMilestonesOptions) ([]*gitlab.GroupMilestone, error) {
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -80,7 +80,7 @@ var ListGroupMilestones = func(client *gitlab.Client, groupID any, opts *gitlab.
 	return milestone, nil
 }
 
-var ListProjectMilestones = func(client *gitlab.Client, projectID any, opts *gitlab.ListMilestonesOptions) ([]*gitlab.Milestone, error) {
+func listProjectMilestones(client *gitlab.Client, projectID any, opts *gitlab.ListMilestonesOptions) ([]*gitlab.Milestone, error) {
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -90,25 +90,6 @@ var ListProjectMilestones = func(client *gitlab.Client, projectID any, opts *git
 		return nil, err
 	}
 	return milestone, nil
-}
-
-var ProjectMilestoneByTitle = func(client *gitlab.Client, projectID any, name string) (*gitlab.Milestone, error) {
-	opts := &gitlab.ListMilestonesOptions{Title: gitlab.Ptr(name), IncludeParentMilestones: gitlab.Ptr(true)}
-
-	if opts.PerPage == 0 {
-		opts.PerPage = DefaultListLimit
-	}
-
-	milestones, _, err := client.Milestones.ListMilestones(projectID, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(milestones) != 1 {
-		return nil, fmt.Errorf("failed to find milestone by title: %s", name)
-	}
-
-	return milestones[0], nil
 }
 
 var ListAllMilestones = func(client *gitlab.Client, projectID any, opts *ListMilestonesOptions) ([]*Milestone, error) {
@@ -123,14 +104,14 @@ var ListAllMilestones = func(client *gitlab.Client, projectID any, opts *ListMil
 
 	errGroup.Go(func() error {
 		var err error
-		projectMilestones, err = ListProjectMilestones(client, projectID, opts.ListProjectMilestonesOptions())
+		projectMilestones, err = listProjectMilestones(client, projectID, opts.ListProjectMilestonesOptions())
 		return err
 	})
 
 	if project.Namespace.Kind == NamespaceKindGroup {
 		errGroup.Go(func() error {
 			var err error
-			groupMilestones, err = ListGroupMilestones(client, project.Namespace.ID, opts.ListGroupMilestonesOptions())
+			groupMilestones, err = listGroupMilestones(client, project.Namespace.ID, opts.ListGroupMilestonesOptions())
 			return err
 		})
 	}

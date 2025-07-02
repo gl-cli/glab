@@ -3,15 +3,19 @@ package unsubscribe
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/api"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
 
 	"github.com/spf13/cobra"
 )
+
+// errIssuableUserNotSubscribed received when trying to unsubscribe from an issue the user is not subscribed to
+var errIssuableUserNotSubscribed = errors.New("you are not subscribed to this issue")
 
 var unsubscribingMessage = map[issuable.IssueType]string{
 	issuable.TypeIssue:    "Unsubscribing from issue",
@@ -65,9 +69,9 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 					)
 				}
 
-				issue, err := api.UnsubscribeFromIssue(gitlabClient, repo.FullName(), issue.IID, nil)
+				issue, err := unsubscribe(gitlabClient, repo.FullName(), issue.IID, nil)
 				if err != nil {
-					if errors.Is(err, api.ErrIssuableUserNotSubscribed) {
+					if errors.Is(err, errIssuableUserNotSubscribed) {
 						fmt.Fprintf(
 							f.IO().StdOut,
 							"%s You are not subscribed to this %s.\n\n",
@@ -87,4 +91,19 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 	}
 
 	return issueUnsubscribeCmd
+}
+
+func unsubscribe(client *gitlab.Client, projectID any, issueID int, opts gitlab.RequestOptionFunc) (*gitlab.Issue, error) {
+	issue, resp, err := client.Issues.UnsubscribeFromIssue(projectID, issueID, opts)
+	if err != nil {
+		if resp != nil {
+			// If the user is not subscribed to the issue, the status code 304 is returned.
+			if resp.StatusCode == http.StatusNotModified {
+				return nil, errIssuableUserNotSubscribed
+			}
+		}
+		return issue, err
+	}
+
+	return issue, nil
 }

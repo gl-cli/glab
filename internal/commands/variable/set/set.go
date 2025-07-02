@@ -138,7 +138,7 @@ func (o *options) run() error {
 			Description:      gitlab.Ptr(o.description),
 		}
 
-		_, err = api.CreateGroupVariable(client, o.group, createVarOpts)
+		_, _, err := client.GroupVariables.CreateVariable(o.group, createVarOpts)
 		if err != nil {
 			return err
 		}
@@ -162,7 +162,7 @@ func (o *options) run() error {
 		Raw:              gitlab.Ptr(o.raw),
 		Description:      gitlab.Ptr(o.description),
 	}
-	_, err = api.CreateProjectVariable(client, baseRepo.FullName(), createVarOpts)
+	_, _, err = client.ProjectVariables.CreateVariable(baseRepo.FullName(), createVarOpts)
 	if err != nil {
 		return err
 	}

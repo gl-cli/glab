@@ -314,7 +314,7 @@ var GetMRForBranch = func(apiClient *gitlab.Client, mrOpts MrOptions) (*gitlab.B
 
 func RebaseMR(ios *iostreams.IOStreams, apiClient *gitlab.Client, repo glrepo.Interface, mr *gitlab.MergeRequest, rebaseOpts *gitlab.RebaseMergeRequestOptions) error {
 	ios.StartSpinner("Sending rebase request...")
-	err := api.RebaseMR(apiClient, repo.FullName(), mr.IID, rebaseOpts)
+	_, err := apiClient.MergeRequests.RebaseMergeRequest(repo.FullName(), mr.IID, rebaseOpts)
 	if err != nil {
 		return err
 	}

@@ -197,7 +197,7 @@ func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
 		return 0, fmt.Errorf("get branch: %w", err)
 	}
 
-	pipeline, err := api.GetLatestPipeline(opts.ApiClient, opts.Repo.FullName(), branch)
+	pipeline, _, err := opts.ApiClient.Pipelines.GetLatestPipeline(opts.Repo.FullName(), &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
 	if err != nil {
 		return 0, fmt.Errorf("get last pipeline: %w", err)
 	}
@@ -246,7 +246,14 @@ func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
 
 	fmt.Fprintf(opts.IO.StdOut, "Getting jobs for pipeline %d...\n\n", pipelineId)
 
-	jobs, err := api.GetPipelineJobs(opts.ApiClient, pipelineId, opts.Repo.FullName())
+	listOptions := &gitlab.ListJobsOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: 100,
+		},
+	}
+	jobs, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.Job, *gitlab.Response, error) {
+		return opts.ApiClient.Jobs.ListPipelineJobs(opts.Repo.FullName(), pipelineId, listOptions)
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -289,12 +296,12 @@ func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
 		return 0, nil
 	}
 
-	pipeline, err := api.GetPipeline(opts.ApiClient, pipelineId, nil, opts.Repo.FullName())
+	pipeline, _, err := opts.ApiClient.Pipelines.GetPipeline(opts.Repo.FullName(), pipelineId)
 	if err != nil {
 		return 0, err
 	}
 	// use commit statuses to show external jobs
-	cs, err := api.GetCommitStatuses(opts.ApiClient, opts.Repo.FullName(), pipeline.SHA)
+	cs, _, err := opts.ApiClient.Commits.GetCommitStatuses(opts.Repo.FullName(), pipeline.SHA, &gitlab.GetCommitStatusesOptions{All: gitlab.Ptr(true)})
 	if err != nil {
 		return 0, nil
 	}

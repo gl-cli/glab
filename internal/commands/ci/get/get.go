@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/git"
@@ -68,7 +67,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 					}
 				}
 
-				commit, err := api.GetCommit(apiClient, repo.FullName(), branch)
+				commit, _, err := apiClient.Commits.GetCommit(repo.FullName(), branch, nil)
 				if err != nil {
 					return err
 				}
@@ -93,14 +92,16 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 				msgNotFound = fmt.Sprintf("No pipelines running or available on branch: %s", branch)
 			}
 
-			pipeline, err := api.GetPipeline(apiClient, pipelineId, nil, repo.FullName())
+			pipeline, _, err := apiClient.Pipelines.GetPipeline(repo.FullName(), pipelineId)
 			if err != nil {
 				redCheck := c.Red("✘")
 				fmt.Fprintf(f.IO().StdOut, "%s %s\n", redCheck, msgNotFound)
 				return err
 			}
 
-			jobs, err := api.GetPipelineJobs(apiClient, pipelineId, repo.FullName())
+			jobs, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.Job, *gitlab.Response, error) {
+				return apiClient.Jobs.ListPipelineJobs(repo.FullName(), pipelineId, &gitlab.ListJobsOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}, p)
+			})
 			if err != nil {
 				return err
 			}
@@ -109,7 +110,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 
 			var variables []*gitlab.PipelineVariable
 			if showVariables {
-				variables, err = api.GetPipelineVariables(apiClient, pipelineId, nil, pipeline.ProjectID)
+				variables, _, err = apiClient.Pipelines.GetPipelineVariables(pipeline.ProjectID, pipelineId)
 				if err != nil {
 					return err
 				}

@@ -13,7 +13,6 @@ import (
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -169,7 +168,7 @@ func runDeletion(pipelineIDs []int, dryRunMode bool, w io.Writer, c *iostreams.C
 			continue
 		}
 
-		err := api.DeletePipeline(apiClient, repo.FullName(), id)
+		_, err := apiClient.Pipelines.DeletePipeline(repo.FullName(), id)
 		if err != nil {
 			return err
 		}

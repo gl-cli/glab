@@ -61,6 +61,28 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	return labelListCmd
 }
 
+type listLabelsOptions struct {
+	withCounts *bool
+	perPage    int
+	page       int
+}
+
+func (opts *listLabelsOptions) listLabelsOptions() *gitlab.ListLabelsOptions {
+	projectOpts := &gitlab.ListLabelsOptions{}
+	projectOpts.WithCounts = opts.withCounts
+	projectOpts.PerPage = opts.perPage
+	projectOpts.Page = opts.page
+	return projectOpts
+}
+
+func (opts *listLabelsOptions) listGroupLabelsOptions() *gitlab.ListGroupLabelsOptions {
+	groupOpts := &gitlab.ListGroupLabelsOptions{}
+	groupOpts.WithCounts = opts.withCounts
+	groupOpts.PerPage = opts.perPage
+	groupOpts.Page = opts.page
+	return groupOpts
+}
+
 func (o *options) run() error {
 	var err error
 
@@ -77,20 +99,22 @@ func (o *options) run() error {
 	}
 	client := apiClient.Lab()
 
-	labelApiOpts := &api.ListLabelsOptions{}
-	labelApiOpts.WithCounts = gitlab.Ptr(true)
+	labelApiOpts := &listLabelsOptions{}
+	labelApiOpts.withCounts = gitlab.Ptr(true)
 
-	if p := o.page; p != 0 {
-		labelApiOpts.Page = p
+	if o.page != 0 {
+		labelApiOpts.page = o.page
 	}
-	if pp := o.perPage; pp != 0 {
-		labelApiOpts.PerPage = pp
+	if o.perPage != 0 {
+		labelApiOpts.perPage = o.perPage
+	} else {
+		labelApiOpts.perPage = api.DefaultListLimit
 	}
 
 	var labelBuilder strings.Builder
 
 	if o.group != "" {
-		labels, err := api.ListGroupLabels(client, o.group, labelApiOpts)
+		labels, _, err := client.GroupLabels.ListGroupLabels(o.group, labelApiOpts.listGroupLabelsOptions())
 		if err != nil {
 			return err
 		}
@@ -109,7 +133,7 @@ func (o *options) run() error {
 			return err
 		}
 
-		labels, err := api.ListLabels(client, repo.FullName(), labelApiOpts)
+		labels, _, err := client.Labels.ListLabels(repo.FullName(), labelApiOpts.listLabelsOptions())
 		if err != nil {
 			return err
 		}

@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
-
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -32,7 +30,7 @@ func Test_projectCreateCmd(t *testing.T) {
 	`))))
 	// to skip creation of local project directory, set prompt to false
 
-	api.CreateProject = func(client *gitlab.Client, opts *gitlab.CreateProjectOptions) (*gitlab.Project, error) {
+	createProject = func(client *gitlab.Client, opts *gitlab.CreateProjectOptions) (*gitlab.Project, error) {
 		return &gitlab.Project{
 			ID:                1,
 			Name:              *opts.Name,
@@ -40,7 +38,7 @@ func Test_projectCreateCmd(t *testing.T) {
 		}, nil
 	}
 
-	api.CurrentUser = func(client *gitlab.Client) (*gitlab.User, error) {
+	currentUser = func(client *gitlab.Client) (*gitlab.User, error) {
 		return &gitlab.User{
 			ID:       1,
 			Username: "username",

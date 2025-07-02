@@ -11,7 +11,6 @@ import (
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/dbg"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -114,7 +113,7 @@ func readZip(artifact *bytes.Reader, path string, zipReadLimit int64, zipFileLim
 }
 
 func DownloadArtifacts(apiClient *gitlab.Client, repo glrepo.Interface, path string, refName string, jobName string) error {
-	artifact, err := api.DownloadArtifactJob(apiClient, repo.FullName(), refName, &gitlab.DownloadArtifactsFileOptions{Job: &jobName})
+	artifact, _, err := apiClient.Jobs.DownloadArtifactsFile(repo.FullName(), refName, &gitlab.DownloadArtifactsFileOptions{Job: &jobName}, nil)
 	if err != nil {
 		return err
 	}

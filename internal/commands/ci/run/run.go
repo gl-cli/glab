@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
@@ -103,11 +102,8 @@ func createPipeline(cmd *cobra.Command, c *gitlab.CreatePipelineOptions, f cmdut
 
 func createBranchPipeline(branch string, c *gitlab.CreatePipelineOptions, apiClient *gitlab.Client, repo glrepo.Interface) (*gitlab.Pipeline, error) {
 	c.Ref = gitlab.Ptr(branch)
-	pipe, err := api.CreatePipeline(apiClient, repo.FullName(), c)
-	if err != nil {
-		return nil, err
-	}
-	return pipe, nil
+	pipe, _, err := apiClient.Pipelines.CreatePipeline(repo.FullName(), c)
+	return pipe, err
 }
 
 func resolveBranch(cmd *cobra.Command, f cmdutils.Factory) (string, error) {
@@ -139,7 +135,7 @@ func createMrPipeline(branch string, f cmdutils.Factory, apiClient *gitlab.Clien
 		return nil, err
 	}
 
-	pipe, err := api.CreateMergeRequestPipeline(apiClient, repo.FullName(), mr.IID)
+	pipe, _, err := apiClient.MergeRequests.CreateMergeRequestPipeline(repo.FullName(), mr.IID)
 	if err != nil {
 		return nil, err
 	}

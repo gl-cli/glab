@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/api"
 
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -36,7 +35,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 
 			o := &gitlab.DeleteLabelOptions{}
 
-			err = api.DeleteLabel(apiClient, repo.FullName(), args[0], o)
+			_, err = apiClient.Labels.DeleteLabel(repo.FullName(), args[0], o)
 			if err != nil {
 				return err
 			}

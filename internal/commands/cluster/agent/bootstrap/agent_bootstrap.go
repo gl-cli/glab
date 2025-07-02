@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 
-	glab_api "gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -412,7 +411,7 @@ func (c *bootstrapCmd) run() error {
 func (c *bootstrapCmd) registerAgent() (*gitlab.Agent, error) {
 	agent, err := c.api.GetAgentByName(c.agentName)
 	if err != nil {
-		if !errors.Is(err, glab_api.AgentNotFoundErr) {
+		if !errors.Is(err, agentNotFoundErr) {
 			return nil, err
 		}
 

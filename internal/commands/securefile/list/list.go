@@ -55,7 +55,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 				l.PerPage = p
 			}
 
-			files, err := api.ListSecureFiles(apiClient, l, repo.FullName())
+			files, _, err := apiClient.SecureFiles.ListProjectSecureFiles(repo.FullName(), l)
 			if err != nil {
 				return fmt.Errorf("Error listing secure files: %v", err)
 			}

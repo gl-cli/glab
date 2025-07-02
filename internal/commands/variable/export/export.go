@@ -114,7 +114,7 @@ func (o *options) run() error {
 
 	if o.group != "" {
 		createVarOpts := &gitlab.ListGroupVariablesOptions{Page: o.page, PerPage: o.perPage}
-		groupVariables, err := api.ListGroupVariables(client, o.group, createVarOpts)
+		groupVariables, _, err := client.GroupVariables.ListVariables(o.group, createVarOpts)
 		if err != nil {
 			return err
 		}
@@ -132,8 +132,8 @@ func (o *options) run() error {
 		if err != nil {
 			return err
 		}
-		createVarOpts := &gitlab.ListProjectVariablesOptions{Page: o.page, PerPage: o.perPage}
-		projectVariables, err := api.ListProjectVariables(client, repo.FullName(), createVarOpts)
+		listOpts := &gitlab.ListProjectVariablesOptions{Page: o.page, PerPage: o.perPage}
+		projectVariables, _, err := client.ProjectVariables.ListVariables(repo.FullName(), listOpts)
 		if err != nil {
 			return err
 		}

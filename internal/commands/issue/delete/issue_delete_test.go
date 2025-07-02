@@ -23,7 +23,7 @@ func TestNewCmdDelete(t *testing.T) {
 
 	oldDeleteMR := api.DeleteMR
 
-	api.DeleteIssue = func(client *gitlab.Client, projectID any, issueID int) error {
+	deleteIssue = func(_ *gitlab.Client, projectID any, issueID int) error {
 		if projectID == "" || projectID == "NAMESPACE/WRONG_REPO" || projectID == "expected_err" || issueID == 0 {
 			return fmt.Errorf("error expected")
 		}

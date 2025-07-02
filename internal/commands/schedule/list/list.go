@@ -3,7 +3,6 @@ package list
 import (
 	"fmt"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/internal/utils"
@@ -12,6 +11,11 @@ import (
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
+
+var getSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {
+	schedules, _, err := client.PipelineSchedules.ListPipelineSchedules(repo, l)
+	return schedules, err
+}
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	scheduleListCmd := &cobra.Command{
@@ -44,7 +48,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			perPage, _ := cmd.Flags().GetInt("per-page")
 			l.PerPage = perPage
 
-			schedules, err := api.GetSchedules(apiClient, l, repo.FullName())
+			schedules, err := getSchedules(apiClient, l, repo.FullName())
 			if err != nil {
 				return err
 			}

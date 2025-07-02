@@ -101,8 +101,8 @@ func (o *options) run() error {
 
 	if o.group != "" {
 		o.io.Logf("Listing variables for the %s group:\n\n", color.Bold(o.group))
-		createVarOpts := &gitlab.ListGroupVariablesOptions{Page: o.page, PerPage: o.perPage}
-		variables, err := api.ListGroupVariables(client, o.group, createVarOpts)
+		listOpts := &gitlab.ListGroupVariablesOptions{Page: o.page, PerPage: o.perPage}
+		variables, _, err := client.GroupVariables.ListVariables(o.group, listOpts)
 		if err != nil {
 			return err
 		}
@@ -121,8 +121,8 @@ func (o *options) run() error {
 			return err
 		}
 		o.io.Logf("Listing variables for the %s project:\n\n", color.Bold(repo.FullName()))
-		createVarOpts := &gitlab.ListProjectVariablesOptions{Page: o.page, PerPage: o.perPage}
-		variables, err := api.ListProjectVariables(client, repo.FullName(), createVarOpts)
+		listOpts := &gitlab.ListProjectVariablesOptions{Page: o.page, PerPage: o.perPage}
+		variables, _, err := client.ProjectVariables.ListVariables(repo.FullName(), listOpts)
 		if err != nil {
 			return err
 		}

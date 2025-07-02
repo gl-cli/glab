@@ -8,7 +8,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 
@@ -63,9 +62,7 @@ func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 				return errors.New("aborted... Note is empty.")
 			}
 
-			noteInfo, err := api.CreateIssueNote(gitlabClient, repo.FullName(), issue.IID, &gitlab.CreateIssueNoteOptions{
-				Body: &body,
-			})
+			noteInfo, _, err := gitlabClient.Notes.CreateIssueNote(repo.FullName(), issue.IID, &gitlab.CreateIssueNoteOptions{Body: &body})
 			if err != nil {
 				return err
 			}

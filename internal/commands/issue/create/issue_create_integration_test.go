@@ -37,9 +37,9 @@ func Test_IssueCreate_Integration(t *testing.T) {
 		},
 	})
 
-	oldCreateIssue := api.CreateIssue
+	oldCreateIssue := createIssue
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.CreateIssue = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
+	createIssue = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -94,7 +94,7 @@ func Test_IssueCreate_Integration(t *testing.T) {
 	assert.Equal(t, "- Creating issue in cli-automated-testing/test\n", outErr)
 	assert.Contains(t, out, glTestHost+"/cli-automated-testing/test/-/issues/1")
 
-	api.CreateIssue = oldCreateIssue
+	createIssue = oldCreateIssue
 }
 
 func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
@@ -111,9 +111,9 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 		},
 	})
 
-	oldCreateIssue := api.CreateIssue
+	oldCreateIssue := createIssue
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.CreateIssue = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
+	createIssue = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}
@@ -195,5 +195,5 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 	assert.Equal(t, "- Creating issue in cli-automated-testing/test\n", newoutErr)
 	assert.Contains(t, newout, glTestHost+"/cli-automated-testing/test/-/issues/2")
 
-	api.CreateIssue = oldCreateIssue
+	createIssue = oldCreateIssue
 }

@@ -21,6 +21,17 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
+var listIssueNotes = func(client *gitlab.Client, projectID any, issueID int, opts *gitlab.ListIssueNotesOptions) ([]*gitlab.Note, error) {
+	if opts.PerPage == 0 {
+		opts.PerPage = api.DefaultListLimit
+	}
+	notes, _, err := client.Notes.ListIssueNotes(projectID, issueID, opts)
+	if err != nil {
+		return nil, err
+	}
+	return notes, nil
+}
+
 type IssueWithNotes struct {
 	*gitlab.Issue
 	Notes []*gitlab.Note
@@ -129,7 +140,7 @@ func (o *options) run(issueType issuable.IssueType, args []string) error {
 		if o.commentLimit != 0 {
 			l.PerPage = o.commentLimit
 		}
-		o.notes, err = api.ListIssueNotes(gitlabClient, baseRepo.FullName(), o.issue.IID, l)
+		o.notes, err = listIssueNotes(gitlabClient, baseRepo.FullName(), o.issue.IID, l)
 		if err != nil {
 			return err
 		}

@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/shlex"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	glab_api "gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"go.uber.org/mock/gomock"
@@ -59,7 +58,7 @@ func TestAgentBootstrap_HappyPath_AgentNotRegisteredYet(t *testing.T) {
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
 		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
-		api.EXPECT().GetAgentByName(agentName).Return(nil, glab_api.AgentNotFoundErr),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, agentNotFoundErr),
 		api.EXPECT().RegisterAgent(agentName).Return(agent, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Agent ... ")),
@@ -185,7 +184,7 @@ func TestAgentBootstrap_HappyPath_NoEnvironmentCreation(t *testing.T) {
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
 		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
-		api.EXPECT().GetAgentByName(agentName).Return(nil, glab_api.AgentNotFoundErr),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, agentNotFoundErr),
 		api.EXPECT().RegisterAgent(agentName).Return(agent, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Agent ... ")),
@@ -248,7 +247,7 @@ func TestAgentBootstrap_HappyPath_CustomEnvironmentValues(t *testing.T) {
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
 		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
-		api.EXPECT().GetAgentByName(agentName).Return(nil, glab_api.AgentNotFoundErr),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, agentNotFoundErr),
 		api.EXPECT().RegisterAgent(agentName).Return(agent, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Agent ... ")),
@@ -318,7 +317,7 @@ func TestAgentBootstrap_HappyPath_NoReconcile(t *testing.T) {
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
 		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
-		api.EXPECT().GetAgentByName(agentName).Return(nil, glab_api.AgentNotFoundErr),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, agentNotFoundErr),
 		api.EXPECT().RegisterAgent(agentName).Return(agent, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Agent ... ")),
@@ -381,7 +380,7 @@ func TestAgentBootstrap_HappyPath_CustomFluxHelmManifestFileNames(t *testing.T) 
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
 		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
-		api.EXPECT().GetAgentByName(agentName).Return(nil, glab_api.AgentNotFoundErr),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, agentNotFoundErr),
 		api.EXPECT().RegisterAgent(agentName).Return(agent, nil),
 		stderr.EXPECT().Write([]byte("[OK]\n")),
 		stderr.EXPECT().Write([]byte("Configuring Agent ... ")),
@@ -462,7 +461,7 @@ func TestAgentBootstrap_Error_RegisterAgent(t *testing.T) {
 	gomock.InOrder(
 		api.EXPECT().GetDefaultBranch().Return(defaultBranch, nil),
 		stderr.EXPECT().Write([]byte("Registering Agent ... ")),
-		api.EXPECT().GetAgentByName(agentName).Return(nil, glab_api.AgentNotFoundErr),
+		api.EXPECT().GetAgentByName(agentName).Return(nil, agentNotFoundErr),
 		api.EXPECT().RegisterAgent(agentName).Return(nil, actualErr),
 		stderr.EXPECT().Write([]byte("[FAILED]\n")),
 		stderr.EXPECT().Write(ContainsBytes([]byte(actualErr.Error()))),

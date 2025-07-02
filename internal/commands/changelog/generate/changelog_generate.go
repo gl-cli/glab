@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/api"
 
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -35,7 +34,7 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			opts := &gitlab.GenerateChangelogDataOptions{}
+			opts := gitlab.GenerateChangelogDataOptions{}
 
 			// Set the version
 			if s, _ := cmd.Flags().GetString("version"); s != "" {
@@ -93,7 +92,7 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			changelog, err := api.GenerateChangelog(apiClient, project.ID, opts)
+			changelog, _, err := apiClient.Repositories.GenerateChangelogData(project.ID, opts)
 			if err != nil {
 				return err
 			}
