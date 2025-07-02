@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -176,7 +177,7 @@ func NewCmdApi(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 			if runF != nil {
 				return runF(&opts)
 			}
-			return opts.run()
+			return opts.run(cmd.Context())
 		},
 	}
 
@@ -212,7 +213,7 @@ func (o *options) validate(cmd *cobra.Command) error {
 	return nil
 }
 
-func (o *options) run() error {
+func (o *options) run(ctx context.Context) error {
 	params, err := parseFields(o)
 	if err != nil {
 		return err
@@ -274,7 +275,7 @@ func (o *options) run() error {
 
 	hasNextPage := true
 	for hasNextPage {
-		resp, err := httpRequest(client, method, requestPath, requestBody, requestHeaders)
+		resp, err := httpRequest(ctx, client, method, requestPath, requestBody, requestHeaders)
 		if err != nil {
 			return err
 		}

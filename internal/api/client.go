@@ -310,8 +310,8 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	return NewClient(options...)
 }
 
-func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, headers []string, bodyIsJSON bool) (*http.Request, error) {
-	req, err := http.NewRequest(method, baseURL.String(), body)
+func NewHTTPRequest(ctx context.Context, c *Client, method string, baseURL *url.URL, body io.Reader, headers []string, bodyIsJSON bool) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, method, baseURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -341,8 +341,7 @@ func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, 
 		req.Header.Set("User-Agent", c.Lab().UserAgent)
 	}
 
-	// FIXME: use proper context?
-	name, value, err := c.authSource.Header(context.Background())
+	name, value, err := c.authSource.Header(ctx)
 	if err != nil {
 		return nil, err
 	}

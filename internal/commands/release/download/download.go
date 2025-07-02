@@ -1,6 +1,7 @@
 package download
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -66,7 +67,7 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 
-			return opts.run()
+			return opts.run(cmd.Context())
 		},
 	}
 
@@ -82,7 +83,7 @@ func (o *options) complete(args []string) {
 	}
 }
 
-func (o *options) run() error {
+func (o *options) run(ctx context.Context) error {
 	client, err := o.httpClient()
 	if err != nil {
 		return err
@@ -162,7 +163,7 @@ func (o *options) run() error {
 	if err != nil {
 		return err
 	}
-	err = downloadAssets(c, o.io, downloadableAssets, o.dir)
+	err = downloadAssets(ctx, c, o.io, downloadableAssets, o.dir)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to download release.")
 	}
@@ -182,7 +183,7 @@ func matchAny(patterns []string, name string) bool {
 	return false
 }
 
-func downloadAssets(httpClient *api.Client, io *iostreams.IOStreams, toDownload []*upload.ReleaseAsset, destDir string) error {
+func downloadAssets(ctx context.Context, httpClient *api.Client, io *iostreams.IOStreams, toDownload []*upload.ReleaseAsset, destDir string) error {
 	color := io.Color()
 	for _, asset := range toDownload {
 		io.Logf("%s downloading file %s=%s %s=%s.\n",
@@ -204,7 +205,7 @@ func downloadAssets(httpClient *api.Client, io *iostreams.IOStreams, toDownload 
 			return fmt.Errorf("invalid file path name.")
 		}
 
-		err = downloadAsset(httpClient, *asset.URL, destPath)
+		err = downloadAsset(ctx, httpClient, *asset.URL, destPath)
 		if err != nil {
 			return err
 		}
@@ -222,13 +223,13 @@ func sanitizeAssetName(asset string) string {
 	return filepath.Clean(asset)
 }
 
-func downloadAsset(client *api.Client, assetURL, destinationPath string) error {
+func downloadAsset(ctx context.Context, client *api.Client, assetURL, destinationPath string) error {
 	var body io.Reader
 	// color := streams.Color()
 
 	baseURL, _ := url.Parse(assetURL)
 
-	req, err := api.NewHTTPRequest(client, http.MethodGet, baseURL, body, []string{"Accept:application/octet-stream"}, false)
+	req, err := api.NewHTTPRequest(ctx, client, http.MethodGet, baseURL, body, []string{"Accept:application/octet-stream"}, false)
 	if err != nil {
 		return err
 	}

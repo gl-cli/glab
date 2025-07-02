@@ -255,7 +255,7 @@ hosts:
 		}
 		httpClient := cmdtest.NewTestApiClient(t, client, "OTOKEN", tt.args.host, options...)
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := httpRequest(httpClient, tt.args.method, tt.args.p, tt.args.params, tt.args.headers)
+			got, err := httpRequest(t.Context(), httpClient, tt.args.method, tt.args.p, tt.args.params, tt.args.headers)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("httpRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return

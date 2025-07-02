@@ -68,7 +68,7 @@ func Test_downloadAssets(t *testing.T) {
 
 			filePathWanted := filepath.Join(tempPath, tt.want)
 
-			err := downloadAssets(client, io, releases, tempPath)
+			err := downloadAssets(t.Context(), client, io, releases, tempPath)
 
 			if tt.wantErr {
 				assert.Error(t, err, "Should error out if a path doesn't exist")
