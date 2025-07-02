@@ -37,6 +37,10 @@ type BuildInfo struct {
 	Version, Commit, Platform, Architecture string
 }
 
+func (i BuildInfo) UserAgent() string {
+	return fmt.Sprintf("glab/%s (%s, %s)", i.Version, i.Platform, i.Architecture)
+}
+
 // Client represents an argument to NewClient
 type Client struct {
 	// gitlabClient represents GitLab API client.
@@ -64,19 +68,17 @@ type Client struct {
 	userAgent string
 }
 
-func (i BuildInfo) UserAgent() string {
-	return fmt.Sprintf("glab/%s (%s, %s)", i.Version, i.Platform, i.Architecture)
-}
-
 func (c *Client) HTTPClient() *http.Client {
-	if c.httpClient != nil {
-		return c.httpClient
-	}
-	return &http.Client{}
+	return c.httpClient
 }
 
 func (c *Client) Token() string {
 	return c.token
+}
+
+// Lab returns the initialized GitLab client.
+func (c *Client) Lab() *gitlab.Client {
+	return c.gitlabClient
 }
 
 var secureCipherSuites = []uint16{
@@ -312,11 +314,6 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	}
 
 	return NewClient(apiHost, authToken, isGraphQL, isOAuth2, isJobToken, userAgent, options...)
-}
-
-// Lab returns the initialized GitLab client.
-func (c *Client) Lab() *gitlab.Client {
-	return c.gitlabClient
 }
 
 func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, headers []string, bodyIsJSON bool) (*http.Request, error) {
