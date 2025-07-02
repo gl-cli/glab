@@ -10,18 +10,30 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 )
 
-var (
+type options struct {
+	io         *iostreams.IOStreams
+	httpClient func() (*gitlab.Client, error)
+	baseRepo   func() (glrepo.Interface, error)
+
+	path        string
 	ref         string
 	dryRun      bool
 	includeJobs bool
-)
+}
 
 func NewCmdLint(f cmdutils.Factory) *cobra.Command {
+	opts := options{
+		io:         f.IO(),
+		httpClient: f.HttpClient,
+		baseRepo:   f.BaseRepo,
+	}
 	pipelineCILintCmd := &cobra.Command{
 		Use:   "lint",
 		Short: "Checks if your `.gitlab-ci.yml` file is valid.",
@@ -33,32 +45,37 @@ func NewCmdLint(f cmdutils.Factory) *cobra.Command {
 			$ glab ci lint path/to/.gitlab-ci.yml
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			path := ".gitlab-ci.yml"
-			if len(args) == 1 {
-				path = args[0]
-			}
-			return lintRun(f, path)
+			opts.complete(args)
+			return opts.run()
 		},
 	}
 
-	pipelineCILintCmd.Flags().BoolVarP(&dryRun, "dry-run", "", false, "Run pipeline creation simulation.")
-	pipelineCILintCmd.Flags().BoolVarP(&includeJobs, "include-jobs", "", false, "Response includes the list of jobs that would exist in a static check or pipeline simulation.")
-	pipelineCILintCmd.Flags().StringVar(&ref, "ref", "", "When 'dry-run' is true, sets the branch or tag context for validating the CI/CD YAML configuration.")
+	pipelineCILintCmd.Flags().BoolVarP(&opts.dryRun, "dry-run", "", false, "Run pipeline creation simulation.")
+	pipelineCILintCmd.Flags().BoolVarP(&opts.includeJobs, "include-jobs", "", false, "Response includes the list of jobs that would exist in a static check or pipeline simulation.")
+	pipelineCILintCmd.Flags().StringVar(&opts.ref, "ref", "", "When 'dry-run' is true, sets the branch or tag context for validating the CI/CD YAML configuration.")
 
 	return pipelineCILintCmd
 }
 
-func lintRun(f cmdutils.Factory, path string) error {
-	var err error
-	out := f.IO().StdOut
-	c := f.IO().Color()
+func (o *options) complete(args []string) {
+	if len(args) == 1 {
+		o.path = args[0]
+	} else {
+		o.path = ".gitlab-ci.yml"
+	}
+}
 
-	apiClient, err := f.HttpClient()
+func (o *options) run() error {
+	var err error
+	out := o.io.StdOut
+	c := o.io.Color()
+
+	apiClient, err := o.httpClient()
 	if err != nil {
 		return err
 	}
 
-	repo, err := f.BaseRepo()
+	repo, err := o.baseRepo()
 	if err != nil {
 		return fmt.Errorf("You must be in a GitLab project repository for this action.\nError: %s", err)
 	}
@@ -73,8 +90,8 @@ func lintRun(f cmdutils.Factory, path string) error {
 	var content []byte
 	var stdout bytes.Buffer
 
-	if git.IsValidURL(path) {
-		resp, err := http.Get(path)
+	if git.IsValidURL(o.path) {
+		resp, err := http.Get(o.path)
 		if err != nil {
 			return err
 		}
@@ -84,24 +101,24 @@ func lintRun(f cmdutils.Factory, path string) error {
 		}
 		content = stdout.Bytes()
 	} else {
-		content, err = os.ReadFile(path)
+		content, err = os.ReadFile(o.path)
 		if err != nil {
 			if os.IsNotExist(err) {
-				return fmt.Errorf("%s: no such file or directory.", path)
+				return fmt.Errorf("%s: no such file or directory.", o.path)
 			}
 			return err
 		}
 	}
 
-	fmt.Fprintln(f.IO().StdOut, "Validating...")
+	fmt.Fprintln(o.io.StdOut, "Validating...")
 
 	lint, _, err := apiClient.Validate.ProjectNamespaceLint(
 		projectID,
 		&gitlab.ProjectNamespaceLintOptions{
 			Content:     gitlab.Ptr(string(content)),
-			DryRun:      gitlab.Ptr(dryRun),
-			Ref:         gitlab.Ptr(ref),
-			IncludeJobs: gitlab.Ptr(includeJobs),
+			DryRun:      gitlab.Ptr(o.dryRun),
+			Ref:         gitlab.Ptr(o.ref),
+			IncludeJobs: gitlab.Ptr(o.includeJobs),
 		},
 	)
 	if err != nil {
@@ -109,7 +126,7 @@ func lintRun(f cmdutils.Factory, path string) error {
 	}
 
 	if !lint.Valid {
-		fmt.Fprintln(out, c.Red(path+" is invalid."))
+		fmt.Fprintln(out, c.Red(o.path+" is invalid."))
 		for i, err := range lint.Errors {
 			i++
 			fmt.Fprintln(out, i, err)
