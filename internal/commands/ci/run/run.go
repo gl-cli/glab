@@ -17,12 +17,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-var (
-	PipelineVarTypeEnv  = gitlab.EnvVariableType
-	PipelineVarTypeFile = gitlab.FileVariableType
-	envVariables        = []string{}
-)
-
 func parseVarArg(s string) (*gitlab.PipelineVariableOptions, error) {
 	// From https://pkg.go.dev/strings#Split:
 	//
@@ -45,7 +39,7 @@ func extractEnvVar(s string) (*gitlab.PipelineVariableOptions, error) {
 	if err != nil {
 		return nil, err
 	}
-	pvar.VariableType = &PipelineVarTypeEnv
+	pvar.VariableType = gitlab.Ptr(gitlab.EnvVariableType)
 	return pvar, nil
 }
 
@@ -59,7 +53,7 @@ func extractFileVar(s string) (*gitlab.PipelineVariableOptions, error) {
 		return nil, err
 	}
 	content := string(b)
-	pvar.VariableType = &PipelineVarTypeFile
+	pvar.VariableType = gitlab.Ptr(gitlab.FileVariableType)
 	pvar.Value = &content
 	return pvar, nil
 }
@@ -260,8 +254,8 @@ If used with merge request pipelines, the command fails with a message like ` + 
 		},
 	}
 	pipelineRunCmd.Flags().StringP("branch", "b", "", "Create pipeline on branch/ref <string>.")
-	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables", "", []string{}, "Pass variables to pipeline in format <key>:<value>. Cannot be used for MR pipelines.")
-	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables-env", "", []string{}, "Pass variables to pipeline in format <key>:<value>. Cannot be used for MR pipelines.")
+	pipelineRunCmd.Flags().StringSliceP("variables", "", []string{}, "Pass variables to pipeline in format <key>:<value>. Cannot be used for MR pipelines.")
+	pipelineRunCmd.Flags().StringSliceP("variables-env", "", []string{}, "Pass variables to pipeline in format <key>:<value>. Cannot be used for MR pipelines.")
 	pipelineRunCmd.Flags().StringSliceP("variables-file", "", []string{}, "Pass file contents as a file variable to pipeline in format <key>:<filename>. Cannot be used for MR pipelines.")
 	pipelineRunCmd.Flags().StringP("variables-from", "f", "", "JSON file with variables for pipeline execution. Expects array of hashes, each with at least 'key' and 'value'. Cannot be used for MR pipelines.")
 	pipelineRunCmd.Flags().BoolVarP(&openInBrowser, "web", "w", false, "Open pipeline in a browser. Uses default browser, or browser specified in BROWSER environment variable.")
