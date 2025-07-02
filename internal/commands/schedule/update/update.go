@@ -12,15 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	variablesToCreate []string
-	variablesToUpdate []string
-	variablesToDelete []string
-
-	variablePairsToCreate [][2]string
-	variablePairsToUpdate [][2]string
-)
-
 func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	scheduleUpdateCmd := &cobra.Command{
 		Use:   "update <id> [flags]",
@@ -32,14 +23,21 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(1),
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			variablesToCreate, _ = cmd.Flags().GetStringSlice("create-variable")
-			variablesToUpdate, _ = cmd.Flags().GetStringSlice("update-variable")
-			variablesToDelete, _ = cmd.Flags().GetStringSlice("delete-variable")
+		RunE: func(cmd *cobra.Command, args []string) error {
+			variablesToCreate, err := cmd.Flags().GetStringSlice("create-variable")
+			if err != nil {
+				return err
+			}
+			variablesToUpdate, err := cmd.Flags().GetStringSlice("update-variable")
+			if err != nil {
+				return err
+			}
+			variablesToDelete, err := cmd.Flags().GetStringSlice("delete-variable")
+			if err != nil {
+				return err
+			}
 
-			variablePairsToCreate = [][2]string{}
-			variablePairsToUpdate = [][2]string{}
-
+			variablePairsToCreate := make([][2]string, 0, len(variablesToCreate))
 			for _, v := range variablesToCreate {
 				split := strings.SplitN(v, ":", 2)
 				if len(split) != 2 {
@@ -49,6 +47,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				variablePairsToCreate = append(variablePairsToCreate, [2]string{split[0], split[1]})
 			}
 
+			variablePairsToUpdate := make([][2]string, 0, len(variablesToUpdate))
 			for _, v := range variablesToUpdate {
 				split := strings.SplitN(v, ":", 2)
 				if len(split) != 2 {
@@ -58,9 +57,6 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				variablePairsToUpdate = append(variablePairsToUpdate, [2]string{split[0], split[1]})
 			}
 
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
 			apiClient, err := f.HttpClient()
 			if err != nil {
 				return err
@@ -154,9 +150,9 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	scheduleUpdateCmd.Flags().String("cron", "", "Cron interval pattern.")
 	scheduleUpdateCmd.Flags().String("cronTimeZone", "", "Cron timezone.")
 	scheduleUpdateCmd.Flags().Bool("active", true, "Whether or not the schedule is active.")
-	scheduleUpdateCmd.Flags().StringSliceVar(&variablesToCreate, "create-variable", []string{}, "Pass new variables to schedule in format <key>:<value>.")
-	scheduleUpdateCmd.Flags().StringSliceVar(&variablesToUpdate, "update-variable", []string{}, "Pass updated variables to schedule in format <key>:<value>.")
-	scheduleUpdateCmd.Flags().StringSliceVar(&variablesToDelete, "delete-variable", []string{}, "Pass variables you want to delete from schedule in format <key>.")
+	scheduleUpdateCmd.Flags().StringSlice("create-variable", []string{}, "Pass new variables to schedule in format <key>:<value>.")
+	scheduleUpdateCmd.Flags().StringSlice("update-variable", []string{}, "Pass updated variables to schedule in format <key>:<value>.")
+	scheduleUpdateCmd.Flags().StringSlice("delete-variable", []string{}, "Pass variables you want to delete from schedule in format <key>.")
 	scheduleUpdateCmd.Flags().Lookup("active").DefValue = "to not change"
 
 	return scheduleUpdateCmd
