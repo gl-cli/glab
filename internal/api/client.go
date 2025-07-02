@@ -80,107 +80,118 @@ type newAuthSource func(c *http.Client) gitlab.AuthSource
 
 // NewClient initializes a api client for use throughout glab.
 func NewClient(newAuthSource newAuthSource, options ...ClientOption) (*Client, error) {
+	// 0. initialize empty Client
 	client := &Client{}
 
-	// Apply options
+	// 1. apply provided option functions to populate client
 	for _, option := range options {
 		if err := option(client); err != nil {
 			return nil, fmt.Errorf("failed to apply client option: %w", err)
 		}
 	}
 
-	if client.httpClient == nil {
-		// Create TLS configuration based on client settings
-		tlsConfig := &tls.Config{
-			MinVersion:         tls.VersionTLS12,
-			InsecureSkipVerify: client.allowInsecure,
-		}
-
-		// Set secure cipher suites for gitlab.com
-		u, err := url.Parse(client.baseURL)
-		if err != nil {
-			return nil, err
-		}
-		if !glinstance.IsSelfHosted(u.Hostname()) {
-			tlsConfig.CipherSuites = secureCipherSuites
-		}
-
-		// Configure custom CA if provided
-		if client.caFile != "" {
-			caCert, err := os.ReadFile(client.caFile)
-			if err != nil {
-				return nil, fmt.Errorf("error reading cert file: %w", err)
-			}
-			// use system cert pool as a baseline
-			caCertPool, err := x509.SystemCertPool()
-			if err != nil {
-				return nil, err
-			}
-			caCertPool.AppendCertsFromPEM(caCert)
-			tlsConfig.RootCAs = caCertPool
-		}
-
-		// Configure client certificates if provided
-		if client.clientCertFile != "" && client.clientKeyFile != "" {
-			clientCert, err := tls.LoadX509KeyPair(client.clientCertFile, client.clientKeyFile)
-			if err != nil {
-				return nil, err
-			}
-			tlsConfig.Certificates = []tls.Certificate{clientCert}
-		}
-
-		// Set appropriate timeouts based on whether custom CA is used
-		dialTimeout := 5 * time.Second
-		keepAlive := 5 * time.Second
-		idleTimeout := 30 * time.Second
-		if client.caFile != "" {
-			dialTimeout = 30 * time.Second
-			keepAlive = 30 * time.Second
-			idleTimeout = 90 * time.Second
-		}
-
-		client.httpClient = &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-				DialContext: (&net.Dialer{
-					Timeout:   dialTimeout,
-					KeepAlive: keepAlive,
-				}).DialContext,
-				ForceAttemptHTTP2:     true,
-				MaxIdleConns:          100,
-				IdleConnTimeout:       idleTimeout,
-				TLSHandshakeTimeout:   10 * time.Second,
-				ExpectContinueTimeout: 1 * time.Second,
-				TLSClientConfig:       tlsConfig,
-			},
-		}
+	// 2. initialize HTTP client used by the auth source and by the GitLab client
+	if err := client.initializeHTTPClient(); err != nil {
+		return nil, err
 	}
 
-	// initialize the authentication source
+	// 3. initialize the auth source
 	// We need to delay this because sources like OAuth2 need a valid
 	// HTTP client to refresh the token.
 	client.authSource = newAuthSource(client.httpClient)
 
-	err := client.initializeGitLabClient()
-	return client, err
+	// 4. initialize the GitLab client
+	if client.gitlabClient != nil {
+		return client, nil
+	}
+
+	if client.authSource == nil {
+		return nil, errors.New("unable to initialize GitLab Client because no authentication source is provided. Login first")
+	}
+
+	gitlabClient, err := gitlab.NewAuthSourceClient(
+		client.authSource,
+		gitlab.WithHTTPClient(client.httpClient),
+		gitlab.WithBaseURL(client.baseURL),
+		gitlab.WithUserAgent(client.userAgent),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize GitLab client: %v", err)
+	}
+
+	client.gitlabClient = gitlabClient
+	return client, nil
 }
 
-func (c *Client) initializeGitLabClient() error {
-	if c.gitlabClient != nil {
+func (c *Client) initializeHTTPClient() error {
+	if c.httpClient != nil {
 		return nil
 	}
 
-	if c.authSource == nil {
-		return errors.New("unable to initialize GitLab Client because no authentication source is provided. Login first")
+	// Create TLS configuration based on client settings
+	tlsConfig := &tls.Config{
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: c.allowInsecure,
 	}
 
-	gitlabClient, err := gitlab.NewAuthSourceClient(c.authSource, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(c.baseURL))
+	// Set secure cipher suites for gitlab.com
+	u, err := url.Parse(c.baseURL)
 	if err != nil {
-		return fmt.Errorf("failed to initialize GitLab client: %v", err)
+		return err
+	}
+	if !glinstance.IsSelfHosted(u.Hostname()) {
+		tlsConfig.CipherSuites = secureCipherSuites
 	}
 
-	c.gitlabClient = gitlabClient
-	c.gitlabClient.UserAgent = c.userAgent
+	// Configure custom CA if provided
+	if c.caFile != "" {
+		caCert, err := os.ReadFile(c.caFile)
+		if err != nil {
+			return fmt.Errorf("error reading cert file: %w", err)
+		}
+		// use system cert pool as a baseline
+		caCertPool, err := x509.SystemCertPool()
+		if err != nil {
+			return err
+		}
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig.RootCAs = caCertPool
+	}
+
+	// Configure client certificates if provided
+	if c.clientCertFile != "" && c.clientKeyFile != "" {
+		clientCert, err := tls.LoadX509KeyPair(c.clientCertFile, c.clientKeyFile)
+		if err != nil {
+			return err
+		}
+		tlsConfig.Certificates = []tls.Certificate{clientCert}
+	}
+
+	// Set appropriate timeouts based on whether custom CA is used
+	dialTimeout := 5 * time.Second
+	keepAlive := 5 * time.Second
+	idleTimeout := 30 * time.Second
+	if c.caFile != "" {
+		dialTimeout = 30 * time.Second
+		keepAlive = 30 * time.Second
+		idleTimeout = 90 * time.Second
+	}
+
+	c.httpClient = &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   dialTimeout,
+				KeepAlive: keepAlive,
+			}).DialContext,
+			ForceAttemptHTTP2:     true,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       idleTimeout,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig:       tlsConfig,
+		},
+	}
 	return nil
 }
 
@@ -217,7 +228,7 @@ func WithHTTPClient(httpClient *http.Client) ClientOption {
 	}
 }
 
-// WithHTTPClient configures the HTTP client
+// WithGitLabClient configures the GitLab client
 func WithGitLabClient(client *gitlab.Client) ClientOption {
 	return func(c *Client) error {
 		c.gitlabClient = client
