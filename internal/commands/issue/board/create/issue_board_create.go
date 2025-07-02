@@ -10,20 +10,17 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 )
 
-var (
-	boardName string
-
-	createIssueBoard = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueBoardOptions) (*gitlab.IssueBoard, error) {
-		board, _, err := client.Boards.CreateIssueBoard(projectID, opts)
-		if err != nil {
-			return nil, err
-		}
-
-		return board, nil
+var createIssueBoard = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueBoardOptions) (*gitlab.IssueBoard, error) {
+	board, _, err := client.Boards.CreateIssueBoard(projectID, opts)
+	if err != nil {
+		return nil, err
 	}
-)
+
+	return board, nil
+}
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
+	var boardName string
 	issueCmd := &cobra.Command{
 		Use:     "create [flags]",
 		Short:   `Create a project issue board.`,
