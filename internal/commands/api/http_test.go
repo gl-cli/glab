@@ -8,7 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 )
@@ -247,7 +249,11 @@ hosts:
 		},
 	}
 	for _, tt := range tests {
-		httpClient := cmdtest.NewTestApiClient(t, client, "OTOKEN", tt.args.host, tt.isGraphQL)
+		var options []api.ClientOption
+		if tt.isGraphQL {
+			options = append(options, api.WithBaseURL(glinstance.GraphQLEndpoint(tt.args.host, glinstance.DefaultProtocol)))
+		}
+		httpClient := cmdtest.NewTestApiClient(t, client, "OTOKEN", tt.args.host, options...)
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := httpRequest(httpClient, tt.args.method, tt.args.p, tt.args.params, tt.args.headers)
 			if (err != nil) != tt.wantErr {

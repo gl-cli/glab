@@ -28,7 +28,7 @@ import (
 
 func runCommand(t *testing.T, command string, rt http.RoundTripper, isTTY bool, cli string, doHyperlinks string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY), iostreams.WithDisplayHyperLinks(doHyperlinks))
-	c := cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)
+	c := cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname)
 	factory := cmdtest.NewTestFactory(ios,
 		cmdtest.WithApiClient(c),
 		cmdtest.WithGitLabClient(c.Lab()),
@@ -51,7 +51,7 @@ func TestNewCmdList(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
 	)
 	t.Run("Issue_NewCmdList", func(t *testing.T) {
 		gotOpts := &ListOptions{}

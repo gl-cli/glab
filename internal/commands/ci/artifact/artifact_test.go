@@ -66,7 +66,7 @@ func makeTestFactory(t *testing.T) (cmdutils.Factory, *httpmock.Mocker) {
 	io, _, _, _ := cmdtest.TestIOStreams()
 
 	client := func(token, hostname string) (*api.Client, error) { // nolint:unparam
-		return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, token, hostname, false), nil
+		return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, token, hostname), nil
 	}
 
 	// FIXME as mentioned in ./commands/auth/status/status_test.go,

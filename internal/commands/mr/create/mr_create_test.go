@@ -28,7 +28,7 @@ func runCommand(t *testing.T, rt http.RoundTripper, branch string, isTTY bool, c
 	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname).Lab()),
 	)
 	factory.RemotesStub = func() (glrepo.Remotes, error) {
 		return glrepo.Remotes{

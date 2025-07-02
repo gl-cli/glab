@@ -19,10 +19,10 @@ func runCommand(t *testing.T, cli string) (*test.CmdOut, error) {
 	factory := cmdtest.NewTestFactory(ios,
 		func(f *cmdtest.Factory) {
 			f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
-				return cmdtest.NewTestApiClient(t, &http.Client{}, "", repoHost, false), nil
+				return cmdtest.NewTestApiClient(t, &http.Client{}, "", repoHost), nil
 			}
 		},
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{}, "", glinstance.DefaultHostname).Lab()),
 	)
 
 	cmd := NewCmdArchive(factory)

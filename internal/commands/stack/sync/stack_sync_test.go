@@ -31,7 +31,7 @@ func setupTestFactory(t *testing.T, rt http.RoundTripper) (cmdutils.Factory, *op
 	ios, _, _, _ := cmdtest.TestIOStreams()
 
 	f := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname).Lab()),
 		func(f *cmdtest.Factory) {
 			f.BaseRepoStub = func() (glrepo.Interface, error) {
 				return glrepo.TestProject("stack_guy", "stackproject"), nil

@@ -171,7 +171,7 @@ hosts:
 	)
 
 	client := func(token, hostname string) (*api.Client, error) { // nolint:unparam
-		return cmdtest.NewTestApiClient(t, nil, token, hostname, false, api.WithGitLabClient(tc.Client)), nil
+		return cmdtest.NewTestApiClient(t, nil, token, hostname, api.WithGitLabClient(tc.Client)), nil
 	}
 
 	for _, tt := range tests {
@@ -232,7 +232,7 @@ hosts:
 	)
 
 	client := func(token, hostname string) (*api.Client, error) { // nolint:unparam
-		return cmdtest.NewTestApiClient(t, nil, token, hostname, false, api.WithGitLabClient(tc.Client)), nil
+		return cmdtest.NewTestApiClient(t, nil, token, hostname, api.WithGitLabClient(tc.Client)), nil
 	}
 
 	expectedOutput := fmt.Sprintf(`gitlab.alpinelinux.org

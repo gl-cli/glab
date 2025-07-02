@@ -1,8 +1,10 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -24,15 +26,6 @@ import (
 // ClientOption represents a function that configures a Client
 type ClientOption func(*Client) error
 
-// AuthType represents an authentication type within GitLab.
-type authType int
-
-const (
-	NoToken authType = iota
-	OAuthToken
-	PrivateToken
-)
-
 type BuildInfo struct {
 	Version, Commit, Platform, Architecture string
 }
@@ -47,22 +40,15 @@ type Client struct {
 	gitlabClient *gitlab.Client
 	// internal http client
 	httpClient *http.Client
-	// Token type used to make authenticated API calls.
-	AuthType authType
 	// custom certificate
 	caFile string
 	// client certificate files
 	clientCertFile string
 	clientKeyFile  string
-	// protocol: host url protocol to make requests. Default is https
-	protocol string
 
-	host  string
-	token string
+	baseURL    string
+	authSource gitlab.AuthSource
 
-	isGraphQL     bool
-	isOauth2      bool
-	isJobToken    bool
 	allowInsecure bool
 
 	userAgent string
@@ -72,8 +58,10 @@ func (c *Client) HTTPClient() *http.Client {
 	return c.httpClient
 }
 
-func (c *Client) Token() string {
-	return c.token
+// AuthSource returns the auth source
+// TODO: clarify use cases for this.
+func (c *Client) AuthSource() gitlab.AuthSource {
+	return c.authSource
 }
 
 // Lab returns the initialized GitLab client.
@@ -89,17 +77,8 @@ var secureCipherSuites = []uint16{
 }
 
 // NewClient initializes a api client for use throughout glab.
-func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken bool, userAgent string, options ...ClientOption) (*Client, error) {
-	client := &Client{
-		protocol:   glinstance.DefaultProtocol,
-		AuthType:   NoToken,
-		host:       host,
-		token:      token,
-		isGraphQL:  isGraphQL,
-		isOauth2:   isOAuth2,
-		isJobToken: isJobToken,
-		userAgent:  userAgent,
-	}
+func NewClient(options ...ClientOption) (*Client, error) {
+	client := &Client{}
 
 	// Apply options
 	for _, option := range options {
@@ -116,7 +95,11 @@ func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken boo
 		}
 
 		// Set secure cipher suites for gitlab.com
-		if host == "gitlab.com" {
+		u, err := url.Parse(client.baseURL)
+		if err != nil {
+			return nil, err
+		}
+		if !glinstance.IsSelfHosted(u.Hostname()) {
 			tlsConfig.CipherSuites = secureCipherSuites
 		}
 
@@ -179,35 +162,17 @@ func (c *Client) initializeGitLabClient() error {
 		return nil
 	}
 
-	var baseURL string
-	if c.isGraphQL {
-		baseURL = glinstance.GraphQLEndpoint(c.host, c.protocol)
-	} else {
-		baseURL = glinstance.APIEndpoint(c.host, c.protocol, "")
+	if c.authSource == nil {
+		return errors.New("unable to initialize GitLab Client because no authentication source is provided. Login first")
 	}
 
-	var err error
-	if c.isOauth2 {
-		ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: c.token})
-		c.gitlabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-	} else if c.isJobToken {
-		c.gitlabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-	} else {
-		c.gitlabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-	}
-
+	gitlabClient, err := gitlab.NewAuthSourceClient(c.authSource, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(c.baseURL))
 	if err != nil {
 		return fmt.Errorf("failed to initialize GitLab client: %v", err)
 	}
-	c.gitlabClient.UserAgent = c.userAgent
 
-	if c.token != "" {
-		if c.isOauth2 {
-			c.AuthType = OAuthToken
-		} else {
-			c.AuthType = PrivateToken
-		}
-	}
+	c.gitlabClient = gitlabClient
+	c.gitlabClient.UserAgent = c.userAgent
 	return nil
 }
 
@@ -236,14 +201,6 @@ func WithInsecureSkipVerify(skip bool) ClientOption {
 	}
 }
 
-// WithProtocol configures the client protocol
-func WithProtocol(protocol string) ClientOption {
-	return func(c *Client) error {
-		c.protocol = protocol
-		return nil
-	}
-}
-
 // WithHTTPClient configures the HTTP client
 func WithHTTPClient(httpClient *http.Client) ClientOption {
 	return func(c *Client) error {
@@ -260,6 +217,30 @@ func WithGitLabClient(client *gitlab.Client) ClientOption {
 	}
 }
 
+// WithAuthSource configures the authentication source for the GitLab client
+func WithAuthSource(source gitlab.AuthSource) ClientOption {
+	return func(c *Client) error {
+		c.authSource = source
+		return nil
+	}
+}
+
+// WithBaseURL configures the base URL for the GitLab instance
+func WithBaseURL(baseURL string) ClientOption {
+	return func(c *Client) error {
+		c.baseURL = baseURL
+		return nil
+	}
+}
+
+// WithUserAgent configures the user agent to use
+func WithUserAgent(userAgent string) ClientOption {
+	return func(c *Client) error {
+		c.userAgent = userAgent
+		return nil
+	}
+}
+
 // NewClientFromConfig initializes the global api with the config data
 func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, userAgent string) (*Client, error) {
 	apiHost, _ := cfg.Get(repoHost, "api_host")
@@ -268,6 +249,9 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	}
 
 	apiProtocol, _ := cfg.Get(repoHost, "api_protocol")
+	if apiProtocol == "" {
+		apiProtocol = glinstance.DefaultProtocol
+	}
 
 	isOAuth2Cfg, _ := cfg.Get(repoHost, "is_oauth2")
 	isOAuth2 := false
@@ -287,15 +271,29 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	clientCert, _ := cfg.Get(repoHost, "client_cert")
 	keyFile, _ := cfg.Get(repoHost, "client_key")
 
-	authToken := token
-	isJobToken := false
-	if jobToken != "" {
-		authToken = jobToken
-		isJobToken = true
+	// Build options based on configuration
+	options := []ClientOption{
+		WithUserAgent(userAgent),
 	}
 
-	// Build options based on configuration
-	var options []ClientOption
+	// determine auth source
+	switch {
+	case isOAuth2:
+		ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: token})
+		options = append(options, WithAuthSource(gitlab.OAuthTokenSource{TokenSource: ts}))
+	case jobToken != "":
+		options = append(options, WithAuthSource(gitlab.JobTokenAuthSource{Token: jobToken}))
+	default:
+		options = append(options, WithAuthSource(gitlab.AccessTokenAuthSource{Token: token}))
+	}
+
+	var baseURL string
+	if isGraphQL {
+		baseURL = glinstance.GraphQLEndpoint(apiHost, apiProtocol)
+	} else {
+		baseURL = glinstance.APIEndpoint(apiHost, apiProtocol, "")
+	}
+	options = append(options, WithBaseURL(baseURL))
 
 	if caCert != "" {
 		options = append(options, WithCustomCA(caCert))
@@ -309,11 +307,7 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 		options = append(options, WithInsecureSkipVerify(skipTlsVerify))
 	}
 
-	if apiProtocol != "" {
-		options = append(options, WithProtocol(apiProtocol))
-	}
-
-	return NewClient(apiHost, authToken, isGraphQL, isOAuth2, isJobToken, userAgent, options...)
+	return NewClient(options...)
 }
 
 func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, headers []string, bodyIsJSON bool) (*http.Request, error) {
@@ -347,13 +341,12 @@ func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, 
 		req.Header.Set("User-Agent", c.Lab().UserAgent)
 	}
 
-	// TODO: support GITLAB_CI_TOKEN
-	switch c.AuthType {
-	case OAuthToken:
-		req.Header.Set("Authorization", "Bearer "+c.Token())
-	case PrivateToken:
-		req.Header.Set("PRIVATE-TOKEN", c.Token())
+	// FIXME: use proper context?
+	name, value, err := c.authSource.Header(context.Background())
+	if err != nil {
+		return nil, err
 	}
+	req.Header.Set(name, value)
 
 	return req, nil
 }

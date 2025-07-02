@@ -18,7 +18,7 @@ import (
 func runCommand(t *testing.T, mockCmd git.GitRunner, args string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, nil, "", glinstance.DefaultHostname, false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, nil, "", glinstance.DefaultHostname).Lab()),
 	)
 	cmd := NewCmdCreateStack(factory, mockCmd)
 	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)

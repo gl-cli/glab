@@ -391,7 +391,7 @@ func Test_apiRun(t *testing.T) {
 					resp.Request = req
 					return resp, nil
 				}
-				return cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false), nil
+				return cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com"), nil
 			}
 
 			err := tt.options.run()
@@ -441,7 +441,7 @@ func Test_apiRun_paginationREST(t *testing.T) {
 		requestCount++
 		return resp, nil
 	}
-	a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+	a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com")
 	options := options{
 		io:     ios,
 		config: config.NewBlankConfig(),
@@ -506,7 +506,7 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 		requestCount++
 		return resp, nil
 	}
-	a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+	a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com")
 	options := options{
 		io:     ios,
 		config: config.NewBlankConfig(),
@@ -599,7 +599,7 @@ func Test_apiRun_inputFile(t *testing.T) {
 				resp.Request = req
 				return resp, nil
 			}
-			a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com", false)
+			a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com")
 			options := options{
 				requestPath:      "hello",
 				requestInputFile: inputFile,

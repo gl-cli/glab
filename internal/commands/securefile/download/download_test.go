@@ -97,7 +97,7 @@ func Test_SecurefileDownload(t *testing.T) {
 func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "gitlab.com", false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "gitlab.com").Lab()),
 	)
 	cmd := NewCmdDownload(factory)
 	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)

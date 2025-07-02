@@ -20,7 +20,7 @@ func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, e
 
 	factory := cmdtest.NewTestFactory(ios,
 		cmdtest.WithBaseRepo("OWNER", "REPO"),
-		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "", false).Lab()),
+		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "").Lab()),
 	)
 
 	cmd := NewCmdClose(factory)
