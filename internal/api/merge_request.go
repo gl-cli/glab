@@ -127,7 +127,7 @@ var ListMRs = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjec
 	}
 }
 
-var listMRsBase = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions) ([]*gitlab.BasicMergeRequest, error) {
+func listMRsBase(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions) ([]*gitlab.BasicMergeRequest, error) {
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -139,7 +139,7 @@ var listMRsBase = func(client *gitlab.Client, projectID any, opts *gitlab.ListPr
 	return mrs, nil
 }
 
-var listMRsWithAssigneesOrReviewers = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions, assigneeIds []int, reviewerIds []int) ([]*gitlab.BasicMergeRequest, error) {
+func listMRsWithAssigneesOrReviewers(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMergeRequestsOptions, assigneeIds []int, reviewerIds []int) ([]*gitlab.BasicMergeRequest, error) {
 	if opts.PerPage == 0 {
 		opts.PerPage = DefaultListLimit
 	}
@@ -199,43 +199,6 @@ var DeleteMR = func(client *gitlab.Client, projectID any, mrID int) error {
 	}
 
 	return nil
-}
-
-// ListMRNotes returns a list of merge request notes
-// Attention: this is a global variable and may be overridden in tests.
-var ListMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
-	if opts.PerPage == 0 {
-		opts.PerPage = DefaultListLimit
-	}
-
-	notes, _, err := client.Notes.ListMergeRequestNotes(projectID, mrID, opts)
-	if err != nil {
-		return notes, err
-	}
-
-	return notes, nil
-}
-
-// SubscribeToMR subscribes to an MR
-// Attention: this is a global variable and may be overridden in tests.
-var SubscribeToMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
-	mr, _, err := client.MergeRequests.SubscribeToMergeRequest(projectID, mrID, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return mr, nil
-}
-
-// UnsubscribeFromMR unsubscribes from an MR
-// Attention: this is a global variable and may be overridden in tests.
-var UnsubscribeFromMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
-	mr, _, err := client.MergeRequests.UnsubscribeFromMergeRequest(projectID, mrID, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return mr, nil
 }
 
 type cliListMROptions struct {

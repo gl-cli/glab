@@ -19,6 +19,19 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
+var listMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
+	if opts.PerPage == 0 {
+		opts.PerPage = api.DefaultListLimit
+	}
+
+	notes, _, err := client.Notes.ListMergeRequestNotes(projectID, mrID, opts)
+	if err != nil {
+		return notes, err
+	}
+
+	return notes, nil
+}
+
 type options struct {
 	showComments   bool
 	showSystemLogs bool
@@ -112,7 +125,7 @@ func (o *options) run(f cmdutils.Factory, args []string) error {
 			},
 		}
 
-		notes, err = api.ListMRNotes(apiClient, baseRepo.FullName(), mr.IID, l)
+		notes, err = listMRNotes(apiClient, baseRepo.FullName(), mr.IID, l)
 		if err != nil {
 			return err
 		}

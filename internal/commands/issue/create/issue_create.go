@@ -25,6 +25,15 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/recovery"
 )
 
+var createIssue = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueOptions) (*gitlab.Issue, error) {
+	issue, _, err := client.Issues.CreateIssue(projectID, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return issue, nil
+}
+
 type options struct {
 	Title       string   `json:"title,omitempty"`
 	Description string   `json:"description,omitempty"`
@@ -372,7 +381,7 @@ var createRun = func(opts *options) error {
 			issueCreateOpts.AssigneeIDs = cmdutils.IDsFromUsers(users)
 		}
 		fmt.Fprintln(opts.io.StdErr, "- Creating issue in", repo.FullName())
-		issue, err := api.CreateIssue(apiClient, repo.FullName(), issueCreateOpts)
+		issue, err := createIssue(apiClient, repo.FullName(), issueCreateOpts)
 		if err != nil {
 			return err
 		}

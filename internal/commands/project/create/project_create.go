@@ -9,7 +9,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -20,6 +19,22 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/run"
 )
+
+var currentUser = func(client *gitlab.Client) (*gitlab.User, error) {
+	u, _, err := client.Users.CurrentUser()
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+var createProject = func(client *gitlab.Client, opts *gitlab.CreateProjectOptions) (*gitlab.Project, error) {
+	project, _, err := client.Projects.CreateProject(opts)
+	if err != nil {
+		return nil, err
+	}
+	return project, nil
+}
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	projectCreateCmd := &cobra.Command{
@@ -97,7 +112,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 		}
 		gitlabClient = client.Lab()
 
-		user, err := api.CurrentUser(gitlabClient)
+		user, err := currentUser(gitlabClient)
 		if err != nil {
 			return err
 		}
@@ -174,7 +189,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 		opts.NamespaceID = &namespaceID
 	}
 
-	project, err := api.CreateProject(gitlabClient, opts)
+	project, err := createProject(gitlabClient, opts)
 
 	greenCheck := c.Green("✓")
 

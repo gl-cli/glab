@@ -7,7 +7,6 @@ import (
 	"github.com/acarl005/stripansi"
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -22,7 +21,7 @@ func Test_ScheduleList(t *testing.T) {
 		    token: OTOKEN
 	`))))
 
-	api.GetSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {
+	getSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {
 		_, err := f.BaseRepo()
 		if err != nil {
 			return nil, err
@@ -67,7 +66,7 @@ func Test_NoScheduleList(t *testing.T) {
 		    token: OTOKEN
 	`))))
 
-	api.GetSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {
+	getSchedules = func(client *gitlab.Client, l *gitlab.ListPipelineSchedulesOptions, repo string) ([]*gitlab.PipelineSchedule, error) {
 		_, err := stubFactory.BaseRepo()
 		if err != nil {
 			return nil, err

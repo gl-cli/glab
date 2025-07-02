@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -13,6 +12,15 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 )
+
+var runSchedule = func(client *gitlab.Client, repo string, schedule int, opts ...gitlab.RequestOptionFunc) error {
+	_, err := client.PipelineSchedules.RunPipelineSchedule(repo, schedule, opts...)
+	if err != nil {
+		return fmt.Errorf("running scheduled pipeline status: %w", err)
+	}
+
+	return nil
+}
 
 type options struct {
 	scheduleID int
@@ -70,7 +78,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	err = api.RunSchedule(apiClient, repo.FullName(), o.scheduleID)
+	err = runSchedule(apiClient, repo.FullName(), o.scheduleID)
 	if err != nil {
 		return err
 	}

@@ -128,9 +128,9 @@ func TestMRView_web_numberArg(t *testing.T) {
 }
 
 func TestMRView(t *testing.T) {
-	oldListMrNotes := api.ListMRNotes
+	oldListMrNotes := listMRNotes
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-	api.ListMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
+	listMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
 		if projectID == "PROJECT_MR_WITH_EMPTY_NOTE" {
 			return []*gitlab.Note{}, nil
 		}
@@ -217,7 +217,7 @@ func TestMRView(t *testing.T) {
 			}
 		}
 	})
-	api.ListMRNotes = oldListMrNotes
+	listMRNotes = oldListMrNotes
 }
 
 func Test_rawMRPreview(t *testing.T) {

@@ -6,16 +6,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-// CurrentUser returns the user for the API token
-// Attention: this is a global variable and may be overridden in tests.
-var CurrentUser = func(client *gitlab.Client) (*gitlab.User, error) {
-	u, _, err := client.Users.CurrentUser()
-	if err != nil {
-		return nil, err
-	}
-	return u, nil
-}
-
 func UserByName(client *gitlab.Client, name string) (*gitlab.User, error) {
 	opts := &gitlab.ListUsersOptions{Username: gitlab.Ptr(name)}
 

@@ -4,12 +4,21 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/api"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 
 	"github.com/spf13/cobra"
 )
+
+var subscribeToMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
+	mr, _, err := client.MergeRequests.SubscribeToMergeRequest(projectID, mrID, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return mr, nil
+}
 
 func NewCmdSubscribe(f cmdutils.Factory) *cobra.Command {
 	mrSubscribeCmd := &cobra.Command{
@@ -49,7 +58,7 @@ func NewCmdSubscribe(f cmdutils.Factory) *cobra.Command {
 
 				fmt.Fprintf(f.IO().StdOut, "- Subscribing to merge request !%d.\n", mr.IID)
 
-				mr, err = api.SubscribeToMR(apiClient, repo.FullName(), mr.IID, nil)
+				mr, err = subscribeToMR(apiClient, repo.FullName(), mr.IID, nil)
 				if err != nil {
 					return err
 				}

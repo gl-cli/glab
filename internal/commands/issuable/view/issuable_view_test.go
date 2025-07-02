@@ -165,9 +165,9 @@ func TestNewCmdView(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testIssuable := testIssuables[tt.issueID]
-			oldListIssueNotes := api.ListIssueNotes
+			oldListIssueNotes := listIssueNotes
 			timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
-			api.ListIssueNotes = func(client *gitlab.Client, projectID any, issueID int, opts *gitlab.ListIssueNotesOptions) ([]*gitlab.Note, error) {
+			listIssueNotes = func(client *gitlab.Client, projectID any, issueID int, opts *gitlab.ListIssueNotesOptions) ([]*gitlab.Note, error) {
 				if projectID == "PROJECT_MR_WITH_EMPTY_NOTE" {
 					return []*gitlab.Note{}, nil
 				}
@@ -255,7 +255,7 @@ func TestNewCmdView(t *testing.T) {
 				}
 			}
 
-			api.ListIssueNotes = oldListIssueNotes
+			listIssueNotes = oldListIssueNotes
 		})
 	}
 }
