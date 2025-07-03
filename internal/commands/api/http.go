@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -20,7 +21,7 @@ const (
 
 var strArrayRegex = regexp.MustCompile(stringArrayRegexPattern)
 
-func httpRequest(client *api.Client, method, p string, params any, headers []string) (*http.Response, error) {
+func httpRequest(ctx context.Context, client *api.Client, method, p string, params any, headers []string) (*http.Response, error) {
 	var err error
 	isGraphQL := p == "graphql"
 
@@ -74,7 +75,7 @@ func httpRequest(client *api.Client, method, p string, params any, headers []str
 	}
 
 	baseURL, _ = url.Parse(baseURLStr)
-	req, err := api.NewHTTPRequest(client, method, baseURL, body, headers, bodyIsJSON)
+	req, err := api.NewHTTPRequest(ctx, client, method, baseURL, body, headers, bodyIsJSON)
 	if err != nil {
 		return nil, err
 	}

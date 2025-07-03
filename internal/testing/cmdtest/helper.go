@@ -396,27 +396,20 @@ func CopyTestRepo(log fatalLogger, name string) string {
 	return dest
 }
 
-func NewTestApiClient(t *testing.T, httpClient *http.Client, token, host string, isGraphQL bool, options ...api.ClientOption) *api.Client {
+func NewTestApiClient(t *testing.T, httpClient *http.Client, token, host string, options ...api.ClientOption) *api.Client {
 	t.Helper()
 
 	opts := []api.ClientOption{
+		api.WithUserAgent("glab test client"),
+		api.WithBaseURL(glinstance.APIEndpoint(host, glinstance.DefaultProtocol, "")),
 		api.WithInsecureSkipVerify(true),
-		api.WithProtocol(glinstance.DefaultProtocol),
 		api.WithHTTPClient(httpClient),
 	}
 	opts = append(opts, options...)
 	testClient, err := api.NewClient(
-		host,
-		token,
-		isGraphQL,
-		false,
-		false,
-		"glab test client",
+		func(*http.Client) gitlab.AuthSource { return gitlab.AccessTokenAuthSource{Token: token} },
 		opts...,
 	)
 	require.NoError(t, err)
-	if token != "" {
-		testClient.AuthType = api.PrivateToken
-	}
 	return testClient
 }

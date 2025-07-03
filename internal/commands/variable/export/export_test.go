@@ -338,7 +338,7 @@ func Test_exportRun_project(t *testing.T) {
 			)
 			opts := &options{
 				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
-					return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com", false), nil
+					return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com"), nil
 				},
 				baseRepo: func() (glrepo.Interface, error) {
 					return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
@@ -610,7 +610,7 @@ func Test_exportRun_group(t *testing.T) {
 			)
 			opts := &options{
 				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
-					return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com", false), nil
+					return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com"), nil
 				},
 				baseRepo: func() (glrepo.Interface, error) {
 					return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)

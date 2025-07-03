@@ -1,8 +1,10 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -24,17 +26,12 @@ import (
 // ClientOption represents a function that configures a Client
 type ClientOption func(*Client) error
 
-// AuthType represents an authentication type within GitLab.
-type authType int
-
-const (
-	NoToken authType = iota
-	OAuthToken
-	PrivateToken
-)
-
 type BuildInfo struct {
 	Version, Commit, Platform, Architecture string
+}
+
+func (i BuildInfo) UserAgent() string {
+	return fmt.Sprintf("glab/%s (%s, %s)", i.Version, i.Platform, i.Architecture)
 }
 
 // Client represents an argument to NewClient
@@ -43,40 +40,33 @@ type Client struct {
 	gitlabClient *gitlab.Client
 	// internal http client
 	httpClient *http.Client
-	// Token type used to make authenticated API calls.
-	AuthType authType
 	// custom certificate
 	caFile string
 	// client certificate files
 	clientCertFile string
 	clientKeyFile  string
-	// protocol: host url protocol to make requests. Default is https
-	protocol string
 
-	host  string
-	token string
+	baseURL    string
+	authSource gitlab.AuthSource
 
-	isGraphQL     bool
-	isOauth2      bool
-	isJobToken    bool
 	allowInsecure bool
 
 	userAgent string
 }
 
-func (i BuildInfo) UserAgent() string {
-	return fmt.Sprintf("glab/%s (%s, %s)", i.Version, i.Platform, i.Architecture)
-}
-
 func (c *Client) HTTPClient() *http.Client {
-	if c.httpClient != nil {
-		return c.httpClient
-	}
-	return &http.Client{}
+	return c.httpClient
 }
 
-func (c *Client) Token() string {
-	return c.token
+// AuthSource returns the auth source
+// TODO: clarify use cases for this.
+func (c *Client) AuthSource() gitlab.AuthSource {
+	return c.authSource
+}
+
+// Lab returns the initialized GitLab client.
+func (c *Client) Lab() *gitlab.Client {
+	return c.gitlabClient
 }
 
 var secureCipherSuites = []uint16{
@@ -86,125 +76,121 @@ var secureCipherSuites = []uint16{
 	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 }
 
-// NewClient initializes a api client for use throughout glab.
-func NewClient(host, token string, isGraphQL bool, isOAuth2 bool, isJobToken bool, userAgent string, options ...ClientOption) (*Client, error) {
-	client := &Client{
-		protocol:   glinstance.DefaultProtocol,
-		AuthType:   NoToken,
-		host:       host,
-		token:      token,
-		isGraphQL:  isGraphQL,
-		isOauth2:   isOAuth2,
-		isJobToken: isJobToken,
-		userAgent:  userAgent,
-	}
+type newAuthSource func(c *http.Client) gitlab.AuthSource
 
-	// Apply options
+// NewClient initializes a api client for use throughout glab.
+func NewClient(newAuthSource newAuthSource, options ...ClientOption) (*Client, error) {
+	// 0. initialize empty Client
+	client := &Client{}
+
+	// 1. apply provided option functions to populate client
 	for _, option := range options {
 		if err := option(client); err != nil {
 			return nil, fmt.Errorf("failed to apply client option: %w", err)
 		}
 	}
 
-	if client.httpClient == nil {
-		// Create TLS configuration based on client settings
-		tlsConfig := &tls.Config{
-			MinVersion:         tls.VersionTLS12,
-			InsecureSkipVerify: client.allowInsecure,
-		}
-
-		// Set secure cipher suites for gitlab.com
-		if host == "gitlab.com" {
-			tlsConfig.CipherSuites = secureCipherSuites
-		}
-
-		// Configure custom CA if provided
-		if client.caFile != "" {
-			caCert, err := os.ReadFile(client.caFile)
-			if err != nil {
-				return nil, fmt.Errorf("error reading cert file: %w", err)
-			}
-			// use system cert pool as a baseline
-			caCertPool, err := x509.SystemCertPool()
-			if err != nil {
-				return nil, err
-			}
-			caCertPool.AppendCertsFromPEM(caCert)
-			tlsConfig.RootCAs = caCertPool
-		}
-
-		// Configure client certificates if provided
-		if client.clientCertFile != "" && client.clientKeyFile != "" {
-			clientCert, err := tls.LoadX509KeyPair(client.clientCertFile, client.clientKeyFile)
-			if err != nil {
-				return nil, err
-			}
-			tlsConfig.Certificates = []tls.Certificate{clientCert}
-		}
-
-		// Set appropriate timeouts based on whether custom CA is used
-		dialTimeout := 5 * time.Second
-		keepAlive := 5 * time.Second
-		idleTimeout := 30 * time.Second
-		if client.caFile != "" {
-			dialTimeout = 30 * time.Second
-			keepAlive = 30 * time.Second
-			idleTimeout = 90 * time.Second
-		}
-
-		client.httpClient = &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-				DialContext: (&net.Dialer{
-					Timeout:   dialTimeout,
-					KeepAlive: keepAlive,
-				}).DialContext,
-				ForceAttemptHTTP2:     true,
-				MaxIdleConns:          100,
-				IdleConnTimeout:       idleTimeout,
-				TLSHandshakeTimeout:   10 * time.Second,
-				ExpectContinueTimeout: 1 * time.Second,
-				TLSClientConfig:       tlsConfig,
-			},
-		}
+	// 2. initialize HTTP client used by the auth source and by the GitLab client
+	if err := client.initializeHTTPClient(); err != nil {
+		return nil, err
 	}
-	err := client.initializeGitLabClient()
-	return client, err
+
+	// 3. initialize the auth source
+	// We need to delay this because sources like OAuth2 need a valid
+	// HTTP client to refresh the token.
+	client.authSource = newAuthSource(client.httpClient)
+
+	// 4. initialize the GitLab client
+	if client.gitlabClient != nil {
+		return client, nil
+	}
+
+	if client.authSource == nil {
+		return nil, errors.New("unable to initialize GitLab Client because no authentication source is provided. Login first")
+	}
+
+	gitlabClient, err := gitlab.NewAuthSourceClient(
+		client.authSource,
+		gitlab.WithHTTPClient(client.httpClient),
+		gitlab.WithBaseURL(client.baseURL),
+		gitlab.WithUserAgent(client.userAgent),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize GitLab client: %v", err)
+	}
+
+	client.gitlabClient = gitlabClient
+	return client, nil
 }
 
-func (c *Client) initializeGitLabClient() error {
-	if c.gitlabClient != nil {
+func (c *Client) initializeHTTPClient() error {
+	if c.httpClient != nil {
 		return nil
 	}
 
-	var baseURL string
-	if c.isGraphQL {
-		baseURL = glinstance.GraphQLEndpoint(c.host, c.protocol)
-	} else {
-		baseURL = glinstance.APIEndpoint(c.host, c.protocol, "")
+	// Create TLS configuration based on client settings
+	tlsConfig := &tls.Config{
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: c.allowInsecure,
 	}
 
-	var err error
-	if c.isOauth2 {
-		ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: c.token})
-		c.gitlabClient, err = gitlab.NewAuthSourceClient(gitlab.OAuthTokenSource{TokenSource: ts}, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-	} else if c.isJobToken {
-		c.gitlabClient, err = gitlab.NewJobClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-	} else {
-		c.gitlabClient, err = gitlab.NewClient(c.token, gitlab.WithHTTPClient(c.httpClient), gitlab.WithBaseURL(baseURL))
-	}
-
+	// Set secure cipher suites for gitlab.com
+	u, err := url.Parse(c.baseURL)
 	if err != nil {
-		return fmt.Errorf("failed to initialize GitLab client: %v", err)
+		return err
 	}
-	c.gitlabClient.UserAgent = c.userAgent
+	if !glinstance.IsSelfHosted(u.Hostname()) {
+		tlsConfig.CipherSuites = secureCipherSuites
+	}
 
-	if c.token != "" {
-		if c.isOauth2 {
-			c.AuthType = OAuthToken
-		} else {
-			c.AuthType = PrivateToken
+	// Configure custom CA if provided
+	if c.caFile != "" {
+		caCert, err := os.ReadFile(c.caFile)
+		if err != nil {
+			return fmt.Errorf("error reading cert file: %w", err)
 		}
+		// use system cert pool as a baseline
+		caCertPool, err := x509.SystemCertPool()
+		if err != nil {
+			return err
+		}
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig.RootCAs = caCertPool
+	}
+
+	// Configure client certificates if provided
+	if c.clientCertFile != "" && c.clientKeyFile != "" {
+		clientCert, err := tls.LoadX509KeyPair(c.clientCertFile, c.clientKeyFile)
+		if err != nil {
+			return err
+		}
+		tlsConfig.Certificates = []tls.Certificate{clientCert}
+	}
+
+	// Set appropriate timeouts based on whether custom CA is used
+	dialTimeout := 5 * time.Second
+	keepAlive := 5 * time.Second
+	idleTimeout := 30 * time.Second
+	if c.caFile != "" {
+		dialTimeout = 30 * time.Second
+		keepAlive = 30 * time.Second
+		idleTimeout = 90 * time.Second
+	}
+
+	c.httpClient = &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   dialTimeout,
+				KeepAlive: keepAlive,
+			}).DialContext,
+			ForceAttemptHTTP2:     true,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       idleTimeout,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig:       tlsConfig,
+		},
 	}
 	return nil
 }
@@ -234,14 +220,6 @@ func WithInsecureSkipVerify(skip bool) ClientOption {
 	}
 }
 
-// WithProtocol configures the client protocol
-func WithProtocol(protocol string) ClientOption {
-	return func(c *Client) error {
-		c.protocol = protocol
-		return nil
-	}
-}
-
 // WithHTTPClient configures the HTTP client
 func WithHTTPClient(httpClient *http.Client) ClientOption {
 	return func(c *Client) error {
@@ -250,10 +228,26 @@ func WithHTTPClient(httpClient *http.Client) ClientOption {
 	}
 }
 
-// WithHTTPClient configures the HTTP client
+// WithGitLabClient configures the GitLab client
 func WithGitLabClient(client *gitlab.Client) ClientOption {
 	return func(c *Client) error {
 		c.gitlabClient = client
+		return nil
+	}
+}
+
+// WithBaseURL configures the base URL for the GitLab instance
+func WithBaseURL(baseURL string) ClientOption {
+	return func(c *Client) error {
+		c.baseURL = baseURL
+		return nil
+	}
+}
+
+// WithUserAgent configures the user agent to use
+func WithUserAgent(userAgent string) ClientOption {
+	return func(c *Client) error {
+		c.userAgent = userAgent
 		return nil
 	}
 }
@@ -266,6 +260,9 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	}
 
 	apiProtocol, _ := cfg.Get(repoHost, "api_protocol")
+	if apiProtocol == "" {
+		apiProtocol = glinstance.DefaultProtocol
+	}
 
 	isOAuth2Cfg, _ := cfg.Get(repoHost, "is_oauth2")
 	isOAuth2 := false
@@ -285,15 +282,36 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	clientCert, _ := cfg.Get(repoHost, "client_cert")
 	keyFile, _ := cfg.Get(repoHost, "client_key")
 
-	authToken := token
-	isJobToken := false
-	if jobToken != "" {
-		authToken = jobToken
-		isJobToken = true
+	// Build options based on configuration
+	options := []ClientOption{
+		WithUserAgent(userAgent),
 	}
 
-	// Build options based on configuration
-	var options []ClientOption
+	// determine auth source
+	var newAuthSource newAuthSource
+	switch {
+	case isOAuth2:
+		newAuthSource = func(client *http.Client) gitlab.AuthSource {
+			ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: token})
+			return gitlab.OAuthTokenSource{TokenSource: ts}
+		}
+	case jobToken != "":
+		newAuthSource = func(*http.Client) gitlab.AuthSource {
+			return gitlab.JobTokenAuthSource{Token: jobToken}
+		}
+	default:
+		newAuthSource = func(*http.Client) gitlab.AuthSource {
+			return gitlab.AccessTokenAuthSource{Token: token}
+		}
+	}
+
+	var baseURL string
+	if isGraphQL {
+		baseURL = glinstance.GraphQLEndpoint(apiHost, apiProtocol)
+	} else {
+		baseURL = glinstance.APIEndpoint(apiHost, apiProtocol, "")
+	}
+	options = append(options, WithBaseURL(baseURL))
 
 	if caCert != "" {
 		options = append(options, WithCustomCA(caCert))
@@ -307,20 +325,11 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 		options = append(options, WithInsecureSkipVerify(skipTlsVerify))
 	}
 
-	if apiProtocol != "" {
-		options = append(options, WithProtocol(apiProtocol))
-	}
-
-	return NewClient(apiHost, authToken, isGraphQL, isOAuth2, isJobToken, userAgent, options...)
+	return NewClient(newAuthSource, options...)
 }
 
-// Lab returns the initialized GitLab client.
-func (c *Client) Lab() *gitlab.Client {
-	return c.gitlabClient
-}
-
-func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, headers []string, bodyIsJSON bool) (*http.Request, error) {
-	req, err := http.NewRequest(method, baseURL.String(), body)
+func NewHTTPRequest(ctx context.Context, c *Client, method string, baseURL *url.URL, body io.Reader, headers []string, bodyIsJSON bool) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, method, baseURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -350,13 +359,11 @@ func NewHTTPRequest(c *Client, method string, baseURL *url.URL, body io.Reader, 
 		req.Header.Set("User-Agent", c.Lab().UserAgent)
 	}
 
-	// TODO: support GITLAB_CI_TOKEN
-	switch c.AuthType {
-	case OAuthToken:
-		req.Header.Set("Authorization", "Bearer "+c.Token())
-	case PrivateToken:
-		req.Header.Set("PRIVATE-TOKEN", c.Token())
+	name, value, err := c.authSource.Header(ctx)
+	if err != nil {
+		return nil, err
 	}
+	req.Header.Set(name, value)
 
 	return req, nil
 }

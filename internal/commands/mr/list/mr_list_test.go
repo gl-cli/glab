@@ -23,7 +23,7 @@ import (
 func runCommand(t *testing.T, rt http.RoundTripper, isTTY bool, cli string, doHyperlinks string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY), iostreams.WithDisplayHyperLinks(doHyperlinks))
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname, false)),
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname)),
 	)
 
 	cmd := NewCmdList(factory, nil)
@@ -38,7 +38,7 @@ func TestNewCmdList(t *testing.T) {
 	defer fakeHTTP.Verify(t)
 
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", "", false)),
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", "")),
 		cmdtest.WithConfig(config.NewBlankConfig()),
 		cmdtest.WithBaseRepo("OWNER", "REPO"),
 	)

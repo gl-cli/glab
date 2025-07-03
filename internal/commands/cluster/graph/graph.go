@@ -102,7 +102,7 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 		This command only supports personal and project access tokens for authentication.
 		`+"The token should have at least the `Developer` role in the agent project and the `read_api` and `k8s_proxy` scopes."+`
 		The user should be allowed to access the agent project.
-		See <https://docs.gitlab.com/user/clusters/agent/user_access/>. 
+		See <https://docs.gitlab.com/user/clusters/agent/user_access/>.
 		%s`, "`object_selector_expression`", objSelExprHelp, "`resource_selector_expression`", resSelExprHelp, text.ExperimentalString),
 		Example: heredoc.Doc(`
 		# Run the default query for agent 123
@@ -183,7 +183,8 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	// 2. Check token type
-	if client.AuthType != api.PrivateToken {
+	authSource, ok := client.AuthSource().(gitlab.AccessTokenAuthSource)
+	if !ok {
 		return errors.New("cluster graph command supports authentication with personal and project access tokens only (with Developer+ role)")
 	}
 
@@ -216,7 +217,7 @@ func (o *options) run(ctx context.Context) error {
 		graphAPIURL:   graphAPIURL,
 		listenNet:     o.listenNet,
 		listenAddr:    o.listenAddr,
-		authorization: fmt.Sprintf("Bearer pat:%d:%s", o.agentID, client.Token()),
+		authorization: fmt.Sprintf("Bearer pat:%d:%s", o.agentID, authSource.Token),
 		watchRequest:  watchReq,
 	}
 	return srv.Run(ctx)
