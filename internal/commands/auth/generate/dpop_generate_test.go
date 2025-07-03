@@ -68,61 +68,74 @@ func getRsaPrivateKey(t *testing.T, bits int) crypto.PrivateKey {
 }
 
 func TestSigningMethods(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
+		name                  string
 		key                   crypto.PrivateKey
 		expectedSigningMethod jwt.SigningMethod
 		shouldError           bool
 	}{
 		{
+			name:                  "supported ed25519",
 			key:                   getEd25519PrivateKey(t),
 			expectedSigningMethod: jwt.SigningMethodEdDSA,
 		},
 		{
+			name:        "unsupported Ecdsa P256",
 			key:         getEcdsaPrivateKey(t, elliptic.P256()),
 			shouldError: true, // GitLab only support the _sk variant which isn't supported by glab yet
 		},
 		{
+			name:        "unsupported Ecdsa P384",
 			key:         getEcdsaPrivateKey(t, elliptic.P384()),
 			shouldError: true, // GitLab only support the _sk variant which isn't supported by glab yet
 		},
 		{
+			name:        "unsupported Ecdsa 521",
 			key:         getEcdsaPrivateKey(t, elliptic.P521()),
 			shouldError: true, // GitLab only support the _sk variant which isn't supported by glab yet
 		},
 		{
+			name:        "unsupported Ecdsa 224",
 			key:         getEcdsaPrivateKey(t, elliptic.P224()),
 			shouldError: true, // ssh-keygen doesn't do 224 bit keys
 		},
 		{
+			name:        "unsupported RSA 2047",
 			key:         getRsaPrivateKey(t, 2047),
 			shouldError: true,
 		},
 		{
+			name:        "unsupported RSA 8193",
 			key:         getRsaPrivateKey(t, 8193),
 			shouldError: true,
 		},
 		{
+			name:                  "supported RSA 2048",
 			key:                   getRsaPrivateKey(t, 2048),
 			expectedSigningMethod: jwt.SigningMethodRS512,
 		},
 		{
+			name:                  "supported RSA 8192",
 			key:                   getRsaPrivateKey(t, 8192),
 			expectedSigningMethod: jwt.SigningMethodRS512,
 		},
 		{
+			name:        "unsupported unknown private key",
 			key:         crypto.PrivateKey(1),
 			shouldError: true,
 		},
 	}
 
-	for _, testCase := range testCases {
-		signingMethod, err := getSigningMethod(testCase.key)
-		if testCase.shouldError {
-			assert.Error(t, err)
-		} else {
-			assert.Nil(t, err)
-			assert.Equal(t, testCase.expectedSigningMethod, signingMethod)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			signingMethod, err := getSigningMethod(tt.key)
+			if tt.shouldError {
+				assert.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.expectedSigningMethod, signingMethod)
+			}
+		})
 	}
 }
 
