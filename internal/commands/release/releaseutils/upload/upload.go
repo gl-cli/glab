@@ -8,6 +8,9 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
+// releasePackageName contains the name for the release asset package
+const releasePackageName = "release-assets"
+
 // ConflictDirectAssetPathError is returned when both direct_asset_path and the deprecated filepath as specified for an asset link.
 type ConflictDirectAssetPathError struct {
 	assetLinkName *string
@@ -67,7 +70,7 @@ type Context struct {
 }
 
 // UploadFiles uploads a file into a release repository.
-func (c *Context) UploadFiles(projectID, tagName string) error {
+func (c *Context) UploadFiles(projectID, tagName string, usePackageRegistry bool) error {
 	if c.AssetFiles == nil {
 		return nil
 	}
@@ -77,23 +80,17 @@ func (c *Context) UploadFiles(projectID, tagName string) error {
 			color.ProgressIcon(), color.Blue("file"), file.Path,
 			color.Blue("name"), file.Name)
 
-		r, err := file.Open()
-		if err != nil {
-			return err
+		var releaseAsset *ReleaseAsset
+		var err error
+		if usePackageRegistry {
+			releaseAsset, err = c.uploadAsGenericPackage(projectID, tagName, file)
+		} else {
+			releaseAsset, err = c.uploadAsProjectMarkdownFile(projectID, file)
 		}
-		// Ignoring SA1019 - not sure what to do yet, see https://gitlab.com/gitlab-org/cli/-/merge_requests/1895#note_2331674215.
-		//nolint:staticcheck
-		projectFile, _, err := c.Client.ProjectMarkdownUploads.UploadProjectMarkdown(
-			projectID,
-			r,
-			file.Name,
-			nil,
-		)
 		if err != nil {
 			return err
 		}
 
-		releaseAsset := c.CreateReleaseAssetFromProjectFile(file, projectFile)
 		_, _, err = CreateLink(c.Client, projectID, tagName, releaseAsset)
 		if err != nil {
 			return err
@@ -102,6 +99,72 @@ func (c *Context) UploadFiles(projectID, tagName string) error {
 	c.AssetFiles = nil
 
 	return nil
+}
+
+func (c *Context) uploadAsGenericPackage(projectID, tagName string, file *ReleaseFile) (*ReleaseAsset, error) {
+	r, err := file.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	_, _, err = c.Client.GenericPackages.PublishPackageFile(projectID, releasePackageName, tagName, file.Name, r, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	assetPath, err := c.Client.GenericPackages.FormatPackageURL(projectID, releasePackageName, tagName, file.Name)
+	if err != nil {
+		return nil, err
+	}
+	assetURL := c.Client.BaseURL().JoinPath(assetPath)
+	return &ReleaseAsset{
+		Name:            gitlab.Ptr(file.Label),
+		URL:             gitlab.Ptr(assetURL.String()),
+		DirectAssetPath: gitlab.Ptr("/" + file.Name),
+		LinkType:        file.Type,
+	}, nil
+}
+
+func (c *Context) uploadAsProjectMarkdownFile(projectID string, file *ReleaseFile) (*ReleaseAsset, error) {
+	r, err := file.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	// Ignoring SA1019 - not sure what to do yet, see https://gitlab.com/gitlab-org/cli/-/merge_requests/1895#note_2331674215.
+	//nolint:staticcheck
+	projectFile, _, err := c.Client.ProjectMarkdownUploads.UploadProjectMarkdown(
+		projectID,
+		r,
+		file.Name,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// projectFile.FullPath contains the absolute path of the file within the
+	// context of the client's assetURL.
+	//
+	// It has a structure like so:
+	// FullPath: /-/project/[project_id]/uploads/[hash]/[file]
+	// Or on older GitLab prior to 17:
+	// FullPath: /[namespace]/[project]/uploads/[hash]/[file]
+	//
+	// Thus, we append it to the base URL to get a usable link.
+	//
+	// See for context [https://docs.gitlab.com/ee/api/projects.html#upload-a-file](https://docs.gitlab.com/api/project_markdown_uploads/)
+	assetURL := c.Client.BaseURL()
+	assetURL.Path = projectFile.FullPath
+
+	return &ReleaseAsset{
+		Name:            gitlab.Ptr(file.Label),
+		URL:             gitlab.Ptr(assetURL.String()),
+		DirectAssetPath: gitlab.Ptr("/" + file.Name),
+		LinkType:        file.Type,
+	}, nil
 }
 
 func (c *Context) CreateReleaseAssetLinks(projectID string, tagName string) error {
@@ -150,32 +213,4 @@ func aliasFilePathToDirectAssetPath(asset *ReleaseAsset) (bool /* aliased */, er
 	asset.FilePath = nil
 
 	return true, nil
-}
-
-// CreateReleaseAssetFromProjectFile creates a ReleaseAsset from a ProjectFile and the metadata from a ReleaseFile.
-// See [https://docs.gitlab.com/api/projects/#upload-a-file](https://docs.gitlab.com/api/project_markdown_uploads/)
-func (c *Context) CreateReleaseAssetFromProjectFile(releaseFile *ReleaseFile, projectFile *gitlab.ProjectMarkdownUploadedFile) *ReleaseAsset {
-	baseURL := c.Client.BaseURL()
-	// projectFile.FullPath contains the absolute path of the file within the
-	// context of the client's baseURL.
-	//
-	// It has a structure like so:
-	// FullPath: /-/project/[project_id]/uploads/[hash]/[file]
-	// Or on older GitLab prior to 17:
-	// FullPath: /[namespace]/[project]/uploads/[hash]/[file]
-	//
-	// Thus, we append it to the base URL to get a usable link.
-	//
-	// See for context [https://docs.gitlab.com/ee/api/projects.html#upload-a-file](https://docs.gitlab.com/api/project_markdown_uploads/)
-	baseURL.Path = projectFile.FullPath
-
-	linkURL := baseURL.String()
-	filename := "/" + releaseFile.Name
-
-	return &ReleaseAsset{
-		Name:            &releaseFile.Label,
-		URL:             &linkURL,
-		DirectAssetPath: &filename,
-		LinkType:        releaseFile.Type,
-	}
 }

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -28,6 +29,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 )
@@ -72,6 +74,8 @@ type options struct {
 
 	assetLink  []*upload.ReleaseAsset
 	assetFiles []*upload.ReleaseFile
+
+	usePackageRegistry bool
 
 	io         *iostreams.IOStreams
 	httpClient func() (*gitlab.Client, error)
@@ -158,7 +162,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			$ glab release create v1.0.1 --publish-to-catalog
 		`, "`"),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.complete(cmd, args); err != nil {
+			if err := opts.complete(cmd.Flags(), args); err != nil {
 				return err
 			}
 
@@ -178,6 +182,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	cmd.Flags().BoolVar(&opts.noUpdate, "no-update", false, "Prevent updating the existing release.")
 	cmd.Flags().BoolVar(&opts.noCloseMilestone, "no-close-milestone", false, "Prevent closing milestones after creating the release.")
 	cmd.Flags().StringVar(&opts.experimentalNotesTextOrFile, "experimental-notes-text-or-file", "", "[EXPERIMENTAL] Value to use as release notes. If a file exists with this value as path, its content will be used. Otherwise, the value itself will be used as text.")
+	cmd.Flags().BoolVar(&opts.usePackageRegistry, "use-package-registry", false, "[EXPERIMENTAL] Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.")
 	_ = cmd.Flags().MarkHidden("experimental-notes-text-or-file")
 
 	// These two need to be separately exclusive to avoid a breaking change
@@ -188,8 +193,8 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	return cmd
 }
 
-func (o *options) complete(cmd *cobra.Command, args []string) error {
-	o.repoOverride, _ = cmd.Flags().GetString("repo")
+func (o *options) complete(flags *pflag.FlagSet, args []string) error {
+	o.repoOverride, _ = flags.GetString("repo")
 
 	o.tagName = args[0]
 
@@ -206,17 +211,23 @@ func (o *options) complete(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	o.notes, err = resolveNotes(cmd, o)
+	o.notes, err = resolveNotes(flags, o)
 	if err != nil {
 		return err
 	}
 	o.noteProvided = o.notes != ""
 
+	if !flags.Changed("use-package-registry") {
+		if usePackageRegistry, err := strconv.ParseBool(os.Getenv("GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY")); err != nil {
+			o.usePackageRegistry = usePackageRegistry
+		}
+	}
+
 	return nil
 }
 
-func resolveNotes(cmd *cobra.Command, opts *options) (string, error) {
-	if cmd.Flags().Changed("notes") {
+func resolveNotes(flags *pflag.FlagSet, opts *options) (string, error) {
+	if flags.Changed("notes") {
 		return opts.notes, nil
 	}
 
@@ -488,7 +499,7 @@ func createRun(opts *options) error {
 	}
 
 	// upload files and create asset links
-	err = releaseutils.CreateReleaseAssets(opts.io, client, opts.assetFiles, opts.assetLink, repo.FullName(), release.TagName)
+	err = releaseutils.CreateReleaseAssets(opts.io, client, opts.assetFiles, opts.assetLink, repo.FullName(), release.TagName, opts.usePackageRegistry)
 	if err != nil {
 		return releaseFailedErr(err, start)
 	}

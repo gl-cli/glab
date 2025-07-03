@@ -110,7 +110,7 @@ func AssetsFromArgs(args []string) ([]*upload.ReleaseFile, error) {
 	return assets, nil
 }
 
-func CreateReleaseAssets(io *iostreams.IOStreams, client *gitlab.Client, assetFiles []*upload.ReleaseFile, assetLinks []*upload.ReleaseAsset, repoName string, tagName string) error {
+func CreateReleaseAssets(io *iostreams.IOStreams, client *gitlab.Client, assetFiles []*upload.ReleaseFile, assetLinks []*upload.ReleaseAsset, repoName string, tagName string, usePackageRegistry bool) error {
 	if assetFiles == nil && assetLinks == nil {
 		return nil
 	}
@@ -128,7 +128,7 @@ func CreateReleaseAssets(io *iostreams.IOStreams, client *gitlab.Client, assetFi
 		color.Blue("repo"), repoName,
 		color.Blue("tag"), tagName)
 
-	if err := uploadCtx.UploadFiles(repoName, tagName); err != nil {
+	if err := uploadCtx.UploadFiles(repoName, tagName, usePackageRegistry); err != nil {
 		return cmdutils.WrapError(err, "upload failed")
 	}
 
