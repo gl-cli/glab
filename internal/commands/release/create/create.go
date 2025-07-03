@@ -49,7 +49,11 @@ var noteOptionsNames = map[noteOptions]string{
 }
 
 type options struct {
-	name                        string
+	// The following fields must be exported because of survey
+	// TODO: make survey independent of command options struct.
+	Name               string
+	ReleaseNotesAction string
+
 	ref                         string
 	tagName                     string
 	tagMessage                  string
@@ -64,8 +68,7 @@ type options struct {
 	noUpdate                    bool
 	noCloseMilestone            bool
 
-	noteProvided       bool
-	releaseNotesAction string
+	noteProvided bool
 
 	assetLink  []*upload.ReleaseAsset
 	assetFiles []*upload.ReleaseFile
@@ -163,7 +166,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.name, "name", "n", "", "The release name or title.")
+	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "The release name or title.")
 	cmd.Flags().StringVarP(&opts.ref, "ref", "r", "", "If the specified tag doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.")
 	cmd.Flags().StringVarP(&opts.tagMessage, "tag-message", "T", "", "Message to use if creating a new annotated tag.")
 	cmd.Flags().StringVarP(&opts.notes, "notes", "N", "", "The release notes or description. You can use Markdown.")
@@ -354,7 +357,7 @@ func createRun(opts *options) error {
 				Name: "name",
 				Prompt: &survey.Input{
 					Message: "Release title (optional)",
-					Default: opts.name,
+					Default: opts.Name,
 				},
 			},
 			{
@@ -373,7 +376,7 @@ func createRun(opts *options) error {
 		var openEditor bool
 		var editorContents string
 
-		switch opts.releaseNotesAction {
+		switch opts.ReleaseNotesAction {
 		case noteOptionsNames[noteOptMyOwn]:
 			openEditor = true
 		case noteOptionsNames[noteOptCommitLog]:
@@ -385,7 +388,7 @@ func createRun(opts *options) error {
 		case noteOptionsNames[noteOptLeaveBlank]:
 			openEditor = false
 		default:
-			return fmt.Errorf("invalid action: %v", opts.releaseNotesAction)
+			return fmt.Errorf("invalid action: %v", opts.ReleaseNotesAction)
 		}
 
 		if openEditor {
@@ -419,13 +422,13 @@ func createRun(opts *options) error {
 		}
 	}
 
-	if opts.name == "" {
-		opts.name = opts.tagName
+	if opts.Name == "" {
+		opts.Name = opts.tagName
 	}
 
 	if (resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusNotFound) || release == nil {
 		createOpts := &gitlab.CreateReleaseOptions{
-			Name:    &opts.name,
+			Name:    &opts.Name,
 			TagName: &opts.tagName,
 		}
 
@@ -461,7 +464,7 @@ func createRun(opts *options) error {
 		}
 
 		updateOpts := &gitlab.UpdateReleaseOptions{
-			Name: &opts.name,
+			Name: &opts.Name,
 		}
 		if opts.notes != "" {
 			updateOpts.Description = &opts.notes
