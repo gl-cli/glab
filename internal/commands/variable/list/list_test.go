@@ -61,6 +61,17 @@ func Test_NewCmdList(t *testing.T) {
 				perPage:      100,
 			},
 		},
+		{
+			name:     "instance vars",
+			cli:      "--instance",
+			wantsErr: false,
+			wants: options{
+				instance:     true,
+				outputFormat: "text",
+				perPage:      20,
+				page:         1,
+			},
+		},
 	}
 
 	for _, tt := range tests {
