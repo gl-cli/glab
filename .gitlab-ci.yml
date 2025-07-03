@@ -81,6 +81,24 @@ check_docs_markdown:
     # Check links
     - lychee --offline --include-fragments docs/**/*.md *.md
 
+check_go_generated_code:
+  extends: .go-cache
+  stage: test
+  needs: []
+  script:
+    # Workaround config.yaml.lock file permissions
+    - chmod 600 internal/config/config.yaml.lock
+    - make generate
+    - |
+      echo "Checking git status"
+      [ -z "$(git status --short)" ] || {
+        echo "Error: Files should have been generated:";
+        git status --short; echo "Diff:";
+        git --no-pager diff HEAD;
+        echo "Run \"make generate\" and try again";
+        exit 1;
+      }
+
 lint_commit:
   stage: test
   image: ${GITLAB_DEPENDENCY_PROXY}node:22-slim

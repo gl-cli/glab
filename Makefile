@@ -159,6 +159,10 @@ fix: bin/golangci-lint ## Fix lint violations
 	gofmt -s -w .
 	goimports -w .
 
+.PHONY: generate
+generate: ## Run go generate
+	go generate ./...
+
 .PHONY: list-todo
 list-todo: ## Detect FIXME, TODO and other comment keywords
 	golangci-lint run --enable=godox --disable-all

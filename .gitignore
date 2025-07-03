@@ -1,6 +1,10 @@
 /bin
 .envrc
 
+# Go caches
+.go/
+.golangci-lint/
+
 # man pages
 /share/man/man1
 
@@ -50,7 +54,7 @@ log.txt.glab-cli
 .git
 gl-*-report.json
 
-# projectionist.vim 
+# projectionist.vim
 .projections.json
 
 # prevent .zip files from being accidentally added
@@ -63,4 +67,4 @@ gl-*-report.json
 test-output.log
 
 # commitlint node_modules
-scripts/commit-lint/node_modules/ 
+scripts/commit-lint/node_modules/
