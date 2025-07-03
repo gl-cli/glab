@@ -9,6 +9,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -21,13 +22,16 @@ import (
 func main() {
 	// Create testdata directory if it doesn't exist
 	testdataDir := "testdata"
-	if err := os.MkdirAll(testdataDir, 0755); err != nil {
+	if err := os.MkdirAll(testdataDir, 0o755); err != nil {
 		log.Fatalf("Failed to create testdata directory: %v", err)
 	}
 
 	// Generate Ed25519 key
-	if err := generateEd25519Key(filepath.Join(testdataDir, "ed25519_key.pem")); err != nil {
-		log.Fatalf("Failed to generate Ed25519 key: %v", err)
+	path := filepath.Join(testdataDir, "ed25519_key.pem")
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		if err := generateEd25519Key(path); err != nil {
+			log.Fatalf("Failed to generate Ed25519 key: %v", err)
+		}
 	}
 
 	// Generate ECDSA keys for different curves
@@ -41,15 +45,20 @@ func main() {
 	}
 
 	for _, c := range curves {
-		filename := filepath.Join(testdataDir, c.name+"_key.pem")
-		if err := generateEcdsaKey(filename, c.curve); err != nil {
-			log.Fatalf("Failed to generate ECDSA key for %s: %v", c.name, err)
+		path := filepath.Join(testdataDir, c.name+"_key.pem")
+		if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+			if err := generateEcdsaKey(path, c.curve); err != nil {
+				log.Fatalf("Failed to generate ECDSA key for %s: %v", c.name, err)
+			}
 		}
 	}
 
 	// Generate P-224 key separately since it's not supported by SSH
-	if err := generateEcdsaKeyManual(filepath.Join(testdataDir, "ecdsa_p224_key.pem"), elliptic.P224()); err != nil {
-		log.Fatalf("Failed to generate ECDSA P-224 key: %v", err)
+	path = filepath.Join(testdataDir, "ecdsa_p224_key.pem")
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		if err := generateEcdsaKeyManual(path, elliptic.P224()); err != nil {
+			log.Fatalf("Failed to generate ECDSA P-224 key: %v", err)
+		}
 	}
 
 	// Generate RSA keys with different bit sizes
@@ -64,9 +73,11 @@ func main() {
 	}
 
 	for _, r := range rsaSizes {
-		filename := filepath.Join(testdataDir, r.name+"_key.pem")
-		if err := generateRsaKey(filename, r.bits); err != nil {
-			log.Fatalf("Failed to generate RSA key for %s: %v", r.name, err)
+		path := filepath.Join(testdataDir, r.name+"_key.pem")
+		if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+			if err := generateRsaKey(path, r.bits); err != nil {
+				log.Fatalf("Failed to generate RSA key for %s: %v", r.name, err)
+			}
 		}
 	}
 }
@@ -121,7 +132,7 @@ func savePrivateKeyAsSSH(filename string, privateKey crypto.PrivateKey) error {
 		return err
 	}
 
-	return os.WriteFile(filename, encoded.Bytes(), os.FileMode(os.O_CREATE))
+	return os.WriteFile(filename, encoded.Bytes(), 0o644)
 }
 
 func savePrivateKeyManual(filename string, privateKey crypto.PrivateKey) error {
@@ -158,5 +169,5 @@ func savePrivateKeyManual(filename string, privateKey crypto.PrivateKey) error {
 		return err
 	}
 
-	return os.WriteFile(filename, encoded.Bytes(), os.FileMode(os.O_CREATE))
+	return os.WriteFile(filename, encoded.Bytes(), 0o644)
 }
