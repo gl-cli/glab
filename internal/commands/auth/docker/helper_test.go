@@ -33,6 +33,7 @@ func TestHelper(t *testing.T) {
 hosts:
   gitlab.example.com:
     is_oauth2: "true"
+    client_id: abc
     user: user1
     token: token1
     oauth2_expiry_date: ` + futureDate + `
@@ -48,12 +49,14 @@ hosts:
 hosts:
   gitlab.example.com:
     is_oauth2: "true"
+    client_id: abc
     user: user1
     token: token1
     oauth2_expiry_date: ` + futureDate + `
     container_registry_domains: registry.gitlab.example.com
   gdk.example.com:
     is_oauth2: "true"
+    client_id: abc
     user: user2
     token: token2
     oauth2_expiry_date: ` + futureDate + `
@@ -89,6 +92,7 @@ hosts:
 hosts:
   gitlab.example.com:
     is_oauth2: "true"
+    client_id: abc
     user: user1
     token: token1
     oauth2_expiry_date: ` + futureDate + `
@@ -102,6 +106,7 @@ hosts:
 hosts:
   gitlab.example.com:
     is_oauth2: "true"
+    client_id: abc
     user: ""
     token: token1
     oauth2_expiry_date: ` + futureDate + `
@@ -116,6 +121,7 @@ hosts:
 hosts:
   gitlab.example.com:
     is_oauth2: "true"
+    client_id: abc
     user: user1
     token: ""
     oauth2_expiry_date: ` + futureDate + `
@@ -130,6 +136,7 @@ hosts:
 hosts:
   gitlab.example.com:
     is_oauth2: "true"
+    client_id: abc
     token: token1
     oauth2_expiry_date: ` + futureDate + `
     container_registry_domains: registry.gitlab.example.com
@@ -143,6 +150,7 @@ hosts:
 hosts:
   gitlab.example.com:
     is_oauth2: "true"
+    client_id: abc
     user: user1
     oauth2_expiry_date: ` + futureDate + `
     container_registry_domains: registry.gitlab.example.com
