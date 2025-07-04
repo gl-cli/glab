@@ -407,7 +407,7 @@ func NewTestApiClient(t *testing.T, httpClient *http.Client, token, host string,
 	}
 	opts = append(opts, options...)
 	testClient, err := api.NewClient(
-		func(*http.Client) gitlab.AuthSource { return gitlab.AccessTokenAuthSource{Token: token} },
+		func(*http.Client) (gitlab.AuthSource, error) { return gitlab.AccessTokenAuthSource{Token: token}, nil },
 		opts...,
 	)
 	require.NoError(t, err)

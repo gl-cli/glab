@@ -12,8 +12,44 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
+
+func TestWillExpire(t *testing.T) {
+	tt := []struct {
+		description string
+		expiryDate  time.Time
+		expected    bool
+	}{
+		{
+			description: "Will expire in the future",
+			expiryDate:  time.Now().Add(minimumTokenLifetime * 2),
+			expected:    false,
+		},
+		{
+			description: "Will expire soon",
+			expiryDate:  time.Now().Add(minimumTokenLifetime - time.Minute),
+			expected:    true,
+		},
+		{
+			description: "Has expire in the past",
+			expiryDate:  time.Now().Add(-10 * time.Minute),
+			expected:    true,
+		},
+		{
+			description: "Expires right now",
+			expiryDate:  time.Now(),
+			expected:    true,
+		},
+	}
+	for _, test := range tt {
+		t.Run(test.description, func(t *testing.T) {
+			tokenNow := &AuthToken{
+				ExpiryDate: test.expiryDate,
+			}
+			require.Equal(t, test.expected, tokenNow.WillExpire())
+		})
+	}
+}
 
 func TestHandleAuthRedirect(t *testing.T) {
 	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -39,9 +75,8 @@ func TestHandleAuthRedirect(t *testing.T) {
 	}
 
 	stderr := &bytes.Buffer{}
-	ios := iostreams.New(iostreams.WithStderr(stderr, false))
 
-	tokenCh := handleAuthRedirect(ios, "localhost", "123", hostname, "http", "abc", "validstate")
+	tokenCh := handleAuthRedirect(stderr, &http.Client{}, "localhost", "123", hostname, "http", "abc", "validstate")
 	defer close(tokenCh)
 	time.Sleep(1 * time.Second)
 
@@ -107,7 +142,7 @@ func TestRefreshToken(t *testing.T) {
 		"client_id":            "321",
 	}
 
-	err := RefreshToken(hostname, cfg, "http")
+	err := RefreshToken(svr.Client(), hostname, cfg, "http")
 	require.Nil(t, err)
 
 	accessToken, err := cfg.Get(hostname, "token")
