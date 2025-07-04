@@ -7,41 +7,14 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/endpoints"
 )
 
 const (
-	redirectURI = "http://localhost:7171/auth/redirect"
+	redirectURL              = "http://localhost:7171/auth/redirect"
+	callbackServerListenAddr = ":7171"
 )
 
 var scopes = []string{"openid", "profile", "read_user", "write_repository", "api"}
-
-func NewOAuth2Config(hostname string, cfg config.Config) (*oauth2.Config, error) {
-	clientID, err := oauthClientID(cfg, hostname)
-	if err != nil {
-		return nil, err
-	}
-
-	return &oauth2.Config{
-		ClientID:    clientID,
-		RedirectURL: redirectURI,
-		Endpoint:    endpoint(glinstance.DefaultProtocol, hostname),
-		Scopes:      scopes,
-	}, nil
-}
-
-func endpoint(protocol, hostname string) oauth2.Endpoint {
-	if !glinstance.IsSelfHosted(hostname) {
-		return endpoints.GitLab
-	}
-
-	baseURL := fmt.Sprintf("%s://%s", protocol, hostname)
-	return oauth2.Endpoint{
-		AuthURL:       baseURL + "/oauth/authorize",
-		TokenURL:      baseURL + "/oauth/token",
-		DeviceAuthURL: baseURL + "/oauth/authorize_device",
-	}
-}
 
 func oauthClientID(cfg config.Config, hostname string) (string, error) {
 	if glinstance.IsSelfHosted(hostname) {
