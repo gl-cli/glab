@@ -3,15 +3,16 @@ package oauth2
 import (
 	"context"
 	_ "embed"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
+	"strings"
+	"time"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/utils"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -35,35 +36,46 @@ func oAuthClientID(cfg config.Config, hostname string) (string, error) {
 }
 
 func StartFlow(cfg config.Config, out io.Writer, httpClient *http.Client, hostname string) (string, error) {
-	authURL := fmt.Sprintf("https://%s/oauth/authorize", hostname)
-
 	clientID, err := oAuthClientID(cfg, hostname)
 	if err != nil {
 		return "", err
 	}
 
-	state := GenerateCodeVerifier()
-	codeVerifier := GenerateCodeVerifier()
-	codeChallenge := GenerateCodeChallenge(codeVerifier)
-	completeAuthURL := fmt.Sprintf(
-		"%s?client_id=%s&redirect_uri=%s&response_type=code&state=%s&scope=%s&code_challenge=%s&code_challenge_method=S256",
-		authURL, clientID, redirectURI, state, scopes, codeChallenge)
+	oauth2Config := oauth2.Config{
+		ClientID:    clientID,
+		RedirectURL: redirectURI,
+		Endpoint:    endpoint(glinstance.DefaultProtocol, hostname),
+		Scopes:      strings.Split(scopes, "+"),
+	}
 
-	tokenCh := handleAuthRedirect(out, httpClient, "0.0.0.0", codeVerifier, hostname, "https", clientID, state)
-	defer close(tokenCh)
+	verifier := oauth2.GenerateVerifier()
+
+	tokenCh, errorCh, shutdownFunc := handleAuthRedirect(oauth2Config, verifier)
 
 	browser, _ := cfg.Get(hostname, "browser")
-	if err := utils.OpenInBrowser(completeAuthURL, browser); err != nil {
-		fmt.Fprintf(out, "Failed opening a browser at %s\n", completeAuthURL)
+	authURL := oauth2Config.AuthCodeURL("state", oauth2.S256ChallengeOption(verifier))
+	if err := utils.OpenInBrowser(authURL, browser); err != nil {
+		fmt.Fprintf(out, "Failed opening a browser at %s\n", authURL)
 		fmt.Fprintf(out, "Encountered error: %s\n", err)
 		fmt.Fprint(out, "Try entering the URL in your browser manually.\n")
 	}
-	token := <-tokenCh
-	if token == nil {
-		return "", fmt.Errorf("authentication failed: no token received")
+
+	var token *oauth2.Token
+	select {
+	case token = <-tokenCh:
+		if err := shutdownFunc(); err != nil {
+			return "", err
+		}
+	case err := <-errorCh:
+		if shutdownErr := shutdownFunc(); shutdownErr != nil {
+			return "", fmt.Errorf("shutdown error: %s, during authorization flow error: %w", shutdownErr, err)
+		}
+		return "", err
 	}
 
-	err = token.SetConfig(hostname, cfg)
+	at := fromOAuth2Token(token)
+
+	err = at.SetConfig(hostname, cfg)
 	if err != nil {
 		return "", err
 	}
@@ -71,79 +83,63 @@ func StartFlow(cfg config.Config, out io.Writer, httpClient *http.Client, hostna
 	return token.AccessToken, nil
 }
 
-func handleAuthRedirect(out io.Writer, httpClient *http.Client, listenHostname, codeVerifier, hostname, protocol, clientID, originalState string) chan *AuthToken {
-	tokenCh := make(chan *AuthToken)
+func handleAuthRedirect(oauth2Config oauth2.Config, verifier string) (chan *oauth2.Token, chan error, func() error) {
+	tokenCh := make(chan *oauth2.Token, 1)
+	errorCh := make(chan error, 1)
 
-	server := &http.Server{Addr: listenHostname + ":7171"}
-
-	http.HandleFunc("/auth/redirect", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/auth/redirect", func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
-		state := r.URL.Query().Get("state")
-
-		if state != originalState {
-			fmt.Fprintf(out, "Error: Invalid state")
-			tokenCh <- nil
+		if code == "" {
+			err := fmt.Errorf("no authorization code received")
+			errorCh <- err
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		token, err := requestToken(httpClient, hostname, protocol, clientID, code, codeVerifier)
+		// Check for errors
+		if errorParam := r.URL.Query().Get("error"); errorParam != "" {
+			err := fmt.Errorf("authorization error: %s", errorParam)
+			errorCh <- err
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		ctx := context.Background()
+		token, err := oauth2Config.Exchange(ctx, code, oauth2.S256ChallengeOption(verifier), oauth2.VerifierOption(verifier))
 		if err != nil {
-			fmt.Fprintf(out, "Error occured requesting access token %s.", err)
-			tokenCh <- nil
+			errorCh <- err
+			http.Error(w, fmt.Sprintf("Token exchange failed: %v", err), http.StatusInternalServerError)
 			return
 		}
 
-		_, _ = w.Write([]byte("You have authenticated successfully. You can now close this browser window."))
+		// Send success response
 		tokenCh <- token
-		_ = server.Shutdown(context.Background())
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`
+            <html>
+            <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+                <h1 style="color: green;">Authentication Successful!</h1>
+                <p>You can close this window and return to the application.</p>
+            </body>
+            </html>
+        `))
 	})
 
+	server := &http.Server{
+		Addr:    ":7171",
+		Handler: mux,
+	}
+
 	go func() {
-		err := http.ListenAndServe(listenHostname+":7171", nil)
-		if err != nil {
-			fmt.Fprintf(out, "Error occured while setting up server %s.", err)
-			tokenCh <- nil
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			errorCh <- fmt.Errorf("error while listening on OAuth2 callback server: %w", err)
 		}
 	}()
 
-	return tokenCh
-}
-
-func requestToken(client *http.Client, hostname, protocol, clientID, code, codeVerifier string) (*AuthToken, error) {
-	tokenURL := fmt.Sprintf("%s://%s/oauth/token", protocol, hostname)
-
-	form := url.Values{
-		"client_id":     []string{clientID},
-		"code":          []string{code},
-		"grant_type":    []string{"authorization_code"},
-		"redirect_uri":  []string{redirectURI},
-		"code_verifier": []string{codeVerifier},
+	return tokenCh, errorCh, func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		return server.Shutdown(ctx)
 	}
-
-	resp, err := client.PostForm(tokenURL, form)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode == http.StatusBadRequest {
-		respBody, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("bad request: %s\n", string(respBody))
-	}
-
-	respBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	at := AuthToken{}
-
-	err = json.Unmarshal(respBytes, &at)
-	if err != nil {
-		return nil, err
-	}
-
-	at.CalcExpiresDate()
-	at.CodeVerifier = codeVerifier
-
-	return &at, nil
 }

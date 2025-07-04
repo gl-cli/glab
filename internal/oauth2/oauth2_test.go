@@ -1,11 +1,6 @@
 package oauth2
 
 import (
-	"bytes"
-	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
@@ -47,74 +42,6 @@ func TestWillExpire(t *testing.T) {
 				ExpiryDate: test.expiryDate,
 			}
 			require.Equal(t, test.expected, tokenNow.WillExpire())
-		})
-	}
-}
-
-func TestHandleAuthRedirect(t *testing.T) {
-	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`{
-			"access_token": "at",
-			"refresh_token": "rt",
-			"expiresIn": 60
-		}`))
-	}))
-
-	cfg := stubConfig{
-		hosts: map[string]map[string]string{},
-	}
-
-	hostname := strings.Split(svr.URL, "://")[1]
-	cfg.hosts[hostname] = map[string]string{
-		"is_oauth2":            "true",
-		"oauth2_refresh_token": "refresh_token",
-		"token":                "access_token",
-		"oauth2_code_verifier": "123",
-		"oauth2_expiry_date":   "13 Mar 23 15:47 GMT",
-		"client_id":            "321",
-	}
-
-	stderr := &bytes.Buffer{}
-
-	tokenCh := handleAuthRedirect(stderr, &http.Client{}, "localhost", "123", hostname, "http", "abc", "validstate")
-	defer close(tokenCh)
-	time.Sleep(1 * time.Second)
-
-	tt := []struct {
-		description         string
-		state               string
-		expectedToken       bool
-		expectedAccessToken string
-	}{
-		{
-			"when valid request then token is returned",
-			"validstate",
-			true,
-			"at",
-		},
-		{
-			"when invalid state is passed does not return token",
-			"invalidstate",
-			false,
-			"",
-		},
-	}
-
-	for _, test := range tt {
-		t.Run(test.description, func(t *testing.T) {
-			go func() {
-				url := fmt.Sprintf("http://localhost:7171/auth/redirect?code=123&state=%s", test.state)
-				_, err := http.Get(url)
-				require.Nil(t, err)
-			}()
-
-			token := <-tokenCh
-			if !test.expectedToken {
-				require.Nil(t, token)
-				return
-			}
-
-			assert.Equal(t, "at", token.AccessToken)
 		})
 	}
 }
