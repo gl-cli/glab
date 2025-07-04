@@ -8,11 +8,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"time"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
@@ -36,7 +34,7 @@ func oAuthClientID(cfg config.Config, hostname string) (string, error) {
 	return glinstance.DefaultClientID, nil
 }
 
-func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (string, error) {
+func StartFlow(cfg config.Config, out io.Writer, httpClient *http.Client, hostname string) (string, error) {
 	authURL := fmt.Sprintf("https://%s/oauth/authorize", hostname)
 
 	clientID, err := oAuthClientID(cfg, hostname)
@@ -51,14 +49,14 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 		"%s?client_id=%s&redirect_uri=%s&response_type=code&state=%s&scope=%s&code_challenge=%s&code_challenge_method=S256",
 		authURL, clientID, redirectURI, state, scopes, codeChallenge)
 
-	tokenCh := handleAuthRedirect(io, "0.0.0.0", codeVerifier, hostname, "https", clientID, state)
+	tokenCh := handleAuthRedirect(out, httpClient, "0.0.0.0", codeVerifier, hostname, "https", clientID, state)
 	defer close(tokenCh)
 
 	browser, _ := cfg.Get(hostname, "browser")
 	if err := utils.OpenInBrowser(completeAuthURL, browser); err != nil {
-		fmt.Fprintf(io.StdErr, "Failed opening a browser at %s\n", completeAuthURL)
-		fmt.Fprintf(io.StdErr, "Encountered error: %s\n", err)
-		fmt.Fprint(io.StdErr, "Try entering the URL in your browser manually.\n")
+		fmt.Fprintf(out, "Failed opening a browser at %s\n", completeAuthURL)
+		fmt.Fprintf(out, "Encountered error: %s\n", err)
+		fmt.Fprint(out, "Try entering the URL in your browser manually.\n")
 	}
 	token := <-tokenCh
 	if token == nil {
@@ -73,7 +71,7 @@ func StartFlow(cfg config.Config, io *iostreams.IOStreams, hostname string) (str
 	return token.AccessToken, nil
 }
 
-func handleAuthRedirect(io *iostreams.IOStreams, listenHostname, codeVerifier, hostname, protocol, clientID, originalState string) chan *AuthToken {
+func handleAuthRedirect(out io.Writer, httpClient *http.Client, listenHostname, codeVerifier, hostname, protocol, clientID, originalState string) chan *AuthToken {
 	tokenCh := make(chan *AuthToken)
 
 	server := &http.Server{Addr: listenHostname + ":7171"}
@@ -83,14 +81,14 @@ func handleAuthRedirect(io *iostreams.IOStreams, listenHostname, codeVerifier, h
 		state := r.URL.Query().Get("state")
 
 		if state != originalState {
-			fmt.Fprintf(io.StdErr, "Error: Invalid state")
+			fmt.Fprintf(out, "Error: Invalid state")
 			tokenCh <- nil
 			return
 		}
 
-		token, err := requestToken(hostname, protocol, clientID, code, codeVerifier)
+		token, err := requestToken(httpClient, hostname, protocol, clientID, code, codeVerifier)
 		if err != nil {
-			fmt.Fprintf(io.StdErr, "Error occured requesting access token %s.", err)
+			fmt.Fprintf(out, "Error occured requesting access token %s.", err)
 			tokenCh <- nil
 			return
 		}
@@ -103,7 +101,7 @@ func handleAuthRedirect(io *iostreams.IOStreams, listenHostname, codeVerifier, h
 	go func() {
 		err := http.ListenAndServe(listenHostname+":7171", nil)
 		if err != nil {
-			fmt.Fprintf(io.StdErr, "Error occured while setting up server %s.", err)
+			fmt.Fprintf(out, "Error occured while setting up server %s.", err)
 			tokenCh <- nil
 		}
 	}()
@@ -111,7 +109,7 @@ func handleAuthRedirect(io *iostreams.IOStreams, listenHostname, codeVerifier, h
 	return tokenCh
 }
 
-func requestToken(hostname, protocol, clientID, code, codeVerifier string) (*AuthToken, error) {
+func requestToken(client *http.Client, hostname, protocol, clientID, code, codeVerifier string) (*AuthToken, error) {
 	tokenURL := fmt.Sprintf("%s://%s/oauth/token", protocol, hostname)
 
 	form := url.Values{
@@ -122,15 +120,14 @@ func requestToken(hostname, protocol, clientID, code, codeVerifier string) (*Aut
 		"code_verifier": []string{codeVerifier},
 	}
 
-	resp, err := http.PostForm(tokenURL, form)
+	resp, err := client.PostForm(tokenURL, form)
+	if err != nil {
+		return nil, err
+	}
 
 	if resp.StatusCode == http.StatusBadRequest {
 		respBody, _ := io.ReadAll(resp.Body)
-		err = fmt.Errorf("bad request: %s\n", string(respBody))
-	}
-
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("bad request: %s\n", string(respBody))
 	}
 
 	respBytes, err := io.ReadAll(resp.Body)
@@ -151,14 +148,14 @@ func requestToken(hostname, protocol, clientID, code, codeVerifier string) (*Aut
 	return &at, nil
 }
 
-func RefreshToken(hostname string, cfg config.Config, protocol string) error {
+func RefreshToken(client *http.Client, hostname string, cfg config.Config, protocol string) error {
 	token, err := tokenFromConfig(hostname, cfg)
 	if err != nil {
 		return err
 	}
 
-	// Check if token has expired
-	if token.ExpiryDate.After(time.Now()) {
+	// Check if token has or will expire
+	if !token.WillExpire() {
 		return nil
 	}
 
@@ -176,7 +173,7 @@ func RefreshToken(hostname string, cfg config.Config, protocol string) error {
 	}
 
 	tokenURL := fmt.Sprintf("%s://%s/oauth/token", protocol, hostname)
-	resp, err := http.PostForm(tokenURL, form)
+	resp, err := client.PostForm(tokenURL, form)
 	if err != nil {
 		return err
 	}

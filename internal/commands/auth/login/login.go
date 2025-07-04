@@ -331,7 +331,12 @@ func loginRun(opts *LoginOptions) error {
 			return err
 		}
 	} else {
-		token, err = oauth2.StartFlow(cfg, opts.IO, hostname)
+		client, err := opts.apiClient(hostname, cfg)
+		if err != nil {
+			return err
+		}
+
+		token, err = oauth2.StartFlow(cfg, opts.IO.StdErr, client.HTTPClient(), hostname)
 		if err != nil {
 			return err
 		}

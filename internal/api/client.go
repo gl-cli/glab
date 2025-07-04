@@ -76,7 +76,7 @@ var secureCipherSuites = []uint16{
 	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 }
 
-type newAuthSource func(c *http.Client) gitlab.AuthSource
+type newAuthSource func(c *http.Client) (authSource gitlab.AuthSource, err error)
 
 // NewClient initializes a api client for use throughout glab.
 func NewClient(newAuthSource newAuthSource, options ...ClientOption) (*Client, error) {
@@ -98,7 +98,11 @@ func NewClient(newAuthSource newAuthSource, options ...ClientOption) (*Client, e
 	// 3. initialize the auth source
 	// We need to delay this because sources like OAuth2 need a valid
 	// HTTP client to refresh the token.
-	client.authSource = newAuthSource(client.httpClient)
+	authSource, err := newAuthSource(client.httpClient)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize auth source: %w", err)
+	}
+	client.authSource = authSource
 
 	// 4. initialize the GitLab client
 	if client.gitlabClient != nil {
@@ -265,14 +269,6 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	}
 
 	isOAuth2Cfg, _ := cfg.Get(repoHost, "is_oauth2")
-	isOAuth2 := false
-	if isOAuth2Cfg == "true" {
-		isOAuth2 = true
-		err := oauth2.RefreshToken(repoHost, cfg, "https")
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	token, _ := cfg.Get(repoHost, "token")
 	jobToken, _ := cfg.Get(repoHost, "job_token")
@@ -290,18 +286,22 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	// determine auth source
 	var newAuthSource newAuthSource
 	switch {
-	case isOAuth2:
-		newAuthSource = func(client *http.Client) gitlab.AuthSource {
+	case isOAuth2Cfg == "true":
+		newAuthSource = func(client *http.Client) (gitlab.AuthSource, error) {
+			err := oauth2.RefreshToken(client, repoHost, cfg, glinstance.DefaultProtocol)
+			if err != nil {
+				return nil, err
+			}
 			ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: token})
-			return gitlab.OAuthTokenSource{TokenSource: ts}
+			return gitlab.OAuthTokenSource{TokenSource: ts}, nil
 		}
 	case jobToken != "":
-		newAuthSource = func(*http.Client) gitlab.AuthSource {
-			return gitlab.JobTokenAuthSource{Token: jobToken}
+		newAuthSource = func(*http.Client) (gitlab.AuthSource, error) {
+			return gitlab.JobTokenAuthSource{Token: jobToken}, nil
 		}
 	default:
-		newAuthSource = func(*http.Client) gitlab.AuthSource {
-			return gitlab.AccessTokenAuthSource{Token: token}
+		newAuthSource = func(*http.Client) (gitlab.AuthSource, error) {
+			return gitlab.AccessTokenAuthSource{Token: token}, nil
 		}
 	}
 

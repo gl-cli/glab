@@ -6,6 +6,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
+const minimumTokenLifetime = 5 * time.Minute
+
 type AuthToken struct {
 	AccessToken  string    `json:"access_token"`
 	RefreshToken string    `json:"refresh_token"`
@@ -16,6 +18,11 @@ type AuthToken struct {
 
 func (t *AuthToken) CalcExpiresDate() {
 	t.ExpiryDate = time.Now().Add(time.Second * time.Duration(t.ExpiresIn))
+}
+
+// WillExpire checks if the token is expired or will expire within the next x minutes.
+func (t *AuthToken) WillExpire() bool {
+	return t.ExpiryDate.Before(time.Now().Add(minimumTokenLifetime))
 }
 
 func tokenFromConfig(hostname string, cfg config.Config) (*AuthToken, error) {
