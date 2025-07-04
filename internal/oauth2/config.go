@@ -14,9 +14,7 @@ const (
 	redirectURI = "http://localhost:7171/auth/redirect"
 )
 
-var (
-	scopes = []string{"openid", "profile", "read_user", "write_repository", "api"}
-)
+var scopes = []string{"openid", "profile", "read_user", "write_repository", "api"}
 
 func NewOAuth2Config(hostname string, cfg config.Config) (*oauth2.Config, error) {
 	clientID, err := oauthClientID(cfg, hostname)
@@ -37,7 +35,7 @@ func endpoint(protocol, hostname string) oauth2.Endpoint {
 		return endpoints.GitLab
 	}
 
-	baseURL := fmt.Sprintf("%s://%s", glinstance.DefaultProtocol, hostname)
+	baseURL := fmt.Sprintf("%s://%s", protocol, hostname)
 	return oauth2.Endpoint{
 		AuthURL:       baseURL + "/oauth/authorize",
 		TokenURL:      baseURL + "/oauth/token",

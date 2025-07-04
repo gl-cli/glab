@@ -13,7 +13,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func StartFlow(cfg config.Config, out io.Writer, httpClient *http.Client, hostname string) (string, error) {
+func StartFlow(ctx context.Context, cfg config.Config, out io.Writer, httpClient *http.Client, hostname string) (string, error) {
 	oauth2Config, err := NewOAuth2Config(hostname, cfg)
 	if err != nil {
 		return "", err
@@ -21,7 +21,7 @@ func StartFlow(cfg config.Config, out io.Writer, httpClient *http.Client, hostna
 
 	verifier := oauth2.GenerateVerifier()
 	state := oauth2.GenerateVerifier()
-	tokenCh, errorCh, shutdownFunc := handleAuthRedirect(oauth2Config, httpClient, verifier, state)
+	tokenCh, errorCh, shutdownFunc := handleAuthRedirect(ctx, oauth2Config, httpClient, verifier, state)
 
 	browser, _ := cfg.Get(hostname, "browser")
 	authURL := oauth2Config.AuthCodeURL(state, oauth2.S256ChallengeOption(verifier))
@@ -33,6 +33,11 @@ func StartFlow(cfg config.Config, out io.Writer, httpClient *http.Client, hostna
 
 	var token *oauth2.Token
 	select {
+	case <-ctx.Done():
+		if shutdownErr := shutdownFunc(); shutdownErr != nil {
+			return "", fmt.Errorf("shutdown error: %s, during cancellation: %w", shutdownErr, ctx.Err())
+		}
+		return "", ctx.Err()
 	case token = <-tokenCh:
 		if err := shutdownFunc(); err != nil {
 			return "", err
@@ -52,7 +57,7 @@ func StartFlow(cfg config.Config, out io.Writer, httpClient *http.Client, hostna
 	return token.AccessToken, nil
 }
 
-func handleAuthRedirect(oauth2Config *oauth2.Config, httpClient *http.Client, verifier, state string) (chan *oauth2.Token, chan error, func() error) {
+func handleAuthRedirect(ctx context.Context, oauth2Config *oauth2.Config, httpClient *http.Client, verifier, state string) (chan *oauth2.Token, chan error, func() error) {
 	tokenCh := make(chan *oauth2.Token, 1)
 	errorCh := make(chan error, 1)
 
@@ -82,7 +87,7 @@ func handleAuthRedirect(oauth2Config *oauth2.Config, httpClient *http.Client, ve
 			return
 		}
 
-		ctx := context.WithValue(context.Background(), oauth2.HTTPClient, httpClient)
+		ctx := context.WithValue(ctx, oauth2.HTTPClient, httpClient)
 		token, err := oauth2Config.Exchange(ctx, code, oauth2.S256ChallengeOption(verifier), oauth2.VerifierOption(verifier))
 		if err != nil {
 			errorCh <- err
@@ -93,7 +98,7 @@ func handleAuthRedirect(oauth2Config *oauth2.Config, httpClient *http.Client, ve
 		// Send success response
 		tokenCh <- token
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(`
+		_, _ = w.Write([]byte(`
             <html>
             <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
                 <h1 style="color: green;">Authentication Successful!</h1>
