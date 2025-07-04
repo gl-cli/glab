@@ -76,7 +76,7 @@ func TestClientID(t *testing.T) {
 					},
 				},
 			}
-			clientID, err := oAuthClientID(cfg, testCase.hostname)
+			clientID, err := oauthClientID(cfg, testCase.hostname)
 			assert.NoError(t, err)
 			assert.Equal(t, testCase.expectedClientID, clientID)
 		})
@@ -88,7 +88,7 @@ func TestClientID(t *testing.T) {
 				"salsa.debian.org": {},
 			},
 		}
-		clientID, err := oAuthClientID(cfg, "salsa.debian.org")
+		clientID, err := oauthClientID(cfg, "salsa.debian.org")
 		assert.Error(t, err)
 		assert.Empty(t, clientID)
 	})

@@ -25,7 +25,7 @@ type configTokenSource struct {
 }
 
 func NewConfigTokenSource(cfg config.Config, httpClient *http.Client, protocol, hostname string) (oauth2.TokenSource, error) {
-	clientID, err := oAuthClientID(cfg, hostname)
+	clientID, err := oauthClientID(cfg, hostname)
 	if err != nil {
 		return nil, err
 	}

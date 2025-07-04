@@ -20,7 +20,7 @@ const (
 	scopes      = "openid+profile+read_user+write_repository+api"
 )
 
-func oAuthClientID(cfg config.Config, hostname string) (string, error) {
+func oauthClientID(cfg config.Config, hostname string) (string, error) {
 	if glinstance.IsSelfHosted(hostname) {
 		clientID, err := cfg.Get(hostname, "client_id")
 		if err != nil {
@@ -36,7 +36,7 @@ func oAuthClientID(cfg config.Config, hostname string) (string, error) {
 }
 
 func StartFlow(cfg config.Config, out io.Writer, httpClient *http.Client, hostname string) (string, error) {
-	clientID, err := oAuthClientID(cfg, hostname)
+	clientID, err := oauthClientID(cfg, hostname)
 	if err != nil {
 		return "", err
 	}
