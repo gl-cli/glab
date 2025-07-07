@@ -2,6 +2,7 @@ package graph
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,7 +10,6 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -18,6 +18,13 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/text"
+)
+
+var (
+	//go:embed long.md
+	longHelp string
+	//go:embed example.md
+	exampleHelp string
 )
 
 type options struct {
@@ -52,84 +59,12 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 		listenNet:  "tcp",
 		listenAddr: "localhost:0",
 	}
-	objSelExprHelp := strings.Join([]string{
-		"- `obj` is the Kubernetes object being evaluated.",
-		"- `group` group of the object.",
-		"- `version` version of the object.",
-		"- `resource` resource name of the object. E.g. pods for the Pod kind.",
-		"- `namespace` namespace of the object.",
-		"- `name` name of the object.",
-		"- `labels` labels of the object.",
-		"- `annotations` annotations of the object.",
-	}, "\n")
-	resSelExprHelp := strings.Join([]string{
-		"- `group` group of the object.",
-		"- `version` version of the object.",
-		"- `resource` resource name of the object. E.g. pods for the Pod kind.",
-		"- `namespaced` scope of group+version+resource. Can be `bool` `true` or `false`.",
-	}, "\n")
 	graphCmd := &cobra.Command{
-		Use:   "graph [flags]",
-		Short: `Query Kubernetes object graph using GitLab Agent for Kubernetes. (EXPERIMENTAL)`,
-		Long: heredoc.Docf(`
-		This commands starts a web server that shows a live view of Kubernetes objects graph in a browser.
-		It works via the GitLab Agent for Kubernetes running in the cluster.
-		The minimum required GitLab and GitLab Agent version is v18.1.
-
-		Please leave feedback in [this issue](https://gitlab.com/gitlab-org/cli/-/issues/7900).
-
-		### Resource filtering
-
-		Resources and namespaces can be filterer using [CEL expressions](https://cel.dev/).
-
-		%s can be used to filter objects. The expression must return a boolean. The following variables are available:
-
-		%s
-
-		%s can be used to filter Kubernetes discovery information to include/exclude resources
-		from the watch request. The expression must return a boolean. The following variables are available:
-
-		%s
-
-		### Advanced usage
-
-		Apart from high level ways to construct the query, this command allows you to construct and send
-		the query using all the underlying API capabilities.
-		Please see the
-		[technical design doc](https://gitlab.com/gitlab-org/cluster-integration/gitlab-agent/-/blob/master/doc/graph_api.md)
-		to understand what is possible and how to do it.
-
-		This command only supports personal and project access tokens for authentication.
-		`+"The token should have at least the `Developer` role in the agent project and the `read_api` and `k8s_proxy` scopes."+`
-		The user should be allowed to access the agent project.
-		See <https://docs.gitlab.com/user/clusters/agent/user_access/>.
-		%s`, "`object_selector_expression`", objSelExprHelp, "`resource_selector_expression`", resSelExprHelp, text.ExperimentalString),
-		Example: heredoc.Doc(`
-		# Run the default query for agent 123
-		$ glab cluster graph -R user/project -a 123
-
-		# Show common resources from the core and RBAC groups
-		$ glab cluster graph -R user/project -a 123 --core --rbac
-
-		# Show certain resources
-		$ glab cluster graph -R user/project -a 123 --resources=pods --resources=configmaps
-
-		# Same as above, but more compact
-		$ glab cluster graph -R user/project -a 123 -r={pods,configmaps}
-
-		# Select a certain namespace
-		$ glab cluster graph -R user/project -a 123 -n={my-ns,my-stuff}
-
-		# Select all namespaces that have a certain annotation
-		$ glab cluster graph -R user/project -a 123 --ns-expression='"my-annotation" in annotations'
-
-		# Advanced usage - pass the full query directly via stdin.
-		# The query below watches serviceaccounts in all namespaces except for the kube-system.
-		$ Q='{"queries":[{"include":{"resource_selector_expression":"resource == \"serviceaccounts\""}}],"namespaces":{"object_selector_expression":"name != \"kube-system\""}}'
-
-		$ echo -n "$Q" | glab cluster graph -R user/project -a 123 --stdin
-		`),
-		Args: cobra.NoArgs,
+		Use:     "graph [flags]",
+		Short:   `Queries the Kubernetes object graph, using the GitLab Agent for Kubernetes. (EXPERIMENTAL)`,
+		Long:    longHelp + text.ExperimentalString,
+		Example: exampleHelp,
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run(cmd.Context())
 		},
@@ -138,20 +73,20 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	fl.Int64VarP(&opts.agentID, "agent", "a", opts.agentID, "The numerical Agent ID to connect to.")
 	fl.StringVar(&opts.listenNet, "listen-net", opts.listenNet, "Network on which to listen for connections.")
 	fl.StringVar(&opts.listenAddr, "listen-addr", opts.listenAddr, "Address to listen on.")
-	fl.BoolVarP(&opts.logWatchRequest, "log-watch-request", "", opts.logWatchRequest, "Log watch request to stdout. Can be useful for debugging.")
+	fl.BoolVarP(&opts.logWatchRequest, "log-watch-request", "", opts.logWatchRequest, "Log watch request to stdout. Helpful for debugging.")
 
 	fl.StringArrayVarP(&opts.nsNames, "namespace", "n", opts.nsNames, "Namespaces to watch. If not specified, all namespaces are watched with label and field selectors filtering.")
-	fl.StringVarP(&opts.nsLabels, "ns-label-selector", "", opts.nsLabels, "Label selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors.")
-	fl.StringVarP(&opts.nsSelector, "ns-field-selector", "", opts.nsSelector, "Field selector to select namespaces. See https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/.")
+	fl.StringVarP(&opts.nsLabels, "ns-label-selector", "", opts.nsLabels, "Label selector to select namespaces.")
+	fl.StringVarP(&opts.nsSelector, "ns-field-selector", "", opts.nsSelector, "Field selector to select namespaces.")
 	fl.StringVarP(&opts.nsCEL, "ns-expression", "", opts.nsCEL, "CEL expression to select namespaces. Evaluated before a namespace is watched and on any updates for the namespace object.")
 
-	fl.StringArrayVarP(&opts.resources, "resources", "r", opts.resources, "A list of resources to watch. You can see the list of resources your cluster supports by running kubectl api-resources.")
-	fl.BoolVar(&opts.groupCore, "core", opts.groupCore, "Watch pods, secrets, configmaps, and serviceaccounts in core/v1 group")
-	fl.BoolVar(&opts.groupBatch, "batch", opts.groupBatch, "Watch jobs, and cronjobs in batch/v1 group.")
+	fl.StringArrayVarP(&opts.resources, "resources", "r", opts.resources, "A list of resources to watch. You can see the list of resources your cluster supports by running 'kubectl api-resources'.")
+	fl.BoolVar(&opts.groupCore, "core", opts.groupCore, "Watch pods, secrets, configmaps, and serviceaccounts in the core/v1 group")
+	fl.BoolVar(&opts.groupBatch, "batch", opts.groupBatch, "Watch jobs and cronjobs in the batch/v1 group.")
 	fl.BoolVar(&opts.groupApps, "apps", opts.groupApps, "Watch deployments, replicasets, daemonsets, and statefulsets in apps/v1 group.")
-	fl.BoolVar(&opts.groupRBAC, "rbac", opts.groupRBAC, "Watch roles, and rolebindings in rbac.authorization.k8s.io/v1 group.")
-	fl.BoolVar(&opts.groupClusterRBAC, "cluster-rbac", opts.groupClusterRBAC, "Watch clusterroles, and clusterrolebindings in rbac.authorization.k8s.io/v1 group.")
-	fl.BoolVar(&opts.groupCRD, "crd", opts.groupCRD, "Watch customresourcedefinitions in apiextensions.k8s.io/v1 group.")
+	fl.BoolVar(&opts.groupRBAC, "rbac", opts.groupRBAC, "Watch roles, and rolebindings in the rbac.authorization.k8s.io/v1 group.")
+	fl.BoolVar(&opts.groupClusterRBAC, "cluster-rbac", opts.groupClusterRBAC, "Watch clusterroles and clusterrolebindings in the rbac.authorization.k8s.io/v1 group.")
+	fl.BoolVar(&opts.groupCRD, "crd", opts.groupCRD, "Watch customresourcedefinitions in the apiextensions.k8s.io/v1 group.")
 	fl.BoolVar(&opts.readQueryFromStdIn, "stdin", opts.readQueryFromStdIn, "Read watch request from standard input.")
 
 	cobra.CheckErr(graphCmd.MarkFlagRequired("agent"))
@@ -185,7 +120,7 @@ func (o *options) run(ctx context.Context) error {
 	// 2. Check token type
 	authSource, ok := client.AuthSource().(gitlab.AccessTokenAuthSource)
 	if !ok {
-		return errors.New("cluster graph command supports authentication with personal and project access tokens only (with Developer+ role)")
+		return errors.New("cluster graph command supports authentication with only personal and project access tokens. Requires at least the Developer role.")
 	}
 
 	// 3. Read the watch request
