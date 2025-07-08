@@ -146,6 +146,28 @@ func rootConfig() *yaml.Node {
 										Kind:  yaml.ScalarNode,
 										Value: "",
 									},
+									{
+										HeadComment: "# The domains of associated container registries. These are used to configure the\n# Docker credential helper.",
+										Kind:        yaml.ScalarNode,
+										Value:       "container_registry_domains",
+									},
+									{
+										Kind: yaml.SequenceNode,
+										Content: []*yaml.Node{
+											{
+												Kind:  yaml.ScalarNode,
+												Value: "gitlab.com",
+											},
+											{
+												Kind:  yaml.ScalarNode,
+												Value: "gitlab.com:443",
+											},
+											{
+												Kind:  yaml.ScalarNode,
+												Value: "registry.gitlab.com",
+											},
+										},
+									},
 								},
 							},
 						},

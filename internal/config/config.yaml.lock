@@ -29,6 +29,12 @@ hosts:
         api_host: gitlab.com
         # Your GitLab access token. To get one, read https://docs.gitlab.com/user/profile/personal_access_tokens/
         token:
+        # The domains of associated container registries. These are used to configure the
+        # Docker credential helper.
+        container_registry_domains:
+            - gitlab.com
+            - gitlab.com:443
+            - registry.gitlab.com
 # Use aliases to create nicknames for glab commands. Supports shell-executable aliases that may not be glab commands.
 aliases:
     ci: pipeline ci
