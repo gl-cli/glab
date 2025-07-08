@@ -81,8 +81,8 @@ func NewCmdLogin(f cmdutils.Factory) *cobra.Command {
 			# Non-interactive setup reading token from a file
 			$ glab auth login --hostname gitlab.example.org --api-host gitlab.example.org:3443 --api-protocol https --git-protocol ssh  --stdin < myaccesstoken.txt
 
-			# Non-interactive job token setup
-			$ glab auth login --hostname gitlab.example.org --job-token $CI_JOB_TOKEN
+			# Non-interactive CI/CD setup
+			$ glab auth login --hostname $CI_SERVER_HOST --job-token $CI_JOB_TOKEN
 		`, "`"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !opts.IO.PromptEnabled() && !tokenStdin && opts.Token == "" && opts.JobToken == "" {
