@@ -11,6 +11,8 @@ require (
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/coder/websocket v1.8.13
 	github.com/cyphar/filepath-securejoin v0.4.1
+	github.com/docker/cli v28.2.2+incompatible
+	github.com/docker/docker-credential-helpers v0.9.3
 	github.com/dustin/go-humanize v1.0.1
 	github.com/gdamore/tcell/v2 v2.8.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
@@ -102,6 +104,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.12.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
@@ -120,6 +123,7 @@ require (
 	gonum.org/v1/plot v0.14.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
+	gotest.tools/v3 v3.5.2 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	oss.terrastruct.com/util-go v0.0.0-20250213174338-243d8661088a // indirect
 	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect

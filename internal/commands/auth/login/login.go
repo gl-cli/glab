@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"regexp"
 	"strings"
@@ -308,7 +309,10 @@ func loginRun(opts *LoginOptions) error {
 		}
 	}
 
-	var loginType string
+	var (
+		loginType                string
+		containerRegistryDomains string
+	)
 
 	if opts.Interactive {
 		err := survey.AskOne(&survey.Select{
@@ -320,6 +324,14 @@ func loginRun(opts *LoginOptions) error {
 		}, &loginType)
 		if err != nil {
 			return fmt.Errorf("could not get sign-in type: %w", err)
+		}
+
+		err = survey.AskOne(&survey.Input{
+			Message: "What domains does this host use for the container registry and image dependency proxy?",
+			Default: defaultContainerRegistryDomainsString(hostname),
+		}, &containerRegistryDomains)
+		if err != nil {
+			return fmt.Errorf("could not get container registry domains: %w", err)
 		}
 	}
 
@@ -349,6 +361,11 @@ func loginRun(opts *LoginOptions) error {
 		}
 	} else {
 		err = cfg.Set(hostname, "token", token)
+		if err != nil {
+			return err
+		}
+
+		err = setContainerRegistryDomains(cfg, hostname, containerRegistryDomains)
 		if err != nil {
 			return err
 		}
@@ -490,4 +507,25 @@ func showTokenPrompt(io *iostreams.IOStreams, hostname string) (string, error) {
 	}
 
 	return token, nil
+}
+
+func defaultContainerRegistryDomainsString(hostname string) string {
+	if !strings.Contains(hostname, ":") {
+		return strings.Join(
+			[]string{
+				hostname,
+				net.JoinHostPort(hostname, "443"),
+				"registry." + hostname,
+			}, ",")
+	}
+
+	return strings.Join(
+		[]string{
+			hostname,
+			"registry." + hostname,
+		}, ",")
+}
+
+func setContainerRegistryDomains(cfg config.Config, hostname string, domains string) error {
+	return cfg.Set(hostname, "container_registry_domains", domains)
 }
