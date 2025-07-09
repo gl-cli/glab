@@ -19,8 +19,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/oauth2"
-
-	oauthz "golang.org/x/oauth2"
 )
 
 // ClientOption represents a function that configures a Client
@@ -288,11 +286,10 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 	switch {
 	case isOAuth2Cfg == "true":
 		newAuthSource = func(client *http.Client) (gitlab.AuthSource, error) {
-			err := oauth2.RefreshToken(client, repoHost, cfg, glinstance.DefaultProtocol)
+			ts, err := oauth2.NewConfigTokenSource(cfg, client, glinstance.DefaultProtocol, repoHost)
 			if err != nil {
 				return nil, err
 			}
-			ts := oauthz.StaticTokenSource(&oauthz.Token{AccessToken: token})
 			return gitlab.OAuthTokenSource{TokenSource: ts}, nil
 		}
 	case jobToken != "":

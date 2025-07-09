@@ -9,6 +9,7 @@ import (
 
 	"github.com/docker/docker-credential-helpers/credentials"
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/oauth2"
 )
 
@@ -28,11 +29,11 @@ func (h *Helper) Get(registryURL string) (string, string, error) {
 		return "", "", err
 	}
 
-	// RefreshToken is idempotent, so it's safe to call here unconditionally.
-	// Internally it checks to see if the token has expired, and only
-	// updates the token if it has.
-	err = oauth2.RefreshToken(h.client, hostname, h.cfg, "https")
+	ts, err := oauth2.NewConfigTokenSource(h.cfg, h.client, glinstance.DefaultProtocol, hostname)
 	if err != nil {
+		return "", "", fmt.Errorf("failed to get OAuth2 token source to potentially refresh token: %w", err)
+	}
+	if _, err := ts.Token(); err != nil {
 		return "", "", fmt.Errorf("refreshing oauth2 token: %w", err)
 	}
 
