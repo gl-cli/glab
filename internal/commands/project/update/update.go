@@ -8,69 +8,145 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
 const (
+	archiveFlag       = "archive"
 	defaultBranchFlag = "defaultBranch"
 	descriptionFlag   = "description"
 )
 
+type options struct {
+	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	config          config.Config
+	io              *iostreams.IOStreams
+	baseRepo        func() (glrepo.Interface, error)
+	httpClient      func() (*gitlab.Client, error)
+	defaultHostname func() string
+
+	archive       *bool
+	defaultBranch *string
+	description   *string
+	projectID     string
+}
+
 func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
-	projectUpdateCmd := &cobra.Command{
+	opts := &options{
+		apiClient:       f.ApiClient,
+		config:          f.Config(),
+		io:              f.IO(),
+		baseRepo:        f.BaseRepo,
+		httpClient:      f.HttpClient,
+		defaultHostname: f.DefaultHostname,
+	}
+
+	cmd := &cobra.Command{
 		Use:   "update [path] [flags]",
 		Short: `Update an existing GitLab project or repository.`,
-		Long:  ``,
 		Args:  cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runUpdateProject(cmd, f, args)
-		},
 		Example: heredoc.Doc(`
 			# Update the description for my-project.
 			$ glab repo update my-project --description "This project is cool."
 
 			# Update the default branch for my-project.
 			$ glab repo update my-project --defaultBranch main
+
+			# Archive my-project.
+			$ glab repo update my-project --archive
+			$ glab repo update my-project --archive=true
+
+			# Unarchive my-project.
+			$ glab repo update my-project --archive=false
 	  `),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := opts.complete(cmd.Flags(), args); err != nil {
+				return err
+			}
+			return opts.run()
+		},
 	}
 
-	projectUpdateCmd.Flags().String(defaultBranchFlag, "", "New default branch for the project.")
-	projectUpdateCmd.Flags().StringP(descriptionFlag, "d", "", "New description for the project.")
-
-	return projectUpdateCmd
+	cmd.Flags().Bool(archiveFlag, false, "Whether the project should be archived.")
+	cmd.Flags().String(defaultBranchFlag, "", "New default branch for the project.")
+	cmd.Flags().StringP(descriptionFlag, "d", "", "New description for the project.")
+	cmd.MarkFlagsOneRequired(archiveFlag, defaultBranchFlag, descriptionFlag)
+	return cmd
 }
 
-func runUpdateProject(cmd *cobra.Command, f cmdutils.Factory, args []string) error {
-	cfg := f.Config()
-
-	var projectID string
-	if len(args) == 1 {
-		projectID = args[0]
+func (o *options) complete(flags *pflag.FlagSet, args []string) error {
+	if flags.Changed(archiveFlag) {
+		archive, err := flags.GetBool(archiveFlag)
+		if err != nil {
+			return err
+		}
+		o.archive = &archive
 	}
-	repo, err := getRepoFromProjectID(projectID, f)
+	if flags.Changed(defaultBranchFlag) {
+		defaultBranch, err := flags.GetString(defaultBranchFlag)
+		if err != nil {
+			return err
+		}
+		o.defaultBranch = &defaultBranch
+	}
+	if flags.Changed(descriptionFlag) {
+		description, err := flags.GetString(descriptionFlag)
+		if err != nil {
+			return err
+		}
+		o.description = &description
+	}
+
+	if len(args) == 1 {
+		o.projectID = args[0]
+	}
+	return nil
+}
+
+func (o *options) run() error {
+	repo, err := o.getRepoFromProjectID()
 	if err != nil {
 		return err
 	}
 
-	client, err := f.ApiClient(repo.RepoHost(), cfg)
+	client, err := o.apiClient(repo.RepoHost(), o.config)
 	if err != nil {
 		return err
 	}
 	apiClient := client.Lab()
 
-	opts, err := getAPIArgs(cmd.Flags())
-	if err != nil {
-		return err
+	var project *gitlab.Project
+	if o.settingsChanged() {
+		project, _, err = apiClient.Projects.EditProject(repo.FullName(), &gitlab.EditProjectOptions{
+			DefaultBranch: o.defaultBranch,
+			Description:   o.description,
+		})
+		if err != nil {
+			return fmt.Errorf("updating project: %w", err)
+		}
 	}
 
-	project, _, err := apiClient.Projects.EditProject(repo.FullName(), opts)
-	if err != nil {
-		return fmt.Errorf("error updating project: %w", err)
+	// Handle archive flag separately - this uses a separate API endpoint
+	if o.archive != nil {
+		if *o.archive {
+			project, _, err = apiClient.Projects.ArchiveProject(repo.FullName())
+			if err != nil {
+				return fmt.Errorf("archiving project: %w", err)
+			}
+		} else {
+			project, _, err = apiClient.Projects.UnarchiveProject(repo.FullName())
+			if err != nil {
+				return fmt.Errorf("unarchiving project: %w", err)
+			}
+		}
 	}
 
-	greenCheck := f.IO().Color().Green("✓")
-	fmt.Fprintf(f.IO().StdOut, "%s Updated repository %s on GitLab: %s\n", greenCheck, project.NameWithNamespace, project.WebURL)
+	greenCheck := o.io.Color().Green("✓")
+	fmt.Fprintf(o.io.StdOut, "%s Updated repository %s on GitLab: %s\n", greenCheck, project.NameWithNamespace, project.WebURL)
 	return nil
 }
 
@@ -82,11 +158,12 @@ func runUpdateProject(cmd *cobra.Command, f cmdutils.Factory, args []string) err
 //     slash
 //   - user/project - can be passed verbatim to the API
 //   - fully qualified GitLab URL
-func getRepoFromProjectID(projectID string, f cmdutils.Factory) (glrepo.Interface, error) {
+func (o *options) getRepoFromProjectID() (glrepo.Interface, error) {
+	projectID := o.projectID
 	// No project argument - use current repository
 	if projectID == "" {
 		// Configure client to have host of current repository
-		repo, err := f.BaseRepo()
+		repo, err := o.baseRepo()
 		if err != nil {
 			return nil, cmdutils.WrapError(err, "`repository` is required when not running in a Git repository.")
 		}
@@ -94,7 +171,7 @@ func getRepoFromProjectID(projectID string, f cmdutils.Factory) (glrepo.Interfac
 	} else {
 		// If the ProjectID is a single token, use current user's namespace
 		if !strings.Contains(projectID, "/") {
-			apiClient, err := f.HttpClient()
+			apiClient, err := o.httpClient()
 			if err != nil {
 				return nil, err
 			}
@@ -107,35 +184,14 @@ func getRepoFromProjectID(projectID string, f cmdutils.Factory) (glrepo.Interfac
 		}
 
 		// Get the repo full name from the ProjectID which can be a full URL or a group/repo format
-		return glrepo.FromFullName(projectID, f.DefaultHostname())
+		return glrepo.FromFullName(projectID, o.defaultHostname())
 	}
 }
 
-func getAPIArgs(flags *pflag.FlagSet) (*gitlab.EditProjectOptions, error) {
-	// We need to check if no flags were defined, and if so, exit early before we
-	// hit the API.
-	someFlagDefined := false
-	opts := &gitlab.EditProjectOptions{}
-
-	if flags.Changed(defaultBranchFlag) {
-		defaultBranch, err := flags.GetString(defaultBranchFlag)
-		if err != nil {
-			return nil, err
-		}
-		opts.DefaultBranch = &defaultBranch
-		someFlagDefined = true
-	}
-	if flags.Changed(descriptionFlag) {
-		description, err := flags.GetString(descriptionFlag)
-		if err != nil {
-			return nil, err
-		}
-		opts.Description = &description
-		someFlagDefined = true
-	}
-
-	if !someFlagDefined {
-		return nil, fmt.Errorf("must specify either --description or --defaultBranch")
-	}
-	return opts, nil
+// settingsChanged returns true if a "settings" flag has been changed. These
+// are the flags that require a call to the EditProject API to change. They
+// include, for example, the description and default branch, but do not include
+// the "archive" flag.
+func (o *options) settingsChanged() bool {
+	return o.defaultBranch != nil || o.description != nil
 }
