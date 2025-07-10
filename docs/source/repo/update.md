@@ -26,11 +26,19 @@ $ glab repo update my-project --description "This project is cool."
 # Update the default branch for my-project.
 $ glab repo update my-project --defaultBranch main
 
+# Archive my-project.
+$ glab repo update my-project --archive
+$ glab repo update my-project --archive=true
+
+# Unarchive my-project.
+$ glab repo update my-project --archive=false
+
 ```
 
 ## Options
 
 ```plaintext
+      --archive                Whether the project should be archived.
       --defaultBranch string   New default branch for the project.
   -d, --description string     New description for the project.
 ```

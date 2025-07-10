@@ -92,7 +92,64 @@ func TestUpdateCmd(t *testing.T) {
 	}, {
 		description: "No flags provided",
 		args:        "",
-		errString:   "must specify either --description or --defaultBranch",
+		errString:   "at least one of the flags in the group",
+	}, {
+		description: "Archive project with just --archive flag",
+		args:        "--archive",
+		httpMocks: []httpMock{{
+			method:       http.MethodPost,
+			path:         "https://gitlab.com/api/v4/projects/user%2Frepo/archive",
+			status:       http.StatusOK,
+			responseBody: `{"name_with_namespace":"user / repo","web_url":"https://gitlab.com/user/repo"}`,
+		}},
+	}, {
+		description: "Archive project with --archive=true",
+		args:        "--archive=true",
+		httpMocks: []httpMock{{
+			method:       http.MethodPost,
+			path:         "https://gitlab.com/api/v4/projects/user%2Frepo/archive",
+			status:       http.StatusOK,
+			responseBody: `{"name_with_namespace":"user / repo","web_url":"https://gitlab.com/user/repo"}`,
+		}},
+	}, {
+		description: "Unarchive project",
+		args:        "--archive=false",
+		httpMocks: []httpMock{{
+			method:       http.MethodPost,
+			path:         "https://gitlab.com/api/v4/projects/user%2Frepo/unarchive",
+			status:       http.StatusOK,
+			responseBody: `{"name_with_namespace":"user / repo","web_url":"https://gitlab.com/user/repo"}`,
+		}},
+	}, {
+		description: "Archive project and change description at the same time",
+		args:        "--archive=true --description=foobar",
+		httpMocks: []httpMock{{
+			method:       http.MethodPut,
+			path:         "https://gitlab.com/api/v4/projects/user%2Frepo",
+			requestBody:  `{"description": "foobar"}`,
+			status:       http.StatusOK,
+			responseBody: `{"name_with_namespace":"user / repo","web_url":"https://gitlab.com/user/repo"}`,
+		}, {
+			method:       http.MethodPost,
+			path:         "https://gitlab.com/api/v4/projects/user%2Frepo/archive",
+			status:       http.StatusOK,
+			responseBody: `{"name_with_namespace":"user / repo","web_url":"https://gitlab.com/user/repo"}`,
+		}},
+	}, {
+		description: "Unarchive project and change default branch at the same time",
+		args:        "--archive=false --defaultBranch=main2",
+		httpMocks: []httpMock{{
+			method:       http.MethodPut,
+			path:         "https://gitlab.com/api/v4/projects/user%2Frepo",
+			requestBody:  `{"default_branch": "main2"}`,
+			status:       http.StatusOK,
+			responseBody: `{"name_with_namespace":"user / repo","web_url":"https://gitlab.com/user/repo"}`,
+		}, {
+			method:       http.MethodPost,
+			path:         "https://gitlab.com/api/v4/projects/user%2Frepo/unarchive",
+			status:       http.StatusOK,
+			responseBody: `{"name_with_namespace":"user / repo","web_url":"https://gitlab.com/user/repo"}`,
+		}},
 	}}
 
 	for _, test := range testCases {
