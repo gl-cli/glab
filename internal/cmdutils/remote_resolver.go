@@ -2,7 +2,6 @@ package cmdutils
 
 import (
 	"errors"
-	"net/url"
 	"sort"
 	"strings"
 
@@ -15,7 +14,6 @@ import (
 type remoteResolver struct {
 	readRemotes     func() (git.RemoteSet, error)
 	getConfig       func() config.Config
-	urlTranslator   func(*url.URL) *url.URL
 	defaultHostname string
 }
 
@@ -38,11 +36,11 @@ func (rr *remoteResolver) Resolver(hostOverride string) func() (glrepo.Remotes, 
 			return nil, remotesError
 		}
 
-		sshTranslate := rr.urlTranslator
-		if sshTranslate == nil {
-			sshTranslate = git.ParseSSHConfig().Translator()
-		}
-		resolvedRemotes := glrepo.TranslateRemotes(gitRemotes, sshTranslate, rr.defaultHostname)
+		resolvedRemotes := glrepo.TranslateRemotes(
+			gitRemotes,
+			git.ParseSSHConfig().Translator(),
+			rr.defaultHostname,
+		)
 
 		cfg := rr.getConfig()
 

@@ -1,7 +1,6 @@
 package cmdutils
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,9 +26,6 @@ func Test_remoteResolver(t *testing.T) {
 				  example.org:
 				    oauth_token: OTOKEN
 			`))
-		},
-		urlTranslator: func(u *url.URL) *url.URL {
-			return u
 		},
 	}
 
@@ -57,9 +53,6 @@ func Test_remoteResolverOverride(t *testing.T) {
 				  example.org:
 				    oauth_token: GHETOKEN
 			`))
-		},
-		urlTranslator: func(u *url.URL) *url.URL {
-			return u
 		},
 	}
 
