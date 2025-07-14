@@ -15,7 +15,6 @@ import (
 type remoteResolver struct {
 	readRemotes     func() (git.RemoteSet, error)
 	getConfig       func() config.Config
-	urlTranslator   func(*url.URL) *url.URL
 	defaultHostname string
 }
 
@@ -38,11 +37,19 @@ func (rr *remoteResolver) Resolver(hostOverride string) func() (glrepo.Remotes, 
 			return nil, remotesError
 		}
 
-		sshTranslate := rr.urlTranslator
-		if sshTranslate == nil {
-			sshTranslate = git.ParseSSHConfig().Translator()
-		}
-		resolvedRemotes := glrepo.TranslateRemotes(gitRemotes, sshTranslate, rr.defaultHostname)
+		sshTranslate := git.ParseSSHConfig().Translator()
+		resolvedRemotes := glrepo.TranslateRemotes(
+			gitRemotes,
+			func(u *url.URL) *url.URL {
+				switch u.Scheme {
+				case "ssh":
+					return sshTranslate(u)
+				default:
+					return u
+				}
+			},
+			rr.defaultHostname,
+		)
 
 		cfg := rr.getConfig()
 
