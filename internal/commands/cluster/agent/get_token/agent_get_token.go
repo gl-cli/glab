@@ -20,7 +20,10 @@ import (
 const (
 	clientAuthenticationApiV1          = "client.authentication.k8s.io/v1"
 	clientAuthenticationExecCredential = "ExecCredential"
-	bufferMinutes                      = 5
+	buffer                             = 5 * time.Minute
+	flagTokenExpiryDuration            = "token-expiry-duration"
+	tokenExpiryDurationDefault         = 24 * time.Hour
+	minTokenExpiryDuration             = 24 * time.Hour
 )
 
 var patScopes = []string{"k8s_proxy"}
@@ -29,7 +32,8 @@ type options struct {
 	httpClient func() (*gitlab.Client, error)
 	io         *iostreams.IOStreams
 
-	agentID int64
+	agentID             int64
+	tokenExpiryDuration time.Duration
 }
 
 func NewCmdAgentGetToken(f cmdutils.Factory) *cobra.Command {
@@ -47,13 +51,25 @@ This command creates a personal access token that is valid until the end of the 
 You might receive an email from your GitLab instance that a new personal access token has been created.
 `, desc),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := opts.validate(); err != nil {
+				return err
+			}
 			return opts.run()
 		},
 	}
-	agentGetTokenCmd.Flags().Int64VarP(&opts.agentID, "agent", "a", 0, "The numerical Agent ID to connect to.")
+	fl := agentGetTokenCmd.Flags()
+	fl.Int64VarP(&opts.agentID, "agent", "a", 0, "The numerical Agent ID to connect to.")
+	fl.DurationVar(&opts.tokenExpiryDuration, flagTokenExpiryDuration, tokenExpiryDurationDefault, "Duration for how long the generated tokens should be valid for. Minimum is 1 day and the effective expiry is always at the end of the day, the time is ignored.")
 	cobra.CheckErr(agentGetTokenCmd.MarkFlagRequired("agent"))
 
 	return agentGetTokenCmd
+}
+
+func (o *options) validate() error {
+	if o.tokenExpiryDuration < minTokenExpiryDuration {
+		return fmt.Errorf("token expiry duration must be at least 24 hours")
+	}
+	return nil
 }
 
 func (o *options) run() error {
@@ -68,7 +84,7 @@ func (o *options) run() error {
 			Kind:       clientAuthenticationExecCredential,
 		},
 		Status: &clientauthenticationv1.ExecCredentialStatus{
-			ExpirationTimestamp: &metav1.Time{Time: time.Time(*pat.ExpiresAt).Add(-bufferMinutes * time.Minute)},
+			ExpirationTimestamp: &metav1.Time{Time: time.Time(*pat.ExpiresAt).Add(-buffer)},
 			Token:               fmt.Sprintf("pat:%d:%s", o.agentID, pat.Token),
 		},
 	}
@@ -114,7 +130,7 @@ func (o *options) cachedPAT() (*gitlab.PersonalAccessToken, error) {
 			}
 
 			patName := fmt.Sprintf("glab-k8s-proxy-%x", randomBytes)
-			patExpiresAt := time.Now().Add(24 * time.Hour).UTC()
+			patExpiresAt := time.Now().Add(o.tokenExpiryDuration).UTC()
 
 			pat, _, err := apiClient.Users.CreatePersonalAccessTokenForCurrentUser(&gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
 				Name:      gitlab.Ptr(patName),

@@ -27,7 +27,8 @@ glab cluster agent get-token [flags]
 ## Options
 
 ```plaintext
-  -a, --agent int   The numerical Agent ID to connect to.
+  -a, --agent int                        The numerical Agent ID to connect to.
+      --token-expiry-duration duration   Duration for how long the generated tokens should be valid for. Minimum is 1 day and the effective expiry is always at the end of the day, the time is ignored. (default 24h0m0s)
 ```
 
 ## Options inherited from parent commands
