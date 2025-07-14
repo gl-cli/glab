@@ -54,25 +54,7 @@ You might receive an email from your GitLab instance that a new personal access 
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
-	if err != nil {
-		return err
-	}
-
-	randomBytes := make([]byte, 16)
-	_, err = rand.Read(randomBytes)
-	if err != nil {
-		return err
-	}
-
-	patName := fmt.Sprintf("glab-k8s-proxy-%x", randomBytes)
-	patExpiresAt := time.Now().Add(24 * time.Hour).UTC()
-
-	pat, _, err := apiClient.Users.CreatePersonalAccessTokenForCurrentUser(&gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
-		Name:      gitlab.Ptr(patName),
-		Scopes:    gitlab.Ptr(patScopes),
-		ExpiresAt: gitlab.Ptr(gitlab.ISOTime(patExpiresAt)),
-	})
+	pat, err := o.pat()
 	if err != nil {
 		return err
 	}
@@ -91,4 +73,31 @@ func (o *options) run() error {
 	e := json.NewEncoder(o.io.StdOut)
 	e.SetIndent("", "  ")
 	return e.Encode(execCredential)
+}
+
+func (o *options) pat() (*gitlab.PersonalAccessToken, error) {
+	apiClient, err := o.httpClient()
+	if err != nil {
+		return nil, err
+	}
+
+	randomBytes := make([]byte, 16)
+	_, err = rand.Read(randomBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	patName := fmt.Sprintf("glab-k8s-proxy-%x", randomBytes)
+	patExpiresAt := time.Now().Add(24 * time.Hour).UTC()
+
+	pat, _, err := apiClient.Users.CreatePersonalAccessTokenForCurrentUser(&gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
+		Name:      gitlab.Ptr(patName),
+		Scopes:    gitlab.Ptr(patScopes),
+		ExpiresAt: gitlab.Ptr(gitlab.ISOTime(patExpiresAt)),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return pat, nil
 }
