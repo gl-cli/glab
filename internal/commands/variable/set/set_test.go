@@ -147,6 +147,20 @@ func Test_NewCmdSet(t *testing.T) {
 				typ:         "env_var",
 			},
 		},
+		{
+			name: "hidden variable",
+			cli:  `var_desc -v "var_desc" --hidden`,
+			wants: options{
+				key:         "var_desc",
+				protected:   false,
+				value:       "var_desc",
+				group:       "",
+				description: "",
+				scope:       "*",
+				typ:         "env_var",
+				hidden:      true,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -184,6 +198,7 @@ func Test_NewCmdSet(t *testing.T) {
 			assert.Equal(t, tt.wants.description, gotOpts.description)
 			assert.Equal(t, tt.wants.raw, gotOpts.raw)
 			assert.Equal(t, tt.wants.masked, gotOpts.masked)
+			assert.Equal(t, tt.wants.hidden, gotOpts.hidden)
 			assert.Equal(t, tt.wants.typ, gotOpts.typ)
 		})
 	}

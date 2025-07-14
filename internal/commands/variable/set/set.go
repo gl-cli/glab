@@ -28,6 +28,7 @@ type options struct {
 	scope       string
 	protected   bool
 	masked      bool
+	hidden      bool
 	raw         bool
 	group       string
 	description string
@@ -75,6 +76,7 @@ func NewCmdSet(f cmdutils.Factory, runE func(opts *options) error) *cobra.Comman
 	cmd.Flags().StringVarP(&opts.scope, "scope", "s", "*", "The environment_scope of the variable. Values: all (*), or specific environments.")
 	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "Set variable for a group.")
 	cmd.Flags().BoolVarP(&opts.masked, "masked", "m", false, "Whether the variable is masked.")
+	cmd.Flags().BoolVarP(&opts.hidden, "hidden", "", false, "Whether the variable is hidden.")
 	cmd.Flags().BoolVarP(&opts.raw, "raw", "r", false, "Whether the variable is treated as a raw string.")
 	cmd.Flags().BoolVarP(&opts.protected, "protected", "p", false, "Whether the variable is protected.")
 	cmd.Flags().StringVarP(&opts.description, "description", "d", "", "Set description of a variable.")
@@ -132,6 +134,7 @@ func (o *options) run() error {
 			Value:            gitlab.Ptr(o.value),
 			EnvironmentScope: gitlab.Ptr(o.scope),
 			Masked:           gitlab.Ptr(o.masked),
+			MaskedAndHidden:  gitlab.Ptr(o.hidden),
 			Protected:        gitlab.Ptr(o.protected),
 			VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(o.typ)),
 			Raw:              gitlab.Ptr(o.raw),
@@ -157,6 +160,7 @@ func (o *options) run() error {
 		Value:            gitlab.Ptr(o.value),
 		EnvironmentScope: gitlab.Ptr(o.scope),
 		Masked:           gitlab.Ptr(o.masked),
+		MaskedAndHidden:  gitlab.Ptr(o.hidden),
 		Protected:        gitlab.Ptr(o.protected),
 		VariableType:     gitlab.Ptr(gitlab.VariableTypeValue(o.typ)),
 		Raw:              gitlab.Ptr(o.raw),
