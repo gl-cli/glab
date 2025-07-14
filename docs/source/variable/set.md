@@ -43,6 +43,7 @@ $ cat token.txt | glab variable set GROUP_TOKEN -g mygroup --scope=prod
 ```plaintext
   -d, --description string   Set description of a variable.
   -g, --group string         Set variable for a group.
+      --hidden               Whether the variable is hidden.
   -m, --masked               Whether the variable is masked.
   -p, --protected            Whether the variable is protected.
   -r, --raw                  Whether the variable is treated as a raw string.

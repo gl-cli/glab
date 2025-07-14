@@ -100,7 +100,6 @@ func (o *options) run() error {
 	client := apiClient.Lab()
 
 	table := tableprinter.NewTablePrinter()
-	table.AddRow("KEY", "PROTECTED", "MASKED", "EXPANDED", "SCOPE", "DESCRIPTION")
 
 	if o.group != "" {
 		o.io.Logf("Listing variables for the %s group:\n\n", color.Bold(o.group))
@@ -114,8 +113,9 @@ func (o *options) run() error {
 			fmt.Fprintln(o.io.StdOut, string(varListJSON))
 
 		} else {
+			table.AddRow("KEY", "PROTECTED", "MASKED", "HIDDEN", "EXPANDED", "SCOPE", "DESCRIPTION")
 			for _, variable := range variables {
-				table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, variable.EnvironmentScope, variable.Description)
+				table.AddRow(variable.Key, variable.Protected, variable.Masked, variable.Hidden, !variable.Raw, variable.EnvironmentScope, variable.Description)
 			}
 		}
 	} else if o.instance {
@@ -130,6 +130,7 @@ func (o *options) run() error {
 			fmt.Fprintln(o.io.StdOut, string(varListJSON))
 
 		} else {
+			table.AddRow("KEY", "PROTECTED", "MASKED", "EXPANDED", "SCOPE", "DESCRIPTION")
 			for _, variable := range variables {
 				table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, "", variable.Description)
 			}
@@ -149,8 +150,9 @@ func (o *options) run() error {
 			varListJSON, _ := json.Marshal(variables)
 			fmt.Fprintln(o.io.StdOut, string(varListJSON))
 		} else {
+			table.AddRow("KEY", "PROTECTED", "MASKED", "HIDDEN", "EXPANDED", "SCOPE", "DESCRIPTION")
 			for _, variable := range variables {
-				table.AddRow(variable.Key, variable.Protected, variable.Masked, !variable.Raw, variable.EnvironmentScope, variable.Description)
+				table.AddRow(variable.Key, variable.Protected, variable.Masked, variable.Hidden, !variable.Raw, variable.EnvironmentScope, variable.Description)
 			}
 		}
 	}
