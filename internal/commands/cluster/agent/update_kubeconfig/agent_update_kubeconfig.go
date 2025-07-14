@@ -58,11 +58,11 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 			return opts.run()
 		},
 	}
-	agentUpdateKubeconfigCmd.Flags().Int64VarP(&opts.agentID, flagAgent, "a", opts.agentID, "The numeric agent ID to create the kubeconfig entry for.")
+	fl := agentUpdateKubeconfigCmd.Flags()
+	fl.Int64VarP(&opts.agentID, flagAgent, "a", opts.agentID, "The numeric agent ID to create the kubeconfig entry for.")
+	fl.StringVar(&pathOptions.LoadingRules.ExplicitPath, pathOptions.ExplicitFileFlag, pathOptions.LoadingRules.ExplicitPath, "Use a particular kubeconfig file.")
+	fl.BoolVarP(&opts.useContext, flagUseContext, "u", opts.useContext, "Use as default context.")
 	cobra.CheckErr(agentUpdateKubeconfigCmd.MarkFlagRequired(flagAgent))
-	persistentFlags := agentUpdateKubeconfigCmd.PersistentFlags()
-	persistentFlags.StringVar(&pathOptions.LoadingRules.ExplicitPath, pathOptions.ExplicitFileFlag, pathOptions.LoadingRules.ExplicitPath, "Use a particular kubeconfig file.")
-	persistentFlags.BoolVarP(&opts.useContext, flagUseContext, "u", opts.useContext, "Use as default context.")
 
 	return agentUpdateKubeconfigCmd
 }
