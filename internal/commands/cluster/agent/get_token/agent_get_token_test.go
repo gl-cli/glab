@@ -15,7 +15,7 @@ import (
 
 func TestAgentGetToken(t *testing.T) {
 	// GIVEN
-	tc := gitlab_testing.NewTestClient(t)
+	tc := gitlab_testing.NewTestClient(t, gitlab.WithBaseURL("https://gitlab.example.com"))
 	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentGetToken, cmdtest.WithGitLabClient(tc.Client))
 
 	tc.MockUsers.EXPECT().

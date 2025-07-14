@@ -2,8 +2,11 @@ package get_token
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -54,7 +57,7 @@ You might receive an email from your GitLab instance that a new personal access 
 }
 
 func (o *options) run() error {
-	pat, err := o.pat()
+	pat, err := o.cachedPAT()
 	if err != nil {
 		return err
 	}
@@ -75,29 +78,55 @@ func (o *options) run() error {
 	return e.Encode(execCredential)
 }
 
-func (o *options) pat() (*gitlab.PersonalAccessToken, error) {
+func (o *options) cachedPAT() (*gitlab.PersonalAccessToken, error) {
 	apiClient, err := o.httpClient()
 	if err != nil {
 		return nil, err
 	}
 
-	randomBytes := make([]byte, 16)
-	_, err = rand.Read(randomBytes)
+	cacheDir, err := userCacheDir()
 	if err != nil {
 		return nil, err
 	}
 
-	patName := fmt.Sprintf("glab-k8s-proxy-%x", randomBytes)
-	patExpiresAt := time.Now().Add(24 * time.Hour).UTC()
-
-	pat, _, err := apiClient.Users.CreatePersonalAccessTokenForCurrentUser(&gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
-		Name:      gitlab.Ptr(patName),
-		Scopes:    gitlab.Ptr(patScopes),
-		ExpiresAt: gitlab.Ptr(gitlab.ISOTime(patExpiresAt)),
-	})
+	gitlabCacheDir := filepath.Join(cacheDir, "gitlab")
+	err = os.MkdirAll(gitlabCacheDir, 0o700)
 	if err != nil {
 		return nil, err
 	}
 
-	return pat, nil
+	root, err := os.OpenRoot(filepath.Join(gitlabCacheDir))
+	if err != nil {
+		return nil, err
+	}
+	defer root.Close()
+
+	gitlabInstance := base64.StdEncoding.EncodeToString([]byte(apiClient.BaseURL().String()))
+	cacheFilePrefix := fmt.Sprintf("%s-%d-", gitlabInstance, o.agentID)
+	cache := cache{
+		dir:    root,
+		prefix: cacheFilePrefix,
+		createFunc: func() (*gitlab.PersonalAccessToken, error) {
+			randomBytes := make([]byte, 16)
+			_, err = rand.Read(randomBytes)
+			if err != nil {
+				return nil, err
+			}
+
+			patName := fmt.Sprintf("glab-k8s-proxy-%x", randomBytes)
+			patExpiresAt := time.Now().Add(24 * time.Hour).UTC()
+
+			pat, _, err := apiClient.Users.CreatePersonalAccessTokenForCurrentUser(&gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
+				Name:      gitlab.Ptr(patName),
+				Scopes:    gitlab.Ptr(patScopes),
+				ExpiresAt: gitlab.Ptr(gitlab.ISOTime(patExpiresAt)),
+			})
+			if err != nil {
+				return nil, err
+			}
+			return pat, nil
+		},
+	}
+
+	return cache.get()
 }
