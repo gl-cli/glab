@@ -39,8 +39,9 @@ func NewCmdConfigureDocker(f cmdutils.Factory) *cobra.Command {
 					"only Linux and MacOS (Darwin) are supported", runtime.GOOS)
 			}
 
+			io := f.IO()
 			cfg := f.Config()
-			return configureDocker(cfg)
+			return configureDocker(io, cfg)
 		},
 	}
 	return cmd
