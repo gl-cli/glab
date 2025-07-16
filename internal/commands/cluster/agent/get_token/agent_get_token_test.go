@@ -7,6 +7,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zalando/go-keyring"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	gitlab_testing "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -15,6 +16,7 @@ import (
 
 func TestAgentGetToken(t *testing.T) {
 	// GIVEN
+	keyring.MockInit()
 	tc := gitlab_testing.NewTestClient(t, gitlab.WithBaseURL("https://gitlab.example.com"))
 	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentGetToken, cmdtest.WithGitLabClient(tc.Client))
 

@@ -1,121 +1,187 @@
 package get_token
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
-	"strings"
 	"time"
 
+	"github.com/zalando/go-keyring"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-type cache struct {
-	dir        *os.Root
-	prefix     string
-	createFunc func() (*gitlab.PersonalAccessToken, error)
+const keyringService = "glab"
+
+var (
+	errNotFound            = errors.New("not found")
+	errTokenExpired        = errors.New("token expired")
+	errUnsupportedPlatform = errors.New("unsupported platform")
+)
+
+// storage defines the interface for token storage backends
+type storage interface {
+	get(id string) ([]byte, error)
+	set(id string, data []byte) error
 }
 
-func (c *cache) get() (*gitlab.PersonalAccessToken, error) {
-	pat, err := c.read()
+// keyringStorage implements storage using the system keyring
+type keyringStorage struct{}
+
+func (k *keyringStorage) get(id string) ([]byte, error) {
+	data, err := keyring.Get(keyringService, id)
+	switch err {
+	case nil:
+		return []byte(data), nil
+	case keyring.ErrNotFound:
+		return nil, errNotFound
+	case keyring.ErrUnsupportedPlatform:
+		return nil, errUnsupportedPlatform
+	default:
+		return nil, err
+	}
+}
+
+func (k *keyringStorage) set(id string, data []byte) error {
+	if err := keyring.Set(keyringService, id, string(data)); err != nil {
+		if errors.Is(err, keyring.ErrUnsupportedPlatform) {
+			return errUnsupportedPlatform
+		}
+		return err
+	}
+	return nil
+}
+
+// fileStorage implements storage using the filesystem
+type fileStorage struct {
+	root *os.Root
+}
+
+func newFileStorage() (*fileStorage, error) {
+	cacheDir, err := userCacheDir()
 	if err != nil {
 		return nil, err
 	}
 
-	if pat == nil {
-		pat, err = c.createFunc()
-		if err != nil {
-			return nil, err
-		}
-
-		if err := c.write(pat); err != nil {
-			return nil, err
-		}
+	gitlabCacheDir := filepath.Join(cacheDir, "gitlab")
+	err = os.MkdirAll(gitlabCacheDir, 0o700)
+	if err != nil {
+		return nil, err
 	}
 
-	return pat, nil
+	root, err := os.OpenRoot(gitlabCacheDir)
+	if err != nil {
+		return nil, err
+	}
+
+	return &fileStorage{root: root}, nil
 }
 
-func (c *cache) read() (*gitlab.PersonalAccessToken, error) {
-	var pat *gitlab.PersonalAccessToken
-	err := filepath.WalkDir(c.dir.Name(), func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
+func (f *fileStorage) get(id string) ([]byte, error) {
+	file, err := f.root.Open(id)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, errNotFound
 		}
+		return nil, err
+	}
+	defer file.Close()
 
-		if d.IsDir() {
-			return nil
-		}
-
-		name := d.Name()
-
-		suffix, found := strings.CutPrefix(name, c.prefix)
-		if !found {
-			return nil
-		}
-
-		ts, err := strconv.ParseInt(suffix, 10, 64)
-		if err != nil {
-			return err
-		}
-		expiresAt := time.Unix(ts, 0)
-		if expiresAt.Before(time.Now().UTC()) {
-			_ = c.dir.Remove(name) // I don't think we care about the error, do we?
-			return nil
-		}
-
-		// token seems valid looking at the expiration date
-		f, err := c.dir.Open(name)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-
-		token, err := io.ReadAll(f)
-		if err != nil {
-			return err
-		}
-
-		pat = &gitlab.PersonalAccessToken{
-			Token:     string(token),
-			ExpiresAt: gitlab.Ptr(gitlab.ISOTime(expiresAt)),
-
-			// NOTE: the other fields are unused, so we don't need to populate them.
-		}
-		return fs.SkipAll
-	})
-	return pat, err
+	return io.ReadAll(file)
 }
 
-func (c *cache) write(pat *gitlab.PersonalAccessToken) (err error) {
+func (f *fileStorage) set(id string, data []byte) error {
 	// TODO: handle race conditions, yes renaming a file is most often atomic, but not always
 	// and it's unclear how it should be handled - should the content of the existing file be
 	// read in case of a conflict? But what if the file is not yet fully written?
 	// There are open questions that can be answered and implemented in a follow up iteration.
-	f, err := c.dir.OpenFile(fmt.Sprintf("%s%d", c.prefix, time.Time(*pat.ExpiresAt).Unix()), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o400)
+	file, err := f.root.OpenFile(id, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o400)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		cerr := f.Close()
+		cerr := file.Close()
 		if err == nil {
 			err = cerr
 		}
 	}()
 
-	if _, err := f.WriteString(pat.Token); err != nil {
+	if _, err := file.Write(data); err != nil {
 		return err
 	}
 
-	if err := f.Sync(); err != nil {
+	if err := file.Sync(); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (f *fileStorage) close() error {
+	return f.root.Close()
+}
+
+type cache struct {
+	id         string
+	createFunc func() (*gitlab.PersonalAccessToken, error)
+	storage    storage
+}
+
+func (c *cache) isTokenExpired(token *gitlab.PersonalAccessToken) bool {
+	return time.Time(*token.ExpiresAt).Before(time.Now().UTC())
+}
+
+func (c *cache) get() (*gitlab.PersonalAccessToken, error) {
+	token, err := c.getCachedToken()
+	switch err {
+	case nil:
+		return token, nil
+	case errNotFound:
+		fallthrough
+	case errTokenExpired:
+		return c.createAndCacheToken()
+	default:
+		return nil, err
+	}
+}
+
+func (c *cache) getCachedToken() (*gitlab.PersonalAccessToken, error) {
+	data, err := c.storage.get(c.id)
+	if err != nil {
+		return nil, err
+	}
+
+	var token gitlab.PersonalAccessToken
+	if err := json.Unmarshal(data, &token); err != nil {
+		return nil, err
+	}
+
+	if c.isTokenExpired(&token) {
+		return nil, errTokenExpired
+	}
+
+	return &token, nil
+}
+
+func (c *cache) createAndCacheToken() (*gitlab.PersonalAccessToken, error) {
+	token, err := c.createFunc()
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.Marshal(token)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := c.storage.set(c.id, data); err != nil {
+		return nil, err
+	}
+
+	return token, nil
 }
 
 func userCacheDir() (string, error) {

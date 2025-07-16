@@ -4,12 +4,12 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/zalando/go-keyring"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -100,49 +100,54 @@ func (o *options) cachedPAT() (*gitlab.PersonalAccessToken, error) {
 		return nil, err
 	}
 
-	cacheDir, err := userCacheDir()
-	if err != nil {
-		return nil, err
-	}
+	createFunc := func() (*gitlab.PersonalAccessToken, error) {
+		randomBytes := make([]byte, 16)
 
-	gitlabCacheDir := filepath.Join(cacheDir, "gitlab")
-	err = os.MkdirAll(gitlabCacheDir, 0o700)
-	if err != nil {
-		return nil, err
-	}
+		_, err = rand.Read(randomBytes)
+		if err != nil {
+			return nil, err
+		}
 
-	root, err := os.OpenRoot(filepath.Join(gitlabCacheDir))
-	if err != nil {
-		return nil, err
+		patName := fmt.Sprintf("glab-k8s-proxy-%x", randomBytes)
+		patExpiresAt := time.Now().Add(o.tokenExpiryDuration).UTC()
+
+		pat, _, err := apiClient.Users.CreatePersonalAccessTokenForCurrentUser(&gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
+			Name:      gitlab.Ptr(patName),
+			Scopes:    gitlab.Ptr(patScopes),
+			ExpiresAt: gitlab.Ptr(gitlab.ISOTime(patExpiresAt)),
+		})
+		if err != nil {
+			return nil, err
+		}
+		return pat, nil
 	}
-	defer root.Close()
 
 	gitlabInstance := base64.StdEncoding.EncodeToString([]byte(apiClient.BaseURL().String()))
-	cacheFilePrefix := fmt.Sprintf("%s-%d-", gitlabInstance, o.agentID)
-	cache := cache{
-		dir:    root,
-		prefix: cacheFilePrefix,
-		createFunc: func() (*gitlab.PersonalAccessToken, error) {
-			randomBytes := make([]byte, 16)
-			_, err = rand.Read(randomBytes)
-			if err != nil {
-				return nil, err
-			}
-
-			patName := fmt.Sprintf("glab-k8s-proxy-%x", randomBytes)
-			patExpiresAt := time.Now().Add(o.tokenExpiryDuration).UTC()
-
-			pat, _, err := apiClient.Users.CreatePersonalAccessTokenForCurrentUser(&gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
-				Name:      gitlab.Ptr(patName),
-				Scopes:    gitlab.Ptr(patScopes),
-				ExpiresAt: gitlab.Ptr(gitlab.ISOTime(patExpiresAt)),
-			})
-			if err != nil {
-				return nil, err
-			}
-			return pat, nil
-		},
+	c := cache{
+		storage:    &keyringStorage{},
+		id:         fmt.Sprintf("%s-%d", gitlabInstance, o.agentID),
+		createFunc: createFunc,
 	}
 
-	return cache.get()
+	pat, err := c.get()
+	if err != nil {
+		if !errors.Is(err, keyring.ErrUnsupportedPlatform) {
+			return nil, err
+		}
+
+		fs, err := newFileStorage()
+		if err != nil {
+			return nil, err
+		}
+		defer fs.close()
+
+		c = cache{
+			id:         c.id,
+			createFunc: c.createFunc,
+			storage:    fs,
+		}
+		return c.get()
+	}
+
+	return pat, nil
 }
