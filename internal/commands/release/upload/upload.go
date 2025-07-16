@@ -5,10 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/release/releaseutils"
@@ -23,6 +26,8 @@ type options struct {
 
 	assetLinks []*upload.ReleaseAsset
 	assetFiles []*upload.ReleaseFile
+
+	usePackageRegistry bool
 
 	io         *iostreams.IOStreams
 	httpClient func() (*gitlab.Client, error)
@@ -80,7 +85,7 @@ func NewCmdUpload(f cmdutils.Factory) *cobra.Command {
 			  ]'
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.complete(args); err != nil {
+			if err := opts.complete(cmd.Flags(), args); err != nil {
 				return err
 			}
 
@@ -93,11 +98,12 @@ func NewCmdUpload(f cmdutils.Factory) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&opts.assetLinksAsJSON, "assets-links", "a", "", "`JSON` string representation of assets links, like: `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
+	cmd.Flags().BoolVar(&opts.usePackageRegistry, "use-package-registry", false, "[EXPERIMENTAL] Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.")
 
 	return cmd
 }
 
-func (o *options) complete(args []string) error {
+func (o *options) complete(flags *pflag.FlagSet, args []string) error {
 	o.tagName = args[0]
 
 	assetFiles, err := releaseutils.AssetsFromArgs(args[1:])
@@ -105,6 +111,12 @@ func (o *options) complete(args []string) error {
 		return err
 	}
 	o.assetFiles = assetFiles
+
+	if !flags.Changed("use-package-registry") {
+		if usePackageRegistry, err := strconv.ParseBool(os.Getenv("GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY")); err != nil {
+			o.usePackageRegistry = usePackageRegistry
+		}
+	}
 
 	return nil
 }
@@ -153,7 +165,7 @@ func (o *options) run() error {
 	}
 
 	// upload files and create asset links
-	err = releaseutils.CreateReleaseAssets(o.io, client, o.assetFiles, o.assetLinks, repo.FullName(), release.TagName)
+	err = releaseutils.CreateReleaseAssets(o.io, client, o.assetFiles, o.assetLinks, repo.FullName(), release.TagName, o.usePackageRegistry)
 	if err != nil {
 		return cmdutils.WrapError(err, "creating release assets failed.")
 	}

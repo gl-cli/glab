@@ -1,11 +1,17 @@
 package upload
 
 import (
+	"bytes"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
+	"go.uber.org/mock/gomock"
 )
 
 func TestReleaseUtilsUpload_AliasFilePathToAssetDirectPath(t *testing.T) {
@@ -59,30 +65,79 @@ func TestReleaseUtilsUpload_AliasFilePathToAssetDirectPath_Conflict(t *testing.T
 	assert.False(t, aliased)
 }
 
-func TestContext_CreateReleaseAssetFromProjectFile(t *testing.T) {
-	expected := &ReleaseAsset{
-		Name:            gitlab.Ptr("label"),
-		URL:             gitlab.Ptr("https://gitlab.com/-/project/42/uploads/66dbcd21ec5d24ed6ea225176098d52b/test_file.txt"),
-		DirectAssetPath: gitlab.Ptr("/test_file.txt"),
-		LinkType:        gitlab.Ptr(gitlab.OtherLinkType),
+func TestReleaseUtilsUpload_UploadFiles_ProjectMarkdownFiles(t *testing.T) {
+	t.Parallel()
+
+	// GIVEN
+	ios, _, _, _ := cmdtest.TestIOStreams()
+	tc := gitlabtesting.NewTestClient(t, gitlab.WithBaseURL(glinstance.DefaultHostname))
+	testReleaseFile := bytes.NewBufferString("Hello World")
+	uploadCtx := &Context{
+		Client: tc.Client,
+		IO:     ios,
+		AssetFiles: []*ReleaseFile{
+			{
+				Open: func() (io.ReadCloser, error) {
+					return io.NopCloser(testReleaseFile), nil
+				},
+				Name: "test-release-file.txt",
+				Path: "./foobar/test-release-file.txt",
+				Type: gitlab.Ptr(gitlab.OtherLinkType),
+			},
+		},
+		AssetsLinks: []*ReleaseAsset{},
 	}
 
-	releaseFile := &ReleaseFile{
-		Name:  "test_file.txt",
-		Label: "label",
-		Path:  "/test_file.txt",
-		Type:  gitlab.Ptr(gitlab.OtherLinkType),
-	}
-	projectFile := &gitlab.MarkdownUploadedFile{
-		FullPath: "/-/project/42/uploads/66dbcd21ec5d24ed6ea225176098d52b/test_file.txt",
-	}
+	// setup mock expections
+	gomock.InOrder(
+		tc.MockProjectMarkdownUploads.EXPECT().
+			UploadProjectMarkdown("any-project", gomock.Any(), "test-release-file.txt", gomock.Any()).
+			Return(&gitlab.MarkdownUploadedFile{FullPath: "test-release-file.txt"}, nil, nil),
+		tc.MockReleaseLinks.EXPECT().CreateReleaseLink("any-project", "42.0.0", gomock.Any()),
+	)
 
-	client, err := gitlab.NewClient("", gitlab.WithBaseURL("https://gitlab.com"))
+	// WHEN
+	err := uploadCtx.UploadFiles("any-project", "42.0.0", false)
+
+	// THEN
 	require.NoError(t, err)
-	context := &Context{
-		Client: client,
+}
+
+func TestReleaseUtilsUpload_UploadFiles_GenericPackageRegistry(t *testing.T) {
+	t.Parallel()
+
+	// GIVEN
+	ios, _, _, _ := cmdtest.TestIOStreams()
+	tc := gitlabtesting.NewTestClient(t, gitlab.WithBaseURL(glinstance.DefaultHostname))
+	testReleaseFile := bytes.NewBufferString("Hello World")
+	uploadCtx := &Context{
+		Client: tc.Client,
+		IO:     ios,
+		AssetFiles: []*ReleaseFile{
+			{
+				Open: func() (io.ReadCloser, error) {
+					return io.NopCloser(testReleaseFile), nil
+				},
+				Name: "test-release-file.txt",
+				Path: "./foobar/test-release-file.txt",
+				Type: gitlab.Ptr(gitlab.OtherLinkType),
+			},
+		},
+		AssetsLinks: []*ReleaseAsset{},
 	}
 
-	releaseAsset := context.CreateReleaseAssetFromProjectFile(releaseFile, projectFile)
-	assert.Equal(t, expected, releaseAsset)
+	// setup mock expections
+	gomock.InOrder(
+		tc.MockGenericPackages.EXPECT().
+			PublishPackageFile("any-project", releasePackageName, "42.0.0", "test-release-file.txt", gomock.Any(), nil),
+		tc.MockGenericPackages.EXPECT().
+			FormatPackageURL("any-project", releasePackageName, "42.0.0", "test-release-file.txt"),
+		tc.MockReleaseLinks.EXPECT().CreateReleaseLink("any-project", "42.0.0", gomock.Any()),
+	)
+
+	// WHEN
+	err := uploadCtx.UploadFiles("any-project", "42.0.0", true)
+
+	// THEN
+	require.NoError(t, err)
 }
