@@ -39,6 +39,7 @@ type options struct {
 	useContext          bool
 	agentID             int64
 	tokenExpiryDuration time.Duration
+	cacheMode           agentutils.CacheMode
 }
 
 func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
@@ -71,6 +72,7 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 	fl.StringVar(&pathOptions.LoadingRules.ExplicitPath, pathOptions.ExplicitFileFlag, pathOptions.LoadingRules.ExplicitPath, "Use a particular kubeconfig file.")
 	fl.BoolVarP(&opts.useContext, flagUseContext, "u", opts.useContext, "Use as default context.")
 	fl.DurationVar(&opts.tokenExpiryDuration, flagTokenExpiryDuration, tokenExpiryDurationDefault, "Duration for how long the generated tokens should be valid for. Minimum is 1 day and the effective expiry is always at the end of the day, the time is ignored.")
+	agentutils.AddTokenCacheModeFlag(fl, &opts.cacheMode)
 	cobra.CheckErr(agentUpdateKubeconfigCmd.MarkFlagRequired(flagAgent))
 
 	return agentUpdateKubeconfigCmd
@@ -140,6 +142,7 @@ func (o *options) run() error {
 		kasK8sProxyURL:      kasK8SProxyURL,
 		agent:               agent,
 		tokenExpiryDuration: o.tokenExpiryDuration,
+		cacheMode:           o.cacheMode,
 	}
 	config, contextName := updateKubeconfig(params)
 
@@ -168,6 +171,7 @@ type updateKubeconfigParams struct {
 	kasK8sProxyURL      string
 	agent               *gitlab.Agent
 	tokenExpiryDuration time.Duration
+	cacheMode           agentutils.CacheMode
 }
 
 func updateKubeconfig(params updateKubeconfigParams) (clientcmdapi.Config, string) {
@@ -187,7 +191,15 @@ func updateKubeconfig(params updateKubeconfigParams) (clientcmdapi.Config, strin
 	if !exists {
 		startingAuthInfo = clientcmdapi.NewAuthInfo()
 	}
-	config.AuthInfos[authInfoName] = modifyAuthInfo(*startingAuthInfo, params.glabExecutable, params.glHost, params.glRepoFullName, int64(params.agent.ID), params.tokenExpiryDuration) // FIXME remove cast
+	config.AuthInfos[authInfoName] = modifyAuthInfo(
+		*startingAuthInfo,
+		params.glabExecutable,
+		params.glHost,
+		params.glRepoFullName,
+		int64(params.agent.ID), // FIXME remove cast
+		params.tokenExpiryDuration,
+		params.cacheMode,
+	)
 
 	// Updating `contexts` entry: `kubectl config set-context ...`
 	contextName := fmt.Sprintf("%s-%s-%s", clusterName, sanitizeForKubeconfig(params.agent.ConfigProject.PathWithNamespace), params.agent.Name)
@@ -205,7 +217,7 @@ func modifyCluster(cluster clientcmdapi.Cluster, server string) *clientcmdapi.Cl
 	return &cluster
 }
 
-func modifyAuthInfo(authInfo clientcmdapi.AuthInfo, glabExecutable string, glabHost string, glRepoFullName string, agentID int64, tokenExpiryDuration time.Duration) *clientcmdapi.AuthInfo {
+func modifyAuthInfo(authInfo clientcmdapi.AuthInfo, glabExecutable string, glabHost string, glRepoFullName string, agentID int64, tokenExpiryDuration time.Duration, cacheMode agentutils.CacheMode) *clientcmdapi.AuthInfo {
 	// Clear existing auth info
 	authInfo.Token = ""
 	authInfo.TokenFile = ""
@@ -223,6 +235,7 @@ func modifyAuthInfo(authInfo clientcmdapi.AuthInfo, glabExecutable string, glabH
 			"--agent", strconv.FormatInt(agentID, 10),
 			"--repo", glRepoFullName,
 			"--token-expiry-duration", tokenExpiryDuration.String(),
+			"--cache-mode", cacheMode,
 		},
 		Env: []clientcmdapi.ExecEnvVar{
 			{

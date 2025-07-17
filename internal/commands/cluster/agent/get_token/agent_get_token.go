@@ -12,6 +12,7 @@ import (
 	"github.com/zalando/go-keyring"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/agentutils"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientauthenticationv1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
@@ -34,6 +35,7 @@ type options struct {
 
 	agentID             int64
 	tokenExpiryDuration time.Duration
+	cacheMode           agentutils.CacheMode
 }
 
 func NewCmdAgentGetToken(f cmdutils.Factory) *cobra.Command {
@@ -60,6 +62,7 @@ You might receive an email from your GitLab instance that a new personal access 
 	fl := agentGetTokenCmd.Flags()
 	fl.Int64VarP(&opts.agentID, "agent", "a", 0, "The numerical Agent ID to connect to.")
 	fl.DurationVar(&opts.tokenExpiryDuration, flagTokenExpiryDuration, tokenExpiryDurationDefault, "Duration for how long the generated tokens should be valid for. Minimum is 1 day and the effective expiry is always at the end of the day, the time is ignored.")
+	agentutils.AddTokenCacheModeFlag(fl, &opts.cacheMode)
 	cobra.CheckErr(agentGetTokenCmd.MarkFlagRequired("agent"))
 
 	return agentGetTokenCmd
@@ -123,31 +126,50 @@ func (o *options) cachedPAT() (*gitlab.PersonalAccessToken, error) {
 	}
 
 	gitlabInstance := base64.StdEncoding.EncodeToString([]byte(apiClient.BaseURL().String()))
+	id := fmt.Sprintf("%s-%d", gitlabInstance, o.agentID)
+
+	switch o.cacheMode {
+	case agentutils.NoCacheCacheMode:
+		return createFunc()
+	case agentutils.ForcedKeyringCacheMode:
+		return fromKeyringCache(id, createFunc)
+	case agentutils.ForcedFilesystemCacheMode:
+		return fromFilesystemCache(id, createFunc)
+	case agentutils.DefaultCacheMode:
+		pat, err := fromKeyringCache(id, createFunc)
+		if err != nil {
+			if !errors.Is(err, keyring.ErrUnsupportedPlatform) {
+				return nil, err
+			}
+			return fromFilesystemCache(id, createFunc)
+		}
+		return pat, nil
+	default:
+		panic(fmt.Sprintf("unimplemented cache mode: %s. This is a programming error, please report at https://gitlab.com/gitlab-org/cli/-/issues", o.cacheMode))
+	}
+}
+
+func fromKeyringCache(id string, createFunc func() (*gitlab.PersonalAccessToken, error)) (*gitlab.PersonalAccessToken, error) {
 	c := cache{
 		storage:    &keyringStorage{},
-		id:         fmt.Sprintf("%s-%d", gitlabInstance, o.agentID),
+		id:         id,
 		createFunc: createFunc,
 	}
 
-	pat, err := c.get()
+	return c.get()
+}
+
+func fromFilesystemCache(id string, createFunc func() (*gitlab.PersonalAccessToken, error)) (*gitlab.PersonalAccessToken, error) {
+	fs, err := newFileStorage()
 	if err != nil {
-		if !errors.Is(err, keyring.ErrUnsupportedPlatform) {
-			return nil, err
-		}
-
-		fs, err := newFileStorage()
-		if err != nil {
-			return nil, err
-		}
-		defer fs.close()
-
-		c = cache{
-			id:         c.id,
-			createFunc: c.createFunc,
-			storage:    fs,
-		}
-		return c.get()
+		return nil, err
 	}
+	defer fs.close()
 
-	return pat, nil
+	c := cache{
+		id:         id,
+		createFunc: createFunc,
+		storage:    fs,
+	}
+	return c.get()
 }
