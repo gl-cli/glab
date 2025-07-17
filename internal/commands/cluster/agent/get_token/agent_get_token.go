@@ -135,7 +135,7 @@ func (o *options) cachedPAT() (*gitlab.PersonalAccessToken, error) {
 		return fromKeyringCache(id, createFunc)
 	case agentutils.ForcedFilesystemCacheMode:
 		return fromFilesystemCache(id, createFunc)
-	case agentutils.DefaultCacheMode:
+	case agentutils.KeyringFilesystemFallback:
 		pat, err := fromKeyringCache(id, createFunc)
 		if err != nil {
 			if !errors.Is(err, keyring.ErrUnsupportedPlatform) {

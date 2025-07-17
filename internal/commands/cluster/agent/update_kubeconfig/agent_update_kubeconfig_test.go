@@ -24,7 +24,7 @@ func TestAgent_UpdateKubeConfig_GlabExec(t *testing.T) {
 		kasK8sProxyURL:      "https://kas.gitlab.example.com/k8s-proxy",
 		agent:               &gitlab.Agent{ID: 42, Name: "test-agent", ConfigProject: gitlab.ConfigProject{PathWithNamespace: "foo/bar"}},
 		tokenExpiryDuration: 42 * time.Hour,
-		cacheMode:           agentutils.DefaultCacheMode,
+		cacheMode:           agentutils.ForcedFilesystemCacheMode,
 	}
 	modifiedConfig, contextName := updateKubeconfig(params)
 
@@ -38,7 +38,7 @@ func TestAgent_UpdateKubeConfig_GlabExec(t *testing.T) {
 	actualExec := modifiedConfig.AuthInfos["gitlab_example_com-42"].Exec
 	assert.Equal(t, k8sAuthInfoExecApiVersion, actualExec.APIVersion)
 	assert.Equal(t, "glab", actualExec.Command)
-	assert.Equal(t, []string{"cluster", "agent", "get-token", "--agent", "42", "--repo", "gitlab-user/repo", "--token-expiry-duration", "42h0m0s", "--cache-mode", agentutils.DefaultCacheMode}, actualExec.Args)
+	assert.Equal(t, []string{"cluster", "agent", "get-token", "--agent", "42", "--repo", "gitlab-user/repo", "--token-expiry-duration", "42h0m0s", "--cache-mode", agentutils.ForcedFilesystemCacheMode}, actualExec.Args)
 	assert.Equal(t, []clientcmdapi.ExecEnvVar{{Name: "GITLAB_HOST", Value: "gitlab.example.com"}}, actualExec.Env)
 	assert.Equal(t, clientcmdapi.NeverExecInteractiveMode, actualExec.InteractiveMode)
 	assert.Empty(t, modifiedConfig.AuthInfos["gitlab_example_com-42"].Token)

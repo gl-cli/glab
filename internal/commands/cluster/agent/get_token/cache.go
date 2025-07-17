@@ -3,11 +3,9 @@ package get_token
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/zalando/go-keyring"
@@ -61,7 +59,7 @@ type fileStorage struct {
 }
 
 func newFileStorage() (*fileStorage, error) {
-	cacheDir, err := userCacheDir()
+	cacheDir, err := os.UserCacheDir()
 	if err != nil {
 		return nil, err
 	}
@@ -182,44 +180,4 @@ func (c *cache) createAndCacheToken() (*gitlab.PersonalAccessToken, error) {
 	}
 
 	return token, nil
-}
-
-func userCacheDir() (string, error) {
-	switch runtime.GOOS {
-	case "windows":
-		// On Windows, use %LOCALAPPDATA%
-		if localAppData := os.Getenv("LOCALAPPDATA"); localAppData != "" {
-			return localAppData, nil
-		}
-		// Fallback to %APPDATA%
-		if appData := os.Getenv("APPDATA"); appData != "" {
-			return appData, nil
-		}
-		return "", fmt.Errorf("neither LOCALAPPDATA nor APPDATA are defined")
-	case "darwin":
-		// On macOS, use ~/Library/Caches
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		return filepath.Join(homeDir, "Library", "Caches"), nil
-	default:
-		// On Linux and other Unix-like systems use XDG
-		return xdgCacheDir()
-	}
-}
-
-// xdgCacheDir returns the XDG cache directory
-// Implemented according to https://specifications.freedesktop.org/basedir-spec/latest/
-func xdgCacheDir() (string, error) {
-	if xdgCache := os.Getenv("XDG_CACHE_HOME"); xdgCache != "" {
-		return xdgCache, nil
-	}
-
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("unable to determine home directory to construct XDG cache directory")
-	}
-
-	return filepath.Join(homeDir, ".cache"), nil
 }
