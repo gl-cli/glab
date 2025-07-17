@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/commands/auth/authutils"
@@ -239,22 +240,28 @@ func loginRun(opts *LoginOptions) error {
 
 	if hostname == "" {
 		var hostType int
+		options := []string{}
+		if hosts, err := cfg.Hosts(); err == nil {
+			options = append(options, hosts...)
+		}
+		if !slices.Contains(options, opts.defaultHostname) {
+			options = append(options, opts.defaultHostname)
+		}
+		options = append(options, "GitLab Self-Managed or GitLab Dedicated instance")
+
 		err := survey.AskOne(&survey.Select{
 			Message: "What GitLab instance do you want to sign in to?",
-			Options: []string{
-				opts.defaultHostname,
-				"GitLab Self-Managed or GitLab Dedicated instance",
-			},
+			Options: options,
 		}, &hostType)
 		if err != nil {
 			return fmt.Errorf("could not prompt: %w", err)
 		}
 
-		isSelfHosted = hostType == 1
+		isSelfHosted = hostType == len(options)-1
 
-		hostname = opts.defaultHostname
-		apiHostname = hostname
 		if isSelfHosted {
+			hostname = opts.defaultHostname
+			apiHostname = hostname
 			err := survey.AskOne(&survey.Input{
 				Message: "GitLab hostname:",
 			}, &hostname, survey.WithValidator(hostnameValidator))
@@ -269,6 +276,9 @@ func loginRun(opts *LoginOptions) error {
 			if err != nil {
 				return fmt.Errorf("could not prompt: %w", err)
 			}
+		} else {
+			hostname = options[hostType]
+			apiHostname = hostname
 		}
 	} else {
 		isSelfHosted = glinstance.IsSelfHosted(hostname)
