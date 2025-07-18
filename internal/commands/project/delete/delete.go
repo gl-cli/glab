@@ -11,7 +11,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 )
@@ -22,8 +21,7 @@ type options struct {
 	args        []string
 
 	io        *iostreams.IOStreams
-	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
-	config    config.Config
+	apiClient func(repoHost string) (*api.Client, error)
 	baseRepo  func() (glrepo.Interface, error)
 }
 
@@ -31,7 +29,6 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:        f.IO(),
 		apiClient: f.ApiClient,
-		config:    f.Config(),
 		baseRepo:  f.BaseRepo,
 	}
 
@@ -61,7 +58,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run() error {
-	c, err := o.apiClient("", o.config)
+	c, err := o.apiClient("")
 	if err != nil {
 		return err
 	}

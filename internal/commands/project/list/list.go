@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -32,15 +31,13 @@ type options struct {
 	user             string
 
 	io        *iostreams.IOStreams
-	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
-	config    config.Config
+	apiClient func(repoHost string) (*api.Client, error)
 }
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:        f.IO(),
 		apiClient: f.ApiClient,
-		config:    f.Config(),
 	}
 	repoListCmd := &cobra.Command{
 		Use:   "list",
@@ -83,7 +80,7 @@ func (o *options) run() error {
 	var err error
 	c := o.io.Color()
 
-	apiClient, err := o.apiClient("", o.config)
+	apiClient, err := o.apiClient("")
 	if err != nil {
 		return err
 	}

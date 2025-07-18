@@ -14,7 +14,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/text"
@@ -29,9 +28,8 @@ var (
 
 type options struct {
 	io                    *iostreams.IOStreams
-	apiClient             func(repoHost string, cfg config.Config) (*api.Client, error)
+	apiClient             func(repoHost string) (*api.Client, error)
 	baseRepo              func() (glrepo.Interface, error)
-	config                func() config.Config
 	listenNet, listenAddr string
 	agentID               int64
 	nsNames               []string
@@ -54,7 +52,6 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 		io:        f.IO(),
 		apiClient: f.ApiClient,
 		baseRepo:  f.BaseRepo,
-		config:    f.Config,
 
 		listenNet:  "tcp",
 		listenAddr: "localhost:0",
@@ -111,8 +108,7 @@ func (o *options) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	cfg := o.config()
-	client, err := o.apiClient(repo.RepoHost(), cfg)
+	client, err := o.apiClient(repo.RepoHost())
 	if err != nil {
 		return err
 	}

@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/run"
@@ -41,8 +40,7 @@ type result struct {
 type opts struct {
 	Prompt    string
 	IO        *iostreams.IOStreams
-	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
-	config    config.Config
+	apiClient func(repoHost string) (*api.Client, error)
 	Git       bool
 }
 
@@ -65,7 +63,6 @@ func NewCmdAsk(f cmdutils.Factory) *cobra.Command {
 	opts := &opts{
 		IO:        f.IO(),
 		apiClient: f.ApiClient,
-		config:    f.Config(),
 	}
 
 	duoAskCmd := &cobra.Command{
@@ -114,7 +111,7 @@ func (opts *opts) Result() (*result, error) {
 	opts.IO.StartSpinner(spinnerText)
 	defer opts.IO.StopSpinner("")
 
-	c, err := opts.apiClient("", opts.config)
+	c, err := opts.apiClient("")
 	if err != nil {
 		return nil, cmdutils.WrapError(err, "failed to get HTTP client.")
 	}

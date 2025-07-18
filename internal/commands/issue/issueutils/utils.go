@@ -11,7 +11,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"golang.org/x/sync/errgroup"
 
@@ -67,7 +66,7 @@ func IssueState(c *iostreams.ColorPalette, i *gitlab.Issue) string {
 	}
 }
 
-func IssuesFromArgs(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), gitlabClient *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), defaultHostname string, args []string) ([]*gitlab.Issue, glrepo.Interface, error) {
+func IssuesFromArgs(apiClientFunc func(repoHost string) (*api.Client, error), gitlabClient *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), defaultHostname string, args []string) ([]*gitlab.Issue, glrepo.Interface, error) {
 	var baseRepo glrepo.Interface
 
 	if len(args) <= 1 {
@@ -104,7 +103,7 @@ func IssuesFromArgs(apiClientFunc func(repoHost string, cfg config.Config) (*api
 	return issues, baseRepo, nil
 }
 
-func IssueFromArg(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), client *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), defaultHostname, arg string) (*gitlab.Issue, glrepo.Interface, error) {
+func IssueFromArg(apiClientFunc func(repoHost string) (*api.Client, error), client *gitlab.Client, baseRepoFn func() (glrepo.Interface, error), defaultHostname, arg string) (*gitlab.Issue, glrepo.Interface, error) {
 	issueIID, baseRepo := issueMetadataFromURL(arg, defaultHostname)
 	if issueIID == 0 {
 		var err error
@@ -121,11 +120,7 @@ func IssueFromArg(apiClientFunc func(repoHost string, cfg config.Config) (*api.C
 			return nil, nil, fmt.Errorf("could not determine base repository: %w", err)
 		}
 	} else {
-		// initialize a new HTTP Client with the new host
-		// TODO: avoid reinitializing the config, get the config as a parameter
-
-		cfg, _ := config.Init()
-		a, err := apiClientFunc(baseRepo.RepoHost(), cfg)
+		a, err := apiClientFunc(baseRepo.RepoHost())
 		if err != nil {
 			return nil, nil, err
 		}

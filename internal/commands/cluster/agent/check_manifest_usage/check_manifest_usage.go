@@ -7,7 +7,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/text"
 	"gopkg.in/yaml.v3"
@@ -21,8 +20,7 @@ type options struct {
 	agentPerPage   int
 	agentPage      int
 
-	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
-	config    config.Config
+	apiClient func(repoHost string) (*api.Client, error)
 	io        *iostreams.IOStreams
 }
 
@@ -36,7 +34,6 @@ func NewCmdCheckManifestUsage(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:        f.IO(),
 		apiClient: f.ApiClient,
-		config:    f.Config(),
 	}
 	checkManifestUsageCmd := &cobra.Command{
 		Use:   "check_manifest_usage [flags]",
@@ -61,7 +58,7 @@ The output can be piped to a tab-separated value (TSV) file.
 }
 
 func (o *options) run() error {
-	c, err := o.apiClient("", o.config)
+	c, err := o.apiClient("")
 	if err != nil {
 		return err
 	}

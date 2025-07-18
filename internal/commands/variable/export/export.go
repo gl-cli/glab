@@ -13,14 +13,12 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
 type options struct {
-	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
-	config    config.Config
+	apiClient func(repoHost string) (*api.Client, error)
 	io        *iostreams.IOStreams
 	baseRepo  func() (glrepo.Interface, error)
 
@@ -45,7 +43,6 @@ func NewCmdExport(f cmdutils.Factory, runE func(opts *options) error) *cobra.Com
 	opts := &options{
 		io:        f.IO(),
 		apiClient: f.ApiClient,
-		config:    f.Config(),
 		baseRepo:  f.BaseRepo,
 	}
 
@@ -106,7 +103,7 @@ func (o *options) run() error {
 	if baseRepo, err := o.baseRepo(); err == nil {
 		repoHost = baseRepo.RepoHost()
 	}
-	apiClient, err := o.apiClient(repoHost, o.config)
+	apiClient, err := o.apiClient(repoHost)
 	if err != nil {
 		return err
 	}

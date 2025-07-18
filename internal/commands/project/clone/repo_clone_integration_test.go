@@ -8,7 +8,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/stretchr/testify/assert"
@@ -21,8 +20,8 @@ func Test_repoClone_Integration(t *testing.T) {
 	io, stdin, stdout, stderr := cmdtest.TestIOStreams()
 	fac := cmdtest.NewTestFactory(io,
 		func(f *cmdtest.Factory) {
-			f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
-				return api.NewClientFromConfig(repoHost, cfg, false, "glab test client")
+			f.ApiClientStub = func(repoHost string) (*api.Client, error) {
+				return api.NewClientFromConfig(repoHost, f.Config(), false, "glab test client")
 			}
 		},
 	)
@@ -74,8 +73,8 @@ func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []
 	io, stdin, stdout, stderr := cmdtest.TestIOStreams()
 	fac := cmdtest.NewTestFactory(io,
 		func(f *cmdtest.Factory) {
-			f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
-				return api.NewClientFromConfig(repoHost, cfg, false, "glab test client")
+			f.ApiClientStub = func(repoHost string) (*api.Client, error) {
+				return api.NewClientFromConfig(repoHost, f.Config(), false, "glab test client")
 			}
 		},
 	)

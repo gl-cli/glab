@@ -30,7 +30,7 @@ import (
 type LoginOptions struct {
 	IO              *iostreams.IOStreams
 	Config          func() config.Config
-	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	apiClient       func(repoHost string) (*api.Client, error)
 	defaultHostname string
 
 	Interactive bool
@@ -294,7 +294,7 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 	existingToken, _, _ := cfg.GetWithSource(hostname, "token", false)
 
 	if existingToken != "" && opts.Interactive {
-		apiClient, err := opts.apiClient(hostname, cfg)
+		apiClient, err := opts.apiClient(hostname)
 		if err != nil {
 			return err
 		}
@@ -354,7 +354,7 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 			return err
 		}
 	} else {
-		client, err := opts.apiClient(hostname, cfg)
+		client, err := opts.apiClient(hostname)
 		if err != nil {
 			return err
 		}
@@ -453,7 +453,7 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 
 		fmt.Fprintf(opts.IO.StdErr, "%s Configured API protocol.\n", c.GreenCheck())
 	}
-	apiClient, err := opts.apiClient(hostname, cfg)
+	apiClient, err := opts.apiClient(hostname)
 	if err != nil {
 		return err
 	}

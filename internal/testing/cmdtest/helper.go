@@ -164,7 +164,7 @@ func TestIOStreams(options ...iostreams.IOStreamsOption) (*iostreams.IOStreams, 
 }
 
 type Factory struct {
-	ApiClientStub  func(repoHost string, cfg config.Config) (*api.Client, error)
+	ApiClientStub  func(repoHost string) (*api.Client, error)
 	HttpClientStub func() (*gitlab.Client, error)
 	BaseRepoStub   func() (glrepo.Interface, error)
 	RemotesStub    func() (glrepo.Remotes, error)
@@ -181,8 +181,8 @@ func (f *Factory) RepoOverride(repo string) error {
 	return nil
 }
 
-func (f *Factory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {
-	return f.ApiClientStub(repoHost, cfg)
+func (f *Factory) ApiClient(repoHost string) (*api.Client, error) {
+	return f.ApiClientStub(repoHost)
 }
 
 func (f *Factory) HttpClient() (*gitlab.Client, error) {
@@ -230,7 +230,7 @@ type FactoryOption func(f *Factory)
 // WithApiClient configures the Factory with a specific API client
 func WithApiClient(client *api.Client) FactoryOption {
 	return func(f *Factory) {
-		f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
+		f.ApiClientStub = func(repoHost string) (*api.Client, error) {
 			return client, nil
 		}
 	}
@@ -310,7 +310,7 @@ func WithBuildInfo(buildInfo api.BuildInfo) FactoryOption {
 func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 	f := &Factory{
 		IOStub: ios,
-		ApiClientStub: func(repoHost string, cfg config.Config) (*api.Client, error) {
+		ApiClientStub: func(repoHost string) (*api.Client, error) {
 			return &api.Client{}, nil
 		},
 		HttpClientStub: func() (*gitlab.Client, error) {

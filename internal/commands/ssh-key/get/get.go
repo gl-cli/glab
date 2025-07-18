@@ -11,15 +11,13 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 type options struct {
-	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
-	config    config.Config
+	apiClient func(repoHost string) (*api.Client, error)
 	io        *iostreams.IOStreams
 
 	keyID   int
@@ -31,7 +29,6 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:        f.IO(),
 		apiClient: f.ApiClient,
-		config:    f.Config(),
 	}
 	cmd := &cobra.Command{
 		Use:   "get <key-id>",
@@ -80,7 +77,7 @@ func (o *options) complete(args []string) error {
 }
 
 func (o *options) run() error {
-	c, err := o.apiClient("", o.config)
+	c, err := o.apiClient("")
 	if err != nil {
 		return err
 	}
@@ -106,7 +103,7 @@ func keySelectPrompt(opts *options) (int, error) {
 		Page:    opts.page,
 	}
 
-	c, err := opts.apiClient("", opts.config)
+	c, err := opts.apiClient("")
 	if err != nil {
 		return 0, err
 	}

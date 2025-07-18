@@ -14,7 +14,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/dbg"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -42,7 +41,6 @@ type options struct {
 
 	io        *iostreams.IOStreams
 	apiClient *api.Client
-	config    func() config.Config
 
 	currentUser *gitlab.User
 }
@@ -56,7 +54,6 @@ func NewCmdClone(f cmdutils.Factory, runE func(*options, *ContextOpts) error) *c
 	opts := &options{
 		gitFlags: []string{},
 		io:       f.IO(),
-		config:   f.Config,
 	}
 
 	ctxOpts := &ContextOpts{}
@@ -123,8 +120,7 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 			opts.host = f.DefaultHostname()
 			opts.archivedSet = cmd.Flags().Changed("archived")
 
-			cfg := opts.config()
-			apiClient, err := f.ApiClient(opts.host, cfg)
+			apiClient, err := f.ApiClient(opts.host)
 			if err != nil {
 				return err
 			}
@@ -135,6 +131,7 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 				return err
 			}
 
+			cfg := f.Config()
 			opts.protocol, _ = cfg.Get(opts.host, "git_protocol")
 
 			if opts.groupName != "" {

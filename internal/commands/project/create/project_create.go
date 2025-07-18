@@ -106,7 +106,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 	if len(args) == 1 {
 		var host string
 		host, namespace, projectPath = projectPathFromArgs(args, f.DefaultHostname())
-		client, err := f.ApiClient(host, f.Config())
+		client, err := f.ApiClient(host)
 		if err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 		projectPath = path.Base(projectPath)
 		isPath = true
 
-		c, err := f.ApiClient(f.DefaultHostname(), f.Config())
+		c, err := f.ApiClient(f.DefaultHostname())
 		if err != nil {
 			return err
 		}

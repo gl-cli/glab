@@ -39,7 +39,7 @@ type options struct {
 	baseRepo        func() (glrepo.Interface, error)
 	remotes         func() (glrepo.Remotes, error)
 	config          func() config.Config
-	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	apiClient       func(repoHost string) (*api.Client, error)
 	defaultHostname string
 }
 
@@ -115,9 +115,7 @@ func (o *options) run() error {
 		}
 	}
 
-	cfg := o.config()
-
-	apiClient, err := o.apiClient(o.repoToFork.RepoHost(), cfg)
+	apiClient, err := o.apiClient(o.repoToFork.RepoHost())
 	if err != nil {
 		return err
 	}
@@ -199,6 +197,7 @@ loop:
 		return nil
 	}
 
+	cfg := o.config()
 	protocol, err := cfg.Get(o.repoToFork.RepoHost(), "git_protocol")
 	if err != nil {
 		return err

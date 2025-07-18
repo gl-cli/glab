@@ -50,7 +50,7 @@ type options struct {
 	issue *gitlab.Issue
 
 	io              *iostreams.IOStreams
-	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	apiClient       func(repoHost string) (*api.Client, error)
 	httpClient      func() (*gitlab.Client, error)
 	config          func() config.Config
 	baseRepo        func() (glrepo.Interface, error)

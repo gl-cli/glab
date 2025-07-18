@@ -8,7 +8,6 @@ import (
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -147,15 +146,14 @@ func Test_getRun_project(t *testing.T) {
 	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	opts := &options{
-		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+		apiClient: func(repoHost string) (*api.Client, error) {
 			return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com"), nil
 		},
 		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 		},
-		config: config.NewBlankConfig(),
-		io:     io,
-		key:    "TEST_VAR",
+		io:  io,
+		key: "TEST_VAR",
 	}
 
 	err := opts.run()

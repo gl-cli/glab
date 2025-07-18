@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -25,7 +24,7 @@ func runCommand(t *testing.T, rt http.RoundTripper, isTTY bool, cli string, stub
 
 	factory := cmdtest.NewTestFactory(ios,
 		func(f *cmdtest.Factory) {
-			f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
+			f.ApiClientStub = func(repoHost string) (*api.Client, error) {
 				return cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", repoHost), nil
 			}
 		},

@@ -19,7 +19,7 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 		Short: "View user events.",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := f.ApiClient("", f.Config())
+			c, err := f.ApiClient("")
 			if err != nil {
 				return err
 			}

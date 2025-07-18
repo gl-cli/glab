@@ -12,7 +12,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/api"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -381,11 +380,10 @@ func Test_apiRun(t *testing.T) {
 			ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 			tt.options.io = ios
-			tt.options.config = config.NewBlankConfig()
 			tt.options.baseRepo = func() (glrepo.Interface, error) {
 				return nil, fmt.Errorf("not supposed to be called")
 			}
-			tt.options.apiClient = func(repoHost string, cfg config.Config) (*api.Client, error) {
+			tt.options.apiClient = func(repoHost string) (*api.Client, error) {
 				var tr roundTripFunc = func(req *http.Request) (*http.Response, error) {
 					resp := tt.httpResponse
 					resp.Request = req
@@ -443,12 +441,11 @@ func Test_apiRun_paginationREST(t *testing.T) {
 	}
 	a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com")
 	options := options{
-		io:     ios,
-		config: config.NewBlankConfig(),
+		io: ios,
 		baseRepo: func() (glrepo.Interface, error) {
 			return nil, fmt.Errorf("not supposed to be called")
 		},
-		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+		apiClient: func(repoHost string) (*api.Client, error) {
 			return a, nil
 		},
 
@@ -508,12 +505,11 @@ func Test_apiRun_paginationGraphQL(t *testing.T) {
 	}
 	a := cmdtest.NewTestApiClient(t, &http.Client{Transport: tr}, "OTOKEN", "gitlab.com")
 	options := options{
-		io:     ios,
-		config: config.NewBlankConfig(),
+		io: ios,
 		baseRepo: func() (glrepo.Interface, error) {
 			return nil, fmt.Errorf("not supposed to be called")
 		},
-		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+		apiClient: func(repoHost string) (*api.Client, error) {
 			return a, nil
 		},
 
@@ -605,12 +601,11 @@ func Test_apiRun_inputFile(t *testing.T) {
 				requestInputFile: inputFile,
 				rawFields:        []string{"a=b", "c=d"},
 
-				io:     ios,
-				config: config.NewBlankConfig(),
+				io: ios,
 				baseRepo: func() (glrepo.Interface, error) {
 					return nil, fmt.Errorf("not supposed to be called")
 				},
-				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+				apiClient: func(repoHost string) (*api.Client, error) {
 					return a, nil
 				},
 			}

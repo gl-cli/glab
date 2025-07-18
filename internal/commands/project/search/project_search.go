@@ -6,7 +6,6 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 
@@ -22,8 +21,7 @@ type options struct {
 	page         int
 	search       string
 	outputFormat string
-	apiClient    func(repoHost string, cfg config.Config) (*api.Client, error)
-	config       config.Config
+	apiClient    func(repoHost string) (*api.Client, error)
 	io           *iostreams.IOStreams
 }
 
@@ -31,7 +29,6 @@ func NewCmdSearch(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:        f.IO(),
 		apiClient: f.ApiClient,
-		config:    f.Config(),
 	}
 
 	projectSearchCmd := &cobra.Command{
@@ -61,7 +58,7 @@ func NewCmdSearch(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run() error {
-	c, err := o.apiClient("", o.config)
+	c, err := o.apiClient("")
 	if err != nil {
 		return err
 	}

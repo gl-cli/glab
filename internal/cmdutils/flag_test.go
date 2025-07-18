@@ -34,7 +34,7 @@ func (f *dummyFactory) RepoOverride(repo string) error {
 	return nil
 }
 
-func (f *dummyFactory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {
+func (f *dummyFactory) ApiClient(repoHost string) (*api.Client, error) {
 	return nil, nil
 }
 

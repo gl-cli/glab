@@ -30,7 +30,7 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				apiClient, err := f.ApiClient(repo.RepoHost(), f.Config())
+				apiClient, err := f.ApiClient(repo.RepoHost())
 				if err != nil {
 					return err
 				}

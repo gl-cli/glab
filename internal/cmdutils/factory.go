@@ -20,7 +20,7 @@ import (
 // Safe for concurrent use.
 type Factory interface {
 	RepoOverride(repo string) error
-	ApiClient(repoHost string, cfg config.Config) (*api.Client, error)
+	ApiClient(repoHost string) (*api.Client, error)
 	// HttpClient returns an HTTP client that is initialize with the host from BaseRepo.
 	// You must only use HttpClient if your command is tied to a single repository,
 	// otherwise use ApiClient
@@ -95,11 +95,11 @@ func (f *DefaultFactory) RepoOverride(repo string) error {
 	return nil
 }
 
-func (f *DefaultFactory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {
+func (f *DefaultFactory) ApiClient(repoHost string) (*api.Client, error) {
 	if repoHost == "" {
 		repoHost = f.defaultHostname
 	}
-	c, err := api.NewClientFromConfig(repoHost, cfg, false, f.buildInfo.UserAgent())
+	c, err := api.NewClientFromConfig(repoHost, f.config, false, f.buildInfo.UserAgent())
 	if err != nil {
 		return nil, err
 	}

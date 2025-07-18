@@ -9,7 +9,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
@@ -18,7 +17,7 @@ func runCommand(t *testing.T, cli string) (*test.CmdOut, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.NewTestFactory(ios,
 		func(f *cmdtest.Factory) {
-			f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
+			f.ApiClientStub = func(repoHost string) (*api.Client, error) {
 				return cmdtest.NewTestApiClient(t, &http.Client{}, "", repoHost), nil
 			}
 		},
