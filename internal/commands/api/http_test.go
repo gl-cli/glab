@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 )
@@ -123,11 +122,10 @@ hosts:
 		headers string
 	}
 	tests := []struct {
-		isGraphQL bool
-		name      string
-		args      args
-		want      expects
-		wantErr   bool
+		name    string
+		args    args
+		want    expects
+		wantErr bool
 	}{
 		{
 			name: "simple GET",
@@ -138,8 +136,7 @@ hosts:
 				params:  nil,
 				headers: []string{},
 			},
-			wantErr:   false,
-			isGraphQL: false,
+			wantErr: false,
 			want: expects{
 				method:  http.MethodGet,
 				u:       "https://gitlab.com/api/v4/projects/gitlab-com%2Fwww-gitlab-com",
@@ -156,8 +153,7 @@ hosts:
 				params:  nil,
 				headers: []string{},
 			},
-			wantErr:   false,
-			isGraphQL: false,
+			wantErr: false,
 			want: expects{
 				method:  http.MethodGet,
 				u:       "https://gitlab.com/api/v4/projects/gitlab-com%2Fwww-gitlab-com",
@@ -176,8 +172,7 @@ hosts:
 				},
 				headers: []string{},
 			},
-			wantErr:   false,
-			isGraphQL: false,
+			wantErr: false,
 			want: expects{
 				method:  http.MethodGet,
 				u:       "https://gitlab.com/api/v4/projects/gitlab-com%2Fwww-gitlab-com?a=b",
@@ -196,11 +191,10 @@ hosts:
 				},
 				headers: []string{},
 			},
-			wantErr:   false,
-			isGraphQL: true,
+			wantErr: false,
 			want: expects{
 				method:  http.MethodPost,
-				u:       "https://gitlab.com/api/graphql/",
+				u:       "https://gitlab.com/api/graphql",
 				body:    `{"variables":{"a":"b"}}`,
 				headers: "Content-Type: application/json; charset=utf-8\r\nPrivate-Token: OTOKEN\r\nUser-Agent: glab test client\r\n",
 			},
@@ -217,8 +211,7 @@ hosts:
 					"accept: application/json",
 				},
 			},
-			wantErr:   false,
-			isGraphQL: false,
+			wantErr: false,
 			want: expects{
 				method:  http.MethodPost,
 				u:       "https://gitlab.com/api/v4/projects",
@@ -238,8 +231,7 @@ hosts:
 					"accept: application/json",
 				},
 			},
-			wantErr:   false,
-			isGraphQL: false,
+			wantErr: false,
 			want: expects{
 				method:  http.MethodPost,
 				u:       "https://gitlab.com/api/v4/projects",
@@ -250,9 +242,6 @@ hosts:
 	}
 	for _, tt := range tests {
 		var options []api.ClientOption
-		if tt.isGraphQL {
-			options = append(options, api.WithBaseURL(glinstance.GraphQLEndpoint(tt.args.host, glinstance.DefaultProtocol)))
-		}
 		httpClient := cmdtest.NewTestApiClient(t, client, "OTOKEN", tt.args.host, options...)
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := httpRequest(t.Context(), httpClient, tt.args.method, tt.args.p, tt.args.params, tt.args.headers)
