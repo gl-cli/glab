@@ -152,21 +152,8 @@ func rootConfig() *yaml.Node {
 										Value:       "container_registry_domains",
 									},
 									{
-										Kind: yaml.SequenceNode,
-										Content: []*yaml.Node{
-											{
-												Kind:  yaml.ScalarNode,
-												Value: "gitlab.com",
-											},
-											{
-												Kind:  yaml.ScalarNode,
-												Value: "gitlab.com:443",
-											},
-											{
-												Kind:  yaml.ScalarNode,
-												Value: "registry.gitlab.com",
-											},
-										},
+										Kind:  yaml.ScalarNode,
+										Value: "gitlab.com,gitlab.com:443,registry.gitlab.com",
 									},
 								},
 							},
