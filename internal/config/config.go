@@ -26,7 +26,6 @@ type Config interface {
 	Get(string, string) (string, error)
 	GetWithSource(string, string, bool) (string, string, error)
 	Set(string, string, string) error
-	UnsetHost(string)
 	Hosts() ([]string, error)
 	Aliases() (*AliasConfig, error)
 	Local() (*LocalConfig, error)
@@ -255,20 +254,6 @@ func (c *fileConfig) Set(hostname, key, value string) error {
 		}
 		return hostCfg.SetStringValue(key, value)
 	}
-}
-
-func (c *fileConfig) UnsetHost(hostname string) {
-	if hostname == "" {
-		return
-	}
-
-	hostsEntry, err := c.FindEntry("hosts")
-	if err != nil {
-		return
-	}
-
-	cm := ConfigMap{hostsEntry.ValueNode}
-	cm.RemoveEntry(hostname)
 }
 
 func (c *fileConfig) Write() error {

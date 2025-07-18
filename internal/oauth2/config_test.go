@@ -28,7 +28,6 @@ func (s stubConfig) Set(host string, key string, value string) error {
 	return nil
 }
 
-func (s stubConfig) UnsetHost(string)                      {}
 func (s stubConfig) Hosts() ([]string, error)              { return nil, nil }
 func (s stubConfig) Aliases() (*config.AliasConfig, error) { return nil, nil }
 func (s stubConfig) Local() (*config.LocalConfig, error)   { return nil, nil }
