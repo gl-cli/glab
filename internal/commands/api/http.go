@@ -30,7 +30,7 @@ func httpRequest(ctx context.Context, client *api.Client, method, p string, para
 	if strings.Contains(p, "://") {
 		baseURLStr = p
 	} else if isGraphQL {
-		baseURL.Path = strings.Replace(baseURL.Path, "api/v4/", "", 1)
+		baseURL.Path = strings.TrimSuffix(strings.TrimSuffix(baseURL.Path, "/"), "/api/v4") + "/api/graphql"
 		baseURLStr = baseURL.String()
 	} else {
 		baseURLStr = baseURLStr + strings.TrimPrefix(p, "/")
