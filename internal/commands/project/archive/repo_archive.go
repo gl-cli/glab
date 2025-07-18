@@ -54,7 +54,7 @@ func NewCmdArchive(f cmdutils.Factory) *cobra.Command {
 				}
 
 				// repository is coming from command args, not -R
-				apiClient, err := f.ApiClient(repo.RepoHost(), f.Config())
+				apiClient, err := f.ApiClient(repo.RepoHost())
 				if err != nil {
 					return err
 				}

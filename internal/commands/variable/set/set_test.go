@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
@@ -225,17 +224,16 @@ func Test_setRun_project(t *testing.T) {
 	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	opts := &options{
-		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+		apiClient: func(repoHost string) (*api.Client, error) {
 			return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com"), nil
 		},
 		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 		},
-		config: config.NewBlankConfig(),
-		io:     io,
-		key:    "NEW_VARIABLE",
-		value:  "new value",
-		scope:  "*",
+		io:    io,
+		key:   "NEW_VARIABLE",
+		value: "new value",
+		scope: "*",
 	}
 
 	err := opts.run()
@@ -264,17 +262,16 @@ func Test_setRun_group(t *testing.T) {
 	io, _, stdout, _ := cmdtest.TestIOStreams()
 
 	opts := &options{
-		apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+		apiClient: func(repoHost string) (*api.Client, error) {
 			return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com"), nil
 		},
 		baseRepo: func() (glrepo.Interface, error) {
 			return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 		},
-		config: config.NewBlankConfig(),
-		io:     io,
-		key:    "NEW_VARIABLE",
-		value:  "new value",
-		group:  "mygroup",
+		io:    io,
+		key:   "NEW_VARIABLE",
+		value: "new value",
+		group: "mygroup",
 	}
 
 	err := opts.run()

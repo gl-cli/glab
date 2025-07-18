@@ -268,7 +268,7 @@ func (f *factory) RepoOverride(repo string) error {
 	return nil
 }
 
-func (f *factory) ApiClient(repoHost string, cfg config.Config) (*api.Client, error) {
+func (f *factory) ApiClient(repoHost string) (*api.Client, error) {
 	return nil, errors.New("not implemented")
 }
 

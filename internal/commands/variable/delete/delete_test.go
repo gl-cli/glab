@@ -7,7 +7,6 @@ import (
 
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"go.uber.org/mock/gomock"
@@ -63,7 +62,7 @@ func Test_NewCmdDelete(t *testing.T) {
 			io, _, _, _ := cmdtest.TestIOStreams()
 			f := cmdtest.NewTestFactory(io,
 				func(f *cmdtest.Factory) {
-					f.ApiClientStub = func(repoHost string, cfg config.Config) (*api.Client, error) {
+					f.ApiClientStub = func(repoHost string) (*api.Client, error) {
 						tc := gitlabtesting.NewTestClient(t)
 						tc.MockProjectVariables.EXPECT().RemoveVariable(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 						tc.MockGroupVariables.EXPECT().RemoveVariable(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
@@ -112,7 +111,7 @@ func Test_deleteRun(t *testing.T) {
 		httpmock.NewStringResponse(http.StatusNoContent, " "),
 	)
 
-	apiClient := func(repoHost string, cfg config.Config) (*api.Client, error) {
+	apiClient := func(repoHost string) (*api.Client, error) {
 		return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com"), nil
 	}
 	baseRepo := func() (glrepo.Interface, error) {
@@ -129,7 +128,6 @@ func Test_deleteRun(t *testing.T) {
 			name: "delete project variable no scope",
 			opts: options{
 				apiClient: apiClient,
-				config:    config.NewBlankConfig(),
 				baseRepo:  baseRepo,
 				key:       "TEST_VAR",
 				scope:     "*",
@@ -141,7 +139,6 @@ func Test_deleteRun(t *testing.T) {
 			name: "delete project variable with stage scope",
 			opts: options{
 				apiClient: apiClient,
-				config:    config.NewBlankConfig(),
 				baseRepo:  baseRepo,
 				key:       "TEST_VAR",
 				scope:     "stage",
@@ -153,7 +150,6 @@ func Test_deleteRun(t *testing.T) {
 			name: "delete group variable",
 			opts: options{
 				apiClient: apiClient,
-				config:    config.NewBlankConfig(),
 				baseRepo:  baseRepo,
 				key:       "TEST_VAR",
 				scope:     "",

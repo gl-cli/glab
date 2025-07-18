@@ -60,7 +60,7 @@ func CheckUpdate(f cmdutils.Factory, silentSuccess bool) error {
 	if err != nil {
 		return err
 	}
-	apiClient, err := f.ApiClient(repo.RepoHost(), f.Config())
+	apiClient, err := f.ApiClient(repo.RepoHost())
 	if err != nil {
 		return err
 	}

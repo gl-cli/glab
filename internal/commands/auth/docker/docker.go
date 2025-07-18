@@ -59,16 +59,14 @@ func NewCmdCredentialHelper(f cmdutils.Factory) *cobra.Command {
 		),
 		Short: "A Docker credential helper for GitLab container registries",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg := f.Config()
-
-			apiClient, err := f.ApiClient("", cfg)
+			apiClient, err := f.ApiClient("")
 			if err != nil {
 				return err
 			}
 
 			httpClient := apiClient.HTTPClient()
 
-			credHelper := Helper{httpClient, cfg}
+			credHelper := Helper{httpClient, f.Config()}
 
 			action := args[0]
 			return credentials.HandleCommand(&credHelper, action, f.IO().In, f.IO().StdOut)

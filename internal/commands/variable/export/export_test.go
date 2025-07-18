@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -337,13 +336,12 @@ func Test_exportRun_project(t *testing.T) {
 				httpmock.NewJSONResponse(http.StatusOK, mockProjectVariables),
 			)
 			opts := &options{
-				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+				apiClient: func(repoHost string) (*api.Client, error) {
 					return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com"), nil
 				},
 				baseRepo: func() (glrepo.Interface, error) {
 					return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 				},
-				config:       config.NewBlankConfig(),
 				io:           io,
 				page:         1,
 				perPage:      10,
@@ -609,13 +607,12 @@ func Test_exportRun_group(t *testing.T) {
 				httpmock.NewJSONResponse(http.StatusOK, mockGroupVariables),
 			)
 			opts := &options{
-				apiClient: func(repoHost string, cfg config.Config) (*api.Client, error) {
+				apiClient: func(repoHost string) (*api.Client, error) {
 					return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com"), nil
 				},
 				baseRepo: func() (glrepo.Interface, error) {
 					return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
 				},
-				config:       config.NewBlankConfig(),
 				io:           io,
 				page:         1,
 				perPage:      10,

@@ -9,7 +9,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -60,8 +59,7 @@ type ListOptions struct {
 
 	IO        *iostreams.IOStreams
 	BaseRepo  func() (glrepo.Interface, error)
-	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
-	config    config.Config
+	apiClient func(repoHost string) (*api.Client, error)
 
 	JSONOutput bool
 }
@@ -71,7 +69,6 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error, issueTyp
 		IO:        f.IO(),
 		BaseRepo:  f.BaseRepo,
 		apiClient: f.ApiClient,
-		config:    f.Config(),
 		IssueType: string(issueType),
 	}
 
@@ -196,7 +193,7 @@ func listRun(opts *ListOptions) error {
 	if baseRepo, err := opts.BaseRepo(); err == nil {
 		repoHost = baseRepo.RepoHost()
 	}
-	apiClient, err := opts.apiClient(repoHost, opts.config)
+	apiClient, err := opts.apiClient(repoHost)
 	if err != nil {
 		return err
 	}

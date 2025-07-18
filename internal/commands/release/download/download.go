@@ -18,7 +18,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/release/releaseutils/upload"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
@@ -29,10 +28,9 @@ type options struct {
 	dir        string
 
 	io         *iostreams.IOStreams
-	apiClient  func(repoHost string, cfg config.Config) (*api.Client, error)
+	apiClient  func(repoHost string) (*api.Client, error)
 	httpClient func() (*gitlab.Client, error)
 	baseRepo   func() (glrepo.Interface, error)
-	config     func() config.Config
 }
 
 func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
@@ -41,7 +39,6 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 		apiClient:  f.ApiClient,
 		httpClient: f.HttpClient,
 		baseRepo:   f.BaseRepo,
-		config:     f.Config,
 	}
 
 	cmd := &cobra.Command{
@@ -88,7 +85,6 @@ func (o *options) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	cfg := o.config()
 	repo, err := o.baseRepo()
 	if err != nil {
 		return err
@@ -159,7 +155,7 @@ func (o *options) run(ctx context.Context) error {
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), o.tagName)
 
-	c, err := o.apiClient(repo.RepoHost(), cfg)
+	c, err := o.apiClient(repo.RepoHost())
 	if err != nil {
 		return err
 	}

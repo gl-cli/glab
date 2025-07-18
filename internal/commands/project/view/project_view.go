@@ -30,7 +30,7 @@ type options struct {
 	io              *iostreams.IOStreams
 	repo            glrepo.Interface
 	config          config.Config
-	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	apiClient       func(repoHost string) (*api.Client, error)
 	httpClient      func() (*gitlab.Client, error)
 	baseRepo        func() (glrepo.Interface, error)
 	branchFactory   func() (string, error)
@@ -101,7 +101,7 @@ func (o *options) complete(args []string) error {
 		o.repo = baseRepo
 
 		// Configure client to have host of current repository
-		client, err := o.apiClient(o.repo.RepoHost(), o.config)
+		client, err := o.apiClient(o.repo.RepoHost())
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func (o *options) complete(args []string) error {
 			return err
 		}
 		o.repo = repo
-		client, err := o.apiClient(o.repo.RepoHost(), o.config)
+		client, err := o.apiClient(o.repo.RepoHost())
 		if err != nil {
 			return err
 		}

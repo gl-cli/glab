@@ -9,13 +9,11 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
 type options struct {
-	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
-	config    config.Config
+	apiClient func(repoHost string) (*api.Client, error)
 	io        *iostreams.IOStreams
 
 	title     string
@@ -30,7 +28,6 @@ func NewCmdAdd(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:        f.IO(),
 		apiClient: f.ApiClient,
-		config:    f.Config(),
 	}
 	cmd := &cobra.Command{
 		Use:   "add [key-file]",
@@ -80,7 +77,7 @@ func (o *options) complete(args []string) error {
 }
 
 func (o *options) run() error {
-	c, err := o.apiClient("", o.config)
+	c, err := o.apiClient("")
 	if err != nil {
 		return err
 	}

@@ -10,7 +10,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
@@ -22,8 +21,7 @@ const (
 )
 
 type options struct {
-	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
-	config          config.Config
+	apiClient       func(repoHost string) (*api.Client, error)
 	io              *iostreams.IOStreams
 	baseRepo        func() (glrepo.Interface, error)
 	httpClient      func() (*gitlab.Client, error)
@@ -38,7 +36,6 @@ type options struct {
 func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		apiClient:       f.ApiClient,
-		config:          f.Config(),
 		io:              f.IO(),
 		baseRepo:        f.BaseRepo,
 		httpClient:      f.HttpClient,
@@ -113,7 +110,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	client, err := o.apiClient(repo.RepoHost(), o.config)
+	client, err := o.apiClient(repo.RepoHost())
 	if err != nil {
 		return err
 	}

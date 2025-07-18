@@ -518,7 +518,7 @@ func Test_ParseMilestoneTitleToID(t *testing.T) {
 	expectedID := 3
 
 	// Override function so it returns the correct milestone
-	projectMilestoneByTitle = func(client *gitlab.Client, projectID any, name string) (*gitlab.Milestone, error) {
+	projectMilestoneByTitle = func(_ *gitlab.Client, _ any, _ string) (*gitlab.Milestone, error) {
 		return &gitlab.Milestone{
 				Title: "kind: testing",
 				ID:    3,
@@ -790,7 +790,7 @@ func Test_UsersPrompt(t *testing.T) {
 	t.Run("respect-flags", func(t *testing.T) {
 		got := []string{"foo"}
 
-		listProjectMembers = func(client *gitlab.Client, projectID any, opts *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
+		listProjectMembers = func(_ *gitlab.Client, _ any, _ *gitlab.ListProjectMembersOptions) ([]*gitlab.ProjectMember, error) {
 			return []*gitlab.ProjectMember{
 				{
 					Username:    "foo",

@@ -70,7 +70,7 @@ type options struct {
 	config          func() config.Config             `json:"-"`
 	baseRepo        func() (glrepo.Interface, error) `json:"-"`
 	headRepo        func() (glrepo.Interface, error) `json:"-"`
-	apiClient       func(repoHost string, cfg config.Config) (*api.Client, error)
+	apiClient       func(repoHost string) (*api.Client, error)
 	defaultHostname string
 
 	// SourceProject is the Project we create the merge request in and where we push our branch
@@ -207,7 +207,7 @@ func (o *options) validate(cmd *cobra.Command) error {
 	return nil
 }
 
-func parseIssue(apiClientFunc func(repoHost string, cfg config.Config) (*api.Client, error), gitlabClient *gitlab.Client, opts *options) (*gitlab.Issue, error) {
+func parseIssue(apiClientFunc func(repoHost string) (*api.Client, error), gitlabClient *gitlab.Client, opts *options) (*gitlab.Issue, error) {
 	issue, _, err := issueutils.IssueFromArg(apiClientFunc, gitlabClient, opts.baseRepo, opts.defaultHostname, opts.RelatedIssue)
 	if err != nil {
 		return nil, err

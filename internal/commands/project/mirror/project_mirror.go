@@ -9,7 +9,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
@@ -24,10 +23,9 @@ type options struct {
 
 	io               *iostreams.IOStreams
 	baseRepo         glrepo.Interface
-	apiClient        func(repoHost string, cfg config.Config) (*api.Client, error)
+	apiClient        func(repoHost string) (*api.Client, error)
 	gitlabClientFunc func() (*gitlab.Client, error)
 	httpClient       *gitlab.Client
-	config           func() config.Config
 	baseRepoFactory  func() (glrepo.Interface, error)
 	defaultHostname  string
 }
@@ -37,7 +35,6 @@ func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 		io:               f.IO(),
 		apiClient:        f.ApiClient,
 		gitlabClientFunc: f.HttpClient,
-		config:           f.Config,
 		defaultHostname:  f.DefaultHostname(),
 	}
 
@@ -81,8 +78,7 @@ func (o *options) complete(args []string) error {
 			if o.httpClient != nil {
 				return o.httpClient, nil
 			}
-			cfg := o.config()
-			c, err := o.apiClient(o.baseRepo.RepoHost(), cfg)
+			c, err := o.apiClient(o.baseRepo.RepoHost())
 			if err != nil {
 				return nil, err
 			}

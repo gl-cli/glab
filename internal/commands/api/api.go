@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/cobra"
 	jsonPretty "github.com/tidwall/pretty"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
@@ -31,10 +30,9 @@ import (
 type options struct {
 	io *iostreams.IOStreams
 
-	apiClient func(repoHost string, cfg config.Config) (*api.Client, error)
+	apiClient func(repoHost string) (*api.Client, error)
 	baseRepo  func() (glrepo.Interface, error)
 	branch    func() (string, error)
-	config    config.Config
 
 	hostname            string
 	requestMethod       string
@@ -166,8 +164,6 @@ func NewCmdApi(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 		},
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.config = f.Config()
-
 			opts.complete(cmd, args)
 
 			if err := opts.validate(cmd); err != nil {
@@ -268,7 +264,7 @@ func (o *options) run(ctx context.Context) error {
 	if err == nil {
 		repoHost = br.RepoHost()
 	}
-	client, err := o.apiClient(repoHost, o.config)
+	client, err := o.apiClient(repoHost)
 	if err != nil {
 		return err
 	}
@@ -384,7 +380,7 @@ func fillPlaceholders(value string, opts *options) (string, error) {
 				return ""
 			}
 
-			h, _ := opts.apiClient(baseRepo.RepoHost(), opts.config)
+			h, _ := opts.apiClient(baseRepo.RepoHost())
 			project, e := baseRepo.Project(h.Lab())
 			if e == nil && project != nil {
 				return strconv.Itoa(project.ID)
@@ -415,7 +411,7 @@ func fillPlaceholders(value string, opts *options) (string, error) {
 
 			return baseRepo.RepoGroup()
 		case ":user", ":username":
-			h, _ := opts.apiClient("", opts.config)
+			h, _ := opts.apiClient("")
 			u, _, e := h.Lab().Users.CurrentUser()
 			if e == nil && u != nil {
 				return u.Username

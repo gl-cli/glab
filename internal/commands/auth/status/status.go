@@ -20,7 +20,7 @@ type options struct {
 
 	httpClientOverride func(token, hostname string) (*api.Client, error) // used in tests to mock http client
 	io                 *iostreams.IOStreams
-	apiClient          func(repoHost string, cfg config.Config) (*api.Client, error)
+	apiClient          func(repoHost string) (*api.Client, error)
 	config             func() config.Config
 }
 
@@ -82,7 +82,7 @@ func (o *options) run() error {
 		}
 
 		token, tokenSource, _ := cfg.GetWithSource(instance, "token", false)
-		apiClient, err := o.apiClient(instance, cfg)
+		apiClient, err := o.apiClient(instance)
 		if o.httpClientOverride != nil {
 			apiClient, _ = o.httpClientOverride(token, instance)
 		}
