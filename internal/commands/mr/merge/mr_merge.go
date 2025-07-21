@@ -206,7 +206,7 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 			fmt.Fprintln(o.io.StdOut, c.FailedIcon(), "Cannot perform merge action")
 			return cmdutils.SilentError
 		}
-		mergeOpts.MergeWhenPipelineSucceeds = gitlab.Ptr(true)
+		mergeOpts.AutoMerge = gitlab.Ptr(true)
 	}
 	if o.sha != "" {
 		mergeOpts.SHA = gitlab.Ptr(o.sha)
