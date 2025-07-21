@@ -154,11 +154,7 @@ func (o *options) run(ctx context.Context) error {
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), o.tagName)
 
-	c, err := o.apiClient(repo.RepoHost())
-	if err != nil {
-		return err
-	}
-	err = downloadAssets(ctx, c, o.io, downloadableAssets, o.dir)
+	err = downloadAssets(ctx, client, o.io, downloadableAssets, o.dir)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to download release.")
 	}
@@ -178,7 +174,7 @@ func matchAny(patterns []string, name string) bool {
 	return false
 }
 
-func downloadAssets(ctx context.Context, httpClient *api.Client, io *iostreams.IOStreams, toDownload []*upload.ReleaseAsset, destDir string) error {
+func downloadAssets(ctx context.Context, client *gitlab.Client, io *iostreams.IOStreams, toDownload []*upload.ReleaseAsset, destDir string) error {
 	color := io.Color()
 	for _, asset := range toDownload {
 		io.Logf("%s downloading file %s=%s %s=%s.\n",
@@ -200,7 +196,7 @@ func downloadAssets(ctx context.Context, httpClient *api.Client, io *iostreams.I
 			return fmt.Errorf("invalid file path name.")
 		}
 
-		err = downloadAsset(ctx, httpClient, *asset.URL, destPath)
+		err = downloadAsset(ctx, client, *asset.URL, destPath)
 		if err != nil {
 			return err
 		}
@@ -218,47 +214,43 @@ func sanitizeAssetName(asset string) string {
 	return filepath.Clean(asset)
 }
 
-func downloadAsset(ctx context.Context, client *api.Client, assetURL, destinationPath string) error {
-	baseURL, _ := url.Parse(assetURL)
-	gitlabBaseURL := client.Lab().BaseURL()
-
-	// check if authenticated GitLab client should be used or not.
-	var c *http.Client
-	var req *http.Request
-	if gitlabBaseURL.Scheme == baseURL.Scheme && gitlabBaseURL.Host == baseURL.Host {
-		c = client.HTTPClient()
-		r, err := api.NewHTTPRequest(ctx, client, http.MethodGet, baseURL, http.NoBody, []string{"Accept:application/octet-stream"}, false)
-		if err != nil {
-			return err
-		}
-		req = r
-	} else {
-		c = http.DefaultClient
-		r, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL.String(), http.NoBody)
-		if err != nil {
-			return err
-		}
-		req = r
-		req.Header.Add("Accept", "application/octet-stream")
-	}
-
-	resp, err := c.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode > 299 {
-		return errors.New(resp.Status)
-	}
-
+func downloadAsset(ctx context.Context, client *gitlab.Client, assetURL, destinationPath string) error {
 	f, err := os.OpenFile(destinationPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	_, err = io.Copy(f, resp.Body)
-	return err
+	// check if authenticated GitLab client should be used or not.
+	baseURL, _ := url.Parse(assetURL)
+	gitlabBaseURL := client.BaseURL()
+	if gitlabBaseURL.Scheme == baseURL.Scheme && gitlabBaseURL.Host == baseURL.Host {
+		r, err := client.NewRequestToURL(http.MethodGet, baseURL, http.NoBody, []gitlab.RequestOptionFunc{gitlab.WithHeader("Accept", "application/octet-stream")})
+		if err != nil {
+			return err
+		}
+		_, err = client.Do(r, f)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		r, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL.String(), http.NoBody)
+		if err != nil {
+			return err
+		}
+		r.Header.Add("Accept", "application/octet-stream")
+
+		resp, err := http.DefaultClient.Do(r)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode > 299 {
+			return errors.New(resp.Status)
+		}
+		_, err = io.Copy(f, resp.Body)
+		return err
+	}
 }
