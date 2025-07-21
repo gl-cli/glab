@@ -219,16 +219,30 @@ func sanitizeAssetName(asset string) string {
 }
 
 func downloadAsset(ctx context.Context, client *api.Client, assetURL, destinationPath string) error {
-	var body io.Reader
-	// color := streams.Color()
-
 	baseURL, _ := url.Parse(assetURL)
+	gitlabBaseURL := client.Lab().BaseURL()
 
-	req, err := api.NewHTTPRequest(ctx, client, http.MethodGet, baseURL, body, []string{"Accept:application/octet-stream"}, false)
-	if err != nil {
-		return err
+	// check if authenticated GitLab client should be used or not.
+	var c *http.Client
+	var req *http.Request
+	if gitlabBaseURL.Scheme == baseURL.Scheme && gitlabBaseURL.Host == baseURL.Host {
+		c = client.HTTPClient()
+		r, err := api.NewHTTPRequest(ctx, client, http.MethodGet, baseURL, http.NoBody, []string{"Accept:application/octet-stream"}, false)
+		if err != nil {
+			return err
+		}
+		req = r
+	} else {
+		c = http.DefaultClient
+		r, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL.String(), http.NoBody)
+		if err != nil {
+			return err
+		}
+		req = r
+		req.Header.Add("Accept", "application/octet-stream")
 	}
-	resp, err := client.HTTPClient().Do(req)
+
+	resp, err := c.Do(req)
 	if err != nil {
 		return err
 	}
