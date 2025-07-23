@@ -74,6 +74,36 @@ func TestCIRun(t *testing.T) {
 			expectedPOSTBody: `"ref":"web-branch"`,
 			expectedErr:      "Opening gitlab.com/OWNER/REPO/-/pipelines/123 in your browser.\n",
 		},
+		{
+			name:             "when running `ci run` with variables",
+			cli:              "-b main --variables FOO:bar",
+			expectedPOSTBody: `"ref":"main","variables":[{"key":"FOO","value":"bar","variable_type":"env_var"}]`,
+			expectedOut:      "Created pipeline (id: 123), status: created, ref: main, weburl: https://gitlab.com/OWNER/REPO/-/pipelines/123\n",
+		},
+		{
+			name:             "when running `ci run` with multiple variables",
+			cli:              "-b main --variables FOO:bar --variables BAR:xxx",
+			expectedPOSTBody: `"ref":"main","variables":[{"key":"FOO","value":"bar","variable_type":"env_var"},{"key":"BAR","value":"xxx","variable_type":"env_var"}]`,
+			expectedOut:      "Created pipeline (id: 123), status: created, ref: main, weburl: https://gitlab.com/OWNER/REPO/-/pipelines/123\n",
+		},
+		{
+			name:             "when running `ci run` with variables-env",
+			cli:              "-b main --variables-env FOO:bar",
+			expectedPOSTBody: `"ref":"main","variables":[{"key":"FOO","value":"bar","variable_type":"env_var"}]`,
+			expectedOut:      "Created pipeline (id: 123), status: created, ref: main, weburl: https://gitlab.com/OWNER/REPO/-/pipelines/123\n",
+		},
+		{
+			name:             "when running `ci run` with multiple variables-env",
+			cli:              "-b main --variables-env FOO:bar --variables-env BAR:xxx",
+			expectedPOSTBody: `"ref":"main","variables":[{"key":"FOO","value":"bar","variable_type":"env_var"},{"key":"BAR","value":"xxx","variable_type":"env_var"}]`,
+			expectedOut:      "Created pipeline (id: 123), status: created, ref: main, weburl: https://gitlab.com/OWNER/REPO/-/pipelines/123\n",
+		},
+		{
+			name:             "when running `ci run` with mixed variables-env and variables",
+			cli:              "-b main --variables-env FOO:bar --variables BAR:xxx",
+			expectedPOSTBody: `"ref":"main","variables":[{"key":"FOO","value":"bar","variable_type":"env_var"},{"key":"BAR","value":"xxx","variable_type":"env_var"}]`,
+			expectedOut:      "Created pipeline (id: 123), status: created, ref: main, weburl: https://gitlab.com/OWNER/REPO/-/pipelines/123\n",
+		},
 	}
 
 	for _, tc := range tests {

@@ -138,13 +138,15 @@ func createMrPipeline(branch string, f cmdutils.Factory, apiClient *gitlab.Clien
 
 func resolvePipelineVars(cmd *cobra.Command) ([]*gitlab.PipelineVariableOptions, error) {
 	pipelineVars := []*gitlab.PipelineVariableOptions{}
-	if customPipelineVars, _ := cmd.Flags().GetStringSlice("variables-env"); len(customPipelineVars) > 0 {
-		for _, v := range customPipelineVars {
-			pvar, err := extractEnvVar(v)
-			if err != nil {
-				return nil, fmt.Errorf("parsing pipeline variable. Expected format KEY:VALUE: %w", err)
+	for _, flag := range []string{"variables-env", "variables"} {
+		if customPipelineVars, _ := cmd.Flags().GetStringSlice(flag); len(customPipelineVars) > 0 {
+			for _, v := range customPipelineVars {
+				pvar, err := extractEnvVar(v)
+				if err != nil {
+					return nil, fmt.Errorf("parsing pipeline variable. Expected format KEY:VALUE: %w", err)
+				}
+				pipelineVars = append(pipelineVars, pvar)
 			}
-			pipelineVars = append(pipelineVars, pvar)
 		}
 	}
 
@@ -228,7 +230,7 @@ If used with merge request pipelines, the command fails with a message like ` + 
 			}
 
 			c := &gitlab.CreatePipelineOptions{
-				Variables: &pipelineVars,
+				Variables: gitlab.Ptr(pipelineVars),
 			}
 
 			pipe, err := createPipeline(cmd, c, f, apiClient, repo, mr)
