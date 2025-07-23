@@ -3,6 +3,7 @@ package view
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -270,6 +271,12 @@ func printTTYMRPreview(opts *options, mr *gitlab.MergeRequest, mrApprovals *gitl
 					body, _ := utils.RenderMarkdown(note.Body, opts.io.BackgroundColor())
 					fmt.Fprint(out, " commented ")
 					fmt.Fprintf(out, c.Gray("%s\n"), createdAt)
+
+					// Display file and line context if available
+					if note.Position != nil {
+						printCommentFileContext(out, c, note.Position)
+					}
+
 					fmt.Fprintln(out, utils.Indent(body, " "))
 				}
 				fmt.Fprintln(out)
@@ -322,5 +329,44 @@ func printJSONMR(opts *options, mr *gitlab.MergeRequest, notes []*gitlab.Note) {
 	} else {
 		mrJSON, _ := json.Marshal(mr)
 		fmt.Fprintln(opts.io.StdOut, string(mrJSON))
+	}
+}
+
+func printCommentFileContext(out io.Writer, c *iostreams.ColorPalette, pos *gitlab.NotePosition) {
+	// Check for multi-line comment first
+	if pos.LineRange != nil && pos.LineRange.StartRange != nil && pos.LineRange.EndRange != nil {
+		startLine := pos.LineRange.StartRange.NewLine
+		endLine := pos.LineRange.EndRange.NewLine
+
+		// Fall back to old line numbers if new ones aren't available
+		if startLine == 0 {
+			startLine = pos.LineRange.StartRange.OldLine
+		}
+		if endLine == 0 {
+			endLine = pos.LineRange.EndRange.OldLine
+		}
+
+		// Display range if we have valid start and end lines
+		if startLine > 0 && endLine > 0 {
+			filePath := pos.NewPath
+			if filePath == "" {
+				filePath = pos.OldPath
+			}
+			if filePath != "" {
+				if startLine != endLine {
+					fmt.Fprintf(out, " on %s:%d-%d\n", c.Cyan(filePath), startLine, endLine)
+				} else {
+					fmt.Fprintf(out, " on %s:%d\n", c.Cyan(filePath), startLine)
+				}
+				return
+			}
+		}
+	}
+
+	// Fall back to single-line comment
+	if pos.NewPath != "" && pos.NewLine > 0 {
+		fmt.Fprintf(out, " on %s:%d\n", c.Cyan(pos.NewPath), pos.NewLine)
+	} else if pos.OldPath != "" && pos.OldLine > 0 {
+		fmt.Fprintf(out, " on %s:%d\n", c.Cyan(pos.OldPath), pos.OldLine)
 	}
 }
