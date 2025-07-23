@@ -260,18 +260,37 @@ the `GITLAB_HOST` environment variable, like this:
 When inside a Git repository `glab` will use that repository's GitLab host by default. For example `glab issue list`
 will list all issues of the current directory's Git repository.
 
+### Configure `glab` to use mTLS certificates
+
+To use a mutual TLS (Mutual Transport Layer Security) certificate with `glab`, edit your global
+configuration file (`~/.config/glab-cli/config.yml`) to provide connection information:
+
+```yaml
+hosts:
+    git.your-domain.com:
+        api_protocol: https
+        api_host: git.your-domain.com
+        token: xxxxxxxxxxxxxxxxxxxxxxxxx
+        client_cert: /path/to/client.crt
+        client_key: /path/to/client.key
+        ca_cert: /path/to/ca-chain.pem
+```
+
+- `ca_cert` is optional for mTLS support if you use a publicly signed server certificate.
+- `token` is not required if you use a different authentication method.
+
 ### Configure `glab` to use self-signed certificates
 
-The GitLab CLI can be configured to support GitLab Self-Managed and GitLab Dedicated instances using
-self-signed certificate authorities by making either of these changes:
+To configure the GitLab CLI to support GitLab Self-Managed and GitLab Dedicated instances with
+self-signed certificates, either:
 
-- You can disable TLS verification with:
+- Disable TLS verification with:
 
   ```shell
   glab config set skip_tls_verify true --host gitlab.example.com
   ```
 
-- Or add the path to the self signed CA:
+- Add the path to the self signed CA:
 
   ```shell
   glab config set ca_cert /path/to/server.pem --host gitlab.example.com
