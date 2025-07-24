@@ -14,6 +14,7 @@ func NewCmdArtifact(f cmdutils.Factory) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ glab job artifact main build
 			$ glab job artifact main deploy --path="artifacts/"
+			$ glab job artifact main deploy --list-paths
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(2),
@@ -30,9 +31,14 @@ func NewCmdArtifact(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return DownloadArtifacts(apiClient, repo, path, args[0], args[1])
+			listPaths, err := cmd.Flags().GetBool("list-paths")
+			if err != nil {
+				return err
+			}
+			return DownloadArtifacts(apiClient, repo, path, listPaths, args[0], args[1])
 		},
 	}
 	jobArtifactCmd.Flags().StringP("path", "p", "./", "Path to download the artifact files.")
+	jobArtifactCmd.Flags().BoolP("list-paths", "l", false, "Print the paths of downloaded artifacts.")
 	return jobArtifactCmd
 }

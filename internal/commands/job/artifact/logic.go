@@ -35,7 +35,7 @@ func ensurePathIsCreated(filename string) error {
 	return nil
 }
 
-func readZip(artifact *bytes.Reader, path string, zipReadLimit int64, zipFileLimit int) error {
+func readZip(artifact *bytes.Reader, path string, listPaths bool, zipReadLimit int64, zipFileLimit int) error {
 	zipReader, err := zip.NewReader(artifact, artifact.Size())
 	if err != nil {
 		return err
@@ -103,6 +103,10 @@ func readZip(artifact *bytes.Reader, path string, zipReadLimit int64, zipFileLim
 				return err
 			}
 
+			if listPaths {
+				fmt.Println(friendlyPath(destPath))
+			}
+
 			written += writtenPerFile
 			if written >= zipReadLimit {
 				return fmt.Errorf("extracted zip too large: limit is %d bytes", zipReadLimit)
@@ -112,11 +116,23 @@ func readZip(artifact *bytes.Reader, path string, zipReadLimit int64, zipFileLim
 	return nil
 }
 
-func DownloadArtifacts(apiClient *gitlab.Client, repo glrepo.Interface, path string, refName string, jobName string) error {
+func friendlyPath(path string) string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return path
+	}
+	rel, err := filepath.Rel(cwd, path)
+	if err != nil {
+		return path
+	}
+	return rel
+}
+
+func DownloadArtifacts(apiClient *gitlab.Client, repo glrepo.Interface, path string, listPaths bool, refName string, jobName string) error {
 	artifact, _, err := apiClient.Jobs.DownloadArtifactsFile(repo.FullName(), refName, &gitlab.DownloadArtifactsFileOptions{Job: &jobName}, nil)
 	if err != nil {
 		return err
 	}
 
-	return readZip(artifact, path, defaultZIPReadLimit, defaultZIPFileLimit)
+	return readZip(artifact, path, listPaths, defaultZIPReadLimit, defaultZIPFileLimit)
 }
