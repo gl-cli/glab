@@ -85,12 +85,6 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error, issueTyp
 		`, issueType)),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(opts.Labels) != 0 && len(opts.NotLabels) != 0 {
-				return cmdutils.FlagError{
-					Err: errors.New("flags --label and --not-label are mutually exclusive."),
-				}
-			}
-
 			if opts.Author != "" && len(opts.NotAuthor) != 0 {
 				return cmdutils.FlagError{
 					Err: errors.New("flags --author and --not-author are mutually exclusive."),
@@ -431,12 +425,6 @@ func isMatch(issue *gitlab.Issue, opts *gitlab.ListProjectIssuesOptions) bool {
 	if opts.NotAuthorID != nil && issue.Author != nil && issue.Author.ID == *opts.NotAuthorID {
 		return false
 	}
-	if opts.Labels != nil && !hasAllLabels(issue, []string(*opts.Labels)) {
-		return false
-	}
-	if opts.NotLabels != nil && hasAnyLabel(issue, []string(*opts.NotLabels)) {
-		return false
-	}
 	if opts.Milestone != nil && (issue.Milestone == nil || !strings.EqualFold(issue.Milestone.Title, *opts.Milestone)) {
 		return false
 	}
@@ -476,36 +464,6 @@ func stateMatches(issue *gitlab.Issue, opts *gitlab.ListProjectIssuesOptions) bo
 	default:
 		return *opts.State == issue.State
 	}
-}
-
-func hasAllLabels(issue *gitlab.Issue, labels []string) bool {
-	issueLabels := make(map[string]bool)
-	for _, l := range issue.Labels {
-		issueLabels[l] = true
-	}
-
-	for _, l := range labels {
-		if _, ok := issueLabels[l]; !ok {
-			return false
-		}
-	}
-
-	return true
-}
-
-func hasAnyLabel(issue *gitlab.Issue, labels []string) bool {
-	issueLabels := make(map[string]bool)
-	for _, l := range issue.Labels {
-		issueLabels[l] = true
-	}
-
-	for _, l := range labels {
-		if _, ok := issueLabels[l]; ok {
-			return true
-		}
-	}
-
-	return false
 }
 
 func projectListIssueOptionsToGroup(l *gitlab.ListProjectIssuesOptions) *gitlab.ListGroupIssuesOptions {

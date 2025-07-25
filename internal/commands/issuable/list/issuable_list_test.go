@@ -20,6 +20,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
@@ -507,16 +508,6 @@ func TestIssueList_epicIssues(t *testing.T) {
 			wantIDs:     []int{2},
 		},
 		{
-			name:        "label flag",
-			commandLine: `--group testGroupID --epic 42 --all --label 'label::one'`,
-			wantIDs:     []int{1},
-		},
-		{
-			name:        "not-label flag",
-			commandLine: `--group testGroupID --epic 42 --all --not-label 'label::one'`,
-			wantIDs:     []int{2},
-		},
-		{
 			name:        "milestone flag",
 			commandLine: `--group testGroupID --epic 42 --all --milestone 'milestone one'`,
 			wantIDs:     []int{1},
@@ -586,6 +577,163 @@ func TestIssueList_epicIssues(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.wantIDs, gotIDs)
+		})
+	}
+}
+
+func TestIssueList_filterByLabel(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		reqURL     string
+		respStatus int
+		respBody   []*gitlab.Issue
+		args       string
+		expect     []int
+	}{
+		"with --label": {
+			reqURL:     `/api/v4/groups/testGroupID/epics/42/issues?page=1&per_page=30`,
+			respStatus: http.StatusOK,
+			respBody: []*gitlab.Issue{
+				{
+					IID:   1,
+					State: "opened",
+					Assignees: []*gitlab.IssueAssignee{
+						{ID: 101},
+					},
+					Author: &gitlab.IssueAuthor{ID: 102},
+					Labels: gitlab.Labels{"label::one"},
+					Milestone: &gitlab.Milestone{
+						Title: "Milestone one",
+					},
+					Title: "This is issue one",
+					Iteration: &gitlab.GroupIteration{
+						ID: 103,
+					},
+					Confidential: false,
+				},
+				{
+					IID:   2,
+					State: "open",
+					Assignees: []*gitlab.IssueAssignee{
+						{ID: 101},
+					},
+					Author: &gitlab.IssueAuthor{ID: 102},
+					Labels: gitlab.Labels{"label::one"},
+					Milestone: &gitlab.Milestone{
+						Title: "Milestone two",
+					},
+					Title: "That is issue two",
+					Iteration: &gitlab.GroupIteration{
+						ID: 203,
+					},
+					Confidential: false,
+				},
+			},
+			args:   "--group testGroupID --epic 42 --all --label label::one",
+			expect: []int{1, 2},
+		},
+		"with --not-label": {
+			reqURL:     `/api/v4/groups/testGroupID/epics/42/issues?page=1&per_page=30`,
+			respStatus: http.StatusOK,
+			respBody: []*gitlab.Issue{
+				{
+					IID:   3,
+					State: "open",
+					Assignees: []*gitlab.IssueAssignee{
+						{ID: 101},
+					},
+					Author: &gitlab.IssueAuthor{ID: 102},
+					Labels: gitlab.Labels{"label::two"},
+					Milestone: &gitlab.Milestone{
+						Title: "Milestone two",
+					},
+					Title: "That is issue three",
+					Iteration: &gitlab.GroupIteration{
+						ID: 303,
+					},
+					Confidential: false,
+				},
+			},
+			args:   "--group testGroupID --epic 42 --all --not-label label::one",
+			expect: []int{3},
+		},
+		"with --label and --not-label": {
+			reqURL:     `/api/v4/groups/testGroupID/epics/42/issues?page=1&per_page=30`,
+			respStatus: http.StatusOK,
+			respBody: []*gitlab.Issue{
+				{
+					IID:   1,
+					State: "opened",
+					Assignees: []*gitlab.IssueAssignee{
+						{ID: 101},
+					},
+					Author: &gitlab.IssueAuthor{ID: 102},
+					Labels: gitlab.Labels{"label::one"},
+					Milestone: &gitlab.Milestone{
+						Title: "Milestone one",
+					},
+					Title: "This is issue one",
+					Iteration: &gitlab.GroupIteration{
+						ID: 103,
+					},
+					Confidential: false,
+				},
+				{
+					IID:   2,
+					State: "open",
+					Assignees: []*gitlab.IssueAssignee{
+						{ID: 101},
+					},
+					Author: &gitlab.IssueAuthor{ID: 102},
+					Labels: gitlab.Labels{"label::one"},
+					Milestone: &gitlab.Milestone{
+						Title: "Milestone two",
+					},
+					Title: "That is issue two",
+					Iteration: &gitlab.GroupIteration{
+						ID: 203,
+					},
+					Confidential: false,
+				},
+				{
+					IID:   3,
+					State: "open",
+					Assignees: []*gitlab.IssueAssignee{
+						{ID: 101},
+					},
+					Author: &gitlab.IssueAuthor{ID: 102},
+					Labels: gitlab.Labels{"label::two"},
+					Milestone: &gitlab.Milestone{
+						Title: "Milestone two",
+					},
+					Title: "That is issue three",
+					Iteration: &gitlab.GroupIteration{
+						ID: 303,
+					},
+					Confidential: false,
+				},
+			},
+			args:   "--group testGroupID --epic 42 --all --label label::one --not-label label::three",
+			expect: []int{1, 2, 3},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			fakeHTTP := &httpmock.Mocker{
+				MatchURL: httpmock.PathAndQuerystring,
+			}
+			defer fakeHTTP.Verify(t)
+
+			fakeHTTP.RegisterResponder(http.MethodGet, tt.reqURL, httpmock.NewJSONResponse(tt.respStatus, tt.respBody))
+			out, err := runCommand(t, "issue", fakeHTTP, true, tt.args+" --output-format ids", "")
+			require.NoError(t, err, "command: %s err: %v", tt.args, err)
+			require.Emptyf(t, out.Stderr(), "command: %s stderr: %s", tt.args, out.Stderr())
+
+			got, err := strToIntSlice(out.String())
+			require.NoErrorf(t, err, "command: %s output:\n%s", tt.args, out)
+
+			assert.Equal(t, tt.expect, got)
 		})
 	}
 }
