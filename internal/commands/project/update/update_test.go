@@ -171,7 +171,7 @@ func TestUpdateCmd(t *testing.T) {
 
 			c := cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname)
 			factory := cmdtest.NewTestFactory(ios,
-				cmdtest.WithBaseRepo("user", "repo"),
+				cmdtest.WithBaseRepo("user", "repo", glinstance.DefaultHostname),
 				cmdtest.WithApiClient(c),
 				cmdtest.WithGitLabClient(c.Lab()),
 			)

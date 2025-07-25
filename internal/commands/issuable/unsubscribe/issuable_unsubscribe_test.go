@@ -19,7 +19,7 @@ func runCommand(t *testing.T, rt http.RoundTripper, issuableID string, issueType
 
 	factory := cmdtest.NewTestFactory(ios,
 		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "").Lab()),
-		cmdtest.WithBaseRepo("OWNER", "REPO"),
+		cmdtest.WithBaseRepo("OWNER", "REPO", ""),
 	)
 
 	cmd := NewCmdUnsubscribe(factory, issueType)

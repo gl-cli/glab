@@ -69,7 +69,7 @@ func Test_NewCmdDelete(t *testing.T) {
 						return cmdtest.NewTestApiClient(t, &http.Client{}, "", repoHost, api.WithGitLabClient(tc.Client)), nil
 					}
 				},
-				cmdtest.WithBaseRepo("OWNER", "REPO"),
+				cmdtest.WithBaseRepo("OWNER", "REPO", ""),
 			)
 
 			io.IsInTTY = tt.stdinTTY

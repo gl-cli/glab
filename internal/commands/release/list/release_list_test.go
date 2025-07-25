@@ -112,7 +112,7 @@ func TestNewCmdReleaseList(t *testing.T) {
 	}
 
 	io, _, stdout, stderr := cmdTestUtils.TestIOStreams(cmdTestUtils.WithTestIOStreamsAsTTY(true))
-	f := cmdTestUtils.NewTestFactory(io, cmdTestUtils.WithBaseRepo("cli-automated-testing", "test"))
+	f := cmdTestUtils.NewTestFactory(io, cmdTestUtils.WithBaseRepo("cli-automated-testing", "test", ""))
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
