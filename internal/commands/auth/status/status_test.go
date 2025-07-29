@@ -117,7 +117,7 @@ hosts:
   ✓ API calls for gitlab.alpinelinux.org are made over https protocol.
   ✓ REST API Endpoint: https://gitlab.alpinelinux.org/api/v4/
   ✓ GraphQL Endpoint: https://gitlab.alpinelinux.org/api/graphql/
-  ✓ Token: **************************
+  ✓ Token found: **************************
 `, cfgFile),
 		},
 		{
@@ -132,7 +132,7 @@ hosts:
   ✓ API calls for gitlab.foo.bar are made over https protocol.
   ✓ REST API Endpoint: https://gitlab.foo.bar/api/v4/
   ✓ GraphQL Endpoint: https://gitlab.foo.bar/api/graphql/
-  ✓ Token: **************************
+  ✓ Token found: **************************
 `, cfgFile),
 		},
 		{
@@ -150,16 +150,16 @@ hosts:
 			},
 			envVar:  true,
 			wantErr: false,
-			stderr: fmt.Sprintf(`gitlab.env.bar
-  ✓ Logged in to gitlab.env.bar as john_doe (%s)
+			stderr: `gitlab.env.bar
+  ✓ Logged in to gitlab.env.bar as john_doe (GITLAB_TOKEN)
   ✓ Git operations for gitlab.env.bar configured to use ssh protocol.
   ✓ API calls for gitlab.env.bar are made over https protocol.
   ✓ REST API Endpoint: https://gitlab.env.bar/api/v4/
   ✓ GraphQL Endpoint: https://gitlab.env.bar/api/graphql/
-  ✓ Token: **************************
+  ✓ Token found: **************************
 
 ! One of GITLAB_TOKEN, GITLAB_ACCESS_TOKEN, OAUTH_TOKEN environment variables is set. It will be used for all authentication.
-`, cfgFile),
+`,
 		},
 	}
 
@@ -241,22 +241,21 @@ hosts:
   ✓ API calls for gitlab.alpinelinux.org are made over https protocol.
   ✓ REST API Endpoint: https://gitlab.alpinelinux.org/api/v4/
   ✓ GraphQL Endpoint: https://gitlab.alpinelinux.org/api/graphql/
-  ✓ Token: **************************
+  ✓ Token found: **************************
 another.host
   x another.host: API call failed: GET https://another.host/api/v4/user: 401 {message: invalid token}
   ✓ Git operations for another.host configured to use ssh protocol.
   ✓ API calls for another.host are made over https protocol.
   ✓ REST API Endpoint: https://another.host/api/v4/
   ✓ GraphQL Endpoint: https://another.host/api/graphql/
-  ✓ Token: **************************
-  ! Invalid token provided in configuration file.
+  ✓ Token found: **************************
 gl.io
   x gl.io: API call failed: GET https://gl.io/api/v4/user: 401 {message: no token provided}
   ✓ Git operations for gl.io configured to use ssh protocol.
   ✓ API calls for gl.io are made over https protocol.
   ✓ REST API Endpoint: https://gl.io/api/v4/
   ✓ GraphQL Endpoint: https://gl.io/api/graphql/
-  ! No token provided in configuration file.
+  ! No token found (checked config file, keyring, and environment variables).
 `, cfgFile)
 
 	t.Setenv("GITLAB_TOKEN", "")
