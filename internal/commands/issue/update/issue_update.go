@@ -170,6 +170,14 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 					}
 				}
 			}
+			if m, _ := cmd.Flags().GetString("due-date"); m != "" {
+				actions = append(actions, "added due date")
+				dueDate, err := gitlab.ParseISOTime(m)
+				if err != nil {
+					return err
+				}
+				l.DueDate = gitlab.Ptr(dueDate)
+			}
 
 			fmt.Fprintf(out, "- Updating issue #%d\n", issue.IID)
 
@@ -200,6 +208,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 		StringSliceP("assignee", "a", []string{}, "Assign users by username. Prefix with '!' or '-' to remove from existing assignees, or '+' to add new. Otherwise, replace existing assignees with these users.")
 	issueUpdateCmd.Flags().Bool("unassign", false, "Unassign all users.")
 	issueUpdateCmd.Flags().IntP("weight", "w", 0, "Set weight of the issue.")
+	issueUpdateCmd.Flags().StringP("due-date", "", "", "A date in 'YYYY-MM-DD' format.")
 
 	return issueUpdateCmd
 }

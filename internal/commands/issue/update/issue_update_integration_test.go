@@ -79,6 +79,16 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 			ExpectedMsg: []string{"- Updating issue #0", "error expected"},
 			wantErr:     true,
 		},
+		{
+			Name:  "Due date applied",
+			Issue: fmt.Sprintf(`-R %s/cli-automated-testing/test 1 -t "New Title" --due-date 2025-07-22`, glTestHost),
+			ExpectedMsg: []string{
+				"- Updating issue #1",
+				"✓ updated title to \"New Title\"",
+				"✓ added due date",
+				"#1 New Title",
+			},
+		},
 	}
 
 	cfg, err := config.Init()
