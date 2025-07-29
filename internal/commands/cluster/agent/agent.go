@@ -7,6 +7,7 @@ import (
 	checkManifestUsageCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/check_manifest_usage"
 	agentGetTokenCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/get_token"
 	agentListCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/list"
+	agentTokenCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/token"
 	agentUpdateKubeconfigCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/update_kubeconfig"
 )
 
@@ -19,6 +20,7 @@ func NewCmdAgent(f cmdutils.Factory) *cobra.Command {
 
 	cmdutils.EnableRepoOverride(agentCmd, f)
 
+	agentCmd.AddCommand(agentTokenCmd.NewCmd(f))
 	agentCmd.AddCommand(agentListCmd.NewCmdAgentList(f))
 	agentCmd.AddCommand(agentGetTokenCmd.NewCmdAgentGetToken(f))
 	agentCmd.AddCommand(agentUpdateKubeconfigCmd.NewCmdAgentUpdateKubeconfig(f))
