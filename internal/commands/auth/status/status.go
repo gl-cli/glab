@@ -81,7 +81,7 @@ func (o *options) run() error {
 			statusInfo[instance] = append(statusInfo[instance], fmt.Sprintf(x, ys...))
 		}
 
-		token, tokenSource, _ := cfg.GetWithSource(instance, "token", false)
+		token, tokenSource, _ := cfg.GetWithSource(instance, "token", true)
 		apiClient, err := o.apiClient(instance)
 		if o.httpClientOverride != nil {
 			apiClient, _ = o.httpClientOverride(token, instance)
@@ -115,17 +115,14 @@ func (o *options) run() error {
 			addMsg("%s GraphQL Endpoint: %s",
 				c.GreenCheck(), c.Bold(graphQLEndpoint))
 		}
-		if token != "" {
+		if api.IsTokenConfigured(token) {
 			tokenDisplay := "**************************"
 			if o.showToken {
 				tokenDisplay = token
 			}
-			addMsg("%s Token: %s", c.GreenCheck(), tokenDisplay)
-			if !api.IsValidToken(token) {
-				addMsg("%s Invalid token provided in configuration file.", c.WarnIcon())
-			}
+			addMsg("%s Token found: %s", c.GreenCheck(), tokenDisplay)
 		} else {
-			addMsg("%s No token provided in configuration file.", c.WarnIcon())
+			addMsg("%s No token found (checked config file, keyring, and environment variables).", c.WarnIcon())
 		}
 	}
 

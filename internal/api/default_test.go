@@ -2,35 +2,42 @@ package api
 
 import "testing"
 
-func TestIsValidToken(t *testing.T) {
-	type args struct {
-		token string
-	}
+func TestIsTokenConfigured(t *testing.T) {
 	tests := []struct {
-		name string
-		args args
-		want bool
+		name  string
+		token string
+		want  bool
 	}{
 		{
-			name: "Token Is Valid",
-			args: args{token: "xxxxxxxxxxxxxxxxxxxx"},
-			want: true,
+			name:  "Non-empty token",
+			token: "some-token",
+			want:  true,
 		},
 		{
-			name: "Oauth token is valid",
-			args: args{token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"},
-			want: true,
+			name:  "Empty token",
+			token: "",
+			want:  false,
 		},
 		{
-			name: "Token Is inValid",
-			args: args{token: "123"},
-			want: false,
+			name:  "Whitespace token",
+			token: "   ",
+			want:  false, // Should be false since whitespace-only tokens are not valid
+		},
+		{
+			name:  "Tab and newline token",
+			token: "\t\n  \r",
+			want:  false, // Should be false since whitespace-only tokens are not valid
+		},
+		{
+			name:  "Token with leading/trailing whitespace",
+			token: "  valid-token  ",
+			want:  true, // Should be true since it contains non-whitespace content
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsValidToken(tt.args.token); got != tt.want {
-				t.Errorf("IsValidToken() = %v, want %v", got, tt.want)
+			if got := IsTokenConfigured(tt.token); got != tt.want {
+				t.Errorf("IsTokenConfigured() = %v, want %v", got, tt.want)
 			}
 		})
 	}
