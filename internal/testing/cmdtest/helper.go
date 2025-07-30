@@ -282,10 +282,14 @@ func WithBranchError(err error) FactoryOption {
 }
 
 // WithBaseRepo configures the Factory with a specific base repository
-func WithBaseRepo(owner, repo string) FactoryOption {
+func WithBaseRepo(owner, repo string, hostname string) FactoryOption {
 	return func(f *Factory) {
 		f.BaseRepoStub = func() (glrepo.Interface, error) {
-			return glrepo.New(owner, repo, glinstance.DefaultHostname), nil
+			repoHostname := glinstance.DefaultHostname
+			if hostname != "" {
+				repoHostname = hostname
+			}
+			return glrepo.New(owner, repo, repoHostname), nil
 		}
 	}
 }

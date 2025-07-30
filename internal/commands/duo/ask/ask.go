@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/run"
@@ -42,6 +43,7 @@ type opts struct {
 	IO        *iostreams.IOStreams
 	apiClient func(repoHost string) (*api.Client, error)
 	Git       bool
+	BaseRepo  func() (glrepo.Interface, error)
 }
 
 var (
@@ -63,6 +65,7 @@ func NewCmdAsk(f cmdutils.Factory) *cobra.Command {
 	opts := &opts{
 		IO:        f.IO(),
 		apiClient: f.ApiClient,
+		BaseRepo:  f.BaseRepo,
 	}
 
 	duoAskCmd := &cobra.Command{
@@ -111,7 +114,12 @@ func (opts *opts) Result() (*result, error) {
 	opts.IO.StartSpinner(spinnerText)
 	defer opts.IO.StopSpinner("")
 
-	c, err := opts.apiClient("")
+	var repoHost string
+	if baseRepo, err := opts.BaseRepo(); err == nil {
+		repoHost = baseRepo.RepoHost()
+	}
+
+	c, err := opts.apiClient(repoHost)
 	if err != nil {
 		return nil, cmdutils.WrapError(err, "failed to get HTTP client.")
 	}

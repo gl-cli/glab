@@ -399,7 +399,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 
 	// Create base factory for tests
 	baseFactory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithBaseRepo("foo", "bar"),
+		cmdtest.WithBaseRepo("foo", "bar", ""),
 		cmdtest.WithBranch("main"),
 	)
 
@@ -468,7 +468,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 		t.Run("HttpClient", func(t *testing.T) {
 			f := cmdtest.NewTestFactory(ios,
 				cmdtest.WithHttpClientError(errors.New("failed to create HttpClient")),
-				cmdtest.WithBaseRepo("foo", "bar"),
+				cmdtest.WithBaseRepo("foo", "bar", ""),
 				cmdtest.WithBranch("main"),
 			)
 
@@ -490,7 +490,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 		})
 		t.Run("Branch", func(t *testing.T) {
 			f := cmdtest.NewTestFactory(ios,
-				cmdtest.WithBaseRepo("foo", "bar"),
+				cmdtest.WithBaseRepo("foo", "bar", ""),
 				cmdtest.WithBranchError(errors.New("failed to get branch")),
 			)
 

@@ -40,7 +40,7 @@ func TestNewCmdList(t *testing.T) {
 	factory := cmdtest.NewTestFactory(ios,
 		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", "")),
 		cmdtest.WithConfig(config.NewBlankConfig()),
-		cmdtest.WithBaseRepo("OWNER", "REPO"),
+		cmdtest.WithBaseRepo("OWNER", "REPO", ""),
 	)
 	t.Run("MergeRequest_NewCmdList", func(t *testing.T) {
 		gotOpts := &options{}

@@ -84,7 +84,7 @@ func makeTestFactory(t *testing.T) (cmdutils.Factory, *httpmock.Mocker) {
 	factory := cmdtest.NewTestFactory(io,
 		cmdtest.WithConfig(config.NewBlankConfig()),
 		cmdtest.WithGitLabClient(a.Lab()),
-		cmdtest.WithBaseRepo("OWNER", "REPO"),
+		cmdtest.WithBaseRepo("OWNER", "REPO", glinstance.DefaultHostname),
 		func(f *cmdtest.Factory) {
 			f.RemotesStub = func() (glrepo.Remotes, error) {
 				return glrepo.Remotes{

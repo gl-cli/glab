@@ -14,16 +14,19 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(t *testing.T, rt http.RoundTripper, args string) (*test.CmdOut, error) {
+func runCommand(t *testing.T, rt http.RoundTripper, args string, glInstanceHostname string) (*test.CmdOut, *cmdtest.Factory, error) {
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname)),
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glInstanceHostname)),
+		cmdtest.WithBaseRepo("OWNER", "REPO", glInstanceHostname),
 	)
 
 	cmd := NewCmdAsk(factory)
 
-	return cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
+	cmdOut, err := cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
+
+	return cmdOut, factory, err
 }
 
 func TestAskCmd(t *testing.T) {
@@ -40,31 +43,39 @@ The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing
 `
 
 	tests := []struct {
-		desc           string
-		content        string
-		withPrompt     bool
-		withExecution  bool
-		expectedResult string
+		desc                       string
+		content                    string
+		withPrompt                 bool
+		withExecution              bool
+		withGlInstanceHostname     string
+		expectedResult             string
+		expectedGlInstanceHostname string
 	}{
 		{
-			desc:           "agree to run commands",
-			content:        initialAiResponse,
-			withPrompt:     true,
-			withExecution:  true,
-			expectedResult: outputWithoutExecution + "git log executed\ngit show executed\n",
+			desc:                       "agree to run commands",
+			content:                    initialAiResponse,
+			withGlInstanceHostname:     "",
+			withPrompt:                 true,
+			withExecution:              true,
+			expectedResult:             outputWithoutExecution + "git log executed\ngit show executed\n",
+			expectedGlInstanceHostname: glinstance.DefaultHostname,
 		},
 		{
-			desc:           "disagree to run commands",
-			content:        initialAiResponse,
-			withPrompt:     true,
-			withExecution:  false,
-			expectedResult: outputWithoutExecution,
+			desc:                       "disagree to run commands",
+			content:                    initialAiResponse,
+			withGlInstanceHostname:     "example.com",
+			withPrompt:                 true,
+			withExecution:              false,
+			expectedResult:             outputWithoutExecution,
+			expectedGlInstanceHostname: "example.com",
 		},
 		{
-			desc:           "no commands",
-			content:        "There are no Git commands related to the text.",
-			withPrompt:     false,
-			expectedResult: "Commands:\n\n\nExplanation:\n\nThere are no Git commands related to the text.\n\n",
+			desc:                       "no commands",
+			content:                    "There are no Git commands related to the text.",
+			withGlInstanceHostname:     "instance.example.com",
+			withPrompt:                 false,
+			expectedResult:             "Commands:\n\n\nExplanation:\n\nThere are no Git commands related to the text.\n\n",
+			expectedGlInstanceHostname: "instance.example.com",
 		},
 	}
 	cmdLogResult := "git log executed"
@@ -92,11 +103,13 @@ The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing
 				cs.Stub(cmdShowResult)
 			}
 
-			output, err := runCommand(t, fakeHTTP, "git list 10 commits")
+			output, factory, err := runCommand(t, fakeHTTP, "git list 10 commits", tc.withGlInstanceHostname)
+			baseRepo, _ := factory.BaseRepo()
 			require.Nil(t, err)
 
 			require.Equal(t, output.String(), tc.expectedResult)
 			require.Empty(t, output.Stderr())
+			require.Equal(t, baseRepo.RepoHost(), tc.expectedGlInstanceHostname)
 		})
 	}
 }
@@ -138,7 +151,7 @@ func TestFailedHttpResponse(t *testing.T) {
 			response := httpmock.NewStringResponse(tc.code, tc.response)
 			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/ai/llm/git_command", response)
 
-			_, err := runCommand(t, fakeHTTP, "git list 10 commits")
+			_, _, err := runCommand(t, fakeHTTP, "git list 10 commits", "")
 			require.NotNil(t, err)
 			require.Contains(t, err.Error(), tc.expectedMsg)
 		})

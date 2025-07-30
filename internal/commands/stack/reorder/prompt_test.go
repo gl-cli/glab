@@ -142,7 +142,7 @@ func setupTestFactory(t *testing.T, rt http.RoundTripper, isTTY bool) cmdutils.F
 
 	f := cmdtest.NewTestFactory(ios,
 		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", "gitlab.com").Lab()),
-		cmdtest.WithBaseRepo("stack_guy", "stackproject"),
+		cmdtest.WithBaseRepo("stack_guy", "stackproject", "gitlab.com"),
 	)
 
 	return f
