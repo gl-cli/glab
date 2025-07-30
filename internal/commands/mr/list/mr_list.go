@@ -249,23 +249,31 @@ func (o *options) run() error {
 
 	assigneeIds := make([]int, 0)
 	if len(o.assignee) > 0 {
-		users, err := api.UsersByNames(client, o.assignee)
-		if err != nil {
-			return err
-		}
-		for _, user := range users {
-			assigneeIds = append(assigneeIds, user.ID)
+		if o.assignee[0] == "@any" {
+			l.AssigneeID = gitlab.AssigneeID(gitlab.UserIDAny)
+		} else {
+			users, err := api.UsersByNames(client, o.assignee)
+			if err != nil {
+				return err
+			}
+			for _, user := range users {
+				assigneeIds = append(assigneeIds, user.ID)
+			}
 		}
 	}
 
 	reviewerIds := make([]int, 0)
 	if len(o.reviewer) > 0 {
-		users, err := api.UsersByNames(client, o.reviewer)
-		if err != nil {
-			return err
-		}
-		for _, user := range users {
-			reviewerIds = append(reviewerIds, user.ID)
+		if o.reviewer[0] == "@any" {
+			l.ReviewerID = gitlab.ReviewerID(gitlab.UserIDAny)
+		} else {
+			users, err := api.UsersByNames(client, o.reviewer)
+			if err != nil {
+				return err
+			}
+			for _, user := range users {
+				reviewerIds = append(reviewerIds, user.ID)
+			}
 		}
 	}
 	title := utils.NewListTitle(o.titleQualifier + " merge request")
