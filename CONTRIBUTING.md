@@ -176,8 +176,8 @@ a complete listing of the transformations supported.
 ### Formatting your code
 
 We use [`golangci-lint`](https://golangci-lint.run/) to lint and format
-the code in this project. The linter configuration can be seen
-[here](https://gitlab.com/gitlab-org/cli/-/blob/main/.golangci.yml).
+the code in this project. The linter configuration can be seen in the
+[.golangci.yml file for this project](https://gitlab.com/gitlab-org/cli/-/blob/main/.golangci.yml).
 
 Additional details about code style and format are in the
 [go guide](https://docs.gitlab.com/ee/development/go_guide/#code-style-and-format).
