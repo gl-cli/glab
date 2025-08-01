@@ -37,6 +37,6 @@ Download a project's secure file using the file's ID to a given path.
 ## Options inherited from parent commands
 
 ```plaintext
-      --help              Show help for this command.
+  -h, --help              Show help for this command.
   -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
 ```

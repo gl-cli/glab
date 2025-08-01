@@ -26,12 +26,12 @@ glab auth status [flags]
 ## Options
 
 ```plaintext
-  -h, --hostname string   Check a specific instance's authentication status.
+      --hostname string   Check a specific instance's authentication status.
   -t, --show-token        Display the authentication token.
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```

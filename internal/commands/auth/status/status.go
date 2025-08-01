@@ -48,7 +48,7 @@ func NewCmdStatus(f cmdutils.Factory, runE func(*options) error) *cobra.Command 
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.hostname, "hostname", "h", "", "Check a specific instance's authentication status.")
+	cmd.Flags().StringVarP(&opts.hostname, "hostname", "", "", "Check a specific instance's authentication status.")
 	cmd.Flags().BoolVarP(&opts.showToken, "show-token", "t", false, "Display the authentication token.")
 
 	return cmd

@@ -47,5 +47,5 @@ $ glab repo contributors -R gitlab-com/www-gitlab-com
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```

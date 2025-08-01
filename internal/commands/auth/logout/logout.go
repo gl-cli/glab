@@ -42,7 +42,7 @@ func NewCmdLogout(f cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.hostname, "hostname", "h", "", "The hostname of the GitLab instance.")
+	cmd.Flags().StringVarP(&opts.hostname, "hostname", "", "", "The hostname of the GitLab instance.")
 	cobra.CheckErr(cmd.MarkFlagRequired("hostname"))
 	return cmd
 }

@@ -84,7 +84,7 @@ func TestConfigGet(t *testing.T) {
 				"editor":            "ed",
 				"gitlab.com:editor": "vim",
 			},
-			args:   []string{"editor", "-h", "gitlab.com"},
+			args:   []string{"editor", "--host", "gitlab.com"},
 			stdout: "vim\n",
 			stderr: "",
 			isTTY:  true,
@@ -136,7 +136,7 @@ func TestConfigSet(t *testing.T) {
 		{
 			name:      "set key scoped by host",
 			config:    configStub{},
-			args:      []string{"editor", "vim", "-h", "gitlab.com"},
+			args:      []string{"editor", "vim", "--host", "gitlab.com"},
 			expectKey: "gitlab.com:editor",
 			stdout:    "",
 			stderr:    "",

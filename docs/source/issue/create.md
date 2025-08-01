@@ -60,6 +60,6 @@ $ glab issue create -m release-1.0.1 -t "security fix" --label security --web --
 ## Options inherited from parent commands
 
 ```plaintext
-      --help              Show help for this command.
+  -h, --help              Show help for this command.
   -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
 ```

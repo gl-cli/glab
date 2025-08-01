@@ -22,7 +22,7 @@ Manage SSH keys registered with your GitLab account.
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```
 
 ## Subcommands

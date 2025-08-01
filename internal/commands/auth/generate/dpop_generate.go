@@ -92,7 +92,7 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.privateKeyLocation, "private-key", "p", "", "Location of the private SSH key on the local system.")
 	cmd.Flags().StringVar(&opts.personalAccessToken, "pat", "", "Personal Access Token (PAT) to generate a DPoP proof for. Defaults to the token set with 'glab auth login'. Returns an error if both are empty.")
-	cmd.Flags().StringVarP(&opts.hostname, "hostname", "h", "gitlab.com", "The hostname of the GitLab instance to authenticate with. Defaults to 'gitlab.com'.")
+	cmd.Flags().StringVarP(&opts.hostname, "hostname", "", "gitlab.com", "The hostname of the GitLab instance to authenticate with. Defaults to 'gitlab.com'.")
 	cobra.CheckErr(cmd.MarkFlagRequired("private-key"))
 
 	return cmd

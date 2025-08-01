@@ -73,7 +73,7 @@ func NewCmdConfigGet(f cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostname, "host", "h", "", "Get per-host setting.")
+	cmd.Flags().StringVarP(&hostname, "host", "", "", "Get per-host setting.")
 	cmd.Flags().BoolP("global", "g", false, "Read from global config file (~/.config/glab-cli/config.yml). (default checks 'Environment variables → Local → Global')")
 
 	return cmd
@@ -125,7 +125,7 @@ Specifying the '--hostname' flag also saves in the global configuration file.
 		},
 	}
 
-	cmd.Flags().StringVarP(&hostname, "host", "h", "", "Set per-host setting.")
+	cmd.Flags().StringVarP(&hostname, "host", "", "", "Set per-host setting.")
 	cmd.Flags().BoolVarP(&isGlobal, "global", "g", false, "Write to global '~/.config/glab-cli/config.yml' file rather than the repository's '.git/glab-cli/config.yml' file.")
 	return cmd
 }

@@ -53,5 +53,5 @@ Open the local configuration file with the default editor
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```
