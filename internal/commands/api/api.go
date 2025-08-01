@@ -258,11 +258,15 @@ func (o *options) run(ctx context.Context) error {
 		defer o.io.StopPager()
 	}
 
-	// NOTE: check if repository is available
-	br, err := o.baseRepo()
 	var repoHost string
-	if err == nil {
-		repoHost = br.RepoHost()
+	if o.hostname != "" {
+		repoHost = o.hostname
+	} else {
+		// NOTE: check if repository is available
+		br, err := o.baseRepo()
+		if err == nil {
+			repoHost = br.RepoHost()
+		}
 	}
 	client, err := o.apiClient(repoHost)
 	if err != nil {
