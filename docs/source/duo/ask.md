@@ -38,5 +38,5 @@ $ glab duo ask list last 10 commit titles
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```

@@ -48,5 +48,5 @@ $ glab variable list --group gitlab-org --per-page 100
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```

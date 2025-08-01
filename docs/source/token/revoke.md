@@ -67,5 +67,5 @@ Revoke a personal access token of another user (administrator only)
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```

@@ -33,11 +33,11 @@ Logout of a specific instance
 ## Options
 
 ```plaintext
-  -h, --hostname string   The hostname of the GitLab instance.
+      --hostname string   The hostname of the GitLab instance.
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```

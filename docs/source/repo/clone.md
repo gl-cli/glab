@@ -74,5 +74,5 @@ $ GITLAB_HOST=salsa.debian.org glab repo clone myrepo
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```

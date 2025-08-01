@@ -29,7 +29,7 @@ $ glab snippet create --title "Title of the snippet" --filename "main.go"
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```
 
 ## Subcommands

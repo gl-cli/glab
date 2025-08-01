@@ -29,7 +29,7 @@ and binary files are supported, but they must be smaller than 5 MB.
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```
 
 ## Subcommands

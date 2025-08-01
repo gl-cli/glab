@@ -53,7 +53,7 @@ $ glab auth login --hostname $CI_SERVER_HOST --job-token $CI_JOB_TOKEN
   -a, --api-host string       API host url.
   -p, --api-protocol string   API protocol: https, http
   -g, --git-protocol string   Git protocol: ssh, https, http
-  -h, --hostname string       The hostname of the GitLab instance to authenticate with.
+      --hostname string       The hostname of the GitLab instance to authenticate with.
   -j, --job-token string      CI job token.
       --stdin                 Read token from standard input.
   -t, --token string          Your GitLab access token.
@@ -63,5 +63,5 @@ $ glab auth login --hostname $CI_SERVER_HOST --job-token $CI_JOB_TOKEN
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```

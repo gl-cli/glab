@@ -31,7 +31,7 @@ $ glab mr note -m "needs to do X before it can be merged" branch-foo
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```
 
 ## Subcommands

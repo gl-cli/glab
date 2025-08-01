@@ -60,5 +60,5 @@ $ glab incident list --milestone release-2.0.0 --opened
 ## Options inherited from parent commands
 
 ```plaintext
-      --help   Show help for this command.
+  -h, --help   Show help for this command.
 ```
