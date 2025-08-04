@@ -3,6 +3,19 @@ variables:
   GOLANGCI_LINT_VERSION: '2.1.6'
   GITLAB_ADVANCED_SAST_ENABLED: 'true'
 
+.code-patterns: &code-patterns
+  - ".gitlab/**/*"
+  - "**/*.go"
+  - "scripts/**/*"
+  - "test/**/*"
+  - ".gitignore"
+  - ".gitlab-ci.yml"
+  - ".golangci.yml"
+  - "Dangerfile"
+  - "Makefile"
+  - "go.mod"
+  - "go.sum"
+
 # run the pipeline only on MRs, tags, and default branch
 workflow:
   rules:
@@ -35,7 +48,6 @@ include:
     inputs:
       golang_version: ${GO_VERSION}
 
-
 # From: https://docs.gitlab.com/ci/caching/#cache-go-dependencies
 .go-cache:
   variables:
@@ -52,6 +64,12 @@ include:
   stage: documentation
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+.test:
+  stage: test
+  rules:
+    - changes: *code-patterns
+      when: always
 
 check_docs_update:
   extends: .documentation
@@ -82,8 +100,9 @@ check_docs_markdown:
     - lychee --offline --include-fragments docs/**/*.md *.md
 
 check_go_generated_code:
-  extends: .go-cache
-  stage: test
+  extends: 
+    - .go-cache
+    - .test
   needs: []
   script:
     # Workaround config.yaml.lock file permissions
@@ -112,8 +131,8 @@ lint_commit:
       when: always
 
 lint:
+  extends: .test
   image: ${GITLAB_DEPENDENCY_PROXY}golangci/golangci-lint:v$GOLANGCI_LINT_VERSION
-  stage: test
   script:
     # Write the code coverage report to gl-code-quality-report.json
     # and print linting issues to stdout in the format: path/to/file:line description
@@ -127,8 +146,9 @@ lint:
       - gl-code-quality-report.json
 
 run_tests:
-  stage: test
-  extends: .go-cache
+  extends: 
+    - .go-cache
+    - .test
   # We currently only test on the lastest versino of Go which we also build against.
   # If we need to introduce testing for future versions of compatibility reasons
   # uncomment the below lines and adjust the `GO_VERSION` to included versions to test.
