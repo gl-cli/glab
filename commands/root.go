@@ -101,7 +101,7 @@ func NewCmdRoot(f *cmdutils.Factory, version, commit string) *cobra.Command {
 	rootCmd.SetOut(f.IO.StdOut)
 	rootCmd.SetErr(f.IO.StdErr)
 
-	rootCmd.PersistentFlags().Bool("help", false, "Show help for this command.")
+	rootCmd.PersistentFlags().BoolP("help", "h", false, "Show help for this command.")
 	rootCmd.SetHelpFunc(func(command *cobra.Command, args []string) {
 		help.RootHelpFunc(f.IO.Color(), command, args)
 	})
