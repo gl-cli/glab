@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/internal/testing/gitmock"
+	"gitlab.com/gitlab-org/cli/internal/testing/stacks"
 )
 
 func Test_matchBranchesToStack(t *testing.T) {
@@ -141,7 +141,7 @@ func Test_updateMRs(t *testing.T) {
 	type args struct {
 		newStack  git.Stack
 		oldStack  git.Stack
-		httpMocks []gitmock.HttpMock
+		httpMocks []stacks.HttpMock
 	}
 	tests := []struct {
 		name    string
@@ -264,46 +264,46 @@ func Test_updateMRs(t *testing.T) {
 						},
 					},
 				},
-				httpMocks: []gitmock.HttpMock{
-					gitmock.MockListOpenStackMRsByBranch("Branch7", "7"),
-					gitmock.MockGetStackMR("Branch7", "7"),
-					gitmock.MockPutStackMR("main", "7", "3"),
+				httpMocks: []stacks.HttpMock{
+					stacks.MockListOpenStackMRsByBranch("Branch7", "7"),
+					stacks.MockGetStackMR("Branch7", "7"),
+					stacks.MockPutStackMR("main", "7", "3"),
 
-					gitmock.MockListOpenStackMRsByBranch("Branch5", "5"),
-					gitmock.MockGetStackMR("Branch5", "5"),
-					gitmock.MockPutStackMR("Branch7", "5", "3"),
+					stacks.MockListOpenStackMRsByBranch("Branch5", "5"),
+					stacks.MockGetStackMR("Branch5", "5"),
+					stacks.MockPutStackMR("Branch7", "5", "3"),
 
-					gitmock.MockListOpenStackMRsByBranch("Branch8", "8"),
-					gitmock.MockGetStackMR("Branch8", "8"),
-					gitmock.MockPutStackMR("Branch5", "8", "3"),
+					stacks.MockListOpenStackMRsByBranch("Branch8", "8"),
+					stacks.MockGetStackMR("Branch8", "8"),
+					stacks.MockPutStackMR("Branch5", "8", "3"),
 
-					gitmock.MockListOpenStackMRsByBranch("Branch1", "1"),
-					gitmock.MockGetStackMR("Branch1", "1"),
-					gitmock.MockPutStackMR("Branch8", "1", "3"),
+					stacks.MockListOpenStackMRsByBranch("Branch1", "1"),
+					stacks.MockGetStackMR("Branch1", "1"),
+					stacks.MockPutStackMR("Branch8", "1", "3"),
 
-					gitmock.MockListOpenStackMRsByBranch("Branch9", "9"),
-					gitmock.MockGetStackMR("Branch9", "9"),
-					gitmock.MockPutStackMR("Branch1", "9", "3"),
+					stacks.MockListOpenStackMRsByBranch("Branch9", "9"),
+					stacks.MockGetStackMR("Branch9", "9"),
+					stacks.MockPutStackMR("Branch1", "9", "3"),
 
-					gitmock.MockListOpenStackMRsByBranch("Branch4", "4"),
-					gitmock.MockGetStackMR("Branch4", "4"),
-					gitmock.MockPutStackMR("Branch9", "4", "3"),
+					stacks.MockListOpenStackMRsByBranch("Branch4", "4"),
+					stacks.MockGetStackMR("Branch4", "4"),
+					stacks.MockPutStackMR("Branch9", "4", "3"),
 
-					gitmock.MockListOpenStackMRsByBranch("Branch2", "2"),
-					gitmock.MockGetStackMR("Branch2", "2"),
-					gitmock.MockPutStackMR("Branch4", "2", "3"),
+					stacks.MockListOpenStackMRsByBranch("Branch2", "2"),
+					stacks.MockGetStackMR("Branch2", "2"),
+					stacks.MockPutStackMR("Branch4", "2", "3"),
 
-					gitmock.MockListOpenStackMRsByBranch("Branch3", "3"),
-					gitmock.MockGetStackMR("Branch3", "3"),
-					gitmock.MockPutStackMR("Branch2", "3", "3"),
+					stacks.MockListOpenStackMRsByBranch("Branch3", "3"),
+					stacks.MockGetStackMR("Branch3", "3"),
+					stacks.MockPutStackMR("Branch2", "3", "3"),
 
-					gitmock.MockListOpenStackMRsByBranch("Branch6", "6"),
-					gitmock.MockGetStackMR("Branch6", "6"),
-					gitmock.MockPutStackMR("Branch3", "6", "3"),
+					stacks.MockListOpenStackMRsByBranch("Branch6", "6"),
+					stacks.MockGetStackMR("Branch6", "6"),
+					stacks.MockPutStackMR("Branch3", "6", "3"),
 
-					gitmock.MockListOpenStackMRsByBranch("Branch10", "10"),
-					gitmock.MockGetStackMR("Branch10", "10"),
-					gitmock.MockPutStackMR("Branch6", "10", "3"),
+					stacks.MockListOpenStackMRsByBranch("Branch10", "10"),
+					stacks.MockGetStackMR("Branch10", "10"),
+					stacks.MockPutStackMR("Branch6", "10", "3"),
 				},
 			},
 		},
@@ -317,7 +317,7 @@ func Test_updateMRs(t *testing.T) {
 			_, err := run.PrepareCmd(gitAddRemote).Output()
 			require.NoError(t, err)
 
-			fakeHTTP := gitmock.SetupMocks(tt.args.httpMocks)
+			fakeHTTP := stacks.SetupMocks(tt.args.httpMocks)
 			defer fakeHTTP.Verify(t)
 
 			factory := setupTestFactory(t, fakeHTTP, false)
