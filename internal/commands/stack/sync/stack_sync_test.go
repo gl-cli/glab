@@ -11,7 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"gitlab.com/gitlab-org/cli/internal/testing/gitmock"
+	"gitlab.com/gitlab-org/cli/internal/testing/stacks"
 	"go.uber.org/mock/gomock"
 )
 
@@ -71,7 +71,7 @@ func Test_stackSync(t *testing.T) {
 	tests := []struct {
 		name      string
 		args      args
-		httpMocks []gitmock.HttpMock
+		httpMocks []stacks.HttpMock
 		wantErr   bool
 	}{
 		{
@@ -95,11 +95,11 @@ func Test_stackSync(t *testing.T) {
 				},
 			},
 
-			httpMocks: []gitmock.HttpMock{
-				gitmock.MockStackUser(),
-				gitmock.MockListStackMRsByBranch("Branch1", "25"),
-				gitmock.MockGetStackMR("Branch1", "25"),
-				gitmock.MockPostStackMR("Branch2", "Branch1", "3"),
+			httpMocks: []stacks.HttpMock{
+				stacks.MockStackUser(),
+				stacks.MockListStackMRsByBranch("Branch1", "25"),
+				stacks.MockGetStackMR("Branch1", "25"),
+				stacks.MockPostStackMR("Branch2", "Branch1", "3"),
 			},
 		},
 
@@ -121,10 +121,10 @@ func Test_stackSync(t *testing.T) {
 				},
 			},
 
-			httpMocks: []gitmock.HttpMock{
-				gitmock.MockStackUser(),
-				gitmock.MockPostStackMR("Branch1", "main", "3"),
-				gitmock.MockPostStackMR("Branch2", "Branch1", "3"),
+			httpMocks: []stacks.HttpMock{
+				stacks.MockStackUser(),
+				stacks.MockPostStackMR("Branch1", "main", "3"),
+				stacks.MockPostStackMR("Branch2", "Branch1", "3"),
 			},
 		},
 
@@ -166,15 +166,15 @@ func Test_stackSync(t *testing.T) {
 				},
 			},
 
-			httpMocks: []gitmock.HttpMock{
-				gitmock.MockStackUser(),
-				gitmock.MockListStackMRsByBranch("Branch1", "25"),
-				gitmock.MockGetStackMR("Branch1", "25"),
-				gitmock.MockPostStackMR("Branch2", "Branch1", "3"),
-				gitmock.MockPostStackMR("Branch3", "Branch2", "3"),
-				gitmock.MockPostStackMR("Branch4", "Branch3", "3"),
-				gitmock.MockPostStackMR("Branch5", "Branch4", "3"),
-				gitmock.MockPostStackMR("Branch6", "Branch5", "3"),
+			httpMocks: []stacks.HttpMock{
+				stacks.MockStackUser(),
+				stacks.MockListStackMRsByBranch("Branch1", "25"),
+				stacks.MockGetStackMR("Branch1", "25"),
+				stacks.MockPostStackMR("Branch2", "Branch1", "3"),
+				stacks.MockPostStackMR("Branch3", "Branch2", "3"),
+				stacks.MockPostStackMR("Branch4", "Branch3", "3"),
+				stacks.MockPostStackMR("Branch5", "Branch4", "3"),
+				stacks.MockPostStackMR("Branch6", "Branch5", "3"),
 			},
 		},
 		{
@@ -196,10 +196,10 @@ func Test_stackSync(t *testing.T) {
 				},
 			},
 
-			httpMocks: []gitmock.HttpMock{
-				gitmock.MockStackUser(),
-				gitmock.MockPostStackMR("Branch1", "jawn", "3"),
-				gitmock.MockPostStackMR("Branch2", "Branch1", "3"),
+			httpMocks: []stacks.HttpMock{
+				stacks.MockStackUser(),
+				stacks.MockPostStackMR("Branch1", "jawn", "3"),
+				stacks.MockPostStackMR("Branch2", "Branch1", "3"),
 			},
 		},
 	}
@@ -208,7 +208,7 @@ func Test_stackSync(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			git.InitGitRepoWithCommit(t)
 
-			fakeHTTP := gitmock.SetupMocks(tc.httpMocks)
+			fakeHTTP := stacks.SetupMocks(tc.httpMocks)
 			defer fakeHTTP.Verify(t)
 
 			ctrl := gomock.NewController(t)

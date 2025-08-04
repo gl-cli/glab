@@ -1,4 +1,4 @@
-package gitmock
+package stacks
 
 import (
 	"math/rand/v2"
