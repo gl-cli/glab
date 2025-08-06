@@ -37,6 +37,7 @@ type options struct {
 	nsSelector            string
 	nsCEL                 string
 	resources             []string
+	rootsCEL              []string
 	readQueryFromStdIn    bool
 	groupCore             bool
 	groupBatch            bool
@@ -60,7 +61,7 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 		Use:     "graph [flags]",
 		Short:   `Queries the Kubernetes object graph, using the GitLab Agent for Kubernetes. (EXPERIMENTAL)`,
 		Long:    longHelp + text.ExperimentalString,
-		Example: exampleHelp,
+		Example: strings.Trim(exampleHelp, "\n\r"),
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run(cmd.Context())
@@ -77,7 +78,9 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	fl.StringVarP(&opts.nsSelector, "ns-field-selector", "", opts.nsSelector, "Field selector to select namespaces.")
 	fl.StringVarP(&opts.nsCEL, "ns-expression", "", opts.nsCEL, "CEL expression to select namespaces. Evaluated before a namespace is watched and on any updates for the namespace object.")
 
-	fl.StringArrayVarP(&opts.resources, "resources", "r", opts.resources, "A list of resources to watch. You can see the list of resources your cluster supports by running 'kubectl api-resources'.")
+	fl.StringArrayVarP(&opts.rootsCEL, "root-expression", "", opts.rootsCEL, "CEL expression to select root objects. GitLab and agent 18.3+ required.")
+
+	fl.StringArrayVarP(&opts.resources, "resource", "r", opts.resources, "A list of resources to watch. You can see the list of resources your cluster supports by running 'kubectl api-resources'.")
 	fl.BoolVar(&opts.groupCore, "core", opts.groupCore, "Watch pods, secrets, configmaps, and serviceaccounts in the core/v1 group")
 	fl.BoolVar(&opts.groupBatch, "batch", opts.groupBatch, "Watch jobs and cronjobs in the batch/v1 group.")
 	fl.BoolVar(&opts.groupApps, "apps", opts.groupApps, "Watch deployments, replicasets, daemonsets, and statefulsets in apps/v1 group.")
@@ -91,7 +94,8 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "ns-label-selector")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "ns-field-selector")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "ns-expression")
-	graphCmd.MarkFlagsMutuallyExclusive("stdin", "resources")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "root-expression")
+	graphCmd.MarkFlagsMutuallyExclusive("stdin", "resource")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "core")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "batch")
 	graphCmd.MarkFlagsMutuallyExclusive("stdin", "apps")
@@ -168,6 +172,7 @@ func (o *options) constructWatchRequest() ([]byte, error) {
 	req, err := json.Marshal(&watchGraphWebSocketRequest{
 		Queries:    q,
 		Namespaces: o.constructWatchNamespaces(),
+		Roots:      o.maybeConstructWatchRoots(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("JSON marshal: %w", err)
@@ -298,4 +303,13 @@ func (o *options) maybeConstructWatchQueriesForGroups() []query {
 		})
 	}
 	return q
+}
+
+func (o *options) maybeConstructWatchRoots() *roots {
+	if len(o.rootsCEL) == 0 {
+		return nil
+	}
+	return &roots{
+		ObjectSelectorExpressions: o.rootsCEL,
+	}
 }
