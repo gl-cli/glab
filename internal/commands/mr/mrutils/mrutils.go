@@ -4,12 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/dbg"
+	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -402,4 +406,79 @@ func PrintMRApprovalState(ios *iostreams.IOStreams, mrApprovals *gitlab.MergeReq
 		}
 		fmt.Fprintln(ios.StdOut, table)
 	}
+}
+
+// AutofillMRFromCommits generates title and body from commit information between two branches
+func AutofillMRFromCommits(targetBranch, sourceBranch string, fillCommitBody bool) (string, string, error) {
+	commits, err := git.Commits(targetBranch, sourceBranch)
+	if err != nil {
+		// If git fails, create a simple title from branch name
+		return utils.Humanize(sourceBranch), "", nil
+	}
+
+	return GenerateMRTitleAndBody(commits, sourceBranch, fillCommitBody)
+}
+
+// GenerateMRTitleAndBody creates title and body from commits
+func GenerateMRTitleAndBody(commits []*git.Commit, sourceBranch string, fillCommitBody bool) (string /* title */, string /* body */, error) {
+	switch len(commits) {
+	case 0:
+		// No commits found, use branch name as fallback title
+		return utils.Humanize(sourceBranch), "", nil
+	case 1:
+		// Single commit: use commit title as MR title
+		title := commits[0].Title
+
+		// For single commit, always try to get the commit body (consistent with original behavior)
+		commitBody, err := git.CommitBody(commits[0].Sha)
+		if err != nil {
+			// If we can't get the commit body, fall back to the commit title
+			return title, commits[0].Title, nil
+		}
+
+		if strings.TrimSpace(commitBody) != "" {
+			return title, commitBody, nil
+		}
+
+		return title, commits[0].Title, nil
+	default:
+		// Multiple commits: use humanized branch name as fallback title
+		title := utils.Humanize(sourceBranch)
+
+		// Generate body from commit list
+		body, err := GenerateMRCommitListBody(commits, fillCommitBody)
+		if err != nil {
+			return "", "", err
+		}
+
+		return title, body, nil
+	}
+}
+
+// GenerateMRCommitListBody creates a markdown list of commits with optional commit bodies
+func GenerateMRCommitListBody(commits []*git.Commit, fillCommitBody bool) (string, error) {
+	var body strings.Builder
+	re := regexp.MustCompile(`\r?\n\n`)
+
+	for _, commit := range slices.Backward(commits) {
+		// adds 2 spaces for markdown line wrapping
+		fmt.Fprintf(&body, "- %s  \n", commit.Title)
+
+		if fillCommitBody {
+			commitBody, err := git.CommitBody(commit.Sha)
+			if err != nil {
+				return "", fmt.Errorf("failed to get commit message for %s: %w", commit.Sha, err)
+			}
+
+			if strings.TrimSpace(commitBody) != "" {
+				commitBody = re.ReplaceAllString(commitBody, "  \n")
+				fmt.Fprintf(&body, "%s\n", commitBody)
+			} else {
+				// Add extra newline when commit has no body to match original behavior
+				fmt.Fprintf(&body, "\n")
+			}
+		}
+	}
+
+	return body.String(), nil
 }

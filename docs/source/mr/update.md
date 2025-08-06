@@ -29,6 +29,9 @@ Mark a merge request as draft
 Updates the merge request for the current branch
 - glab mr update --draft
 
+Update merge request with commit information
+- glab mr update 23 --fill --fill-commit-body --yes
+
 ```
 
 ## Options
@@ -37,6 +40,8 @@ Updates the merge request for the current branch
   -a, --assignee strings       Assign users via username. Prefix with '!' or '-' to remove from existing assignees, '+' to add. Otherwise, replace existing assignees with given users.
   -d, --description string     Merge request description. Set to "-" to open an editor.
       --draft                  Mark merge request as a draft.
+  -f, --fill                   Do not prompt for title or body, and just use commit info.
+      --fill-commit-body       Fill body with each commit body when multiple commits. Can only be used with --fill.
   -l, --label strings          Add labels.
       --lock-discussion        Lock discussion on merge request.
   -m, --milestone string       Title of the milestone to assign. Set to "" or 0 to unassign.
@@ -50,6 +55,7 @@ Updates the merge request for the current branch
   -u, --unlabel strings        Remove labels.
       --unlock-discussion      Unlock discussion on merge request.
       --wip                    Mark merge request as a work in progress. Alternative to --draft.
+  -y, --yes                    Skip confirmation prompt.
 ```
 
 ## Options inherited from parent commands

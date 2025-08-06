@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -74,6 +75,142 @@ func Test_DisplayMR(t *testing.T) {
 		t.Run(tC.name, func(t *testing.T) {
 			got := DisplayMR(streams.Color(), tC.mr, tC.outputToTTY)
 			assert.Equal(t, tC.output, got)
+		})
+	}
+}
+
+func TestGenerateMRTitleAndBody(t *testing.T) {
+	tests := []struct {
+		name           string
+		commits        []*git.Commit
+		fallbackBranch string
+		fillCommitBody bool
+		expectedTitle  string
+		expectedDesc   string
+		wantErr        bool
+	}{
+		{
+			name:           "No commits - use branch name",
+			commits:        []*git.Commit{},
+			fallbackBranch: "feature-branch",
+			fillCommitBody: false,
+			expectedTitle:  "feature branch",
+			expectedDesc:   "",
+			wantErr:        false,
+		},
+		{
+			name: "Single commit - use commit title",
+			commits: []*git.Commit{
+				{Title: "Fix login bug", Sha: "abc123"},
+			},
+			fallbackBranch: "fix-login",
+			fillCommitBody: false,
+			expectedTitle:  "Fix login bug",
+			expectedDesc:   "Fix login bug", // Falls back to title when fillCommitBody is false
+			wantErr:        false,
+		},
+		{
+			name: "Multiple commits without body - list format",
+			commits: []*git.Commit{
+				{Title: "Add feature A", Sha: "abc123"},
+				{Title: "Fix bug B", Sha: "def456"},
+			},
+			fallbackBranch: "feature-branch",
+			fillCommitBody: false,
+			expectedTitle:  "feature branch",
+			expectedDesc:   "- Fix bug B  \n- Add feature A  \n",
+			wantErr:        false,
+		},
+		{
+			name: "Multiple commits with body - list format",
+			commits: []*git.Commit{
+				{Title: "Add feature A", Sha: "abc123"},
+				{Title: "Fix bug B", Sha: "def456"},
+			},
+			fallbackBranch: "feature-branch",
+			fillCommitBody: true,
+			expectedTitle:  "feature branch",
+			// When git.CommitBody fails, we just get the titles
+			expectedDesc: "",
+			wantErr:      true, // This will error when trying to get commit bodies
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			title, desc, err := GenerateMRTitleAndBody(tt.commits, tt.fallbackBranch, tt.fillCommitBody)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedTitle, title)
+			assert.Equal(t, tt.expectedDesc, desc)
+		})
+	}
+}
+
+func TestGenerateMRCommitListBody(t *testing.T) {
+	tests := []struct {
+		name           string
+		commits        []*git.Commit
+		fillCommitBody bool
+		expectedOutput string
+		wantErr        bool
+	}{
+		{
+			name:           "Empty commits list",
+			commits:        []*git.Commit{},
+			fillCommitBody: false,
+			expectedOutput: "",
+			wantErr:        false,
+		},
+		{
+			name: "Single commit without body",
+			commits: []*git.Commit{
+				{Title: "Fix login issue", Sha: "abc123"},
+			},
+			fillCommitBody: false,
+			expectedOutput: "- Fix login issue  \n",
+			wantErr:        false,
+		},
+		{
+			name: "Multiple commits without body",
+			commits: []*git.Commit{
+				{Title: "First commit", Sha: "abc123"},
+				{Title: "Second commit", Sha: "def456"},
+				{Title: "Third commit", Sha: "ghi789"},
+			},
+			fillCommitBody: false,
+			expectedOutput: "- Third commit  \n- Second commit  \n- First commit  \n",
+			wantErr:        false,
+		},
+		{
+			name: "Multiple commits with body enabled but git fails",
+			commits: []*git.Commit{
+				{Title: "First commit", Sha: "abc123"},
+				{Title: "Second commit", Sha: "def456"},
+			},
+			fillCommitBody: true,
+			// When git.CommitBody fails with fake SHAs, expect error
+			expectedOutput: "",
+			wantErr:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			output, err := GenerateMRCommitListBody(tt.commits, tt.fillCommitBody)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedOutput, output)
 		})
 	}
 }
