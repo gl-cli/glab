@@ -346,6 +346,11 @@ When the `DEBUG` environment variable is set to `1` or `true`, `glab` outputs mo
 - Expanded aliases.
 - DNS error details.
 
+## Troubleshooting
+
+For troubleshooting information, see the
+[GitLab documentation for the CLI](https://docs.gitlab.com/editor_extensions/gitlab_cli/#troubleshooting).
+
 ## Issues
 
 If you have an issue: report it on the [issue tracker](https://gitlab.com/gitlab-org/cli/-/issues)
