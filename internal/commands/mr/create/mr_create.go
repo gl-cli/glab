@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -427,7 +426,7 @@ func (o *options) run() error {
 						if err != nil {
 							return fmt.Errorf("failed to get commits: %w", err)
 						}
-						templateContents, err = mrBody(commits, true)
+						templateContents, err = mrutils.GenerateMRCommitListBody(commits, true)
 						if err != nil {
 							return err
 						}
@@ -655,27 +654,6 @@ func (o *options) run() error {
 	return errors.New("expected to cancel, preview in browser, or submit.")
 }
 
-func mrBody(commits []*git.Commit, fillCommitBody bool) (string, error) {
-	var body strings.Builder
-	re := regexp.MustCompile(`\r?\n\n`)
-
-	for i := len(commits) - 1; i >= 0; i-- {
-		// adds 2 spaces for markdown line wrapping
-		fmt.Fprintf(&body, "- %s  \n", commits[i].Title)
-
-		if fillCommitBody {
-			commitBody, err := git.CommitBody(commits[i].Sha)
-			if err != nil {
-				return "", fmt.Errorf("failed to get commit message for %s: %w", commits[i].Sha, err)
-			}
-			commitBody = re.ReplaceAllString(commitBody, "  \n")
-			fmt.Fprintf(&body, "%s\n", commitBody)
-		}
-	}
-
-	return body.String(), nil
-}
-
 func mrBodyAndTitle(opts *options) error {
 	// TODO: detect forks
 	commits, err := git.Commits(opts.TargetTrackingBranch, opts.SourceBranch)
@@ -699,7 +677,7 @@ func mrBodyAndTitle(opts *options) error {
 		}
 
 		if opts.Description == "" {
-			description, err := mrBody(commits, opts.FillCommitBody)
+			description, err := mrutils.GenerateMRCommitListBody(commits, opts.FillCommitBody)
 			if err != nil {
 				return err
 			}

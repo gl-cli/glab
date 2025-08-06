@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
@@ -29,6 +30,9 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 
 			Updates the merge request for the current branch
 			- glab mr update --draft
+
+			Update merge request with commit information
+			- glab mr update 23 --fill --fill-commit-body --yes
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -37,6 +41,14 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			var ua *cmdutils.UserAssignments // assignees
 			var ur *cmdutils.UserAssignments // reviewers
 			c := f.IO().Color()
+
+			// Check for autofill flags
+			autofill, _ := cmd.Flags().GetBool("fill")
+			fillCommitBody, _ := cmd.Flags().GetBool("fill-commit-body")
+
+			if !autofill && fillCommitBody {
+				return &cmdutils.FlagError{Err: errors.New("--fill-commit-body should be used with --fill.")}
+			}
 
 			if cmd.Flags().Changed("unassign") && cmd.Flags().Changed("assignee") {
 				return &cmdutils.FlagError{Err: fmt.Errorf("--assignee and --unassign are mutually exclusive.")}
@@ -88,6 +100,55 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 
 			l := &gitlab.UpdateMergeRequestOptions{}
 			var mergeTitle string
+			var mergeBody string
+
+			// Handle autofill functionality
+			if autofill {
+				title, body, err := mrutils.AutofillMRFromCommits(mr.TargetBranch, mr.SourceBranch, fillCommitBody)
+				if err != nil {
+					return fmt.Errorf("failed to autofill MR content: %w", err)
+				}
+
+				// Check if --yes flag is provided to skip confirmation
+				skipConfirmation, _ := cmd.Flags().GetBool("yes")
+
+				// Show preview and ask for confirmation unless --yes is provided
+				if !skipConfirmation {
+					fmt.Fprintf(f.IO().StdOut, "\nProposed changes:\n")
+					if !cmd.Flags().Changed("title") {
+						fmt.Fprintf(f.IO().StdOut, "  Title: %s\n", title)
+					}
+					if !cmd.Flags().Changed("description") {
+						fmt.Fprintf(f.IO().StdOut, "  Description: %s\n", body)
+					}
+					fmt.Fprintf(f.IO().StdOut, "\n")
+
+					action, err := confirmUpdateSurvey()
+					if err != nil {
+						// Handle interrupt or EOF gracefully
+						if strings.Contains(err.Error(), "interrupt") || strings.Contains(err.Error(), "EOF") {
+							fmt.Fprintf(f.IO().StdOut, "Operation cancelled.\n")
+							return nil
+						}
+						return fmt.Errorf("failed to prompt for confirmation: %w", err)
+					}
+
+					if action == cmdutils.CancelAction {
+						fmt.Fprintf(f.IO().StdOut, "Operation cancelled.\n")
+						return nil
+					}
+				}
+
+				// Only set title and body if not explicitly provided by user
+				if !cmd.Flags().Changed("title") {
+					mergeTitle = title
+					actions = append(actions, "updated title with commit info")
+				}
+				if !cmd.Flags().Changed("description") {
+					mergeBody = body
+					actions = append(actions, "updated body with commit info")
+				}
+			}
 
 			isDraft, _ := cmd.Flags().GetBool("draft")
 			isWIP, _ := cmd.Flags().GetBool("wip")
@@ -96,11 +157,6 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				mergeTitle = m
 			}
 			if mergeTitle == "" {
-				opts := &gitlab.GetMergeRequestsOptions{}
-				mr, err := api.GetMR(apiClient, repo.FullName(), mr.IID, opts)
-				if err != nil {
-					return err
-				}
 				mergeTitle = mr.Title
 			}
 			if isDraft || isWIP {
@@ -136,29 +192,26 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			}
 
 			if m, _ := cmd.Flags().GetString("description"); m != "" {
-				actions = append(actions, "updated description")
+				actions = append(actions, "updated body")
 
-				// Edit the description via editor
+				// Edit the body via editor
 				if m == "-" {
-
-					mr, _, err := mrutils.MRFromArgs(f, args, "any")
-					if err != nil {
-						return err
-					}
-
 					editor, err := cmdutils.GetEditor(f.Config)
 					if err != nil {
 						return err
 					}
 
 					l.Description = gitlab.Ptr("")
-					err = cmdutils.EditorPrompt(l.Description, "Description", mr.Description, editor)
+					err = cmdutils.EditorPrompt(l.Description, "Body", mr.Description, editor)
 					if err != nil {
 						return err
 					}
 				} else {
 					l.Description = gitlab.Ptr(m)
 				}
+			} else if mergeBody != "" {
+				// Use autofilled body if available and no explicit body provided
+				l.Description = gitlab.Ptr(mergeBody)
 			}
 
 			if m, _ := cmd.Flags().GetStringSlice("label"); len(m) != 0 {
@@ -277,5 +330,37 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	mrUpdateCmd.Flags().StringP("milestone", "m", "", "Title of the milestone to assign. Set to \"\" or 0 to unassign.")
 	mrUpdateCmd.Flags().String("target-branch", "", "Set target branch.")
 
+	// Add new autofill flags
+	mrUpdateCmd.Flags().BoolP("fill", "f", false, "Do not prompt for title or body, and just use commit info.")
+	mrUpdateCmd.Flags().Bool("fill-commit-body", false, "Fill body with each commit body when multiple commits. Can only be used with --fill.")
+	mrUpdateCmd.Flags().BoolP("yes", "y", false, "Skip confirmation prompt.")
+
 	return mrUpdateCmd
+}
+
+func confirmUpdateSurvey() (cmdutils.Action, error) {
+	const (
+		proceedLabel = "Proceed with changes"
+		cancelLabel  = "Cancel"
+	)
+
+	options := []string{proceedLabel, cancelLabel}
+
+	var result string
+	confirm := &survey.Select{
+		Message: "What would you like to do?",
+		Options: options,
+	}
+
+	err := survey.AskOne(confirm, &result)
+	if err != nil {
+		return cmdutils.CancelAction, fmt.Errorf("could not prompt: %w", err)
+	}
+
+	switch result {
+	case proceedLabel:
+		return cmdutils.SubmitAction, nil
+	default:
+		return cmdutils.CancelAction, nil
+	}
 }
