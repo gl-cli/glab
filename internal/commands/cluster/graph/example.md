@@ -5,7 +5,7 @@ $ glab cluster graph -R user/project -a 123
 $ glab cluster graph -R user/project -a 123 --core --rbac
 
 # Show certain resources
-$ glab cluster graph -R user/project -a 123 --resources=pods --resources=configmaps
+$ glab cluster graph -R user/project -a 123 --resource=pods --resource=configmaps
 
 # Same as above, but more compact
 $ glab cluster graph -R user/project -a 123 -r={pods,configmaps}
@@ -21,3 +21,6 @@ $ glab cluster graph -R user/project -a 123 --ns-expression='"my-annotation" in 
 $ Q='{"queries":[{"include":{"resource_selector_expression":"resource == \"serviceaccounts\""}}],"namespaces":{"object_selector_expression":"name != \"kube-system\""}}'
 
 $ echo -n "$Q" | glab cluster graph -R user/project -a 123 --stdin
+
+# Roots filtering
+$ glab cluster graph -R user/project -a 123 --root-expression 'group == "" && resource == "pods"'

@@ -39,22 +39,7 @@ type namespaces struct {
 }
 
 type roots struct {
-	Individual []rootsIndividual `json:"individual,omitempty"`
-	Selector   []rootsSelector   `json:"selector,omitempty"`
-}
-
-type rootsIndividual struct {
-	Group     string `json:"group,omitempty"`
-	Resource  string `json:"resource,omitempty"`
-	Namespace string `json:"namespace,omitempty"`
-	Name      string `json:"name,omitempty"`
-}
-
-type rootsSelector struct {
-	Group         string `json:"group,omitempty"`
-	Resource      string `json:"resource,omitempty"`
-	LabelSelector string `json:"label_selector,omitempty"`
-	FieldSelector string `json:"field_selector,omitempty"`
+	ObjectSelectorExpressions []string `json:"object_selector_expressions"`
 }
 
 type jsonWatchGraphResponse struct {

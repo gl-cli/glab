@@ -11,7 +11,8 @@ Leave feedback in [issue 7900](https://gitlab.com/gitlab-org/cli/-/issues/7900).
 
 ### Resource filtering
 
-To filter resources and namespaces, use [CEL expressions](https://cel.dev/).
+To filter resources, namespaces, and select root objects, use
+[Common Expression Language (CEL)](https://cel.dev/).
 
 `object_selector_expression`: Filters objects. The expression must return a boolean. These variables are available:
 
@@ -31,6 +32,11 @@ from the watch request. The expression must return a boolean. These variables ar
 - `version`: The version of the object.
 - `resource`: The resource name of the object, like `pods` for the `Pod` kind.
 - `namespaced`: The scope of group, version, and resource. Can be `bool`, `true`, or `false`.
+
+To select root objects, use the `--root-expression` flag. When set, only objects that are directly
+or transitively reachable from root objects are shown. This flag uses the same variables
+as `object_selector_expression`, and must return a boolean. Multiple values are joined with `OR`
+statements. If any match, the object is used as root.
 
 For more information about using [label selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors)
 and [field selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/) to select namespaces, see the Kubernetes documentation.

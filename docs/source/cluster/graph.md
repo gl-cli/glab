@@ -28,7 +28,8 @@ Leave feedback in [issue 7900](https://gitlab.com/gitlab-org/cli/-/issues/7900).
 
 ### Resource filtering
 
-To filter resources and namespaces, use [CEL expressions](https://cel.dev/).
+To filter resources, namespaces, and select root objects, use
+[Common Expression Language (CEL)](https://cel.dev/).
 
 `object_selector_expression`: Filters objects. The expression must return a boolean. These variables are available:
 
@@ -48,6 +49,11 @@ from the watch request. The expression must return a boolean. These variables ar
 - `version`: The version of the object.
 - `resource`: The resource name of the object, like `pods` for the `Pod` kind.
 - `namespaced`: The scope of group, version, and resource. Can be `bool`, `true`, or `false`.
+
+To select root objects, use the `--root-expression` flag. When set, only objects that are directly
+or transitively reachable from root objects are shown. This flag uses the same variables
+as `object_selector_expression`, and must return a boolean. Multiple values are joined with `OR`
+statements. If any match, the object is used as root.
 
 For more information about using [label selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors)
 and [field selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/) to select namespaces, see the Kubernetes documentation.
@@ -82,7 +88,7 @@ $ glab cluster graph -R user/project -a 123
 $ glab cluster graph -R user/project -a 123 --core --rbac
 
 # Show certain resources
-$ glab cluster graph -R user/project -a 123 --resources=pods --resources=configmaps
+$ glab cluster graph -R user/project -a 123 --resource=pods --resource=configmaps
 
 # Same as above, but more compact
 $ glab cluster graph -R user/project -a 123 -r={pods,configmaps}
@@ -99,27 +105,30 @@ $ Q='{"queries":[{"include":{"resource_selector_expression":"resource == \"servi
 
 $ echo -n "$Q" | glab cluster graph -R user/project -a 123 --stdin
 
+# Roots filtering
+$ glab cluster graph -R user/project -a 123 --root-expression 'group == "" && resource == "pods"'
 ```
 
 ## Options
 
 ```plaintext
-  -a, --agent int                  The numerical Agent ID to connect to.
-      --apps                       Watch deployments, replicasets, daemonsets, and statefulsets in apps/v1 group.
-      --batch                      Watch jobs and cronjobs in the batch/v1 group.
-      --cluster-rbac               Watch clusterroles and clusterrolebindings in the rbac.authorization.k8s.io/v1 group.
-      --core                       Watch pods, secrets, configmaps, and serviceaccounts in the core/v1 group
-      --crd                        Watch customresourcedefinitions in the apiextensions.k8s.io/v1 group.
-      --listen-addr string         Address to listen on. (default "localhost:0")
-      --listen-net string          Network on which to listen for connections. (default "tcp")
-      --log-watch-request          Log watch request to stdout. Helpful for debugging.
-  -n, --namespace stringArray      Namespaces to watch. If not specified, all namespaces are watched with label and field selectors filtering.
-      --ns-expression string       CEL expression to select namespaces. Evaluated before a namespace is watched and on any updates for the namespace object.
-      --ns-field-selector string   Field selector to select namespaces.
-      --ns-label-selector string   Label selector to select namespaces.
-      --rbac                       Watch roles, and rolebindings in the rbac.authorization.k8s.io/v1 group.
-  -r, --resources stringArray      A list of resources to watch. You can see the list of resources your cluster supports by running 'kubectl api-resources'.
-      --stdin                      Read watch request from standard input.
+  -a, --agent int                     The numerical Agent ID to connect to.
+      --apps                          Watch deployments, replicasets, daemonsets, and statefulsets in apps/v1 group.
+      --batch                         Watch jobs and cronjobs in the batch/v1 group.
+      --cluster-rbac                  Watch clusterroles and clusterrolebindings in the rbac.authorization.k8s.io/v1 group.
+      --core                          Watch pods, secrets, configmaps, and serviceaccounts in the core/v1 group
+      --crd                           Watch customresourcedefinitions in the apiextensions.k8s.io/v1 group.
+      --listen-addr string            Address to listen on. (default "localhost:0")
+      --listen-net string             Network on which to listen for connections. (default "tcp")
+      --log-watch-request             Log watch request to stdout. Helpful for debugging.
+  -n, --namespace stringArray         Namespaces to watch. If not specified, all namespaces are watched with label and field selectors filtering.
+      --ns-expression string          CEL expression to select namespaces. Evaluated before a namespace is watched and on any updates for the namespace object.
+      --ns-field-selector string      Field selector to select namespaces.
+      --ns-label-selector string      Label selector to select namespaces.
+      --rbac                          Watch roles, and rolebindings in the rbac.authorization.k8s.io/v1 group.
+  -r, --resource stringArray          A list of resources to watch. You can see the list of resources your cluster supports by running 'kubectl api-resources'.
+      --root-expression stringArray   CEL expression to select root objects. GitLab and agent 18.3+ required.
+      --stdin                         Read watch request from standard input.
 ```
 
 ## Options inherited from parent commands
