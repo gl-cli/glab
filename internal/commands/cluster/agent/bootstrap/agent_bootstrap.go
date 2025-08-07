@@ -164,7 +164,7 @@ This command consists of multiple idempotent steps:
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stdout, stderr := f.IO().StdOut, f.IO().StdErr
 
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

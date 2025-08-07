@@ -38,7 +38,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 		apiClient:       f.ApiClient,
 		io:              f.IO(),
 		baseRepo:        f.BaseRepo,
-		httpClient:      f.HttpClient,
+		httpClient:      f.GitLabClient,
 		defaultHostname: f.DefaultHostname,
 	}
 

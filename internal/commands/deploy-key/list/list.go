@@ -26,7 +26,7 @@ type options struct {
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 		baseRepo:   f.BaseRepo,
 	}
 	cmd := &cobra.Command{

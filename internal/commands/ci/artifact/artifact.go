@@ -24,7 +24,7 @@ func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

@@ -43,7 +43,7 @@ func NewCmdClose(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			gitlabClient, err := f.HttpClient()
+			gitlabClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

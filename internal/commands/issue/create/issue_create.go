@@ -73,7 +73,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
 		baseRepo:   f.BaseRepo,
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 		remotes:    f.Remotes,
 		config:     f.Config,
 	}

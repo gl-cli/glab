@@ -36,7 +36,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			var err error
 			c := f.IO().Color()
 
-			gitlabClient, err := f.HttpClient()
+			gitlabClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

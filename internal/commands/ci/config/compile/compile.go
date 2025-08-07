@@ -45,7 +45,7 @@ func NewCmdConfigCompile(f cmdutils.Factory) *cobra.Command {
 func compileRun(f cmdutils.Factory, path string) error {
 	var err error
 
-	apiClient, err := f.HttpClient()
+	apiClient, err := f.GitLabClient()
 	if err != nil {
 		return err
 	}

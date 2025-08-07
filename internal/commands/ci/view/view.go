@@ -101,7 +101,7 @@ func ViewJobFromJob(job *gitlab.Job) *ViewJob {
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := options{
 		io:         f.IO(),
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 		baseRepo:   f.BaseRepo,
 		config:     f.Config,
 	}

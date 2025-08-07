@@ -28,7 +28,7 @@ func NewCmdApprove(f cmdutils.Factory) *cobra.Command {
 			var err error
 			c := f.IO().Color()
 
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

@@ -31,7 +31,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO().Color()
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

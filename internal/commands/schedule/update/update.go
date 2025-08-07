@@ -57,7 +57,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				variablePairsToUpdate = append(variablePairsToUpdate, [2]string{split[0], split[1]})
 			}
 
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

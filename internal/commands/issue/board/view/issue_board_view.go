@@ -49,7 +49,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 			a := tview.NewApplication()
 			defer recoverPanic(a)
 
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

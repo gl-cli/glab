@@ -28,7 +28,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			var err error
 			var titleQualifier string
 
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

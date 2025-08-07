@@ -88,7 +88,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

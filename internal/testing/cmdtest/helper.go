@@ -164,14 +164,14 @@ func TestIOStreams(options ...iostreams.IOStreamsOption) (*iostreams.IOStreams, 
 }
 
 type Factory struct {
-	ApiClientStub  func(repoHost string) (*api.Client, error)
-	HttpClientStub func() (*gitlab.Client, error)
-	BaseRepoStub   func() (glrepo.Interface, error)
-	RemotesStub    func() (glrepo.Remotes, error)
-	ConfigStub     func() config.Config
-	BranchStub     func() (string, error)
-	IOStub         *iostreams.IOStreams
-	BuildInfoStub  api.BuildInfo
+	ApiClientStub    func(repoHost string) (*api.Client, error)
+	GitLabClientStub func() (*gitlab.Client, error)
+	BaseRepoStub     func() (glrepo.Interface, error)
+	RemotesStub      func() (glrepo.Remotes, error)
+	ConfigStub       func() config.Config
+	BranchStub       func() (string, error)
+	IOStub           *iostreams.IOStreams
+	BuildInfoStub    api.BuildInfo
 
 	repoOverride string
 }
@@ -185,8 +185,8 @@ func (f *Factory) ApiClient(repoHost string) (*api.Client, error) {
 	return f.ApiClientStub(repoHost)
 }
 
-func (f *Factory) HttpClient() (*gitlab.Client, error) {
-	return f.HttpClientStub()
+func (f *Factory) GitLabClient() (*gitlab.Client, error) {
+	return f.GitLabClientStub()
 }
 
 func (f *Factory) BaseRepo() (glrepo.Interface, error) {
@@ -239,7 +239,7 @@ func WithApiClient(client *api.Client) FactoryOption {
 // WithGitLabClient configures the Factory with a specific GitLab client
 func WithGitLabClient(client *gitlab.Client) FactoryOption {
 	return func(f *Factory) {
-		f.HttpClientStub = func() (*gitlab.Client, error) {
+		f.GitLabClientStub = func() (*gitlab.Client, error) {
 			return client, nil
 		}
 	}
@@ -254,10 +254,10 @@ func WithConfig(cfg config.Config) FactoryOption {
 	}
 }
 
-// WithHttpClientError configures the Factory to return an error when creating HTTP client
-func WithHttpClientError(err error) FactoryOption {
+// WithGitLabClientError configures the Factory to return an error when creating GitLab client
+func WithGitLabClientError(err error) FactoryOption {
 	return func(f *Factory) {
-		f.HttpClientStub = func() (*gitlab.Client, error) {
+		f.GitLabClientStub = func() (*gitlab.Client, error) {
 			return nil, err
 		}
 	}
@@ -317,7 +317,7 @@ func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 		ApiClientStub: func(repoHost string) (*api.Client, error) {
 			return &api.Client{}, nil
 		},
-		HttpClientStub: func() (*gitlab.Client, error) {
+		GitLabClientStub: func() (*gitlab.Client, error) {
 			return &gitlab.Client{}, nil
 		},
 		ConfigStub: func() config.Config {

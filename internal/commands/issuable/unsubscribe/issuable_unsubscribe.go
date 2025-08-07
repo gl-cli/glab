@@ -42,7 +42,7 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO().Color()
-			gitlabClient, err := f.HttpClient()
+			gitlabClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

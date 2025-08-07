@@ -37,7 +37,7 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
 		apiClient:  f.ApiClient,
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 		baseRepo:   f.BaseRepo,
 	}
 

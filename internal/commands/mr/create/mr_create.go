@@ -85,7 +85,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		io:              f.IO(),
 		branch:          f.Branch,
 		remotes:         f.Remotes,
-		httpClient:      f.HttpClient,
+		httpClient:      f.GitLabClient,
 		config:          f.Config,
 		baseRepo:        f.BaseRepo,
 		headRepo:        ResolvedHeadRepo(f),
@@ -782,7 +782,7 @@ func generateMRCompareURL(opts *options) (string, error) {
 
 func ResolvedHeadRepo(f cmdutils.Factory) func() (glrepo.Interface, error) {
 	return func() (glrepo.Interface, error) {
-		httpClient, err := f.HttpClient()
+		httpClient, err := f.GitLabClient()
 		if err != nil {
 			return nil, err
 		}

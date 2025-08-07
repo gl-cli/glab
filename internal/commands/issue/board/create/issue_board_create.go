@@ -35,7 +35,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			out := f.IO().StdOut
 			c := f.IO().Color()
 
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

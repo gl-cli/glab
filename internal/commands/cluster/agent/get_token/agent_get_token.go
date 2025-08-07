@@ -41,7 +41,7 @@ type options struct {
 func NewCmdAgentGetToken(f cmdutils.Factory) *cobra.Command {
 	opts := options{
 		io:         f.IO(),
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 	}
 	desc := "Create and return a k8s_proxy-scoped personal access token to authenticate with a GitLab Agents for Kubernetes."
 	agentGetTokenCmd := &cobra.Command{

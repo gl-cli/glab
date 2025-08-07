@@ -64,7 +64,7 @@ func run(factory cmdutils.Factory, cmd *cobra.Command) error {
 		return err
 	}
 
-	apiClient, err := factory.HttpClient()
+	apiClient, err := factory.GitLabClient()
 	if err != nil {
 		return err
 	}

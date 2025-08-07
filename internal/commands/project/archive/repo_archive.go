@@ -65,7 +65,7 @@ func NewCmdArchive(f cmdutils.Factory) *cobra.Command {
 
 				gitlabClient = apiClient.Lab()
 			} else {
-				gitlabClient, err = f.HttpClient()
+				gitlabClient, err = f.GitLabClient()
 				if err != nil {
 					return err
 				}

@@ -16,7 +16,7 @@ func NewCmdApprovers(f cmdutils.Factory) *cobra.Command {
 		Aliases: []string{},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

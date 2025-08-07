@@ -25,7 +25,7 @@ type options struct {
 func NewCmdRemove(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 		baseRepo:   f.BaseRepo,
 	}
 	securefileRemoveCmd := &cobra.Command{

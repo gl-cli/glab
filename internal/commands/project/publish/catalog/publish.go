@@ -44,7 +44,7 @@ type options struct {
 func NewCmdPublishCatalog(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 		baseRepo:   f.BaseRepo,
 	}
 	publishCatalogCmd := &cobra.Command{

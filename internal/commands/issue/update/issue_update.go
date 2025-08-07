@@ -58,7 +58,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				return &cmdutils.FlagError{Err: errors.New("--public and --confidential can't be used together.")}
 			}
 
-			gitlabClient, err := f.HttpClient()
+			gitlabClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -96,7 +96,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				if m == "-" {
 
 					// Fetch the current issue and description
-					gitlabClient, err := f.HttpClient()
+					gitlabClient, err := f.GitLabClient()
 					if err != nil {
 						return err
 					}

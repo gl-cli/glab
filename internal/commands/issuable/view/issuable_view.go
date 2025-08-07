@@ -67,7 +67,7 @@ func NewCmdView(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 	opts := &options{
 		io:              f.IO(),
 		apiClient:       f.ApiClient,
-		httpClient:      f.HttpClient,
+		httpClient:      f.GitLabClient,
 		config:          f.Config,
 		baseRepo:        f.BaseRepo,
 		defaultHostname: f.DefaultHostname(),

@@ -261,7 +261,7 @@ func TestGetJobId(t *testing.T) {
 				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
 			)
 
-			apiClient, _ := f.HttpClient()
+			apiClient, _ := f.GitLabClient()
 			repo, _ := f.BaseRepo()
 
 			output, err := GetJobId(&JobInputs{
@@ -425,7 +425,7 @@ func TestTraceJob(t *testing.T) {
 				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
 			)
 
-			apiClient, _ := f.HttpClient()
+			apiClient, _ := f.GitLabClient()
 			repo, _ := f.BaseRepo()
 
 			err := TraceJob(&JobInputs{

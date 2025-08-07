@@ -29,7 +29,7 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 		Long: ``,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

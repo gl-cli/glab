@@ -92,7 +92,7 @@ func (o *options) validate(cmd *cobra.Command) error {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.factory.HttpClient()
+	apiClient, err := o.factory.GitLabClient()
 	if err != nil {
 		return err
 	}

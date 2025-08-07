@@ -55,7 +55,7 @@ type MRWithNotes struct {
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 		config:     f.Config,
 	}
 	mrViewCmd := &cobra.Command{

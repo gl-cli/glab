@@ -44,7 +44,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		baseRepo:        f.BaseRepo,
 		branchFactory:   f.Branch,
 		apiClient:       f.ApiClient,
-		httpClient:      f.HttpClient,
+		httpClient:      f.GitLabClient,
 		defaultHostname: f.DefaultHostname(),
 	}
 

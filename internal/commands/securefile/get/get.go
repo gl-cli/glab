@@ -25,7 +25,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 			$ glab securefile show 1
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

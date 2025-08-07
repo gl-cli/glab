@@ -21,10 +21,10 @@ import (
 type Factory interface {
 	RepoOverride(repo string) error
 	ApiClient(repoHost string) (*api.Client, error)
-	// HttpClient returns an HTTP client that is initialize with the host from BaseRepo.
-	// You must only use HttpClient if your command is tied to a single repository,
+	// GitLabClient returns an HTTP client that is initialize with the host from BaseRepo.
+	// You must only use GitLabClient if your command is tied to a single repository,
 	// otherwise use ApiClient
-	HttpClient() (*gitlab.Client, error)
+	GitLabClient() (*gitlab.Client, error)
 	BaseRepo() (glrepo.Interface, error)
 	Remotes() (glrepo.Remotes, error)
 	Config() config.Config
@@ -43,7 +43,7 @@ type DefaultFactory struct {
 	defaultProtocol string
 
 	mu sync.Mutex // protects the fields below
-	// cachedBaseRepo if set is the SSoT of the repository to use in BaseRepo(), HttpClient() and other factory function that require a repository.
+	// cachedBaseRepo if set is the SSoT of the repository to use in BaseRepo(), GitLabClient() and other factory function that require a repository.
 	// This is also being set for a repo override.
 	cachedBaseRepo glrepo.Interface
 }
@@ -106,7 +106,7 @@ func (f *DefaultFactory) ApiClient(repoHost string) (*api.Client, error) {
 	return c, nil
 }
 
-func (f *DefaultFactory) HttpClient() (*gitlab.Client, error) {
+func (f *DefaultFactory) GitLabClient() (*gitlab.Client, error) {
 	// TODO: the above code is a safety net for the factory changes introduced with
 	// https://gitlab.com/gitlab-org/cli/-/merge_requests/2181
 	// Eventually, we should make the factory independent of the repository a command
@@ -125,7 +125,7 @@ func (f *DefaultFactory) HttpClient() (*gitlab.Client, error) {
 		repoHost = repo.RepoHost()
 	default:
 		repoHost = f.defaultHostname
-		dbg.Debug("The current command request Factory.HttpClient() without being able to resolve a base repository. The command should probably use Factory.ApiClient() instead")
+		dbg.Debug("The current command request Factory.GitLabClient() without being able to resolve a base repository. The command should probably use Factory.ApiClient() instead")
 	}
 
 	c, err := api.NewClientFromConfig(repoHost, f.config, false, f.buildInfo.UserAgent())

@@ -49,7 +49,7 @@ func hasStdIn() bool {
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 		baseRepo:   f.BaseRepo,
 	}
 	snippetCreateCmd := &cobra.Command{

@@ -153,7 +153,7 @@ func MRFromArgsWithOpts(
 	var mrID int
 	var mr *gitlab.MergeRequest
 
-	apiClient, err := f.HttpClient()
+	apiClient, err := f.GitLabClient()
 	if err != nil {
 		return nil, nil, err
 	}

@@ -24,7 +24,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		`),
 		Long: ``,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
+			apiClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

@@ -25,7 +25,7 @@ func NewCmdRebase(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		f:          f,
 		io:         f.IO(),
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 	}
 
 	mrRebaseCmd := &cobra.Command{

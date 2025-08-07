@@ -29,7 +29,7 @@ func NewCmdContributors(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
 		io:         f.IO(),
 		baseRepo:   f.BaseRepo,
-		httpClient: f.HttpClient,
+		httpClient: f.GitLabClient,
 	}
 	repoContributorsCmd := &cobra.Command{
 		Use:   "contributors",

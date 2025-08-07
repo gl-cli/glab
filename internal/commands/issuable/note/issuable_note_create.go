@@ -26,7 +26,7 @@ func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 			var err error
 			out := f.IO().StdOut
 
-			gitlabClient, err := f.HttpClient()
+			gitlabClient, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}

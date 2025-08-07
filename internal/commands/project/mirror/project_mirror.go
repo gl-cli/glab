@@ -34,7 +34,7 @@ func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 	opts := options{
 		io:               f.IO(),
 		apiClient:        f.ApiClient,
-		gitlabClientFunc: f.HttpClient,
+		gitlabClientFunc: f.GitLabClient,
 		defaultHostname:  f.DefaultHostname(),
 	}
 
