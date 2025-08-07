@@ -5,15 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_CheckPathExists(t *testing.T) {
 	t.Run("exists", func(t *testing.T) {
-		dir, err := os.MkdirTemp("", "")
-		if err != nil {
-			t.Skipf("unexpected error creating temporary directory for testing = %s", err)
-		}
-		defer os.Remove(dir)
+		dir := t.TempDir()
 
 		got := CheckPathExists(dir)
 		assert.True(t, got)
@@ -25,12 +22,12 @@ func Test_CheckPathExists(t *testing.T) {
 }
 
 func Test_CheckFileExists(t *testing.T) {
-	file, err := os.CreateTemp("", "")
+	file, err := os.CreateTemp(t.TempDir(), "")
 	if err != nil {
 		t.Skipf("Unexpected error creating temporary file for testing = %s", err)
 	}
 	fPath := file.Name()
-	defer os.Remove(fPath)
+	require.NoError(t, file.Close())
 
 	t.Run("exists", func(t *testing.T) {
 		got := CheckFileExists(fPath)
@@ -45,12 +42,12 @@ func Test_CheckFileExists(t *testing.T) {
 
 func Test_BackupConfigFile(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		file, err := os.CreateTemp("", "")
+		file, err := os.CreateTemp(t.TempDir(), "")
 		if err != nil {
 			t.Skipf("Unexpected error creating temporary file for testing = %s", err)
 		}
 		fPath := file.Name()
-		defer os.Remove(fPath)
+		require.NoError(t, file.Close())
 
 		err = BackupConfigFile(fPath)
 		if err != nil {

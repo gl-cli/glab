@@ -576,13 +576,12 @@ func Test_apiRun_inputFile(t *testing.T) {
 			if tt.inputFile == "-" {
 				_, _ = stdin.Write(tt.inputContents)
 			} else {
-				f, err := os.CreateTemp("", tt.inputFile)
+				f, err := os.CreateTemp(t.TempDir(), tt.inputFile)
 				if err != nil {
 					t.Fatal(err)
 				}
 				_, _ = f.Write(tt.inputContents)
-				f.Close()
-				t.Cleanup(func() { os.Remove(f.Name()) })
+				require.NoError(t, f.Close())
 				inputFile = f.Name()
 			}
 
@@ -661,13 +660,11 @@ func Test_parseFields(t *testing.T) {
 }
 
 func Test_magicFieldValue(t *testing.T) {
-	f, err := os.CreateTemp("", "gitlab-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Fprint(f, "file contents")
-	f.Close()
-	t.Cleanup(func() { os.Remove(f.Name()) })
+	f, err := os.CreateTemp(t.TempDir(), "gitlab-test")
+	require.NoError(t, err)
+	_, err = f.WriteString("file contents")
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
 
 	ios, _, _, _ := cmdtest.TestIOStreams()
 
@@ -754,13 +751,11 @@ func Test_magicFieldValue(t *testing.T) {
 }
 
 func Test_openUserFile(t *testing.T) {
-	f, err := os.CreateTemp("", "gitlab-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Fprint(f, "file contents")
-	f.Close()
-	t.Cleanup(func() { os.Remove(f.Name()) })
+	f, err := os.CreateTemp(t.TempDir(), "gitlab-test")
+	require.NoError(t, err)
+	_, err = f.WriteString("file contents")
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
 
 	file, length, err := openUserFile(f.Name(), nil)
 	if err != nil {

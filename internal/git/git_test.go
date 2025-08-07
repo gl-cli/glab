@@ -499,8 +499,7 @@ func TestListTags(t *testing.T) {
 			if tt.wantErr {
 				tempDir := t.TempDir()
 				// move to a directory without a .git subdirectory
-				err := os.Chdir(tempDir)
-				require.NoError(t, err)
+				t.Chdir(tempDir)
 
 				tags, err := ListTags()
 				require.Equal(t, tt.errString, errors.Unwrap(err).Error())

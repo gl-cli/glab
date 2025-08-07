@@ -30,9 +30,7 @@ func doesFileExist(fileName string) bool {
 }
 
 func createZipFile(t *testing.T, filename string) (string, string) {
-	tempPath, err := os.MkdirTemp("/tmp", "testing_directory")
-	require.NoError(t, err)
-
+	tempPath := t.TempDir()
 	archive, err := os.CreateTemp(tempPath, "test.*.zip")
 	require.NoError(t, err)
 	defer archive.Close()
@@ -102,8 +100,7 @@ func makeTestFactory(t *testing.T) (cmdutils.Factory, *httpmock.Mocker) {
 }
 
 func createSymlinkZip(t *testing.T) (string, string) {
-	tempPath, err := os.MkdirTemp("/tmp", "testing_directory")
-	require.NoError(t, err)
+	tempPath := t.TempDir()
 
 	archive, err := os.CreateTemp(tempPath, "test.*.zip")
 	require.NoError(t, err)
@@ -173,7 +170,6 @@ func Test_NewCmdRun(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			factory, fakeHTTP := makeTestFactory(t)
 			tempPath, tempFileName := createZipFile(t, tt.filename)
-			// defer os.Remove(tempFileName)
 
 			fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/jobs/artifacts/main/download?job=secret_detection`,
 				httpmock.NewFileResponse(http.StatusOK, tempFileName))
@@ -217,7 +213,6 @@ func Test_NewCmdRun(t *testing.T) {
 		factory, fakeHTTP := makeTestFactory(t)
 
 		tempPath, tempFileName := createSymlinkZip(t)
-		defer os.Remove(tempFileName)
 
 		fakeHTTP.RegisterResponder(http.MethodGet, `https://gitlab.com/api/v4/projects/OWNER%2FREPO/jobs/artifacts/main/download?job=secret_detection`,
 			httpmock.NewFileResponse(http.StatusOK, tempFileName))
