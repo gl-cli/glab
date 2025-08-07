@@ -29,7 +29,7 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 		Long: ``,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -49,7 +49,7 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 				return fmt.Errorf("Unable to get path flag: %v", err)
 			}
 
-			err = saveFile(apiClient, repo, fileID, path)
+			err = saveFile(client, repo, fileID, path)
 			if err != nil {
 				return err
 			}

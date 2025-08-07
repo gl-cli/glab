@@ -26,12 +26,12 @@ func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 			var err error
 			out := f.IO().StdOut
 
-			gitlabClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
 
-			issue, repo, err := issueutils.IssueFromArg(f.ApiClient, gitlabClient, f.BaseRepo, f.DefaultHostname(), args[0])
+			issue, repo, err := issueutils.IssueFromArg(f.ApiClient, client, f.BaseRepo, f.DefaultHostname(), args[0])
 			if err != nil {
 				return err
 			}
@@ -62,7 +62,7 @@ func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 				return errors.New("aborted... Note is empty.")
 			}
 
-			noteInfo, _, err := gitlabClient.Notes.CreateIssueNote(repo.FullName(), issue.IID, &gitlab.CreateIssueNoteOptions{Body: &body})
+			noteInfo, _, err := client.Notes.CreateIssueNote(repo.FullName(), issue.IID, &gitlab.CreateIssueNoteOptions{Body: &body})
 			if err != nil {
 				return err
 			}

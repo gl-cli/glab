@@ -214,7 +214,7 @@ If used with merge request pipelines, the command fails with a message like ` + 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -233,7 +233,7 @@ If used with merge request pipelines, the command fails with a message like ` + 
 				Variables: gitlab.Ptr(pipelineVars),
 			}
 
-			pipe, err := createPipeline(cmd, c, f, apiClient, repo, mr)
+			pipe, err := createPipeline(cmd, c, f, client, repo, mr)
 			if err != nil {
 				return err
 			}

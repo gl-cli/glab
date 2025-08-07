@@ -604,7 +604,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 	t.Run("fail", func(t *testing.T) {
 		t.Run("HttpClient", func(t *testing.T) {
 			f := cmdtest.NewTestFactory(ios,
-				cmdtest.WithHttpClientError(errors.New("failed to create HttpClient")),
+				cmdtest.WithGitLabClientError(errors.New("failed to create HttpClient")),
 				cmdtest.WithBaseRepo("foo", "bar", ""),
 				cmdtest.WithBranch("main"),
 			)

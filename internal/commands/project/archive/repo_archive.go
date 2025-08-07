@@ -45,7 +45,7 @@ func NewCmdArchive(f cmdutils.Factory) *cobra.Command {
 			var name string
 			var err error
 
-			var gitlabClient *gitlab.Client
+			var client *gitlab.Client
 			var repo glrepo.Interface
 			if len(args) != 0 {
 				repo, err = glrepo.FromFullName(args[0], f.DefaultHostname())
@@ -63,9 +63,9 @@ func NewCmdArchive(f cmdutils.Factory) *cobra.Command {
 					name = args[1]
 				}
 
-				gitlabClient = apiClient.Lab()
+				client = apiClient.Lab()
 			} else {
-				gitlabClient, err = f.HttpClient()
+				client, err = f.GitLabClient()
 				if err != nil {
 					return err
 				}
@@ -94,7 +94,7 @@ func NewCmdArchive(f cmdutils.Factory) *cobra.Command {
 				archiveName = name + "." + ext
 			}
 
-			bt, _, err := gitlabClient.Repositories.Archive(repo.FullName(), l)
+			bt, _, err := client.Repositories.Archive(repo.FullName(), l)
 			if err != nil {
 				return fmt.Errorf("failed to get archive: %v", err)
 			}

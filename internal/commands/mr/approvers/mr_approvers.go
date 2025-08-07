@@ -16,7 +16,7 @@ func NewCmdApprovers(f cmdutils.Factory) *cobra.Command {
 		Aliases: []string{},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -30,7 +30,7 @@ func NewCmdApprovers(f cmdutils.Factory) *cobra.Command {
 
 			fmt.Fprintf(f.IO().StdOut, "\nListing merge request !%d eligible approvers:\n", mr.IID)
 
-			mrApprovals, _, err := apiClient.MergeRequestApprovals.GetApprovalState(repo.FullName(), mr.IID)
+			mrApprovals, _, err := client.MergeRequestApprovals.GetApprovalState(repo.FullName(), mr.IID)
 			if err != nil {
 				return err
 			}

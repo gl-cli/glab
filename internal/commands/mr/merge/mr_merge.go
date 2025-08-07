@@ -31,9 +31,9 @@ const (
 )
 
 type options struct {
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	config     func() config.Config
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	config       func() config.Config
 
 	setAutoMerge       bool
 	squashBeforeMerge  bool
@@ -50,9 +50,9 @@ type options struct {
 
 func NewCmdMerge(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		config:     f.Config,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		config:       f.Config,
 
 		mergeMethod: MRMergeMethodMerge,
 	}
@@ -107,7 +107,7 @@ func (o *options) validate() error {
 func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) error {
 	c := o.io.Color()
 
-	apiClient, err := o.httpClient()
+	apiClient, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}

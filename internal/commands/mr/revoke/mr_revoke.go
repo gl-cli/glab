@@ -31,7 +31,7 @@ func NewCmdRevoke(f cmdutils.Factory) *cobra.Command {
 			var err error
 			c := f.IO().Color()
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -52,7 +52,7 @@ func NewCmdRevoke(f cmdutils.Factory) *cobra.Command {
 
 				fmt.Fprintf(f.IO().StdOut, "- Revoking approval for merge request !%d...\n", mr.IID)
 
-				_, err := apiClient.MergeRequestApprovals.UnapproveMergeRequest(repo.FullName(), mr.IID)
+				_, err := client.MergeRequestApprovals.UnapproveMergeRequest(repo.FullName(), mr.IID)
 				if err != nil {
 					return err
 				}

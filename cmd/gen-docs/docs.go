@@ -270,7 +270,7 @@ func (f *factory) ApiClient(repoHost string) (*api.Client, error) {
 	return nil, errors.New("not implemented")
 }
 
-func (f *factory) HttpClient() (*gitlab.Client, error) {
+func (f *factory) GitLabClient() (*gitlab.Client, error) {
 	return nil, errors.New("not implemented")
 }
 

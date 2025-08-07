@@ -35,7 +35,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			out := f.IO().StdOut
 			c := f.IO().Color()
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -58,7 +58,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 
 			fmt.Fprintln(out, "- Creating board")
 
-			issueBoard, err := createIssueBoard(apiClient, repo.FullName(), opts)
+			issueBoard, err := createIssueBoard(client, repo.FullName(), opts)
 			if err != nil {
 				return err
 			}

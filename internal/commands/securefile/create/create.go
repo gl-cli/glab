@@ -17,16 +17,16 @@ type options struct {
 	fileName      string
 	inputFilePath string
 
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
 }
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	securefileCreateCmd := &cobra.Command{
 		Use:   "create <fileName> <inputFilePath>",
@@ -56,7 +56,7 @@ func (o *options) complete(args []string) {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (o *options) run() error {
 		return fmt.Errorf("Unable to read file at %s: %w", o.inputFilePath, err)
 	}
 
-	_, _, err = apiClient.SecureFiles.CreateSecureFile(repo.FullName(), reader, &gitlab.CreateSecureFileOptions{Name: gitlab.Ptr(o.fileName)})
+	_, _, err = client.SecureFiles.CreateSecureFile(repo.FullName(), reader, &gitlab.CreateSecureFileOptions{Name: gitlab.Ptr(o.fileName)})
 	if err != nil {
 		return fmt.Errorf("Error creating secure file: %w", err)
 	}

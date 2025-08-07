@@ -28,7 +28,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			var err error
 			var titleQualifier string
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -100,7 +100,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 				l.UpdatedBefore = gitlab.Ptr(updatedBeforeTime)
 			}
 
-			pipes, _, err := apiClient.Pipelines.ListProjectPipelines(repo.FullName(), l)
+			pipes, _, err := client.Pipelines.ListProjectPipelines(repo.FullName(), l)
 			if err != nil {
 				return err
 			}

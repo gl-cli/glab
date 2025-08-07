@@ -24,7 +24,7 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -87,12 +87,12 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 				opts.Trailer = gitlab.Ptr(s)
 			}
 
-			project, err := repo.Project(apiClient)
+			project, err := repo.Project(client)
 			if err != nil {
 				return err
 			}
 
-			changelog, _, err := apiClient.Repositories.GenerateChangelogData(project.ID, opts)
+			changelog, _, err := client.Repositories.GenerateChangelogData(project.ID, opts)
 			if err != nil {
 				return err
 			}

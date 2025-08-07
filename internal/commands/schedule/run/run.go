@@ -25,16 +25,16 @@ var runSchedule = func(client *gitlab.Client, repo string, schedule int, opts ..
 type options struct {
 	scheduleID int
 
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
 }
 
 func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	scheduleRunCmd := &cobra.Command{
 		Use:   "run <id>",
@@ -68,7 +68,7 @@ func (o *options) complete(args []string) error {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	err = runSchedule(apiClient, repo.FullName(), o.scheduleID)
+	err = runSchedule(client, repo.FullName(), o.scheduleID)
 	if err != nil {
 		return err
 	}

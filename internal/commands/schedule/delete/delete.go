@@ -16,16 +16,16 @@ import (
 type options struct {
 	scheduleID int
 
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
 }
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	scheduleDeleteCmd := &cobra.Command{
 		Use:   "delete <id> [flags]",
@@ -59,7 +59,7 @@ func (o *options) complete(args []string) error {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	_, err = apiClient.PipelineSchedules.DeletePipelineSchedule(repo.FullName(), o.scheduleID)
+	_, err = client.PipelineSchedules.DeletePipelineSchedule(repo.FullName(), o.scheduleID)
 	if err != nil {
 		return err
 	}

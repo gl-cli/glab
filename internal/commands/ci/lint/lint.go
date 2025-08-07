@@ -18,9 +18,9 @@ import (
 )
 
 type options struct {
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
 
 	path        string
 	ref         string
@@ -30,9 +30,9 @@ type options struct {
 
 func NewCmdLint(f cmdutils.Factory) *cobra.Command {
 	opts := options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	pipelineCILintCmd := &cobra.Command{
 		Use:   "lint",
@@ -70,7 +70,7 @@ func (o *options) run() error {
 	out := o.io.StdOut
 	c := o.io.Color()
 
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (o *options) run() error {
 		return fmt.Errorf("You must be in a GitLab project repository for this action.\nError: %s", err)
 	}
 
-	project, err := repo.Project(apiClient)
+	project, err := repo.Project(client)
 	if err != nil {
 		return fmt.Errorf("You must be in a GitLab project repository for this action.\nError: %s", err)
 	}
@@ -112,7 +112,7 @@ func (o *options) run() error {
 
 	fmt.Fprintln(o.io.StdOut, "Validating...")
 
-	lint, _, err := apiClient.Validate.ProjectNamespaceLint(
+	lint, _, err := client.Validate.ProjectNamespaceLint(
 		projectID,
 		&gitlab.ProjectNamespaceLintOptions{
 			Content:     gitlab.Ptr(string(content)),

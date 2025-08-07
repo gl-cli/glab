@@ -23,7 +23,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -35,7 +35,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 
 			o := &gitlab.DeleteLabelOptions{}
 
-			_, err = apiClient.Labels.DeleteLabel(repo.FullName(), args[0], o)
+			_, err = client.Labels.DeleteLabel(repo.FullName(), args[0], o)
 			if err != nil {
 				return err
 			}

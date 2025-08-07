@@ -25,7 +25,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -47,7 +47,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			if s, _ := cmd.Flags().GetString("description"); s != "" {
 				l.Description = gitlab.Ptr(s)
 			}
-			label, _, err := apiClient.Labels.CreateLabel(repo.FullName(), l)
+			label, _, err := client.Labels.CreateLabel(repo.FullName(), l)
 			if err != nil {
 				return err
 			}

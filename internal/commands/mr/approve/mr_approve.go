@@ -28,7 +28,7 @@ func NewCmdApprove(f cmdutils.Factory) *cobra.Command {
 			var err error
 			c := f.IO().Color()
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -53,7 +53,7 @@ func NewCmdApprove(f cmdutils.Factory) *cobra.Command {
 				}
 
 				fmt.Fprintf(f.IO().StdOut, "- Approving merge request !%d\n", mr.IID)
-				_, _, err := apiClient.MergeRequestApprovals.ApproveMergeRequest(repo.FullName(), mr.IID, opts)
+				_, _, err := client.MergeRequestApprovals.ApproveMergeRequest(repo.FullName(), mr.IID, opts)
 				if err != nil {
 					return err
 				}

@@ -53,7 +53,7 @@ func setupTestFactory(t *testing.T, rt http.RoundTripper) (cmdutils.Factory, *op
 		},
 	)
 
-	client, _ := f.HttpClient()
+	client, _ := f.GitLabClient()
 
 	return f, &options{
 		io:        ios,

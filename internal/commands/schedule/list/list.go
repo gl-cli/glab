@@ -32,7 +32,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 		Long: ``,
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -48,7 +48,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			perPage, _ := cmd.Flags().GetInt("per-page")
 			l.PerPage = perPage
 
-			schedules, err := getSchedules(apiClient, l, repo.FullName())
+			schedules, err := getSchedules(client, l, repo.FullName())
 			if err != nil {
 				return err
 			}

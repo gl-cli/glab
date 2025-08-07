@@ -30,8 +30,8 @@ const (
 var patScopes = []string{"k8s_proxy"}
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	io           *iostreams.IOStreams
 
 	agentID             int64
 	tokenExpiryDuration time.Duration
@@ -40,8 +40,8 @@ type options struct {
 
 func NewCmdAgentGetToken(f cmdutils.Factory) *cobra.Command {
 	opts := options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
 	}
 	desc := "Create and return a k8s_proxy-scoped personal access token to authenticate with a GitLab Agents for Kubernetes."
 	agentGetTokenCmd := &cobra.Command{
@@ -98,7 +98,7 @@ func (o *options) run() error {
 }
 
 func (o *options) cachedPAT() (*gitlab.PersonalAccessToken, error) {
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (o *options) cachedPAT() (*gitlab.PersonalAccessToken, error) {
 		patName := fmt.Sprintf("glab-k8s-proxy-%x", randomBytes)
 		patExpiresAt := time.Now().Add(o.tokenExpiryDuration).UTC()
 
-		pat, _, err := apiClient.Users.CreatePersonalAccessTokenForCurrentUser(&gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
+		pat, _, err := client.Users.CreatePersonalAccessTokenForCurrentUser(&gitlab.CreatePersonalAccessTokenForCurrentUserOptions{
 			Name:      gitlab.Ptr(patName),
 			Scopes:    gitlab.Ptr(patScopes),
 			ExpiresAt: gitlab.Ptr(gitlab.ISOTime(patExpiresAt)),
@@ -125,7 +125,7 @@ func (o *options) cachedPAT() (*gitlab.PersonalAccessToken, error) {
 		return pat, nil
 	}
 
-	gitlabInstance := base64.StdEncoding.EncodeToString([]byte(apiClient.BaseURL().String()))
+	gitlabInstance := base64.StdEncoding.EncodeToString([]byte(client.BaseURL().String()))
 	id := fmt.Sprintf("%s-%d", gitlabInstance, o.agentID)
 
 	switch o.cacheMode {

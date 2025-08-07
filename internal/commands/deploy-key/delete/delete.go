@@ -14,18 +14,18 @@ import (
 )
 
 type options struct {
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
 
 	keyID int
 }
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	cmd := &cobra.Command{
 		Use:   "delete <key-id>",
@@ -61,7 +61,7 @@ func (o *options) complete(args []string) error {
 }
 
 func (o *options) run() error {
-	httpClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	_, err = httpClient.DeployKeys.DeleteDeployKey(baseRepo.FullName(), o.keyID)
+	_, err = client.DeployKeys.DeleteDeployKey(baseRepo.FullName(), o.keyID)
 	if err != nil {
 		return cmdutils.WrapError(err, "deleting deploy key.")
 	}

@@ -77,18 +77,18 @@ type options struct {
 
 	usePackageRegistry bool
 
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
-	config     func() config.Config
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
+	config       func() config.Config
 }
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
-		config:     f.Config,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
+		config:       f.Config,
 	}
 
 	cmd := &cobra.Command{
@@ -288,7 +288,7 @@ func resolveNotesFileOrText(opts *options) (string, error) {
 }
 
 func createRun(opts *options) error {
-	client, err := opts.httpClient()
+	client, err := opts.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -542,7 +542,7 @@ func getMilestoneByTitle(c *options, title string) (*gitlab.Milestone, error) {
 		Title: &title,
 	}
 
-	client, err := c.httpClient()
+	client, err := c.gitlabClient()
 	if err != nil {
 		return nil, err
 	}
@@ -576,7 +576,7 @@ func getMilestoneByTitle(c *options, title string) (*gitlab.Milestone, error) {
 
 // CloseMilestone closes a given milestone.
 func closeMilestone(c *options, title string) error {
-	client, err := c.httpClient()
+	client, err := c.gitlabClient()
 	if err != nil {
 		return err
 	}

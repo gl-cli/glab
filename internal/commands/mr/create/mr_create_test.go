@@ -55,7 +55,7 @@ func runCommand(t *testing.T, rt http.RoundTripper, branch string, isTTY bool, c
 	}
 
 	if letItFail {
-		factory.HttpClientStub = func() (*gitlab.Client, error) {
+		factory.GitLabClientStub = func() (*gitlab.Client, error) {
 			return nil, errors.New("fail on purpose")
 		}
 	}

@@ -24,7 +24,7 @@ func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -33,7 +33,7 @@ func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			return jobArtifact.DownloadArtifacts(apiClient, repo, path, false, args[0], args[1])
+			return jobArtifact.DownloadArtifacts(client, repo, path, false, args[0], args[1])
 		},
 		Deprecated: "use 'glab job artifact' instead.",
 	}

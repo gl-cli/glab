@@ -38,7 +38,7 @@ func (f *dummyFactory) ApiClient(repoHost string) (*api.Client, error) {
 	return nil, nil
 }
 
-func (f *dummyFactory) HttpClient() (*gitlab.Client, error) { return nil, nil }
+func (f *dummyFactory) GitLabClient() (*gitlab.Client, error) { return nil, nil }
 
 func (f *dummyFactory) BaseRepo() (glrepo.Interface, error) {
 	if f.baseRepo != nil {

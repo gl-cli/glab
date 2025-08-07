@@ -25,7 +25,7 @@ func NewCmdTodo(f cmdutils.Factory) *cobra.Command {
 			var err error
 			c := f.IO().Color()
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -35,7 +35,7 @@ func NewCmdTodo(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			_, resp, err := apiClient.MergeRequests.CreateTodo(repo.FullName(), mr.IID)
+			_, resp, err := client.MergeRequests.CreateTodo(repo.FullName(), mr.IID)
 
 			if resp.StatusCode == http.StatusNotModified {
 				return errTodoExists

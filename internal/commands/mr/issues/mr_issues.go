@@ -31,7 +31,7 @@ func NewCmdIssues(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -43,7 +43,7 @@ func NewCmdIssues(f cmdutils.Factory) *cobra.Command {
 
 			l := &gitlab.GetIssuesClosedOnMergeOptions{}
 
-			mrIssues, _, err := apiClient.MergeRequests.GetIssuesClosedOnMerge(repo.FullName(), mr.IID, l)
+			mrIssues, _, err := client.MergeRequests.GetIssuesClosedOnMerge(repo.FullName(), mr.IID, l)
 			if err != nil {
 				return err
 			}

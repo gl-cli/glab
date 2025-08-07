@@ -41,12 +41,12 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO().Color()
-			gitlabClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
 
-			issues, repo, err := issueutils.IssuesFromArgs(f.ApiClient, gitlabClient, f.BaseRepo, f.DefaultHostname(), args)
+			issues, repo, err := issueutils.IssuesFromArgs(f.ApiClient, client, f.BaseRepo, f.DefaultHostname(), args)
 			if err != nil {
 				return err
 			}
@@ -68,7 +68,7 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 					)
 				}
 
-				issue, err := subscribe(gitlabClient, repo.FullName(), issue.IID)
+				issue, err := subscribe(client, repo.FullName(), issue.IID)
 				if err != nil {
 					if errors.Is(err, errIssuableUserAlreadySubscribed) {
 						fmt.Fprintf(

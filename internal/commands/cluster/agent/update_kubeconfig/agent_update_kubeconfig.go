@@ -31,7 +31,7 @@ const (
 var sanitizeReplacer = strings.NewReplacer("/", "_", ".", "_")
 
 type options struct {
-	httpClient   func() (*gitlab.Client, error)
+	gitlabClient func() (*gitlab.Client, error)
 	baseRepo     func() (glrepo.Interface, error)
 	io           *iostreams.IOStreams
 	configAccess clientcmd.ConfigAccess
@@ -50,7 +50,7 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 
 	opts := options{
 		io:           f.IO(),
-		httpClient:   f.HttpClient,
+		gitlabClient: f.GitLabClient,
 		baseRepo:     f.BaseRepo,
 		configAccess: pathOptions,
 	}
@@ -86,7 +86,7 @@ func (o *options) validate() error {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (o *options) run() error {
 	}
 
 	// Retrieve metadata of the instance to determine KAS URL
-	metadata, _, err := apiClient.Metadata.GetMetadata()
+	metadata, _, err := client.Metadata.GetMetadata()
 	if err != nil {
 		return err
 	}
@@ -111,13 +111,13 @@ func (o *options) run() error {
 
 	// Retrieve agent information, most importantly its name to use it as context name.
 	repoFullName := repo.FullName()
-	agent, _, err := apiClient.ClusterAgents.GetAgent(repoFullName, int(o.agentID)) // FIXME remove cast
+	agent, _, err := client.ClusterAgents.GetAgent(repoFullName, int(o.agentID)) // FIXME remove cast
 	if err != nil {
 		return err
 	}
 
 	// Retrieve user information
-	user, _, err := apiClient.Users.CurrentUser()
+	user, _, err := client.Users.CurrentUser()
 	if err != nil {
 		return err
 	}

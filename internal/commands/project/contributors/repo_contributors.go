@@ -20,16 +20,16 @@ type options struct {
 	perPage int
 	page    int
 
-	baseRepo   func() (glrepo.Interface, error)
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
+	baseRepo     func() (glrepo.Interface, error)
+	gitlabClient func() (*gitlab.Client, error)
+	io           *iostreams.IOStreams
 }
 
 func NewCmdContributors(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		baseRepo:   f.BaseRepo,
-		httpClient: f.HttpClient,
+		io:           f.IO(),
+		baseRepo:     f.BaseRepo,
+		gitlabClient: f.GitLabClient,
 	}
 	repoContributorsCmd := &cobra.Command{
 		Use:   "contributors",
@@ -61,7 +61,7 @@ func (o *options) run() error {
 	var err error
 	c := o.io.Color()
 
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (o *options) run() error {
 		l.Sort = gitlab.Ptr(o.sort)
 	}
 
-	users, _, err := apiClient.Repositories.Contributors(repo.FullName(), l)
+	users, _, err := client.Repositories.Contributors(repo.FullName(), l)
 	if err != nil {
 		return err
 	}

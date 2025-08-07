@@ -21,7 +21,7 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 
-			var gitlabClient *gitlab.Client
+			var client *gitlab.Client
 			var repo glrepo.Interface
 			if len(args) != 0 {
 				// repository is coming from command args, not -R
@@ -35,9 +35,9 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 					return err
 				}
 
-				gitlabClient = apiClient.Lab()
+				client = apiClient.Lab()
 			} else {
-				gitlabClient, err = f.HttpClient()
+				client, err = f.GitLabClient()
 				if err != nil {
 					return err
 				}
@@ -82,7 +82,7 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 			opt := &gitlab.TransferProjectOptions{}
 			opt.Namespace = targetNamespace
 
-			project, _, err := gitlabClient.Projects.TransferProject(repo.FullName(), opt)
+			project, _, err := client.Projects.TransferProject(repo.FullName(), opt)
 			if err != nil {
 				return err
 			}

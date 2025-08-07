@@ -33,7 +33,7 @@ func NewCmdClose(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			c := f.IO().Color()
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -53,7 +53,7 @@ func NewCmdClose(f cmdutils.Factory) *cobra.Command {
 					return err
 				}
 				fmt.Fprintf(f.IO().StdOut, "- Closing merge request...\n")
-				_, err := api.UpdateMR(apiClient, repo.FullName(), mr.IID, l)
+				_, err := api.UpdateMR(client, repo.FullName(), mr.IID, l)
 				if err != nil {
 					return err
 				}

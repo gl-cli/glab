@@ -41,7 +41,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 			var err error
 			c := f.IO().Color()
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -80,7 +80,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 			repoName := repo.FullName()
 			dbg.Debug("Repository:", repoName)
 
-			runningPipeline, _, err := apiClient.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
+			runningPipeline, _, err := client.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
 			if err != nil {
 				redCheck := c.Red("✘")
 				fmt.Fprintf(f.IO().StdOut, "%s No pipelines running or available on branch: %s\n", redCheck, branch)
@@ -94,7 +94,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 			defer writer.Stop()
 			for {
 				jobs, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.Job, *gitlab.Response, error) {
-					return apiClient.Jobs.ListPipelineJobs(repoName, runningPipeline.ID, &gitlab.ListJobsOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}, p)
+					return client.Jobs.ListPipelineJobs(repoName, runningPipeline.ID, &gitlab.ListJobsOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}, p)
 				})
 				if err != nil {
 					return err
@@ -138,7 +138,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 				fmt.Fprintf(writer.Newline(), "Pipeline state: %s\n\n", runningPipeline.Status)
 
 				if (runningPipeline.Status == "pending" || runningPipeline.Status == "running") && live {
-					runningPipeline, _, err = apiClient.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
+					runningPipeline, _, err = client.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
 					if err != nil {
 						return err
 					}
@@ -154,16 +154,16 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 						return ciutils.TraceJob(&ciutils.JobInputs{
 							Branch: branch,
 						}, &ciutils.JobOptions{
-							Repo:      repo,
-							ApiClient: apiClient,
-							IO:        f.IO(),
+							Repo:   repo,
+							Client: client,
+							IO:     f.IO(),
 						})
 					} else if answer == "Retry" {
-						_, _, err := apiClient.Pipelines.RetryPipelineBuild(repoName, runningPipeline.ID)
+						_, _, err := client.Pipelines.RetryPipelineBuild(repoName, runningPipeline.ID)
 						if err != nil {
 							return err
 						}
-						runningPipeline, _, err = apiClient.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
+						runningPipeline, _, err = client.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
 						if err != nil {
 							return err
 						}

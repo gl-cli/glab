@@ -23,7 +23,7 @@ func NewCmdArtifact(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -35,7 +35,7 @@ func NewCmdArtifact(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return DownloadArtifacts(apiClient, repo, path, listPaths, args[0], args[1])
+			return DownloadArtifacts(client, repo, path, listPaths, args[0], args[1])
 		},
 	}
 	jobArtifactCmd.Flags().StringP("path", "p", "./", "Path to download the artifact files.")

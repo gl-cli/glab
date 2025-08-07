@@ -153,7 +153,7 @@ func MRFromArgsWithOpts(
 	var mrID int
 	var mr *gitlab.MergeRequest
 
-	apiClient, err := f.HttpClient()
+	client, err := f.GitLabClient()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -182,13 +182,13 @@ func MRFromArgsWithOpts(
 	}
 
 	if mrID == 0 {
-		basicMR, err := GetMRForBranch(apiClient, MrOptions{baseRepo, branch, state, f.IO().PromptEnabled()})
+		basicMR, err := GetMRForBranch(client, MrOptions{baseRepo, branch, state, f.IO().PromptEnabled()})
 		if err != nil {
 			return nil, nil, err
 		}
 		mrID = basicMR.IID
 	}
-	mr, err = api.GetMR(apiClient, baseRepo.FullName(), mrID, opts)
+	mr, err = api.GetMR(client, baseRepo.FullName(), mrID, opts)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get merge request %d: %w", mrID, err)
 	}

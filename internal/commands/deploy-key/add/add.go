@@ -14,9 +14,9 @@ import (
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	gitlabClient func() (*gitlab.Client, error)
+	io           *iostreams.IOStreams
+	baseRepo     func() (glrepo.Interface, error)
 
 	title     string
 	key       string
@@ -28,9 +28,9 @@ type options struct {
 
 func NewCmdAdd(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.HttpClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	cmd := &cobra.Command{
 		Use:   "add [key-file]",
@@ -83,7 +83,7 @@ func (o *options) complete(args []string) error {
 }
 
 func (o *options) run() error {
-	httpClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	err = UploadDeployKey(httpClient, baseRepo.FullName(), o.title, o.key, o.canPush, o.expiresAt)
+	err = UploadDeployKey(client, baseRepo.FullName(), o.title, o.key, o.canPush, o.expiresAt)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to add new deploy key.")
 	}

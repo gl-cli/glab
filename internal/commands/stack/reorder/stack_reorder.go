@@ -91,7 +91,7 @@ func (o *options) run(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor) e
 		return fmt.Errorf("no updates needed")
 	}
 
-	client, err := auth.GetAuthenticatedClient(f.Config(), f.HttpClient, f.IO())
+	client, err := auth.GetAuthenticatedClient(f.Config(), f.GitLabClient, f.IO())
 	if err != nil {
 		return fmt.Errorf("error authorizing with GitLab: %v", err)
 	}
@@ -184,7 +184,7 @@ func updateMRs(f cmdutils.Factory, newStack git.Stack, oldStack git.Stack) error
 			(ref.Next != oldStack.Refs[ref.SHA].Next ||
 				ref.Prev != oldStack.Refs[ref.SHA].Prev) {
 
-			client, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return fmt.Errorf("error connecting to GitLab: %v", err)
 			}

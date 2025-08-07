@@ -60,22 +60,22 @@ type options struct {
 	web           bool
 	recover       bool
 
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
-	httpClient func() (*gitlab.Client, error)
-	remotes    func() (glrepo.Remotes, error)
-	config     func() config.Config
+	io           *iostreams.IOStreams
+	baseRepo     func() (glrepo.Interface, error)
+	gitlabClient func() (*gitlab.Client, error)
+	remotes      func() (glrepo.Remotes, error)
+	config       func() config.Config
 
 	baseProject *gitlab.Project
 }
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		baseRepo:   f.BaseRepo,
-		httpClient: f.HttpClient,
-		remotes:    f.Remotes,
-		config:     f.Config,
+		io:           f.IO(),
+		baseRepo:     f.BaseRepo,
+		gitlabClient: f.GitLabClient,
+		remotes:      f.Remotes,
+		config:       f.Config,
 	}
 	issueCreateCmd := &cobra.Command{
 		Use:     "create [flags]",
@@ -91,7 +91,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := opts.httpClient()
+			client, err := opts.gitlabClient()
 			if err != nil {
 				return err
 			}
@@ -116,7 +116,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				return &cmdutils.FlagError{Err: errors.New("'--web' already skips all prompts currently skipped by '--yes'.")}
 			}
 
-			opts.baseProject, err = api.GetProject(apiClient, repo.FullName())
+			opts.baseProject, err = api.GetProject(client, repo.FullName())
 			if err != nil {
 				return err
 			}
@@ -164,7 +164,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 }
 
 var createRun = func(opts *options) error {
-	apiClient, err := opts.httpClient()
+	apiClient, err := opts.gitlabClient()
 	if err != nil {
 		return err
 	}

@@ -88,7 +88,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -228,7 +228,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			}
 			if ok := cmd.Flags().Changed("milestone"); ok {
 				if m, _ := cmd.Flags().GetString("milestone"); m != "" || m == "0" {
-					mID, err := cmdutils.ParseMilestone(apiClient, repo, m)
+					mID, err := cmdutils.ParseMilestone(client, repo, m)
 					if err != nil {
 						return err
 					}
@@ -246,12 +246,12 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			}
 			if ua != nil {
 				if len(ua.ToReplace) != 0 {
-					l.AssigneeIDs, actions, err = ua.UsersFromReplaces(apiClient, actions)
+					l.AssigneeIDs, actions, err = ua.UsersFromReplaces(client, actions)
 					if err != nil {
 						return err
 					}
 				} else if len(ua.ToAdd) != 0 || len(ua.ToRemove) != 0 {
-					l.AssigneeIDs, actions, err = ua.UsersFromAddRemove(nil, mr.Assignees, apiClient, actions)
+					l.AssigneeIDs, actions, err = ua.UsersFromAddRemove(nil, mr.Assignees, client, actions)
 					if err != nil {
 						return err
 					}
@@ -260,12 +260,12 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 
 			if ur != nil {
 				if len(ur.ToReplace) != 0 {
-					l.ReviewerIDs, actions, err = ur.UsersFromReplaces(apiClient, actions)
+					l.ReviewerIDs, actions, err = ur.UsersFromReplaces(client, actions)
 					if err != nil {
 						return err
 					}
 				} else if len(ur.ToAdd) != 0 || len(ur.ToRemove) != 0 {
-					l.ReviewerIDs, actions, err = ur.UsersFromAddRemove(nil, mr.Reviewers, apiClient, actions)
+					l.ReviewerIDs, actions, err = ur.UsersFromAddRemove(nil, mr.Reviewers, client, actions)
 					if err != nil {
 						return err
 					}
@@ -296,7 +296,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 
 			fmt.Fprintf(f.IO().StdOut, "- Updating merge request !%d\n", mr.IID)
 
-			mr, err = api.UpdateMR(apiClient, repo.FullName(), mr.IID, l)
+			mr, err = api.UpdateMR(client, repo.FullName(), mr.IID, l)
 			if err != nil {
 				return err
 			}

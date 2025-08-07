@@ -47,7 +47,7 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 
-			apiClient, err := f.HttpClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -97,7 +97,7 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 			}
 			c.Token = &token
 
-			pipe, _, err := apiClient.PipelineTriggers.RunPipelineTrigger(repo.FullName(), c)
+			pipe, _, err := client.PipelineTriggers.RunPipelineTrigger(repo.FullName(), c)
 			if err != nil {
 				return err
 			}
