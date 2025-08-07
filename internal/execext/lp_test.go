@@ -28,9 +28,7 @@ func TestLookPath(t *testing.T) {
 	}
 	t.Setenv("PATH", strings.Join(paths, string(filepath.ListSeparator)))
 
-	if err := os.Chdir(filepath.Join(root, "testdata", "cwd")); err != nil {
-		t.Fatal(err)
-	}
+	t.Chdir(filepath.Join(root, "testdata", "cwd"))
 
 	testCases := []struct {
 		desc    string

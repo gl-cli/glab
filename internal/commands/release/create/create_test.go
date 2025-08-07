@@ -368,8 +368,7 @@ func TestReleaseCreateWithPublishToCatalog(t *testing.T) {
 	originalWd, err := os.Getwd()
 	require.NoError(t, err)
 
-	err = os.Chdir(filepath.Join(originalWd, "..", "..", "project", "publish", "catalog", "testdata", "test-repo"))
-	require.NoError(t, err)
+	t.Chdir(filepath.Join(originalWd, "..", "..", "project", "publish", "catalog", "testdata", "test-repo"))
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -427,9 +426,6 @@ func TestReleaseCreateWithPublishToCatalog(t *testing.T) {
 			}
 		})
 	}
-
-	err = os.Chdir(originalWd)
-	require.NoError(t, err)
 }
 
 func TestReleaseCreate_NoUpdate(t *testing.T) {
@@ -629,9 +625,7 @@ func TestReleaseCreate_ExperimentalNotes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tempDir := t.TempDir()
-			err := os.Chdir(tempDir)
-			require.NoError(t, err)
+			t.Chdir(t.TempDir())
 
 			for filename, content := range tt.files {
 				err := os.WriteFile(filename, []byte(content), 0o600)

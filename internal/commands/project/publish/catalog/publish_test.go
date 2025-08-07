@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -93,11 +92,7 @@ func TestPublishCatalog(t *testing.T) {
 		},
 	}
 
-	originalWd, err := os.Getwd()
-	require.NoError(t, err)
-
-	err = os.Chdir(filepath.Join(originalWd, "testdata", "test-repo"))
-	require.NoError(t, err)
+	t.Chdir(filepath.Join("testdata", "test-repo"))
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -152,21 +147,11 @@ func TestPublishCatalog(t *testing.T) {
 			}
 		})
 	}
-
-	err = os.Chdir(originalWd)
-	require.NoError(t, err)
 }
 
 func Test_fetchTemplates(t *testing.T) {
-	err := os.Chdir("./testdata/test-repo")
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		err := os.Chdir("../..")
-		require.NoError(t, err)
-	})
+	wd := filepath.Join("testdata", "test-repo")
 
-	wd, err := os.Getwd()
-	require.NoError(t, err)
 	want := map[string]string{
 		"component-1": filepath.Join(wd, "templates/component-1.yml"),
 		"component-2": filepath.Join(wd, "templates/component-2.yml"),
@@ -181,15 +166,7 @@ func Test_fetchTemplates(t *testing.T) {
 }
 
 func Test_extractComponentName(t *testing.T) {
-	err := os.Chdir("./testdata/test-repo")
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		err := os.Chdir("../..")
-		require.NoError(t, err)
-	})
-
-	wd, err := os.Getwd()
-	require.NoError(t, err)
+	wd := filepath.Join("testdata", "test-repo")
 
 	tests := []struct {
 		name     string

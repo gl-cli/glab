@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"gitlab.com/gitlab-org/cli/internal/commands/release/releaseutils/upload"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
@@ -63,8 +62,7 @@ func Test_downloadAssets(t *testing.T) {
 
 			releases := []*upload.ReleaseAsset{release}
 
-			tempPath, tempPathErr := os.MkdirTemp("/tmp", "temp_tester")
-			require.NoError(t, tempPathErr)
+			tempPath := t.TempDir()
 
 			filePathWanted := filepath.Join(tempPath, tt.want)
 

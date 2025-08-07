@@ -1,7 +1,6 @@
 package git
 
 import (
-	"os"
 	"os/exec"
 	"testing"
 
@@ -13,11 +12,10 @@ import (
 func InitGitRepo(t *testing.T) string {
 	tempDir := t.TempDir()
 
-	err := os.Chdir(tempDir)
-	require.NoError(t, err)
+	t.Chdir(tempDir)
 
 	gitInit := GitCommand("init")
-	_, err = run.PrepareCmd(gitInit).Output()
+	_, err := run.PrepareCmd(gitInit).Output()
 	require.NoError(t, err)
 
 	return tempDir

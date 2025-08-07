@@ -75,9 +75,7 @@ func TestAcceptableZipFile(t *testing.T) {
 	reader, err := toByteReader(zip.Name())
 	require.NoError(t, err)
 
-	targetDir, err := os.MkdirTemp("", "tempdir-*")
-	require.NoError(t, err)
-	defer os.RemoveAll(targetDir)
+	targetDir := t.TempDir()
 
 	old := os.Stdout
 	r, w, _ := os.Pipe()
