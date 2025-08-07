@@ -43,11 +43,11 @@ require (
 	gitlab.com/gitlab-org/api/client-go v0.137.0
 	go.uber.org/goleak v1.3.0
 	go.uber.org/mock v0.5.2
-	golang.org/x/crypto v0.40.0
+	golang.org/x/crypto v0.41.0
 	golang.org/x/oauth2 v0.30.0
 	golang.org/x/sync v0.16.0
-	golang.org/x/term v0.33.0
-	golang.org/x/text v0.27.0
+	golang.org/x/term v0.34.0
+	golang.org/x/text v0.28.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.33.3
 	k8s.io/client-go v0.33.3
@@ -116,8 +116,8 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0 // indirect
 	golang.org/x/image v0.20.0 // indirect
-	golang.org/x/net v0.41.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	gonum.org/v1/plot v0.14.0 // indirect
