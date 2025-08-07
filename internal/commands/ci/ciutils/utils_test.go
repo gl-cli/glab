@@ -261,7 +261,7 @@ func TestGetJobId(t *testing.T) {
 				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
 			)
 
-			apiClient, _ := f.GitLabClient()
+			client, _ := f.GitLabClient()
 			repo, _ := f.BaseRepo()
 
 			output, err := GetJobId(&JobInputs{
@@ -269,9 +269,9 @@ func TestGetJobId(t *testing.T) {
 				PipelineId: tc.pipelineId,
 				Branch:     "main",
 			}, &JobOptions{
-				IO:        f.IO(),
-				Repo:      repo,
-				ApiClient: apiClient,
+				IO:     f.IO(),
+				Repo:   repo,
+				Client: client,
 			})
 
 			if tc.expectedError == "" {
@@ -425,7 +425,7 @@ func TestTraceJob(t *testing.T) {
 				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
 			)
 
-			apiClient, _ := f.GitLabClient()
+			client, _ := f.GitLabClient()
 			repo, _ := f.BaseRepo()
 
 			err := TraceJob(&JobInputs{
@@ -433,9 +433,9 @@ func TestTraceJob(t *testing.T) {
 				PipelineId: tc.pipelineId,
 				Branch:     "main",
 			}, &JobOptions{
-				IO:        f.IO(),
-				Repo:      repo,
-				ApiClient: apiClient,
+				IO:     f.IO(),
+				Repo:   repo,
+				Client: client,
 			})
 
 			if tc.expectedError == "" {

@@ -21,21 +21,21 @@ type options struct {
 	allowDivergence       bool
 	projectID             int
 
-	io               *iostreams.IOStreams
-	baseRepo         glrepo.Interface
-	apiClient        func(repoHost string) (*api.Client, error)
-	gitlabClientFunc func() (*gitlab.Client, error)
-	httpClient       *gitlab.Client
-	baseRepoFactory  func() (glrepo.Interface, error)
-	defaultHostname  string
+	io              *iostreams.IOStreams
+	baseRepo        glrepo.Interface
+	apiClient       func(repoHost string) (*api.Client, error)
+	gitlabClient    func() (*gitlab.Client, error)
+	client          *gitlab.Client
+	baseRepoFactory func() (glrepo.Interface, error)
+	defaultHostname string
 }
 
 func NewCmdMirror(f cmdutils.Factory) *cobra.Command {
 	opts := options{
-		io:               f.IO(),
-		apiClient:        f.ApiClient,
-		gitlabClientFunc: f.GitLabClient,
-		defaultHostname:  f.DefaultHostname(),
+		io:              f.IO(),
+		apiClient:       f.ApiClient,
+		gitlabClient:    f.GitLabClient,
+		defaultHostname: f.DefaultHostname(),
 	}
 
 	projectMirrorCmd := &cobra.Command{
@@ -74,16 +74,16 @@ func (o *options) complete(args []string) error {
 		}
 		o.baseRepo = baseRepo
 
-		o.gitlabClientFunc = func() (*gitlab.Client, error) {
-			if o.httpClient != nil {
-				return o.httpClient, nil
+		o.gitlabClient = func() (*gitlab.Client, error) {
+			if o.client != nil {
+				return o.client, nil
 			}
 			c, err := o.apiClient(o.baseRepo.RepoHost())
 			if err != nil {
 				return nil, err
 			}
-			o.httpClient = c.Lab()
-			return o.httpClient, nil
+			o.client = c.Lab()
+			return o.client, nil
 		}
 
 	} else {
@@ -96,13 +96,13 @@ func (o *options) complete(args []string) error {
 
 	o.url = strings.TrimSpace(o.url)
 
-	httpClient, err := o.gitlabClientFunc()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
-	o.httpClient = httpClient
+	o.client = client
 
-	project, err := o.baseRepo.Project(o.httpClient)
+	project, err := o.baseRepo.Project(o.client)
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func (o *options) run() error {
 }
 
 func (o *options) createPushMirror() error {
-	pm, _, err := o.httpClient.ProjectMirrors.AddProjectMirror(o.projectID, &gitlab.AddProjectMirrorOptions{
+	pm, _, err := o.client.ProjectMirrors.AddProjectMirror(o.projectID, &gitlab.AddProjectMirrorOptions{
 		URL:                   gitlab.Ptr(o.url),
 		Enabled:               gitlab.Ptr(o.enabled),
 		OnlyProtectedBranches: gitlab.Ptr(o.protectedBranchesOnly),
@@ -157,7 +157,7 @@ func (o *options) createPushMirror() error {
 }
 
 func (o *options) createPullMirror() error {
-	_, _, err := o.httpClient.Projects.EditProject(o.projectID, &gitlab.EditProjectOptions{
+	_, _, err := o.client.Projects.EditProject(o.projectID, &gitlab.EditProjectOptions{
 		ImportURL:                   gitlab.Ptr(o.url),
 		Mirror:                      gitlab.Ptr(o.enabled),
 		OnlyMirrorProtectedBranches: gitlab.Ptr(o.protectedBranchesOnly),

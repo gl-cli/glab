@@ -36,7 +36,7 @@ func NewCmdFor(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -47,7 +47,7 @@ func NewCmdFor(f cmdutils.Factory) *cobra.Command {
 			}
 
 			issueID := utils.StringToInt(args[0])
-			issue, err := api.GetIssue(apiClient, repo.FullName(), issueID)
+			issue, err := api.GetIssue(client, repo.FullName(), issueID)
 			if err != nil {
 				return err
 			}
@@ -75,7 +75,7 @@ func NewCmdFor(f cmdutils.Factory) *cobra.Command {
 				Ref:    gitlab.Ptr(targetBranch),
 			}
 
-			_, _, err = apiClient.Branches.CreateBranch(repo.FullName(), lb)
+			_, _, err = client.Branches.CreateBranch(repo.FullName(), lb)
 			if err != nil {
 				for branchErr, branchCount := err, 1; branchErr != nil; branchCount++ {
 
@@ -85,7 +85,7 @@ func NewCmdFor(f cmdutils.Factory) *cobra.Command {
 						Ref:    gitlab.Ptr(targetBranch),
 					}
 					sourceBranch = numberedBranch
-					_, _, branchErr = apiClient.Branches.CreateBranch(repo.FullName(), lb)
+					_, _, branchErr = client.Branches.CreateBranch(repo.FullName(), lb)
 					fmt.Println(branchErr)
 				}
 			}
@@ -135,7 +135,7 @@ func NewCmdFor(f cmdutils.Factory) *cobra.Command {
 				l.AssigneeIDs = &t2
 			}
 
-			mr, _, err := apiClient.MergeRequests.CreateMergeRequest(repo.FullName(), l)
+			mr, _, err := client.MergeRequests.CreateMergeRequest(repo.FullName(), l)
 			if err != nil {
 				return err
 			}

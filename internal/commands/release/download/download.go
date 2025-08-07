@@ -27,18 +27,18 @@ type options struct {
 	assetNames []string
 	dir        string
 
-	io         *iostreams.IOStreams
-	apiClient  func(repoHost string) (*api.Client, error)
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
+	io           *iostreams.IOStreams
+	apiClient    func(repoHost string) (*api.Client, error)
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
 }
 
 func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		apiClient:  f.ApiClient,
-		httpClient: f.GitLabClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		apiClient:    f.ApiClient,
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -81,7 +81,7 @@ func (o *options) complete(args []string) {
 }
 
 func (o *options) run(ctx context.Context) error {
-	client, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}

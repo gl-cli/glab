@@ -747,8 +747,8 @@ func Test_PrintMRApprovalState(t *testing.T) {
 			},
 			expected: `Rule "rule 1" sufficient approvals (2/2 required):
 Name	Username	Approved
-User One	user1	👍
-User Two	user2	👍
+User One	user1	👍	
+User Two	user2	👍	
 
 `,
 		},
@@ -773,7 +773,7 @@ User Two	user2	👍
 			},
 			expected: `Rule "rule 1" insufficient approvals (1/2 required):
 Name	Username	Approved
-User One	user1	👍
+User One	user1	👍	
 
 `,
 		},
@@ -815,8 +815,8 @@ User One	user1	👍
 			},
 			expected: `Rule "rule 1" sufficient approvals (2/2 required):
 Name	Username	Approved
-User One	user1	👍
-User Two	user2	👍
+User One	user1	👍	
+User Two	user2	👍	
 
 `,
 		},
@@ -853,8 +853,8 @@ User Two	user2	👍
 			},
 			expected: `Rule "rule 1" insufficient approvals (1/2 required):
 Name	Username	Approved
-User One	user1	👍
-User Two	user2	-
+User One	user1	👍	
+User Two	user2	-	
 
 `,
 		},
@@ -894,10 +894,10 @@ User Two	user2	-
 			},
 			expected: `Rule "rule 1" sufficient approvals (4/2 required):
 Name	Username	Approved
-User Three	000	👍
-User One	aaa	👍
-User Four	xyz	👍
-User Two	zzz	👍
+User Three	000	👍	
+User One	aaa	👍	
+User Four	xyz	👍	
+User Two	zzz	👍	
 
 `,
 		},
@@ -949,10 +949,10 @@ User Two	zzz	👍
 			},
 			expected: `Rule "rule 1" sufficient approvals (4/2 required):
 Name	Username	Approved
-User Four	xyz	👍
-User Two	zzz	👍
-User Three	000	👍
-User One	aaa	👍
+User Four	xyz	👍	
+User Two	zzz	👍	
+User Three	000	👍	
+User One	aaa	👍	
 
 `,
 		},
@@ -994,10 +994,10 @@ User One	aaa	👍
 			},
 			expected: `Rule "rule 1" sufficient approvals (2/2 required):
 Name	Username	Approved
-User Four	xyz	-
-User Two	zzz	-
-User Three	000	👍
-User One	aaa	👍
+User Four	xyz	-	
+User Two	zzz	-	
+User Three	000	👍	
+User One	aaa	👍	
 
 `,
 		},

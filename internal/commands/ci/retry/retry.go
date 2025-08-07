@@ -33,7 +33,7 @@ func NewCmdRetry(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -51,9 +51,9 @@ func NewCmdRetry(f cmdutils.Factory) *cobra.Command {
 				PipelineId:      pipelineId,
 				SelectionPrompt: "Select pipeline job to retry:",
 			}, &ciutils.JobOptions{
-				ApiClient: apiClient,
-				IO:        f.IO(),
-				Repo:      repo,
+				Client: client,
+				IO:     f.IO(),
+				Repo:   repo,
 			})
 			if err != nil {
 				fmt.Fprintln(f.IO().StdErr, "invalid job ID:", args[0])
@@ -64,7 +64,7 @@ func NewCmdRetry(f cmdutils.Factory) *cobra.Command {
 				return nil
 			}
 
-			job, _, err := apiClient.Jobs.RetryJob(repo.FullName(), jobID)
+			job, _, err := client.Jobs.RetryJob(repo.FullName(), jobID)
 			if err != nil {
 				return cmdutils.WrapError(err, fmt.Sprintf("Could not retry job with ID: %d", jobID))
 			}

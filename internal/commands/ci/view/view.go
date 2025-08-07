@@ -33,10 +33,10 @@ import (
 )
 
 type options struct {
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
-	config     func() config.Config
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
+	config       func() config.Config
 
 	refName       string
 	openInBrowser bool
@@ -100,10 +100,10 @@ func ViewJobFromJob(job *gitlab.Job) *ViewJob {
 
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := options{
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
-		baseRepo:   f.BaseRepo,
-		config:     f.Config,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
+		config:       f.Config,
 	}
 	pipelineCIView := &cobra.Command{
 		Use:   "view [branch/tag]",
@@ -167,7 +167,7 @@ func (o *options) complete(args []string) error {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -179,7 +179,7 @@ func (o *options) run() error {
 
 	projectID := repo.FullName()
 
-	commit, _, err := apiClient.Commits.GetCommit(projectID, o.refName, nil)
+	commit, _, err := client.Commits.GetCommit(projectID, o.refName, nil)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ func (o *options) run() error {
 		return utils.OpenInBrowser(webURL, browser)
 	}
 
-	p, _, err := apiClient.Pipelines.GetPipeline(projectID, commit.LastPipeline.ID)
+	p, _, err := client.Pipelines.GetPipeline(projectID, commit.LastPipeline.ID)
 	if err != nil {
 		return fmt.Errorf("Can't get pipeline #%d info: %s", commit.LastPipeline.ID, err)
 	}
@@ -230,13 +230,13 @@ func (o *options) run() error {
 	defer recoverPanic(app)
 
 	var navi navigator
-	app.SetInputCapture(inputCapture(app, root, navi, inputCh, forceUpdateCh, o, apiClient, projectID, commitSHA))
-	go updateJobs(app, jobsCh, forceUpdateCh, apiClient, commit)
+	app.SetInputCapture(inputCapture(app, root, navi, inputCh, forceUpdateCh, o, client, projectID, commitSHA))
+	go updateJobs(app, jobsCh, forceUpdateCh, client, commit)
 	go func() {
 		defer recoverPanic(app)
 		for {
 			app.SetFocus(root)
-			jobsView(app, jobsCh, inputCh, root, apiClient, projectID, commitSHA)
+			jobsView(app, jobsCh, inputCh, root, client, projectID, commitSHA)
 			app.Draw()
 		}
 	}()

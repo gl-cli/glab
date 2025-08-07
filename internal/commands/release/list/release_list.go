@@ -64,7 +64,7 @@ func run(factory cmdutils.Factory, cmd *cobra.Command) error {
 		return err
 	}
 
-	apiClient, err := factory.GitLabClient()
+	client, err := factory.GitLabClient()
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func run(factory cmdutils.Factory, cmd *cobra.Command) error {
 	}
 
 	if tag != "" {
-		release, err := getRelease(apiClient, repo.FullName(), tag)
+		release, err := getRelease(client, repo.FullName(), tag)
 		if err != nil {
 			return err
 		}
@@ -93,7 +93,7 @@ func run(factory cmdutils.Factory, cmd *cobra.Command) error {
 		fmt.Fprintln(factory.IO().StdOut, releaseutils.DisplayRelease(factory.IO(), release, repo))
 	} else {
 
-		releases, err := listReleases(apiClient, repo.FullName(), l)
+		releases, err := listReleases(client, repo.FullName(), l)
 		if err != nil {
 			return err
 		}

@@ -56,7 +56,7 @@ func NewCmdCheckout(f cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -73,10 +73,10 @@ func NewCmdCheckout(f cmdutils.Factory) *cobra.Command {
 			var mrRef string
 			var mrProject *gitlab.Project
 
-			mrProject, err = api.GetProject(apiClient, mr.SourceProjectID)
+			mrProject, err = api.GetProject(client, mr.SourceProjectID)
 			if err != nil {
 				// If we don't have access to the source project, let's try the target project
-				mrProject, err = api.GetProject(apiClient, mr.TargetProjectID)
+				mrProject, err = api.GetProject(client, mr.TargetProjectID)
 				if err != nil {
 					return err
 				} else {

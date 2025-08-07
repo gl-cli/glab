@@ -25,9 +25,9 @@ type options struct {
 
 	files []*gitlab.CreateSnippetFileOptions
 
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
 }
 
 func (opts *options) addFile(path, content *string) {
@@ -48,9 +48,9 @@ func hasStdIn() bool {
 
 func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	snippetCreateCmd := &cobra.Command{
 		Use: `create [flags] -t <title> <file1> [<file2>...]
@@ -132,7 +132,7 @@ func (o *options) validate() error {
 }
 
 func (o *options) run() error {
-	client, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}

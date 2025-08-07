@@ -31,7 +31,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO().Color()
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -43,7 +43,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 
 			for _, mr := range mrs {
 				fmt.Fprintf(f.IO().StdOut, "- Deleting merge request !%d.\n", mr.IID)
-				if err = api.DeleteMR(apiClient, repo.FullName(), mr.IID); err != nil {
+				if err = api.DeleteMR(client, repo.FullName(), mr.IID); err != nil {
 					return err
 				}
 				fmt.Fprintf(f.IO().StdOut, "%s Merge request !%d deleted.\n", c.RedCheck(), mr.IID)

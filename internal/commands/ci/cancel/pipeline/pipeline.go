@@ -40,7 +40,7 @@ func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			c := f.IO().Color()
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -57,7 +57,7 @@ func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return runCancelation(pipelineIDs, dryRunMode, f.IO().StdOut, c, apiClient, repo)
+			return runCancelation(pipelineIDs, dryRunMode, f.IO().StdOut, c, client, repo)
 		},
 	}
 

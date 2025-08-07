@@ -12,9 +12,9 @@ import (
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	gitlabClient func() (*gitlab.Client, error)
+	io           *iostreams.IOStreams
+	baseRepo     func() (glrepo.Interface, error)
 
 	// Pagination
 	page    int
@@ -25,9 +25,9 @@ type options struct {
 
 func NewCmdList(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -50,7 +50,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run() error {
-	httpClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	keys, _, err := httpClient.DeployKeys.ListProjectDeployKeys(baseRepo.FullName(), listProjectDeployKeysOptions)
+	keys, _, err := client.DeployKeys.ListProjectDeployKeys(baseRepo.FullName(), listProjectDeployKeysOptions)
 	if err != nil {
 		return cmdutils.WrapError(err, "failed to get deploy keys.")
 	}

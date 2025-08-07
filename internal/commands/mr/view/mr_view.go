@@ -42,9 +42,9 @@ type options struct {
 	commentPageNujmber int
 	commentLimit       int
 
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	config     func() config.Config
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	config       func() config.Config
 }
 
 type MRWithNotes struct {
@@ -54,9 +54,9 @@ type MRWithNotes struct {
 
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
-		config:     f.Config,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		config:       f.Config,
 	}
 	mrViewCmd := &cobra.Command{
 		Use:     "view {<id> | <branch>}",
@@ -80,7 +80,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run(f cmdutils.Factory, args []string) error {
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func (o *options) run(f cmdutils.Factory, args []string) error {
 	// does not provide the necessary ability to determine if this value was present or not in the response JSON
 	// since Project.ApprovalsBeforeMerge is a non-pointer type. Because of this, this step will either succeed
 	// and show approval state or it will fail silently
-	mrApprovals, _, err := apiClient.MergeRequestApprovals.GetApprovalState(baseRepo.FullName(), mr.IID) //nolint:ineffassign,staticcheck
+	mrApprovals, _, err := client.MergeRequestApprovals.GetApprovalState(baseRepo.FullName(), mr.IID) //nolint:ineffassign,staticcheck
 
 	cfg := o.config()
 
@@ -126,7 +126,7 @@ func (o *options) run(f cmdutils.Factory, args []string) error {
 			},
 		}
 
-		notes, err = listMRNotes(apiClient, baseRepo.FullName(), mr.IID, l)
+		notes, err = listMRNotes(client, baseRepo.FullName(), mr.IID, l)
 		if err != nil {
 			return err
 		}

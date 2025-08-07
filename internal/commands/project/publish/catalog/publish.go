@@ -36,16 +36,16 @@ type publishToCatalogResponse struct {
 type options struct {
 	tagName string
 
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
-	io         *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
+	io           *iostreams.IOStreams
 }
 
 func NewCmdPublishCatalog(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	publishCatalogCmd := &cobra.Command{
 		Use:   "catalog <tag-name>",
@@ -93,7 +93,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	client, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}

@@ -49,7 +49,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 			a := tview.NewApplication()
 			defer recoverPanic(a)
 
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -59,26 +59,26 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			project, err := api.GetProject(apiClient, repo.FullName())
+			project, err := api.GetProject(client, repo.FullName())
 			if err != nil {
 				return fmt.Errorf("failed to get project: %w", err)
 			}
 
 			// list the groups that are ancestors to project:
 			// https://docs.gitlab.com/api/projects/#list-groups
-			projectGroups, _, err := apiClient.Projects.ListProjectsGroups(project.ID, &gitlab.ListProjectGroupOptions{})
+			projectGroups, _, err := client.Projects.ListProjectsGroups(project.ID, &gitlab.ListProjectGroupOptions{})
 			if err != nil {
 				return err
 			}
 
 			// get issue boards related to project and parent groups
 			// https://docs.gitlab.com/api/group_boards/#list-group-issue-board-lists
-			projectIssueBoards, err := getProjectIssueBoards(apiClient, repo)
+			projectIssueBoards, err := getProjectIssueBoards(client, repo)
 			if err != nil {
 				return fmt.Errorf("getting project issue boards: %w", err)
 			}
 
-			projectGroupIssueBoards, err := getGroupIssueBoards(projectGroups, apiClient)
+			projectGroupIssueBoards, err := getGroupIssueBoards(projectGroups, client)
 			if err != nil {
 				return fmt.Errorf("getting project issue boards: %w", err)
 			}
@@ -91,7 +91,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 			}
 			selectedBoard := boardMetaMap[selection]
 
-			boardLists, err := getBoardLists(apiClient, selectedBoard, repo)
+			boardLists, err := getBoardLists(client, selectedBoard, repo)
 			if err != nil {
 				return fmt.Errorf("getting issue board lists: %w", err)
 			}
@@ -123,14 +123,14 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 				issues := []*gitlab.Issue{}
 				if selectedBoard.group != nil {
 					groupID := selectedBoard.group.ID
-					issues, err = getGroupBoardIssues(apiClient, groupID, opts)
+					issues, err = getGroupBoardIssues(client, groupID, opts)
 					if err != nil {
 						return fmt.Errorf("getting issue board lists: %w", err)
 					}
 				}
 
 				if selectedBoard.group == nil {
-					issues, err = getProjectBoardIssues(apiClient, repo, opts)
+					issues, err = getProjectBoardIssues(client, repo, opts)
 					if err != nil {
 						return fmt.Errorf("getting issue board lists: %w", err)
 					}

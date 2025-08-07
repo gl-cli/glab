@@ -11,9 +11,9 @@ import (
 )
 
 type options struct {
-	f          cmdutils.Factory // TODO: refactor mrutils to not rely on factory
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
+	f            cmdutils.Factory // TODO: refactor mrutils to not rely on factory
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
 
 	// SkipCI: rebase merge request while skipping CI/CD pipeline.
 	SkipCI bool
@@ -23,9 +23,9 @@ type options struct {
 
 func NewCmdRebase(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		f:          f,
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
+		f:            f,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
 	}
 
 	mrRebaseCmd := &cobra.Command{
@@ -61,7 +61,7 @@ func (o *options) complete(args []string) {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (o *options) run() error {
 
 	return mrutils.RebaseMR(
 		o.io,
-		apiClient,
+		client,
 		repo,
 		mr,
 		&gitlab.RebaseMergeRequestOptions{SkipCI: gitlab.Ptr(o.SkipCI)},

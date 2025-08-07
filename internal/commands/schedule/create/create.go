@@ -24,7 +24,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		`),
 		Long: ``,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -51,7 +51,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			l.CronTimezone = &cronTimeZone
 			l.Active = &active
 
-			schedule, _, err := apiClient.PipelineSchedules.CreatePipelineSchedule(repo.FullName(), l)
+			schedule, _, err := client.PipelineSchedules.CreatePipelineSchedule(repo.FullName(), l)
 			if err != nil {
 				return err
 			}
@@ -63,7 +63,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				}
 				variable.Key = &split[0]
 				variable.Value = &split[1]
-				_, _, err := apiClient.PipelineSchedules.CreatePipelineScheduleVariable(repo.FullName(), schedule.ID, variable)
+				_, _, err := client.PipelineSchedules.CreatePipelineScheduleVariable(repo.FullName(), schedule.ID, variable)
 				if err != nil {
 					return err
 				}

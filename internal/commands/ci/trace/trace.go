@@ -28,7 +28,7 @@ func NewCmdTrace(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -44,9 +44,9 @@ func NewCmdTrace(f cmdutils.Factory) *cobra.Command {
 				Branch:     branch,
 				PipelineId: pipelineId,
 			}, &ciutils.JobOptions{
-				ApiClient: apiClient,
-				IO:        f.IO(),
-				Repo:      repo,
+				Client: client,
+				IO:     f.IO(),
+				Repo:   repo,
 			})
 		},
 	}

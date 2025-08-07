@@ -537,12 +537,12 @@ resolves #1
 		}
 
 		assert.Equal(t, "mr autofill test br", opts.Title)
-		assert.Equal(t, `- docs: more changes to more things
+		assert.Equal(t, `- docs: more changes to more things  
 Here, I am adding some commit body.
-Little longer
+Little longer  
 Resolves #1
 
-- chore: some tidying
+- chore: some tidying  
 another body for another commit
 closes 1234
 

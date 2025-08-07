@@ -92,7 +92,7 @@ func (o *options) validate(cmd *cobra.Command) error {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.factory.GitLabClient()
+	client, err := o.factory.GitLabClient()
 	if err != nil {
 		return err
 	}
@@ -104,14 +104,14 @@ func (o *options) run() error {
 	diffOut := &bytes.Buffer{}
 
 	if o.rawDiff {
-		rawDiff, _, err := apiClient.MergeRequests.ShowMergeRequestRawDiffs(baseRepo.FullName(), mr.IID, nil)
+		rawDiff, _, err := client.MergeRequests.ShowMergeRequestRawDiffs(baseRepo.FullName(), mr.IID, nil)
 		if err != nil {
 			return fmt.Errorf("could not obtain raw diff: %w", err)
 		}
 
 		diffOut.Write(rawDiff)
 	} else {
-		diffs, _, err := apiClient.MergeRequests.GetMergeRequestDiffVersions(baseRepo.FullName(), mr.IID, &gitlab.GetMergeRequestDiffVersionsOptions{})
+		diffs, _, err := client.MergeRequests.GetMergeRequestDiffVersions(baseRepo.FullName(), mr.IID, &gitlab.GetMergeRequestDiffVersionsOptions{})
 		if err != nil {
 			return fmt.Errorf("could not find merge request diffs: %w", err)
 		}
@@ -123,7 +123,7 @@ func (o *options) run() error {
 		diff := diffs[0]
 
 		// the diffs are not included in the GetMergeRequestDiffVersions so we query for the diff version
-		diffVersion, _, err := apiClient.MergeRequests.GetSingleMergeRequestDiffVersion(baseRepo.FullName(), mr.IID, diff.ID, &gitlab.GetSingleMergeRequestDiffVersionOptions{})
+		diffVersion, _, err := client.MergeRequests.GetSingleMergeRequestDiffVersion(baseRepo.FullName(), mr.IID, diff.ID, &gitlab.GetSingleMergeRequestDiffVersionOptions{})
 		if err != nil {
 			return fmt.Errorf("could not find merge request diff: %w", err)
 		}

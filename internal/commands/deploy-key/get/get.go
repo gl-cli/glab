@@ -13,18 +13,18 @@ import (
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	gitlabClient func() (*gitlab.Client, error)
+	io           *iostreams.IOStreams
+	baseRepo     func() (glrepo.Interface, error)
 
 	keyID int
 }
 
 func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	cmd := &cobra.Command{
 		Use:   "get <key-id>",
@@ -52,7 +52,7 @@ func (o *options) complete(args []string) {
 }
 
 func (o *options) run() error {
-	httpClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	key, _, err := httpClient.DeployKeys.GetDeployKey(baseRepo.FullName(), o.keyID, nil)
+	key, _, err := client.DeployKeys.GetDeployKey(baseRepo.FullName(), o.keyID, nil)
 	if err != nil {
 		return cmdutils.WrapError(err, "getting deploy key.")
 	}

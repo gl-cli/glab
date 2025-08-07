@@ -34,7 +34,7 @@ func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -54,9 +54,9 @@ func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 					return s.Status == "manual"
 				},
 			}, &ciutils.JobOptions{
-				ApiClient: apiClient,
-				IO:        f.IO(),
-				Repo:      repo,
+				Client: client,
+				IO:     f.IO(),
+				Repo:   repo,
 			})
 			if err != nil {
 				fmt.Fprintln(f.IO().StdErr, "invalid job ID:", jobName)
@@ -67,7 +67,7 @@ func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 				return nil
 			}
 
-			job, _, err := apiClient.Jobs.PlayJob(repo.FullName(), jobID, &gitlab.PlayJobOptions{})
+			job, _, err := client.Jobs.PlayJob(repo.FullName(), jobID, &gitlab.PlayJobOptions{})
 			if err != nil {
 				return cmdutils.WrapError(err, fmt.Sprintf("Could not trigger job with ID: %d", jobID))
 			}

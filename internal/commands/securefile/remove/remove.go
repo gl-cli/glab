@@ -17,16 +17,16 @@ type options struct {
 	forceDelete bool
 	fileID      int
 
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
 }
 
 func NewCmdRemove(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	securefileRemoveCmd := &cobra.Command{
 		Use:     "remove <fileID>",
@@ -84,7 +84,7 @@ func (o *options) validate() error {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func (o *options) run() error {
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("fileID"), o.fileID)
 
-	_, err = apiClient.SecureFiles.RemoveSecureFile(repo.FullName(), o.fileID)
+	_, err = client.SecureFiles.RemoveSecureFile(repo.FullName(), o.fileID)
 	if err != nil {
 		return fmt.Errorf("Error removing secure file: %v", err)
 	}

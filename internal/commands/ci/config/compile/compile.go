@@ -45,7 +45,7 @@ func NewCmdConfigCompile(f cmdutils.Factory) *cobra.Command {
 func compileRun(f cmdutils.Factory, path string) error {
 	var err error
 
-	apiClient, err := f.GitLabClient()
+	client, err := f.GitLabClient()
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func compileRun(f cmdutils.Factory, path string) error {
 		return fmt.Errorf("You must be in a GitLab project repository for this action: %w", err)
 	}
 
-	project, err := repo.Project(apiClient)
+	project, err := repo.Project(client)
 	if err != nil {
 		return fmt.Errorf("You must be in a GitLab project repository for this action: %w", err)
 	}
@@ -65,7 +65,7 @@ func compileRun(f cmdutils.Factory, path string) error {
 		return fmt.Errorf("reading CI/CD configuration at %s: %w", path, err)
 	}
 
-	compiledResult, _, err := apiClient.Validate.ProjectNamespaceLint(
+	compiledResult, _, err := client.Validate.ProjectNamespaceLint(
 		project.ID,
 		&gitlab.ProjectNamespaceLintOptions{
 			Content:     gitlab.Ptr(string(content)),

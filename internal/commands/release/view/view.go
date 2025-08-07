@@ -20,18 +20,18 @@ type options struct {
 	tagName       string
 	openInBrowser bool
 
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
-	config     func() config.Config
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
+	config       func() config.Config
 }
 
 func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
-		baseRepo:   f.BaseRepo,
-		config:     f.Config,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
+		config:       f.Config,
 	}
 
 	cmd := &cobra.Command{
@@ -68,7 +68,7 @@ func (o *options) complete(args []string) {
 }
 
 func (o *options) run() error {
-	client, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}

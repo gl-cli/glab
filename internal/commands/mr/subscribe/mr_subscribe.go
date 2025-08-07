@@ -39,7 +39,7 @@ func NewCmdSubscribe(f cmdutils.Factory) *cobra.Command {
 			var err error
 			c := f.IO().Color()
 
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -58,7 +58,7 @@ func NewCmdSubscribe(f cmdutils.Factory) *cobra.Command {
 
 				fmt.Fprintf(f.IO().StdOut, "- Subscribing to merge request !%d.\n", mr.IID)
 
-				mr, err = subscribeToMR(apiClient, repo.FullName(), mr.IID, nil)
+				mr, err = subscribeToMR(client, repo.FullName(), mr.IID, nil)
 				if err != nil {
 					return err
 				}

@@ -39,7 +39,7 @@ func NewCmdUnsubscribe(f cmdutils.Factory) *cobra.Command {
 			var err error
 			c := f.IO().Color()
 
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -58,7 +58,7 @@ func NewCmdUnsubscribe(f cmdutils.Factory) *cobra.Command {
 
 				fmt.Fprintf(f.IO().StdOut, "- Unsubscribing from merge request !%d.\n", mr.IID)
 
-				mr, err = unsubscribeFromMR(apiClient, repo.FullName(), mr.IID, nil)
+				mr, err = unsubscribeFromMR(client, repo.FullName(), mr.IID, nil)
 				if err != nil {
 					return err
 				}

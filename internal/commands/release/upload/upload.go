@@ -29,16 +29,16 @@ type options struct {
 
 	usePackageRegistry bool
 
-	io         *iostreams.IOStreams
-	httpClient func() (*gitlab.Client, error)
-	baseRepo   func() (glrepo.Interface, error)
+	io           *iostreams.IOStreams
+	gitlabClient func() (*gitlab.Client, error)
+	baseRepo     func() (glrepo.Interface, error)
 }
 
 func NewCmdUpload(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 
 	cmd := &cobra.Command{
@@ -139,7 +139,7 @@ func (o *options) validate() error {
 func (o *options) run() error {
 	start := time.Now()
 
-	client, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}

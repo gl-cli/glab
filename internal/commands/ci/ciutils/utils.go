@@ -160,7 +160,7 @@ func GetJobId(inputs *JobInputs, opts *JobOptions) (int, error) {
 	}
 
 	for {
-		jobsPerPage, response, err := opts.ApiClient.Jobs.ListPipelineJobs(opts.Repo.FullName(), pipelineId, options)
+		jobsPerPage, response, err := opts.Client.Jobs.ListPipelineJobs(opts.Repo.FullName(), pipelineId, options)
 		if err != nil {
 			return 0, fmt.Errorf("list pipeline jobs: %w", err)
 		}
@@ -197,7 +197,7 @@ func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
 		return 0, fmt.Errorf("get branch: %w", err)
 	}
 
-	pipeline, _, err := opts.ApiClient.Pipelines.GetLatestPipeline(opts.Repo.FullName(), &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
+	pipeline, _, err := opts.Client.Pipelines.GetLatestPipeline(opts.Repo.FullName(), &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
 	if err != nil {
 		return 0, fmt.Errorf("get last pipeline: %w", err)
 	}
@@ -252,7 +252,7 @@ func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
 		},
 	}
 	jobs, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.Job, *gitlab.Response, error) {
-		return opts.ApiClient.Jobs.ListPipelineJobs(opts.Repo.FullName(), pipelineId, listOptions)
+		return opts.Client.Jobs.ListPipelineJobs(opts.Repo.FullName(), pipelineId, listOptions)
 	})
 	if err != nil {
 		return 0, err
@@ -296,12 +296,12 @@ func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
 		return 0, nil
 	}
 
-	pipeline, _, err := opts.ApiClient.Pipelines.GetPipeline(opts.Repo.FullName(), pipelineId)
+	pipeline, _, err := opts.Client.Pipelines.GetPipeline(opts.Repo.FullName(), pipelineId)
 	if err != nil {
 		return 0, err
 	}
 	// use commit statuses to show external jobs
-	cs, _, err := opts.ApiClient.Commits.GetCommitStatuses(opts.Repo.FullName(), pipeline.SHA, &gitlab.GetCommitStatusesOptions{All: gitlab.Ptr(true)})
+	cs, _, err := opts.Client.Commits.GetCommitStatuses(opts.Repo.FullName(), pipeline.SHA, &gitlab.GetCommitStatusesOptions{All: gitlab.Ptr(true)})
 	if err != nil {
 		return 0, nil
 	}
@@ -337,9 +337,9 @@ type JobInputs struct {
 }
 
 type JobOptions struct {
-	ApiClient *gitlab.Client
-	Repo      glrepo.Interface
-	IO        *iostreams.IOStreams
+	Client *gitlab.Client
+	Repo   glrepo.Interface
+	IO     *iostreams.IOStreams
 }
 
 func TraceJob(inputs *JobInputs, opts *JobOptions) error {
@@ -352,7 +352,7 @@ func TraceJob(inputs *JobInputs, opts *JobOptions) error {
 		return nil
 	}
 	fmt.Fprintln(opts.IO.StdOut)
-	return runTrace(context.Background(), opts.ApiClient, opts.IO.StdOut, opts.Repo.FullName(), jobID)
+	return runTrace(context.Background(), opts.Client, opts.IO.StdOut, opts.Repo.FullName(), jobID)
 }
 
 // IDsFromArgs parses list of IDs from space or comma-separated values

@@ -29,7 +29,7 @@ func NewCmdReopen(f cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"open"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO().Color()
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -50,7 +50,7 @@ func NewCmdReopen(f cmdutils.Factory) *cobra.Command {
 				}
 
 				fmt.Fprintf(f.IO().StdOut, "- Reopening merge request !%d...\n", mr.IID)
-				mr, err = api.UpdateMR(apiClient, repo.FullName(), mr.IID, l)
+				mr, err = api.UpdateMR(client, repo.FullName(), mr.IID, l)
 				if err != nil {
 					return err
 				}

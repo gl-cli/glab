@@ -13,18 +13,18 @@ import (
 )
 
 type options struct {
-	httpClient func() (*gitlab.Client, error)
-	io         *iostreams.IOStreams
-	baseRepo   func() (glrepo.Interface, error)
+	gitlabClient func() (*gitlab.Client, error)
+	io           *iostreams.IOStreams
+	baseRepo     func() (glrepo.Interface, error)
 
 	page, perPage uint
 }
 
 func NewCmdAgentList(f cmdutils.Factory) *cobra.Command {
 	opts := options{
-		io:         f.IO(),
-		httpClient: f.GitLabClient,
-		baseRepo:   f.BaseRepo,
+		io:           f.IO(),
+		gitlabClient: f.GitLabClient,
+		baseRepo:     f.BaseRepo,
 	}
 	agentListCmd := &cobra.Command{
 		Use:     "list [flags]",
@@ -43,7 +43,7 @@ func NewCmdAgentList(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) run() error {
-	apiClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	agents, _, err := apiClient.ClusterAgents.ListAgents(repo.FullName(), &gitlab.ListAgentsOptions{
+	agents, _, err := client.ClusterAgents.ListAgents(repo.FullName(), &gitlab.ListAgentsOptions{
 		Page:    int(o.page),
 		PerPage: int(o.perPage),
 	})

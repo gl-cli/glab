@@ -21,7 +21,7 @@ func NewCmdNote(f cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -54,7 +54,7 @@ func NewCmdNote(f cmdutils.Factory) *cobra.Command {
 
 			if uniqueNoteEnabled {
 				opts := &gitlab.ListMergeRequestNotesOptions{ListOptions: gitlab.ListOptions{PerPage: api.DefaultListLimit}}
-				notes, _, err := apiClient.Notes.ListMergeRequestNotes(repo.FullName(), mr.IID, opts)
+				notes, _, err := client.Notes.ListMergeRequestNotes(repo.FullName(), mr.IID, opts)
 				if err != nil {
 					return fmt.Errorf("running merge request note deduplication: %v", err)
 				}
@@ -66,7 +66,7 @@ func NewCmdNote(f cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			noteInfo, _, err := apiClient.Notes.CreateMergeRequestNote(repo.FullName(), mr.IID, &gitlab.CreateMergeRequestNoteOptions{Body: &body})
+			noteInfo, _, err := client.Notes.CreateMergeRequestNote(repo.FullName(), mr.IID, &gitlab.CreateMergeRequestNoteOptions{Body: &body})
 			if err != nil {
 				return err
 			}

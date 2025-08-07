@@ -24,7 +24,7 @@ type options struct {
 	apiClient       func(repoHost string) (*api.Client, error)
 	io              *iostreams.IOStreams
 	baseRepo        func() (glrepo.Interface, error)
-	httpClient      func() (*gitlab.Client, error)
+	gitlabClient    func() (*gitlab.Client, error)
 	defaultHostname func() string
 
 	archive       *bool
@@ -38,7 +38,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 		apiClient:       f.ApiClient,
 		io:              f.IO(),
 		baseRepo:        f.BaseRepo,
-		httpClient:      f.GitLabClient,
+		gitlabClient:    f.GitLabClient,
 		defaultHostname: f.DefaultHostname,
 	}
 
@@ -168,11 +168,11 @@ func (o *options) getRepoFromProjectID() (glrepo.Interface, error) {
 	} else {
 		// If the ProjectID is a single token, use current user's namespace
 		if !strings.Contains(projectID, "/") {
-			apiClient, err := o.httpClient()
+			client, err := o.gitlabClient()
 			if err != nil {
 				return nil, err
 			}
-			currentUser, _, err := apiClient.Users.CurrentUser()
+			currentUser, _, err := client.Users.CurrentUser()
 			if err != nil {
 				return nil, cmdutils.WrapError(err, "Failed to retrieve your current user.")
 			}

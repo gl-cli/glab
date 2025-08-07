@@ -25,7 +25,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 			$ glab securefile show 1
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -40,7 +40,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 				return fmt.Errorf("Secure file ID must be an integer: %s", args[0])
 			}
 
-			file, _, err := apiClient.SecureFiles.ShowSecureFileDetails(repo.FullName(), fileID)
+			file, _, err := client.SecureFiles.ShowSecureFileDetails(repo.FullName(), fileID)
 			if err != nil {
 				return fmt.Errorf("Error getting secure file: %v", err)
 			}

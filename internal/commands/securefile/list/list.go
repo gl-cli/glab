@@ -32,7 +32,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			apiClient, err := f.GitLabClient()
+			client, err := f.GitLabClient()
 			if err != nil {
 				return err
 			}
@@ -55,7 +55,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 				l.PerPage = p
 			}
 
-			files, _, err := apiClient.SecureFiles.ListProjectSecureFiles(repo.FullName(), l)
+			files, _, err := client.SecureFiles.ListProjectSecureFiles(repo.FullName(), l)
 			if err != nil {
 				return fmt.Errorf("Error listing secure files: %v", err)
 			}

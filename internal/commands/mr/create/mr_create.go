@@ -65,7 +65,7 @@ type options struct {
 	io              *iostreams.IOStreams             `json:"-"`
 	branch          func() (string, error)           `json:"-"`
 	remotes         func() (glrepo.Remotes, error)   `json:"-"`
-	httpClient      func() (*gitlab.Client, error)   `json:"-"`
+	gitlabClient    func() (*gitlab.Client, error)   `json:"-"`
 	config          func() config.Config             `json:"-"`
 	baseRepo        func() (glrepo.Interface, error) `json:"-"`
 	headRepo        func() (glrepo.Interface, error) `json:"-"`
@@ -85,7 +85,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		io:              f.IO(),
 		branch:          f.Branch,
 		remotes:         f.Remotes,
-		httpClient:      f.GitLabClient,
+		gitlabClient:    f.GitLabClient,
 		config:          f.Config,
 		baseRepo:        f.BaseRepo,
 		headRepo:        ResolvedHeadRepo(f),
@@ -235,7 +235,7 @@ func (o *options) run() error {
 		}
 	}
 
-	labClient, err := o.httpClient()
+	client, err := o.gitlabClient()
 	if err != nil {
 		return err
 	}
@@ -252,7 +252,7 @@ func (o *options) run() error {
 
 	// only fetch source project if it wasn't saved for recovery
 	if o.SourceProject == nil {
-		o.SourceProject, err = api.GetProject(labClient, headRepo.FullName())
+		o.SourceProject, err = api.GetProject(client, headRepo.FullName())
 		if err != nil {
 			return err
 		}
@@ -262,7 +262,7 @@ func (o *options) run() error {
 	if o.TargetProject == nil {
 		// if the user set the target_project, get details of the target
 		if o.MRCreateTargetProject != "" {
-			o.TargetProject, err = api.GetProject(labClient, o.MRCreateTargetProject)
+			o.TargetProject, err = api.GetProject(client, o.MRCreateTargetProject)
 			if err != nil {
 				return err
 			}
@@ -273,7 +273,7 @@ func (o *options) run() error {
 			} else {
 				// Otherwise assume the user wants to create the merge request against the
 				// baseRepo
-				o.TargetProject, err = api.GetProject(labClient, baseRepo.FullName())
+				o.TargetProject, err = api.GetProject(client, baseRepo.FullName())
 				if err != nil {
 					return err
 				}
@@ -307,7 +307,7 @@ func (o *options) run() error {
 	}
 
 	if o.MilestoneFlag != "" {
-		o.Milestone, err = cmdutils.ParseMilestone(labClient, baseRepo, o.MilestoneFlag)
+		o.Milestone, err = cmdutils.ParseMilestone(client, baseRepo, o.MilestoneFlag)
 		if err != nil {
 			return err
 		}
@@ -327,7 +327,7 @@ func (o *options) run() error {
 	}
 
 	if o.RelatedIssue != "" {
-		issue, err := parseIssue(o.apiClient, labClient, o)
+		issue, err := parseIssue(o.apiClient, client, o)
 		if err != nil {
 			return err
 		}
@@ -354,11 +354,11 @@ func (o *options) run() error {
 				Ref:    &o.TargetBranch,
 			}
 
-			_, _, err = labClient.Branches.CreateBranch(baseRepo.FullName(), branchOpts)
+			_, _, err = client.Branches.CreateBranch(baseRepo.FullName(), branchOpts)
 			if err != nil {
 				for branchErr, branchCount := err, 1; branchErr != nil; branchCount++ {
 					sourceBranch = fmt.Sprintf("%d-%s-%d", issue.IID, strings.ReplaceAll(strings.ToLower(issue.Title), " ", "-"), branchCount)
-					_, _, branchErr = labClient.Branches.CreateBranch(baseRepo.FullName(), branchOpts)
+					_, _, branchErr = client.Branches.CreateBranch(baseRepo.FullName(), branchOpts)
 				}
 			}
 			o.SourceBranch = sourceBranch
@@ -374,7 +374,7 @@ func (o *options) run() error {
 			if err = mrBodyAndTitle(o); err != nil {
 				return err
 			}
-			_, _, err := labClient.Commits.GetCommit(baseRepo.FullName(), o.TargetBranch, nil)
+			_, _, err := client.Commits.GetCommit(baseRepo.FullName(), o.TargetBranch, nil)
 			if err != nil {
 				return fmt.Errorf("target branch %s does not exist on remote. Specify target branch with the --target-branch flag",
 					o.TargetBranch)
@@ -431,13 +431,13 @@ func (o *options) run() error {
 							return err
 						}
 						if o.signoff {
-							u, _, _ := labClient.Users.CurrentUser()
+							u, _, _ := client.Users.CurrentUser()
 							templateContents += "Signed-off-by: " + u.Name + "<" + u.Email + ">"
 						}
 					} else if templateName == mrEmptyTemplate {
 						// blank merge request was choosen, leave templateContents empty
 						if o.signoff {
-							u, _, _ := labClient.Users.CurrentUser()
+							u, _, _ := client.Users.CurrentUser()
 							templateContents += "Signed-off-by: " + u.Name + "<" + u.Email + ">"
 						}
 					} else {
@@ -513,7 +513,7 @@ func (o *options) run() error {
 			Ref:    &o.TargetBranch,
 		}
 		fmt.Fprintln(o.io.StdErr, "\nCreating related branch...")
-		branch, _, err := labClient.Branches.CreateBranch(headRepo.FullName(), lb)
+		branch, _, err := client.Branches.CreateBranch(headRepo.FullName(), lb)
 		if err == nil {
 			fmt.Fprintln(o.io.StdErr, "Branch created: ", branch.WebURL)
 		} else {
@@ -555,7 +555,7 @@ func (o *options) run() error {
 
 		for _, x := range metadataActions {
 			if x == "labels" {
-				err = cmdutils.LabelsPrompt(&o.Labels, labClient, baseRepoRemote)
+				err = cmdutils.LabelsPrompt(&o.Labels, client, baseRepoRemote)
 				if err != nil {
 					return err
 				}
@@ -563,13 +563,13 @@ func (o *options) run() error {
 			if x == "assignees" {
 				// Use minimum permission level 30 (Maintainer) as it is the minimum level
 				// to accept a merge request
-				err = cmdutils.UsersPrompt(&o.Assignees, labClient, baseRepoRemote, o.io, 30, x)
+				err = cmdutils.UsersPrompt(&o.Assignees, client, baseRepoRemote, o.io, 30, x)
 				if err != nil {
 					return err
 				}
 			}
 			if x == "milestones" {
-				err = cmdutils.MilestonesPrompt(&o.Milestone, labClient, baseRepoRemote, o.io)
+				err = cmdutils.MilestonesPrompt(&o.Milestone, client, baseRepoRemote, o.io)
 				if err != nil {
 					return err
 				}
@@ -577,7 +577,7 @@ func (o *options) run() error {
 			if x == "reviewers" {
 				// Use minimum permission level 30 (Maintainer) as it is the minimum level
 				// to accept a merge request
-				err = cmdutils.UsersPrompt(&o.Reviewers, labClient, baseRepoRemote, o.io, 30, x)
+				err = cmdutils.UsersPrompt(&o.Reviewers, client, baseRepoRemote, o.io, 30, x)
 				if err != nil {
 					return err
 				}
@@ -600,7 +600,7 @@ func (o *options) run() error {
 	*mrCreateOpts.Labels = append(*mrCreateOpts.Labels, o.Labels...)
 
 	if len(o.Assignees) > 0 {
-		users, err := api.UsersByNames(labClient, o.Assignees)
+		users, err := api.UsersByNames(client, o.Assignees)
 		if err != nil {
 			return err
 		}
@@ -608,7 +608,7 @@ func (o *options) run() error {
 	}
 
 	if len(o.Reviewers) > 0 {
-		users, err := api.UsersByNames(labClient, o.Reviewers)
+		users, err := api.UsersByNames(client, o.Reviewers)
 		if err != nil {
 			return err
 		}
@@ -642,7 +642,7 @@ func (o *options) run() error {
 
 		// It is intentional that we create against the head repo, it is necessary
 		// for cross-repository merge requests
-		mr, _, err := labClient.MergeRequests.CreateMergeRequest(headRepo.FullName(), mrCreateOpts)
+		mr, _, err := client.MergeRequests.CreateMergeRequest(headRepo.FullName(), mrCreateOpts)
 		if err != nil {
 			return err
 		}
@@ -782,7 +782,7 @@ func generateMRCompareURL(opts *options) (string, error) {
 
 func ResolvedHeadRepo(f cmdutils.Factory) func() (glrepo.Interface, error) {
 	return func() (glrepo.Interface, error) {
-		httpClient, err := f.GitLabClient()
+		client, err := f.GitLabClient()
 		if err != nil {
 			return nil, err
 		}
@@ -790,7 +790,7 @@ func ResolvedHeadRepo(f cmdutils.Factory) func() (glrepo.Interface, error) {
 		if err != nil {
 			return nil, err
 		}
-		repoContext, err := glrepo.ResolveRemotesToRepos(remotes, httpClient, f.DefaultHostname())
+		repoContext, err := glrepo.ResolveRemotesToRepos(remotes, client, f.DefaultHostname())
 		if err != nil {
 			return nil, err
 		}
