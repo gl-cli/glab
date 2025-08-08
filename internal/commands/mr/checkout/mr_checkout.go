@@ -11,6 +11,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 )
 
 type mrCheckoutConfig struct {
@@ -88,11 +89,23 @@ func NewCmdCheckout(f cmdutils.Factory) *cobra.Command {
 				mrRef = fmt.Sprintf("refs/heads/%s", mr.SourceBranch)
 			}
 
+			// Get the appropriate remote URL based on user's git_protocol preference
+			baseRepo, err := f.BaseRepo()
+			if err != nil {
+				return err
+			}
+			cfg := f.Config()
+			gitProtocol, err := cfg.Get(baseRepo.RepoHost(), "git_protocol")
+			if err != nil {
+				return err
+			}
+			repoURL := glrepo.RemoteURL(mrProject, gitProtocol)
+
 			fetchRefSpec := fmt.Sprintf("%s:%s", mrRef, mrCheckoutCfg.branch)
-			if err := git.RunCmd([]string{"fetch", mrProject.SSHURLToRepo, fetchRefSpec}); err != nil {
+			if err := git.RunCmd([]string{"fetch", repoURL, fetchRefSpec}); err != nil {
 				// the remote may have diverged from local after git operations
 				// try fetching without updating the branch ref before giving up
-				if err := git.RunCmd([]string{"fetch", mrProject.SSHURLToRepo, mrRef}); err != nil {
+				if err := git.RunCmd([]string{"fetch", repoURL, mrRef}); err != nil {
 					return err
 				}
 			}
@@ -100,11 +113,11 @@ func NewCmdCheckout(f cmdutils.Factory) *cobra.Command {
 			// .remote is needed for `git pull` to work
 			// .pushRemote is needed for `git push` to work, if user has set `remote.pushDefault`.
 			// see https://git-scm.com/docs/git-config#Documentation/git-config.txt-branchltnamegtremote
-			if err := git.RunCmd([]string{"config", fmt.Sprintf("branch.%s.remote", mrCheckoutCfg.branch), mrProject.SSHURLToRepo}); err != nil {
+			if err := git.RunCmd([]string{"config", fmt.Sprintf("branch.%s.remote", mrCheckoutCfg.branch), repoURL}); err != nil {
 				return err
 			}
 			if mr.AllowCollaboration {
-				if err := git.RunCmd([]string{"config", fmt.Sprintf("branch.%s.pushRemote", mrCheckoutCfg.branch), mrProject.SSHURLToRepo}); err != nil {
+				if err := git.RunCmd([]string{"config", fmt.Sprintf("branch.%s.pushRemote", mrCheckoutCfg.branch), repoURL}); err != nil {
 					return err
 				}
 			}
