@@ -65,11 +65,12 @@ func DisplayMultiplePipelines(s *iostreams.IOStreams, p []*gitlab.PipelineInfo, 
 			}
 
 			var pipeState string
-			if pipeline.Status == "success" {
+			switch pipeline.Status {
+			case "success":
 				pipeState = c.Green(fmt.Sprintf("(%s) • #%s", pipeline.Status, makeHyperlink(s, pipeline)))
-			} else if pipeline.Status == "failed" {
+			case "failed":
 				pipeState = c.Red(fmt.Sprintf("(%s) • #%s", pipeline.Status, makeHyperlink(s, pipeline)))
-			} else {
+			default:
 				pipeState = c.Gray(fmt.Sprintf("(%s) • #%s", pipeline.Status, makeHyperlink(s, pipeline)))
 			}
 

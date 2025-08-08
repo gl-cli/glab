@@ -144,9 +144,10 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 			if err != nil {
 				return err
 			}
-			if o.mergeMethod == MRMergeMethodSquash {
+			switch o.mergeMethod {
+			case MRMergeMethodSquash:
 				o.squashBeforeMerge = true
-			} else if o.mergeMethod == MRMergeMethodRebase {
+			case MRMergeMethodRebase:
 				o.rebaseBeforeMerge = true
 			}
 		}

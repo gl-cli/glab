@@ -134,7 +134,6 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	for _, source := range release.Assets.Sources {
-		source := source
 		name := path.Base(source.URL)
 		if len(o.assetNames) > 0 && (!matchAny(o.assetNames, name)) {
 			continue

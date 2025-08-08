@@ -150,7 +150,8 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 					}
 					var answer string
 					_ = survey.AskOne(prompt, &answer)
-					if answer == "View logs" {
+					switch answer {
+					case "View logs":
 						return ciutils.TraceJob(&ciutils.JobInputs{
 							Branch: branch,
 						}, &ciutils.JobOptions{
@@ -158,7 +159,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 							Client: client,
 							IO:     f.IO(),
 						})
-					} else if answer == "Retry" {
+					case "Retry":
 						_, _, err := client.Pipelines.RetryPipelineBuild(repoName, runningPipeline.ID)
 						if err != nil {
 							return err
@@ -167,7 +168,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 						if err != nil {
 							return err
 						}
-					} else {
+					default:
 						break
 					}
 				} else {

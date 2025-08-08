@@ -324,7 +324,8 @@ func createMR(client *gitlab.Client, opts *options, ref *git.StackRef, gr git.Gi
 }
 
 func removeOldMrs(io *iostreams.IOStreams, ref *git.StackRef, mr *gitlab.MergeRequest, stack *git.Stack, gr git.GitRunner) error {
-	if mr.State == mergedStatus {
+	switch mr.State {
+	case mergedStatus:
 		progress := fmt.Sprintf("Merge request !%v has merged. Removing reference...", mr.IID)
 		fmt.Println(progressString(io, progress))
 
@@ -332,7 +333,7 @@ func removeOldMrs(io *iostreams.IOStreams, ref *git.StackRef, mr *gitlab.MergeRe
 		if err != nil {
 			return err
 		}
-	} else if mr.State == closedStatus {
+	case closedStatus:
 		progress := fmt.Sprintf("MR !%v has closed", mr.IID)
 		fmt.Println(progressString(io, progress))
 	}
