@@ -9,6 +9,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 
@@ -18,39 +19,39 @@ import (
 	"gitlab.com/gitlab-org/cli/test"
 )
 
-func runCommand(t *testing.T, rt http.RoundTripper, branch string, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
-
-	factory := cmdtest.NewTestFactory(ios,
+func runCommand(t *testing.T, rt http.RoundTripper, branch string, cli string, opts ...cmdtest.FactoryOption) (*test.CmdOut, error) {
+	// Default options
+	defaultOpts := []cmdtest.FactoryOption{
 		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname).Lab()),
 		cmdtest.WithBranch(branch),
-	)
+		func(f *cmdtest.Factory) {
+			f.RemotesStub = func() (glrepo.Remotes, error) {
+				pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 
-	factory.RemotesStub = func() (glrepo.Remotes, error) {
-		return glrepo.Remotes{
-			{
-				Remote: &git.Remote{
-					Name:     "upstream",
-					Resolved: "base",
-					PushURL:  pu,
-				},
-				Repo: glrepo.New("OWNER", "REPO", glinstance.DefaultHostname),
-			},
-			{
-				Remote: &git.Remote{
-					Name:     "origin",
-					Resolved: "base",
-					PushURL:  pu,
-				},
-				Repo: glrepo.New("monalisa", "REPO", glinstance.DefaultHostname),
-			},
-		}, nil
+				return glrepo.Remotes{
+					{
+						Remote: &git.Remote{
+							Name:     "upstream",
+							Resolved: "base",
+							PushURL:  pu,
+						},
+						Repo: glrepo.New("OWNER", "REPO", glinstance.DefaultHostname),
+					},
+					{
+						Remote: &git.Remote{
+							Name:     "origin",
+							Resolved: "base",
+							PushURL:  pu,
+						},
+						Repo: glrepo.New("monalisa", "REPO", glinstance.DefaultHostname),
+					},
+				}, nil
+			}
+		},
 	}
 
-	cmd := NewCmdCheckout(factory)
-
-	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdCheckout, append(defaultOpts, opts...)...)
+	return exec(cli)
 }
 
 func TestMrCheckout(t *testing.T) {
@@ -258,5 +259,71 @@ func TestMrCheckout(t *testing.T) {
 				assert.Equal(t, expectedShellout, strings.Join(cs.Calls[idx].Args, " "))
 			}
 		})
+	}
+}
+
+func TestMrCheckout_HTTPSProtocolConfiguration(t *testing.T) {
+	fakeHTTP := httpmock.New()
+	defer fakeHTTP.Verify(t)
+
+	fakeHTTP.RegisterResponder(
+		http.MethodGet,
+		"/api/v4/projects/OWNER/REPO/merge_requests/123",
+		httpmock.NewStringResponse(http.StatusOK, `{
+			"id": 123,
+			"iid": 123,
+			"project_id": 3,
+			"source_project_id": 3,
+			"title": "test mr title",
+			"description": "test mr description",
+			"allow_collaboration": false,
+			"state": "opened",
+			"source_branch":"feat-new-mr"
+		}`),
+	)
+
+	fakeHTTP.RegisterResponder(
+		http.MethodGet,
+		"/api/v4/projects/3",
+		httpmock.NewStringResponse(http.StatusOK, `{
+			"id": 3,
+			"http_url_to_repo": "https://gitlab.com/OWNER/REPO.git",
+			"ssh_url_to_repo": "git@gitlab.com:OWNER/REPO.git"
+		}`),
+	)
+
+	cs, csTeardown := test.InitCmdStubber()
+	defer csTeardown()
+
+	cs.Stub("HEAD branch: master\n")
+	cs.Stub("\n")
+	cs.Stub("\n")
+	cs.Stub(heredoc.Doc(`
+		deadbeef HEAD
+		deadb00f refs/remotes/upstream/feat-new-mr
+		deadbeef refs/remotes/origin/feat-new-mr
+	`))
+
+	// Create config with HTTPS protocol
+	cfg := config.NewBlankConfig()
+	err := cfg.Set("gitlab.com", "git_protocol", "https")
+	assert.NoError(t, err)
+
+	output, err := runCommand(t, fakeHTTP, "main", "123", cmdtest.WithConfig(cfg))
+
+	assert.NoError(t, err)
+	assert.Empty(t, output.String())
+	assert.Empty(t, output.Stderr())
+
+	expectedShellouts := []string{
+		"git fetch https://gitlab.com/OWNER/REPO.git refs/heads/feat-new-mr:feat-new-mr",
+		"git config branch.feat-new-mr.remote https://gitlab.com/OWNER/REPO.git",
+		"git config branch.feat-new-mr.merge refs/heads/feat-new-mr",
+		"git checkout feat-new-mr",
+	}
+
+	assert.Equal(t, len(expectedShellouts), cs.Count)
+	for idx, expectedShellout := range expectedShellouts {
+		assert.Equal(t, expectedShellout, strings.Join(cs.Calls[idx].Args, " "))
 	}
 }
