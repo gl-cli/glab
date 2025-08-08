@@ -420,7 +420,8 @@ func (o *options) run() error {
 					}
 
 					templateName = templateNames[templateResponse.Index]
-					if templateName == mrWithCommitsTemplate {
+					switch templateName {
+					case mrWithCommitsTemplate:
 						// templateContents should be filled from commit messages
 						commits, err := git.Commits(o.TargetTrackingBranch, o.SourceBranch)
 						if err != nil {
@@ -434,13 +435,13 @@ func (o *options) run() error {
 							u, _, _ := client.Users.CurrentUser()
 							templateContents += "Signed-off-by: " + u.Name + "<" + u.Email + ">"
 						}
-					} else if templateName == mrEmptyTemplate {
+					case mrEmptyTemplate:
 						// blank merge request was choosen, leave templateContents empty
 						if o.signoff {
 							u, _, _ := client.Users.CurrentUser()
 							templateContents += "Signed-off-by: " + u.Name + "<" + u.Email + ">"
 						}
-					} else {
+					default:
 						templateContents, err = cmdutils.LoadGitLabTemplate(cmdutils.MergeRequestTemplate, templateName)
 						if err != nil {
 							return fmt.Errorf("failed to get template contents: %w", err)

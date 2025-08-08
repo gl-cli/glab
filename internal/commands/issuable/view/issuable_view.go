@@ -178,10 +178,10 @@ func assigneesList(opts *options) string {
 }
 
 func issueState(opts *options, c *iostreams.ColorPalette) string {
-	switch {
-	case opts.issue.State == "opened":
+	switch opts.issue.State {
+	case "opened":
 		return c.Green("open")
-	case opts.issue.State == "locked":
+	case "locked":
 		return c.Blue(opts.issue.State)
 	default:
 		return c.Red(opts.issue.State)

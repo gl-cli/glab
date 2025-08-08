@@ -15,7 +15,7 @@ import (
 )
 
 func TestNewCmdCreate(t *testing.T) {
-	createIssueBoard = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueBoardOptions) (*gitlab.IssueBoard, error) {
+	createIssueBoard = func(_ *gitlab.Client, projectID any, opts *gitlab.CreateIssueBoardOptions) (*gitlab.IssueBoard, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "NS/WRONG_REPO" {
 			return nil, fmt.Errorf("error expected")
 		}

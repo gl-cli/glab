@@ -186,7 +186,6 @@ func printJobTable(p PipelineMergedResponse, dest io.Writer) {
 	jobTable := tableprinter.NewTablePrinter()
 	jobTable.AddRow("ID", "Name", "Status", "Duration", "Failure reason")
 	for _, j := range p.Jobs {
-		j := j
 		jobTable.AddRow(j.ID, j.Name, j.Status, j.Duration, j.FailureReason)
 	}
 	fmt.Fprintln(dest, jobTable.String())
@@ -196,7 +195,6 @@ func printJobText(p PipelineMergedResponse, dest io.Writer) {
 	fmt.Fprint(dest, "# Jobs:\n")
 	jobTable := tableprinter.NewTablePrinter()
 	for _, j := range p.Jobs {
-		j := j
 		jobTable.AddRow(j.Name+":", j.Status)
 	}
 	fmt.Fprintln(dest, jobTable.String())

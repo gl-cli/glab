@@ -25,7 +25,7 @@ func Test_ScheduleRun(t *testing.T) {
 		    token: OTOKEN
 	`))))
 
-	runSchedule = func(client *gitlab.Client, repo string, schedule int, opts ...gitlab.RequestOptionFunc) error {
+	runSchedule = func(*gitlab.Client, string, int, ...gitlab.RequestOptionFunc) error {
 		_, err := f.BaseRepo()
 		if err != nil {
 			return err
