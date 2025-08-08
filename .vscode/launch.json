@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug glab",
+      "type": "go",
+      "request": "launch",
+      "program": "${workspaceFolder}/cmd/glab",
+      "outputMode": "remote",
+      "args": [
+        "${input:arguments}"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "arguments",
+      "type": "promptString",
+      "description": "Enter arguments to pass to the program",
+      "default": ""
+    }
+  ]
+}

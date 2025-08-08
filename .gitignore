@@ -33,6 +33,7 @@ _test
 
 # VsCode
 .vscode/
+!.vscode/launch.json
 .devcontainer
 
 # Dist binaries created at build with make rt
