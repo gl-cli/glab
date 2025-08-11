@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	initCmd "gitlab.com/gitlab-org/cli/internal/commands/opentofu/init"
+	stateCmd "gitlab.com/gitlab-org/cli/internal/commands/opentofu/state"
 )
 
 func NewCmd(f cmdutils.Factory) *cobra.Command {
@@ -16,5 +17,6 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	cmdutils.EnableRepoOverride(cmd, f)
 
 	cmd.AddCommand(initCmd.NewCmd(f, initCmd.RunCommand))
+	cmd.AddCommand(stateCmd.NewCmd(f))
 	return cmd
 }
