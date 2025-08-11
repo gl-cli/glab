@@ -19,7 +19,7 @@ func TestAgentList(t *testing.T) {
 	t.Setenv("NO_COLOR", "true")
 
 	tc := gitlab_testing.NewTestClient(t)
-	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentList, cmdtest.WithGitLabClient(tc.Client))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentList, false, cmdtest.WithGitLabClient(tc.Client))
 
 	tc.MockClusterAgents.EXPECT().
 		ListAgents("OWNER/REPO", &gitlab.ListAgentsOptions{Page: 1, PerPage: 30}).
@@ -61,7 +61,7 @@ func TestAgentList_Pagination(t *testing.T) {
 	t.Setenv("NO_COLOR", "true")
 
 	tc := gitlab_testing.NewTestClient(t)
-	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentList, cmdtest.WithGitLabClient(tc.Client))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentList, false, cmdtest.WithGitLabClient(tc.Client))
 
 	tc.MockClusterAgents.EXPECT().
 		ListAgents("OWNER/REPO", &gitlab.ListAgentsOptions{Page: 2, PerPage: 1}).

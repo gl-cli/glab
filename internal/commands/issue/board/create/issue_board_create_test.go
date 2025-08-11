@@ -60,6 +60,7 @@ func TestNewCmdCreate(t *testing.T) {
 					cmdutils.EnableRepoOverride(cmd, f)
 					return cmd
 				},
+				false,
 			)
 
 			cmdOut, err := exec(tc.arg)

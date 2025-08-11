@@ -17,14 +17,19 @@ type (
 )
 
 type Stub struct {
-	matched   bool
+	Used      bool
+	Reusable  bool
 	Matcher   Matcher
 	Responder Responder
 	body      string
+	Method    string   // Field to track the method
+	URL       *url.URL // Field to track the URL
 }
 
-func newRequest(method, path string, match matchType) Matcher {
-	return func(req *http.Request) bool {
+func newRequest(method, path string, match matchType) (Matcher, *url.URL) {
+	u, _ := url.Parse(path) // Parse the URL here to reuse it
+
+	matcher := func(req *http.Request) bool {
 		if !strings.EqualFold(req.Method, method) {
 			return false
 		}
@@ -34,33 +39,32 @@ func newRequest(method, path string, match matchType) Matcher {
 			}
 			return req.URL.Path == path
 		}
-		u, err := url.Parse(path)
-		if err != nil {
-			return false
-		}
-		if match == FullURL {
-			return req.URL.String() == u.String()
-		}
-		if match == HostOnly {
-			return req.URL.Host == u.Host
-		}
-		if match == HostAndPath {
-			return req.URL.Host == u.Host && req.URL.Path == u.Path
-		}
-		if match == PathAndQuerystring {
-			return req.URL.RawQuery == u.RawQuery && req.URL.Path == u.Path
+
+		if u != nil {
+			if match == FullURL {
+				return req.URL.String() == u.String()
+			}
+			if match == HostOnly {
+				return req.URL.Host == u.Host
+			}
+			if match == HostAndPath {
+				return req.URL.Host == u.Host && req.URL.Path == u.Path
+			}
+			if match == PathAndQuerystring {
+				return req.URL.RawQuery == u.RawQuery && req.URL.Path == u.Path
+			}
 		}
 		return false
 	}
+
+	return matcher, u
 }
 
-func newRequestWithBody(method, path, body string) Matcher {
-	return func(req *http.Request) bool {
+func newRequestWithBody(method, path, body string) (Matcher, *url.URL) {
+	u, _ := url.Parse(path) // Parse the URL here to reuse it
+
+	matcher := func(req *http.Request) bool {
 		if !strings.EqualFold(req.Method, method) {
-			return false
-		}
-		u, err := url.Parse(path)
-		if err != nil {
 			return false
 		}
 
@@ -69,6 +73,8 @@ func newRequestWithBody(method, path, body string) Matcher {
 
 		return req.URL.RawQuery == u.RawQuery && req.URL.Path == u.Path && bodyEqual(reqBodyString, body)
 	}
+
+	return matcher, u
 }
 
 func NewStringResponse(status int, body string) Responder {

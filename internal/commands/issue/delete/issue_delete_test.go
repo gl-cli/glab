@@ -77,6 +77,7 @@ func TestNewCmdDelete(t *testing.T) {
 					cmd.Flags().StringP("repo", "R", "", "")
 					return cmd
 				},
+				false,
 			)
 
 			cli := strings.Join(tt.args, " ")

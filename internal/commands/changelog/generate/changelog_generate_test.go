@@ -30,6 +30,7 @@ func TestChangelogGenerate(t *testing.T) {
 	exec := cmdtest.SetupCmdForTest(
 		t,
 		NewCmdGenerate,
+		false,
 		cmdtest.WithGitLabClient(tc.Client),
 	)
 
@@ -75,6 +76,7 @@ func TestChangelogGenerateWithError(t *testing.T) {
 			exec := cmdtest.SetupCmdForTest(
 				t,
 				NewCmdGenerate,
+				false,
 				cmdtest.WithGitLabClient(tc.Client),
 			)
 

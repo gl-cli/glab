@@ -11,7 +11,7 @@ import (
 func TestCIPipelineCancelWithoutArgument(t *testing.T) {
 	t.Parallel()
 
-	exec := cmdtest.SetupCmdForTest(t, NewCmdCancel)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdCancel, false)
 
 	out, err := exec("")
 	assert.EqualError(t, err, "You must pass a job ID.")
@@ -23,7 +23,7 @@ func TestCIPipelineCancelWithoutArgument(t *testing.T) {
 func TestCIDryRunDeleteNothing(t *testing.T) {
 	t.Parallel()
 
-	exec := cmdtest.SetupCmdForTest(t, NewCmdCancel)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdCancel, false)
 
 	out, err := exec("--dry-run 11111111,22222222")
 	require.NoError(t, err)

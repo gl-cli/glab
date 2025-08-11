@@ -50,7 +50,7 @@ func runCommand(t *testing.T, rt http.RoundTripper, branch string, cli string, o
 		},
 	}
 
-	exec := cmdtest.SetupCmdForTest(t, NewCmdCheckout, append(defaultOpts, opts...)...)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdCheckout, false, append(defaultOpts, opts...)...)
 	return exec(cli)
 }
 
