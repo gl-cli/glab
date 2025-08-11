@@ -21,7 +21,7 @@ func TestCIDelete(t *testing.T) {
 
 	tc := gitlabtesting.NewTestClient(t)
 	tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, nil)
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
 	out, err := exec("11111111")
 	require.NoError(t, err)
@@ -35,7 +35,7 @@ func TestCIDeleteNonExistingPipeline(t *testing.T) {
 
 	tc := gitlabtesting.NewTestClient(t)
 	tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, errors.New(`{"message": "404 Not found"}`))
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
 	out, err := exec("11111111")
 	require.Error(t, err)
@@ -45,7 +45,7 @@ func TestCIDeleteNonExistingPipeline(t *testing.T) {
 func TestCIDeleteWithWrongArgument(t *testing.T) {
 	t.Parallel()
 
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false)
 
 	out, err := exec("test")
 	require.Error(t, err)
@@ -70,7 +70,7 @@ func TestCIDeleteByStatus(t *testing.T) {
 		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, nil),
 		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 22222222).Return(nil, nil),
 	)
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
 	out, err := exec("--status=success")
 	require.NoError(t, err)
@@ -84,7 +84,7 @@ func TestCIDeleteByStatus(t *testing.T) {
 func TestCIDeleteByStatusFailsWithArgument(t *testing.T) {
 	t.Parallel()
 
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false)
 	out, err := exec("--status=success 11111111")
 	assert.EqualError(t, err, "either a status filter or a pipeline ID must be passed, but not both.")
 
@@ -95,7 +95,7 @@ func TestCIDeleteByStatusFailsWithArgument(t *testing.T) {
 func TestCIDeleteWithoutFilterFailsWithoutArgument(t *testing.T) {
 	t.Parallel()
 
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false)
 	out, err := exec("")
 	assert.EqualError(t, err, "accepts 1 arg(s), received 0")
 
@@ -111,7 +111,7 @@ func TestCIDeleteMultiple(t *testing.T) {
 		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, nil),
 		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 22222222).Return(nil, nil),
 	)
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
 	out, err := exec("11111111,22222222")
 	require.NoError(t, err)
@@ -125,7 +125,7 @@ func TestCIDeleteMultiple(t *testing.T) {
 func TestCIDryRunDeleteNothing(t *testing.T) {
 	t.Parallel()
 
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete)
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false)
 	out, err := exec("--dry-run 11111111,22222222")
 	require.NoError(t, err)
 
@@ -149,7 +149,7 @@ func TestCIDeletedDryRunWithFilterDoesNotDelete(t *testing.T) {
 				ID: 22222222,
 			},
 		}, &gitlab.Response{NextPage: 0}, nil)
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
 	out, err := exec("--dry-run --status=success")
 	require.NoError(t, err)
@@ -174,7 +174,7 @@ func TestCIDeleteBySource(t *testing.T) {
 			}, &gitlab.Response{NextPage: 0}, nil),
 		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 22222222).Return(nil, nil),
 	)
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
 	out, err := exec("--source=push")
 	require.NoError(t, err)
@@ -209,7 +209,7 @@ func TestExtractPipelineIDsFromFlagsWithError(t *testing.T) {
 	tc.MockPipelines.EXPECT().
 		ListProjectPipelines("OWNER/REPO", &gitlab.ListProjectPipelinesOptions{Status: gitlab.Ptr(gitlab.Success)}).
 		Return(nil, nil, errors.New(`{"message": "403 Forbidden"}`))
-	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, cmdtest.WithGitLabClient(tc.Client))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
 	out, err := exec("--status=success")
 	require.Error(t, err)

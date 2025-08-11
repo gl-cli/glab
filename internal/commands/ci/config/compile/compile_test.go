@@ -65,7 +65,7 @@ func Test_compileRun(t *testing.T) {
 			if !tt.showHaveBaseRepo {
 				options = append(options, cmdtest.WithBaseRepoError(errors.New("no base repository present")))
 			}
-			exec := cmdtest.SetupCmdForTest(t, NewCmdConfigCompile, options...)
+			exec := cmdtest.SetupCmdForTest(t, NewCmdConfigCompile, false, options...)
 
 			args := path.Join(cmdtest.ProjectPath, "test/testdata", tt.testFile)
 			out, err := exec(args)

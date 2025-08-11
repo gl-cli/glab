@@ -18,7 +18,7 @@ func TestAgentGetToken(t *testing.T) {
 	// GIVEN
 	keyring.MockInit()
 	tc := gitlab_testing.NewTestClient(t, gitlab.WithBaseURL("https://gitlab.example.com"))
-	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentGetToken, cmdtest.WithGitLabClient(tc.Client))
+	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentGetToken, false, cmdtest.WithGitLabClient(tc.Client))
 
 	tc.MockUsers.EXPECT().
 		CreatePersonalAccessTokenForCurrentUser(gomock.Any()).

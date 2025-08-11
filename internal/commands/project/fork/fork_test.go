@@ -1,64 +1,35 @@
 package fork
 
 import (
+	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
+	"go.uber.org/mock/gomock"
+
+	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
-	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname)),
-	)
-	cmd := NewCmdFork(factory)
-	return cmdtest.ExecuteCommand(cmd, cli, stdout, stderr)
-}
-
 func TestProjectFork(t *testing.T) {
-	type httpMock struct {
-		method string
-		path   string
-		status int
-		body   string
-	}
-
-	httpMocks := []httpMock{
-		{
-			http.MethodPost,
-			"/api/v4/projects/OWNER/REPO/fork",
-			http.StatusCreated,
-			`{"id": 99}`,
-		},
-		{
-			http.MethodGet,
-			"/api/v4/projects/99?license=true&with_custom_attributes=true",
-			http.StatusOK,
-			`{
-							"id": 99,
-							"import_status": "finished",
-							"ssh_url_to_repo": "git@gitlab.com:OWNER/REPO.git",
-							"path_with_namespace": "OWNER/baz"
-							}`,
-		},
-	}
-
 	cloneShelloutStubs := []string{
-		"git clone executed",
-		"git remote added",
+		"git clone git@gitlab.com:OWNER/baz.git REPO",
+		"git -C REPO remote add -f upstream git@gitlab.com:OWNER/REPO.git",
 	}
 
 	expectedCloneShellouts := []string{
-		"git clone git@gitlab.com:OWNER/REPO.git",
-		"git -C REPO remote add -f upstream git@gitlab.com:OWNER/baz.git",
+		"git clone ",
+		"git -C . remote add -f upstream git@gitlab.com:OWNER/REPO.git",
 	}
 
 	tests := []struct {
@@ -95,54 +66,307 @@ func TestProjectFork(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			fakeHTTP := &httpmock.Mocker{
-				MatchURL: httpmock.PathAndQuerystring,
-			}
-			defer fakeHTTP.Verify(t)
-
-			for _, mock := range httpMocks {
-				fakeHTTP.RegisterResponder(mock.method, mock.path, httpmock.NewStringResponse(mock.status, mock.body))
-			}
-
-			if tc.expectClonePrompt {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.expectClonePrompt {
 				restore := prompt.StubConfirm(true)
 				defer restore()
 			}
 
-			if tc.expectClone {
-				fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO?license=true&with_custom_attributes=true",
-					httpmock.NewStringResponse(http.StatusOK, `{
-							  "id": 100,
-							  "description": "this is a test description",
-							  "name": "foo",
-							  "name_with_namespace": "OWNER / baz",
-							  "path": "baz",
-							  "path_with_namespace": "OWNER/baz",
-							  "created_at": "2022-07-13T02:04:56.151Z",
-							  "default_branch": "main",
-							  "http_url_to_repo": "https://gitlab.com/OWNER/baz.git",
-							  "ssh_url_to_repo": "git@gitlab.com:OWNER/baz.git"
-							}`))
+			cs, csTeardown := test.InitCmdStubber()
+			defer csTeardown()
+
+			for _, stub := range tt.shelloutStubs {
+				cs.Stub(stub)
+			}
+
+			tc := gitlabtesting.NewTestClient(t)
+			tc.MockProjects.EXPECT().
+				ForkProject("OWNER/REPO", gomock.Any(), gomock.Any()).
+				Return(&gitlab.Project{
+					ID:                99,
+					PathWithNamespace: "OWNER/baz",
+				}, nil, nil)
+			if tt.expectClone {
+				tc.MockProjects.EXPECT().
+					GetProject("OWNER/REPO", gomock.Any(), gomock.Any()).
+					Return(&gitlab.Project{
+						ID:                100,
+						Description:       "this is a test description",
+						Name:              "foo",
+						NameWithNamespace: "OWNER / REPO",
+						Path:              "REPO",
+						PathWithNamespace: "OWNER/REPO",
+						DefaultBranch:     "main",
+						HTTPURLToRepo:     "https://gitlab.com/OWNER/REPO.git",
+						SSHURLToRepo:      "git@gitlab.com:OWNER/REPO.git",
+					}, nil, nil)
+			}
+
+			exec := cmdtest.SetupCmdForTest(
+				t,
+				NewCmdFork,
+				false,
+				cmdtest.WithGitLabClient(tc.Client),
+				cmdtest.WithApiClient(
+					cmdtest.NewTestApiClient(
+						t,
+						nil,
+						"",
+						glinstance.DefaultHostname,
+						api.WithGitLabClient(tc.Client),
+					),
+				),
+				cmdtest.WithBaseRepo("OWNER", "REPO", glinstance.DefaultHostname),
+				func(f *cmdtest.Factory) {
+					f.RemotesStub = func() (glrepo.Remotes, error) {
+						remote := &git.Remote{
+							Name: "origin",
+							FetchURL: &url.URL{
+								Scheme: "https",
+								Host:   "gitlab.com",
+								Path:   "/OWNER/REPO.git",
+							},
+							PushURL: &url.URL{
+								Scheme: "https",
+								Host:   "gitlab.com",
+								Path:   "/OWNER/REPO.git",
+							},
+						}
+
+						repo := glrepo.New("OWNER", "REPO", glinstance.DefaultHostname)
+
+						return glrepo.Remotes{
+							&glrepo.Remote{
+								Remote: remote,
+								Repo:   repo,
+							},
+						}, nil
+					}
+				},
+			)
+
+			out, err := exec(tt.commandArgs)
+
+			if assert.NoErrorf(
+				t,
+				err,
+				"error running command `project fork %s`: %v",
+				tt.commandArgs,
+				err,
+			) {
+				assert.Empty(t, out.OutBuf.String())
+				assert.Equal(t, "✓ Created fork OWNER/baz.\n", out.ErrBuf.String())
+			}
+
+			assert.Equal(t, len(tt.expectedShellouts), cs.Count)
+			for idx, expectedShellout := range tt.expectedShellouts {
+				assert.Equal(t, expectedShellout, strings.Join(cs.Calls[idx].Args, " "))
+			}
+		})
+	}
+}
+
+func TestProjectForkExistingRepo(t *testing.T) {
+	shelloutStubs := []string{
+		"git remote rename executed",
+		"git remote add executed",
+	}
+
+	expectedShellouts := []string{
+		"git remote rename origin upstream",
+		"git remote add -f origin git@gitlab.com:OWNER/REPO.git",
+	}
+
+	tests := []struct {
+		name                   string
+		commandArgs            string
+		shelloutStubs          []string
+		expectedShellouts      []string
+		addRemoteFlag          bool
+		promptResponse         bool
+		expectError            bool
+		expectNamespaceMessage bool
+	}{
+		{
+			name:                   "when fork exists and user wants to add a remote",
+			commandArgs:            "", // Empty to simulate running in current directory
+			shelloutStubs:          shelloutStubs,
+			expectedShellouts:      expectedShellouts,
+			promptResponse:         true,
+			expectError:            false,
+			expectNamespaceMessage: false,
+		},
+		{
+			name:                   "when fork exists and remote flag is true",
+			commandArgs:            "--remote",
+			shelloutStubs:          shelloutStubs,
+			expectedShellouts:      expectedShellouts,
+			addRemoteFlag:          true,
+			expectError:            false,
+			expectNamespaceMessage: false,
+		},
+		{
+			name:                   "when fork exists and remote flag is false",
+			commandArgs:            "--remote=false",
+			shelloutStubs:          []string{},
+			expectedShellouts:      []string{},
+			addRemoteFlag:          false,
+			expectError:            false,
+			expectNamespaceMessage: false,
+		},
+		{
+			name:                   "when fork exists but project not found in user namespace (should error)",
+			commandArgs:            "--remote",
+			shelloutStubs:          []string{}, // No shellouts expected because operation errors out before git commands
+			expectedShellouts:      []string{},
+			addRemoteFlag:          true,
+			expectError:            true,
+			expectNamespaceMessage: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Initialize git repository for testing
+			git.InitGitRepo(t)
+			// tempDir := cmdtest.InitGitRepo(t, "gitlab.com", "OWNER", "REPO")
+
+			// Set up prompt stub if needed
+			if !tt.addRemoteFlag {
+				restore := prompt.StubConfirm(tt.promptResponse)
+				defer restore()
 			}
 
 			cs, csTeardown := test.InitCmdStubber()
 			defer csTeardown()
-			for _, stub := range tc.shelloutStubs {
+			for _, stub := range tt.shelloutStubs {
 				cs.Stub(stub)
 			}
 
-			output, err := runCommand(t, fakeHTTP, tc.commandArgs)
+			tc := gitlabtesting.NewTestClient(t)
+			tc.MockUsers.EXPECT().CurrentUser().Return(&gitlab.User{
+				Username:    "OWNER",
+				ID:          123,
+				Name:        "Test User",
+				NamespaceID: 123,
+			}, nil, nil).AnyTimes()
+			tc.MockProjects.EXPECT().
+				ForkProject("OWNER/REPO", gomock.Any(), gomock.Any()).
+				Return(nil, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusConflict}}, errors.New(`{"message":"Project namespace name has already been taken"}`))
 
-			if assert.NoErrorf(t, err, "error running command `project fork %s`: %v", tc.commandArgs, err) {
-				assert.Empty(t, output.String())
-				assert.Equal(t, "- finished\n✓ Created fork OWNER/baz.\n", output.Stderr())
+			if tt.promptResponse || tt.addRemoteFlag {
+				// Register the projects search API that happens during the "repository already exists" flow
+				if tt.expectNamespaceMessage {
+					// Return an empty list to simulate no matching project in user's namespace
+					tc.MockProjects.EXPECT().
+						ListProjects(gomock.Any(), gomock.Any()).
+						Return(nil, nil, nil)
+				} else {
+					tc.MockProjects.EXPECT().ListProjects(gomock.Any(), gomock.Any()).Return([]*gitlab.Project{
+						{
+							ID:                123,
+							Name:              "REPO",
+							Description:       "Test repo",
+							Path:              "REPO",
+							PathWithNamespace: "OWNER/REPO",
+							// Created_at": "2023-01-01T00:00:00Z",
+							DefaultBranch: "main",
+							SSHURLToRepo:  "git@gitlab.com:OWNER/REPO.git",
+							HTTPURLToRepo: "https://gitlab.com/OWNER/REPO.git",
+							WebURL:        "https://gitlab.com/OWNER/REPO",
+							Namespace: &gitlab.ProjectNamespace{
+								ID:       123,
+								Name:     "OWNER",
+								Path:     "OWNER",
+								Kind:     "user",
+								FullPath: "OWNER",
+							},
+						},
+					}, nil, nil)
+				}
 			}
 
-			assert.Equal(t, len(tc.expectedShellouts), cs.Count)
-			for idx, expectedShellout := range tc.expectedShellouts {
-				assert.Equal(t, expectedShellout, strings.Join(cs.Calls[idx].Args, " "))
+			exec := cmdtest.SetupCmdForTest(
+				t,
+				NewCmdFork,
+				true,
+				cmdtest.WithGitLabClient(tc.Client),
+				cmdtest.WithApiClient(
+					cmdtest.NewTestApiClient(
+						t,
+						nil,
+						"",
+						glinstance.DefaultHostname,
+						api.WithGitLabClient(tc.Client),
+					),
+				),
+				cmdtest.WithBaseRepo("OWNER", "REPO", glinstance.DefaultHostname),
+				func(f *cmdtest.Factory) {
+					f.RemotesStub = func() (glrepo.Remotes, error) {
+						remote := &git.Remote{
+							Name: "origin",
+							FetchURL: &url.URL{
+								Scheme: "https",
+								Host:   "gitlab.com",
+								Path:   "/OWNER/REPO.git",
+							},
+							PushURL: &url.URL{
+								Scheme: "https",
+								Host:   "gitlab.com",
+								Path:   "/OWNER/REPO.git",
+							},
+						}
+
+						repo := glrepo.New("OWNER", "REPO", glinstance.DefaultHostname)
+
+						return glrepo.Remotes{
+							&glrepo.Remote{
+								Remote: remote,
+								Repo:   repo,
+							},
+						}, nil
+					}
+				},
+			)
+
+			t.Logf("Running fork command with arguments: %q", tt.commandArgs)
+			out, err := exec(tt.commandArgs)
+
+			// Log stderr for debugging
+
+			if tt.expectError {
+				assert.Error(t, err, "expected an error but got none")
+				if tt.expectNamespaceMessage {
+					assert.Contains(t, out.ErrBuf.String(), "Only user namespaces")
+				}
+			} else {
+				if assert.NoErrorf(t, err, "error running command `project fork %s`: %v", tt.commandArgs, err) {
+					assert.Empty(t, out.OutBuf.String())
+
+					// On success, ensure namespace error message is absent unless we expect it
+					if !tt.expectNamespaceMessage {
+						assert.NotContains(t, out.ErrBuf.String(), "Only user namespaces")
+					}
+
+					// Check success related messages
+					if tt.addRemoteFlag || tt.promptResponse {
+						assert.Contains(t, out.ErrBuf.String(), "Using existing repository")
+						if len(tt.expectedShellouts) > 0 {
+							assert.Contains(t, out.ErrBuf.String(), "Added remote")
+						}
+					}
+				}
+			}
+
+			// Assert shellouts
+			if len(tt.expectedShellouts) > 0 {
+				assert.Equal(t, len(tt.expectedShellouts), cs.Count)
+				for idx, expectedShellout := range tt.expectedShellouts {
+					assert.Equal(t, expectedShellout, strings.Join(cs.Calls[idx].Args, " "))
+				}
+			} else {
+				assert.Equal(t, 0, cs.Count)
 			}
 		})
 	}

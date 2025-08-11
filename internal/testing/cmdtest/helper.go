@@ -341,10 +341,10 @@ func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 }
 
 // SetupCmdForTest creates a test environment with a configured Factory
-func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, opts ...FactoryOption) CmdExecFunc {
+func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, isTTY bool, opts ...FactoryOption) CmdExecFunc {
 	t.Helper()
 
-	ios, _, stdout, stderr := TestIOStreams(WithTestIOStreamsAsTTY(true))
+	ios, _, stdout, stderr := TestIOStreams(WithTestIOStreamsAsTTY(isTTY))
 
 	f := NewTestFactory(ios, opts...)
 	return func(cli string) (*test.CmdOut, error) {
