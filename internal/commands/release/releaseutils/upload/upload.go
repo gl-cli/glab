@@ -8,8 +8,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
-// releasePackageName contains the name for the release asset package
-const releasePackageName = "release-assets"
+// DefaultReleasePackageName contains the name for the release asset package
+const DefaultReleasePackageName = "release-assets"
 
 // ConflictDirectAssetPathError is returned when both direct_asset_path and the deprecated filepath as specified for an asset link.
 type ConflictDirectAssetPathError struct {
@@ -70,7 +70,7 @@ type Context struct {
 }
 
 // UploadFiles uploads a file into a release repository.
-func (c *Context) UploadFiles(projectID, tagName string, usePackageRegistry bool) error {
+func (c *Context) UploadFiles(projectID, tagName string, packageName string, usePackageRegistry bool) error {
 	if c.AssetFiles == nil {
 		return nil
 	}
@@ -83,7 +83,7 @@ func (c *Context) UploadFiles(projectID, tagName string, usePackageRegistry bool
 		var releaseAsset *ReleaseAsset
 		var err error
 		if usePackageRegistry {
-			releaseAsset, err = c.uploadAsGenericPackage(projectID, tagName, file)
+			releaseAsset, err = c.uploadAsGenericPackage(projectID, tagName, packageName, file)
 		} else {
 			releaseAsset, err = c.uploadAsProjectMarkdownFile(projectID, file)
 		}
@@ -101,19 +101,19 @@ func (c *Context) UploadFiles(projectID, tagName string, usePackageRegistry bool
 	return nil
 }
 
-func (c *Context) uploadAsGenericPackage(projectID, tagName string, file *ReleaseFile) (*ReleaseAsset, error) {
+func (c *Context) uploadAsGenericPackage(projectID, tagName string, packageName string, file *ReleaseFile) (*ReleaseAsset, error) {
 	r, err := file.Open()
 	if err != nil {
 		return nil, err
 	}
 	defer r.Close()
 
-	_, _, err = c.Client.GenericPackages.PublishPackageFile(projectID, releasePackageName, tagName, file.Name, r, nil)
+	_, _, err = c.Client.GenericPackages.PublishPackageFile(projectID, packageName, tagName, file.Name, r, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	assetPath, err := c.Client.GenericPackages.FormatPackageURL(projectID, releasePackageName, tagName, file.Name)
+	assetPath, err := c.Client.GenericPackages.FormatPackageURL(projectID, packageName, tagName, file.Name)
 	if err != nil {
 		return nil, err
 	}

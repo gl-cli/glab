@@ -28,6 +28,7 @@ type options struct {
 	assetFiles []*upload.ReleaseFile
 
 	usePackageRegistry bool
+	packageName        string
 
 	io           *iostreams.IOStreams
 	gitlabClient func() (*gitlab.Client, error)
@@ -99,6 +100,7 @@ func NewCmdUpload(f cmdutils.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.assetLinksAsJSON, "assets-links", "a", "", "`JSON` string representation of assets links, like: `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
 	cmd.Flags().BoolVar(&opts.usePackageRegistry, "use-package-registry", false, "[EXPERIMENTAL] Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.")
+	cmd.Flags().StringVar(&opts.packageName, "package-name", upload.DefaultReleasePackageName, "[EXPERIMENTAL] The package name to use when uploading the assets to the generic package release with --use-package-registry.")
 
 	return cmd
 }
@@ -165,7 +167,7 @@ func (o *options) run() error {
 	}
 
 	// upload files and create asset links
-	err = releaseutils.CreateReleaseAssets(o.io, client, o.assetFiles, o.assetLinks, repo.FullName(), release.TagName, o.usePackageRegistry)
+	err = releaseutils.CreateReleaseAssets(o.io, client, o.assetFiles, o.assetLinks, repo.FullName(), release.TagName, o.packageName, o.usePackageRegistry)
 	if err != nil {
 		return cmdutils.WrapError(err, "creating release assets failed.")
 	}

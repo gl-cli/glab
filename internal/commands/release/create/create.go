@@ -76,6 +76,7 @@ type options struct {
 	assetFiles []*upload.ReleaseFile
 
 	usePackageRegistry bool
+	packageName        string
 
 	io           *iostreams.IOStreams
 	gitlabClient func() (*gitlab.Client, error)
@@ -183,6 +184,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	cmd.Flags().BoolVar(&opts.noCloseMilestone, "no-close-milestone", false, "Prevent closing milestones after creating the release.")
 	cmd.Flags().StringVar(&opts.experimentalNotesTextOrFile, "experimental-notes-text-or-file", "", "[EXPERIMENTAL] Value to use as release notes. If a file exists with this value as path, its content will be used. Otherwise, the value itself will be used as text.")
 	cmd.Flags().BoolVar(&opts.usePackageRegistry, "use-package-registry", false, "[EXPERIMENTAL] Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.")
+	cmd.Flags().StringVar(&opts.packageName, "package-name", upload.DefaultReleasePackageName, "[EXPERIMENTAL] The package name to use when uploading the assets to the generic package release with --use-package-registry.")
 	_ = cmd.Flags().MarkHidden("experimental-notes-text-or-file")
 
 	// These two need to be separately exclusive to avoid a breaking change
@@ -499,7 +501,7 @@ func createRun(opts *options) error {
 	}
 
 	// upload files and create asset links
-	err = releaseutils.CreateReleaseAssets(opts.io, client, opts.assetFiles, opts.assetLink, repo.FullName(), release.TagName, opts.usePackageRegistry)
+	err = releaseutils.CreateReleaseAssets(opts.io, client, opts.assetFiles, opts.assetLink, repo.FullName(), release.TagName, opts.packageName, opts.usePackageRegistry)
 	if err != nil {
 		return releaseFailedErr(err, start)
 	}
