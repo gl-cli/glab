@@ -493,6 +493,7 @@ func TestListTags(t *testing.T) {
 	}
 
 	t.Setenv("GIT_CONFIG_GLOBAL", "/dev/null")
+	t.Setenv("GIT_DISCOVERY_ACROSS_FILESYSTEM", "true")
 
 	for name, tt := range cases {
 		t.Run(name, func(t *testing.T) {
