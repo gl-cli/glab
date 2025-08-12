@@ -49,6 +49,10 @@ func configureGitConfig(t *testing.T) {
 	emailConfig := GitCommand("config", "user.email", "no-reply+cli-tests@gitlab.com")
 	_, err = run.PrepareCmd(emailConfig).Output()
 	require.NoError(t, err)
+
+	gpgConfig := GitCommand("config", "commit.gpgsign", "false")
+	_, err = run.PrepareCmd(gpgConfig).Output()
+	require.NoError(t, err)
 }
 
 func CreateRefFiles(refs map[string]StackRef, title string) error {
