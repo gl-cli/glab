@@ -97,7 +97,7 @@ func TestReleaseUtilsUpload_UploadFiles_ProjectMarkdownFiles(t *testing.T) {
 	)
 
 	// WHEN
-	err := uploadCtx.UploadFiles("any-project", "42.0.0", false)
+	err := uploadCtx.UploadFiles("any-project", "42.0.0", DefaultReleasePackageName, false)
 
 	// THEN
 	require.NoError(t, err)
@@ -129,14 +129,14 @@ func TestReleaseUtilsUpload_UploadFiles_GenericPackageRegistry(t *testing.T) {
 	// setup mock expections
 	gomock.InOrder(
 		tc.MockGenericPackages.EXPECT().
-			PublishPackageFile("any-project", releasePackageName, "42.0.0", "test-release-file.txt", gomock.Any(), nil),
+			PublishPackageFile("any-project", DefaultReleasePackageName, "42.0.0", "test-release-file.txt", gomock.Any(), nil),
 		tc.MockGenericPackages.EXPECT().
-			FormatPackageURL("any-project", releasePackageName, "42.0.0", "test-release-file.txt"),
+			FormatPackageURL("any-project", DefaultReleasePackageName, "42.0.0", "test-release-file.txt"),
 		tc.MockReleaseLinks.EXPECT().CreateReleaseLink("any-project", "42.0.0", gomock.Any()),
 	)
 
 	// WHEN
-	err := uploadCtx.UploadFiles("any-project", "42.0.0", true)
+	err := uploadCtx.UploadFiles("any-project", "42.0.0", DefaultReleasePackageName, true)
 
 	// THEN
 	require.NoError(t, err)

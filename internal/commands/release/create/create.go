@@ -76,6 +76,7 @@ type options struct {
 	assetFiles []*upload.ReleaseFile
 
 	usePackageRegistry bool
+	packageName        string
 
 	io           *iostreams.IOStreams
 	gitlabClient func() (*gitlab.Client, error)
@@ -170,20 +171,22 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "The release name or title.")
-	cmd.Flags().StringVarP(&opts.ref, "ref", "r", "", "If the specified tag doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.")
-	cmd.Flags().StringVarP(&opts.tagMessage, "tag-message", "T", "", "Message to use if creating a new annotated tag.")
-	cmd.Flags().StringVarP(&opts.notes, "notes", "N", "", "The release notes or description. You can use Markdown.")
-	cmd.Flags().StringVarP(&opts.notesFile, "notes-file", "F", "", "Read release notes 'file'. Specify '-' as the value to read from stdin.")
-	cmd.Flags().StringVarP(&opts.releasedAt, "released-at", "D", "", "The 'date' when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).")
-	cmd.Flags().StringSliceVarP(&opts.milestone, "milestone", "m", []string{}, "The title of each milestone the release is associated with.")
-	cmd.Flags().StringVarP(&opts.assetLinksAsJSON, "assets-links", "a", "", "'JSON' string representation of assets links, like `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
-	cmd.Flags().BoolVar(&opts.publishToCatalog, "publish-to-catalog", false, "[EXPERIMENTAL] Publish the release to the GitLab CI/CD catalog.")
-	cmd.Flags().BoolVar(&opts.noUpdate, "no-update", false, "Prevent updating the existing release.")
-	cmd.Flags().BoolVar(&opts.noCloseMilestone, "no-close-milestone", false, "Prevent closing milestones after creating the release.")
-	cmd.Flags().StringVar(&opts.experimentalNotesTextOrFile, "experimental-notes-text-or-file", "", "[EXPERIMENTAL] Value to use as release notes. If a file exists with this value as path, its content will be used. Otherwise, the value itself will be used as text.")
-	cmd.Flags().BoolVar(&opts.usePackageRegistry, "use-package-registry", false, "[EXPERIMENTAL] Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.")
-	_ = cmd.Flags().MarkHidden("experimental-notes-text-or-file")
+	fl := cmd.Flags()
+	fl.StringVarP(&opts.Name, "name", "n", "", "The release name or title.")
+	fl.StringVarP(&opts.ref, "ref", "r", "", "If the specified tag doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.")
+	fl.StringVarP(&opts.tagMessage, "tag-message", "T", "", "Message to use if creating a new annotated tag.")
+	fl.StringVarP(&opts.notes, "notes", "N", "", "The release notes or description. You can use Markdown.")
+	fl.StringVarP(&opts.notesFile, "notes-file", "F", "", "Read release notes 'file'. Specify '-' as the value to read from stdin.")
+	fl.StringVarP(&opts.releasedAt, "released-at", "D", "", "The 'date' when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).")
+	fl.StringSliceVarP(&opts.milestone, "milestone", "m", []string{}, "The title of each milestone the release is associated with.")
+	fl.StringVarP(&opts.assetLinksAsJSON, "assets-links", "a", "", "'JSON' string representation of assets links, like `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
+	fl.BoolVar(&opts.publishToCatalog, "publish-to-catalog", false, "[EXPERIMENTAL] Publish the release to the GitLab CI/CD catalog.")
+	fl.BoolVar(&opts.noUpdate, "no-update", false, "Prevent updating the existing release.")
+	fl.BoolVar(&opts.noCloseMilestone, "no-close-milestone", false, "Prevent closing milestones after creating the release.")
+	fl.StringVar(&opts.experimentalNotesTextOrFile, "experimental-notes-text-or-file", "", "[EXPERIMENTAL] Value to use as release notes. If a file exists with this value as path, its content will be used. Otherwise, the value itself will be used as text.")
+	fl.BoolVar(&opts.usePackageRegistry, "use-package-registry", false, "[EXPERIMENTAL] Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.")
+	fl.StringVar(&opts.packageName, "package-name", upload.DefaultReleasePackageName, "[EXPERIMENTAL] The package name to use when uploading the assets to the generic package release with --use-package-registry.")
+	cobra.CheckErr(fl.MarkHidden("experimental-notes-text-or-file"))
 
 	// These two need to be separately exclusive to avoid a breaking change
 	// because there may be existing scripts that already use both notes and notes-file.
@@ -499,7 +502,7 @@ func createRun(opts *options) error {
 	}
 
 	// upload files and create asset links
-	err = releaseutils.CreateReleaseAssets(opts.io, client, opts.assetFiles, opts.assetLink, repo.FullName(), release.TagName, opts.usePackageRegistry)
+	err = releaseutils.CreateReleaseAssets(opts.io, client, opts.assetFiles, opts.assetLink, repo.FullName(), release.TagName, opts.packageName, opts.usePackageRegistry)
 	if err != nil {
 		return releaseFailedErr(err, start)
 	}
