@@ -39,7 +39,7 @@ func NewCmd(f cmdutils.Factory, runCommand RunCommandFunc) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "init <state> [flags]",
-		Short: `Initialize OpenTofu / Terraform.`,
+		Short: `Initialize OpenTofu or Terraform.`,
 		Example: heredoc.Doc(`
 			# Initialize state with name production in working directory
 			$ glab opentofu init production

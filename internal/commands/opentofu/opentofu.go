@@ -9,7 +9,7 @@ import (
 func NewCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "opentofu <command> [flags]",
-		Short: `Work with the OpenTofu / Terraform integration.`,
+		Short: `Work with the OpenTofu or Terraform integration.`,
 		Long:  ``,
 	}
 
