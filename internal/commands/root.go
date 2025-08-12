@@ -24,6 +24,7 @@ import (
 	jobCmd "gitlab.com/gitlab-org/cli/internal/commands/job"
 	labelCmd "gitlab.com/gitlab-org/cli/internal/commands/label"
 	mrCmd "gitlab.com/gitlab-org/cli/internal/commands/mr"
+	opentofuCmd "gitlab.com/gitlab-org/cli/internal/commands/opentofu"
 	projectCmd "gitlab.com/gitlab-org/cli/internal/commands/project"
 	releaseCmd "gitlab.com/gitlab-org/cli/internal/commands/release"
 	scheduleCmd "gitlab.com/gitlab-org/cli/internal/commands/schedule"
@@ -147,6 +148,7 @@ func NewCmdRoot(f cmdutils.Factory) *cobra.Command {
 	rootCmd.AddCommand(tokenCmd.NewTokenCmd(f))
 	rootCmd.AddCommand(stackCmd.NewCmdStack(f))
 	rootCmd.AddCommand(deployKeyCmd.NewCmdDeployKey(f))
+	rootCmd.AddCommand(opentofuCmd.NewCmd(f))
 
 	// TODO: This can probably be removed by GitLab 18.3
 	// See: https://gitlab.com/gitlab-org/cli/-/issues/7885
