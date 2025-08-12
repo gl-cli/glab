@@ -32,7 +32,7 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "download <state> [<serial>]",
-		Short: `download the given state and output as JSON to stdout.`,
+		Short: `Download the given state and output as JSON to stdout.`,
 		Example: heredoc.Doc(`
 			# Download the latest serial of the state production
 			$ glab opentofu state download production

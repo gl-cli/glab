@@ -12,7 +12,7 @@ import (
 func NewCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "state <command> [flags]",
-		Short: `Work with the OpenTofu / Terraform states.`,
+		Short: `Work with the OpenTofu or Terraform states.`,
 	}
 
 	cmd.AddCommand(listCmd.NewCmd(f))

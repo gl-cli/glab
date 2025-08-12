@@ -25,8 +25,8 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "list [flags]",
-		Short: `List states`,
+		Use:   "list",
+		Short: `List states.`,
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run()

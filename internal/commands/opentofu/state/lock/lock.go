@@ -27,8 +27,8 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "lock <state> [flags]",
-		Short: `lock the given state.`,
+		Use:   "lock <state>",
+		Short: `Lock the given state.`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
