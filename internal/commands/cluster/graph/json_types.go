@@ -40,6 +40,7 @@ type namespaces struct {
 
 type roots struct {
 	ObjectSelectorExpressions []string `json:"object_selector_expressions"`
+	IgnoreArcDirection        []string `json:"ignore_arc_direction,omitempty"`
 }
 
 type jsonWatchGraphResponse struct {

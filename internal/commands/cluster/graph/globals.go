@@ -10,10 +10,8 @@ type arcType string
 
 const (
 	ownerReferenceArcType      arcType = "or"
-	labelSelectorArcType       arcType = "ls"
 	referenceArcType           arcType = "r"
-	transitiveReferenceArcType arcType = "tr"
-	viaReferenceArcType        arcType = "via"
+	transitiveReferenceArcType arcType = "t"
 )
 
 var globals = sync.OnceValue(constructGlobals)
@@ -50,10 +48,11 @@ func constructGlobals() map[string]any {
 			"style.stroke-dash": "3",
 			"style.stroke":      "gold",
 		},
-		labelSelectorArcType:       {},
-		referenceArcType:           {},
-		transitiveReferenceArcType: {},
-		viaReferenceArcType:        {},
+		referenceArcType: {},
+		transitiveReferenceArcType: {
+			"style.stroke-dash": "3",
+			"style.stroke":      "deepskyblue",
+		},
 	}
 	gl := map[string]any{
 		//"cluster-scoped": map[string]any{
