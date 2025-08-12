@@ -118,6 +118,7 @@ $ glab cluster graph -R user/project -a 123 --root-expression 'group == "" && re
       --cluster-rbac                  Watch clusterroles and clusterrolebindings in the rbac.authorization.k8s.io/v1 group.
       --core                          Watch pods, secrets, configmaps, and serviceaccounts in the core/v1 group
       --crd                           Watch customresourcedefinitions in the apiextensions.k8s.io/v1 group.
+      --ignore-arc-direction          Ignore arc direction when evaluating roots connectivity. GitLab and agent 18.3+ required.
       --listen-addr string            Address to listen on. (default "localhost:0")
       --listen-net string             Network on which to listen for connections. (default "tcp")
       --log-watch-request             Log watch request to stdout. Helpful for debugging.

@@ -46,6 +46,7 @@ type options struct {
 	groupClusterRBAC      bool
 	groupCRD              bool
 	logWatchRequest       bool
+	ignoreArcDirection    bool
 }
 
 func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
@@ -79,6 +80,7 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 	fl.StringVarP(&opts.nsCEL, "ns-expression", "", opts.nsCEL, "CEL expression to select namespaces. Evaluated before a namespace is watched and on any updates for the namespace object.")
 
 	fl.StringArrayVarP(&opts.rootsCEL, "root-expression", "", opts.rootsCEL, "CEL expression to select root objects. GitLab and agent 18.3+ required.")
+	fl.BoolVarP(&opts.ignoreArcDirection, "ignore-arc-direction", "", opts.ignoreArcDirection, "Ignore arc direction when evaluating roots connectivity. GitLab and agent 18.3+ required.")
 
 	fl.StringArrayVarP(&opts.resources, "resource", "r", opts.resources, "A list of resources to watch. You can see the list of resources your cluster supports by running 'kubectl api-resources'.")
 	fl.BoolVar(&opts.groupCore, "core", opts.groupCore, "Watch pods, secrets, configmaps, and serviceaccounts in the core/v1 group")
@@ -309,7 +311,12 @@ func (o *options) maybeConstructWatchRoots() *roots {
 	if len(o.rootsCEL) == 0 {
 		return nil
 	}
+	var arcsToIgnoreDirection []string
+	if o.ignoreArcDirection {
+		arcsToIgnoreDirection = []string{string(ownerReferenceArcType), string(referenceArcType), string(transitiveReferenceArcType)}
+	}
 	return &roots{
 		ObjectSelectorExpressions: o.rootsCEL,
+		IgnoreArcDirection:        arcsToIgnoreDirection,
 	}
 }
