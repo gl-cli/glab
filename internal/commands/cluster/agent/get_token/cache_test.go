@@ -95,6 +95,9 @@ func TestCache_hit(t *testing.T) {
 		createFunc: func() (*gitlab.PersonalAccessToken, error) {
 			return nil, errors.New("sentinel - should not be called")
 		},
+		isTokenRevoked: func(t *gitlab.PersonalAccessToken) (bool, error) {
+			return false, nil
+		},
 		storage: mockStore,
 	}
 
@@ -129,6 +132,48 @@ func TestCache_tokenExpired(t *testing.T) {
 		id: "test-id",
 		createFunc: func() (*gitlab.PersonalAccessToken, error) {
 			return newToken, nil
+		},
+		isTokenRevoked: func(t *gitlab.PersonalAccessToken) (bool, error) {
+			return false, nil
+		},
+		storage: mockStore,
+	}
+
+	// WHEN
+	pat, err := c.get()
+
+	// THEN
+	require.NoError(t, err)
+	require.Equal(t, "new-token", pat.Token)
+}
+
+func TestCache_tokenRevoked(t *testing.T) {
+	// GIVEN
+	revokedToken := &gitlab.PersonalAccessToken{
+		Token:     "revoked-token",
+		Revoked:   true,
+		ExpiresAt: gitlab.Ptr(gitlab.ISOTime(time.Now().UTC().Add(-1 * time.Hour))),
+	}
+
+	newToken := &gitlab.PersonalAccessToken{
+		Token:     "new-token",
+		ExpiresAt: gitlab.Ptr(gitlab.ISOTime(time.Now().UTC().Add(tokenExpiryDurationDefault))),
+	}
+
+	mockStore := &mockStorage{}
+	// Manually set revoked token in storage
+	revokedData, err := json.Marshal(revokedToken)
+	require.NoError(t, err)
+	err = mockStore.set("test-id", revokedData)
+	require.NoError(t, err)
+
+	c := cache{
+		id: "test-id",
+		createFunc: func() (*gitlab.PersonalAccessToken, error) {
+			return newToken, nil
+		},
+		isTokenRevoked: func(t *gitlab.PersonalAccessToken) (bool, error) {
+			return true, nil
 		},
 		storage: mockStore,
 	}

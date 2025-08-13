@@ -25,6 +25,7 @@ func TestAgent_UpdateKubeConfig_GlabExec(t *testing.T) {
 		agent:               &gitlab.Agent{ID: 42, Name: "test-agent", ConfigProject: gitlab.ConfigProject{PathWithNamespace: "foo/bar"}},
 		tokenExpiryDuration: 42 * time.Hour,
 		cacheMode:           agentutils.ForcedFilesystemCacheMode,
+		checkRevoked:        false,
 	}
 	modifiedConfig, contextName := updateKubeconfig(params)
 

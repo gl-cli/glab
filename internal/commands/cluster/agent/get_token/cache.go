@@ -3,6 +3,7 @@ package get_token
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -17,6 +18,7 @@ const keyringService = "glab"
 var (
 	errNotFound            = errors.New("not found")
 	errTokenExpired        = errors.New("token expired")
+	errTokenRevoked        = errors.New("token revoked")
 	errUnsupportedPlatform = errors.New("unsupported platform")
 )
 
@@ -120,9 +122,10 @@ func (f *fileStorage) close() error {
 }
 
 type cache struct {
-	id         string
-	createFunc func() (*gitlab.PersonalAccessToken, error)
-	storage    storage
+	id             string
+	createFunc     func() (*gitlab.PersonalAccessToken, error)
+	isTokenRevoked func(t *gitlab.PersonalAccessToken) (bool, error)
+	storage        storage
 }
 
 func (c *cache) isTokenExpired(token *gitlab.PersonalAccessToken) bool {
@@ -136,7 +139,7 @@ func (c *cache) get() (*gitlab.PersonalAccessToken, error) {
 		return token, nil
 	case errNotFound:
 		fallthrough
-	case errTokenExpired:
+	case errTokenExpired, errTokenRevoked:
 		return c.createAndCacheToken()
 	default:
 		return nil, err
@@ -156,6 +159,22 @@ func (c *cache) getCachedToken() (*gitlab.PersonalAccessToken, error) {
 
 	if c.isTokenExpired(&token) {
 		return nil, errTokenExpired
+	}
+
+	if token.Revoked {
+		fmt.Fprintln(os.Stderr, "Cached token has been revoked, creating new one")
+		return nil, errTokenRevoked
+	}
+
+	isRevoked, err := c.isTokenRevoked(&token)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: Failed to check if token is revoked: %v. Using cached token anyway.\n", err)
+		return &token, nil
+	}
+
+	if isRevoked {
+		fmt.Fprintln(os.Stderr, "Cached token has been revoked, creating new one")
+		return nil, errTokenRevoked
 	}
 
 	return &token, nil
