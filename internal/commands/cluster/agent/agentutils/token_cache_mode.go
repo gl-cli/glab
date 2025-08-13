@@ -20,5 +20,5 @@ var CacheModes = []CacheMode{KeyringFilesystemFallback, ForcedKeyringCacheMode, 
 type CacheMode = string
 
 func AddTokenCacheModeFlag(fl *pflag.FlagSet, f *string) {
-	fl.VarP(cmdutils.NewEnumValue(CacheModes, ForcedFilesystemCacheMode, f), "cache-mode", "c", fmt.Sprintf("Mode to use for caching the token (allowed: %s)", strings.Join(CacheModes, ", ")))
+	fl.VarP(cmdutils.NewEnumValue(CacheModes, ForcedKeyringCacheMode, f), "cache-mode", "c", fmt.Sprintf("Mode to use for caching the token (allowed: %s)", strings.Join(CacheModes, ", ")))
 }

@@ -21,7 +21,7 @@ func TestAgentGetToken(t *testing.T) {
 	exec := cmdtest.SetupCmdForTest(t, NewCmdAgentGetToken, false, cmdtest.WithGitLabClient(tc.Client))
 
 	tc.MockUsers.EXPECT().
-		CreatePersonalAccessTokenForCurrentUser(gomock.Any()).
+		CreatePersonalAccessTokenForCurrentUser(gomock.Any(), gomock.Any()).
 		Return(&gitlab.PersonalAccessToken{
 			Token:     "glpat-XTESTX",
 			ExpiresAt: gitlab.Ptr(mustParse(t, "2023-01-02")),

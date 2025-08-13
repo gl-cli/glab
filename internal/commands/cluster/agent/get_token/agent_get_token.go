@@ -1,11 +1,13 @@
 package get_token
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -56,7 +58,7 @@ You might receive an email from your GitLab instance that a new personal access 
 			if err := opts.validate(); err != nil {
 				return err
 			}
-			return opts.run()
+			return opts.run(cmd.Context())
 		},
 	}
 	fl := agentGetTokenCmd.Flags()
@@ -75,8 +77,8 @@ func (o *options) validate() error {
 	return nil
 }
 
-func (o *options) run() error {
-	pat, err := o.cachedPAT()
+func (o *options) run(ctx context.Context) error {
+	pat, err := o.cachedPAT(ctx)
 	if err != nil {
 		return err
 	}
@@ -97,7 +99,7 @@ func (o *options) run() error {
 	return e.Encode(execCredential)
 }
 
-func (o *options) cachedPAT() (*gitlab.PersonalAccessToken, error) {
+func (o *options) cachedPAT(ctx context.Context) (*gitlab.PersonalAccessToken, error) {
 	client, err := o.gitlabClient()
 	if err != nil {
 		return nil, err
@@ -118,35 +120,52 @@ func (o *options) cachedPAT() (*gitlab.PersonalAccessToken, error) {
 			Name:      gitlab.Ptr(patName),
 			Scopes:    gitlab.Ptr(patScopes),
 			ExpiresAt: gitlab.Ptr(gitlab.ISOTime(patExpiresAt)),
-		})
+		}, gitlab.WithContext(ctx))
 		if err != nil {
 			return nil, err
 		}
 		return pat, nil
 	}
 
+	if o.cacheMode == agentutils.NoCacheCacheMode {
+		return createFunc()
+	}
+
 	gitlabInstance := base64.StdEncoding.EncodeToString([]byte(client.BaseURL().String()))
 	id := fmt.Sprintf("%s-%d", gitlabInstance, o.agentID)
 
-	switch o.cacheMode {
-	case agentutils.NoCacheCacheMode:
-		return createFunc()
-	case agentutils.ForcedKeyringCacheMode:
-		return fromKeyringCache(id, createFunc)
-	case agentutils.ForcedFilesystemCacheMode:
-		return fromFilesystemCache(id, createFunc)
-	case agentutils.KeyringFilesystemFallback:
-		pat, err := fromKeyringCache(id, createFunc)
-		if err != nil {
-			if !errors.Is(err, keyring.ErrUnsupportedPlatform) {
-				return nil, err
-			}
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	pat, err := withLock(ctx, id, func() (*gitlab.PersonalAccessToken, error) {
+		switch o.cacheMode {
+		case agentutils.ForcedKeyringCacheMode:
+			return fromKeyringCache(id, createFunc)
+		case agentutils.ForcedFilesystemCacheMode:
 			return fromFilesystemCache(id, createFunc)
+		case agentutils.KeyringFilesystemFallback:
+			pat, err := fromKeyringCache(id, createFunc)
+			if err != nil {
+				if !errors.Is(err, keyring.ErrUnsupportedPlatform) {
+					return nil, err
+				}
+				return fromFilesystemCache(id, createFunc)
+			}
+			return pat, nil
+		default:
+			panic(fmt.Sprintf("unimplemented cache mode: %s. This is a programming error, please report at https://gitlab.com/gitlab-org/cli/-/issues", o.cacheMode))
 		}
-		return pat, nil
-	default:
-		panic(fmt.Sprintf("unimplemented cache mode: %s. This is a programming error, please report at https://gitlab.com/gitlab-org/cli/-/issues", o.cacheMode))
+	})
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			fmt.Fprintf(os.Stderr, "Unable to use cache, proceeding without it: %s\n", err)
+			return createFunc()
+		}
+
+		return nil, err
 	}
+
+	return pat, nil
 }
 
 func fromKeyringCache(id string, createFunc func() (*gitlab.PersonalAccessToken, error)) (*gitlab.PersonalAccessToken, error) {

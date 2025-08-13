@@ -92,19 +92,9 @@ func (f *fileStorage) get(id string) ([]byte, error) {
 }
 
 func (f *fileStorage) set(id string, data []byte) (err error) {
-	// TODO: handle race conditions, yes renaming a file is most often atomic, but not always
-	// and it's unclear how it should be handled - should the content of the existing file be
-	// read in case of a conflict? But what if the file is not yet fully written?
-	// There are open questions that can be answered and implemented in a follow up iteration.
 	var file *os.File
-	file, err = f.root.OpenFile(id, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o400)
+	file, err = f.root.OpenFile(id, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
-		if errors.Is(err, os.ErrExist) {
-			// NOTE: this may happen on concurrent runs, we just won't write the
-			// file and rely on the concurrent process to have it done correctly
-			// and we let the caller use the token they produce this time.
-			return nil
-		}
 		return err
 	}
 	defer func() {
