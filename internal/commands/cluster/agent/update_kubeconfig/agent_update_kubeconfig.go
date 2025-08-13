@@ -24,6 +24,7 @@ const (
 	flagAgent                  = "agent"
 	flagUseContext             = "use-context"
 	flagTokenExpiryDuration    = "token-expiry-duration"
+	flagCheckRevoked           = "check-revoked"
 	tokenExpiryDurationDefault = 24 * time.Hour
 	minTokenExpiryDuration     = 24 * time.Hour
 )
@@ -40,6 +41,7 @@ type options struct {
 	agentID             int64
 	tokenExpiryDuration time.Duration
 	cacheMode           agentutils.CacheMode
+	checkRevoked        bool
 }
 
 func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
@@ -72,6 +74,7 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 	fl.StringVar(&pathOptions.LoadingRules.ExplicitPath, pathOptions.ExplicitFileFlag, pathOptions.LoadingRules.ExplicitPath, "Use a particular kubeconfig file.")
 	fl.BoolVarP(&opts.useContext, flagUseContext, "u", opts.useContext, "Use as default context.")
 	fl.DurationVar(&opts.tokenExpiryDuration, flagTokenExpiryDuration, tokenExpiryDurationDefault, "Duration for how long the generated tokens should be valid for. Minimum is 1 day and the effective expiry is always at the end of the day, the time is ignored.")
+	fl.BoolVar(&opts.checkRevoked, flagCheckRevoked, false, "Check if a cached token is revoked. This requires an API call to GitLab which adds latency every time a cached token is accessed.")
 	agentutils.AddTokenCacheModeFlag(fl, &opts.cacheMode)
 	cobra.CheckErr(agentUpdateKubeconfigCmd.MarkFlagRequired(flagAgent))
 
@@ -143,6 +146,7 @@ func (o *options) run() error {
 		agent:               agent,
 		tokenExpiryDuration: o.tokenExpiryDuration,
 		cacheMode:           o.cacheMode,
+		checkRevoked:        o.checkRevoked,
 	}
 	config, contextName := updateKubeconfig(params)
 
@@ -172,6 +176,7 @@ type updateKubeconfigParams struct {
 	agent               *gitlab.Agent
 	tokenExpiryDuration time.Duration
 	cacheMode           agentutils.CacheMode
+	checkRevoked        bool
 }
 
 func updateKubeconfig(params updateKubeconfigParams) (clientcmdapi.Config, string) {
@@ -199,6 +204,7 @@ func updateKubeconfig(params updateKubeconfigParams) (clientcmdapi.Config, strin
 		int64(params.agent.ID), // FIXME remove cast
 		params.tokenExpiryDuration,
 		params.cacheMode,
+		params.checkRevoked,
 	)
 
 	// Updating `contexts` entry: `kubectl config set-context ...`
@@ -217,7 +223,7 @@ func modifyCluster(cluster clientcmdapi.Cluster, server string) *clientcmdapi.Cl
 	return &cluster
 }
 
-func modifyAuthInfo(authInfo clientcmdapi.AuthInfo, glabExecutable string, glabHost string, glRepoFullName string, agentID int64, tokenExpiryDuration time.Duration, cacheMode agentutils.CacheMode) *clientcmdapi.AuthInfo {
+func modifyAuthInfo(authInfo clientcmdapi.AuthInfo, glabExecutable string, glabHost string, glRepoFullName string, agentID int64, tokenExpiryDuration time.Duration, cacheMode agentutils.CacheMode, checkRevoked bool) *clientcmdapi.AuthInfo {
 	// Clear existing auth info
 	authInfo.Token = ""
 	authInfo.TokenFile = ""
@@ -228,15 +234,19 @@ func modifyAuthInfo(authInfo clientcmdapi.AuthInfo, glabExecutable string, glabH
 	//   This requires ALWAYS setting this variable, even it has the default value as the caller might have
 	//   a custom value set, but it must be ignored.
 
+	args := []string{
+		"cluster", "agent", "get-token",
+		"--agent", strconv.FormatInt(agentID, 10),
+		"--repo", glRepoFullName,
+		"--token-expiry-duration", tokenExpiryDuration.String(),
+		"--cache-mode", cacheMode,
+	}
+	if checkRevoked {
+		args = append(args, "--check-revoked")
+	}
 	authInfo.Exec = &clientcmdapi.ExecConfig{
 		Command: glabExecutable,
-		Args: []string{
-			"cluster", "agent", "get-token",
-			"--agent", strconv.FormatInt(agentID, 10),
-			"--repo", glRepoFullName,
-			"--token-expiry-duration", tokenExpiryDuration.String(),
-			"--cache-mode", cacheMode,
-		},
+		Args:    args,
 		Env: []clientcmdapi.ExecEnvVar{
 			{
 				Name:  "GITLAB_HOST",

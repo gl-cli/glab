@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -25,6 +27,7 @@ const (
 	clientAuthenticationExecCredential = "ExecCredential"
 	buffer                             = 5 * time.Minute
 	flagTokenExpiryDuration            = "token-expiry-duration"
+	flagCheckRevoked                   = "check-revoked"
 	tokenExpiryDurationDefault         = 24 * time.Hour
 	minTokenExpiryDuration             = 24 * time.Hour
 )
@@ -38,6 +41,7 @@ type options struct {
 	agentID             int64
 	tokenExpiryDuration time.Duration
 	cacheMode           agentutils.CacheMode
+	checkRevoked        bool
 }
 
 func NewCmdAgentGetToken(f cmdutils.Factory) *cobra.Command {
@@ -64,6 +68,7 @@ You might receive an email from your GitLab instance that a new personal access 
 	fl := agentGetTokenCmd.Flags()
 	fl.Int64VarP(&opts.agentID, "agent", "a", 0, "The numerical Agent ID to connect to.")
 	fl.DurationVar(&opts.tokenExpiryDuration, flagTokenExpiryDuration, tokenExpiryDurationDefault, "Duration for how long the generated tokens should be valid for. Minimum is 1 day and the effective expiry is always at the end of the day, the time is ignored.")
+	fl.BoolVar(&opts.checkRevoked, flagCheckRevoked, false, "Check if a cached token is revoked. This requires an API call to GitLab which adds latency every time a cached token is accessed.")
 	agentutils.AddTokenCacheModeFlag(fl, &opts.cacheMode)
 	cobra.CheckErr(agentGetTokenCmd.MarkFlagRequired("agent"))
 
@@ -138,18 +143,25 @@ func (o *options) cachedPAT(ctx context.Context) (*gitlab.PersonalAccessToken, e
 	defer cancel()
 
 	pat, err := withLock(ctx, id, func() (*gitlab.PersonalAccessToken, error) {
+		isTokenRevoked := func(t *gitlab.PersonalAccessToken) (bool, error) {
+			if !o.checkRevoked {
+				return false, nil
+			}
+
+			return isTokenRevoked(ctx, client, t)
+		}
 		switch o.cacheMode {
 		case agentutils.ForcedKeyringCacheMode:
-			return fromKeyringCache(id, createFunc)
+			return fromKeyringCache(id, createFunc, isTokenRevoked)
 		case agentutils.ForcedFilesystemCacheMode:
-			return fromFilesystemCache(id, createFunc)
+			return fromFilesystemCache(id, createFunc, isTokenRevoked)
 		case agentutils.KeyringFilesystemFallback:
-			pat, err := fromKeyringCache(id, createFunc)
+			pat, err := fromKeyringCache(id, createFunc, isTokenRevoked)
 			if err != nil {
 				if !errors.Is(err, keyring.ErrUnsupportedPlatform) {
 					return nil, err
 				}
-				return fromFilesystemCache(id, createFunc)
+				return fromFilesystemCache(id, createFunc, isTokenRevoked)
 			}
 			return pat, nil
 		default:
@@ -168,17 +180,18 @@ func (o *options) cachedPAT(ctx context.Context) (*gitlab.PersonalAccessToken, e
 	return pat, nil
 }
 
-func fromKeyringCache(id string, createFunc func() (*gitlab.PersonalAccessToken, error)) (*gitlab.PersonalAccessToken, error) {
+func fromKeyringCache(id string, createFunc func() (*gitlab.PersonalAccessToken, error), isTokenRevoked func(t *gitlab.PersonalAccessToken) (bool, error)) (*gitlab.PersonalAccessToken, error) {
 	c := cache{
-		storage:    &keyringStorage{},
-		id:         id,
-		createFunc: createFunc,
+		storage:        &keyringStorage{},
+		id:             id,
+		createFunc:     createFunc,
+		isTokenRevoked: isTokenRevoked,
 	}
 
 	return c.get()
 }
 
-func fromFilesystemCache(id string, createFunc func() (*gitlab.PersonalAccessToken, error)) (*gitlab.PersonalAccessToken, error) {
+func fromFilesystemCache(id string, createFunc func() (*gitlab.PersonalAccessToken, error), isTokenRevoked func(t *gitlab.PersonalAccessToken) (bool, error)) (*gitlab.PersonalAccessToken, error) {
 	fs, err := newFileStorage()
 	if err != nil {
 		return nil, err
@@ -186,9 +199,52 @@ func fromFilesystemCache(id string, createFunc func() (*gitlab.PersonalAccessTok
 	defer fs.close()
 
 	c := cache{
-		id:         id,
-		createFunc: createFunc,
-		storage:    fs,
+		id:             id,
+		createFunc:     createFunc,
+		storage:        fs,
+		isTokenRevoked: isTokenRevoked,
 	}
 	return c.get()
+}
+
+func isTokenRevoked(ctx context.Context, client *gitlab.Client, token *gitlab.PersonalAccessToken) (bool, error) {
+	req, err := client.NewRequest(http.MethodGet, "personal_access_tokens/self", nil, []gitlab.RequestOptionFunc{
+		gitlab.WithHeader(gitlab.AccessTokenHeaderName, token.Token),
+		gitlab.WithContext(ctx),
+	})
+	if err != nil {
+		return false, fmt.Errorf("unable to create request to check if token is revoked: %w", err)
+	}
+
+	var t gitlab.PersonalAccessToken
+	_, err = client.Do(req, &t)
+	if err == nil {
+		return t.Revoked, nil
+	}
+
+	var errResp *gitlab.ErrorResponse
+	if !errors.As(err, &errResp) {
+		return false, nil
+	}
+
+	// check if token is revoked, the endpoint returns the following if it is (status code is 401):
+	// {
+	//   "error": "invalid_token",
+	//   "error_description": "Token was revoked. You have to re-authorize from the user."
+	// }
+
+	if !errResp.HasStatusCode(http.StatusUnauthorized) {
+		return false, err
+	}
+	var response errorResponse
+	jsonErr := json.Unmarshal(errResp.Body, &response)
+	if jsonErr != nil {
+		return false, err // we want to return the original API error
+	}
+
+	return strings.HasPrefix(response.ErrorDescription, "Token was revoked."), nil
+}
+
+type errorResponse struct {
+	ErrorDescription string `json:"error_description"`
 }
