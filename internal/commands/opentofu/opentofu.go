@@ -9,9 +9,10 @@ import (
 
 func NewCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "opentofu <command> [flags]",
-		Short: `Work with the OpenTofu or Terraform integration.`,
-		Long:  ``,
+		Use:     "opentofu <command> [flags]",
+		Short:   `Work with the OpenTofu or Terraform integration.`,
+		Long:    ``,
+		Aliases: []string{"terraform", "tf"},
 	}
 
 	cmdutils.EnableRepoOverride(cmd, f)
