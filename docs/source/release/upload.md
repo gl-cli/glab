@@ -56,8 +56,8 @@ $ glab release upload v1.0.1 --assets-links='
 
 ```plaintext
   -a, --assets-links JSON      JSON string representation of assets links, like: `--assets-links='[{"name": "Asset1", "url":"https://<domain>/some/location/1", "link_type": "other", "direct_asset_path": "path/to/file"}]'.`
-      --package-name string    [EXPERIMENTAL] The package name to use when uploading the assets to the generic package release with --use-package-registry. (default "release-assets")
-      --use-package-registry   [EXPERIMENTAL] Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.
+      --package-name string    The package name to use when uploading the assets to the generic package release with --use-package-registry. (default "release-assets")
+      --use-package-registry   Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.
 ```
 
 ## Options inherited from parent commands
