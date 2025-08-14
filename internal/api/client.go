@@ -179,21 +179,25 @@ func (c *Client) initializeHTTPClient() error {
 		idleTimeout = 90 * time.Second
 	}
 
-	c.httpClient = &http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   dialTimeout,
-				KeepAlive: keepAlive,
-			}).DialContext,
-			ForceAttemptHTTP2:     true,
-			MaxIdleConns:          100,
-			IdleConnTimeout:       idleTimeout,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-			TLSClientConfig:       tlsConfig,
-		},
+	var rt http.RoundTripper = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   dialTimeout,
+			KeepAlive: keepAlive,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       idleTimeout,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		TLSClientConfig:       tlsConfig,
 	}
+
+	if isDebug := os.Getenv("GLAB_DEBUG_HTTP"); isDebug == "true" {
+		rt = &debugTransport{rt: rt, w: os.Stderr}
+	}
+
+	c.httpClient = &http.Client{Transport: rt}
 	return nil
 }
 
