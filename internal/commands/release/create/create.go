@@ -184,8 +184,8 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	fl.BoolVar(&opts.noUpdate, "no-update", false, "Prevent updating the existing release.")
 	fl.BoolVar(&opts.noCloseMilestone, "no-close-milestone", false, "Prevent closing milestones after creating the release.")
 	fl.StringVar(&opts.experimentalNotesTextOrFile, "experimental-notes-text-or-file", "", "[EXPERIMENTAL] Value to use as release notes. If a file exists with this value as path, its content will be used. Otherwise, the value itself will be used as text.")
-	fl.BoolVar(&opts.usePackageRegistry, "use-package-registry", false, "[EXPERIMENTAL] Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.")
-	fl.StringVar(&opts.packageName, "package-name", upload.DefaultReleasePackageName, "[EXPERIMENTAL] The package name to use when uploading the assets to the generic package release with --use-package-registry.")
+	fl.BoolVar(&opts.usePackageRegistry, "use-package-registry", false, "Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.")
+	fl.StringVar(&opts.packageName, "package-name", upload.DefaultReleasePackageName, "The package name to use when uploading the assets to the generic package release with --use-package-registry.")
 	cobra.CheckErr(fl.MarkHidden("experimental-notes-text-or-file"))
 
 	// These two need to be separately exclusive to avoid a breaking change
