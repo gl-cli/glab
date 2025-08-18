@@ -113,7 +113,15 @@ func resolveBranch(cmd *cobra.Command, f cmdutils.Factory) (string, error) {
 	} else {
 		// `ci run` is running out of a git repo
 		fmt.Fprintln(f.IO().StdOut, "not in a Git repository. Using repository argument.")
-		branch = ciutils.GetDefaultBranch(f)
+		client, err := f.GitLabClient()
+		if err != nil {
+			return "", err
+		}
+		repo, err := f.BaseRepo()
+		if err != nil {
+			return "", err
+		}
+		branch = ciutils.GetDefaultBranch(repo, client)
 	}
 	return branch, nil
 }

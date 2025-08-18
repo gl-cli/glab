@@ -8,8 +8,8 @@ import (
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
-	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -60,12 +60,10 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 			if pipelineId != 0 {
 				msgNotFound = fmt.Sprintf("No pipeline with the given ID: %d", pipelineId)
 			} else {
-				if branch == "" {
-					branch, err = git.CurrentBranch()
-					if err != nil {
-						return err
-					}
-				}
+				// Use enhanced branch resolution that supports API fallback
+				branch = ciutils.GetBranch(branch, func() (string, error) {
+					return f.Branch()
+				}, repo, client)
 
 				commit, _, err := client.Commits.GetCommit(repo.FullName(), branch, nil)
 				if err != nil {
