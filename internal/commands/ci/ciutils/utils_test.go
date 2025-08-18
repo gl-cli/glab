@@ -7,6 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
+	"go.uber.org/mock/gomock"
 
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
@@ -259,6 +262,7 @@ func TestGetJobId(t *testing.T) {
 			ios, _, _, _ := cmdtest.TestIOStreams()
 			f := cmdtest.NewTestFactory(ios,
 				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
+				cmdtest.WithBranch("main"),
 			)
 
 			client, _ := f.GitLabClient()
@@ -423,6 +427,7 @@ func TestTraceJob(t *testing.T) {
 			ios, _, _, _ := cmdtest.TestIOStreams()
 			f := cmdtest.NewTestFactory(ios,
 				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
+				cmdtest.WithBranch("main"),
 			)
 
 			client, _ := f.GitLabClient()
@@ -446,4 +451,187 @@ func TestTraceJob(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestGetDefaultBranch_HappyPath tests successful scenarios for GetDefaultBranch
+func TestGetDefaultBranch_HappyPath(t *testing.T) {
+	tests := []struct {
+		name           string
+		defaultBranch  string
+		expectedResult string
+	}{
+		{
+			name:           "when API returns default branch",
+			defaultBranch:  "develop",
+			expectedResult: "develop",
+		},
+		{
+			name:           "when API returns main as default branch",
+			defaultBranch:  "main",
+			expectedResult: "main",
+		},
+		{
+			name:           "when API returns empty default branch",
+			defaultBranch:  "",
+			expectedResult: "main",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			testClient := gitlabtesting.NewTestClient(t)
+
+			project := &gitlab.Project{
+				DefaultBranch: tc.defaultBranch,
+			}
+			testClient.MockProjects.EXPECT().GetProject("OWNER/REPO", gomock.Any()).Return(project, nil, nil)
+
+			ios, _, _, _ := cmdtest.TestIOStreams()
+			f := cmdtest.NewTestFactory(ios,
+				cmdtest.WithGitLabClient(testClient.Client),
+			)
+
+			client, _ := f.GitLabClient()
+			repo, _ := f.BaseRepo()
+			result := GetDefaultBranch(repo, client)
+			require.Equal(t, tc.expectedResult, result)
+		})
+	}
+}
+
+// TestGetDefaultBranch_ErrorCases tests error scenarios for GetDefaultBranch
+func TestGetDefaultBranch_ErrorCases(t *testing.T) {
+	tests := []struct {
+		name           string
+		factoryOptions []cmdtest.FactoryOption
+		expectMain     bool
+	}{
+		{
+			name:           "when BaseRepo fails",
+			factoryOptions: []cmdtest.FactoryOption{cmdtest.WithBaseRepoError(assert.AnError)},
+			expectMain:     true,
+		},
+		{
+			name:           "when GitLabClient fails",
+			factoryOptions: []cmdtest.FactoryOption{cmdtest.WithGitLabClientError(assert.AnError)},
+			expectMain:     true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ios, _, _, _ := cmdtest.TestIOStreams()
+			factory := cmdtest.NewTestFactory(ios, tc.factoryOptions...)
+
+			client, _ := factory.GitLabClient()
+			repo, _ := factory.BaseRepo()
+
+			// Run the test with the configured factory
+			result := GetDefaultBranch(repo, client)
+			require.Equal(t, "main", result)
+		})
+	}
+}
+
+// TestGetDefaultBranch_APIErrorCases tests API failure scenarios for GetDefaultBranch
+func TestGetDefaultBranch_APIErrorCases(t *testing.T) {
+	t.Run("when API call fails", func(t *testing.T) {
+		testClient := gitlabtesting.NewTestClient(t)
+
+		testClient.MockProjects.EXPECT().GetProject("OWNER/REPO", gomock.Any()).Return(nil, nil, assert.AnError)
+
+		ios, _, _, _ := cmdtest.TestIOStreams()
+		f := cmdtest.NewTestFactory(ios,
+			cmdtest.WithGitLabClient(testClient.Client),
+		)
+
+		client, _ := f.GitLabClient()
+		repo, _ := f.BaseRepo()
+		result := GetDefaultBranch(repo, client)
+		require.Equal(t, "main", result)
+	})
+}
+
+// TestGetBranch_HappyPath tests successful scenarios for GetBranch
+func TestGetBranch_HappyPath(t *testing.T) {
+	tests := []struct {
+		name             string
+		specifiedBranch  string
+		gitBranch        string
+		apiDefaultBranch string
+		expectedResult   string
+	}{
+		{
+			name:            "when branch is specified",
+			specifiedBranch: "feature-branch",
+			expectedResult:  "feature-branch",
+		},
+		{
+			name:           "when no branch specified and git works",
+			gitBranch:      "current-git-branch",
+			expectedResult: "current-git-branch",
+		},
+		{
+			name:             "when no branch specified and git fails, uses API default",
+			apiDefaultBranch: "develop",
+			expectedResult:   "develop",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			testClient := gitlabtesting.NewTestClient(t)
+
+			if tc.apiDefaultBranch != "" {
+				project := &gitlab.Project{
+					DefaultBranch: tc.apiDefaultBranch,
+				}
+				testClient.MockProjects.EXPECT().GetProject("OWNER/REPO", gomock.Any()).Return(project, nil, nil)
+			}
+
+			ios, _, _, _ := cmdtest.TestIOStreams()
+			f := cmdtest.NewTestFactory(ios,
+				cmdtest.WithGitLabClient(testClient.Client),
+			)
+
+			if tc.gitBranch != "" {
+				f.BranchStub = func() (string, error) {
+					return tc.gitBranch, nil
+				}
+			} else if tc.apiDefaultBranch != "" {
+				f.BranchStub = func() (string, error) {
+					return "", assert.AnError
+				}
+			}
+
+			client, _ := f.GitLabClient()
+			repo, _ := f.BaseRepo()
+			result := GetBranch(tc.specifiedBranch, f.BranchStub, repo, client)
+			require.Equal(t, tc.expectedResult, result)
+		})
+	}
+}
+
+// TestGetBranch_ErrorFallback tests error scenarios that fallback to main
+func TestGetBranch_ErrorFallback(t *testing.T) {
+	t.Run("when no branch specified and git fails, falls back to main", func(t *testing.T) {
+		testClient := gitlabtesting.NewTestClient(t)
+
+		// Mock API failure
+		testClient.MockProjects.EXPECT().GetProject("OWNER/REPO", gomock.Any()).Return(nil, nil, assert.AnError)
+
+		ios, _, _, _ := cmdtest.TestIOStreams()
+		f := cmdtest.NewTestFactory(ios,
+			cmdtest.WithGitLabClient(testClient.Client),
+		)
+
+		f.BranchStub = func() (string, error) {
+			return "", assert.AnError
+		}
+
+		client, _ := f.GitLabClient()
+		repo, _ := f.BaseRepo()
+		result := GetBranch("", f.BranchStub, repo, client)
+		require.Equal(t, "main", result)
+	})
 }

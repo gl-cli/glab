@@ -82,7 +82,7 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 			} else {
 				// `ci run-trig` is running out of a git repo
 				fmt.Fprintln(f.IO().StdOut, "not in a Git repository. Using repository argument.")
-				c.Ref = gitlab.Ptr(ciutils.GetDefaultBranch(f))
+				c.Ref = gitlab.Ptr(ciutils.GetDefaultBranch(repo, client))
 			}
 
 			token, err := cmd.Flags().GetString("token")

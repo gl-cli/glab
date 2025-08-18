@@ -8,8 +8,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/internal/dbg"
-	"gitlab.com/gitlab-org/cli/internal/git"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -49,37 +47,17 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 			branch, _ := cmd.Flags().GetString("branch")
 			live, _ := cmd.Flags().GetBool("live")
 			compact, _ := cmd.Flags().GetBool("compact")
-
-			if branch == "" {
-				branch, err = git.CurrentBranch()
-				if err != nil {
-					return err
-				}
-				dbg.Debug("Current branch:", branch)
-			}
-
-			var repo glrepo.Interface
-			branchConfig := git.ReadBranchConfig(branch)
-			if branchConfig.RemoteName == "" {
-				repo, err = f.BaseRepo()
-				if err != nil {
-					return err
-				}
-			} else {
-				remotes, err := f.Remotes()
-				if err != nil {
-					return err
-				}
-				repo, err = remotes.FindByName(branchConfig.RemoteName)
-				if err != nil {
-					redCheck := c.Red("x")
-					fmt.Fprintf(f.IO().StdOut, "%s Remote '%s' for branch '%s' is gone.\n", redCheck, branchConfig.RemoteName, branch)
-					return err
-				}
+			repo, err := f.BaseRepo()
+			if err != nil {
+				return err
 			}
 			repoName := repo.FullName()
 			dbg.Debug("Repository:", repoName)
 
+			branch = ciutils.GetBranch(branch, func() (string, error) {
+				return f.Branch()
+			}, repo, client)
+			dbg.Debug("Using branch:", branch)
 			runningPipeline, _, err := client.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
 			if err != nil {
 				redCheck := c.Red("✘")

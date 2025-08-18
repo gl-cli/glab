@@ -124,14 +124,14 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 			# Uses current branch
 			$ glab pipeline ci view
 
-			# Get latest pipeline on master branch
-			$ glab pipeline ci view master
+			# Get latest pipeline on main branch
+			$ glab pipeline ci view main
 
 			# just like the second example
-			$ glab pipeline ci view -b master
+			$ glab pipeline ci view -b main
 
-			# Get latest pipeline on master branch of profclems/glab repo
-			$ glab pipeline ci view -b master -R profclems/glab
+			# Get latest pipeline on main branch of profclems/glab repo
+			$ glab pipeline ci view -b main -R profclems/glab
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

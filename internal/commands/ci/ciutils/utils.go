@@ -10,8 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
@@ -193,9 +191,9 @@ func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
 		return inputs.PipelineId, nil
 	}
 
-	branch, err := getBranch(inputs.Branch)
-	if err != nil {
-		return 0, fmt.Errorf("get branch: %w", err)
+	branch := GetBranch(inputs.Branch, nil, opts.Repo, opts.Client)
+	if branch == "" {
+		return 0, fmt.Errorf("unable to determine branch")
 	}
 
 	pipeline, _, err := opts.Client.Pipelines.GetLatestPipeline(opts.Repo.FullName(), &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
@@ -205,38 +203,33 @@ func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
 	return pipeline.ID, err
 }
 
-func GetDefaultBranch(f cmdutils.Factory) string {
-	repo, err := f.BaseRepo()
-	if err != nil {
-		return "master"
+// GetDefaultBranch fetches the repository's default branch from GitLab API.
+// Falls back to "main" if the API call fails or returns empty.
+func GetDefaultBranch(repo glrepo.Interface, client *gitlab.Client) string {
+	if repo == nil || client == nil {
+		return "main"
 	}
-
-	remotes, err := f.Remotes()
+	project, _, err := client.Projects.GetProject(repo.FullName(), nil)
 	if err != nil {
-		return "master"
+		return "main"
 	}
-
-	repoRemote, err := remotes.FindByRepo(repo.RepoOwner(), repo.RepoName())
-	if err != nil {
-		return "master"
+	if project.DefaultBranch != "" {
+		return project.DefaultBranch
 	}
-
-	branch, _ := git.GetDefaultBranch(repoRemote.Name)
-
-	return branch
+	return "main"
 }
 
-func getBranch(branch string) (string, error) {
+// GetBranch returns the specified branch, current git branch, or the default branch from API
+func GetBranch(branch string, currentBranch func() (string, error), repo glrepo.Interface, client *gitlab.Client) string {
 	if branch != "" {
-		return branch, nil
+		return branch
 	}
-
-	branch, err := git.CurrentBranch()
-	if err != nil {
-		return "", err
+	if currentBranch != nil {
+		if gitBranch, _ := currentBranch(); gitBranch != "" {
+			return gitBranch
+		}
 	}
-
-	return branch, nil
+	return GetDefaultBranch(repo, client)
 }
 
 func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
