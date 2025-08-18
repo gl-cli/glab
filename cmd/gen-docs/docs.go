@@ -38,7 +38,7 @@ func main() {
 		}
 		os.Exit(1)
 	}
-	err := os.MkdirAll(*path, 0o755)
+	err := os.MkdirAll(*path, 0o750)
 	if err != nil {
 		fatal(err)
 	}
@@ -70,61 +70,70 @@ func genManPage(glabCli *cobra.Command, path string) error {
 	return nil
 }
 
-func genWebDocs(glabCli *cobra.Command, path string) error {
-	cmds := glabCli.Commands()
-
-	for _, cmd := range cmds {
-		fmt.Println("Generating docs for " + cmd.Name())
-		// create directories for parent commands
-		_ = os.MkdirAll(path+cmd.Name(), 0o750)
-
-		// Generate parent command
-		out := new(bytes.Buffer)
-		err := GenMarkdownCustom(cmd, out)
-		if err != nil {
-			return err
-		}
-
-		// Generate children commands
-		for _, cmdC := range cmd.Commands() {
-			if cmdC.HasAvailableSubCommands() {
-				fmt.Println("Generating subcommand docs for " + cmdC.Name())
-				_ = os.MkdirAll(path+cmd.Name()+"/"+cmdC.Name(), 0o750)
-
-				// Generate parent command
-				out := new(bytes.Buffer)
-				err := GenMarkdownCustom(cmdC, out)
-				if err != nil {
-					return err
-				}
-
-				err = config.WriteFile(path+cmd.Name()+"/"+cmdC.Name()+"/index.md", out.Bytes(), 0o644)
-				if err != nil {
-					return err
-				}
-
-				for _, cmdCC := range cmdC.Commands() {
-					if cmdCC.Name() != "help" {
-						err = GenMarkdownTreeCustom(cmdCC, path+cmd.Name()+"/"+cmdC.Name())
-						if err != nil {
-							return err
-						}
-					}
-				}
-
-			} else {
-				err = GenMarkdownTreeCustom(cmdC, path+cmd.Name())
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		err = config.WriteFile(path+cmd.Name()+"/index.md", out.Bytes(), 0o644)
-		if err != nil {
+func genWebDocs(glabCli *cobra.Command, basePath string) error {
+	// Generate docs for all top-level commands
+	for _, cmd := range glabCli.Commands() {
+		if err := genCommandDocs(cmd, basePath, []string{}); err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+// genCommandDocs recursively generates documentation for a command and all its subcommands
+// Top-level commands always get their own folder with index.md
+// Non-top-level commands with subcommands get their own folder with index.md
+// Non-top-level commands without subcommands get a .md file in their parent's directory
+func genCommandDocs(cmd *cobra.Command, basePath string, parentPath []string) error {
+	// Skip help commands
+	if cmd.Name() == "help" {
+		return nil
+	}
+
+	// Build the current command path
+	currentPath := append(parentPath, cmd.Name())
+	fullPath := filepath.Join(append([]string{basePath}, currentPath...)...)
+
+	fmt.Println("Generating docs for " + strings.Join(currentPath, " "))
+
+	// Create directory for this command
+	if err := os.MkdirAll(fullPath, 0o750); err != nil {
+		return err
+	}
+
+	// Generate the command documentation
+	out := new(bytes.Buffer)
+	if err := GenMarkdownCustom(cmd, out); err != nil {
+		return err
+	}
+
+	// Write the documentation file
+	// - Top-level commands always get folder/index.md (even without subcommands)
+	// - Non-top-level commands with subcommands get folder/index.md
+	// - Non-top-level commands without subcommands get parent/command.md
+	var filename string
+	if cmd.HasAvailableSubCommands() || len(parentPath) == 0 {
+		// Commands with subcommands OR top-level commands always get folder/index.md
+		filename = filepath.Join(fullPath, "index.md")
+	} else {
+		// Non-top-level leaf commands (no subcommands) write as a .md file in the parent directory
+		parentDir := filepath.Join(append([]string{basePath}, parentPath...)...)
+		filename = filepath.Join(parentDir, cmd.Name()+".md")
+	}
+
+	if err := config.WriteFile(filename, out.Bytes(), 0o644); err != nil {
+		return err
+	}
+
+	// Recursively generate docs for all subcommands
+	for _, subCmd := range cmd.Commands() {
+		if subCmd.Name() != "help" {
+			if err := genCommandDocs(subCmd, basePath, currentPath); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
