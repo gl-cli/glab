@@ -59,7 +59,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			for _, v := range variableList {
 				split := strings.SplitN(v, ":", 2)
 				if len(split) != 2 {
-					return fmt.Errorf("Invalid format for --variable: %s", v)
+					return fmt.Errorf("invalid format for --variable: %s", v)
 				}
 				variable.Key = &split[0]
 				variable.Value = &split[1]
@@ -69,7 +69,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 				}
 			}
 
-			fmt.Fprintln(f.IO().StdOut, "Created schedule")
+			fmt.Fprintln(f.IO().StdOut, "Created schedule with ID", schedule.ID)
 
 			return nil
 		},

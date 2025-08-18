@@ -30,14 +30,14 @@ func Test_ScheduleCreate(t *testing.T) {
 	}{
 		{
 			Name:        "Schedule created",
-			ExpectedMsg: []string{"Created schedule"},
+			ExpectedMsg: []string{"Created schedule with ID 2"},
 			cli:         "--cron '*0 * * * *' --description 'example pipeline' --ref 'main'",
 			httpMocks: []httpMock{
 				{
 					http.MethodPost,
 					"/api/v4/projects/OWNER/REPO/pipeline_schedules",
 					http.StatusCreated,
-					`{}`,
+					`{"id": 2}`,
 				},
 			},
 		},
@@ -50,7 +50,7 @@ func Test_ScheduleCreate(t *testing.T) {
 		},
 		{
 			Name:       "Schedule created but with skipped variable",
-			wantStderr: "Invalid format for --variable: foo",
+			wantStderr: "invalid format for --variable: foo",
 			wantErr:    true,
 			cli:        "--cron '*0 * * * *' --description 'example pipeline' --ref 'main'  --variable 'foo'",
 			httpMocks: []httpMock{
