@@ -9,6 +9,7 @@ release:
 before:
   hooks:
     - go mod tidy
+    - go mod vendor
     - make manpage
 
 builds:
@@ -96,6 +97,13 @@ archives:
   - id: windows
     ids: [windows]
     formats: zip
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+  format: tar.gz
+  files:
+    - vendor/*
 
 nfpms:
   - id: foo
