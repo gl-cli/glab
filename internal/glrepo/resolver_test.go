@@ -165,6 +165,11 @@ func Test_resolveNetwork(t *testing.T) {
 		// Make our own copy of rem we can modify
 		rem := *rem
 
+		// Override api.GetProject so it doesn't mess with other tests
+		originalGetProject := api.GetProject
+		defer func() {
+			api.GetProject = originalGetProject
+		}()
 		api.GetProject = func(_ *gitlab.Client, ProjectID any) (*gitlab.Project, error) {
 			return nil, assert.AnError
 		}
@@ -231,10 +236,19 @@ func Test_BaseRepo(t *testing.T) {
 	}
 
 	// Override git.SetRemoteResolution so it doesn't mess with the user configs
+	originalSetRemoteResolution := git.SetRemoteResolution
+	defer func() {
+		git.SetRemoteResolution = originalSetRemoteResolution
+	}()
 	git.SetRemoteResolution = func(_, _ string) error {
 		return nil
 	}
 
+	// Override api.GetProject so it doesn't mess with other tests
+	originalGetProject := api.GetProject
+	defer func() {
+		api.GetProject = originalGetProject
+	}()
 	api.GetProject = func(_ *gitlab.Client, projectID any) (*gitlab.Project, error) {
 		p := mockGitlabProject(projectID)
 		return &p, nil
@@ -521,6 +535,11 @@ func Test_BaseRepo(t *testing.T) {
 	})
 
 	t.Run("Consult the network, all calls fail", func(t *testing.T) {
+		// Override api.GetProject so it doesn't mess with other tests
+		originalGetProject := api.GetProject
+		defer func() {
+			api.GetProject = originalGetProject
+		}()
 		api.GetProject = func(_ *gitlab.Client, projectID any) (*gitlab.Project, error) {
 			return nil, assert.AnError
 		}
@@ -542,6 +561,11 @@ func Test_BaseRepo(t *testing.T) {
 	})
 
 	t.Run("Consult the network, some, but not all, calls fail", func(t *testing.T) {
+		// Override api.GetProject so it doesn't mess with other tests
+		originalGetProject := api.GetProject
+		defer func() {
+			api.GetProject = originalGetProject
+		}()
 		api.GetProject = func(_ *gitlab.Client, projectID any) (*gitlab.Project, error) {
 			if projectID == "profclems/glab" {
 				return &gitlab.Project{
@@ -565,6 +589,70 @@ func Test_BaseRepo(t *testing.T) {
 		// Prompt must be true otherwise we won't reach the code we want to test
 		_, err := localRem.BaseRepo(true)
 		assert.NoError(t, err)
+	})
+
+	t.Run("Host mismatch: API host differs from git remote host", func(t *testing.T) {
+		// This test verifies our fix for the host mismatch bug
+		// where the API returns a different host than the git remote
+		// Git remote uses git.example.com, but API returns api.example.com
+		localRem := &ResolvedRemotes{
+			remotes: Remotes{
+				&Remote{
+					Remote: &git.Remote{
+						Name: "origin",
+					},
+					Repo: NewWithHost("owner", "repo", "git.example.com"), // Git remote uses git host
+				},
+			},
+			apiClient: &gitlab.Client{},
+			network: []gitlab.Project{
+				{
+					ID:                1,
+					PathWithNamespace: "owner/repo",
+					HTTPURLToRepo:     "https://api.example.com/owner/repo.git", // API returns api.example.com, different from git remote's git.example.com
+				},
+			},
+		}
+
+		// Override git.SetRemoteResolution so it doesn't mess with the user configs
+		originalSetRemoteResolution := git.SetRemoteResolution
+		defer func() {
+			git.SetRemoteResolution = originalSetRemoteResolution
+		}()
+		git.SetRemoteResolution = func(_, _ string) error {
+			return nil
+		}
+
+		// Override api.GetProject so it doesn't mess with other tests
+		originalGetProject := api.GetProject
+		defer func() {
+			api.GetProject = originalGetProject
+		}()
+		api.GetProject = func(_ *gitlab.Client, projectID any) (*gitlab.Project, error) {
+			p := &gitlab.Project{
+				PathWithNamespace: fmt.Sprint(projectID),
+				HTTPURLToRepo:     "https://api.example.com/owner/repo.git", // API returns api.example.com, different from git remote's git.example.com
+			}
+			return p, nil
+		}
+
+		// Mock the prompt to select the first (and only) project
+		as, restoreAsk := prompt.InitAskStubber()
+		defer restoreAsk()
+
+		as.Stub([]*prompt.QuestionStub{
+			{
+				Name:  "base",
+				Value: "owner/repo",
+			},
+		})
+
+		got, err := localRem.BaseRepo(true)
+		assert.NoError(t, err)
+
+		// The fix should ensure we use the git remote host, not the API host
+		assert.Equal(t, "owner/repo", got.FullName())
+		assert.Equal(t, "git.example.com", got.RepoHost()) // Should use git remote host, not API host
 	})
 }
 
@@ -601,10 +689,19 @@ func Test_HeadRepo(t *testing.T) {
 	}
 
 	// Override git.SetRemoteResolution so it doesn't mess with the user configs
+	originalSetRemoteResolution := git.SetRemoteResolution
+	defer func() {
+		git.SetRemoteResolution = originalSetRemoteResolution
+	}()
 	git.SetRemoteResolution = func(_, _ string) error {
 		return nil
 	}
 
+	// Override api.GetProject so it doesn't mess with other tests
+	originalGetProject := api.GetProject
+	defer func() {
+		api.GetProject = originalGetProject
+	}()
 	api.GetProject = func(_ *gitlab.Client, projectID any) (*gitlab.Project, error) {
 		p := mockGitlabProject(projectID)
 		return &p, nil
@@ -911,5 +1008,69 @@ func Test_HeadRepo(t *testing.T) {
 		got, err := localRem.HeadRepo(true)
 		assert.Nil(t, got)
 		assert.EqualError(t, err, "could not prompt")
+	})
+
+	t.Run("Host mismatch: API host differs from git remote host", func(t *testing.T) {
+		// This test verifies our fix for the host mismatch bug
+		// where the API returns a different host than the git remote
+		// Git remote uses git.example.com, but API returns api.example.com
+		localRem := &ResolvedRemotes{
+			remotes: Remotes{
+				&Remote{
+					Remote: &git.Remote{
+						Name: "origin",
+					},
+					Repo: NewWithHost("owner", "repo", "git.example.com"), // Git remote uses git host
+				},
+			},
+			apiClient: &gitlab.Client{},
+			network: []gitlab.Project{
+				{
+					ID:                1,
+					PathWithNamespace: "owner/repo",
+					HTTPURLToRepo:     "https://api.example.com/owner/repo.git", // API returns api.example.com, different from git remote's git.example.com
+				},
+			},
+		}
+
+		// Override git.SetRemoteResolution so it doesn't mess with the user configs
+		originalSetRemoteResolution := git.SetRemoteResolution
+		defer func() {
+			git.SetRemoteResolution = originalSetRemoteResolution
+		}()
+		git.SetRemoteResolution = func(_, _ string) error {
+			return nil
+		}
+
+		// Override api.GetProject so it doesn't mess with other tests
+		originalGetProject := api.GetProject
+		defer func() {
+			api.GetProject = originalGetProject
+		}()
+		api.GetProject = func(_ *gitlab.Client, projectID any) (*gitlab.Project, error) {
+			p := &gitlab.Project{
+				PathWithNamespace: fmt.Sprint(projectID),
+				HTTPURLToRepo:     "https://api.example.com/owner/repo.git", // API returns api.example.com, different from git remote's git.example.com
+			}
+			return p, nil
+		}
+
+		// Mock the prompt to select the first (and only) project
+		as, restoreAsk := prompt.InitAskStubber()
+		defer restoreAsk()
+
+		as.Stub([]*prompt.QuestionStub{
+			{
+				Name:  "head",
+				Value: "owner/repo",
+			},
+		})
+
+		got, err := localRem.HeadRepo(true)
+		assert.NoError(t, err)
+
+		// The fix should ensure we use the git remote host, not the API host
+		assert.Equal(t, "owner/repo", got.FullName())
+		assert.Equal(t, "git.example.com", got.RepoHost()) // Should use git remote host, not API host
 	})
 }

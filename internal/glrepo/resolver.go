@@ -143,7 +143,14 @@ func (r *ResolvedRemotes) BaseRepo(interactive bool) (Interface, error) {
 
 	// cache the result to git config
 	err := git.SetRemoteResolution(remote.Name, resolution)
-	return selectedRepoInfo, err
+
+	// Create the final repo object using the remote's host, not the API host
+	remoteHost := remote.RepoHost()
+	if remoteHost == "" {
+		return nil, fmt.Errorf("remote %s has invalid or empty host", remote.Name)
+	}
+	finalRepo := NewWithHost(selectedRepoInfo.RepoOwner(), selectedRepoInfo.RepoName(), remoteHost)
+	return finalRepo, err
 }
 
 func (r *ResolvedRemotes) HeadRepo(interactive bool) (Interface, error) {
@@ -228,7 +235,14 @@ func (r *ResolvedRemotes) HeadRepo(interactive bool) (Interface, error) {
 
 	// cache the result to git config
 	err := git.SetRemoteResolution(remote.Name, resolution)
-	return selectedRepoInfo, err
+
+	// Create the final repo object using the remote's host, not the API host
+	remoteHost := remote.RepoHost()
+	if remoteHost == "" {
+		return nil, fmt.Errorf("remote %s has invalid or empty host", remote.Name)
+	}
+	finalRepo := NewWithHost(selectedRepoInfo.RepoOwner(), selectedRepoInfo.RepoName(), remoteHost)
+	return finalRepo, err
 }
 
 // RemoteForRepo finds the git remote that points to a repository
