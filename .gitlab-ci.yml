@@ -1,6 +1,6 @@
 variables:
-  GO_VERSION: "1.25.0"
-  GOLANGCI_LINT_VERSION: '2.1.6'
+  GO_VERSION: '1.25.0'
+  GOLANGCI_LINT_VERSION: '2.4.0'
   GITLAB_ADVANCED_SAST_ENABLED: 'true'
 
 .code-patterns: &code-patterns
