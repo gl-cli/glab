@@ -14,8 +14,8 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-//go:generate go run go.uber.org/mock/mockgen@v0.5.2 -typed -destination=./mocks_for_test.go -package=bootstrap gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/bootstrap API,FluxWrapper,KubectlWrapper,Cmd
-//go:generate go run go.uber.org/mock/mockgen@v0.5.2 -typed -destination=./stdlib_mocks_for_test.go -package=bootstrap "io" "Writer"
+//go:generate go run go.uber.org/mock/mockgen@v0.6.0 -typed -destination=./mocks_for_test.go -package=bootstrap gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/bootstrap API,FluxWrapper,KubectlWrapper,Cmd
+//go:generate go run go.uber.org/mock/mockgen@v0.6.0 -typed -destination=./stdlib_mocks_for_test.go -package=bootstrap "io" "Writer"
 
 type API interface {
 	GetDefaultBranch() (string, error)
