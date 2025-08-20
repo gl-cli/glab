@@ -48,7 +48,7 @@ func lockFileBaseDir() (*os.Root, error) {
 		return nil, err
 	}
 
-	gitlabCacheDir := filepath.Join(cacheDir, "gitlab")
+	gitlabCacheDir := filepath.Join(cacheDir, "gitlab", "cli")
 	err = os.MkdirAll(gitlabCacheDir, 0o700)
 	if err != nil {
 		return nil, err
