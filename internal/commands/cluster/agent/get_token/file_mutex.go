@@ -21,7 +21,7 @@ type fileMutex struct {
 	f        *os.File
 }
 
-func withLock[T any](ctx context.Context, id string, fn func() (*T, error)) (t *T, err error) { //nolint:nonamedreturns
+func withLock[T any](ctx context.Context, id string, fn func() (*T, error)) (t *T, retErr error) { //nolint:nonamedreturns
 	root, err := lockFileBaseDir()
 	if err != nil {
 		return nil, err
@@ -34,8 +34,8 @@ func withLock[T any](ctx context.Context, id string, fn func() (*T, error)) (t *
 	}
 	defer func() {
 		uerr := fm.unlock()
-		if err == nil && uerr != nil {
-			err = fmt.Errorf("failed to release file lock (%s): %w", filepath.Join(root.Name(), fm.filename), uerr)
+		if retErr == nil && uerr != nil {
+			retErr = fmt.Errorf("failed to release file lock (%s): %w", filepath.Join(root.Name(), fm.filename), uerr)
 		}
 	}()
 
