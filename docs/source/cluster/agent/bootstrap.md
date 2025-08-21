@@ -81,11 +81,19 @@ $ glab cluster agent bootstrap my-agent --helm-release-values values.yaml
 # Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a Kubernetes ConfigMap
 $ glab cluster agent bootstrap my-agent --helm-release-values-from ConfigMap/agent-config
 
+# Bootstrap "my-agent" and commit with custom user
+$ glab cluster agent bootstrap my-agent --commit-author-name="Tanuki" --commit-author-email="tanuki@example.com"
+
+# Bootstrap "my-agent" with authenticated API user
+$ glab cluster agent bootstrap my-agent --use-api-commit-author
+
 ```
 
 ## Options
 
 ```plaintext
+      --commit-author-email string                   The Git commit author email to use. Conflicts with the --use-api-commit-author flag. (default "noreply@glab.gitlab.com")
+      --commit-author-name string                    The Git commit author name to use. Conflicts with the --use-api-commit-author flag. (default "glab")
       --create-environment                           Create an Environment for the GitLab Agent. (default true)
       --create-flux-environment                      Create an Environment for FluxCD. This only affects the environment creation, not the use of Flux itself which is always required for the bootstrap process. (default true)
       --environment-flux-resource-path string        Flux Resource Path of the Environment for the GitLab Agent. (default "helm.toolkit.fluxcd.io/v2beta1/namespaces/<helm-release-namespace>/helmreleases/<helm-release-name>")
@@ -111,6 +119,7 @@ $ glab cluster agent bootstrap my-agent --helm-release-values-from ConfigMap/age
   -b, --manifest-branch string                       Branch to commit the Flux Manifests to. (default to the project default branch)
   -p, --manifest-path string                         Location of directory in Git repository for storing the GitLab Agent for Kubernetes Helm resources.
       --no-reconcile                                 Do not trigger Flux reconciliation for GitLab Agent for Kubernetes Flux resource.
+      --use-api-commit-author                        When creating Git commits use the user from the authenticated API request. Conflicts with the --commit-author-name and --commit-author-email flags.
 ```
 
 ## Options inherited from parent commands

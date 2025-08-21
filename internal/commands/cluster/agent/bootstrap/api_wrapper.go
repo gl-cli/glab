@@ -14,8 +14,6 @@ import (
 )
 
 const (
-	commitAuthorName  = "glab"
-	commitAuthorEmail = "noreply@glab.gitlab.com"
 	// agentTokenLimit specifies the maximal amount of agent tokens that can be active per agent at any given time.
 	agentTokenLimit = 2
 )
@@ -24,13 +22,18 @@ var agentNotFoundErr = errors.New("agent not found")
 
 var _ API = (*apiWrapper)(nil)
 
-func NewAPI(client *gitlab.Client, projectID any) API {
-	return &apiWrapper{client: client, projectID: projectID}
+type commitAuthor struct {
+	name, email string
+}
+
+func NewAPI(client *gitlab.Client, projectID any, commitAuthor *commitAuthor) API {
+	return &apiWrapper{client: client, projectID: projectID, commitAuthor: commitAuthor}
 }
 
 type apiWrapper struct {
-	client    *gitlab.Client
-	projectID any
+	client       *gitlab.Client
+	projectID    any
+	commitAuthor *commitAuthor
 }
 
 func (a *apiWrapper) GetDefaultBranch() (string, error) {
@@ -108,13 +111,18 @@ func (a *apiWrapper) ConfigureAgent(agent *gitlab.Agent, branch string) error {
 			return err
 		}
 
-		_, _, err = a.client.RepositoryFiles.CreateFile(a.projectID, configPath, &gitlab.CreateFileOptions{
+		opts := &gitlab.CreateFileOptions{
 			Branch:        gitlab.Ptr(branch),
 			Content:       gitlab.Ptr(string(configuredContent)),
 			CommitMessage: gitlab.Ptr(fmt.Sprintf("Add %s via glab file sync", configPath)),
-			AuthorName:    gitlab.Ptr(commitAuthorName),
-			AuthorEmail:   gitlab.Ptr(commitAuthorEmail),
-		})
+		}
+
+		if a.commitAuthor != nil {
+			opts.AuthorName = gitlab.Ptr(a.commitAuthor.name)
+			opts.AuthorEmail = gitlab.Ptr(a.commitAuthor.email)
+		}
+
+		_, _, err = a.client.RepositoryFiles.CreateFile(a.projectID, configPath, opts)
 		return err
 	} else {
 		content, err := base64.StdEncoding.DecodeString(file.Content)
@@ -142,13 +150,18 @@ func (a *apiWrapper) ConfigureAgent(agent *gitlab.Agent, branch string) error {
 			return err
 		}
 
-		_, _, err = a.client.RepositoryFiles.UpdateFile(a.projectID, configPath, &gitlab.UpdateFileOptions{
+		opts := &gitlab.UpdateFileOptions{
 			Branch:        gitlab.Ptr(branch),
 			Content:       gitlab.Ptr(string(configuredContent)),
 			CommitMessage: gitlab.Ptr(fmt.Sprintf("Update %s via glab file sync", configPath)),
-			AuthorName:    gitlab.Ptr(commitAuthorName),
-			AuthorEmail:   gitlab.Ptr(commitAuthorEmail),
-		})
+		}
+
+		if a.commitAuthor != nil {
+			opts.AuthorName = gitlab.Ptr(a.commitAuthor.name)
+			opts.AuthorEmail = gitlab.Ptr(a.commitAuthor.email)
+		}
+
+		_, _, err = a.client.RepositoryFiles.UpdateFile(a.projectID, configPath, opts)
 		return err
 	}
 }
@@ -210,25 +223,35 @@ func (a *apiWrapper) SyncFile(f file, branch string) error {
 			return err
 		}
 
-		// file does not exist yet, lets create it
-		_, _, err := a.client.RepositoryFiles.CreateFile(a.projectID, f.path, &gitlab.CreateFileOptions{
+		opts := &gitlab.CreateFileOptions{
 			Branch:        gitlab.Ptr(branch),
 			Content:       gitlab.Ptr(string(f.content)),
 			CommitMessage: gitlab.Ptr(fmt.Sprintf("Add %s via glab file sync", f.path)),
-			AuthorName:    gitlab.Ptr(commitAuthorName),
-			AuthorEmail:   gitlab.Ptr(commitAuthorEmail),
-		})
+		}
+
+		if a.commitAuthor != nil {
+			opts.AuthorName = gitlab.Ptr(a.commitAuthor.name)
+			opts.AuthorEmail = gitlab.Ptr(a.commitAuthor.email)
+		}
+
+		// file does not exist yet, lets create it
+		_, _, err := a.client.RepositoryFiles.CreateFile(a.projectID, f.path, opts)
 		return err
 	}
 
-	// file already exists, lets update it
-	_, _, err = a.client.RepositoryFiles.UpdateFile(a.projectID, f.path, &gitlab.UpdateFileOptions{
+	opts := &gitlab.UpdateFileOptions{
 		Branch:        gitlab.Ptr(branch),
 		Content:       gitlab.Ptr(string(f.content)),
 		CommitMessage: gitlab.Ptr(fmt.Sprintf("Update %s via glab file sync", f.path)),
-		AuthorName:    gitlab.Ptr(commitAuthorName),
-		AuthorEmail:   gitlab.Ptr(commitAuthorEmail),
-	})
+	}
+
+	if a.commitAuthor != nil {
+		opts.AuthorName = gitlab.Ptr(a.commitAuthor.name)
+		opts.AuthorEmail = gitlab.Ptr(a.commitAuthor.email)
+	}
+
+	// file already exists, lets update it
+	_, _, err = a.client.RepositoryFiles.UpdateFile(a.projectID, f.path, opts)
 	return err
 }
 
