@@ -954,7 +954,7 @@ func setupCmdExec(t *testing.T) (execFunc, *MockAPI, *MockWriter, *MockWriter, *
 			},
 		),
 		func() error { return nil },
-		func(*gitlab.Client, any) API { return mockAPI },
+		func(*gitlab.Client, any, *commitAuthor) API { return mockAPI },
 		func(_ Cmd, _, _, _ string) KubectlWrapper { return mockKubectlWrapper },
 		func(_ Cmd, _, _, _, _, _, _, _, _, _, _ string, _, _ []string, _, _, _ string) FluxWrapper {
 			return mockFluxWrapper
