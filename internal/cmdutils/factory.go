@@ -58,10 +58,6 @@ func NewFactory(io *iostreams.IOStreams, resolveRepos bool, cfg config.Config, b
 		defaultProtocol: glinstance.DefaultProtocol,
 	}
 
-	baseRepo, err := f.BaseRepo()
-	if err == nil {
-		f.defaultHostname = baseRepo.RepoHost()
-	}
 	// Fetch the custom host config from env vars, then local config.yml, then global config,yml.
 	customGLHost, _ := cfg.Get("", "host")
 	if customGLHost != "" {
@@ -71,6 +67,11 @@ func NewFactory(io *iostreams.IOStreams, resolveRepos bool, cfg config.Config, b
 			f.defaultProtocol = protocol
 		}
 		f.defaultHostname = customGLHost
+	}
+
+	baseRepo, err := f.BaseRepo()
+	if err == nil {
+		f.defaultHostname = baseRepo.RepoHost()
 	}
 
 	return f
