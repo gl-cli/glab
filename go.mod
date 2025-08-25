@@ -14,7 +14,7 @@ require (
 	github.com/docker/cli v28.3.3+incompatible
 	github.com/docker/docker-credential-helpers v0.9.3
 	github.com/dustin/go-humanize v1.0.1
-	github.com/gdamore/tcell/v2 v2.8.1
+	github.com/gdamore/tcell/v2 v2.9.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/renameio/v2 v2.0.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
