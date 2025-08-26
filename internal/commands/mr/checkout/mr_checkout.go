@@ -24,7 +24,7 @@ var mrCheckoutCfg mrCheckoutConfig
 
 func NewCmdCheckout(f cmdutils.Factory) *cobra.Command {
 	mrCheckoutCmd := &cobra.Command{
-		Use:   "checkout [<id> | <branch>]",
+		Use:   "checkout [<id> | <branch> | <url>]",
 		Short: "Check out an open merge request.",
 		Long:  ``,
 		Example: heredoc.Doc(`
@@ -32,6 +32,7 @@ func NewCmdCheckout(f cmdutils.Factory) *cobra.Command {
 			$ glab mr checkout branch
 			$ glab mr checkout 12 --branch todo-fix
 			$ glab mr checkout new-feature --set-upstream-to=upstream/main
+			$ glab mr checkout https://gitlab.com/gitlab-org/cli/-/merge_requests/1234
 
 			# Uses the checked-out branch
 			$ glab mr checkout
