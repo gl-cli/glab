@@ -41,7 +41,8 @@ func NewCmdMR(f cmdutils.Factory) *cobra.Command {
 			"help:arguments": heredoc.Doc(`
 			A merge request can be supplied as argument in any of the following formats:
 			- by number, e.g. "123"; or
-			- by the name of its source branch, e.g. "patch-1" or "OWNER:patch-1".
+			- by the name of its source branch, e.g. "patch-1" or "OWNER:patch-1"; or
+			- by URL, e.g. "https://gitlab.com/gitlab-org/cli/-/merge_requests/123".
 			`),
 		},
 	}

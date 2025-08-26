@@ -599,6 +599,125 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.Equal(t, "test mr", gotMR.Title)
 			assert.Equal(t, "main", gotMR.SourceBranch)
 		})
+		t.Run("via-URL", func(t *testing.T) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+				// Verify the correct MR ID from the URL is being used
+				assert.Equal(t, 1234, mrID)
+				return &gitlab.MergeRequest{
+					BasicMergeRequest: gitlab.BasicMergeRequest{
+						IID:          1234,
+						Title:        "test mr from URL",
+						SourceBranch: "feature-branch",
+					},
+				}, nil
+			}
+
+			gotMR, gotRepo, err := MRFromArgs(baseFactory, []string{"https://gitlab.com/gitlab-org/cli/-/merge_requests/1234"}, "")
+			assert.NoError(t, err)
+
+			// The repository should be extracted from the URL
+			assert.Equal(t, "gitlab-org/cli", gotRepo.FullName())
+
+			assert.Equal(t, 1234, gotMR.IID)
+			assert.Equal(t, "test mr from URL", gotMR.Title)
+			assert.Equal(t, "feature-branch", gotMR.SourceBranch)
+		})
+		t.Run("via-URL-self-managed", func(t *testing.T) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+				// Verify the correct MR ID from the URL is being used
+				assert.Equal(t, 42, mrID)
+				return &gitlab.MergeRequest{
+					BasicMergeRequest: gitlab.BasicMergeRequest{
+						IID:          42,
+						Title:        "test mr from self-managed",
+						SourceBranch: "feature-branch",
+					},
+				}, nil
+			}
+
+			// Need to create a factory that can handle different hosts
+			f := cmdtest.NewTestFactory(ios,
+				cmdtest.WithBaseRepo("kde", "krita", "invent.kde.org"),
+				cmdtest.WithBranch("main"),
+			)
+
+			gotMR, gotRepo, err := MRFromArgs(f, []string{"https://invent.kde.org/kde/krita/-/merge_requests/42"}, "")
+			assert.NoError(t, err)
+
+			// The repository should be extracted from the URL
+			assert.Equal(t, "kde/krita", gotRepo.FullName())
+			assert.Equal(t, "invent.kde.org", gotRepo.RepoHost())
+
+			assert.Equal(t, 42, gotMR.IID)
+			assert.Equal(t, "test mr from self-managed", gotMR.Title)
+			assert.Equal(t, "feature-branch", gotMR.SourceBranch)
+		})
+		t.Run("via-URL-cross-instance", func(t *testing.T) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+				// Verify the correct MR ID from the URL is being used
+				assert.Equal(t, 42, mrID)
+				return &gitlab.MergeRequest{
+					BasicMergeRequest: gitlab.BasicMergeRequest{
+						IID:          42,
+						Title:        "test mr from cross instance",
+						SourceBranch: "feature-branch",
+					},
+				}, nil
+			}
+
+			// Create a factory with gitlab.com as base, but test with invent.kde.org URL
+			// This tests the cross-instance hostname comparison logic
+			f := cmdtest.NewTestFactory(ios,
+				cmdtest.WithBaseRepo("gitlab-org", "cli", "gitlab.com"),
+				cmdtest.WithBranch("main"),
+			)
+
+			gotMR, gotRepo, err := MRFromArgs(f, []string{"https://invent.kde.org/kde/krita/-/merge_requests/42"}, "")
+			assert.NoError(t, err)
+
+			// The repository should be extracted from the URL (different from base repo)
+			assert.Equal(t, "kde/krita", gotRepo.FullName())
+			assert.Equal(t, "invent.kde.org", gotRepo.RepoHost())
+
+			assert.Equal(t, 42, gotMR.IID)
+			assert.Equal(t, "test mr from cross instance", gotMR.Title)
+			assert.Equal(t, "feature-branch", gotMR.SourceBranch)
+		})
+		t.Run("via-URL-cross-instance-api-client", func(t *testing.T) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+				return &gitlab.MergeRequest{
+					BasicMergeRequest: gitlab.BasicMergeRequest{
+						IID:          42,
+						Title:        "test mr api client",
+						SourceBranch: "feature-branch",
+					},
+				}, nil
+			}
+
+			// Track which hostname was used for ApiClient call
+			var capturedHostname string
+
+			f := cmdtest.NewTestFactory(ios,
+				cmdtest.WithBaseRepo("gitlab-org", "cli", "gitlab.com"),
+				cmdtest.WithBranch("main"),
+			)
+
+			// Override ApiClient to capture the hostname parameter
+			originalApiClient := f.ApiClientStub
+			f.ApiClientStub = func(repoHost string) (*api.Client, error) {
+				capturedHostname = repoHost
+				return originalApiClient(repoHost) // Call original implementation
+			}
+
+			gotMR, gotRepo, err := MRFromArgs(f, []string{"https://custom.gitlab.com/user/repo/-/merge_requests/42"}, "")
+			assert.NoError(t, err)
+
+			// Verify that ApiClient was called with the correct hostname from URL
+			assert.Equal(t, "custom.gitlab.com", capturedHostname)
+			assert.Equal(t, "user/repo", gotRepo.FullName())
+			assert.Equal(t, "custom.gitlab.com", gotRepo.RepoHost())
+			assert.Equal(t, 42, gotMR.IID)
+		})
 	})
 
 	t.Run("fail", func(t *testing.T) {
@@ -661,6 +780,29 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.Nil(t, gotMR)
 			assert.Nil(t, gotRepo)
 			assert.EqualError(t, err, "failed to get merge request 2: API call failed")
+		})
+		t.Run("URL-with-API-failure", func(t *testing.T) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+				// This should be called with the ID from the URL (1234)
+				assert.Equal(t, 1234, mrID)
+				return nil, errors.New("API call failed for URL MR")
+			}
+
+			gotMR, gotRepo, err := MRFromArgs(baseFactory, []string{"https://gitlab.com/gitlab-org/cli/-/merge_requests/1234"}, "")
+			assert.Nil(t, gotMR)
+			assert.Nil(t, gotRepo)
+			assert.EqualError(t, err, "failed to get merge request 1234: API call failed for URL MR")
+		})
+		t.Run("URL-without-scheme", func(t *testing.T) {
+			// Test that a URL without a scheme (http/https) fails to parse and falls back to branch lookup
+			GetMRForBranch = func(_ *gitlab.Client, mrOpts MrOptions) (*gitlab.BasicMergeRequest, error) {
+				return nil, fmt.Errorf("no merge requests from branch %q", mrOpts.Branch)
+			}
+
+			gotMR, gotRepo, err := MRFromArgs(baseFactory, []string{"gitlab.com/gitlab-org/cli/-/merge_requests/1234"}, "")
+			assert.Nil(t, gotMR)
+			assert.Nil(t, gotRepo)
+			assert.EqualError(t, err, `no merge requests from branch "gitlab.com/gitlab-org/cli/-/merge_requests/1234"`)
 		})
 	})
 }

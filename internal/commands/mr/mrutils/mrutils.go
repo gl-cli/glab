@@ -167,11 +167,26 @@ func MRFromArgsWithOpts(
 	var branch string
 
 	if len(args) > 0 {
-		mrID, err = strconv.Atoi(strings.TrimPrefix(args[0], "!"))
-		if err != nil {
-			branch = args[0]
-		} else if mrID == 0 { // to check for cases where the user explicitly specified mrID to be zero
-			return nil, nil, fmt.Errorf("invalid merge request ID provided.")
+		// First, try to parse as a GitLab MR URL
+		if urlMRID, urlRepo := cmdutils.ParseMergeRequestFromURL(args[0], f.DefaultHostname()); urlMRID != 0 {
+			mrID = urlMRID
+			// Update client to use the hostname from the URL if it's different
+			if urlRepo.RepoHost() != baseRepo.RepoHost() {
+				apiClient, err := f.ApiClient(urlRepo.RepoHost())
+				if err != nil {
+					return nil, nil, fmt.Errorf("failed to connect to GitLab instance %s from URL (%s): %v", urlRepo.RepoHost(), args[0], err)
+				}
+				client = apiClient.Lab()
+			}
+			baseRepo = urlRepo
+		} else {
+			// If not a URL, try to parse as an integer (with optional ! prefix)
+			mrID, err = strconv.Atoi(strings.TrimPrefix(args[0], "!"))
+			if err != nil {
+				branch = args[0]
+			} else if mrID == 0 { // to check for cases where the user explicitly specified mrID to be zero
+				return nil, nil, fmt.Errorf("invalid merge request ID provided.")
+			}
 		}
 	}
 
