@@ -16,9 +16,10 @@ GLab is an open source GitLab CLI tool. It brings GitLab to your terminal, next 
 
 ## Table of contents
 
-- [Table of contents](#table-of-contents)
 - [Requirements](#requirements)
 - [Usage](#usage)
+  - [Core commands](#core-commands)
+  - [GitLab Duo for the CLI](#gitlab-duo-for-the-cli)
 - [Demo](#demo)
 - [Documentation](#documentation)
 - [Installation](#installation)
@@ -27,10 +28,26 @@ GLab is an open source GitLab CLI tool. It brings GitLab to your terminal, next 
   - [Building from source](#building-from-source)
     - [Prerequisites for building from source](#prerequisites-for-building-from-source)
 - [Authentication](#authentication)
+  - [OAuth (GitLab.com)](#oauth-gitlabcom)
+  - [OAuth (GitLab Self-Managed, GitLab Dedicated)](#oauth-gitlab-self-managed-gitlab-dedicated)
+  - [Personal access token](#personal-access-token)
+  - [CI Job Token](#ci-job-token)
 - [Configuration](#configuration)
+  - [Configure `glab` to use your GitLab Self-Managed or GitLab Dedicated instance](#configure-glab-to-use-your-gitlab-self-managed-or-gitlab-dedicated-instance)
+  - [Configure `glab` to use mTLS certificates](#configure-glab-to-use-mtls-certificates)
+  - [Configure `glab` to use self-signed certificates](#configure-glab-to-use-self-signed-certificates)
 - [Environment variables](#environment-variables)
+  - [GitLab access variables](#gitlab-access-variables)
+  - [`glab` configuration variables](#glab-configuration-variables)
+  - [Other variables](#other-variables)
+  - [Token and environment variable precedence](#token-and-environment-variable-precedence)
+  - [Debugging](#debugging)
+- [Troubleshooting](#troubleshooting)
 - [Issues](#issues)
 - [Contributing](#contributing)
+  - [Versioning](#versioning)
+  - [Classify version changes](#classify-version-changes)
+  - [Compatibility](#compatibility)
 - [Inspiration](#inspiration)
 
 ## Requirements
@@ -65,11 +82,15 @@ Run `glab --help` to view a list of core commands in your terminal.
 - [`glab cluster`](docs/source/cluster)
 - [`glab completion`](docs/source/completion)
 - [`glab config`](docs/source/config)
+- [`glab deploy-key`](docs/source/deploy-key)
 - [`glab duo`](docs/source/duo)
 - [`glab incident`](docs/source/incident)
 - [`glab issue`](docs/source/issue)
+- [`glab iteration`](docs/source/iteration)
+- [`glab job`](docs/source/job)
 - [`glab label`](docs/source/label)
 - [`glab mr`](docs/source/mr)
+- [`glab opentofu`](docs/source/opentofu)
 - [`glab release`](docs/source/release)
 - [`glab repo`](docs/source/repo)
 - [`glab schedule`](docs/source/schedule)
@@ -77,12 +98,13 @@ Run `glab --help` to view a list of core commands in your terminal.
 - [`glab snippet`](docs/source/snippet)
 - [`glab ssh-key`](docs/source/ssh-key)
 - [`glab stack`](docs/source/stack)
+- [`glab token`](docs/source/token)
 - [`glab user`](docs/source/user)
 - [`glab variable`](docs/source/variable)
 
 Commands follow this pattern:
 
-```shell
+```bash
 glab <command> <subcommand> [flags]
 ```
 
@@ -314,20 +336,22 @@ self-signed certificates, either:
 
 | Token name         | In `config.yml` | Default value if [not set](#configuration) | Description |
 |--------------------|-----------------|--------------------------------------------|-------------|
-| `GLAB_CONFIG_DIR`  | -            | `~/.config/glab-cli/`                      | Directory where the `glab` global configuration file is located. Can be set in the config with `glab config set remote_alias origin`. |
 | `BROWSER`          | `browser`       | system default                                        | The web browser to use for opening links. Can be set in the configuration with `glab config set browser mybrowser`. |
-| `FORCE_HYPERLINKS` | `display_hyperlinks`             | `false`                                        | Set to `1` to force hyperlinks to be output, even when not outputting to a TTY. |
-| `GLAB_SEND_TELEMETRY` | `telemetry`             | `true`                                        | Set to `0` to prevent command usage data from being sent to your GitLab instance. |
+| `FORCE_HYPERLINKS` | `display_hyperlinks`             | `false`                                        | Set to `true` to force hyperlinks to be output, even when not outputting to a TTY. |
+| `GLAB_CHECK_UPDATE` | -            | -            | Set to `true` to force an update check. |
+| `GLAB_CONFIG_DIR`  | -            | `~/.config/glab-cli/`                      | Directory where the `glab` global configuration file is located. Can be set in the config with `glab config set remote_alias origin`. |
+| `GLAB_DEBUG_HTTP`  | -             | `false`                                        | Set to true to output HTTP transport information (request / response). |
+| `GLAB_SEND_TELEMETRY` | `telemetry`             | `true`                                        | Set to `false` to prevent command usage data from being sent to your GitLab instance. |
 | `GLAMOUR_STYLE`    | `glamour_style` | `dark`                                       | Environment variable to set your desired Markdown renderer style. Available options are (`dark`, `light`, `notty`) or set a [custom style](https://github.com/charmbracelet/glamour#styles). |
 | `NO_COLOR`         | -            | `true`                                        | Set to any value to avoid printing ANSI escape sequences for color output. |
+| `NO_PROMPT`        | `no_prompt`            | `false`                                        | Set to `true` to disable prompts. |
 | `VISUAL`, `EDITOR` | `editor`        | `nano`                                        | (in order of precedence) The editor tool to use for authoring text. Can be set in the config with `glab config set editor vim`. |
-| `GLAB_CHECK_UPDATE` | -            | -            | Set to `1`, `TRUE`, or `yes` to force an update check. |
 
 ### Other variables
 
 | Token name           | In `config.yml` | Default value if [not set](#configuration) | Description |
 |----------------------|-----------------|--------------------------------------------|-------------|
-| `DEBUG`              | `debug`            | `false`                                        | Set to `1` or `true` to output more information for each command, like Git commands, expanded aliases, and DNS error details. |
+| `DEBUG`              | `debug`            | `false`                                        | Set to `true` to output more information for each command, like Git commands, expanded aliases, and DNS error details. |
 | `GIT_REMOTE_URL_VAR` | not applicable         | not applicable                          | Alias of `REMOTE_ALIAS`. |
 | `REMOTE_ALIAS`       | `remote_alias`             | -                                        | `git remote` variable or alias that contains the GitLab URL. Alias: `GIT_REMOTE_URL_VAR` |
 
@@ -340,7 +364,7 @@ GLab uses tokens in this order:
 
 ### Debugging
 
-When the `DEBUG` environment variable is set to `1` or `true`, `glab` outputs more logging information, including:
+When the `DEBUG` environment variable is set to `true`, `glab` outputs more logging information, including:
 
 - Underlying Git commands.
 - Expanded aliases.

@@ -3,8 +3,10 @@ package utils
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -178,7 +180,7 @@ func CommonElementsInStringSlice(s1 []string, s2 []string) []string {
 	return arr
 }
 
-// isValidUrl tests a string to determine if it is a well-structured url or not.
+// IsValidUrl tests a string to determine if it is a well-structured url or not.
 func IsValidURL(toTest string) bool {
 	_, err := url.ParseRequestURI(toTest)
 	if err != nil {
@@ -202,4 +204,21 @@ func Map[T1, T2 any](elems []T1, fn func(T1) T2) []T2 {
 	}
 
 	return r
+}
+
+// IsEnvVarEnabled checks if an environment variable is set
+// and logs an error to stdout if it a boolean value cannot be parsed
+func IsEnvVarEnabled(key string) (bool, bool) {
+	str, found := os.LookupEnv(key)
+	if found {
+		val, err := strconv.ParseBool(str)
+		// if the environment variable has invalid value we print a warning
+		// otherwise we return the parsed value
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "WARNING: Could not parse %s environment variable value: %s\n", key, err.Error())
+		}
+		return val, found
+	}
+
+	return false, false
 }

@@ -2,17 +2,18 @@ package dbg
 
 import (
 	"log"
-	"os"
+
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 func Debug(output ...string) {
-	if os.Getenv("DEBUG") != "" {
+	if enabled, found := utils.IsEnvVarEnabled("DEBUG"); found && enabled {
 		log.Print(output)
 	}
 }
 
 func Debugf(format string, v ...any) {
-	if os.Getenv("DEBUG") != "" {
+	if enabled, found := utils.IsEnvVarEnabled("DEBUG"); found && enabled {
 		log.Printf(format, v...)
 	}
 }

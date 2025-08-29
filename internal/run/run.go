@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -35,7 +36,7 @@ type cmdWithStderr struct {
 }
 
 func (c cmdWithStderr) Output() ([]byte, error) {
-	if os.Getenv("DEBUG") != "" {
+	if debugMode, err := strconv.ParseBool(os.Getenv("DEBUG")); err == nil && debugMode {
 		fmt.Fprintf(os.Stderr, "%v\n", c.Cmd.Args)
 	}
 	if c.Cmd.Stderr != nil {
@@ -51,7 +52,7 @@ func (c cmdWithStderr) Output() ([]byte, error) {
 }
 
 func (c cmdWithStderr) Run() error {
-	if os.Getenv("DEBUG") != "" {
+	if debugMode, err := strconv.ParseBool(os.Getenv("DEBUG")); err == nil && debugMode {
 		fmt.Fprintf(os.Stderr, "%v\n", c.Cmd.Args)
 	}
 	if c.Cmd.Stderr != nil {
