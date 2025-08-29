@@ -10,6 +10,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/dbg"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 func addTelemetryHook(f cmdutils.Factory, cmd *cobra.Command) func() {
@@ -20,14 +21,18 @@ func addTelemetryHook(f cmdutils.Factory, cmd *cobra.Command) func() {
 
 // isTelemetryEnabled checks if usage data is disabled via config or env var
 func isTelemetryEnabled(cfg config.Config) bool {
-	telemetryEnabled, _ := cfg.Get("", "telemetry")
-	enabled, err := strconv.ParseBool(telemetryEnabled)
-	if err != nil {
-		dbg.Debugf("Could not parse telemetry config value %s - defaulting to 'true'", telemetryEnabled)
-		return true
+	if enabled, found := utils.IsEnvVarEnabled("GLAB_SEND_TELEMETRY"); found {
+		return enabled
 	}
 
-	return enabled
+	// Fall back to config value if env var not set
+	if telemetryEnabled, _ := cfg.Get("", "telemetry"); telemetryEnabled != "" {
+		if telemetryEnabledParsed, err := strconv.ParseBool(telemetryEnabled); err == nil {
+			return telemetryEnabledParsed
+		}
+	}
+
+	return true
 }
 
 // parseCommand parses a command string and returns components

@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	"github.com/mgutz/ansi"
 
@@ -74,9 +75,15 @@ func main() {
 
 			// configure hyperlink display
 			func(i *iostreams.IOStreams) {
-				if forceHyperlinks := os.Getenv("FORCE_HYPERLINKS"); forceHyperlinks != "" && forceHyperlinks != "0" {
-					i.SetDisplayHyperlinks("always")
-				} else if displayHyperlinks, _ := cfg.Get("", "display_hyperlinks"); displayHyperlinks == "true" {
+				if enabled, found := utils.IsEnvVarEnabled("FORCE_HYPERLINKS"); found {
+					if enabled {
+						i.SetDisplayHyperlinks("always")
+					}
+
+					return
+				}
+
+				if displayHyperlinks, _ := cfg.Get("", "display_hyperlinks"); displayHyperlinks == "true" {
 					i.SetDisplayHyperlinks("auto")
 				}
 			},
@@ -233,25 +240,31 @@ func setupTelemetryHook(cfg config.Config, f cmdutils.Factory, cmd *cobra.Comman
 }
 
 func checkForUpdate(f cmdutils.Factory, rootCmd *cobra.Command, debug bool) {
-	shouldCheck := false
-
-	// GLAB_CHECK_UPDATE has higher priority than the check_update configuration value
-	if envVal, ok := os.LookupEnv("GLAB_CHECK_UPDATE"); ok {
-		if checkUpdate, err := strconv.ParseBool(envVal); err == nil {
-			shouldCheck = checkUpdate
-		}
-	} else {
-		// Fall back to config value if env var not set
-		if checkUpdate, _ := f.Config().Get("", "check_update"); checkUpdate != "" {
-			if parsed, err := strconv.ParseBool(checkUpdate); err == nil {
-				shouldCheck = parsed
-			}
-		}
+	if !isUpdateCheckEnabled(f) {
+		return
 	}
 
-	if shouldCheck {
-		if err := update.CheckUpdate(f, true); err != nil {
-			printError(f.IO(), err, rootCmd, debug)
-		}
+	if err := update.CheckUpdate(f, true); err != nil {
+		printError(f.IO(), err, rootCmd, debug)
 	}
+}
+
+func isUpdateCheckEnabled(f cmdutils.Factory) bool {
+	if enabled, found := utils.IsEnvVarEnabled("GLAB_CHECK_UPDATE"); found {
+		return enabled
+	}
+
+	val, err := f.Config().Get("", "check_update")
+	// WARN: I return true here since I think we should always check for updates
+	// and an error likely indicates that the value wasn't found in the config.
+	if err != nil {
+		return true
+	}
+
+	checkUpdate, err := strconv.ParseBool(val)
+	if err != nil {
+		f.IO().Logf("ERROR: Could not parse config value %q: %s", "check_update", err)
+	}
+
+	return checkUpdate
 }

@@ -19,6 +19,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/oauth2"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 // ClientOption represents a function that configures a Client
@@ -193,7 +194,7 @@ func (c *Client) initializeHTTPClient() error {
 		TLSClientConfig:       tlsConfig,
 	}
 
-	if isDebug := os.Getenv("GLAB_DEBUG_HTTP"); isDebug == "true" {
+	if enabled, found := utils.IsEnvVarEnabled("GLAB_DEBUG_HTTP"); found && enabled {
 		rt = &debugTransport{rt: rt, w: os.Stderr}
 	}
 
