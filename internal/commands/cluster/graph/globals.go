@@ -34,12 +34,13 @@ func constructGlobals() map[string]any {
 			"shape":      "parallelogram",
 			"style.fill": "#E5F3FF",
 		},
+		{Group: "", Resource: "secrets"}: {
+			"style.fill": "#FCC31E",
+		},
 		{Group: "apps", Resource: "replicasets"}: {
-			//"shape":      "square",
 			"style.fill": "#BCDDFB",
 		},
 		{Group: "apps", Resource: "deployments"}: {
-			//"shape":      "square",
 			"style.fill": "#87BFF3",
 		},
 	}
