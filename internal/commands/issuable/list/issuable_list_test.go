@@ -187,7 +187,7 @@ func TestIssueList_filterByIteration(t *testing.T) {
 	}
 	defer fakeHTTP.Verify(t)
 
-	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/issues?in=title%2Cdescription&iteration_id=9&page=1&per_page=30&state=opened",
+	fakeHTTP.RegisterResponder(http.MethodGet, "/api/v4/projects/OWNER/REPO/issues?in=title%2Cdescription&iteration_id=9&order_by=created_at&page=1&per_page=30&sort=desc&state=opened",
 		httpmock.NewStringResponse(http.StatusOK, `[]`))
 
 	output, err := runCommand(t, "issue", fakeHTTP, true, "--iteration 9", "")

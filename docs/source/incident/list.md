@@ -49,12 +49,14 @@ $ glab incident list --milestone release-2.0.0 --opened
       --not-assignee string    Filter incident by not being assigned to <username>.
       --not-author string      Filter incident by not being by author(s) <username>.
       --not-label strings      Filter incident by lack of label <name>.
+      --order string           Order incident by <field>. Order options: created_at, updated_at, priority, due_date, relative_position, label_priority, milestone_due, popularity, weight. (default "created_at")
   -O, --output string          Options: 'text' or 'json'. (default "text")
   -F, --output-format string   Options: 'details', 'ids', 'urls'. (default "details")
   -p, --page int               Page number. (default 1)
   -P, --per-page int           Number of items to list per page. (default 30)
   -R, --repo OWNER/REPO        Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
       --search string          Search <string> in the fields defined by '--in'.
+      --sort string            Return incident sorted in asc or desc order. (default "desc")
 ```
 
 ## Options inherited from parent commands
