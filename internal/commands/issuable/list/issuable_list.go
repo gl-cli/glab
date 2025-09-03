@@ -56,6 +56,8 @@ type ListOptions struct {
 	TitleQualifier string
 	OutputFormat   string
 	Output         string
+	OrderBy        string
+	Sort           string
 
 	IO        *iostreams.IOStreams
 	BaseRepo  func() (glrepo.Interface, error)
@@ -162,6 +164,8 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *ListOptions) error, issueTyp
 	issueListCmd.PersistentFlags().StringP("group", "g", "", "Select a group or subgroup. Ignored if a repo argument is set.")
 	issueListCmd.Flags().IntVarP(&opts.Epic, "epic", "e", 0, "List issues belonging to a given epic (requires --group, no pagination support).")
 	issueListCmd.MarkFlagsMutuallyExclusive("output", "output-format")
+	issueListCmd.Flags().StringVar(&opts.OrderBy, "order", "created_at", fmt.Sprintf("Order %s by <field>. Order options: created_at, updated_at, priority, due_date, relative_position, label_priority, milestone_due, popularity, weight.", issueType))
+	issueListCmd.Flags().StringVar(&opts.Sort, "sort", "desc", fmt.Sprintf("Return %s sorted in asc or desc order.", issueType))
 
 	if issueType == issuable.TypeIssue {
 		issueListCmd.Flags().StringVarP(&opts.IssueType, "issue-type", "t", "", "Filter issue by its type. Options: issue, incident, test_case.")
@@ -194,8 +198,10 @@ func listRun(opts *ListOptions) error {
 	client := apiClient.Lab()
 
 	listOpts := &gitlab.ListProjectIssuesOptions{
-		State: gitlab.Ptr(opts.State),
-		In:    gitlab.Ptr(opts.In),
+		State:   gitlab.Ptr(opts.State),
+		In:      gitlab.Ptr(opts.In),
+		OrderBy: gitlab.Ptr(opts.OrderBy),
+		Sort:    gitlab.Ptr(opts.Sort),
 	}
 	listOpts.Page = 1
 	listOpts.PerPage = 30
