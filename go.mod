@@ -11,7 +11,7 @@ require (
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/coder/websocket v1.8.13
 	github.com/cyphar/filepath-securejoin v0.4.1
-	github.com/docker/cli v28.3.3+incompatible
+	github.com/docker/cli v28.4.0+incompatible
 	github.com/docker/docker-credential-helpers v0.9.3
 	github.com/dustin/go-humanize v1.0.1
 	github.com/gdamore/tcell/v2 v2.9.0
