@@ -24,11 +24,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-var (
-	once   sync.Once
-	offset int64
-)
-
 func makeHyperlink(s *iostreams.IOStreams, pipeline *gitlab.PipelineInfo) string {
 	return s.Hyperlink(fmt.Sprintf("%d", pipeline.ID), pipeline.WebURL)
 }
@@ -90,6 +85,9 @@ func RunTraceSha(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid
 }
 
 func runTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid any, jobId int) error {
+	var once sync.Once
+	var offset int64
+
 	fmt.Fprintln(w, "Getting job trace...")
 	for range time.NewTicker(time.Second * 3).C {
 		if ctx.Err() == context.Canceled {
