@@ -66,7 +66,7 @@ func TestCiTrace(t *testing.T) {
 			name:          "when trace for job-id is requested and getTrace throws error",
 			args:          "1122",
 			expectedError: "failed to find job: GET https://gitlab.com/api/v4/projects/OWNER%2FREPO/jobs/1122/trace: 403",
-			expectedOut:   "\nGetting job trace...\n",
+			expectedOut:   "\nGetting job trace...\nShowing logs for lint job #1122.\n",
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
@@ -103,7 +103,7 @@ func TestCiTrace(t *testing.T) {
 		{
 			name:        "when trace for job-name is requested",
 			args:        "lint -b main -p 123",
-			expectedOut: "\nGetting job trace...\n",
+			expectedOut: "\nGetting job trace...\nShowing logs for lint job #1122.\nLorem ipsum",
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
@@ -140,7 +140,7 @@ func TestCiTrace(t *testing.T) {
 		{
 			name:        "when trace for job-name and last pipeline is requested",
 			args:        "lint -b main",
-			expectedOut: "\nGetting job trace...\n",
+			expectedOut: "\nGetting job trace...\nShowing logs for lint job #1122.\nLorem ipsum",
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
