@@ -37,7 +37,7 @@ func NewCmdReorderStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.G
 
 	stackSaveCmd := &cobra.Command{
 		Use:   "reorder",
-		Short: "Reorder a stack of merge requests. (EXPERIMENTAL.)",
+		Short: "Reorder a stack of merge requests. (EXPERIMENTAL)",
 		Long:  "Reorder how the current stack's merge requests are merged." + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab stack reorder

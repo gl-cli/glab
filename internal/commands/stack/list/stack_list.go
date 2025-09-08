@@ -15,7 +15,7 @@ func NewCmdStackList(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
-		Short:   "Lists all entries in the stack. (EXPERIMENTAL.)",
+		Short:   "Lists all entries in the stack. (EXPERIMENTAL)",
 		Long:    "Lists all entries in the stack. To select a different revision, use a command like 'stack move'.\n" + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab stack list

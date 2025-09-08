@@ -29,7 +29,7 @@ func baseCommand() (git.Stack, error) {
 func NewCmdStackFirst(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:   "first",
-		Short: "Moves to the first diff in the stack. (EXPERIMENTAL.)",
+		Short: "Moves to the first diff in the stack. (EXPERIMENTAL)",
 		Long:  "Moves to the first diff in the stack, and checks out that branch.\n" + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab stack first
@@ -60,7 +60,7 @@ func NewCmdStackFirst(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 func NewCmdStackNext(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:   "next",
-		Short: "Moves to the next diff in the stack. (EXPERIMENTAL.)",
+		Short: "Moves to the next diff in the stack. (EXPERIMENTAL)",
 		Long:  "Moves to the next diff in the stack, and checks out that branch.\n" + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab stack next
@@ -96,7 +96,7 @@ func NewCmdStackNext(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 func NewCmdStackPrev(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:   "prev",
-		Short: "Moves to the previous diff in the stack. (EXPERIMENTAL.)",
+		Short: "Moves to the previous diff in the stack. (EXPERIMENTAL)",
 		Long:  "Moves to the previous diff in the stack, and checks out that branch.\n" + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab stack prev
@@ -132,7 +132,7 @@ func NewCmdStackPrev(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 func NewCmdStackLast(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:   "last",
-		Short: "Moves to the last diff in the stack. (EXPERIMENTAL.)",
+		Short: "Moves to the last diff in the stack. (EXPERIMENTAL)",
 		Long:  "Moves to the last diff in the stack, and checks out that branch.\n" + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab stack last
@@ -164,7 +164,7 @@ func NewCmdStackLast(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 func NewCmdStackMove(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 	return &cobra.Command{
 		Use:   "move",
-		Short: "Moves to any selected entry in the stack. (EXPERIMENTAL.)",
+		Short: "Moves to any selected entry in the stack. (EXPERIMENTAL)",
 		Long:  "Shows a menu with a fuzzy finder to select a stack.\n" + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab stack move

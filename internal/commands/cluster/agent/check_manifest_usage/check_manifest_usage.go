@@ -37,7 +37,7 @@ func NewCmdCheckManifestUsage(f cmdutils.Factory) *cobra.Command {
 	}
 	checkManifestUsageCmd := &cobra.Command{
 		Use:   "check_manifest_usage [flags]",
-		Short: `Check agent configuration files for built-in GitOps manifests usage. (EXPERIMENTAL.)`,
+		Short: `Check agent configuration files for built-in GitOps manifests usage. (EXPERIMENTAL)`,
 		Long: `Checks the descendants of a group for registered agents with configuration files that rely on the deprecated GitOps manifests settings.
 The output can be piped to a tab-separated value (TSV) file.
 ` + text.ExperimentalString,
