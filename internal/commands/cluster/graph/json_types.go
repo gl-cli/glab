@@ -77,9 +77,10 @@ func (v *vertex) IsNamespaced() bool {
 }
 
 type jsonSetVertex struct {
-	Vertex   vertex         `json:"vx"`
-	Object   map[string]any `json:"o,omitempty"`
-	JSONPath []any          `json:"j,omitempty"`
+	Vertex      vertex         `json:"vx"`
+	Object      map[string]any `json:"o,omitempty"`
+	JSONPath    []any          `json:"j,omitempty"`
+	HelmRelease map[string]any `json:"hr,omitempty"`
 }
 
 type jsonDeleteVertex struct {
