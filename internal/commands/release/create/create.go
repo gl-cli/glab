@@ -95,19 +95,23 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create <tag> [<files>...]",
 		Short: "Create a new GitLab release, or update an existing one.",
-		Long: heredoc.Docf(`Create a new release, or update an existing GitLab release, for a repository. Requires the Developer role or higher.
+		Long: heredoc.Docf(`Create a new GitLab release for a repository, or
+		update an existing one. Requires at least the Developer role.
 
 		An existing release is updated with the new information you provide.
 
-		To create a release from an annotated Git tag, first create one locally with
-		Git, push the tag to GitLab, then run this command.
+		To create a release from an annotated Git tag:
 
-		If the Git tag you specify doesn't exist, the release is created
-		from the latest state of the default branch, and tagged with the tag name you specify.
+		1. Create the tag locally with Git, and push the tag to GitLab.
+		2. Run this command.
+		3. If the Git tag you specify doesn't exist, the command creates a
+		   release from the latest state of the default branch, and tags it
+		   with the tag name you specify.
 
-		To override this behavior, use %[1]s--ref%[1]s. The %[1]sref%[1]s can be a commit SHA, another tag name, or a branch name.
-
-		To fetch the new tag locally after the release, run %[1]sgit fetch --tags origin%[1]s.
+		   To override this behavior, use %[1]s--ref%[1]s. The %[1]sref%[1]s
+		   can be a commit SHA, another tag name, or a branch name.
+		4. Optional. To fetch the new tag locally after the release, run
+		   %[1]sgit fetch --tags origin%[1]s.
 		`, "`"),
 		Args: cmdutils.MinimumArgs(1, "no tag name provided."),
 		Example: heredoc.Docf(`
@@ -143,7 +147,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			    }
 			  ]'
 
-			# [EXPERIMENTAL] Create a release and publish it to the GitLab CI/CD catalog
+			# (EXPERIMENTAL) Create a release and publish it to the GitLab CI/CD catalog
 			# Requires the feature flag %[1]sci_release_cli_catalog_publish_option%[1]s to be enabled
 			# for this project in your GitLab instance. Do NOT run this manually. Use it as part
 			# of a CI/CD pipeline with the "release" keyword:
@@ -173,19 +177,19 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 
 	fl := cmd.Flags()
 	fl.StringVarP(&opts.Name, "name", "n", "", "The release name or title.")
-	fl.StringVarP(&opts.ref, "ref", "r", "", "If the specified tag doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.")
+	fl.StringVarP(&opts.ref, "ref", "r", "", "If the specified tag doesn't exist, create a release from the ref and tag it with the specified tag name. Accepts a commit SHA, tag name, or branch name.")
 	fl.StringVarP(&opts.tagMessage, "tag-message", "T", "", "Message to use if creating a new annotated tag.")
-	fl.StringVarP(&opts.notes, "notes", "N", "", "The release notes or description. You can use Markdown.")
-	fl.StringVarP(&opts.notesFile, "notes-file", "F", "", "Read release notes 'file'. Specify '-' as the value to read from stdin.")
-	fl.StringVarP(&opts.releasedAt, "released-at", "D", "", "The 'date' when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).")
+	fl.StringVarP(&opts.notes, "notes", "N", "", "The release notes or description. Accepts Markdown.")
+	fl.StringVarP(&opts.notesFile, "notes-file", "F", "", "Read release notes 'file'. To read from stdin, use '-'.")
+	fl.StringVarP(&opts.releasedAt, "released-at", "D", "", "ISO 8601 datetime when the release was ready. Defaults to the current datetime.")
 	fl.StringSliceVarP(&opts.milestone, "milestone", "m", []string{}, "The title of each milestone the release is associated with.")
-	fl.StringVarP(&opts.assetLinksAsJSON, "assets-links", "a", "", "'JSON' string representation of assets links, like `--assets-links='[{\"name\": \"Asset1\", \"url\":\"https://<domain>/some/location/1\", \"link_type\": \"other\", \"direct_asset_path\": \"path/to/file\"}]'.`")
-	fl.BoolVar(&opts.publishToCatalog, "publish-to-catalog", false, "[EXPERIMENTAL] Publish the release to the GitLab CI/CD catalog.")
+	fl.StringVarP(&opts.assetLinksAsJSON, "assets-links", "a", "", "JSON string representation of assets links. See documentation for example.")
+	fl.BoolVar(&opts.publishToCatalog, "publish-to-catalog", false, "(EXPERIMENTAL) Publish the release to the GitLab CI/CD catalog.")
 	fl.BoolVar(&opts.noUpdate, "no-update", false, "Prevent updating the existing release.")
 	fl.BoolVar(&opts.noCloseMilestone, "no-close-milestone", false, "Prevent closing milestones after creating the release.")
-	fl.StringVar(&opts.experimentalNotesTextOrFile, "experimental-notes-text-or-file", "", "[EXPERIMENTAL] Value to use as release notes. If a file exists with this value as path, its content will be used. Otherwise, the value itself will be used as text.")
-	fl.BoolVar(&opts.usePackageRegistry, "use-package-registry", false, "Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.")
-	fl.StringVar(&opts.packageName, "package-name", upload.DefaultReleasePackageName, "The package name to use when uploading the assets to the generic package release with --use-package-registry.")
+	fl.StringVar(&opts.experimentalNotesTextOrFile, "experimental-notes-text-or-file", "", "(EXPERIMENTAL) Value to use as release notes. If a file exists with this value as path, its content will be used. Otherwise, the value itself will be used as text.")
+	fl.BoolVar(&opts.usePackageRegistry, "use-package-registry", false, "Upload release assets to the generic package registry of the project. Overrides the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable.")
+	fl.StringVar(&opts.packageName, "package-name", upload.DefaultReleasePackageName, "The package name, when uploading assets to the generic package release with --use-package-registry.")
 	cobra.CheckErr(fl.MarkHidden("experimental-notes-text-or-file"))
 
 	// These two need to be separately exclusive to avoid a breaking change
