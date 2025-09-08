@@ -53,7 +53,7 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "dpop-gen [flags]",
-		Short: "Generates a DPoP (demonstrating-proof-of-possession) proof JWT. (Experimental.)",
+		Short: "Generates a DPoP (demonstrating-proof-of-possession) proof JWT. (EXPERIMENTAL)",
 		Long: heredoc.Docf(`
 		Demonstrating-proof-of-possession (DPoP) is a technique to
 		cryptographically bind personal access tokens to their owners. This command provides

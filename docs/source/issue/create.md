@@ -48,7 +48,7 @@ $ glab issue create -m release-1.0.1 -t "security fix" --label security --web --
       --linked-mr int          The IID of a merge request in which to resolve all issues.
   -m, --milestone string       The global ID or title of a milestone to assign.
       --no-editor              Don't open editor to enter a description. If set to true, uses prompt. (default false)
-      --recover                Save the options to a file if the issue fails to be created. If the file exists, the options will be loaded from the recovery file. (EXPERIMENTAL.)
+      --recover                Save the options to a file if the issue fails to be created. If the file exists, the options will be loaded from the recovery file. (EXPERIMENTAL)
   -e, --time-estimate string   Set time estimate for the issue.
   -s, --time-spent string      Set time spent for the issue.
   -t, --title string           Issue title.

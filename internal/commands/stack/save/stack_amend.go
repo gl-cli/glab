@@ -19,7 +19,7 @@ import (
 func NewCmdAmendStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetTextUsingEditor) *cobra.Command {
 	stackSaveCmd := &cobra.Command{
 		Use:   "amend",
-		Short: `Save more changes to a stacked diff. (EXPERIMENTAL.)`,
+		Short: `Save more changes to a stacked diff. (EXPERIMENTAL)`,
 		Long: `Add more changes to an existing stacked diff.
 ` + text.ExperimentalString,
 		Example: heredoc.Doc(`

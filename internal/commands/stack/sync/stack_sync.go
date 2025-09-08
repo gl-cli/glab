@@ -52,7 +52,7 @@ func NewCmdSyncStack(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 
 	stackSaveCmd := &cobra.Command{
 		Use:   "sync",
-		Short: `Sync and submit progress on a stacked diff. (EXPERIMENTAL.)`,
+		Short: `Sync and submit progress on a stacked diff. (EXPERIMENTAL)`,
 		Long: heredoc.Doc(`Sync and submit progress on a stacked diff. This command runs these steps:
 
 1. Optional. If working in a fork, select whether to push to the fork,
