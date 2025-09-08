@@ -15,19 +15,23 @@ Create a new GitLab release, or update an existing one.
 
 ## Synopsis
 
-Create a new release, or update an existing GitLab release, for a repository. Requires the Developer role or higher.
+Create a new GitLab release for a repository, or
+update an existing one. Requires at least the Developer role.
 
 An existing release is updated with the new information you provide.
 
-To create a release from an annotated Git tag, first create one locally with
-Git, push the tag to GitLab, then run this command.
+To create a release from an annotated Git tag:
 
-If the Git tag you specify doesn't exist, the release is created
-from the latest state of the default branch, and tagged with the tag name you specify.
+1. Create the tag locally with Git, and push the tag to GitLab.
+2. Run this command.
+3. If the Git tag you specify doesn't exist, the command creates a
+   release from the latest state of the default branch, and tags it
+   with the tag name you specify.
 
-To override this behavior, use `--ref`. The `ref` can be a commit SHA, another tag name, or a branch name.
-
-To fetch the new tag locally after the release, run `git fetch --tags origin`.
+   To override this behavior, use `--ref`. The `ref`
+   can be a commit SHA, another tag name, or a branch name.
+4. Optional. To fetch the new tag locally after the release, run
+   `git fetch --tags origin`.
 
 ```plaintext
 glab release create <tag> [<files>...] [flags]
@@ -68,7 +72,7 @@ $ glab release create v1.0.1 --assets-links='
     }
   ]'
 
-# [EXPERIMENTAL] Create a release and publish it to the GitLab CI/CD catalog
+# (EXPERIMENTAL) Create a release and publish it to the GitLab CI/CD catalog
 # Requires the feature flag `ci_release_cli_catalog_publish_option` to be enabled
 # for this project in your GitLab instance. Do NOT run this manually. Use it as part
 # of a CI/CD pipeline with the "release" keyword:
@@ -92,19 +96,19 @@ $ glab release create v1.0.1 --publish-to-catalog
 ## Options
 
 ```plaintext
-  -a, --assets-links --assets-links='[{"name": "Asset1", "url":"https://<domain>/some/location/1", "link_type": "other", "direct_asset_path": "path/to/file"}]'.   'JSON' string representation of assets links, like --assets-links='[{"name": "Asset1", "url":"https://<domain>/some/location/1", "link_type": "other", "direct_asset_path": "path/to/file"}]'.
-  -m, --milestone strings                                                                                                                                          The title of each milestone the release is associated with.
-  -n, --name string                                                                                                                                                The release name or title.
-      --no-close-milestone                                                                                                                                         Prevent closing milestones after creating the release.
-      --no-update                                                                                                                                                  Prevent updating the existing release.
-  -N, --notes string                                                                                                                                               The release notes or description. You can use Markdown.
-  -F, --notes-file string                                                                                                                                          Read release notes 'file'. Specify '-' as the value to read from stdin.
-      --package-name string                                                                                                                                        The package name to use when uploading the assets to the generic package release with --use-package-registry. (default "release-assets")
-      --publish-to-catalog                                                                                                                                         [EXPERIMENTAL] Publish the release to the GitLab CI/CD catalog.
-  -r, --ref string                                                                                                                                                 If the specified tag doesn't exist, the release is created from ref and tagged with the specified tag name. It can be a commit SHA, another tag name, or a branch name.
-  -D, --released-at string                                                                                                                                         The 'date' when the release was ready. Defaults to the current datetime. Expects ISO 8601 format (2019-03-15T08:00:00Z).
-  -T, --tag-message string                                                                                                                                         Message to use if creating a new annotated tag.
-      --use-package-registry                                                                                                                                       Upload release assets to the generic package registry of the project. Alternatively to this flag you may also set the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable to either the value true or 1. The flag takes precedence over this environment variable.
+  -a, --assets-links string    JSON string representation of assets links. See documentation for example.
+  -m, --milestone strings      The title of each milestone the release is associated with.
+  -n, --name string            The release name or title.
+      --no-close-milestone     Prevent closing milestones after creating the release.
+      --no-update              Prevent updating the existing release.
+  -N, --notes string           The release notes or description. Accepts Markdown.
+  -F, --notes-file string      Read release notes 'file'. To read from stdin, use '-'.
+      --package-name string    The package name, when uploading assets to the generic package release with --use-package-registry. (default "release-assets")
+      --publish-to-catalog     (EXPERIMENTAL) Publish the release to the GitLab CI/CD catalog.
+  -r, --ref string             If the specified tag doesn't exist, create a release from the ref and tag it with the specified tag name. Accepts a commit SHA, tag name, or branch name.
+  -D, --released-at string     ISO 8601 datetime when the release was ready. Defaults to the current datetime.
+  -T, --tag-message string     Message to use if creating a new annotated tag.
+      --use-package-registry   Upload release assets to the generic package registry of the project. Overrides the GITLAB_RELEASE_ASSETS_USE_PACKAGE_REGISTRY environment variable.
 ```
 
 ## Options inherited from parent commands
