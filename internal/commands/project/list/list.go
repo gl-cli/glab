@@ -2,6 +2,7 @@ package list
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -163,20 +164,12 @@ func listAllProjects(apiClient *gitlab.Client, opts options) ([]*gitlab.Project,
 }
 
 func listAllProjectsForGroup(apiClient *gitlab.Client, opts options) ([]*gitlab.Project, *gitlab.Response, error) {
-	groups, resp, err := apiClient.Groups.SearchGroup(opts.group)
+	group, resp, err := apiClient.Groups.GetGroup(opts.group, &gitlab.GetGroupOptions{})
 	if err != nil {
-		return nil, resp, err
-	}
-
-	var group *gitlab.Group = nil
-	for _, g := range groups {
-		if g.FullPath == opts.group {
-			group = g
-			break
+		if errors.Is(err, gitlab.ErrNotFound) {
+			return nil, nil, fmt.Errorf("No group matching path %s", opts.group)
 		}
-	}
-	if group == nil {
-		return nil, nil, fmt.Errorf("No group matching path %s", opts.group)
+		return nil, resp, err
 	}
 
 	l := &gitlab.ListGroupProjectsOptions{

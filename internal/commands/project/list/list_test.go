@@ -42,12 +42,12 @@ func TestProjectList(t *testing.T) {
  							"description": "This is a test project",
  							"path_with_namespace": "gitlab-org/incubation-engineering/service-desk/meta"
 					}]`
-	groupResponse := `[{
+	groupResponse := `{
 							"id": 456,
 							"description": "This is a test group",
 							"path": "subgroup",
-							"full_path": "/me/group/subgroup"
-					}]`
+							"full_path": "me/group/subgroup"
+					}`
 
 	tests := []struct {
 		name        string
@@ -181,7 +181,7 @@ func TestProjectList(t *testing.T) {
 			httpMock: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/groups?search=%2Fme%2Fgroup%2Fsubgroup",
+					"/api/v4/groups/me/group/subgroup",
 					http.StatusOK,
 					groupResponse,
 				},
@@ -192,7 +192,7 @@ func TestProjectList(t *testing.T) {
 					projectResponse,
 				},
 			},
-			args:        "--group /me/group/subgroup",
+			args:        "--group me/group/subgroup",
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0).\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
 		{
@@ -200,7 +200,7 @@ func TestProjectList(t *testing.T) {
 			httpMock: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/groups?search=%2Fme%2Fgroup%2Fsubgroup",
+					"/api/v4/groups/me%2Fgroup%2Fsubgroup",
 					http.StatusOK,
 					groupResponse,
 				},
@@ -211,7 +211,7 @@ func TestProjectList(t *testing.T) {
 					projectResponse,
 				},
 			},
-			args:        "--group /me/group/subgroup --include-subgroups",
+			args:        "--group me/group/subgroup --include-subgroups",
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0).\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
 		{
@@ -219,7 +219,7 @@ func TestProjectList(t *testing.T) {
 			httpMock: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/groups?search=%2Fme%2Fgroup%2Fsubgroup",
+					"/api/v4/groups/me%2Fgroup%2Fsubgroup",
 					http.StatusOK,
 					groupResponse,
 				},
@@ -230,7 +230,7 @@ func TestProjectList(t *testing.T) {
 					projectResponse,
 				},
 			},
-			args:        "-a --group /me/group/subgroup --archived=false",
+			args:        "-a --group me/group/subgroup --archived=false",
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0).\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
 		{
@@ -238,7 +238,7 @@ func TestProjectList(t *testing.T) {
 			httpMock: []httpMock{
 				{
 					http.MethodGet,
-					"/api/v4/groups?search=%2Fme%2Fgroup%2Fsubgroup",
+					"/api/v4/groups/me%2Fgroup%2Fsubgroup",
 					http.StatusOK,
 					groupResponse,
 				},
@@ -249,7 +249,7 @@ func TestProjectList(t *testing.T) {
 					projectResponse,
 				},
 			},
-			args:        "-a --group /me/group/subgroup --archived=true",
+			args:        "-a --group me/group/subgroup --archived=true",
 			expectedOut: "Showing 1 of 0 projects (Page 0 of 0).\n\ngitlab-org/incubation-engineering/service-desk/meta\t\tThis is a test project\n\n",
 		},
 		{
