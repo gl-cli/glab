@@ -84,31 +84,7 @@ func (o *options) run(ctx context.Context) error {
 		return err
 	}
 
-	// retrieve token
-	var token string
-	switch ts := apiClient.AuthSource().(type) {
-	case gitlab.AccessTokenAuthSource:
-		token = ts.Token
-	case gitlab.JobTokenAuthSource:
-		token = ts.Token
-	case gitlab.OAuthTokenSource:
-		ot, err := ts.TokenSource.Token()
-		if err != nil {
-			return fmt.Errorf("unable to retrieve access token to authenticate OpenTofu")
-		}
-		token = ot.AccessToken
-	case *gitlab.PasswordCredentialsAuthSource:
-		token = ts.Password
-	default:
-		return fmt.Errorf("init command does not support this authentication method: %T", ts)
-	}
-
 	client := apiClient.Lab()
-	currentUser, _, err := client.Users.CurrentUser(gitlab.WithContext(ctx))
-	if err != nil {
-		return fmt.Errorf("unable to retrieve current user: %w", err)
-	}
-
 	baseURL := client.BaseURL()
 	stateAPIURL := baseURL.JoinPath("projects", gitlab.PathEscape(repo.FullName()), "terraform", "state", o.stateName)
 	args := []string{
@@ -117,11 +93,34 @@ func (o *options) run(ctx context.Context) error {
 		fmt.Sprintf(`-backend-config=address=%s`, stateAPIURL.String()),
 		fmt.Sprintf(`-backend-config=lock_address=%s`, stateAPIURL.JoinPath("lock").String()),
 		fmt.Sprintf(`-backend-config=unlock_address=%s`, stateAPIURL.JoinPath("lock").String()),
-		fmt.Sprintf(`-backend-config=username=%s`, currentUser.Username),
-		fmt.Sprintf(`-backend-config=password=%s`, token),
 		`-backend-config=lock_method=POST`,
 		`-backend-config=unlock_method=DELETE`,
 		`-backend-config=retry_wait_min=5`,
+	}
+
+	switch ts := apiClient.AuthSource().(type) {
+	case gitlab.AccessTokenAuthSource:
+		args = append(args, fmt.Sprintf(`-backend-config=headers={"Authorization" = "Bearer %s"}`, ts.Token))
+	case gitlab.JobTokenAuthSource:
+		args = append(args, fmt.Sprintf(`-backend-config=headers={"%s" = "%s"}`, gitlab.JobTokenHeaderName, ts.Token))
+	case gitlab.OAuthTokenSource:
+		ot, err := ts.TokenSource.Token()
+		if err != nil {
+			return fmt.Errorf("unable to retrieve access token to authenticate OpenTofu")
+		}
+		args = append(args, fmt.Sprintf(`-backend-config=headers={"Authorization" = "Bearer %s"}`, ot.AccessToken))
+	case *gitlab.PasswordCredentialsAuthSource:
+		currentUser, _, err := client.Users.CurrentUser(gitlab.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("unable to retrieve current user: %w", err)
+		}
+
+		args = append(args,
+			fmt.Sprintf(`-backend-config=username=%s`, currentUser.Username),
+			fmt.Sprintf(`-backend-config=password=%s`, ts.Password),
+		)
+	default:
+		return fmt.Errorf("init command does not support this authentication method: %T", ts)
 	}
 	args = append(args, o.initArgs...)
 
