@@ -16,6 +16,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // opts holds the configuration options for Claude commands.
@@ -24,6 +25,14 @@ type opts struct {
 	IO        *iostreams.IOStreams
 	apiClient func(repoHost string) (*api.Client, error)
 	BaseRepo  func() (glrepo.Interface, error)
+
+	withGitLabMCP bool
+}
+
+// isNpxAvailable checks if npx is available in the system
+func isNpxAvailable() bool {
+	_, err := exec.LookPath("npx")
+	return err == nil
 }
 
 func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
@@ -38,9 +47,9 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 		Short: "Launch Claude Code with GitLab Duo integration",
 		Long: heredoc.Doc(`
 			Launch Claude Code with automatic GitLab authentication, proxy configuration,
-			and GitLab MCP tools integration. All flags and arguments are passed through 
+			and GitLab MCP tools integration. All flags and arguments are passed through
 			to the Claude executable.
-			
+
 			This command automatically configures Claude Code to work with GitLab AI services,
 			handling authentication tokens and API endpoints based on your current repository.
 			It also provides access to all GitLab functionality through MCP tools, allowing
@@ -72,8 +81,9 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
+			client := c.Lab()
 			// Fetch direct_access token
-			token, err := fetchDirectAccessToken(c.Lab())
+			token, err := fetchDirectAccessToken(client)
 			if err != nil {
 				return fmt.Errorf("failed to retrieve GitLab Duo access token: %w", err)
 			}
@@ -85,8 +95,12 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 
 			wasAbleToSetApiKeyHelper := setClaudeSettings()
 
-			// Extract Claude command arguments
-			claudeArgs, err := extractClaudeArgs()
+			// Extract Claude command arguments (known flag detection only works for boolean flags)
+			knownFlags := []string{}
+			cmd.Flags().VisitAll(func(f *pflag.Flag) {
+				knownFlags = append(knownFlags, "--"+f.Name)
+			})
+			claudeArgs, err := extractClaudeArgs(knownFlags)
 			if err != nil {
 				return fmt.Errorf("failed to parse command arguments: %w", err)
 			}
@@ -113,6 +127,49 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 			}
 
 			claudeArgs = append(claudeArgs, "--mcp-config", string(mcpConfigBytes))
+
+			// add GitLab MCP server
+			if opts.withGitLabMCP {
+				var gitlabMCPCfg map[string]any
+
+				// Check if npx is available and use mcp-remote if possible
+				// see https://docs.gitlab.com/user/gitlab_duo/model_context_protocol/mcp_server/
+				mcpURL := client.BaseURL().JoinPath("mcp").String()
+				if isNpxAvailable() {
+					gitlabMCPCfg = map[string]any{
+						"mcpServers": map[string]any{
+							"gitlab": map[string]any{
+								"command": "npx",
+								"args": []string{
+									"-y",
+									"mcp-remote@latest",
+									mcpURL,
+									"--static-oauth-client-metadata",
+									`{"scope": "mcp"}`,
+								},
+							},
+						},
+					}
+				} else {
+					// Fallback to HTTP type when npx is not available
+					fmt.Fprintln(f.IO().StdErr, "Warning: npx is not available, falling back to Claude Code. Claude Code doesn't yet support OAuth2 scopes, thus, the automatic setup of the GitLab MCP server might not work. Please install npx.")
+					gitlabMCPCfg = map[string]any{
+						"mcpServers": map[string]any{
+							"gitlab": map[string]any{
+								"type": "http",
+								"url":  mcpURL,
+							},
+						},
+					}
+				}
+
+				b, err := json.Marshal(gitlabMCPCfg)
+				if err != nil {
+					return fmt.Errorf("failed to marshal GitLab MCP server config to JSON: %w", err)
+				}
+
+				claudeArgs = append(claudeArgs, "--mcp-config", string(b))
+			}
 
 			// Execute Claude command with all arguments
 			claudeCmd := exec.Command(ClaudeExecutable, claudeArgs...)
@@ -141,6 +198,8 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 			return nil
 		},
 	}
+	fl := duoClaudeCmd.Flags()
+	fl.BoolVar(&opts.withGitLabMCP, "with-gitlab-mcp", false, "If provided will configure the GitLab MCP server")
 
 	duoClaudeCmd.AddCommand(NewCmdToken(f))
 

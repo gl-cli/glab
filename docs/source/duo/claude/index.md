@@ -16,7 +16,7 @@ Launch Claude Code with GitLab Duo integration
 ## Synopsis
 
 Launch Claude Code with automatic GitLab authentication, proxy configuration,
-and GitLab MCP tools integration. All flags and arguments are passed through 
+and GitLab MCP tools integration. All flags and arguments are passed through
 to the Claude executable.
 
 This command automatically configures Claude Code to work with GitLab AI services,
@@ -36,6 +36,12 @@ $ glab duo claude
 $ glab duo claude -p "List all open issues in this project"
 $ glab duo claude -p "Write a function to calculate Fibonacci numbers"
 
+```
+
+## Options
+
+```plaintext
+      --with-gitlab-mcp   If provided will configure the GitLab MCP server
 ```
 
 ## Options inherited from parent commands

@@ -165,7 +165,7 @@ func TestExtractClaudeArgs(t *testing.T) {
 			// Set test args
 			os.Args = tc.osArgs
 
-			result, err := extractClaudeArgs()
+			result, err := extractClaudeArgs(nil)
 
 			if tc.expectedError != "" {
 				assert.Error(t, err)

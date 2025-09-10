@@ -24,7 +24,7 @@ func NewCmdToken(f cmdutils.Factory) *cobra.Command {
 		Short: "Generate GitLab Duo access token for Claude Code",
 		Long: heredoc.Doc(`
 			Generate and display a GitLab Duo access token required for Claude Code authentication.
-			
+
 			This token allows Claude Code to authenticate with GitLab AI services.
 			The token is automatically used when running 'glab duo claude'.
 		`),
