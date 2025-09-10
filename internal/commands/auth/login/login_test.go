@@ -318,6 +318,10 @@ func Test_hostnameValidator(t *testing.T) {
 			hostname: testMap,
 			expected: `invalid hostname "map[profclems:glab]"`,
 		},
+		{
+			name:     "valid-hostname-with-path-and-dash",
+			hostname: "internal.hostname.com/gitlab-licensed",
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
