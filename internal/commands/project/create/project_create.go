@@ -40,8 +40,15 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	projectCreateCmd := &cobra.Command{
 		Use:   "create [path] [flags]",
 		Short: `Create a new GitLab project/repository.`,
-		Long:  ``,
-		Args:  cobra.MaximumNArgs(1),
+		Long: heredoc.Docf(`
+	Creates the new project with your first configured host in your %[1]sglab%[1]s
+	configuration. The host defaults to %[1]sGitLab.com%[1]s if not set. To set a host,
+	provide either:
+
+	- A %[1]sGITLAB_HOST%[1]s environment variable.
+	- A full URL for the project.
+	`, "`"),
+		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runCreateProject(cmd, args, f)
 		},
@@ -57,6 +64,10 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 
 			# Create a repository for a group.
 			$ glab repo create glab-cli/my-project
+
+			# Create on a host other than gitlab.com.
+			$ GITLAB_HOST=example.com glab repo create
+			$ glab repo create <host>/path/to/repository
 	  `),
 	}
 
