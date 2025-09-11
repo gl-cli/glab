@@ -16,6 +16,19 @@ variables:
   - "go.mod"
   - "go.sum"
 
+.sign_windows_base:
+  image: ${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/code-signer:1.1.0
+  extends: .google-oidc:auth
+  rules:
+    - if: $CI_COMMIT_TAG && $CI_SERVER_HOST == "gitlab.com" && ($CI_PROJECT_PATH == "gitlab-org/cli" || $CI_PROJECT_PATH == "gitlab-org/security/cli")
+  stage: release
+  artifacts:
+    expire_in: "30 days"
+  variables:
+    GCLOUD_PROJECT: gitlab-ci-runners-signing
+    SERVICE_ACCOUNT: gitlab-cli-signer@gitlab-ci-runners-signing.iam.gserviceaccount.com
+    WI_POOL_PROVIDER: //iam.googleapis.com/projects/8522242139/locations/global/workloadIdentityPools/gitlab-pool-oidc-$CI_PROJECT_ID/providers/gitlab-jwt-$CI_PROJECT_ID
+
 # run the pipeline only on MRs, tags, and default branch
 workflow:
   rules:
@@ -47,6 +60,9 @@ include:
   - component: ${CI_SERVER_FQDN}/components/code-intelligence/golang-code-intel@v0.0.3
     inputs:
       golang_version: ${GO_VERSION}
+  - project: "gitlab-com/gl-security/security-operations/infrastructure-security-public/oidc-modules"
+    ref: 3.4.0
+    file: templates/gcp_auth.yaml
 
 # From: https://docs.gitlab.com/ci/caching/#cache-go-dependencies
 .go-cache:
@@ -259,14 +275,24 @@ windows_installer:
         - .goreleaser.yml
         - .gitlab-ci.yml
   script:
+    - |
+      if [ -d "signed/" ]; then
+        echo "Using signed artifacts"
+        mv signed/glab.exe bin/glab.exe
+      else
+        echo "Using unsigned artifacts"
+      fi
     - mv scripts/setup_windows.iss .
     - iscc "setup_windows.iss" -DVersion=${CI_COMMIT_TAG//v}
   artifacts:
     paths:
       - "bin/*"
     expire_in: "30 days"
-  dependencies: [build_windows]
-  needs: [build_windows]
+  needs:
+    - job: build_windows
+      optional: false
+    - job: sign_windows
+      optional: true
 
 build_windows:
   stage: release
@@ -286,6 +312,27 @@ build_windows:
     paths:
       - "bin/glab.exe"
     expire_in: "30 days"
+
+sign_windows:
+  image: ${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/code-signer:1.1.0
+  extends: .google-oidc:auth
+  rules:
+    - if: $CI_SERVER_HOST == "gitlab.com" && ($CI_PROJECT_PATH == "gitlab-org/cli" || $CI_PROJECT_PATH == "gitlab-org/security/cli")
+  stage: release
+  needs:
+    - build_windows
+  script:
+    - sign-windows-binaries bin/glab.exe
+    - mkdir signed
+    - mv bin/glab.exe signed/
+  artifacts:
+    paths:
+      - "signed/glab.exe"
+    expire_in: "30 days"
+  variables:
+    GCLOUD_PROJECT: gitlab-ci-runners-signing
+    SERVICE_ACCOUNT: gitlab-cli-signer@gitlab-ci-runners-signing.iam.gserviceaccount.com
+    WI_POOL_PROVIDER: //iam.googleapis.com/projects/8522242139/locations/global/workloadIdentityPools/gitlab-pool-oidc-$CI_PROJECT_ID/providers/gitlab-jwt-$CI_PROJECT_ID
 
 secret_detection:
   dependencies: [] # Don't download artifacts, especially `./public/`
