@@ -1,4 +1,4 @@
-golang 1.25.0
+golang 1.25.1
 
 # For linting Go code
 golangci-lint 2.4.0
