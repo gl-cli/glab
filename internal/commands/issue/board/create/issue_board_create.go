@@ -3,6 +3,8 @@ package create
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 
 	"github.com/spf13/cobra"
@@ -27,6 +29,9 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"new"},
 		Args:    cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 1 {
 				boardName = args[0]

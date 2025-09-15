@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/git"
@@ -44,6 +46,9 @@ func NewCmdLint(f cmdutils.Factory) *cobra.Command {
 			$ glab ci lint .gitlab-ci.yml
 			$ glab ci lint path/to/.gitlab-ci.yml
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 			return opts.run()

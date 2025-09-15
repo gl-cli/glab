@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 
 	"github.com/spf13/cobra"
@@ -23,6 +25,9 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 			$ glab changelog generate
 		`),
 		Args: cobra.ExactArgs(0),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := f.GitLabClient()
 			if err != nil {

@@ -6,6 +6,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
 	"github.com/spf13/cobra"
 )
@@ -45,6 +46,9 @@ func NewCmdRebase(f cmdutils.Factory) *cobra.Command {
 			$ glab mr rebase branch --skip-ci
 		`),
 		Args: cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

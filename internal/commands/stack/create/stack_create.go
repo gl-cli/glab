@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
@@ -30,6 +32,9 @@ func NewCmdCreateStack(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 			$ glab stack new cool-new-feature
 		`),
 		Args: cobra.MaximumNArgs(10),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var titleString string
 

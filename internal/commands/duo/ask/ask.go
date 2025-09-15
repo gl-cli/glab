@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -78,6 +80,9 @@ func NewCmdAsk(f cmdutils.Factory) *cobra.Command {
 			$ glab duo ask list last 10 commit titles
 			> A list of Git commands to show the titles of the latest 10 commits with an explanation and an option to execute the commands.
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !opts.Git {
 				return nil

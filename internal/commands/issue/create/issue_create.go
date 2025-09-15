@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -90,6 +92,9 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			$ glab issue create -m release-1.0.1 -t "security fix" --label security --web --recover
 		`),
 		Args: cobra.ExactArgs(0),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := opts.gitlabClient()
 			if err != nil {

@@ -3,6 +3,8 @@ package approvers
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
@@ -15,6 +17,9 @@ func NewCmdApprovers(f cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{},
 		Args:    cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := f.GitLabClient()
 			if err != nil {

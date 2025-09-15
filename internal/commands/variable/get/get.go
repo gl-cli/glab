@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -41,6 +43,9 @@ func NewCmdGet(f cmdutils.Factory, runE func(opts *options) error) *cobra.Comman
 			$ glab variable get -g GROUP VAR_KEY
 			$ glab variable get -s SCOPE VAR_KEY
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

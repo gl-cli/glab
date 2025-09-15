@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -71,6 +73,9 @@ func NewCmdSet(f cmdutils.Factory) *cobra.Command {
 		> glab issue list --assignee="user" | grep "foo"
 	`),
 		Args: cobra.ExactArgs(2),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(cmd, args)
 

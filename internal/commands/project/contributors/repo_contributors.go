@@ -3,6 +3,8 @@ package contributors
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -43,6 +45,9 @@ func NewCmdContributors(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"users"},
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run()
 		},

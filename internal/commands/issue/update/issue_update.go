@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
@@ -24,6 +26,9 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			$ glab issue update 42 --unlabel working
 		`),
 		Args: cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			var actions []string

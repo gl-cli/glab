@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -23,6 +25,9 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			> Created schedule
 		`),
 		Long: ``,
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := f.GitLabClient()
 			if err != nil {

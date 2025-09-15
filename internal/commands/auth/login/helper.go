@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -33,6 +35,9 @@ func NewCmdCredential(f cmdutils.Factory) *cobra.Command {
 		Args:   cobra.ExactArgs(1),
 		Short:  "Implements Git credential helper manager.",
 		Hidden: true,
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

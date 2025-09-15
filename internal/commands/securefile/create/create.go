@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -41,6 +43,9 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"upload"},
 		Args:    cobra.ExactArgs(2),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

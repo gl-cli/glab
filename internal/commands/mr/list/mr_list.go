@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -70,6 +72,9 @@ func NewCmdList(f cmdutils.Factory, runE func(opts *options) error) *cobra.Comma
 		Short:   `List merge requests.`,
 		Long:    ``,
 		Aliases: []string{"ls"},
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		Example: heredoc.Doc(`
 			$ glab mr list --all
 			$ glab mr ls -a

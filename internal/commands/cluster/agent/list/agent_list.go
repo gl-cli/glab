@@ -6,6 +6,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/agentutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	"github.com/spf13/cobra"
@@ -32,6 +33,9 @@ func NewCmdAgentList(f cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"ls"},
 		Args:    cobra.MaximumNArgs(3),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run()
 		},

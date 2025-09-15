@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	jobArtifact "gitlab.com/gitlab-org/cli/internal/commands/job/artifact"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 func NewCmdRun(f cmdutils.Factory) *cobra.Command {
@@ -19,6 +20,9 @@ func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(2),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			repo, err := f.BaseRepo()
 			if err != nil {

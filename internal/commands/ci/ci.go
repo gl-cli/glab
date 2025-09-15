@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	jobArtifactCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/artifact"
 	ciCancelCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/cancel"
@@ -30,6 +32,9 @@ func NewCmdCI(f cmdutils.Factory) *cobra.Command {
 		Short:   `Work with GitLab CI/CD pipelines and jobs.`,
 		Long:    ``,
 		Aliases: []string{"pipe", "pipeline"},
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Fprintf(os.Stderr, "Aliases 'pipe' and 'pipeline' are deprecated. Use 'ci' instead.\n\n")
 			_ = cmd.Help()

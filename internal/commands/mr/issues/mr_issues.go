@@ -3,6 +3,8 @@ package issues
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -28,6 +30,9 @@ func NewCmdIssues(f cmdutils.Factory) *cobra.Command {
 			# Use the checked-out branch
 			$ glab mr issues
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 

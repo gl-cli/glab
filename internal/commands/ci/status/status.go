@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
@@ -36,6 +38,9 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 	       `),
 		Long: ``,
 		Args: cobra.ExactArgs(0),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			c := f.IO().Color()

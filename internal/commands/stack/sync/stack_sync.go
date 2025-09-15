@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
@@ -64,6 +66,9 @@ func NewCmdSyncStack(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ glab stack sync
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.io.StartSpinner("Syncing")
 			defer opts.io.StopSpinner("")

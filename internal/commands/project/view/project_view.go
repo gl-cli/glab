@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -69,6 +71,9 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 			$ glab repo view https://gitlab.company.org/user/repo
 			$ glab repo view https://gitlab.company.org/user/repo.git
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(args); err != nil {
 				return err

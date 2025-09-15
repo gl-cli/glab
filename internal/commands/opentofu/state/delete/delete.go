@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -37,6 +39,9 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 		Use:   "delete <state> [<serial>] [flags]",
 		Short: `Delete the given state or if the serial is provided only that version of the given state.`,
 		Args:  cobra.MinimumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(args); err != nil {
 				return err

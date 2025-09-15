@@ -3,6 +3,8 @@ package retry
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 
@@ -26,6 +28,9 @@ func NewCmdRetry(f cmdutils.Factory) *cobra.Command {
 			$ glab ci retry lint
 		`),
 		Long: ``,
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 

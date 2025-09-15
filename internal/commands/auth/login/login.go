@@ -11,6 +11,8 @@ import (
 	"slices"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/commands/auth/authutils"
 
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -87,6 +89,9 @@ func NewCmdLogin(f cmdutils.Factory) *cobra.Command {
 			# Non-interactive CI/CD setup
 			$ glab auth login --hostname $CI_SERVER_HOST --job-token $CI_JOB_TOKEN
 		`, "`"),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !opts.IO.PromptEnabled() && !tokenStdin && opts.Token == "" && opts.JobToken == "" {
 				return &cmdutils.FlagError{Err: errors.New("'--stdin', '--token', or '--job-token' required when not running interactively.")}

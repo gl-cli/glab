@@ -3,6 +3,8 @@ package list
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -20,6 +22,9 @@ func NewCmdStackList(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ glab stack list
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			title, err := git.GetCurrentStackTitle()
 			if err != nil {

@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -33,6 +35,9 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 		Use:   "list <agent-id> [flags]",
 		Short: `List tokens of an agent.`,
 		Args:  cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(args); err != nil {
 				return err

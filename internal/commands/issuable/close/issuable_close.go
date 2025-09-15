@@ -3,6 +3,8 @@ package close
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/api"
 
@@ -42,6 +44,9 @@ func NewCmdClose(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comman
 			$ glab %[1]s close https://gitlab.com/NAMESPACE/REPO/-/%s
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := f.GitLabClient()
 			if err != nil {

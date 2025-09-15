@@ -3,6 +3,8 @@ package stackswitch
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -21,6 +23,9 @@ func NewCmdStackSwitch(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 				text.ExperimentalString,
 		),
 		Example: "$ glab stack switch <stack-name>",
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := switchFunc(f, args[0]); err != nil {
 				return fmt.Errorf("switching stacks failed: %w", err)

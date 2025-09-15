@@ -3,6 +3,8 @@ package delete
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -29,6 +31,9 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			$ glab mr del 123
 			$ glab mr delete branch
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO().Color()
 			client, err := f.GitLabClient()

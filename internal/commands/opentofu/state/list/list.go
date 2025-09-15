@@ -3,6 +3,8 @@ package list
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -28,6 +30,9 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 		Use:   "list",
 		Short: `List states.`,
 		Args:  cobra.NoArgs,
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run()
 		},

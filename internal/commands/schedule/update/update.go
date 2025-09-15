@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
@@ -23,6 +25,9 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			variablesToCreate, err := cmd.Flags().GetStringSlice("create-variable")
 			if err != nil {

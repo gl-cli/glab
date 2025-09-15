@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
@@ -219,6 +221,9 @@ The options for variables are incompatible with merge request pipelines.
 If used with merge request pipelines, the command fails with a message like ` + "`ERROR: if any flags in the group [output output-format] are set none of the others can be`" + `
 `,
 		Args: cobra.ExactArgs(0),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 

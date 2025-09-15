@@ -10,6 +10,8 @@ import (
 	"log/slog"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -64,6 +66,9 @@ func NewCmdGraph(f cmdutils.Factory) *cobra.Command {
 		Long:    longHelp + text.ExperimentalString,
 		Example: strings.Trim(exampleHelp, "\n\r"),
 		Args:    cobra.NoArgs,
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run(cmd.Context())
 		},

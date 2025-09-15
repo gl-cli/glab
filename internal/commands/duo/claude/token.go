@@ -3,6 +3,8 @@ package claude
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -32,6 +34,9 @@ func NewCmdToken(f cmdutils.Factory) *cobra.Command {
 		// Allow unknown flags to be passed through to the claude command
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
 			UnknownFlags: true,
+		},
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Fetch repo host

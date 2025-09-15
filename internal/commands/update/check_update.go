@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/utils"
@@ -37,6 +39,9 @@ func NewCheckUpdateCmd(f cmdutils.Factory) *cobra.Command {
 		To re-enable the update check, run 'glab config set check_update true'.
 		`),
 		Aliases: commandAliases,
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return CheckUpdate(f, false)
 		},

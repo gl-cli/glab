@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -62,6 +64,9 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 		Short: `Update selected kubeconfig.`,
 		Long: heredoc.Doc(`Update selected kubeconfig for use with a GitLab agent for Kubernetes.
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.validate(); err != nil {
 				return err

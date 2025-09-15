@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -93,6 +95,9 @@ glab repo clone -g <group> [flags] [<dir>] [-- <gitflags>...]`,
 		- org/group/repo
 		- project ID
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Move arguments after "--" to gitFlags
 			if dashPos := cmd.ArgsLenAtDash(); dashPos != -1 {

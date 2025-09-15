@@ -2,9 +2,12 @@
 package claude
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -34,19 +37,27 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 		Use:   "claude [flags] [args]",
 		Short: "Launch Claude Code with GitLab Duo integration",
 		Long: heredoc.Doc(`
-			Launch Claude Code with automatic GitLab authentication and proxy configuration.
-			All flags and arguments are passed through to the Claude executable.
+			Launch Claude Code with automatic GitLab authentication, proxy configuration,
+			and GitLab MCP tools integration. All flags and arguments are passed through 
+			to the Claude executable.
 			
 			This command automatically configures Claude Code to work with GitLab AI services,
 			handling authentication tokens and API endpoints based on your current repository.
+			It also provides access to all GitLab functionality through MCP tools, allowing
+			you to interact with issues, merge requests, CI/CD pipelines, and more directly
+			from within Claude Code.
 		`),
 		Example: heredoc.Doc(`
 			$ glab duo claude
+			$ glab duo claude -p "List all open issues in this project"
 			$ glab duo claude -p "Write a function to calculate Fibonacci numbers"
 		`),
 		// Allow unknown flags to be passed through to the claude command
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
 			UnknownFlags: true,
+		},
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Fetch repo host
@@ -79,6 +90,29 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to parse command arguments: %w", err)
 			}
+
+			// Add ephemeral MCP configuration for glab server using current binary
+			currentBinary, err := os.Executable()
+			if err != nil {
+				return fmt.Errorf("failed to determine current executable path: %w", err)
+			}
+
+			// Create MCP configuration struct and marshal to JSON
+			mcpConfigStruct := map[string]interface{}{
+				"mcpServers": map[string]interface{}{
+					"glab": map[string]interface{}{
+						"command": currentBinary,
+						"args":    []string{"mcp", "serve"},
+					},
+				},
+			}
+
+			mcpConfigBytes, err := json.Marshal(mcpConfigStruct)
+			if err != nil {
+				return fmt.Errorf("failed to marshal MCP config: %w", err)
+			}
+
+			claudeArgs = append(claudeArgs, "--mcp-config", string(mcpConfigBytes))
 
 			// Execute Claude command with all arguments
 			claudeCmd := exec.Command(ClaudeExecutable, claudeArgs...)

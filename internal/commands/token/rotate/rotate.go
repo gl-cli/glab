@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/commands/token/expirationdate"
 	"gitlab.com/gitlab-org/cli/internal/commands/token/filter"
 
@@ -73,6 +75,9 @@ func NewCmdRotate(f cmdutils.Factory) *cobra.Command {
 			Rotate a personal access token of another user (administrator only)
 			- glab token rotate --user johndoe johns-personal-token
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(cmd, args); err != nil {
 				return err

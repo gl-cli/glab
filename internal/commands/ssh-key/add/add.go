@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -45,6 +47,9 @@ func NewCmdAdd(f cmdutils.Factory) *cobra.Command {
 			$ glab ssh-key add ~/.ssh/id_ed25519.pub -t "my title" --usage-type "auth"
 		`),
 		Args: cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(args); err != nil {
 				return err

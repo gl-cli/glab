@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -21,6 +23,9 @@ func NewCmdTodo(f cmdutils.Factory) *cobra.Command {
 		Short:   "Add a to-do item to merge request.",
 		Long:    ``,
 		Args:    cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			c := f.IO().Color()

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
@@ -47,6 +49,9 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 		`),
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"ls"},
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(cmd)
 

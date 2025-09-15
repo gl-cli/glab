@@ -6,19 +6,17 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/token/expirationdate"
-	"gitlab.com/gitlab-org/cli/internal/commands/token/filter"
-
-	"gitlab.com/gitlab-org/cli/internal/commands/token/accesslevel"
-
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/token/accesslevel"
+	"gitlab.com/gitlab-org/cli/internal/commands/token/expirationdate"
+	"gitlab.com/gitlab-org/cli/internal/commands/token/filter"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 type options struct {
@@ -83,6 +81,9 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		- glab token create --user johndoe --scope api johns-personal-token
 
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(cmd, args); err != nil {
 				return err

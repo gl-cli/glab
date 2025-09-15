@@ -6,6 +6,8 @@ import (
 	"io"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
@@ -64,6 +66,9 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"show"},
 		Args:    cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run(f, args)
 		},

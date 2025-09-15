@@ -3,6 +3,8 @@ package completion
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
@@ -108,6 +110,9 @@ func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {
 		more shell configuration to support completions.
 		For Homebrew, see [brew shell completion](https://docs.brew.sh/Shell-Completion)
 		`, "`", "```"),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			out := io.StdOut
 			rootCmd := cmd.Parent()

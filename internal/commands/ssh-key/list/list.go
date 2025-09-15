@@ -7,6 +7,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
@@ -35,6 +36,9 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			$ glab ssh-key list
 		`),
 		Args: cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run()
 		},

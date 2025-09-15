@@ -3,6 +3,8 @@ package reopen
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -48,6 +50,9 @@ func NewCmdReopen(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Comma
 			$ glab %[1]s reopen https://gitlab.com/NAMESPACE/REPO/-/%s
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			out := f.IO().StdOut

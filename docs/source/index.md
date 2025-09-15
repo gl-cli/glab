@@ -85,6 +85,7 @@ in the main README.
 - [`glab iteration`](iteration/index.md)
 - [`glab job`](job/index.md)
 - [`glab label`](label/index.md)
+- [`glab mcp`](mcp/index.md)
 - [`glab mr`](mr/index.md)
 - [`glab opentofu`](opentofu/index.md)
 - [`glab release`](release/index.md)

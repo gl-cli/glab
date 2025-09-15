@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
@@ -120,6 +122,9 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		- 'Ctrl+Space' to suspend application and view the logs. Similar to 'glab pipeline ci trace'.
 		Supports vi style bindings and arrow keys for navigating jobs and logs.
 	`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		Example: heredoc.Doc(`
 			# Uses current branch
 			$ glab pipeline ci view

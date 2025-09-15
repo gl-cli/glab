@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -65,6 +67,9 @@ glab snippet create [flags] -t <title> -f <filename>  # reads from stdin`,
 			$ glab snippet create -t Title -f "different.go" -d Description --filename different.go main.go
 			$ glab snippet create --personal --title "Personal snippet" script.py
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(args); err != nil {
 				return err

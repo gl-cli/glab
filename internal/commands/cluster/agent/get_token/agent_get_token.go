@@ -14,6 +14,8 @@ import (
 	"syscall"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/spf13/cobra"
 	"github.com/zalando/go-keyring"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -60,6 +62,9 @@ func NewCmdAgentGetToken(f cmdutils.Factory) *cobra.Command {
 This command creates a personal access token that is valid until the end of the current day.
 You might receive an email from your GitLab instance that a new personal access token has been created.
 `, desc),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.validate(); err != nil {
 				return err

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -42,6 +44,9 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		  - glab variable delete VAR_NAME --scope=prod
 		  - glab variable delete VARNAME -g mygroup
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

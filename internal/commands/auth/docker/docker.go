@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"runtime"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/docker/docker-credential-helpers/credentials"
 	"github.com/spf13/cobra"
 
@@ -29,6 +31,9 @@ func NewCmdConfigureDocker(f cmdutils.Factory) *cobra.Command {
 		Use:   "configure-docker",
 		Args:  cobra.ExactArgs(0),
 		Short: "Register glab as a Docker credential helper",
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: The shell wrapper approach is only implemented for POSIX
 			// compliant operating systems at the moment.
@@ -58,6 +63,9 @@ func NewCmdCredentialHelper(f cmdutils.Factory) *cobra.Command {
 			cobra.OnlyValidArgs,
 		),
 		Short: "A Docker credential helper for GitLab container registries",
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			apiClient, err := f.ApiClient("")
 			if err != nil {

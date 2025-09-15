@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
@@ -29,6 +31,9 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 		Use:   "list [flags]",
 		Short: `List the available aliases.`,
 		Long:  ``,
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run()
 		},

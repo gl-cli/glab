@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
@@ -23,6 +25,9 @@ func NewCmdConfigCompile(f cmdutils.Factory) *cobra.Command {
 			$ glab ci config compile .gitlab-ci.yml
 			$ glab ci config compile path/to/.gitlab-ci.yml
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path := ".gitlab-ci.yml"
 			if len(args) == 1 {

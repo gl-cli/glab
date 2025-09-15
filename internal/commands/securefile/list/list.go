@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -31,6 +33,9 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 			- glab securefile list --page 2 --per-page 10
 		`),
 		Args: cobra.ExactArgs(0),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := f.GitLabClient()
 			if err != nil {
