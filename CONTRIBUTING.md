@@ -4,7 +4,7 @@
 
 Contributions to this repository are subject to the [Developer Certificate of Origin](https://docs.gitlab.com/legal/developer_certificate_of_origin/#developer-certificate-of-origin-version-11).
 
-All Documentation content that resides under the [docs/ directory](/docs) of this
+All Documentation content that resides under the [`docs/` directory](docs/README.md) of this
 repository is licensed under Creative Commons:
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 
