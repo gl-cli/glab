@@ -9,6 +9,8 @@ import (
 	"slices"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
@@ -41,6 +43,9 @@ func NewCmdArchive(f cmdutils.Factory) *cobra.Command {
 	- namespace/group/repo
 	`),
 		Args: cobra.MaximumNArgs(2),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var name string
 			var err error

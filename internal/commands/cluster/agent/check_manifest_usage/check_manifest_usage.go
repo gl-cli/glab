@@ -3,6 +3,8 @@ package check_manifest_usage
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -41,6 +43,9 @@ func NewCmdCheckManifestUsage(f cmdutils.Factory) *cobra.Command {
 		Long: `Checks the descendants of a group for registered agents with configuration files that rely on the deprecated GitOps manifests settings.
 The output can be piped to a tab-separated value (TSV) file.
 ` + text.ExperimentalString,
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run()
 		},

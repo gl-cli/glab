@@ -3,6 +3,8 @@ package note
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -20,6 +22,9 @@ func NewCmdNote(f cmdutils.Factory) *cobra.Command {
 		Short:   "Add a comment or note to a merge request.",
 		Long:    ``,
 		Args:    cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := f.GitLabClient()
 			if err != nil {

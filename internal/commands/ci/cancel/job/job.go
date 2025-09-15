@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -36,6 +38,9 @@ func NewCmdCancel(f cmdutils.Factory) *cobra.Command {
 			}
 
 			return nil
+		},
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error

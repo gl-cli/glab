@@ -3,6 +3,8 @@ package trigger
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 
@@ -27,6 +29,9 @@ func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 			$ glab ci trigger lint
 	`),
 		Long: ``,
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 

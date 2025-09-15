@@ -3,6 +3,8 @@ package logout
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -37,6 +39,9 @@ func NewCmdLogout(f cmdutils.Factory) *cobra.Command {
 			Logout of a specific instance
 			- glab auth logout --hostname gitlab.example.com
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.run()
 		},

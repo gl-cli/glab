@@ -4,6 +4,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 func NewCmdArtifact(f cmdutils.Factory) *cobra.Command {
@@ -18,6 +19,9 @@ func NewCmdArtifact(f cmdutils.Factory) *cobra.Command {
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(2),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			repo, err := f.BaseRepo()
 			if err != nil {

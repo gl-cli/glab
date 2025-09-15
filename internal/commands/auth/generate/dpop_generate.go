@@ -11,6 +11,8 @@ import (
 	"os"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/text"
 
@@ -81,6 +83,9 @@ func NewCmdGenerate(f cmdutils.Factory) *cobra.Command {
 			$ glab auth dpop-gen --private-key "~/.ssh/id_rsa" --hostname "https://gitlab.com"
 		`),
 		Args: cobra.ExactArgs(0),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(); err != nil {
 				return err

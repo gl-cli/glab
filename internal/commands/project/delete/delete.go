@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
@@ -46,6 +48,9 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			$ glab repo delete mygroup/dotfiles
 			$ glab repo delete myorg/mynamespace/dotfiles
 	  `),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.args = args
 			return opts.run()

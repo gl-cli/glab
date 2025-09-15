@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -45,6 +47,9 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		Use:   "view [flags]",
 		Short: `View project issue board.`,
 		Long:  ``,
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a := tview.NewApplication()
 			defer recoverPanic(a)

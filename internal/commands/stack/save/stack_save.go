@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/briandowns/spinner"
 	"gitlab.com/gitlab-org/cli/internal/git"
@@ -31,6 +33,9 @@ func NewCmdSaveStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.GetT
 			$ glab stack save added_file
 			$ glab stack save . -m "added a function"
 			$ glab stack save -m "added a function"`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("message") && cmd.Flags().Changed("description") {
 				return &cmdutils.FlagError{Err: errors.New("specify either of --message or --description.")}

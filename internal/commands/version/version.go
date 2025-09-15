@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/spf13/cobra"
@@ -15,6 +17,9 @@ func NewCmdVersion(f cmdutils.Factory) *cobra.Command {
 		Short:   "Show version information for glab.",
 		Long:    ``,
 		Aliases: []string{"v"},
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			buildInfo := f.BuildInfo()
 			fmt.Fprint(f.IO().StdOut, Scheme(buildInfo.Version, buildInfo.Commit))

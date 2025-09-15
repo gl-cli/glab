@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -66,6 +68,9 @@ func NewCmdFork(f cmdutils.Factory) *cobra.Command {
 			$ glab repo fork namespace/repo --clone
 		`),
 		Args: cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(cmd, args)
 

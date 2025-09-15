@@ -3,6 +3,8 @@ package reopen
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -27,6 +29,9 @@ func NewCmdReopen(f cmdutils.Factory) *cobra.Command {
 			- glab mr reopen branch-1 branch-2
 		`),
 		Aliases: []string{"open"},
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO().Color()
 			client, err := f.GitLabClient()

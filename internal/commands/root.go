@@ -23,6 +23,7 @@ import (
 	iterationCmd "gitlab.com/gitlab-org/cli/internal/commands/iteration"
 	jobCmd "gitlab.com/gitlab-org/cli/internal/commands/job"
 	labelCmd "gitlab.com/gitlab-org/cli/internal/commands/label"
+	mcpCmd "gitlab.com/gitlab-org/cli/internal/commands/mcp"
 	mrCmd "gitlab.com/gitlab-org/cli/internal/commands/mr"
 	opentofuCmd "gitlab.com/gitlab-org/cli/internal/commands/opentofu"
 	projectCmd "gitlab.com/gitlab-org/cli/internal/commands/project"
@@ -147,6 +148,7 @@ func NewCmdRoot(f cmdutils.Factory) *cobra.Command {
 	rootCmd.AddCommand(securefileCmd.NewCmdSecurefile(f))
 	rootCmd.AddCommand(snippetCmd.NewCmdSnippet(f))
 	rootCmd.AddCommand(duoCmd.NewCmdDuo(f))
+	rootCmd.AddCommand(mcpCmd.NewCmdMCP(f))
 	rootCmd.AddCommand(tokenCmd.NewTokenCmd(f))
 	rootCmd.AddCommand(stackCmd.NewCmdStack(f))
 	rootCmd.AddCommand(deployKeyCmd.NewCmdDeployKey(f))

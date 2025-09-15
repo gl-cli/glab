@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -46,6 +48,9 @@ func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 		`),
 		Long: ``,
 		Args: cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(args); err != nil {
 				return err

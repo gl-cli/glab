@@ -3,6 +3,8 @@ package unsubscribe
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -35,6 +37,9 @@ func NewCmdUnsubscribe(f cmdutils.Factory) *cobra.Command {
 			Unsubscribe from multiple merge requests
 			- glab mr unsubscribe 123 branch
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			c := f.IO().Color()

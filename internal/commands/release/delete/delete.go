@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -51,6 +53,9 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			# Delete release and associated tag
 			$ glab release delete v1.0.1 --with-tag
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

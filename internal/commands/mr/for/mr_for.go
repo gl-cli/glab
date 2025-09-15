@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/git"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -33,6 +35,9 @@ func NewCmdFor(f cmdutils.Factory) *cobra.Command {
 			$ glab mr create-for 34
 		`),
 		Args: cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 

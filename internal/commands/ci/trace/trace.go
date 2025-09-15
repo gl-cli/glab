@@ -3,6 +3,7 @@ package trace
 import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -22,6 +23,9 @@ func NewCmdTrace(f cmdutils.Factory) *cobra.Command {
 			# Trace job with the name 'lint'
 			$ glab ci trace lint
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			repo, err := f.BaseRepo()

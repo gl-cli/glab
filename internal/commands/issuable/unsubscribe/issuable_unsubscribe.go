@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -40,6 +42,9 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 			$ glab %[1]s unsubscribe https://gitlab.com/OWNER/REPO/-/%[2]s
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO().Color()
 			client, err := f.GitLabClient()

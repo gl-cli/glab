@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -36,6 +38,9 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			$ glab deploy-key delete 1234`,
 		),
 		Args: cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(args); err != nil {
 				return err

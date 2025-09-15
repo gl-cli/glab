@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/dbg"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -62,6 +64,9 @@ func NewCmdMerge(f cmdutils.Factory) *cobra.Command {
 		Short:   `Merge or accept a merge request.`,
 		Long:    ``,
 		Aliases: []string{"accept"},
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		Example: heredoc.Doc(`
 			# Merge a merge request
 			$ glab mr merge 235

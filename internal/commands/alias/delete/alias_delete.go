@@ -3,6 +3,8 @@ package delete
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -28,6 +30,9 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		Short: `Delete an alias.`,
 		Long:  ``,
 		Args:  cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
@@ -18,6 +20,9 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 		Use:   "events",
 		Short: "View user events.",
 		Args:  cobra.ExactArgs(0),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := f.ApiClient("")
 			if err != nil {

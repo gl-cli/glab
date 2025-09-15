@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -58,6 +60,9 @@ func NewCmdConfigGet(f cmdutils.Factory) *cobra.Command {
   		> notty
 		`),
 		Args: cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg := f.Config()
 

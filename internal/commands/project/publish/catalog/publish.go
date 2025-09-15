@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"sort"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -73,6 +75,9 @@ func NewCmdPublishCatalog(f cmdutils.Factory) *cobra.Command {
 			- glab repo publish catalog v1.2.3
 		`),
 		Args: cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

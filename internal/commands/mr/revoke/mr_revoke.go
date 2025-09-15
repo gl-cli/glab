@@ -3,6 +3,8 @@ package revoke
 import (
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
@@ -27,6 +29,9 @@ func NewCmdRevoke(f cmdutils.Factory) *cobra.Command {
 			Revoke approval on merge request 123 on branch 456
 			- glab mr revoke 123 branch 456
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			c := f.IO().Color()

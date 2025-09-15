@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -30,6 +32,9 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 		Use:   "unlock <state>",
 		Short: `Unlock the given state.`,
 		Args:  cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 			return opts.run(cmd.Context())

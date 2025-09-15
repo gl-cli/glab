@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -39,6 +41,9 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 			$ glab %[1]s subscribe https://gitlab.com/OWNER/REPO/-/%[2]s
 		`, issueType, examplePath)),
 		Args: cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := f.IO().Color()
 			client, err := f.GitLabClient()

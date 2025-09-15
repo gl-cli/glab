@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/AlecAivazis/survey/v2"
 	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
@@ -114,6 +116,9 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			if repoOverride != "" {
 				headRepoOverride(opts, repoOverride)
 			}
+		},
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(cmd)

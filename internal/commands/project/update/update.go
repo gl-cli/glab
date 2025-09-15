@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -60,6 +62,9 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 			# Unarchive my-project.
 			$ glab repo update my-project --archive=false
 	  `),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(cmd.Flags(), args); err != nil {
 				return err

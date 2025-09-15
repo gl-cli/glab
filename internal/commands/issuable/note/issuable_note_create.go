@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
 
@@ -22,6 +24,9 @@ func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command
 		Short:   fmt.Sprintf("Comment on an %s in GitLab.", issueType),
 		Long:    ``,
 		Args:    cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			out := f.IO().StdOut

@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -61,6 +63,9 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 			# Download assets with names matching the glob pattern
 			$ glab release download v1.10.1 --asset-name="*.tar.gz"
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

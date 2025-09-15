@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	securejoin "github.com/cyphar/filepath-securejoin"
 	catalog "gitlab.com/gitlab-org/cli/internal/commands/project/publish/catalog"
 	"gitlab.com/gitlab-org/cli/internal/commands/release/releaseutils"
@@ -166,6 +168,9 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 
 			$ glab release create v1.0.1 --publish-to-catalog
 		`, "`"),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(cmd.Flags(), args); err != nil {
 				return err

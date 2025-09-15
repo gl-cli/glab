@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/briandowns/spinner"
 
@@ -26,6 +28,9 @@ func NewCmdAmendStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.Get
 			$ glab stack amend modifiedfile
 			$ glab stack amend . -m "fixed a function"
 			$ glab stack amend newfile -d "forgot to add this"`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			output, err := amendFunc(f, args, getText, description)
 			if err != nil {

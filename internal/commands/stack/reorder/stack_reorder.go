@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -42,6 +44,9 @@ func NewCmdReorderStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.G
 		Example: heredoc.Doc(`
 			$ glab stack reorder
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.io.StartSpinner("Reordering\n")
 			defer opts.io.StopSpinner("%s Reordering complete\n", f.IO().Color().GreenCheck())

@@ -10,6 +10,8 @@ import (
 	"strings"
 	"syscall"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -49,6 +51,9 @@ func NewCmdDiff(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 			$ glab mr diff 123 --color=never
 		`),
 		Args: cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

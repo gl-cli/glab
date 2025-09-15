@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -39,6 +41,9 @@ func NewCmdStatus(f cmdutils.Factory, runE func(*options) error) *cobra.Command 
 
 		This command tests the authentication states of all known GitLab instances in the configuration file and reports issues, if any.
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Safe: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runE != nil {
 				return runE(opts)

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/commands/token/filter"
 
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -68,6 +70,9 @@ func NewCmdRevoke(f cmdutils.Factory) *cobra.Command {
 			- glab token revoke --user johndoe johns-personal-token
 
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.complete(cmd, args); err != nil {
 				return err

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -54,6 +56,9 @@ func NewCmdSet(f cmdutils.Factory, runE func(opts *options) error) *cobra.Comman
 			$ cat file.txt | glab variable set SERVER_TOKEN
 			$ cat token.txt | glab variable set GROUP_TOKEN -g mygroup --scope=prod
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(args)
 

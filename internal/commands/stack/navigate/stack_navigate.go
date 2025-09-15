@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -34,6 +36,9 @@ func NewCmdStackFirst(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ glab stack first
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()
 			if err != nil {
@@ -65,6 +70,9 @@ func NewCmdStackNext(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ glab stack next
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()
 			if err != nil {
@@ -101,6 +109,9 @@ func NewCmdStackPrev(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ glab stack prev
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()
 			if err != nil {
@@ -137,6 +148,9 @@ func NewCmdStackLast(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ glab stack last
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()
 			if err != nil {
@@ -169,6 +183,9 @@ func NewCmdStackMove(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ glab stack move
 		`),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stack, err := baseCommand()
 			if err != nil {

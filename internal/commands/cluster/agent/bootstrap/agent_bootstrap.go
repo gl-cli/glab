@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -170,6 +172,9 @@ This command consists of multiple idempotent steps:
 		`),
 		Aliases: []string{"bs"},
 		Args:    cobra.ExactArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return ensureRequirements()
 		},

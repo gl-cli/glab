@@ -7,6 +7,8 @@ import (
 	"path"
 	"strings"
 
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
@@ -49,6 +51,9 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	- A full URL for the project.
 	`, "`"),
 		Args: cobra.MaximumNArgs(1),
+		Annotations: map[string]string{
+			mcpannotations.Destructive: "true",
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runCreateProject(cmd, args, f)
 		},
