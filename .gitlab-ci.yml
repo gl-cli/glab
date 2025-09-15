@@ -17,7 +17,7 @@ variables:
   - "go.sum"
 
 .sign_windows_base:
-  image: ${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/code-signer:1.1.0
+  image: ${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/code-signer:1.2.1
   extends: .google-oidc:auth
   rules:
     - if: $CI_COMMIT_TAG && $CI_SERVER_HOST == "gitlab.com" && ($CI_PROJECT_PATH == "gitlab-org/cli" || $CI_PROJECT_PATH == "gitlab-org/security/cli")
@@ -202,6 +202,7 @@ run_tests:
     access: 'developer'
 
 .release:
+  extends: .sign_windows_base
   tags:
     # NOTE: we really benefit from the capacities of this 2xlarge runner.
     # we only want to build from the canonical project so we don't really
@@ -218,7 +219,16 @@ run_tests:
   needs: [sign_windows_installer]
   dependencies: [sign_windows_installer]
   before_script:
+    - !reference [.google-oidc:auth, before_script]
     - *use_signed_if_available
+    # The OIDC module creates secrets in /var/run/secrets/gitlab, but this
+    # mount is only available on the job container, not the docker:dind
+    # service. Copy these files into the the project dir to ensure
+    # all containers can access it.
+    - cp -r /var/run/secrets/gitlab .gitlab-secrets
+  after_script:
+    - !reference [.google-oidc:auth, after_script]
+    - rm -rf .gitlab-secrets
 
 release_test:
   extends: .release
@@ -233,11 +243,15 @@ release_test:
         - .gitlab-ci.yml
   script: |
     docker run --rm --privileged \
-      -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
+      -e APPSTORE_CONNECT_API_KEY_FILE=$APPSTORE_CONNECT_API_KEY_FILE \
+      -e GCLOUD_PROJECT=$GCLOUD_PROJECT \
       -e GO_VERSION="$GO_VERSION" \
-      -w /go/src/gitlab.com/gitlab-org/cli \
+      -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+      -e HOST_PWD=$PWD \
+      -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
       -v /var/run/docker.sock:/var/run/docker.sock \
-      goreleaser/goreleaser:nightly release --snapshot
+      -w /go/src/gitlab.com/gitlab-org/cli \
+      goreleaser/goreleaser:nightly release --skip=sign --snapshot
   artifacts:
     name: goreleaser-artifacts
     paths:
@@ -255,11 +269,15 @@ release:
     - if: $CI_COMMIT_TAG
   script: |
     docker run --rm --privileged \
-      -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
-      -w /go/src/gitlab.com/gitlab-org/cli \
-      -v /var/run/docker.sock:/var/run/docker.sock \
+      -e APPSTORE_CONNECT_API_KEY_FILE=$APPSTORE_CONNECT_API_KEY_FILE \
+      -e GCLOUD_PROJECT=$GCLOUD_PROJECT \
       -e GO_VERSION="$GO_VERSION" \
       -e GITLAB_TOKEN=$GITLAB_TOKEN_RELEASE \
+      -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+      -e HOST_PWD=$PWD \
+      -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -w /go/src/gitlab.com/gitlab-org/cli \
       --entrypoint "" \
       goreleaser/goreleaser:nightly \
       bash -c "
@@ -331,9 +349,7 @@ sign_windows_glab:
   needs:
     - build_windows
   script:
-    - mkdir -p signed
-    - sign-windows-binaries bin/glab.exe
-    - mv bin/glab.exe signed/
+    - sign-windows-binaries --output-dir signed bin/glab.exe
   artifacts:
     paths:
       - "signed/glab.exe"
@@ -343,9 +359,7 @@ sign_windows_installer:
   needs:
     - windows_installer
   script:
-    - mkdir -p signed
-    - sign-windows-binaries bin/glab_*Windows_x86_64_installer.exe
-    - mv bin/glab_*Windows_x86_64_installer.exe signed
+    - sign-windows-binaries --output-dir signed bin/glab_*Windows_x86_64_installer.exe
   artifacts:
     paths:
       - "signed/glab_*Windows_x86_64_installer.exe"
