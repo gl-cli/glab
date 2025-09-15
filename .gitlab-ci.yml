@@ -16,6 +16,30 @@ variables:
   - "go.mod"
   - "go.sum"
 
+.sign_windows_base:
+  image: ${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/code-signer:1.1.0
+  extends: .google-oidc:auth
+  rules:
+    - if: $CI_COMMIT_TAG && $CI_SERVER_HOST == "gitlab.com" && ($CI_PROJECT_PATH == "gitlab-org/cli" || $CI_PROJECT_PATH == "gitlab-org/security/cli")
+  stage: release
+  artifacts:
+    expire_in: "30 days"
+  variables:
+    GCLOUD_PROJECT: gitlab-ci-runners-signing
+    SERVICE_ACCOUNT: gitlab-cli-signer@gitlab-ci-runners-signing.iam.gserviceaccount.com
+    WI_POOL_PROVIDER: //iam.googleapis.com/projects/8522242139/locations/global/workloadIdentityPools/gitlab-pool-oidc-$CI_PROJECT_ID/providers/gitlab-jwt-$CI_PROJECT_ID
+
+.use_signed_if_available: &use_signed_if_available
+  - |
+    if [ -d "signed/" ]; then
+      echo "Using signed binaries"
+      rm -rf bin/
+      mv signed bin
+      ls -al bin
+    else
+      echo "Using unsigned binaries"
+    fi
+
 # run the pipeline only on MRs, tags, and default branch
 workflow:
   rules:
@@ -47,6 +71,9 @@ include:
   - component: ${CI_SERVER_FQDN}/components/code-intelligence/golang-code-intel@v0.0.3
     inputs:
       golang_version: ${GO_VERSION}
+  - project: "gitlab-com/gl-security/security-operations/infrastructure-security-public/oidc-modules"
+    ref: 3.4.0
+    file: templates/gcp_auth.yaml
 
 # From: https://docs.gitlab.com/ci/caching/#cache-go-dependencies
 .go-cache:
@@ -188,8 +215,10 @@ run_tests:
     # Disable shallow cloning so that goreleaser can diff between tags to
     # generate a changelog.
     GIT_DEPTH: 0
-  needs: [windows_installer]
-  dependencies: [windows_installer]
+  needs: [sign_windows_installer]
+  dependencies: [sign_windows_installer]
+  before_script:
+    - *use_signed_if_available
 
 release_test:
   extends: .release
@@ -214,6 +243,11 @@ release_test:
     paths:
       - dist/
     expire_in: 1 week
+  needs:
+    - job: windows_installer
+      optional: false
+    - job: sign_windows_installer
+      optional: true
 
 release:
   extends: .release
@@ -258,6 +292,8 @@ windows_installer:
     - changes:
         - .goreleaser.yml
         - .gitlab-ci.yml
+  before_script:
+    - *use_signed_if_available
   script:
     - mv scripts/setup_windows.iss .
     - iscc "setup_windows.iss" -DVersion=${CI_COMMIT_TAG//v}
@@ -265,8 +301,11 @@ windows_installer:
     paths:
       - "bin/*"
     expire_in: "30 days"
-  dependencies: [build_windows]
-  needs: [build_windows]
+  needs:
+    - job: build_windows
+      optional: false
+    - job: sign_windows_glab
+      optional: true
 
 build_windows:
   stage: release
@@ -286,6 +325,30 @@ build_windows:
     paths:
       - "bin/glab.exe"
     expire_in: "30 days"
+
+sign_windows_glab:
+  extends: .sign_windows_base
+  needs:
+    - build_windows
+  script:
+    - mkdir -p signed
+    - sign-windows-binaries bin/glab.exe
+    - mv bin/glab.exe signed/
+  artifacts:
+    paths:
+      - "signed/glab.exe"
+
+sign_windows_installer:
+  extends: .sign_windows_base
+  needs:
+    - windows_installer
+  script:
+    - mkdir -p signed
+    - sign-windows-binaries bin/glab_*Windows_x86_64_installer.exe
+    - mv bin/glab_*Windows_x86_64_installer.exe signed
+  artifacts:
+    paths:
+      - "signed/glab_*Windows_x86_64_installer.exe"
 
 secret_detection:
   dependencies: [] # Don't download artifacts, especially `./public/`
