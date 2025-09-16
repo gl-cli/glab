@@ -6,7 +6,6 @@ import (
 	"iter"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -35,11 +34,20 @@ type mcpServer struct {
 
 // newMCPServer creates a new MCP server instance using mark3labs/mcp-go
 func newMCPServer(rootCmd *cobra.Command) *mcpServer {
-	// Create MCP server
+	// Create MCP server with usage instructions
+	instructions := `GitLab CLI MCP Server - Provides access to GitLab functionality through glab commands.
+
+General Usage:
+- Use --help flag with any tool to get detailed usage information
+- For large outputs, use limit/offset parameters for pagination
+- Check 'total_size' in response metadata to navigate results
+- Most tools support common flags like --output for formatting`
+
 	mcpSrv := server.NewMCPServer(
 		"glab-mcp-server",
 		"1.0.0",
 		server.WithToolCapabilities(true),
+		server.WithInstructions(instructions),
 	)
 
 	glabServer := &mcpServer{
@@ -112,8 +120,7 @@ func (s *mcpServer) iterCommands(cmd *cobra.Command, path []string) iter.Seq2[*c
 	}
 }
 
-// buildEnhancedDescription creates a comprehensive description by collecting Short, Long, Example,
-// and help:arguments annotations from the command and its parents
+// buildEnhancedDescription creates an optimized description with truncated content and standard guidance
 func (s *mcpServer) buildEnhancedDescription(cmd *cobra.Command) string {
 	var parts []string
 
@@ -122,52 +129,38 @@ func (s *mcpServer) buildEnhancedDescription(cmd *cobra.Command) string {
 		parts = append(parts, cmd.Short)
 	}
 
-	// Add long description if present
+	// Add truncated long description if present
 	if cmd.Long != "" {
-		parts = append(parts, "", cmd.Long)
+		truncatedLong := s.truncateAtWordBoundary(cmd.Long, 100)
+		parts = append(parts, "", truncatedLong)
 	}
 
-	// Walk up the command tree to find nearest Example and help:arguments
-	nearestExample := s.findNearestExample(cmd)
-	nearestHelpArgs := s.findNearestHelpArguments(cmd)
-
-	// Add example if found
-	if nearestExample != "" {
-		parts = append(parts, "", "Examples:", nearestExample)
-	}
-
-	// Add help:arguments if found
-	if nearestHelpArgs != "" {
-		parts = append(parts, "", "Arguments:", nearestHelpArgs)
-	}
-
-	return strings.Join(parts, "\n")
+	// Add standard guidance
+	description := strings.Join(parts, "\n")
+	return s.addStandardGuidance(description)
 }
 
-// findNearestExample walks up the command tree to find the nearest Example
-func (s *mcpServer) findNearestExample(cmd *cobra.Command) string {
-	current := cmd
-	for current != nil {
-		if current.Example != "" {
-			return strings.TrimSpace(current.Example)
-		}
-		current = current.Parent()
+// truncateAtWordBoundary truncates text to maxChars at the nearest word boundary
+func (s *mcpServer) truncateAtWordBoundary(text string, maxChars int) string {
+	if len(text) <= maxChars {
+		return text
 	}
-	return ""
+
+	// Find the last space within the limit, accounting for "..." suffix
+	for i := maxChars - 4; i >= 0; i-- {
+		if text[i] == ' ' || text[i] == '\n' {
+			return strings.TrimSpace(text[:i]) + "..."
+		}
+	}
+
+	// If no space found, hard truncate accounting for "..." suffix
+	return text[:maxChars-3] + "..."
 }
 
-// findNearestHelpArguments walks up the command tree to find the nearest help:arguments annotation
-func (s *mcpServer) findNearestHelpArguments(cmd *cobra.Command) string {
-	current := cmd
-	for current != nil {
-		if current.Annotations != nil {
-			if helpArgs, exists := current.Annotations["help:arguments"]; exists && helpArgs != "" {
-				return strings.TrimSpace(helpArgs)
-			}
-		}
-		current = current.Parent()
-	}
-	return ""
+// addStandardGuidance is no longer needed since guidance is provided at server level
+// Keeping this as a no-op for now in case we want tool-specific guidance later
+func (s *mcpServer) addStandardGuidance(description string) string {
+	return description
 }
 
 // buildToolFromCommand creates a tool using the builder pattern with dynamic schema
@@ -219,27 +212,11 @@ func (s *mcpServer) buildToolFromCommand(toolName, description string, cmd *cobr
 
 	// Add the new nested structure parameters
 	toolOptions = append(toolOptions,
-		// args: array of positional arguments
-		mcp.WithArray(argsParam,
-			mcp.WithStringItems(),
-			mcp.Description("Positional arguments to pass to the command before flags. Use this for arguments that don't have corresponding flag names (e.g., job IDs, issue IDs, file names). Check the command's help text and examples to determine what positional arguments it accepts."),
-		),
-		// flags: object containing all available flags
-		mcp.WithObject(flagsParam,
-			mcp.Properties(flagsProperties),
-			mcp.Description("Named flags and their values. All command flags are available as properties of this object."),
-		),
-		// limit: response size limit in runes
-		mcp.WithNumber(limitParam,
-			mcp.Description("Maximum response size in runes (Unicode characters). Defaults to 10000. Use smaller values to reduce context usage, larger values to see more content at once. The response will include pagination metadata to help navigate large outputs."),
-			mcp.DefaultNumber(float64(defaultResponseLimit)),
-			mcp.Min(0),
-		),
-		// offset: starting position in runes
-		mcp.WithNumber(offsetParam,
-			mcp.Description("Starting position in runes for pagination. Use 0 for beginning. To jump to end of output, check the 'total_size' in the response metadata, then use: total_size - limit. The response includes 'navigation_hints' with pre-calculated offsets for common navigation patterns. Negative values count from the end (like 'tail -n')."),
-			mcp.DefaultNumber(0),
-		),
+		// Simplified parameter definitions to reduce token usage
+		mcp.WithArray(argsParam, mcp.WithStringItems(), mcp.Description("Positional arguments")),
+		mcp.WithObject(flagsParam, mcp.Properties(flagsProperties), mcp.Description("Command flags")),
+		mcp.WithNumber(limitParam, mcp.Description("Response size limit"), mcp.DefaultNumber(float64(defaultResponseLimit))),
+		mcp.WithNumber(offsetParam, mcp.Description("Pagination offset"), mcp.DefaultNumber(0)),
 	)
 
 	return mcp.NewTool(toolName, toolOptions...)
@@ -250,47 +227,17 @@ func (s *mcpServer) buildFlagSchema(flag *pflag.Flag) map[string]any {
 	flagType := flag.Value.Type()
 	schema := make(map[string]any)
 
-	// Add description
-	if flag.Usage != "" {
-		schema["description"] = flag.Usage
-	}
+	// Removed descriptions and defaults to minimize token usage
+	// LLMs can infer flag purpose from flag names
 
-	// Add default value if available and meaningful
-	if flag.DefValue != "" && flag.DefValue != "false" && flag.DefValue != "0" {
-		switch flagType {
-		case "bool":
-			// Don't add default for bool
-		case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64":
-			if val := flag.DefValue; val != "0" {
-				if f64, err := strconv.ParseFloat(val, 64); err == nil {
-					schema["default"] = f64
-				}
-			}
-		default:
-			schema["default"] = flag.DefValue
-		}
-	}
-
-	// Set type and constraints based on flag type
+	// Minimal type information only
 	switch flagType {
 	case "bool":
 		schema["type"] = "boolean"
-	case "stringSlice", "stringArray":
+	case "stringSlice", "stringArray", "intSlice":
 		schema["type"] = "array"
-		schema["items"] = map[string]any{"type": "string"}
-	case "intSlice":
-		schema["type"] = "array"
-		schema["items"] = map[string]any{"type": "number"}
-	case "int", "int8", "int16", "int32", "int64":
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64":
 		schema["type"] = "number"
-	case "uint", "uint8", "uint16", "uint32", "uint64":
-		schema["type"] = "number"
-		schema["minimum"] = 0
-	case "float32", "float64":
-		schema["type"] = "number"
-	case "duration":
-		schema["type"] = "string"
-		schema["description"] = flag.Usage + " (e.g., '1h30m', '5s')"
 	default:
 		schema["type"] = "string"
 	}

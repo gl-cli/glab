@@ -89,9 +89,9 @@ func TestBuildEnhancedDescription(t *testing.T) {
 			expected: "Short desc\n\nLong description here",
 		},
 		{
-			name:     "all fields present",
-			cmd:      createMockCommand("full", "Short", "Long", "example content"),
-			expected: "Short\n\nLong\n\nExamples:\nexample content",
+			name:     "long description truncation",
+			cmd:      createMockCommand("truncated", "Short", "This is a very long description that should be truncated at one hundred characters because it exceeds the limit", ""),
+			expected: "Short\n\nThis is a very long description that should be truncated at one hundred characters because it...",
 		},
 	}
 
@@ -108,87 +108,82 @@ func TestBuildEnhancedDescriptionWithHierarchy(t *testing.T) {
 	root, _, child := createMockCommandHierarchy()
 	server.rootCmd = root
 
-	// Test child command picking up parent's help:arguments
+	// Test child command with simplified format
 	result := server.buildEnhancedDescription(child)
-	expected := "Child command\n\nExamples:\nparent example\n\nArguments:\nparent help arguments"
+	expected := "Child command"
 	assert.Equal(t, expected, result)
 }
 
-// Tests for findNearestExample
+// Tests for truncateAtWordBoundary
 
-func TestFindNearestExample(t *testing.T) {
+func TestTruncateAtWordBoundary(t *testing.T) {
 	server := &mcpServer{}
-	root, parent, child := createMockCommandHierarchy()
 
 	tests := []struct {
 		name     string
-		cmd      *cobra.Command
+		text     string
+		maxChars int
 		expected string
 	}{
 		{
-			name:     "command with direct example",
-			cmd:      parent,
-			expected: "parent example",
+			name:     "short text no truncation",
+			text:     "Short text",
+			maxChars: 20,
+			expected: "Short text",
 		},
 		{
-			name:     "child inherits parent example",
-			cmd:      child,
-			expected: "parent example",
+			name:     "truncate at word boundary",
+			text:     "This is a long text that should be truncated",
+			maxChars: 20,
+			expected: "This is a long...",
 		},
 		{
-			name:     "root command example",
-			cmd:      root,
-			expected: "root example",
+			name:     "hard truncate if no spaces",
+			text:     "Verylongtextwithnospaces",
+			maxChars: 10,
+			expected: "Verylon...",
+		},
+		{
+			name:     "truncate at newline",
+			text:     "First line\nSecond line that is longer",
+			maxChars: 15,
+			expected: "First line...",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := server.findNearestExample(tt.cmd)
+			result := server.truncateAtWordBoundary(tt.text, tt.maxChars)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
 
-func TestFindNearestExampleNoExample(t *testing.T) {
+// Tests for addStandardGuidance
+
+func TestAddStandardGuidance(t *testing.T) {
 	server := &mcpServer{}
-	cmd := createMockCommand("no-example", "Short", "", "")
-
-	result := server.findNearestExample(cmd)
-	assert.Equal(t, "", result)
-}
-
-// Tests for findNearestHelpArguments
-
-func TestFindNearestHelpArguments(t *testing.T) {
-	server := &mcpServer{}
-	root, parent, child := createMockCommandHierarchy()
 
 	tests := []struct {
-		name     string
-		cmd      *cobra.Command
-		expected string
+		name        string
+		description string
+		expected    string
 	}{
 		{
-			name:     "command with direct help:arguments",
-			cmd:      parent,
-			expected: "parent help arguments",
+			name:        "empty description",
+			description: "",
+			expected:    "",
 		},
 		{
-			name:     "child inherits parent help:arguments",
-			cmd:      child,
-			expected: "parent help arguments",
-		},
-		{
-			name:     "no help:arguments found",
-			cmd:      root,
-			expected: "",
+			name:        "add guidance to description",
+			description: "Command description",
+			expected:    "Command description",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := server.findNearestHelpArguments(tt.cmd)
+			result := server.addStandardGuidance(tt.description)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -203,38 +198,26 @@ func TestBuildFlagSchema(t *testing.T) {
 	tests := []struct {
 		flagName     string
 		expectedType string
-		hasDefault   bool
-		hasMin       bool
 	}{
 		{
 			flagName:     "verbose",
 			expectedType: "boolean",
-			hasDefault:   false,
-			hasMin:       false,
 		},
 		{
 			flagName:     "output",
 			expectedType: "string",
-			hasDefault:   true,
-			hasMin:       false,
 		},
 		{
 			flagName:     "count",
 			expectedType: "number",
-			hasDefault:   true,
-			hasMin:       false,
 		},
 		{
 			flagName:     "labels",
 			expectedType: "array",
-			hasDefault:   true, // StringSlice flags get default "[]"
-			hasMin:       false,
 		},
 		{
 			flagName:     "port",
 			expectedType: "number",
-			hasDefault:   true,
-			hasMin:       true,
 		},
 	}
 
@@ -248,21 +231,10 @@ func TestBuildFlagSchema(t *testing.T) {
 
 			assert.Equal(t, tt.expectedType, schema["type"])
 
-			if tt.hasDefault {
-				assert.Contains(t, schema, "default")
-			} else {
-				assert.NotContains(t, schema, "default")
-			}
-
-			if tt.hasMin {
-				assert.Contains(t, schema, "minimum")
-				assert.Equal(t, 0, schema["minimum"])
-			} else {
-				assert.NotContains(t, schema, "minimum")
-			}
-
-			// All should have description
-			assert.Contains(t, schema, "description")
+			// Minimal schema only contains type
+			assert.NotContains(t, schema, "default")
+			assert.NotContains(t, schema, "description")
+			assert.NotContains(t, schema, "minimum")
 		})
 	}
 }
