@@ -37,20 +37,20 @@ rm
 ## Examples
 
 ```console
-Revoke a project access token of current project
-- glab token revoke my-project-token
+# Revoke a project access token of current project
+$ glab token revoke my-project-token
 
-Revoke a project access token of a specific project
-- glab token revoke --repo user/my-repo my-project-token
+# Revoke a project access token of a specific project
+$ glab token revoke --repo user/my-repo my-project-token
 
-Revoke a group access token
-- glab token revoke --group group/sub-group my-group-token
+# Revoke a group access token
+$ glab token revoke --group group/sub-group my-group-token
 
-Revoke my personal access token
-- glab token revoke --user @me my-personal-token
+# Revoke my personal access token
+$ glab token revoke --user @me my-personal-token
 
-Revoke a personal access token of another user (administrator only)
-- glab token revoke --user johndoe johns-personal-token
+# Revoke a personal access token of another user (administrator only)
+$ glab token revoke --user johndoe johns-personal-token
 
 
 ```
