@@ -153,6 +153,7 @@ changelog:
 binary_signs:
   - id: code-signer
     cmd: sh
+    signature: '${artifact}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}.sha256'
     args:
       - -c
       # This could be simplified if we built an image that had a combination of code-signer
@@ -184,6 +185,9 @@ binary_signs:
             registry.gitlab.com/gitlab-com/gl-infra/common-ci-tasks-images/code-signer:1.2.1 \
             sign-macos-binaries --overwrite "/work/$artifact"
         else
-          echo "Not a Windows or macOS binary, skip signing: $artifact"
+          echo "Not a Windows or macOS binary, no need for code signing: $artifact"
         fi
+        echo "Generating SHA-256 checksum for ${artifact} -> ${signature}"
+        sha256sum "${artifact}" > "${signature}"
+        ls -al "${artifact}" "${signature}"
     output: true
