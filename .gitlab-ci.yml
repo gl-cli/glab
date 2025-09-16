@@ -251,7 +251,7 @@ release_test:
       -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
       -v /var/run/docker.sock:/var/run/docker.sock \
       -w /go/src/gitlab.com/gitlab-org/cli \
-      goreleaser/goreleaser:nightly release --snapshot
+      goreleaser/goreleaser:nightly release --skip=sign --snapshot
   artifacts:
     name: goreleaser-artifacts
     paths:
