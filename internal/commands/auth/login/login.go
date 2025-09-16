@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/url"
 	"os"
-	"regexp"
 	"slices"
 	"strings"
 
@@ -493,14 +493,25 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 }
 
 func hostnameValidator(v any) error {
-	val := fmt.Sprint(v)
-	if len(strings.TrimSpace(val)) < 1 {
-		return errors.New("a value is required.")
+	s, ok := v.(string)
+	if !ok {
+		return errors.New("hostname must be a string")
 	}
-	re := regexp.MustCompile(`^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])(:[0-9]+)?(/[a-z0-9-]*)*$`)
-	if !re.MatchString(val) {
-		return fmt.Errorf("invalid hostname %q", val)
+
+	if strings.TrimSpace(s) == "" {
+		return errors.New("hostname cannot be empty")
 	}
+
+	// NOTE: adding a scheme here so that `url.Parse`
+	// doesn't interpret the first segment before a colon
+	// as a scheme. We never expect `v` to contain
+	// a scheme anyways.
+	val := fmt.Sprintf("https://%s", s)
+	_, err := url.Parse(val)
+	if err != nil {
+		return fmt.Errorf("invalid hostname: %w", err)
+	}
+
 	return nil
 }
 

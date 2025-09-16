@@ -289,7 +289,12 @@ func Test_hostnameValidator(t *testing.T) {
 		{
 			name:     "empty",
 			hostname: "",
-			expected: "a value is required.",
+			expected: "hostname cannot be empty",
+		},
+		{
+			name:     "only whitespaces",
+			hostname: " ",
+			expected: "hostname cannot be empty",
 		},
 		{
 			name:     "valid-hostname-slash",
@@ -302,21 +307,7 @@ func Test_hostnameValidator(t *testing.T) {
 		{
 			name:     "hostname-with-invalid-port",
 			hostname: "local:host",
-			expected: `invalid hostname "local:host"`,
-		},
-		{
-			name:     "valid-with-int-type",
-			hostname: 10,
-		},
-		{
-			name:     "valid-with-slice-string-type",
-			hostname: []string{"local", "host"},
-			expected: `invalid hostname "[local host]"`,
-		},
-		{
-			name:     "invalid-with-map-type",
-			hostname: testMap,
-			expected: `invalid hostname "map[profclems:glab]"`,
+			expected: `invalid hostname: parse "https://local:host": invalid port ":host" after host`,
 		},
 		{
 			name:     "valid-hostname-with-path-and-dash",
