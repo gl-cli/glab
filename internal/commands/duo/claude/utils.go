@@ -53,7 +53,11 @@ func fetchDirectAccessToken(client *gitlab.Client) (*DirectAccessResponse, error
 	var response DirectAccessResponse
 	resp, err := client.Do(req, &response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute direct access token request: %w", err)
+		if gitlab.HasStatusCode(err, http.StatusForbidden) {
+			return nil, fmt.Errorf("failed to execute direct access token request: %w (your user most likely isn't enabled for the `agent_platform_claude_code` feature flag, please contact your GitLab administrator to enable it)", err)
+		} else {
+			return nil, fmt.Errorf("failed to execute direct access token request: %w", err)
+		}
 	}
 
 	if resp.StatusCode != http.StatusCreated {
