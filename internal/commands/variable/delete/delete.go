@@ -40,10 +40,10 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"remove"},
 		Args:    cobra.ExactArgs(1),
 		Example: heredoc.Doc(`
-	    - glab variable delete VAR_NAME
-		  - glab variable delete VAR_NAME --scope=prod
-		  - glab variable delete VARNAME -g mygroup
-		`),
+			$ glab variable delete VAR_NAME
+			$ glab variable delete VAR_NAME --scope=prod
+			$ glab variable delete VARNAME -g mygroup
+	`),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
 		},
