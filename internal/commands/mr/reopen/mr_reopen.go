@@ -19,14 +19,14 @@ func NewCmdReopen(f cmdutils.Factory) *cobra.Command {
 		Use:   "reopen [<id>... | <branch>...]",
 		Short: `Reopen a merge request.`,
 		Example: heredoc.Doc(`
-			Reopen merge request 123
-			- glab mr reopen 123
+		# Reopen merge request 123
+		$ glab mr reopen 123
 
-			Reopen merge requests 123, 456, and 789
-			- glab mr reopen 123 456 789
+		# Reopen merge requests 123, 456, and 789
+		$ glab mr reopen 123 456 789
 
-			Reopen merge requests from branches branch-1 and branch-2
-			- glab mr reopen branch-1 branch-2
+		# Reopen merge requests from branches branch-1 and branch-2
+		$ glab mr reopen branch-1 branch-2
 		`),
 		Aliases: []string{"open"},
 		Annotations: map[string]string{

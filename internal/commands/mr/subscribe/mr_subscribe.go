@@ -29,13 +29,13 @@ func NewCmdSubscribe(f cmdutils.Factory) *cobra.Command {
 		Long:    ``,
 		Aliases: []string{"sub"},
 		Example: heredoc.Doc(`
-			Subscribe to a merge request
-			- glab mr subscribe 123
-			- glab mr sub 123
-			- glab mr subscribe branch
+		# Subscribe to a merge request
+		$ glab mr subscribe 123
+		$ glab mr sub 123
+		$ glab mr subscribe branch
 
-			Subscribe to multiple merge requests
-			- glab mr subscribe 123 branch
+		# Subscribe to multiple merge requests
+		$ glab mr subscribe 123 branch
 		`),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",

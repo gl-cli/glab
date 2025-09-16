@@ -20,17 +20,17 @@ glab mr update [<id> | <branch>] [flags]
 ## Examples
 
 ```console
-Mark a merge request as ready
-- glab mr update 23 --ready
+# Mark a merge request as ready
+$ glab mr update 23 --ready
 
-Mark a merge request as draft
-- glab mr update 23 --draft
+# Mark a merge request as draft
+$ glab mr update 23 --draft
 
-Updates the merge request for the current branch
-- glab mr update --draft
+# Updates the merge request for the current branch
+$ glab mr update --draft
 
-Update merge request with commit information
-- glab mr update 23 --fill --fill-commit-body --yes
+# Update merge request with commit information
+$ glab mr update 23 --fill --fill-commit-body --yes
 
 ```
 

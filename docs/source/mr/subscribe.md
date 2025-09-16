@@ -26,13 +26,13 @@ sub
 ## Examples
 
 ```console
-Subscribe to a merge request
-- glab mr subscribe 123
-- glab mr sub 123
-- glab mr subscribe branch
+# Subscribe to a merge request
+$ glab mr subscribe 123
+$ glab mr sub 123
+$ glab mr subscribe branch
 
-Subscribe to multiple merge requests
-- glab mr subscribe 123 branch
+# Subscribe to multiple merge requests
+$ glab mr subscribe 123 branch
 
 ```
 
