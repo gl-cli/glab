@@ -16,7 +16,7 @@ Launch Claude Code with GitLab Duo integration
 ## Synopsis
 
 Launch Claude Code with automatic GitLab authentication, proxy configuration,
-and GitLab MCP tools integration. All flags and arguments are passed through 
+and GitLab MCP tools integration. All flags and arguments are passed through
 to the Claude executable.
 
 This command automatically configures Claude Code to work with GitLab AI services,
@@ -24,6 +24,11 @@ handling authentication tokens and API endpoints based on your current repositor
 It also provides access to all GitLab functionality through MCP tools, allowing
 you to interact with issues, merge requests, CI/CD pipelines, and more directly
 from within Claude Code.
+
+Warning: Automatic token retrieval is currently behind the `agent_platform_claude_code` 
+feature flag. If you are seeing a 403 Forbidden error, that is most likely because
+your user isn't enabled for this feature flag. This requires a GitLab administrator
+to enable it.
 
 ```plaintext
 glab duo claude [flags] [args]
