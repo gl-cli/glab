@@ -36,7 +36,7 @@ func TestNewCmdToken(t *testing.T) {
 
 	assert.NotNil(t, cmd)
 	assert.Equal(t, "token", cmd.Use)
-	assert.Equal(t, "Generate GitLab Duo access token for Claude Code", cmd.Short)
+	assert.Equal(t, "Generate GitLab Duo access token for Claude Code. (EXPERIMENTAL)", cmd.Short)
 	assert.True(t, cmd.FParseErrWhitelist.UnknownFlags)
 	assert.Contains(t, cmd.Long, "Generate and display a GitLab Duo access token")
 	assert.Contains(t, cmd.Long, "This token allows Claude Code to authenticate")

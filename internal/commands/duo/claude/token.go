@@ -9,6 +9,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/text"
 )
 
 // NewCmdToken creates a new cobra command for generating GitLab Duo access tokens.
@@ -21,13 +22,13 @@ func NewCmdToken(f cmdutils.Factory) *cobra.Command {
 
 	duoClaudeTokenCmd := &cobra.Command{
 		Use:   "token",
-		Short: "Generate GitLab Duo access token for Claude Code",
+		Short: "Generate GitLab Duo access token for Claude Code. (EXPERIMENTAL)",
 		Long: heredoc.Doc(`
 			Generate and display a GitLab Duo access token required for Claude Code authentication.
-			
+
 			This token allows Claude Code to authenticate with GitLab AI services.
 			The token is automatically used when running 'glab duo claude'.
-		`),
+		`) + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab duo claude token
 		`),
