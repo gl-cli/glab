@@ -8,25 +8,29 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/text"
 )
 
 func NewCmdServe(_ cmdutils.Factory) *cobra.Command {
 	serveCmd := &cobra.Command{
 		Use:   "serve",
-		Short: "Start MCP server with stdio transport",
-		Long: heredoc.Doc(`
-			Start a Model Context Protocol server that exposes GitLab functionality
+		Short: "Start a MCP server with stdio transport. (EXPERIMENTAL)",
+		Long: heredoc.Docf(`
+			Start a Model Context Protocol server to expose GitLab features
 			as tools for AI assistants like Claude Code.
-			
-			The server uses stdio transport for communication and provides tools for:
 
-			- Managing issues (list, create, update, close, add notes)
-			- Managing merge requests (list, create, update, merge, add notes)  
-			- Managing projects (list, get details)
-			- Managing CI/CD pipelines and jobs
-			- And more GitLab functionality
-			
-			Configure this server in Claude Code by adding to your MCP settings:
+			The server uses stdio (standard input and output) transport for
+			communication, and provides tools to:
+
+			- Manage issues (list, create, update, close, add notes)
+			- Manage merge requests (list, create, update, merge, add notes)
+			- Manage projects (list, get details)
+			- Manage CI/CD pipelines and jobs
+
+			To configure this server in Claude Code, add this code to your
+			MCP settings:
+
+			%[1]sjson
 			{
 			  "mcpServers": {
 			    "glab": {
@@ -35,7 +39,8 @@ func NewCmdServe(_ cmdutils.Factory) *cobra.Command {
 			    }
 			  }
 			}
-		`),
+			%[1]s
+		`, "```") + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab mcp serve
 		`),

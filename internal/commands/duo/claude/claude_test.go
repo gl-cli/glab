@@ -32,7 +32,7 @@ func TestNewCmdClaude(t *testing.T) {
 
 	assert.NotNil(t, cmd)
 	assert.Equal(t, "claude [flags] [args]", cmd.Use)
-	assert.Equal(t, "Launch Claude Code with GitLab Duo integration", cmd.Short)
+	assert.Equal(t, "Launch Claude Code with GitLab Duo integration. (EXPERIMENTAL)", cmd.Short)
 	assert.True(t, cmd.FParseErrWhitelist.UnknownFlags)
 
 	// Check that token subcommand is added

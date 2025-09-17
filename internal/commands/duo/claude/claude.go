@@ -13,6 +13,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/text"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -35,7 +36,7 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 
 	duoClaudeCmd := &cobra.Command{
 		Use:   "claude [flags] [args]",
-		Short: "Launch Claude Code with GitLab Duo integration",
+		Short: "Launch Claude Code with GitLab Duo integration. (EXPERIMENTAL)",
 		Long: heredoc.Doc(`
 			Launch Claude Code with automatic GitLab authentication, proxy configuration,
 			and GitLab MCP tools integration. All flags and arguments are passed through
@@ -43,15 +44,15 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 
 			This command automatically configures Claude Code to work with GitLab AI services,
 			handling authentication tokens and API endpoints based on your current repository.
-			It also provides access to all GitLab functionality through MCP tools, allowing
+			It also provides access to all GitLab features through MCP tools, enabling
 			you to interact with issues, merge requests, CI/CD pipelines, and more directly
 			from within Claude Code.
 
-			Warning: Automatic token retrieval is currently behind the ` + "`agent_platform_claude_code` " + `
-			feature flag. If you are seeing a 403 Forbidden error, that is most likely because
-			your user isn't enabled for this feature flag. This requires a GitLab administrator
+			Warning: Automatic token retrieval is currently behind the `+"`agent_platform_claude_code` "+`
+			feature flag. A "403 Forbidden" error usually means the feature
+			flag is not enabled for you. The flag requires a GitLab administrator
 			to enable it.
-		`),
+		`) + text.ExperimentalString,
 		Example: heredoc.Doc(`
 			$ glab duo claude
 			$ glab duo claude -p "List all open issues in this project"
@@ -85,7 +86,7 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 
 			// Validate Claude executable exists
 			if err := validateClaudeExecutable(); err != nil {
-				return fmt.Errorf("claude executable validation failed: %w", err)
+				return fmt.Errorf("Claude executable validation failed: %w", err)
 			}
 
 			wasAbleToSetApiKeyHelper := setClaudeSettings()
