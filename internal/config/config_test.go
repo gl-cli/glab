@@ -82,6 +82,39 @@ hosts:
 	assert.Equal(t, expected, mainBuf.String())
 }
 
+func Test_fileConfig_Set_Empty_Removes(t *testing.T) {
+	defer StubConfig(`---
+git_protocol: ssh
+editor: vim
+hosts:
+  gitlab.com:
+    token: foobar
+    git_protocol: https
+    username: user
+`, `
+`)()
+
+	mainBuf := bytes.Buffer{}
+	aliasesBuf := bytes.Buffer{}
+	defer StubWriteConfig(&mainBuf, &aliasesBuf)()
+
+	c, err := ParseConfig("config.yml")
+	require.NoError(t, err)
+
+	assert.NoError(t, c.Set("", "editor", ""))
+	assert.NoError(t, c.Set("gitlab.com", "token", ""))
+	assert.NoError(t, c.WriteAll())
+
+	expected := heredoc.Doc(`
+git_protocol: ssh
+hosts:
+    gitlab.com:
+        git_protocol: https
+        username: user
+`)
+	assert.Equal(t, expected, mainBuf.String())
+}
+
 func Test_defaultConfig(t *testing.T) {
 	mainBuf := bytes.Buffer{}
 	hostsBuf := bytes.Buffer{}

@@ -243,16 +243,32 @@ func (c *fileConfig) GetWithSource(hostname, key string, searchENVVars bool) (st
 
 func (c *fileConfig) Set(hostname, key, value string) error {
 	key = ConfigKeyEquivalence(key)
-	if hostname == "" {
-		return c.SetStringValue(key, value)
-	} else {
-		hostCfg, err := c.configForHost(hostname)
-		if isNotFoundError(err) {
-			hostCfg = c.makeConfigForHost(hostname)
-		} else if err != nil {
+	var cfg interface {
+		SetStringValue(string, string) error
+		RemoveEntry(string)
+	}
+
+	switch hostname {
+	case "":
+		cfg = c
+	default:
+		var err error
+		cfg, err = c.configForHost(hostname)
+		if err != nil {
+			if isNotFoundError(err) {
+				cfg = c.makeConfigForHost(hostname)
+				break
+			}
 			return err
 		}
-		return hostCfg.SetStringValue(key, value)
+	}
+
+	switch value {
+	case "":
+		cfg.RemoveEntry(key)
+		return nil
+	default:
+		return cfg.SetStringValue(key, value)
 	}
 }
 
