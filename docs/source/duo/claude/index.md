@@ -49,6 +49,12 @@ $ glab duo claude -p "Write a function to calculate Fibonacci numbers"
 
 ```
 
+## Options
+
+```plaintext
+      --with-gitlab-mcp   If provided will configure the GitLab MCP server
+```
+
 ## Options inherited from parent commands
 
 ```plaintext

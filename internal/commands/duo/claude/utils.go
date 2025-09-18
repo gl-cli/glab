@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -165,8 +166,11 @@ func validateClaudeExecutable() error {
 }
 
 // extractClaudeArgs extracts arguments after "claude" from os.Args.
-func extractClaudeArgs() ([]string, error) {
-	osArgs := os.Args
+func extractClaudeArgs(knownFlags []string) ([]string, error) {
+	// remove known known flags
+	osArgs := slices.DeleteFunc(os.Args, func(a string) bool {
+		return slices.Contains(knownFlags, a)
+	})
 
 	// Find the index where "claude" appears in the arguments
 	claudeIndex := -1
