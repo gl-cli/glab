@@ -14,6 +14,15 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
+// fieldsToClear a collection of all fields to clear from the config when logging out.
+var fieldsToClear = []string{
+	"token",
+	"job_token",
+	"is_oauth2",
+	"oauth2_refresh_token",
+	"oauth2_expiry_date",
+}
+
 type options struct {
 	io       *iostreams.IOStreams
 	config   func() config.Config
@@ -55,8 +64,10 @@ func NewCmdLogout(f cmdutils.Factory) *cobra.Command {
 func (o *options) run() error {
 	cfg := o.config()
 
-	if err := cfg.Set(o.hostname, "token", ""); err != nil {
-		return err
+	for _, key := range fieldsToClear {
+		if err := cfg.Set(o.hostname, key, ""); err != nil {
+			return err
+		}
 	}
 
 	if err := cfg.Write(); err != nil {
