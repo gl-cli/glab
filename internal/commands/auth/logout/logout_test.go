@@ -60,6 +60,10 @@ func Test_NewCmdLogout(t *testing.T) {
 					    token: %[1]s
 					  gitlab.example.com:
 					    token: %[1]s
+					    job_token: %[1]s
+					    is_oauth2: %[1]s
+					    oauth2_refresh_token: %[1]s
+					    oauth2_expiry_date: %[1]s
 				`,
 				token,
 			))
@@ -82,6 +86,18 @@ func Test_NewCmdLogout(t *testing.T) {
 
 				exampleToken, _ := cfg.Get(tt.hostname, "token")
 				assert.Equal(t, "", exampleToken)
+
+				exampleJobToken, _ := cfg.Get(tt.hostname, "job_token")
+				assert.Equal(t, "", exampleJobToken)
+
+				exampleIsOauth2, _ := cfg.Get(tt.hostname, "is_oauth2")
+				assert.Equal(t, "", exampleIsOauth2)
+
+				exampleOauth2RefreshToken, _ := cfg.Get(tt.hostname, "oauth2_refresh_token")
+				assert.Equal(t, "", exampleOauth2RefreshToken)
+
+				exampleOauth2ExpiryDate, _ := cfg.Get(tt.hostname, "oauth2_expiry_date")
+				assert.Equal(t, "", exampleOauth2ExpiryDate)
 			}
 		})
 	}
