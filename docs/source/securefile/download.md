@@ -20,18 +20,26 @@ glab securefile download <fileID> [flags]
 ## Examples
 
 ```console
-Download a project's secure file using the file's ID.
-- glab securefile download 1
+# Download a project's secure file using the file's ID.
+$ glab securefile download 1
 
-Download a project's secure file using the file's ID to a given path.
-- glab securefile download 1 --path="securefiles/file.txt"
+# Download a project's secure file using the file's ID to a given path.
+$ glab securefile download 1 --path="securefiles/file.txt"
+
+# Download a project's secure file without verifying its checksum.
+$ glab securefile download 1 --no-verify
+
+# Download a project's secure file even if checksum verification fails.
+$ glab securefile download 1 --force-download
 
 ```
 
 ## Options
 
 ```plaintext
-  -p, --path string   Path to download the secure file to, including filename and extension. (default "./downloaded.tmp")
+      --force-download   Force download file(s) even if checksum verification fails. Warning: when enabled, this setting allows the download of files that are corrupt or tampered with.
+      --no-verify        Do not verify the checksum of the downloaded file(s). Warning: when enabled, this setting allows the download of files that are corrupt or tampered with.
+  -p, --path string      Path to download the secure file to, including filename and extension. (default "./downloaded.tmp")
 ```
 
 ## Options inherited from parent commands
