@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 
@@ -13,21 +14,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
-
-func runCommand(t *testing.T, rt http.RoundTripper, args string, glInstanceHostname string) (*test.CmdOut, *cmdtest.Factory, error) {
-	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glInstanceHostname)),
-		cmdtest.WithBaseRepo("OWNER", "REPO", glInstanceHostname),
-	)
-
-	cmd := NewCmdAsk(factory)
-
-	cmdOut, err := cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
-
-	return cmdOut, factory, err
-}
 
 func TestAskCmd(t *testing.T) {
 	initialAiResponse := "The appropriate ```git log --pretty=format:'%h'``` Git command ```non-git cmd``` for listing ```git show``` commit SHAs."
@@ -103,13 +89,22 @@ The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing
 				cs.Stub(cmdShowResult)
 			}
 
-			output, factory, err := runCommand(t, fakeHTTP, "git list 10 commits", tc.withGlInstanceHostname)
-			baseRepo, _ := factory.BaseRepo()
-			require.Nil(t, err)
+			exec := cmdtest.SetupCmdForTest(t, NewCmdAsk, false,
+				func(f *cmdtest.Factory) {
+					f.ApiClientStub = func(repoHost string) (*api.Client, error) {
+						require.Equal(t, tc.expectedGlInstanceHostname, repoHost)
+
+						return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", tc.withGlInstanceHostname), nil
+					}
+				},
+				cmdtest.WithBaseRepo("OWNER", "REPO", tc.withGlInstanceHostname),
+			)
+
+			output, err := exec("git list 10 commits")
+			require.NoError(t, err)
 
 			require.Equal(t, output.String(), tc.expectedResult)
 			require.Empty(t, output.Stderr())
-			require.Equal(t, baseRepo.RepoHost(), tc.expectedGlInstanceHostname)
 		})
 	}
 }
@@ -151,9 +146,13 @@ func TestFailedHttpResponse(t *testing.T) {
 			response := httpmock.NewStringResponse(tc.code, tc.response)
 			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/ai/llm/git_command", response)
 
-			_, _, err := runCommand(t, fakeHTTP, "git list 10 commits", "")
-			require.NotNil(t, err)
-			require.Contains(t, err.Error(), tc.expectedMsg)
+			exec := cmdtest.SetupCmdForTest(t, NewCmdAsk, false,
+				cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", "")),
+				cmdtest.WithBaseRepo("OWNER", "REPO", ""),
+			)
+
+			_, err := exec("git list 10 commits")
+			require.EqualError(t, err, tc.expectedMsg)
 		})
 	}
 }
