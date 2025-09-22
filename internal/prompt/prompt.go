@@ -80,11 +80,3 @@ func Select(response any, name string, question string, options []string, opts .
 var AskOne = survey.AskOne
 
 var Ask = survey.Ask
-
-var Confirm = func(result *bool, prompt string, defaultVal bool) error {
-	p := &survey.Confirm{
-		Message: prompt,
-		Default: defaultVal,
-	}
-	return survey.AskOne(p, result)
-}

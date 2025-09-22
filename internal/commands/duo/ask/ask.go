@@ -1,6 +1,7 @@
 package ask
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/run"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -102,7 +102,7 @@ func NewCmdAsk(f cmdutils.Factory) *cobra.Command {
 			opts.displayResult(result)
 
 			if len(result.Commands) > 0 {
-				if err := opts.executeCommands(result.Commands); err != nil {
+				if err := opts.executeCommands(cmd.Context(), result.Commands); err != nil {
 					return err
 				}
 			}
@@ -173,12 +173,12 @@ func (opts *opts) displayResult(result *result) {
 	opts.IO.LogInfo(explanation + "\n")
 }
 
-func (opts *opts) executeCommands(commands []string) error {
+func (opts *opts) executeCommands(ctx context.Context, commands []string) error {
 	color := opts.IO.Color()
 
-	var confirmed bool
+	confirmed := true
 	question := color.Bold(runCmdsQuestion)
-	if err := prompt.Confirm(&confirmed, question, true); err != nil {
+	if err := opts.IO.Confirm(ctx, &confirmed, question); err != nil {
 		return err
 	}
 
@@ -187,7 +187,7 @@ func (opts *opts) executeCommands(commands []string) error {
 	}
 
 	for _, command := range commands {
-		if err := opts.executeCommand(command); err != nil {
+		if err := opts.executeCommand(ctx, command); err != nil {
 			return err
 		}
 	}
@@ -195,7 +195,7 @@ func (opts *opts) executeCommands(commands []string) error {
 	return nil
 }
 
-func (opts *opts) executeCommand(cmd string) error {
+func (opts *opts) executeCommand(ctx context.Context, cmd string) error {
 	gitArgs, err := shlex.Split(cmd)
 	if err != nil {
 		return nil
@@ -207,8 +207,8 @@ func (opts *opts) executeCommand(cmd string) error {
 
 	color := opts.IO.Color()
 	question := fmt.Sprintf("Run `%s`", color.Green(cmd))
-	var confirmed bool
-	if err := prompt.Confirm(&confirmed, question, true); err != nil {
+	confirmed := true
+	if err := opts.IO.Confirm(ctx, &confirmed, question); err != nil {
 		return err
 	}
 

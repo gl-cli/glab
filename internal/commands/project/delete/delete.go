@@ -1,6 +1,7 @@
 package delete
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,7 +15,6 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 )
 
 type options struct {
@@ -53,7 +53,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.args = args
-			return opts.run()
+			return opts.run(cmd.Context())
 		},
 	}
 
@@ -62,7 +62,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	return projectCreateCmd
 }
 
-func (o *options) run() error {
+func (o *options) run(ctx context.Context) error {
 	c, err := o.apiClient("")
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func (o *options) run() error {
 
 	if !o.forceDelete && o.io.PromptEnabled() {
 		fmt.Fprintf(o.io.StdErr, "This action will permanently delete %s immediately, including its repositories and all content: issues and merge requests.\n\n", o.repoName)
-		err = prompt.Confirm(&o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete %s?", o.repoName), false)
+		err = o.io.Confirm(ctx, &o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete %s?", o.repoName))
 		if err != nil {
 			return err
 		}

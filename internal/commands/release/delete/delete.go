@@ -1,6 +1,7 @@
 package delete
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -13,7 +14,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 )
 
 type options struct {
@@ -63,7 +63,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			return opts.run()
+			return opts.run(cmd.Context())
 		},
 	}
 
@@ -85,7 +85,7 @@ func (o *options) validate() error {
 	return nil
 }
 
-func (o *options) run() error {
+func (o *options) run(ctx context.Context) error {
 	client, err := o.gitlabClient()
 	if err != nil {
 		return err
@@ -113,7 +113,7 @@ func (o *options) run() error {
 
 	if !o.forceDelete && o.io.PromptEnabled() {
 		o.io.Logf("This action will permanently delete release %q immediately.\n\n", release.TagName)
-		err = prompt.Confirm(&o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete this release %q?", release.Name), false)
+		err = o.io.Confirm(ctx, &o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete this release %q?", release.Name))
 		if err != nil {
 			return cmdutils.WrapError(err, "could not prompt")
 		}
