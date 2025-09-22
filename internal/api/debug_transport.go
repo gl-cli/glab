@@ -15,6 +15,8 @@ var sensitiveHeaders = []string{
 	gitlab.AccessTokenHeaderName,
 	gitlab.JobTokenHeaderName,
 	"Authorization",
+	"Proxy-Authorization",
+	"Cf-Access-Client-Secret",
 }
 
 type debugTransport struct {

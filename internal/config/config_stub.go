@@ -155,6 +155,15 @@ func rootConfig() *yaml.Node {
 										Kind:  yaml.ScalarNode,
 										Value: "gitlab.com,gitlab.com:443,registry.gitlab.com",
 									},
+									{
+										HeadComment: "# Custom HTTP headers to add to all HTTP requests made by glab. Supports both direct values and environment variable loading.\n# - name: Proxy-Authorization\n#   value: Bearer token123\n# - name: Cf-Access-Client-Secret\n#   valueFromEnv: MY_SECRET_VALUE",
+										Kind:        yaml.ScalarNode,
+										Value:       "custom_headers",
+									},
+									{
+										Kind:  yaml.SequenceNode,
+										Value: "",
+									},
 								},
 							},
 						},
