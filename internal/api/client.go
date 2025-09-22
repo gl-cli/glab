@@ -51,6 +51,8 @@ type Client struct {
 	allowInsecure bool
 
 	userAgent string
+
+	customHeaders map[string]string
 }
 
 func (c *Client) HTTPClient() *http.Client {
@@ -117,6 +119,7 @@ func NewClient(newAuthSource newAuthSource, options ...ClientOption) (*Client, e
 		gitlab.WithHTTPClient(client.httpClient),
 		gitlab.WithBaseURL(client.baseURL),
 		gitlab.WithUserAgent(client.userAgent),
+		gitlab.WithRequestOptions(gitlab.WithHeaders(client.customHeaders)),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize GitLab client: %v", err)
@@ -200,6 +203,14 @@ func (c *Client) initializeHTTPClient() error {
 
 	c.httpClient = &http.Client{Transport: rt}
 	return nil
+}
+
+// WithCustomHeaders is a ClientOption that sets custom headers
+func WithCustomHeaders(headers map[string]string) ClientOption {
+	return func(c *Client) error {
+		c.customHeaders = headers
+		return nil
+	}
 }
 
 // WithCustomCA configures the client to use a custom CA certificate
@@ -286,6 +297,15 @@ func NewClientFromConfig(repoHost string, cfg config.Config, isGraphQL bool, use
 		WithUserAgent(userAgent),
 	}
 
+	// Resolve custom headers from config
+	headers, err := config.ResolveCustomHeaders(cfg, repoHost)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve custom headers: %w", err)
+	}
+	if len(headers) > 0 {
+		options = append(options, WithCustomHeaders(headers))
+	}
+
 	// determine auth source
 	var newAuthSource newAuthSource
 	switch {
@@ -336,6 +356,11 @@ func NewHTTPRequest(ctx context.Context, c *Client, method string, baseURL *url.
 		return nil, err
 	}
 
+	for name, value := range c.customHeaders {
+		req.Header.Set(name, value)
+	}
+
+	// Add any headers passed directly to this function
 	for _, h := range headers {
 		idx := strings.IndexRune(h, ':')
 		if idx == -1 {

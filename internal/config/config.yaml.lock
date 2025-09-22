@@ -32,6 +32,12 @@ hosts:
         # The domains of associated container registries. These are used to configure the
         # Docker credential helper.
         container_registry_domains: gitlab.com,gitlab.com:443,registry.gitlab.com
+        # Custom HTTP headers to add to all HTTP requests made by glab. Supports both direct values and environment variable loading.
+        # - name: Proxy-Authorization
+        #   value: Bearer token123
+        # - name: Cf-Access-Client-Secret
+        #   valueFromEnv: MY_SECRET_VALUE
+        custom_headers: []
 # Use aliases to create nicknames for glab commands. Supports shell-executable aliases that may not be glab commands.
 aliases:
     ci: pipeline ci

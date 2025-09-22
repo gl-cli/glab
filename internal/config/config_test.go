@@ -181,3 +181,54 @@ func Test_config_Get_NotFoundError(t *testing.T) {
 	require.Error(t, err)
 	assert.True(t, isNotFoundError(err))
 }
+
+func TestCustomHeader_ResolvedValue_MissingEnvVar(t *testing.T) {
+	// Ensure the environment variable doesn't exist
+	os.Unsetenv("NONEXISTENT_VAR")
+
+	header := CustomHeader{
+		Name:         "X-Test-Header",
+		ValueFromEnv: "NONEXISTENT_VAR",
+	}
+
+	value, err := header.ResolvedValue()
+	require.Error(t, err)
+	require.Empty(t, value)
+	require.Contains(t, err.Error(), "environment variable \"NONEXISTENT_VAR\" for header \"X-Test-Header\" is not set or empty")
+}
+
+func TestCustomHeader_ResolvedValue_EmptyEnvVar(t *testing.T) {
+	// Set environment variable to empty string
+	t.Setenv("EMPTY_VAR", "")
+
+	header := CustomHeader{
+		Name:         "X-Test-Header",
+		ValueFromEnv: "EMPTY_VAR",
+	}
+
+	value, err := header.ResolvedValue()
+	require.Error(t, err)
+	require.Empty(t, value)
+	require.Contains(t, err.Error(), "environment variable \"EMPTY_VAR\" for header \"X-Test-Header\" is not set or empty")
+}
+
+func TestResolveCustomHeaders_MissingEnvVar(t *testing.T) {
+	// Ensure the environment variable doesn't exist
+	os.Unsetenv("MISSING_SECRET")
+
+	configYAML := `
+hosts:
+  gitlab.com:
+    custom_headers:
+      - name: Cf-Access-Client-Secret
+        valueFromEnv: MISSING_SECRET
+`
+
+	cfg := NewFromString(configYAML)
+	headers, err := ResolveCustomHeaders(cfg, "gitlab.com")
+
+	require.Error(t, err)
+	require.Nil(t, headers)
+	require.Contains(t, err.Error(), "failed to resolve header \"Cf-Access-Client-Secret\"")
+	require.Contains(t, err.Error(), "environment variable \"MISSING_SECRET\" for header \"Cf-Access-Client-Secret\" is not set or empty")
+}
