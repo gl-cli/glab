@@ -13,6 +13,15 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 )
 
+// isolateHomeDir creates a temporary directory and sets it as HOME for the test,
+// automatically restoring the original HOME when the test completes.
+// Returns the path to the temporary directory.
+func isolateHomeDir(t *testing.T) string {
+	tempDir := t.TempDir()
+	t.Setenv("HOME", tempDir)
+	return tempDir
+}
+
 func TestGetHeaderEnv(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -179,11 +188,8 @@ func TestExtractClaudeArgs(t *testing.T) {
 }
 
 func TestSetClaudeSettings(t *testing.T) {
-	// Create a temporary directory for testing
-	tempDir := t.TempDir()
-	originalHome := os.Getenv("HOME")
-	defer t.Setenv("HOME", originalHome)
-	t.Setenv("HOME", tempDir)
+	// Isolate HOME directory for testing
+	tempDir := isolateHomeDir(t)
 
 	result := setClaudeSettings()
 	assert.True(t, result)
