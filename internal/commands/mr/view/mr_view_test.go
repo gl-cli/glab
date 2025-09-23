@@ -584,3 +584,39 @@ func TestPrintCommentFileContext(t *testing.T) {
 		})
 	}
 }
+
+func Test_printTTYMRPreview_closedMRWithNilClosedBy(t *testing.T) {
+	// NOTE: we need to force disable colors, otherwise we'd need ANSI sequences in our test output assertions.
+	t.Setenv("NO_COLOR", "true")
+
+	ioStreams, _, stdout, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
+
+	createdTime, _ := time.Parse(time.RFC3339, "2024-01-01T12:00:00Z")
+
+	mr := &gitlab.MergeRequest{
+		BasicMergeRequest: gitlab.BasicMergeRequest{
+			IID:         505,
+			Title:       "Test closed MR",
+			Description: "Test description",
+			State:       "closed", // Now test closed MR with nil ClosedBy
+			Author:      &gitlab.BasicUser{Username: "testuser"},
+			WebURL:      "https://gitlab.com/OWNER/REPO/-/merge_requests/505",
+			CreatedAt:   &createdTime,
+			ClosedBy:    nil,
+		},
+	}
+
+	opts := &options{
+		io:             ioStreams,
+		showComments:   false,
+		showSystemLogs: false,
+	}
+
+	// This should not panic - the bug would cause a nil pointer dereference here
+	printTTYMRPreview(opts, mr, nil, []*gitlab.Note{})
+	output := stdout.String()
+
+	// Verify that it contains "Closed" but not "Closed by:" since ClosedBy is nil
+	assert.Contains(t, output, "Closed")
+	assert.NotContains(t, output, "Closed by:")
+}

@@ -223,7 +223,11 @@ func printTTYMRPreview(opts *options, mr *gitlab.MergeRequest, mrApprovals *gitl
 		fmt.Fprintln(out, mr.Milestone.Title)
 	}
 	if mr.State == "closed" {
-		fmt.Fprintf(out, "Closed by: %s %s\n", mr.ClosedBy.Username, mrTimeAgo)
+		if mr.ClosedBy != nil {
+			fmt.Fprintf(out, "Closed by: %s %s\n", mr.ClosedBy.Username, mrTimeAgo)
+		} else {
+			fmt.Fprintf(out, "Closed %s\n", mrTimeAgo)
+		}
 	}
 	if mr.Pipeline != nil {
 		fmt.Fprint(out, c.Bold("Pipeline status: "))
