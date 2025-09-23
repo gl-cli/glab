@@ -74,10 +74,21 @@ type DirectAccessResponse struct {
 	Token   string            `json:"token"`
 }
 
+// getHomeDir returns the home directory, preferring the HOME environment variable
+// over os.UserHomeDir() to support test environments.
+func getHomeDir() (string, error) {
+	// First try HOME environment variable (works in test environments)
+	if homeDir := os.Getenv("HOME"); homeDir != "" {
+		return homeDir, nil
+	}
+	// Fall back to os.UserHomeDir()
+	return os.UserHomeDir()
+}
+
 // setClaudeSettings configures Claude settings to use this binary as the API key helper.
 // Returns true if successful, false otherwise.
 func setClaudeSettings() bool {
-	homeDir, err := os.UserHomeDir()
+	homeDir, err := getHomeDir()
 	if err != nil {
 		return false
 	}

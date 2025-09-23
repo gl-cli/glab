@@ -41,6 +41,9 @@ func TestNewCmdClaude(t *testing.T) {
 }
 
 func TestClaudeCmdFailedTokenRetrieval(t *testing.T) {
+	// Isolate HOME directory for all subtests to prevent writing to real ~/.claude/settings.json
+	isolateHomeDir(t)
+
 	tests := []struct {
 		name         string
 		statusCode   int
@@ -80,6 +83,9 @@ func TestClaudeCmdFailedTokenRetrieval(t *testing.T) {
 }
 
 func TestClaudeCmdClaudeExecutableNotFound(t *testing.T) {
+	// Isolate HOME directory to prevent writing to real ~/.claude/settings.json
+	isolateHomeDir(t)
+
 	// This test fails at argument parsing since the test environment doesn't set up os.Args with 'claude'
 	fakeHTTP := &httpmock.Mocker{
 		MatchURL: httpmock.PathAndQuerystring,
