@@ -110,18 +110,18 @@ func NewCmdAgentBootstrap(f cmdutils.Factory, ensureRequirements func() error, a
 	agentBootstrapCmd := &cobra.Command{
 		Use:   "bootstrap agent-name [flags]",
 		Short: `Bootstrap a GitLab Agent for Kubernetes in a project.`,
-		Long: `Bootstrap a GitLab Agent for Kubernetes (agentk) in a project.
+		Long: heredoc.Docf(`Bootstrap a GitLab Agent for Kubernetes (agentk) in a project.
 
 The first argument must be the name of the agent.
 
-It requires the kubectl and flux commands to be accessible via $PATH.
+It requires the %[1]skubectl%[1]s and %[1]sflux%[1]s commands to be accessible via %[1]s$PATH%[1]s.
 
 This command consists of multiple idempotent steps:
 
 1. Register the agent with the project.
 2. Configure the agent.
 3. Configure an environment with dashboard for the agent.
-4. Configure an environment with dashboard for FluxCD (if --create-flux-environment).
+4. Configure an environment with dashboard for FluxCD (if %[1]s--create-flux-environment%[1]s).
 5. Create a token for the agent.
    - If the agent has reached the maximum amount of tokens,
      the one that has not been used the longest is revoked
@@ -131,32 +131,32 @@ This command consists of multiple idempotent steps:
 6. Push the Kubernetes Secret that contains the token to the cluster.
 7. Create Flux HelmRepository and HelmRelease resources.
 8. Commit and Push the created Flux Helm resources to the manifest path.
-9. Trigger Flux reconciliation of GitLab Agent HelmRelease (unless --no-reconcile).
-`,
+9. Trigger Flux reconciliation of GitLab Agent HelmRelease (unless %[1]s--no-reconcile%[1]s).
+`, "`"),
 		Example: heredoc.Doc(`
-			# Bootstrap "my-agent" to root of Git project in CWD and trigger reconciliation
+			# Bootstrap "my-agent" to the root of the Git project in CWD, and trigger reconciliation
 			$ glab cluster agent bootstrap my-agent
 
-			# Bootstrap "my-agent" to "manifests/" of Git project in CWD and trigger reconciliation
-			# This is especially useful when "flux bootstrap gitlab --path manifests/" was used.
+			# Bootstrap "my-agent" to "manifests/" of the Git project in CWD, and trigger reconciliation
+			# Especially useful when "flux bootstrap gitlab --path manifests/" is used.
 			# Make sure that the "--path" from the "flux bootstrap gitlab" command matches
 			# the "--manifest-path" of the "glab cluster agent bootstrap" command.
 			$ glab cluster agent bootstrap my-agent --manifest-path manifests/
 
-			# Bootstrap "my-agent" to "manifests/" of Git project in CWD and do not manually trigger a reconilication
+			# Bootstrap "my-agent" to "manifests/" of the Git project in CWD, and do not manually trigger a reconilication
 			$ glab cluster agent bootstrap my-agent --manifest-path manifests/ --no-reconcile
 
 			# Bootstrap "my-agent" without configuring an environment
 			$ glab cluster agent bootstrap my-agent --create-environment=false
 
-			Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
-			- glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
+			# Bootstrap "my-agent" and configure an environment with custom name and Kubernetes namespace
+			$ glab cluster agent bootstrap my-agent --environment-name production --environment-namespace default
 
-			Bootstrap "my-agent" without configuring a FluxCD environment
-			- glab cluster agent bootstrap my-agent --create-flux-environment=false
+			# Bootstrap "my-agent" without configuring a FluxCD environment
+			$ glab cluster agent bootstrap my-agent --create-flux-environment=false
 
-			Bootstrap "my-agent" and configure a FluxCD environment with custom name and Kubernetes namespace
-			- glab cluster agent bootstrap my-agent --flux-environment-name production-flux --flux-environment-namespace flux-system
+			# Bootstrap "my-agent" and configure a FluxCD environment with custom name and Kubernetes namespace
+			$ glab cluster agent bootstrap my-agent --flux-environment-name production-flux --flux-environment-namespace flux-system
 
 			# Bootstrap "my-agent" and pass additional GitLab Helm Chart values from a local file
 			$ glab cluster agent bootstrap my-agent --helm-release-values values.yaml
@@ -281,30 +281,30 @@ This command consists of multiple idempotent steps:
 	fl.StringVar(&opts.helmRepositoryAddress, "helm-repository-address", "https://charts.gitlab.io", "Address of the HelmRepository.")
 	fl.StringVar(&opts.helmRepositoryName, "helm-repository-name", "gitlab", "Name of the Flux HelmRepository manifest.")
 	fl.StringVar(&opts.helmRepositoryNamespace, "helm-repository-namespace", "flux-system", "Namespace of the Flux HelmRepository manifest.")
-	fl.StringVar(&opts.helmRepositoryFilepath, "helm-repository-filepath", "gitlab-helm-repository.yaml", "Filepath within the GitLab Agent project to commit the Flux HelmRepository to.")
+	fl.StringVar(&opts.helmRepositoryFilepath, "helm-repository-filepath", "gitlab-helm-repository.yaml", "File path within the GitLab Agent project to commit the Flux HelmRepository to.")
 
 	fl.StringVar(&opts.helmReleaseName, "helm-release-name", "gitlab-agent", "Name of the Flux HelmRelease manifest.")
 	fl.StringVar(&opts.helmReleaseNamespace, "helm-release-namespace", "flux-system", "Namespace of the Flux HelmRelease manifest.")
-	fl.StringVar(&opts.helmReleaseFilepath, "helm-release-filepath", "gitlab-agent-helm-release.yaml", "Filepath within the GitLab Agent project to commit the Flux HelmRelease to.")
+	fl.StringVar(&opts.helmReleaseFilepath, "helm-release-filepath", "gitlab-agent-helm-release.yaml", "File path within the GitLab Agent project to commit the Flux HelmRelease to.")
 	fl.StringVar(&opts.helmReleaseTargetNamespace, "helm-release-target-namespace", "gitlab-agent", "Namespace of the GitLab Agent deployment.")
 	fl.StringSliceVar(&opts.helmReleaseValues, "helm-release-values", nil, "Local path to values.yaml files")
-	fl.StringSliceVar(&opts.helmReleaseValuesFrom, "helm-release-values-from", nil, "Kubernetes object reference that contains the values.yaml data key in the format '<kind>/<name>', where kind must be one of: (Secret,ConfigMap)")
+	fl.StringSliceVar(&opts.helmReleaseValuesFrom, "helm-release-values-from", nil, "Kubernetes object reference that contains the values.yaml data key in the format '<kind>/<name>', where 'kind' must be one of: (Secret, ConfigMap)")
 
 	fl.StringVar(&opts.gitlabAgentTokenSecretName, "gitlab-agent-token-secret-name", "gitlab-agent-token", "Name of the Secret where the token for the GitLab Agent is stored. The helm-release-target-namespace is implied for the namespace of the Secret.")
 
-	fl.StringVar(&opts.fluxSourceType, "flux-source-type", "git", "Source type of the flux-system, e.g. git, oci, helm, ...")
+	fl.StringVar(&opts.fluxSourceType, "flux-source-type", "git", "Source type of the flux-system, like Git, OCI, or Helm.")
 	fl.StringVar(&opts.fluxSourceNamespace, "flux-source-namespace", "flux-system", "Flux source namespace.")
 	fl.StringVar(&opts.fluxSourceName, "flux-source-name", "flux-system", "Flux source name.")
 
-	fl.BoolVar(&opts.createEnvironment, "create-environment", true, "Create an Environment for the GitLab Agent.")
-	fl.StringVar(&opts.environmentName, "environment-name", "<helm-release-namespace>/<helm-release-name>", "Name of the Environment for the GitLab Agent.")
-	fl.StringVar(&opts.environmentNamespace, "environment-namespace", "<helm-release-namespace>", "Kubernetes namespace of the Environment for the GitLab Agent.")
-	fl.StringVar(&opts.environmentFluxResourcePath, "environment-flux-resource-path", "helm.toolkit.fluxcd.io/v2beta1/namespaces/<helm-release-namespace>/helmreleases/<helm-release-name>", "Flux Resource Path of the Environment for the GitLab Agent.")
+	fl.BoolVar(&opts.createEnvironment, "create-environment", true, "Create an environment for the GitLab Agent.")
+	fl.StringVar(&opts.environmentName, "environment-name", "<helm-release-namespace>/<helm-release-name>", "Name of the environment for the GitLab Agent.")
+	fl.StringVar(&opts.environmentNamespace, "environment-namespace", "<helm-release-namespace>", "Kubernetes namespace of the environment for the GitLab Agent.")
+	fl.StringVar(&opts.environmentFluxResourcePath, "environment-flux-resource-path", "helm.toolkit.fluxcd.io/v2beta1/namespaces/<helm-release-namespace>/helmreleases/<helm-release-name>", "Flux resource path of the environment for the GitLab Agent.")
 
-	fl.BoolVar(&opts.createFluxEnvironment, "create-flux-environment", true, "Create an Environment for FluxCD. This only affects the environment creation, not the use of Flux itself which is always required for the bootstrap process.")
-	fl.StringVar(&opts.fluxEnvironmentName, "flux-environment-name", "<flux-source-namespace>/<flux-source-name>", "Name of the Environment for FluxCD.")
-	fl.StringVar(&opts.fluxEnvironmentNamespace, "flux-environment-namespace", "<flux-source-namespace>", "Kubernetes namespace of the Environment for FluxCD.")
-	fl.StringVar(&opts.fluxEnvironmentFluxResourcePath, "flux-environment-flux-resource-path", "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system", "Flux Resource Path of the Environment for FluxCD.")
+	fl.BoolVar(&opts.createFluxEnvironment, "create-flux-environment", true, "Create an environment for FluxCD. Affects only the environment creation, not the use of Flux itself. Flux is always required for the bootstrap process.")
+	fl.StringVar(&opts.fluxEnvironmentName, "flux-environment-name", "<flux-source-namespace>/<flux-source-name>", "Name of the environment for FluxCD.")
+	fl.StringVar(&opts.fluxEnvironmentNamespace, "flux-environment-namespace", "<flux-source-namespace>", "Kubernetes namespace of the environment for FluxCD.")
+	fl.StringVar(&opts.fluxEnvironmentFluxResourcePath, "flux-environment-flux-resource-path", "kustomize.toolkit.fluxcd.io/v1/namespaces/flux-system/kustomizations/flux-system", "Flux resource path of the environment for FluxCD.")
 
 	fl.BoolVar(&opts.useAPICommitAuthor, "use-api-commit-author", false, "When creating Git commits use the user from the authenticated API request. Conflicts with the --commit-author-name and --commit-author-email flags.")
 	fl.StringVar(&opts.commitAuthor.name, "commit-author-name", defaultCommitAuthorName, "The Git commit author name to use. Conflicts with the --use-api-commit-author flag.")

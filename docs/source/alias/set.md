@@ -18,22 +18,22 @@ Set an alias for a longer command.
 Declare a word as an alias for a longer command.
 
 Your expansion might include arguments and flags. If your expansion
-includes positional placeholders such as '$1' or '$2', any extra
+includes positional placeholders such as `$1` or `$2`, any extra
 arguments that follow the invocation of an alias are inserted
 appropriately.
 
-Specify '--shell' in your alias to run it through 'sh', a shell
-converter. Shell conversion enables you to compose commands with "|"
-or redirect with ">", with these caveats:
+Specify `--shell` in your alias to run it through `sh`, a shell
+converter. Shell conversion enables you to compose commands with `|`
+or redirect with `>`, with these caveats:
 
 - Any extra arguments following the alias are not passed to the
   expanded expression arguments by default.
-- You must explicitly accept the arguments using '$1', '$2', and so on.
-- Use '$@' to accept all arguments.
+- You must explicitly accept the arguments using `$1`, `$2`, and so on.
+- Use `$@` to accept all arguments.
 
 For Windows users only:
 
-- On Windows, shell aliases are executed with 'sh' as installed by
+- On Windows, shell aliases are executed with `sh` as installed by
   Git For Windows. If you installed Git in some other way in Windows,
   shell aliases might not work for you.
 - Always use quotation marks when defining a command, as in the examples.
