@@ -18,5 +18,5 @@ func TestNewCmdBoard(t *testing.T) {
 
 	out := test.ReturnBuffer(old, r, w)
 
-	assert.Contains(t, out, "Work with GitLab Issue Boards in the given project.\n")
+	assert.Contains(t, out, "Work with GitLab issue boards in the given project.\n")
 }

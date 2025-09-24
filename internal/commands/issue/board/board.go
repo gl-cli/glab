@@ -10,13 +10,13 @@ import (
 func NewCmdBoard(f cmdutils.Factory) *cobra.Command {
 	issueCmd := &cobra.Command{
 		Use:   "board [command] [flags]",
-		Short: `Work with GitLab Issue Boards in the given project.`,
+		Short: `Work with GitLab issue boards in the given project.`,
 		Long:  ``,
 	}
 
 	issueCmd.AddCommand(boardCreateCmd.NewCmdCreate(f))
 	issueCmd.AddCommand(boardViewCmd.NewCmdView(f))
-	issueCmd.PersistentFlags().StringP("repo", "R", "", "Select another repository using the OWNER/REPO format or the project ID. Supports group namespaces")
+	issueCmd.PersistentFlags().StringP("repo", "R", "", "Select another repository using the OWNER/REPO format or the project ID. Supports group namespaces.")
 
 	return issueCmd
 }

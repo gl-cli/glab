@@ -19,13 +19,16 @@ Supports viewing, running, tracing, and canceling jobs.
 
 Use arrow keys to navigate jobs and logs.
 
-- 'Enter' to toggle through a job's logs / traces, or display a child pipeline. Trigger jobs are marked with a '»'.
-- 'Esc' or 'q' to close the logs or trace, or return to the parent pipeline.
-- 'Ctrl+R', 'Ctrl+P' to run, retry, or play a job. Use 'Tab' or arrow keys to navigate the modal, and 'Enter' to confirm.
-- 'Ctrl+D' to cancel a job. If the selected job isn't running or pending, quits the CI/CD view.
-- 'Ctrl+Q' to quit the CI/CD view.
-- 'Ctrl+Space' to suspend application and view the logs. Similar to 'glab pipeline ci trace'.
-Supports vi style bindings and arrow keys for navigating jobs and logs.
+- `Enter` to toggle through a job's logs / traces, or display a child pipeline.
+  Trigger jobs are marked with a `»`.
+- `Esc` or `q` to close the logs or trace, or return to the parent pipeline.
+- `Ctrl+R`, `Ctrl+P` to run, retry, or play a job. Use `Tab` or arrow keys to
+  navigate the modal, and `Enter` to confirm.
+- `Ctrl+D` to cancel a job. If the selected job isn't running or pending,
+  quits the CI/CD view.
+- `Ctrl+Q` to quit the CI/CD view.
+- `Ctrl+Space` to suspend application and view the logs. Similar to `glab pipeline ci trace`.
+- Supports `vi` style bindings and arrow keys for navigating jobs and logs.
 
 ```plaintext
 glab ci ci view [branch/tag] [flags]
@@ -40,11 +43,11 @@ $ glab pipeline ci view
 # Get latest pipeline on main branch
 $ glab pipeline ci view main
 
-# just like the second example
+# Just like the second example
 $ glab pipeline ci view -b main
 
-# Get latest pipeline on main branch of profclems/glab repo
-$ glab pipeline ci view -b main -R profclems/glab
+# Get latest pipeline on main branch of myusername/glab repo
+$ glab pipeline ci view -b main -R myusername/glab
 
 ```
 

@@ -63,14 +63,14 @@ func NewCmdApi(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 		Long: heredoc.Docf(`
 		Makes an authenticated HTTP request to the GitLab API, and prints the response.
 		The endpoint argument should either be a path of a GitLab API v4 endpoint, or
-		"graphql" to access the GitLab GraphQL API.
+		%[1]sgraphql%[1]s to access the GitLab GraphQL API.
 
 		- [GitLab REST API documentation](https://docs.gitlab.com/api/)
 		- [GitLab GraphQL documentation](https://docs.gitlab.com/api/graphql/)
 
 		If the current directory is a Git directory, uses the GitLab authenticated host in the current
 		directory. Otherwise, %[1]sgitlab.com%[1]s will be used.
-		To override the GitLab hostname, use '--hostname'.
+		To override the GitLab hostname, use %[1]s--hostname%[1]s.
 
 		These placeholder values, when used in the endpoint argument, are
 		replaced with values from the repository of the current directory:
@@ -84,43 +84,40 @@ func NewCmdApi(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 		- %[1]s:user%[1]s
 		- %[1]s:username%[1]s
 
-		Methods: the default HTTP request method is "GET", if no parameters are added, and "POST" otherwise. Override the method with '--method'.
+		Methods: the default HTTP request method is %[1]sGET%[1]s, if no parameters are added,
+		and %[1]sPOST%[1]s otherwise. Override the method with %[1]s--method%[1]s.
 
-		Pass one or more '--raw-field' values in "key=value" format to add
-		JSON-encoded string parameters to the POST body.
+		Pass one or more %[1]s--raw-field%[1]s values in %[1]skey=value%[1]s format to add
+		JSON-encoded string parameters to the %[1]sPOST%[1]s body.
 
-		The '--field' flag behaves like '--raw-field' with magic type conversion based
+		The %[1]s--field%[1]s flag behaves like %[1]s--raw-field%[1]s with magic type conversion based
 		on the format of the value:
 
-		- Literal values "true", "false", "null", and integer numbers are converted to
+		- Literal values %[1]strue%[1]s, %[1]sfalse%[1]s, %[1]snull%[1]s, and integer numbers are converted to
 		  appropriate JSON types.
-		- Placeholder values ":namespace", ":repo", and ":branch" are populated with values
+		- Placeholder values %[1]s:namespace%[1]s, %[1]s:repo%[1]s, and %[1]s:branch%[1]s are populated with values
 		  from the repository of the current directory.
-		- If the value starts with "@", the rest of the value is interpreted as a
-		  filename to read the value from. Pass "-" to read from standard input.
+		- If the value starts with %[1]s@%[1]s, the rest of the value is interpreted as a
+		  filename to read the value from. Pass %[1]s-%[1]s to read from standard input.
 
-		For GraphQL requests, all fields other than "query" and "operationName" are
+		For GraphQL requests, all fields other than %[1]squery%[1]s and %[1]soperationName%[1]s are
 		interpreted as GraphQL variables.
 
-		Raw request body can be passed from the outside via a file specified by '--input'.
-		Pass "-" to read from standard input. In this mode, parameters specified with
-		'--field' flags are serialized into URL query parameters.
+		Raw request body can be passed from the outside via a file specified by %[1]s--input%[1]s.
+		Pass %[1]s-%[1]s to read from standard input. In this mode, parameters specified with
+		%[1]s--field%[1]s flags are serialized into URL query parameters.
 
-		In '--paginate' mode, all pages of results are requested sequentially until
+		In %[1]s--paginate%[1]s mode, all pages of results are requested sequentially until
 		no more pages of results remain. For GraphQL requests:
 
-		- The original query must accept an '$endCursor: String' variable.
-		- The query must fetch the 'pageInfo{ hasNextPage, endCursor }' set of fields from a collection.
+		- The original query must accept an %[1]s$endCursor: String%[1]s variable.
+		- The query must fetch the %[1]spageInfo{ hasNextPage, endCursor }%[1]s set of fields from a collection.
 		`, "`"),
 		Example: heredoc.Doc(`
-			- glab api projects/:fullpath/releases
-
-			- glab api projects/gitlab-com%2Fwww-gitlab-com/issues
-
-			- glab api issues --paginate
-
+			$ glab api projects/:fullpath/releases
+			$ glab api projects/gitlab-com%2Fwww-gitlab-com/issues
+			$ glab api issues --paginate
 			$ glab api graphql -f query="query { currentUser { username } }"
-
 			$ glab api graphql -f query='
 			  query {
 			    project(fullPath: "gitlab-org/gitlab-docs") {
@@ -180,7 +177,7 @@ func NewCmdApi(f cmdutils.Factory, runF func(*options) error) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.hostname, "hostname", "", "The GitLab hostname for the request. Defaults to \"gitlab.com\", or the authenticated host in the current Git directory.")
+	cmd.Flags().StringVar(&opts.hostname, "hostname", "", "The GitLab hostname for the request. Defaults to 'gitlab.com', or the authenticated host in the current Git directory.")
 	cmd.Flags().StringVarP(&opts.requestMethod, "method", "X", "GET", "The HTTP method for the request.")
 	cmd.Flags().StringArrayVarP(&opts.magicFields, "field", "F", nil, "Add a parameter of inferred type. Changes the default HTTP method to \"POST\".")
 	cmd.Flags().StringArrayVarP(&opts.rawFields, "raw-field", "f", nil, "Add a string parameter.")

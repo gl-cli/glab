@@ -110,18 +110,21 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	pipelineCIView := &cobra.Command{
 		Use:   "view [branch/tag]",
 		Short: "View, run, trace, log, and cancel CI/CD job's current pipeline.",
-		Long: heredoc.Doc(`Supports viewing, running, tracing, and canceling jobs.
+		Long: heredoc.Docf(`Supports viewing, running, tracing, and canceling jobs.
 
 		Use arrow keys to navigate jobs and logs.
 
-		- 'Enter' to toggle through a job's logs / traces, or display a child pipeline. Trigger jobs are marked with a '»'.
-		- 'Esc' or 'q' to close the logs or trace, or return to the parent pipeline.
-		- 'Ctrl+R', 'Ctrl+P' to run, retry, or play a job. Use 'Tab' or arrow keys to navigate the modal, and 'Enter' to confirm.
-		- 'Ctrl+D' to cancel a job. If the selected job isn't running or pending, quits the CI/CD view.
-		- 'Ctrl+Q' to quit the CI/CD view.
-		- 'Ctrl+Space' to suspend application and view the logs. Similar to 'glab pipeline ci trace'.
-		Supports vi style bindings and arrow keys for navigating jobs and logs.
-	`),
+		- %[1]sEnter%[1]s to toggle through a job's logs / traces, or display a child pipeline.
+		  Trigger jobs are marked with a %[1]s»%[1]s.
+		- %[1]sEsc%[1]s or %[1]sq%[1]s to close the logs or trace, or return to the parent pipeline.
+		- %[1]sCtrl+R%[1]s, %[1]sCtrl+P%[1]s to run, retry, or play a job. Use %[1]sTab%[1]s or arrow keys to
+		  navigate the modal, and %[1]sEnter%[1]s to confirm.
+		- %[1]sCtrl+D%[1]s to cancel a job. If the selected job isn't running or pending,
+		  quits the CI/CD view.
+		- %[1]sCtrl+Q%[1]s to quit the CI/CD view.
+		- %[1]sCtrl+Space%[1]s to suspend application and view the logs. Similar to %[1]sglab pipeline ci trace%[1]s.
+		- Supports %[1]svi%[1]s style bindings and arrow keys for navigating jobs and logs.
+	`, "`"),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
 		},
@@ -132,11 +135,11 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 			# Get latest pipeline on main branch
 			$ glab pipeline ci view main
 
-			# just like the second example
+			# Just like the second example
 			$ glab pipeline ci view -b main
 
-			# Get latest pipeline on main branch of profclems/glab repo
-			$ glab pipeline ci view -b main -R profclems/glab
+			# Get latest pipeline on main branch of myusername/glab repo
+			$ glab pipeline ci view -b main -R myusername/glab
 		`),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

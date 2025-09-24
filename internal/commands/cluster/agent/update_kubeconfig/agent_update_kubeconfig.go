@@ -62,8 +62,8 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 	agentUpdateKubeconfigCmd := &cobra.Command{
 		Use:   "update-kubeconfig [flags]",
 		Short: `Update selected kubeconfig.`,
-		Long: heredoc.Doc(`Update selected kubeconfig for use with a GitLab agent for Kubernetes.
-		`),
+		Long: heredoc.Docf(`Update selected %[1]skubeconfig%[1]s for use with a GitLab agent for Kubernetes.
+		`, "`"),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
 		},
@@ -78,8 +78,8 @@ func NewCmdAgentUpdateKubeconfig(f cmdutils.Factory) *cobra.Command {
 	fl.Int64VarP(&opts.agentID, flagAgent, "a", opts.agentID, "The numeric agent ID to create the kubeconfig entry for.")
 	fl.StringVar(&pathOptions.LoadingRules.ExplicitPath, pathOptions.ExplicitFileFlag, pathOptions.LoadingRules.ExplicitPath, "Use a particular kubeconfig file.")
 	fl.BoolVarP(&opts.useContext, flagUseContext, "u", opts.useContext, "Use as default context.")
-	fl.DurationVar(&opts.tokenExpiryDuration, flagTokenExpiryDuration, tokenExpiryDurationDefault, "Duration for how long the generated tokens should be valid for. Minimum is 1 day and the effective expiry is always at the end of the day, the time is ignored.")
-	fl.BoolVar(&opts.checkRevoked, flagCheckRevoked, false, "Check if a cached token is revoked. This requires an API call to GitLab which adds latency every time a cached token is accessed.")
+	fl.DurationVar(&opts.tokenExpiryDuration, flagTokenExpiryDuration, tokenExpiryDurationDefault, "Duration for generated token's validity. Minimum is 1 day. Expires at end of day, and ignores time.")
+	fl.BoolVar(&opts.checkRevoked, flagCheckRevoked, false, "Check if a cached token is revoked. Requires an API call to GitLab, which adds latency every time a cached token is accessed.")
 	agentutils.AddTokenCacheModeFlag(fl, &opts.cacheMode)
 	cobra.CheckErr(agentUpdateKubeconfigCmd.MarkFlagRequired(flagAgent))
 
