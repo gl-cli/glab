@@ -19,7 +19,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 	"golang.org/x/sync/errgroup"
 )
@@ -53,6 +52,8 @@ type MrOptions struct {
 	State         string
 	PromptEnabled bool
 }
+
+var multipleMRSelectQuestion = "Multiple merge requests exist for this branch. Select one:"
 
 // MRCheckErrors checks and return merge request errors specified in MRCheckErrOptions{}
 func MRCheckErrors(mr *gitlab.MergeRequest, err MRCheckErrOptions) error {
@@ -198,7 +199,7 @@ func MRFromArgsWithOpts(
 	}
 
 	if mrID == 0 {
-		basicMR, err := GetMRForBranch(client, MrOptions{baseRepo, branch, state, f.IO().PromptEnabled()})
+		basicMR, err := GetMRForBranch(f.IO(), client, MrOptions{baseRepo, branch, state, f.IO().PromptEnabled()})
 		if err != nil {
 			return nil, nil, err
 		}
@@ -266,7 +267,7 @@ func resolveOwnerAndBranch(potentialBranch string) (string, string) {
 	return owner, branch
 }
 
-var GetMRForBranch = func(apiClient *gitlab.Client, mrOpts MrOptions) (*gitlab.BasicMergeRequest, error) {
+var GetMRForBranch = func(ios *iostreams.IOStreams, apiClient *gitlab.Client, mrOpts MrOptions) (*gitlab.BasicMergeRequest, error) {
 	owner, currentBranch := resolveOwnerAndBranch(mrOpts.Branch)
 
 	opts := gitlab.ListProjectMergeRequestsOptions{
@@ -319,11 +320,7 @@ var GetMRForBranch = func(apiClient *gitlab.Client, mrOpts MrOptions) (*gitlab.B
 		// NO_PROMPT environment variable is set. Skip prompt and return error when multiple merge requests exist for branch.
 		err = fmt.Errorf("merge request ID number required. Possible matches:\n\n%s", strings.Join(mrNames, "\n"))
 	} else {
-		err = prompt.Select(&pickedMR,
-			"mr",
-			"Multiple merge requests exist for this branch. Select one:",
-			mrNames,
-		)
+		err = ios.Select(context.Background(), &pickedMR, multipleMRSelectQuestion, mrNames)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("you must select a merge request: %w", err)

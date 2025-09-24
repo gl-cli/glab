@@ -319,6 +319,14 @@ func (s *IOStreams) Confirm(ctx context.Context, result *bool, title string) err
 			Value(result))
 }
 
+func (s *IOStreams) Select(ctx context.Context, result *string, title string, options []string) error {
+	return s.Run(ctx,
+		huh.NewSelect[string]().
+			Title(title).
+			Options(huh.NewOptions(options...)...).
+			Value(result))
+}
+
 func (s *IOStreams) Run(ctx context.Context, field huh.Field) error {
 	group := huh.NewGroup(field)
 	form := huh.NewForm(group).

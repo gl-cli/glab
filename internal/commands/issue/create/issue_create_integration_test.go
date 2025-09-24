@@ -9,8 +9,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/test"
 
-	"gitlab.com/gitlab-org/cli/internal/prompt"
-
 	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	"github.com/acarl005/stripansi"
@@ -27,15 +25,6 @@ func Test_IssueCreate_Integration(t *testing.T) {
 	glTestHost := test.GetHostOrSkip(t)
 
 	cmdtest.CopyTestRepo(t, "issue_create")
-	ask, teardown := prompt.InitAskStubber()
-	defer teardown()
-
-	ask.Stub([]*prompt.QuestionStub{
-		{
-			Name:  "confirmation",
-			Value: 0,
-		},
-	})
 
 	oldCreateIssue := createIssue
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
@@ -101,15 +90,6 @@ func Test_IssueCreate_With_Recover_Integration(t *testing.T) {
 	glTestHost := test.GetHostOrSkip(t)
 
 	cmdtest.CopyTestRepo(t, "issue_create_with_recover")
-	ask, teardown := prompt.InitAskStubber()
-	defer teardown()
-
-	ask.Stub([]*prompt.QuestionStub{
-		{
-			Name:  "confirmation",
-			Value: 0,
-		},
-	})
 
 	oldCreateIssue := createIssue
 	timer, _ := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")

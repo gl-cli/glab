@@ -1,8 +1,10 @@
 package transfer
 
 import (
+	"context"
 	"fmt"
 
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -78,7 +80,7 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 			`), c.Yellow(repo.FullName()), c.Yellow(targetNamespace))
 
 			if !dontPromptForConfirmation {
-				err = cmdutils.ConfirmTransfer()
+				err = confirmTransfer(f.IO())
 				if err != nil {
 					return fmt.Errorf("unable to confirm: %w", err)
 				}
@@ -105,4 +107,28 @@ func NewCmdTransfer(f cmdutils.Factory) *cobra.Command {
 	_ = repoTransferCmd.MarkFlagRequired("target-namespace")
 
 	return repoTransferCmd
+}
+
+func confirmTransfer(ios *iostreams.IOStreams) error {
+	const (
+		performTransferLabel = "Confirm repository transfer"
+		abortTransferLabel   = "Abort repository transfer"
+	)
+
+	options := []string{abortTransferLabel, performTransferLabel}
+
+	var confirmTransfer string
+	err := ios.Select(context.Background(), &confirmTransfer, "Continue with the repository transfer?", options)
+	if err != nil {
+		return fmt.Errorf("could not prompt: %w", err)
+	}
+
+	switch confirmTransfer {
+	case performTransferLabel:
+		return nil
+	case abortTransferLabel:
+		return fmt.Errorf("user aborted operation")
+	default:
+		return fmt.Errorf("invalid value: %s", confirmTransfer)
+	}
 }

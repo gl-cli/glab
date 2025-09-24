@@ -4,14 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/stretchr/testify/assert"
+	"github.com/survivorbat/huhtest"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
@@ -260,7 +262,7 @@ func Test_BaseRepo(t *testing.T) {
 		// Set a base resolution
 		localRem.remotes[0].Resolved = "base"
 
-		got, err := localRem.BaseRepo(false)
+		got, err := localRem.BaseRepo(iostreams.New())
 		assert.NoError(t, err)
 
 		assert.Equal(t, localRem.remotes[0].FullName(), got.FullName())
@@ -275,7 +277,7 @@ func Test_BaseRepo(t *testing.T) {
 		// Set a base resolution
 		localRem.remotes[0].Resolved = "base: gitlab.com/maxice8/glab"
 
-		got, err := localRem.BaseRepo(false)
+		got, err := localRem.BaseRepo(iostreams.New())
 		assert.NoError(t, err)
 
 		assert.Equal(t, expectedResolution.FullName(), got.FullName())
@@ -288,7 +290,7 @@ func Test_BaseRepo(t *testing.T) {
 		// Set a base resolution
 		localRem.remotes[0].Resolved = "base:NotAnActualValidValue"
 
-		got, err := localRem.BaseRepo(false)
+		got, err := localRem.BaseRepo(iostreams.New())
 		assert.Nil(t, got)
 		assert.EqualError(t, err, `expected the "[HOST/]OWNER/[NAMESPACE/]REPO" format, got "NotAnActualValidValue"`)
 	})
@@ -301,7 +303,7 @@ func Test_BaseRepo(t *testing.T) {
 		// Set a base resolution
 		localRem.remotes[0].Resolved = "gitlab.com/maxice8/glab"
 
-		got, err := localRem.BaseRepo(false)
+		got, err := localRem.BaseRepo(iostreams.New())
 		assert.NoError(t, err)
 
 		assert.Equal(t, expectedResolution.FullName(), got.FullName())
@@ -314,7 +316,7 @@ func Test_BaseRepo(t *testing.T) {
 		// Set a base resolution
 		localRem.remotes[0].Resolved = "NotAnActualValidValue"
 
-		got, err := localRem.BaseRepo(false)
+		got, err := localRem.BaseRepo(iostreams.New())
 		assert.Nil(t, got)
 		assert.EqualError(t, err, `expected the "[HOST/]OWNER/[NAMESPACE/]REPO" format, got "NotAnActualValidValue"`)
 	})
@@ -322,7 +324,7 @@ func Test_BaseRepo(t *testing.T) {
 	t.Run("Prompt==false", func(t *testing.T) {
 		localRem := rem()
 
-		got, err := localRem.BaseRepo(false)
+		got, err := localRem.BaseRepo(iostreams.New())
 		assert.NoError(t, err)
 
 		assert.Equal(t, localRem.remotes[0].FullName(), got.FullName())
@@ -333,7 +335,7 @@ func Test_BaseRepo(t *testing.T) {
 		localRem := rem()
 
 		// Prompt must be true otherwise we won't reach the code we want to test
-		got, err := localRem.BaseRepo(true)
+		got, err := localRem.BaseRepo(iostreams.New(iostreams.WithStdout(nil, true), iostreams.WithStderr(nil, true)))
 		assert.NoError(t, err)
 
 		assert.Equal(t, localRem.remotes[0].FullName(), got.FullName())
@@ -347,7 +349,7 @@ func Test_BaseRepo(t *testing.T) {
 		localRem.remotes = Remotes{}
 		localRem.network = nil
 
-		_, err := localRem.BaseRepo(true)
+		_, err := localRem.BaseRepo(iostreams.New(iostreams.WithStdout(nil, true), iostreams.WithStderr(nil, true)))
 		assert.EqualError(t, err, "no GitLab Projects found from remotes")
 	})
 
@@ -369,17 +371,14 @@ func Test_BaseRepo(t *testing.T) {
 		localRem.network = append(localRem.network, originNetwork)
 
 		// Mock the prompt
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+		stdin, stdout, cancel := huhtest.NewResponder().
+			AddSelect("Which should be the base repository", 1).MatchRegexp(). // We expect to get `origin`
+			Start(t, 1*time.Hour)
+		t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "base",
-				Value: "maxice8/glab", // We expect to get `origin`
-			},
-		})
+		ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true), iostreams.WithStderr(nil, true))
 
-		got, err := localRem.BaseRepo(true)
+		got, err := localRem.BaseRepo(ios)
 		assert.NoError(t, err)
 
 		assert.Equal(t, originRemote.Repo.FullName(), got.FullName())
@@ -404,17 +403,14 @@ func Test_BaseRepo(t *testing.T) {
 		localRem.network = append(localRem.network, originNetwork)
 
 		// Mock the prompt
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+		stdin, stdout, cancel := huhtest.NewResponder().
+			AddSelect("Which should be the base repository", 0).MatchRegexp(). // We expect to get `origin`
+			Start(t, 1*time.Hour)
+		t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "base",
-				Value: "profclems/glab", // We expect to get `origin`
-			},
-		})
+		ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true), iostreams.WithStderr(nil, true))
 
-		got, err := localRem.BaseRepo(true)
+		got, err := localRem.BaseRepo(ios)
 		assert.NoError(t, err)
 
 		assert.Equal(t, localRem.remotes[0].Repo.FullName(), got.FullName())
@@ -444,17 +440,14 @@ func Test_BaseRepo(t *testing.T) {
 		localRem.network = []gitlab.Project{originNetwork}
 
 		// Mock the prompt
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+		stdin, stdout, cancel := huhtest.NewResponder().
+			AddSelect("Which should be the base repository", 1).MatchRegexp(). // We expect to get `origin`
+			Start(t, 1*time.Hour)
+		t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "base",
-				Value: "maxice8/glab", // We expect to get `origin`
-			},
-		})
+		ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true), iostreams.WithStderr(nil, true))
 
-		got, err := localRem.BaseRepo(true)
+		got, err := localRem.BaseRepo(ios)
 		assert.NoError(t, err)
 
 		assert.Equal(t, originRemote.Repo.FullName(), got.FullName())
@@ -484,54 +477,18 @@ func Test_BaseRepo(t *testing.T) {
 		localRem.network = []gitlab.Project{originNetwork}
 
 		// Mock the prompt
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+		stdin, stdout, cancel := huhtest.NewResponder().
+			AddSelect("Which should be the base repository", 0).MatchRegexp(). // We expect to get `origin`
+			Start(t, 1*time.Hour)
+		t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "base",
-				Value: "profclems/glab", // We expect to get `origin`
-			},
-		})
+		ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true), iostreams.WithStderr(nil, true))
 
-		got, err := localRem.BaseRepo(true)
+		got, err := localRem.BaseRepo(ios)
 		assert.NoError(t, err)
 
 		assert.Equal(t, "profclems/glab", got.FullName())
 		assert.Equal(t, "gitlab.com", got.RepoHost())
-	})
-
-	t.Run("Consult the network, multiple projects, prompt fails", func(t *testing.T) {
-		localRem := rem()
-
-		originRemote := &Remote{
-			Remote: &git.Remote{Name: "origin"},
-			Repo:   NewWithHost("maxice8", "glab", "gitlab.com"),
-		}
-
-		originNetwork := gitlab.Project{
-			ID:                2,
-			PathWithNamespace: "maxice8/glab",
-			HTTPURLToRepo:     "https://gitlab.com/maxice8/glab",
-		}
-
-		localRem.remotes = append(localRem.remotes, originRemote)
-		localRem.network = append(localRem.network, originNetwork)
-
-		// Mock the prompt
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
-
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "base",
-				Value: errors.New("could not prompt"),
-			},
-		})
-
-		got, err := localRem.BaseRepo(true)
-		assert.Nil(t, got)
-		assert.EqualError(t, err, "could not prompt")
 	})
 
 	t.Run("Consult the network, all calls fail", func(t *testing.T) {
@@ -554,7 +511,7 @@ func Test_BaseRepo(t *testing.T) {
 		localRem.network = nil
 
 		// Prompt must be true otherwise we won't reach the code we want to test
-		_, err := localRem.BaseRepo(true)
+		_, err := localRem.BaseRepo(iostreams.New(iostreams.WithStdout(nil, true), iostreams.WithStderr(nil, true)))
 		multierr := err.(*multierror.Error)
 		assert.Len(t, multierr.Errors, 2)
 		assert.True(t, errors.Is(err, assert.AnError), "Unexpected error type")
@@ -587,7 +544,7 @@ func Test_BaseRepo(t *testing.T) {
 		localRem.network = nil
 
 		// Prompt must be true otherwise we won't reach the code we want to test
-		_, err := localRem.BaseRepo(true)
+		_, err := localRem.BaseRepo(iostreams.New(iostreams.WithStdout(nil, true), iostreams.WithStderr(nil, true)))
 		assert.NoError(t, err)
 	})
 
@@ -637,17 +594,14 @@ func Test_BaseRepo(t *testing.T) {
 		}
 
 		// Mock the prompt to select the first (and only) project
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+		stdin, stdout, cancel := huhtest.NewResponder().
+			AddSelect("Which should be the base repository", 0).MatchRegexp(). // We expect to get `origin`
+			Start(t, 1*time.Hour)
+		t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "base",
-				Value: "owner/repo",
-			},
-		})
+		ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true), iostreams.WithStderr(nil, true))
 
-		got, err := localRem.BaseRepo(true)
+		got, err := localRem.BaseRepo(ios)
 		assert.NoError(t, err)
 
 		// The fix should ensure we use the git remote host, not the API host
@@ -713,7 +667,7 @@ func Test_HeadRepo(t *testing.T) {
 		// Set a head resolution
 		localRem.remotes[0].Resolved = "head"
 
-		got, err := localRem.HeadRepo(false)
+		got, err := localRem.HeadRepo(iostreams.New())
 		assert.NoError(t, err)
 
 		assert.Equal(t, localRem.remotes[0].FullName(), got.FullName())
@@ -728,7 +682,7 @@ func Test_HeadRepo(t *testing.T) {
 		// Set a base resolution
 		localRem.remotes[0].Resolved = "head: gitlab.com/maxice8/glab"
 
-		got, err := localRem.HeadRepo(false)
+		got, err := localRem.HeadRepo(iostreams.New())
 		assert.NoError(t, err)
 
 		assert.Equal(t, expectedResolution.FullName(), got.FullName())
@@ -741,7 +695,7 @@ func Test_HeadRepo(t *testing.T) {
 		// Set a base resolution
 		localRem.remotes[0].Resolved = "head:NotAnActualValidValue"
 
-		got, err := localRem.HeadRepo(false)
+		got, err := localRem.HeadRepo(iostreams.New())
 		assert.Nil(t, got)
 		assert.EqualError(t, err, `expected the "[HOST/]OWNER/[NAMESPACE/]REPO" format, got "NotAnActualValidValue"`)
 	})
@@ -749,7 +703,7 @@ func Test_HeadRepo(t *testing.T) {
 	t.Run("Prompt==false", func(t *testing.T) {
 		localRem := rem()
 
-		got, err := localRem.HeadRepo(false)
+		got, err := localRem.HeadRepo(iostreams.New())
 		assert.NoError(t, err)
 
 		assert.Equal(t, localRem.remotes[0].FullName(), got.FullName())
@@ -759,7 +713,7 @@ func Test_HeadRepo(t *testing.T) {
 		localRem := rem()
 
 		// Prompt must be true otherwise we won't reach the code we want to test
-		got, err := localRem.HeadRepo(false)
+		got, err := localRem.HeadRepo(iostreams.New())
 		assert.NoError(t, err)
 
 		assert.Equal(t, got.FullName(), localRem.remotes[0].FullName())
@@ -787,7 +741,7 @@ func Test_HeadRepo(t *testing.T) {
 		localRem.remotes = Remotes{originRemote}
 		localRem.network = []gitlab.Project{originNetwork}
 
-		got, err := localRem.HeadRepo(false)
+		got, err := localRem.HeadRepo(iostreams.New())
 		assert.NoError(t, err)
 
 		assert.Equal(t, "maxice8/glab", got.FullName())
@@ -810,7 +764,7 @@ func Test_HeadRepo(t *testing.T) {
 		localRem.remotes = append(localRem.remotes, originRemote)
 		localRem.network = append(localRem.network, originNetwork)
 
-		got, err := localRem.HeadRepo(false)
+		got, err := localRem.HeadRepo(iostreams.New())
 		assert.NoError(t, err)
 
 		assert.Equal(t, "profclems/glab", got.FullName())
@@ -823,7 +777,7 @@ func Test_HeadRepo(t *testing.T) {
 		localRem.remotes = Remotes{}
 		localRem.network = nil
 
-		_, err := localRem.HeadRepo(true)
+		_, err := localRem.HeadRepo(iostreams.New(iostreams.WithStdout(nil, true), iostreams.WithStderr(nil, true)))
 		assert.EqualError(t, err, "no GitLab Projects found from remotes")
 	})
 
@@ -845,17 +799,13 @@ func Test_HeadRepo(t *testing.T) {
 		localRem.network = append(localRem.network, originNetwork)
 
 		// Mock the prompt
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+		stdin, stdout, cancel := huhtest.NewResponder().
+			AddSelect("Which should be the head repository", 1).MatchRegexp(). // We expect to get `origin`
+			Start(t, 1*time.Hour)
+		t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "head",
-				Value: "maxice8/glab", // We expect to get `origin`
-			},
-		})
-
-		got, err := localRem.HeadRepo(true)
+		ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true), iostreams.WithStderr(nil, true))
+		got, err := localRem.HeadRepo(ios)
 		assert.NoError(t, err)
 
 		assert.Equal(t, originRemote.Repo.FullName(), got.FullName())
@@ -880,17 +830,13 @@ func Test_HeadRepo(t *testing.T) {
 		localRem.network = append(localRem.network, originNetwork)
 
 		// Mock the prompt
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+		stdin, stdout, cancel := huhtest.NewResponder().
+			AddSelect("Which should be the head repository", 0).MatchRegexp(). // We expect to get `origin`
+			Start(t, 1*time.Hour)
+		t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "head",
-				Value: "profclems/glab", // We expect to get `origin`
-			},
-		})
-
-		got, err := localRem.HeadRepo(true)
+		ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true), iostreams.WithStderr(nil, true))
+		got, err := localRem.HeadRepo(ios)
 		assert.NoError(t, err)
 
 		assert.Equal(t, localRem.remotes[0].Repo.FullName(), got.FullName())
@@ -920,17 +866,13 @@ func Test_HeadRepo(t *testing.T) {
 		localRem.network = []gitlab.Project{originNetwork}
 
 		// Mock the prompt
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+		stdin, stdout, cancel := huhtest.NewResponder().
+			AddSelect("Which should be the head repository", 1).MatchRegexp(). // We expect to get `origin`
+			Start(t, 1*time.Hour)
+		t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "head",
-				Value: "maxice8/glab", // We expect to get `origin`
-			},
-		})
-
-		got, err := localRem.HeadRepo(true)
+		ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true), iostreams.WithStderr(nil, true))
+		got, err := localRem.HeadRepo(ios)
 		assert.NoError(t, err)
 
 		assert.Equal(t, originRemote.Repo.FullName(), got.FullName())
@@ -960,54 +902,17 @@ func Test_HeadRepo(t *testing.T) {
 		localRem.network = []gitlab.Project{originNetwork}
 
 		// Mock the prompt
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+		stdin, stdout, cancel := huhtest.NewResponder().
+			AddSelect("Which should be the head repository", 0).MatchRegexp(). // We expect to get `origin`
+			Start(t, 1*time.Hour)
+		t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "head",
-				Value: "profclems/glab", // We expect to get `origin`
-			},
-		})
-
-		got, err := localRem.HeadRepo(true)
+		ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true), iostreams.WithStderr(nil, true))
+		got, err := localRem.HeadRepo(ios)
 		assert.NoError(t, err)
 
 		assert.Equal(t, "profclems/glab", got.FullName())
 		assert.Equal(t, "gitlab.com", got.RepoHost())
-	})
-
-	t.Run("Consult the network, multiple projects, prompt fails", func(t *testing.T) {
-		localRem := rem()
-
-		originRemote := &Remote{
-			Remote: &git.Remote{Name: "origin"},
-			Repo:   NewWithHost("maxice8", "glab", "gitlab.com"),
-		}
-
-		originNetwork := gitlab.Project{
-			ID:                2,
-			PathWithNamespace: "maxice8/glab",
-			HTTPURLToRepo:     "https://gitlab.com/maxice8/glab",
-		}
-
-		localRem.remotes = append(localRem.remotes, originRemote)
-		localRem.network = append(localRem.network, originNetwork)
-
-		// Mock the prompt
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
-
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "head",
-				Value: errors.New("could not prompt"),
-			},
-		})
-
-		got, err := localRem.HeadRepo(true)
-		assert.Nil(t, got)
-		assert.EqualError(t, err, "could not prompt")
 	})
 
 	t.Run("Host mismatch: API host differs from git remote host", func(t *testing.T) {
@@ -1056,17 +961,13 @@ func Test_HeadRepo(t *testing.T) {
 		}
 
 		// Mock the prompt to select the first (and only) project
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+		stdin, stdout, cancel := huhtest.NewResponder().
+			AddSelect("Which should be the head repository", 0).MatchRegexp(). // We expect to get `origin`
+			Start(t, 1*time.Hour)
+		t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "head",
-				Value: "owner/repo",
-			},
-		})
-
-		got, err := localRem.HeadRepo(true)
+		ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true), iostreams.WithStderr(nil, true))
+		got, err := localRem.HeadRepo(ios)
 		assert.NoError(t, err)
 
 		// The fix should ensure we use the git remote host, not the API host

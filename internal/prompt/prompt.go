@@ -60,23 +60,6 @@ func AskMultiline(response any, name, question string, defaultVal string) error 
 	return nil
 }
 
-func Select(response any, name string, question string, options []string, opts ...survey.AskOpt) error {
-	prompt := []*survey.Question{
-		{
-			Name: name,
-			Prompt: &survey.Select{
-				Message: question,
-				Options: options,
-			},
-		},
-	}
-	err := Ask(prompt, response, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 var AskOne = survey.AskOne
 
 var Ask = survey.Ask

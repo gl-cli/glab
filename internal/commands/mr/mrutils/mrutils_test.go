@@ -4,13 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/survivorbat/huhtest"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
@@ -366,7 +368,7 @@ func Test_getMRForBranchFails(t *testing.T) {
 			return nil, errors.New("API call failed")
 		}
 
-		got, err := GetMRForBranch(&gitlab.Client{}, MrOptions{baseRepo, "foo", "opened", true})
+		got, err := GetMRForBranch(nil, &gitlab.Client{}, MrOptions{baseRepo, "foo", "opened", true})
 		assert.Nil(t, got)
 		assert.EqualError(t, err, `failed to get open merge request for "foo": API call failed`)
 	})
@@ -376,7 +378,7 @@ func Test_getMRForBranchFails(t *testing.T) {
 			return []*gitlab.BasicMergeRequest{}, nil
 		}
 
-		got, err := GetMRForBranch(&gitlab.Client{}, MrOptions{baseRepo, "foo", "opened", true})
+		got, err := GetMRForBranch(nil, &gitlab.Client{}, MrOptions{baseRepo, "foo", "opened", true})
 		assert.Nil(t, got)
 		assert.EqualError(t, err, `no open merge request available for "foo"`)
 	})
@@ -399,7 +401,7 @@ func Test_getMRForBranchFails(t *testing.T) {
 			}, nil
 		}
 
-		got, err := GetMRForBranch(&gitlab.Client{}, MrOptions{baseRepo, "zemzale:foo", "opened", true})
+		got, err := GetMRForBranch(nil, &gitlab.Client{}, MrOptions{baseRepo, "zemzale:foo", "opened", true})
 		assert.Nil(t, got)
 		assert.EqualError(t, err, `no open merge request available for "foo" owned by @zemzale`)
 	})
@@ -466,7 +468,7 @@ func Test_getMRForBranch(t *testing.T) {
 				return tC.mrs, nil
 			}
 
-			got, err := GetMRForBranch(&gitlab.Client{}, MrOptions{baseRepo, tC.input, "opened", true})
+			got, err := GetMRForBranch(nil, &gitlab.Client{}, MrOptions{baseRepo, tC.input, "opened", true})
 			assert.NoError(t, err)
 
 			assert.Equal(t, tC.expect.IID, got.IID)
@@ -495,39 +497,18 @@ func Test_getMRForBranchPrompt(t *testing.T) {
 		}, nil
 	}
 
-	t.Run("success", func(t *testing.T) {
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
+	stdin, stdout, cancel := huhtest.NewResponder().
+		AddSelect(multipleMRSelectQuestion, 0).
+		Start(t, 1*time.Hour)
+	t.Cleanup(cancel)
 
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "mr",
-				Value: "!1 (foo) by @profclems",
-			},
-		})
+	ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true))
 
-		got, err := GetMRForBranch(&gitlab.Client{}, MrOptions{baseRepo, "foo", "opened", true})
-		assert.NoError(t, err)
+	got, err := GetMRForBranch(ios, &gitlab.Client{}, MrOptions{baseRepo, "foo", "opened", true})
+	assert.NoError(t, err)
 
-		assert.Equal(t, 1, got.IID)
-		assert.Equal(t, "profclems", got.Author.Username)
-	})
-
-	t.Run("error", func(t *testing.T) {
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
-
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "mr",
-				Value: errors.New("prompt failed"),
-			},
-		})
-
-		got, err := GetMRForBranch(&gitlab.Client{}, MrOptions{baseRepo, "foo", "opened", true})
-		assert.Nil(t, got)
-		assert.EqualError(t, err, "you must select a merge request: prompt failed")
-	})
+	assert.Equal(t, 1, got.IID)
+	assert.Equal(t, "profclems", got.Author.Username)
 }
 
 func Test_MRFromArgsWithOpts(t *testing.T) {
@@ -567,7 +548,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.Equal(t, "main", gotMR.SourceBranch)
 		})
 		t.Run("via-name", func(t *testing.T) {
-			GetMRForBranch = func(apiClient *gitlab.Client, mrOpts MrOptions) (*gitlab.BasicMergeRequest, error) {
+			GetMRForBranch = func(_ *iostreams.IOStreams, apiClient *gitlab.Client, mrOpts MrOptions) (*gitlab.BasicMergeRequest, error) {
 				return &gitlab.BasicMergeRequest{
 					IID:          2,
 					Title:        "test mr",
@@ -762,7 +743,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.EqualError(t, err, "invalid merge request ID provided.")
 		})
 		t.Run("invalid-name", func(t *testing.T) {
-			GetMRForBranch = func(_ *gitlab.Client, mrOpts MrOptions) (*gitlab.BasicMergeRequest, error) {
+			GetMRForBranch = func(_ *iostreams.IOStreams, _ *gitlab.Client, mrOpts MrOptions) (*gitlab.BasicMergeRequest, error) {
 				return nil, fmt.Errorf("no merge requests from branch %q", mrOpts.Branch)
 			}
 
@@ -795,7 +776,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 		})
 		t.Run("URL-without-scheme", func(t *testing.T) {
 			// Test that a URL without a scheme (http/https) fails to parse and falls back to branch lookup
-			GetMRForBranch = func(_ *gitlab.Client, mrOpts MrOptions) (*gitlab.BasicMergeRequest, error) {
+			GetMRForBranch = func(_ *iostreams.IOStreams, _ *gitlab.Client, mrOpts MrOptions) (*gitlab.BasicMergeRequest, error) {
 				return nil, fmt.Errorf("no merge requests from branch %q", mrOpts.Branch)
 			}
 
