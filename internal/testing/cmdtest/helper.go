@@ -385,6 +385,8 @@ func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, isTTY bool, opts ...FactoryO
 }
 
 func WithResponder(t *testing.T, responder *huhtest.Responder) FactoryOption {
+	t.Helper()
+
 	return func(f *Factory) {
 		rIn, wIn := io.Pipe()
 		rOut, wOut := io.Pipe()
