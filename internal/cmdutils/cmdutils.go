@@ -1,6 +1,7 @@
 package cmdutils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -209,7 +210,7 @@ func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glre
 	return nil
 }
 
-func MilestonesPrompt(response *int, apiClient *gitlab.Client, repoRemote *glrepo.Remote, io *iostreams.IOStreams) error {
+func MilestonesPrompt(response *int, apiClient *gitlab.Client, repoRemote *glrepo.Remote, ios *iostreams.IOStreams) error {
 	var milestoneOptions []string
 	milestoneMap := map[string]int{}
 
@@ -223,7 +224,7 @@ func MilestonesPrompt(response *int, apiClient *gitlab.Client, repoRemote *glrep
 		return err
 	}
 	if len(milestones) == 0 {
-		fmt.Fprintln(io.StdErr, "No active milestones exist for this project.")
+		fmt.Fprintln(ios.StdErr, "No active milestones exist for this project.")
 		return nil
 	}
 
@@ -233,7 +234,7 @@ func MilestonesPrompt(response *int, apiClient *gitlab.Client, repoRemote *glrep
 	}
 
 	var selectedMilestone string
-	err = prompt.Select(&selectedMilestone, "milestone", "Select milestone", milestoneOptions)
+	err = ios.Select(context.Background(), &selectedMilestone, "Select milestone", milestoneOptions)
 	if err != nil {
 		return err
 	}
@@ -308,7 +309,7 @@ const (
 	EditCommitMessageAction
 )
 
-func ConfirmSubmission(allowPreview bool, allowAddMetadata bool) (Action, error) {
+func ConfirmSubmission(ios *iostreams.IOStreams, allowAddMetadata bool) (Action, error) {
 	const (
 		submitLabel      = "Submit"
 		previewLabel     = "Continue in browser"
@@ -316,17 +317,14 @@ func ConfirmSubmission(allowPreview bool, allowAddMetadata bool) (Action, error)
 		cancelLabel      = "Cancel"
 	)
 
-	options := []string{submitLabel}
-	if allowPreview {
-		options = append(options, previewLabel)
-	}
+	options := []string{submitLabel, previewLabel}
 	if allowAddMetadata {
 		options = append(options, addMetadataLabel)
 	}
 	options = append(options, cancelLabel)
 
 	var confirmAnswer string
-	err := prompt.Select(&confirmAnswer, "confirmation", "What's next?", options)
+	err := ios.Select(context.Background(), &confirmAnswer, "What's next?", options)
 	if err != nil {
 		return -1, fmt.Errorf("could not prompt: %w", err)
 	}
@@ -567,28 +565,4 @@ func (ua *UserAssignments) UsersFromAddRemove(
 		assignedIDs = []int{0}
 	}
 	return &assignedIDs, actions, nil
-}
-
-func ConfirmTransfer() error {
-	const (
-		performTransferLabel = "Confirm repository transfer"
-		abortTransferLabel   = "Abort repository transfer"
-	)
-
-	options := []string{abortTransferLabel, performTransferLabel}
-
-	var confirmTransfer string
-	err := prompt.Select(&confirmTransfer, "confirmation", "Continue with the repository transfer?", options)
-	if err != nil {
-		return fmt.Errorf("could not prompt: %w", err)
-	}
-
-	switch confirmTransfer {
-	case performTransferLabel:
-		return nil
-	case abortTransferLabel:
-		return fmt.Errorf("user aborted operation")
-	default:
-		return fmt.Errorf("invalid value: %s", confirmTransfer)
-	}
 }

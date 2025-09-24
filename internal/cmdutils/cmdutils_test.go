@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -12,6 +13,7 @@ import (
 	"github.com/acarl005/stripansi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/survivorbat/huhtest"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/git"
@@ -853,31 +855,26 @@ func Test_MilestonesPrompt(t *testing.T) {
 
 	testCases := []struct {
 		name       string
-		input      string // Selected milestone
-		expectedID int    // expected global ID from the milestone
+		inputIdx   int // Selected milestone
+		expectedID int // expected global ID from the milestone
 	}{
 		{
 			name:       "match",
-			input:      "New Release",
+			inputIdx:   0,
 			expectedID: 5,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			as, restoreAsk := prompt.InitAskStubber()
-			defer restoreAsk()
+			stdin, stdout, cancel := huhtest.NewResponder().
+				AddSelect("Select milestone", tC.inputIdx).
+				Start(t, 1*time.Hour)
+			t.Cleanup(cancel)
 
-			as.Stub([]*prompt.QuestionStub{
-				{
-					Name:  "milestone",
-					Value: tC.input,
-				},
-			})
+			ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true))
 
 			var got int
-			var io iostreams.IOStreams
-
-			err := MilestonesPrompt(&got, &gitlab.Client{}, repoRemote, &io)
+			err := MilestonesPrompt(&got, &gitlab.Client{}, repoRemote, ios)
 			if err != nil {
 				t.Errorf("MilestonesPrompt() unexpected error = %s", err)
 			}
@@ -886,25 +883,6 @@ func Test_MilestonesPrompt(t *testing.T) {
 			}
 		})
 	}
-
-	t.Run("Prompt fails", func(t *testing.T) {
-		as, restoreAsk := prompt.InitAskStubber()
-		defer restoreAsk()
-
-		as.Stub([]*prompt.QuestionStub{
-			{
-				Name:  "milestone",
-				Value: errors.New("meant to fail"),
-			},
-		})
-
-		var got int
-		var io iostreams.IOStreams
-
-		err := MilestonesPrompt(&got, &gitlab.Client{}, repoRemote, &io)
-		assert.Empty(t, got)
-		assert.EqualError(t, err, "meant to fail")
-	})
 }
 
 func Test_MilestonesPromptNoPrompts(t *testing.T) {
@@ -1261,95 +1239,53 @@ func Test_LabelsPromptAskQuestionWithInput(t *testing.T) {
 
 func Test_ConfirmSubmission(t *testing.T) {
 	const (
-		submitLabel      = "Submit"
-		previewLabel     = "Continue in browser"
-		addMetadataLabel = "Add metadata"
-		cancelLabel      = "Cancel"
+		submitLabelIdx      = 0
+		previewLabelIdx     = 1
+		addMetadataLabelIdx = 2
+		cancelLabelIdx      = 3
 	)
 
 	t.Run("success", func(t *testing.T) {
 		testCases := []struct {
 			name             string
-			input            string
-			allowPreview     bool
+			optionIdx        int
 			allowAddMetadata bool
 			output           Action
 		}{
 			{
-				name:   "submit",
-				input:  submitLabel,
-				output: SubmitAction,
+				name:      "submit",
+				optionIdx: submitLabelIdx,
+				output:    SubmitAction,
 			},
 			{
-				name:         "preview",
-				input:        previewLabel,
-				allowPreview: true,
-				output:       PreviewAction,
+				name:      "preview",
+				optionIdx: previewLabelIdx,
+				output:    PreviewAction,
 			},
 			{
 				name:             "Add Metadata",
-				input:            addMetadataLabel,
+				optionIdx:        addMetadataLabelIdx,
 				allowAddMetadata: true,
 				output:           AddMetadataAction,
 			},
 			{
-				name:   "cancel",
-				input:  cancelLabel,
-				output: CancelAction,
+				name:      "cancel",
+				optionIdx: cancelLabelIdx - 1, // no metadata
+				output:    CancelAction,
 			},
 		}
 		for _, tC := range testCases {
 			t.Run(tC.name, func(t *testing.T) {
-				as, restoreAsk := prompt.InitAskStubber()
-				defer restoreAsk()
+				stdin, stdout, cancel := huhtest.NewResponder().
+					AddSelect("What's next?", tC.optionIdx).
+					Start(t, 1*time.Hour)
+				t.Cleanup(cancel)
 
-				as.Stub([]*prompt.QuestionStub{
-					{
-						Name:  "confirmation",
-						Value: tC.input,
-					},
-				})
+				ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true))
 
-				var got Action
-				got, err := ConfirmSubmission(tC.allowPreview, tC.allowAddMetadata)
+				got, err := ConfirmSubmission(ios, tC.allowAddMetadata)
 				assert.NoError(t, err)
 				assert.Equal(t, tC.output, got)
-			})
-		}
-	})
-	t.Run("failed", func(t *testing.T) {
-		testCases := []struct {
-			name   string
-			input  any
-			output string
-		}{
-			{
-				name:   "prompt",
-				input:  errors.New("no terminal"),
-				output: "could not prompt: no terminal",
-			},
-			{
-				name:   "invalid value",
-				input:  "does not exist",
-				output: "invalid value: does not exist",
-			},
-		}
-		for _, tC := range testCases {
-			t.Run(tC.name, func(t *testing.T) {
-				as, restoreAsk := prompt.InitAskStubber()
-				defer restoreAsk()
-
-				as.Stub([]*prompt.QuestionStub{
-					{
-						Name:  "confirmation",
-						Value: tC.input,
-					},
-				})
-
-				var got Action
-				got, err := ConfirmSubmission(false, false)
-				assert.Equal(t, Action(-1), got)
-				assert.EqualError(t, err, tC.output)
 			})
 		}
 	})

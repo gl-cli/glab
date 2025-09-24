@@ -130,6 +130,7 @@ func resolveBranch(cmd *cobra.Command, f cmdutils.Factory) (string, error) {
 
 func createMrPipeline(branch string, f cmdutils.Factory, apiClient *gitlab.Client, repo glrepo.Interface) (*gitlab.PipelineInfo, error) {
 	mr, err := mrutils.GetMRForBranch(
+		f.IO(),
 		apiClient,
 		mrutils.MrOptions{
 			BaseRepo: repo, Branch: branch, State: "opened", PromptEnabled: f.IO().PromptEnabled(),

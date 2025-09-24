@@ -539,7 +539,7 @@ func (o *options) run() error {
 	}
 
 	if action == cmdutils.NoAction {
-		action, err = cmdutils.ConfirmSubmission(true, true)
+		action, err = cmdutils.ConfirmSubmission(o.io, true)
 		if err != nil {
 			return fmt.Errorf("unable to confirm: %w", err)
 		}
@@ -591,7 +591,7 @@ func (o *options) run() error {
 		}
 
 		// Ask the user again but don't permit AddMetadata a second time
-		action, err = cmdutils.ConfirmSubmission(true, false)
+		action, err = cmdutils.ConfirmSubmission(o.io, false)
 		if err != nil {
 			return err
 		}
@@ -800,7 +800,7 @@ func ResolvedHeadRepo(f cmdutils.Factory) func() (glrepo.Interface, error) {
 		if err != nil {
 			return nil, err
 		}
-		headRepo, err := repoContext.HeadRepo(f.IO().PromptEnabled())
+		headRepo, err := repoContext.HeadRepo(f.IO())
 		if err != nil {
 			return nil, err
 		}

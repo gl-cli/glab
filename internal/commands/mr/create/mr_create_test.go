@@ -123,16 +123,6 @@ func TestNewCmdCreate_tty(t *testing.T) {
 		`),
 	)
 
-	ask, teardown := prompt.InitAskStubber()
-	defer teardown()
-
-	ask.Stub([]*prompt.QuestionStub{
-		{
-			Name:  "confirmation",
-			Value: 0,
-		},
-	})
-
 	cs, csTeardown := test.InitCmdStubber()
 	defer csTeardown()
 	cs.Stub("HEAD branch: master\n")
@@ -151,8 +141,6 @@ func TestNewCmdCreate_tty(t *testing.T) {
 	}
 
 	cli := strings.Join(cliStr, " ")
-
-	t.Log(cli)
 
 	output, err := runCommand(t, fakeHTTP, "feat-new-mr", true, cli, false)
 	if err != nil {
@@ -621,16 +609,6 @@ func Test_MRCreate_With_Recover_Integration(t *testing.T) {
 		`),
 	)
 
-	ask, teardown := prompt.InitAskStubber()
-	defer teardown()
-
-	ask.Stub([]*prompt.QuestionStub{
-		{
-			Name:  "confirmation",
-			Value: 0,
-		},
-	})
-
 	cs, csTeardown := test.InitCmdStubber()
 	defer csTeardown()
 	cs.Stub("HEAD branch: master\n")
@@ -649,8 +627,6 @@ func Test_MRCreate_With_Recover_Integration(t *testing.T) {
 	}
 
 	cli := strings.Join(cliStr, " ")
-
-	t.Log(cli)
 
 	output, err := runCommand(t, fakeHTTP, "feat-new-mr", true, cli, true)
 

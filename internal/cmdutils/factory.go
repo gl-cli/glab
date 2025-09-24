@@ -176,7 +176,7 @@ func (f *DefaultFactory) resolveBaseRepoFromRemotes() (glrepo.Interface, error) 
 		return nil, err
 	}
 
-	baseRepo, err := repoContext.BaseRepo(f.io.PromptEnabled())
+	baseRepo, err := repoContext.BaseRepo(f.io)
 	if err != nil {
 		return nil, err
 	}

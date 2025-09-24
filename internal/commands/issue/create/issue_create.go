@@ -282,7 +282,7 @@ var createRun = func(opts *options) error {
 	}
 
 	if action == cmdutils.NoAction {
-		action, err = cmdutils.ConfirmSubmission(true, true)
+		action, err = cmdutils.ConfirmSubmission(opts.io, true)
 		if err != nil {
 			return fmt.Errorf("unable to confirm: %w", err)
 		}
@@ -336,7 +336,7 @@ var createRun = func(opts *options) error {
 		}
 
 		// Ask the user again but don't permit AddMetadata a second time
-		action, err = cmdutils.ConfirmSubmission(true, false)
+		action, err = cmdutils.ConfirmSubmission(opts.io, false)
 		if err != nil {
 			return err
 		}

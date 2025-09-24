@@ -1,6 +1,7 @@
 package glrepo
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -8,7 +9,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/git"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
 	"github.com/hashicorp/go-multierror"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -17,6 +18,11 @@ import (
 // cap the number of git remotes looked up, since the user might have an
 // unusually large number of git remotes
 const maxRemotesForLookup = 5
+
+var (
+	resolverBaseRepoQuestion = "Which should be the base repository (used for e.g. querying issues) for this directory?"
+	resolverHeadRepoQuestion = "Which should be the head repository (where branches are pushed) for this directory?"
+)
 
 func ResolveRemotesToRepos(remotes Remotes, client *gitlab.Client, defaultHostname string) (*ResolvedRemotes, error) {
 	sort.Stable(remotes)
@@ -56,7 +62,7 @@ type ResolvedRemotes struct {
 	defaultHostname string
 }
 
-func (r *ResolvedRemotes) BaseRepo(interactive bool) (Interface, error) {
+func (r *ResolvedRemotes) BaseRepo(ios *iostreams.IOStreams) (Interface, error) {
 	// if any of the remotes already has a resolution, respect that
 	for _, remote := range r.remotes {
 		if remote.Resolved == "base" {
@@ -83,7 +89,7 @@ func (r *ResolvedRemotes) BaseRepo(interactive bool) (Interface, error) {
 		}
 	}
 
-	if !interactive {
+	if !ios.PromptEnabled() {
 		// we cannot prompt, so just resort to the 1st remote
 		return r.remotes[0], nil
 	}
@@ -119,12 +125,7 @@ func (r *ResolvedRemotes) BaseRepo(interactive bool) (Interface, error) {
 
 	baseName := repoNames[0]
 	if len(repoNames) > 1 {
-		err := prompt.Select(
-			&baseName,
-			"base",
-			"Which should be the base repository (used for e.g. querying issues) for this directory?",
-			repoNames,
-		)
+		err := ios.Select(context.Background(), &baseName, resolverBaseRepoQuestion, repoNames)
 		if err != nil {
 			return nil, err
 		}
@@ -153,7 +154,7 @@ func (r *ResolvedRemotes) BaseRepo(interactive bool) (Interface, error) {
 	return finalRepo, err
 }
 
-func (r *ResolvedRemotes) HeadRepo(interactive bool) (Interface, error) {
+func (r *ResolvedRemotes) HeadRepo(ios *iostreams.IOStreams) (Interface, error) {
 	// if any of the remotes already has a resolution, respect that
 	for _, remote := range r.remotes {
 		if remote.Resolved == "head" {
@@ -198,7 +199,7 @@ func (r *ResolvedRemotes) HeadRepo(interactive bool) (Interface, error) {
 
 	headName := repoNames[0]
 	if len(repoNames) > 1 {
-		if !interactive {
+		if !ios.PromptEnabled() {
 			// We cannot prompt so get the first repo that is a fork
 			for _, repo := range repoNames {
 				if repoMap[repo].ForkedFromProject != nil {
@@ -211,12 +212,7 @@ func (r *ResolvedRemotes) HeadRepo(interactive bool) (Interface, error) {
 			return r.remotes[0], nil
 		}
 
-		err := prompt.Select(
-			&headName,
-			"head",
-			"Which should be the head repository (where branches are pushed) for this directory?",
-			repoNames,
-		)
+		err := ios.Select(context.Background(), &headName, resolverHeadRepoQuestion, repoNames)
 		if err != nil {
 			return nil, err
 		}
