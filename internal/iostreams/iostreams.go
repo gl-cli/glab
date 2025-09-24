@@ -2,6 +2,7 @@ package iostreams
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/briandowns/spinner"
+	"github.com/charmbracelet/huh"
 	"github.com/google/shlex"
 	"github.com/muesli/termenv"
 )
@@ -306,4 +308,22 @@ func (s *IOStreams) Hyperlink(displayText, targetURL string) string {
 	closeSequence := "\x1b]8;;\x1b\\"
 
 	return openSequence + displayText + closeSequence
+}
+
+func (s *IOStreams) Confirm(ctx context.Context, result *bool, title string) error {
+	return s.Run(ctx,
+		huh.NewConfirm().
+			Title(title).
+			Affirmative("Yes!").
+			Negative("No.").
+			Value(result))
+}
+
+func (s *IOStreams) Run(ctx context.Context, field huh.Field) error {
+	group := huh.NewGroup(field)
+	form := huh.NewForm(group).
+		WithInput(s.In).
+		WithOutput(s.StdOut).
+		WithShowHelp(false)
+	return form.RunWithContext(ctx)
 }

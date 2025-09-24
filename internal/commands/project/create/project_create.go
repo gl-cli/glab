@@ -9,8 +9,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
-	"gitlab.com/gitlab-org/cli/internal/prompt"
-
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -112,6 +110,12 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 	}
 	skipGitInit, _ := cmd.Flags().GetBool("skipGitInit")
 	if !skipGitInit && f.IO().PromptEnabled() {
+		doInit := true
+		err := f.IO().Confirm(cmd.Context(), &doInit, "Directory not Git initialized. Run `git init`?")
+		if err != nil || !doInit {
+			return err
+		}
+
 		err = initGit(defaultBranch)
 		if err != nil {
 			return err
@@ -224,8 +228,8 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 			fmt.Fprintf(f.IO().StdOut, "%s Added remote %s\n", greenCheck, remote)
 
 		} else if f.IO().PromptEnabled() {
-			var doSetup bool
-			err := prompt.Confirm(&doSetup, fmt.Sprintf("Create a local project directory for %s?", project.NameWithNamespace), true)
+			doSetup := true
+			err := f.IO().Confirm(cmd.Context(), &doSetup, fmt.Sprintf("Create a local project directory for %s?", project.NameWithNamespace))
 			if err != nil {
 				return err
 			}
@@ -250,16 +254,11 @@ func initGit(defaultBranch string) error {
 	if stat, err := os.Stat(gitDir); err == nil && stat.Mode().IsDir() {
 		return nil
 	}
-	var doInit bool
-	err := prompt.Confirm(&doInit, "Directory not Git initialized. Run `git init`?", true)
-	if err != nil || !doInit {
-		return err
-	}
 
 	gitInit := git.GitCommand("init")
 	gitInit.Stdout = os.Stdout
 	gitInit.Stderr = os.Stderr
-	err = run.PrepareCmd(gitInit).Run()
+	err := run.PrepareCmd(gitInit).Run()
 	if err != nil {
 		return err
 	}

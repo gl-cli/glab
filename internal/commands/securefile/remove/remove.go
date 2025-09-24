@@ -1,6 +1,7 @@
 package remove
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -12,7 +13,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 )
 
 type options struct {
@@ -61,7 +61,7 @@ func NewCmdRemove(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			return opts.run()
+			return opts.run(cmd.Context())
 		},
 	}
 
@@ -88,7 +88,7 @@ func (o *options) validate() error {
 	return nil
 }
 
-func (o *options) run() error {
+func (o *options) run(ctx context.Context) error {
 	client, err := o.gitlabClient()
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func (o *options) run() error {
 
 	if !o.forceDelete && o.io.PromptEnabled() {
 		o.io.Logf("This action will permanently delete secure file %d immediately.\n\n", o.fileID)
-		err = prompt.Confirm(&o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete this secure file %d?", o.fileID), false)
+		err = o.io.Confirm(ctx, &o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete this secure file %d?", o.fileID))
 		if err != nil {
 			return cmdutils.WrapError(err, "could not prompt")
 		}

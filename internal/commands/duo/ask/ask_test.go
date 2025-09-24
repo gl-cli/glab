@@ -4,30 +4,17 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/survivorbat/huhtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
-
-func runCommand(t *testing.T, rt http.RoundTripper, args string, glInstanceHostname string) (*test.CmdOut, *cmdtest.Factory, error) {
-	ios, _, stdout, stderr := cmdtest.TestIOStreams()
-
-	factory := cmdtest.NewTestFactory(ios,
-		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glInstanceHostname)),
-		cmdtest.WithBaseRepo("OWNER", "REPO", glInstanceHostname),
-	)
-
-	cmd := NewCmdAsk(factory)
-
-	cmdOut, err := cmdtest.ExecuteCommand(cmd, args, stdout, stderr)
-
-	return cmdOut, factory, err
-}
 
 func TestAskCmd(t *testing.T) {
 	initialAiResponse := "The appropriate ```git log --pretty=format:'%h'``` Git command ```non-git cmd``` for listing ```git show``` commit SHAs."
@@ -48,7 +35,7 @@ The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing
 		withPrompt                 bool
 		withExecution              bool
 		withGlInstanceHostname     string
-		expectedResult             string
+		expectedResult             []string
 		expectedGlInstanceHostname string
 	}{
 		{
@@ -57,7 +44,7 @@ The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing
 			withGlInstanceHostname:     "",
 			withPrompt:                 true,
 			withExecution:              true,
-			expectedResult:             outputWithoutExecution + "git log executed\ngit show executed\n",
+			expectedResult:             []string{outputWithoutExecution, "git log executed", "git show executed"},
 			expectedGlInstanceHostname: glinstance.DefaultHostname,
 		},
 		{
@@ -66,7 +53,7 @@ The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing
 			withGlInstanceHostname:     "example.com",
 			withPrompt:                 true,
 			withExecution:              false,
-			expectedResult:             outputWithoutExecution,
+			expectedResult:             []string{outputWithoutExecution},
 			expectedGlInstanceHostname: "example.com",
 		},
 		{
@@ -74,7 +61,8 @@ The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing
 			content:                    "There are no Git commands related to the text.",
 			withGlInstanceHostname:     "instance.example.com",
 			withPrompt:                 false,
-			expectedResult:             "Commands:\n\n\nExplanation:\n\nThere are no Git commands related to the text.\n\n",
+			withExecution:              false,
+			expectedResult:             []string{"Commands:\n\n\nExplanation:\n\nThere are no Git commands related to the text.\n\n"},
 			expectedGlInstanceHostname: "instance.example.com",
 		},
 	}
@@ -94,22 +82,51 @@ The appropriate git log --pretty=format:'%h' Git command non-git cmd for listing
 			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/ai/llm/git_command", response)
 
 			if tc.withPrompt {
-				restore := prompt.StubConfirm(tc.withExecution)
-				defer restore()
-
 				cs, restore := test.InitCmdStubber()
 				defer restore()
 				cs.Stub(cmdLogResult)
 				cs.Stub(cmdShowResult)
 			}
 
-			output, factory, err := runCommand(t, fakeHTTP, "git list 10 commits", tc.withGlInstanceHostname)
-			baseRepo, _ := factory.BaseRepo()
-			require.Nil(t, err)
+			opts := []cmdtest.FactoryOption{
+				func(f *cmdtest.Factory) {
+					f.ApiClientStub = func(repoHost string) (*api.Client, error) {
+						require.Equal(t, tc.expectedGlInstanceHostname, repoHost)
 
-			require.Equal(t, output.String(), tc.expectedResult)
+						return cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", tc.withGlInstanceHostname), nil
+					}
+				},
+				cmdtest.WithBaseRepo("OWNER", "REPO", tc.withGlInstanceHostname),
+			}
+
+			// Set up prompt stub if needed
+			if tc.withPrompt {
+				responder := huhtest.NewResponder()
+				// FIXME: there is a bug in huhtest (I've created https://github.com/survivorbat/huhtest/issues/2)
+				// which leads to wrong answers when the Confirm has an affirmative default.
+				// Therefore, we need to invert our actual answer.
+				if !tc.withExecution {
+					responder = responder.
+						AddConfirm(runCmdsQuestion, huhtest.ConfirmAffirm).
+						AddConfirm("Run `.*?`", huhtest.ConfirmAffirm).MatchRegexp()
+				} else {
+					responder = responder.
+						AddConfirm(runCmdsQuestion, huhtest.ConfirmNegative).
+						AddConfirm("Run `.*?`", huhtest.ConfirmNegative).MatchRegexp()
+				}
+				opts = append(opts, cmdtest.WithResponder(t, responder))
+			}
+
+			exec := cmdtest.SetupCmdForTest(t, NewCmdAsk, false, opts...)
+
+			output, err := exec("git list 10 commits")
+			require.NoError(t, err)
+
+			stdout := output.String()
+			for _, r := range tc.expectedResult {
+				assert.Contains(t, stdout, r)
+			}
 			require.Empty(t, output.Stderr())
-			require.Equal(t, baseRepo.RepoHost(), tc.expectedGlInstanceHostname)
 		})
 	}
 }
@@ -151,9 +168,13 @@ func TestFailedHttpResponse(t *testing.T) {
 			response := httpmock.NewStringResponse(tc.code, tc.response)
 			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/ai/llm/git_command", response)
 
-			_, _, err := runCommand(t, fakeHTTP, "git list 10 commits", "")
-			require.NotNil(t, err)
-			require.Contains(t, err.Error(), tc.expectedMsg)
+			exec := cmdtest.SetupCmdForTest(t, NewCmdAsk, false,
+				cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", "")),
+				cmdtest.WithBaseRepo("OWNER", "REPO", ""),
+			)
+
+			_, err := exec("git list 10 commits")
+			require.EqualError(t, err, tc.expectedMsg)
 		})
 	}
 }

@@ -12,7 +12,9 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/git"
@@ -23,6 +25,7 @@ import (
 	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
+	"github.com/survivorbat/huhtest"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -174,6 +177,16 @@ type Factory struct {
 	BuildInfoStub    api.BuildInfo
 
 	repoOverride string
+
+	// captured standard ios for assertion purposes
+	stdin  safeBuffer
+	stdout bytes.Buffer
+	stderr bytes.Buffer
+
+	// functions to run before and after exec a command
+	// NOTE: this is only supported via SetupCmdForTest
+	execSetup   []func()
+	execCleanup []func()
 }
 
 func (f *Factory) RepoOverride(repo string) error {
@@ -337,18 +350,78 @@ func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 		opt(f)
 	}
 
+	// Create multi writers to assert outputs
+	if f.IOStub != nil {
+		f.IOStub.In = newTeeReadCloser(f.IOStub.In, &f.stdin)
+		f.IOStub.StdOut = io.MultiWriter(&f.stdout, f.IOStub.StdOut)
+		f.IOStub.StdErr = io.MultiWriter(&f.stderr, f.IOStub.StdErr)
+	}
+
+	// run setup functions (may have been registered by FactoryOption functions)
+	for _, sf := range f.execSetup {
+		sf()
+	}
+
 	return f
+}
+
+func (f *Factory) cleanup() {
+	for _, cf := range f.execCleanup {
+		cf()
+	}
 }
 
 // SetupCmdForTest creates a test environment with a configured Factory
 func SetupCmdForTest(t *testing.T, cmdFunc CmdFunc, isTTY bool, opts ...FactoryOption) CmdExecFunc {
 	t.Helper()
 
-	ios, _, stdout, stderr := TestIOStreams(WithTestIOStreamsAsTTY(isTTY))
+	ios, _, _, _ := TestIOStreams(WithTestIOStreamsAsTTY(isTTY))
 
 	f := NewTestFactory(ios, opts...)
 	return func(cli string) (*test.CmdOut, error) {
-		return ExecuteCommand(cmdFunc(f), cli, stdout, stderr)
+		defer f.cleanup()
+		return ExecuteCommand(cmdFunc(f), cli, &f.stdout, &f.stderr)
+	}
+}
+
+func WithResponder(t *testing.T, responder *huhtest.Responder) FactoryOption {
+	return func(f *Factory) {
+		rIn, wIn := io.Pipe()
+		rOut, wOut := io.Pipe()
+
+		closer := func() {
+			rIn.Close()
+			wIn.Close()
+			rOut.Close()
+			wOut.Close()
+		}
+
+		f.IOStub.In = rIn
+		f.IOStub.StdOut = wOut
+
+		// register setup functions to redirect ios to responder
+		startResponder := func() {
+			rstdin, rstdout, cancel := responder.Start(t, 1*time.Hour)
+
+			var wg sync.WaitGroup
+
+			wg.Go(func() {
+				_, _ = io.Copy(wIn, rstdin)
+			})
+
+			wg.Go(func() {
+				_, _ = io.Copy(rstdout, rOut)
+			})
+
+			f.execCleanup = append(f.execCleanup, func() {
+				cancel()
+				closer()
+
+				wg.Wait()
+			})
+		}
+
+		f.execSetup = append(f.execSetup, startResponder)
 	}
 }
 
@@ -416,4 +489,55 @@ func NewTestApiClient(t *testing.T, httpClient *http.Client, token, host string,
 	)
 	require.NoError(t, err)
 	return testClient
+}
+
+type safeBuffer struct {
+	buf bytes.Buffer
+	mu  sync.Mutex
+}
+
+func (sb *safeBuffer) Write(p []byte) (int, error) {
+	sb.mu.Lock()
+	defer sb.mu.Unlock()
+	return sb.buf.Write(p)
+}
+
+func (sb *safeBuffer) String() string {
+	sb.mu.Lock()
+	defer sb.mu.Unlock()
+	return sb.buf.String()
+}
+
+func (sb *safeBuffer) Bytes() []byte {
+	sb.mu.Lock()
+	defer sb.mu.Unlock()
+	return sb.buf.Bytes()
+}
+
+func (sb *safeBuffer) Reset() {
+	sb.mu.Lock()
+	defer sb.mu.Unlock()
+	sb.buf.Reset()
+}
+
+func (sb *safeBuffer) Len() int {
+	sb.mu.Lock()
+	defer sb.mu.Unlock()
+	return sb.buf.Len()
+}
+
+type teeReadCloser struct {
+	io.Reader
+	closer io.Closer
+}
+
+func (t *teeReadCloser) Close() error {
+	return t.closer.Close()
+}
+
+func newTeeReadCloser(r io.ReadCloser, w io.Writer) io.ReadCloser {
+	return &teeReadCloser{
+		Reader: io.TeeReader(r, w),
+		closer: r,
+	}
 }

@@ -140,7 +140,8 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 		mr.Pipeline != nil &&
 		o.io.PromptEnabled() &&
 		!o.skipPrompts {
-		_ = prompt.Confirm(&o.setAutoMerge, "Set auto-merge?", true)
+		o.setAutoMerge = true
+		_ = x.IO().Confirm(cmd.Context(), &o.setAutoMerge, "Set auto-merge?")
 	}
 
 	if o.io.IsOutputTTY() && !o.skipPrompts {

@@ -13,7 +13,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 )
 
 type options struct {
@@ -85,7 +84,7 @@ func (o *options) run(ctx context.Context) error {
 	// Prompt user to proceed with deletion
 	if !o.force {
 		var shouldDelete bool
-		if err := prompt.Confirm(&shouldDelete, "Are you sure you want to delete? This action is destructive and non-recoverable", false); err != nil {
+		if err := o.io.Confirm(ctx, &shouldDelete, "Are you sure you want to delete? This action is destructive"); err != nil {
 			return err
 		}
 		if !shouldDelete {

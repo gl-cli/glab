@@ -8,17 +8,6 @@ import (
 	"github.com/AlecAivazis/survey/v2/core"
 )
 
-func StubConfirm(result bool) func() {
-	orig := Confirm
-	Confirm = func(r *bool, _ string, _ bool) error {
-		*r = result
-		return nil
-	}
-	return func() {
-		Confirm = orig
-	}
-}
-
 type AskStubber struct {
 	Asks     [][]*survey.Question
 	AskOnes  []*survey.Prompt

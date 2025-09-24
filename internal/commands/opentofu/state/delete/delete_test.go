@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/survivorbat/huhtest"
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"go.uber.org/mock/gomock"
 )
@@ -72,6 +72,9 @@ func TestDelete_YesInPrompt(t *testing.T) {
 		false,
 		cmdtest.WithGitLabClient(tc.Client),
 		cmdtest.WithBaseRepo("OWNER", "REPO", glinstance.DefaultHostname),
+		cmdtest.WithResponder(t,
+			huhtest.NewResponder().
+				AddConfirm("Are you sure you want to delete? This action is destructive", huhtest.ConfirmAffirm)),
 	)
 
 	// setup mock expectations
@@ -79,15 +82,12 @@ func TestDelete_YesInPrompt(t *testing.T) {
 		Delete("OWNER/REPO", "production", gomock.Any()).
 		Return(nil, nil)
 
-	revert := prompt.StubConfirm(true)
-	t.Cleanup(revert)
-
 	// WHEN
 	out, err := exec("production")
 	require.NoError(t, err)
 
 	// THEN
-	assert.Equal(t, "Deleted state production\n", out.OutBuf.String())
+	assert.Contains(t, out.OutBuf.String(), "Deleted state production\n")
 }
 
 func TestDelete_NoInPrompt(t *testing.T) {
@@ -100,15 +100,15 @@ func TestDelete_NoInPrompt(t *testing.T) {
 		false,
 		cmdtest.WithGitLabClient(tc.Client),
 		cmdtest.WithBaseRepo("OWNER", "REPO", glinstance.DefaultHostname),
+		cmdtest.WithResponder(t,
+			huhtest.NewResponder().
+				AddConfirm("Are you sure you want to delete? This action is destructive", huhtest.ConfirmNegative)),
 	)
 
 	// setup mock expectations
 	tc.MockTerraformStates.EXPECT().
 		Delete("OWNER/REPO", "production", gomock.Any()).
 		Times(0)
-
-	revert := prompt.StubConfirm(false)
-	t.Cleanup(revert)
 
 	// WHEN
 	_, err := exec("production")

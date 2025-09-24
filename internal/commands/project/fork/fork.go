@@ -1,6 +1,7 @@
 package fork
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -21,7 +22,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/run"
 )
 
@@ -74,7 +74,7 @@ func NewCmdFork(f cmdutils.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.complete(cmd, args)
 
-			return opts.run()
+			return opts.run(cmd.Context())
 		},
 	}
 
@@ -101,7 +101,7 @@ func (o *options) complete(cmd *cobra.Command, args []string) {
 	o.isTerminal = o.io.IsaTTY && o.io.IsErrTTY && o.io.IsInTTY
 }
 
-func (o *options) run() error {
+func (o *options) run(ctx context.Context) error {
 	var err error
 
 	c := o.io.Color()
@@ -169,10 +169,11 @@ func (o *options) run() error {
 
 			if o.isTerminal {
 				if !o.addRemoteSet {
-					err := prompt.Confirm(
+					remoteDesired = true // set the default value
+					err := o.io.Confirm(
+						ctx,
 						&remoteDesired,
 						"Would you like to add this repository as a remote instead?",
-						true,
 					)
 					if err != nil {
 						return err
@@ -371,10 +372,11 @@ func (o *options) run() error {
 
 		remoteDesired := o.addRemote
 		if !o.addRemoteSet {
-			err = prompt.Confirm(
+			remoteDesired = true // set the default value
+			err = o.io.Confirm(
+				ctx,
 				&remoteDesired,
 				"Would you like to add a remote for the fork?",
-				true,
 			)
 			if err != nil {
 				return fmt.Errorf("failed to prompt: %w", err)
@@ -394,7 +396,8 @@ func (o *options) run() error {
 			if o.cloneSet {
 				return nil
 			}
-			err = prompt.Confirm(&cloneDesired, "Would you like to clone the fork?", true)
+			cloneDesired = true // set the default value
+			err = o.io.Confirm(ctx, &cloneDesired, "Would you like to clone the fork?")
 			if err != nil {
 				return fmt.Errorf("failed to prompt: %w", err)
 			}

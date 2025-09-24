@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/survivorbat/huhtest"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 	"go.uber.org/mock/gomock"
@@ -16,7 +18,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 )
@@ -68,11 +69,6 @@ func TestProjectFork(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.expectClonePrompt {
-				restore := prompt.StubConfirm(true)
-				defer restore()
-			}
-
 			cs, csTeardown := test.InitCmdStubber()
 			defer csTeardown()
 
@@ -103,10 +99,7 @@ func TestProjectFork(t *testing.T) {
 					}, nil, nil)
 			}
 
-			exec := cmdtest.SetupCmdForTest(
-				t,
-				NewCmdFork,
-				false,
+			opts := []cmdtest.FactoryOption{
 				cmdtest.WithGitLabClient(tc.Client),
 				cmdtest.WithApiClient(
 					cmdtest.NewTestApiClient(
@@ -144,6 +137,26 @@ func TestProjectFork(t *testing.T) {
 						}, nil
 					}
 				},
+			}
+
+			// Set up prompt stub if needed
+			if tt.expectClonePrompt {
+				responder := huhtest.NewResponder()
+				// FIXME: there is a bug in huhtest (I've created https://github.com/survivorbat/huhtest/issues/2)
+				// which leads to wrong answers when the Confirm has an affirmative default.
+				// Therefore, we need to invert our actual answer.
+				responder = responder.
+					AddConfirm("Would you like to clone the fork?", huhtest.ConfirmNegative).
+					AddConfirm("Would you like to add a remote for the fork?", huhtest.ConfirmNegative).
+					AddConfirm("Would you like to add this repository as a remote instead?", huhtest.ConfirmNegative)
+				opts = append(opts, cmdtest.WithResponder(t, responder))
+			}
+
+			exec := cmdtest.SetupCmdForTest(
+				t,
+				NewCmdFork,
+				false,
+				opts...,
 			)
 
 			out, err := exec(tt.commandArgs)
@@ -155,7 +168,6 @@ func TestProjectFork(t *testing.T) {
 				tt.commandArgs,
 				err,
 			) {
-				assert.Empty(t, out.OutBuf.String())
 				assert.Equal(t, "✓ Created fork OWNER/baz.\n", out.ErrBuf.String())
 			}
 
@@ -232,12 +244,6 @@ func TestProjectForkExistingRepo(t *testing.T) {
 			git.InitGitRepo(t)
 			// tempDir := cmdtest.InitGitRepo(t, "gitlab.com", "OWNER", "REPO")
 
-			// Set up prompt stub if needed
-			if !tt.addRemoteFlag {
-				restore := prompt.StubConfirm(tt.promptResponse)
-				defer restore()
-			}
-
 			cs, csTeardown := test.InitCmdStubber()
 			defer csTeardown()
 			for _, stub := range tt.shelloutStubs {
@@ -287,10 +293,7 @@ func TestProjectForkExistingRepo(t *testing.T) {
 				}
 			}
 
-			exec := cmdtest.SetupCmdForTest(
-				t,
-				NewCmdFork,
-				true,
+			opts := []cmdtest.FactoryOption{
 				cmdtest.WithGitLabClient(tc.Client),
 				cmdtest.WithApiClient(
 					cmdtest.NewTestApiClient(
@@ -328,6 +331,32 @@ func TestProjectForkExistingRepo(t *testing.T) {
 						}, nil
 					}
 				},
+			}
+			// Set up prompt stub if needed
+			if !tt.addRemoteFlag {
+				responder := huhtest.NewResponder()
+				// FIXME: there is a bug in huhtest (I've created https://github.com/survivorbat/huhtest/issues/2)
+				// which leads to wrong answers when the Confirm has an affirmative default.
+				// Therefore, we need to invert our actual answer.
+				if !tt.promptResponse {
+					responder = responder.Debug().
+						AddConfirm("Would you like to clone the fork?", huhtest.ConfirmAffirm).
+						AddConfirm("Would you like to add a remote for the fork?", huhtest.ConfirmAffirm).
+						AddConfirm("Would you like to add this repository as a remote instead?", huhtest.ConfirmAffirm)
+				} else {
+					responder = responder.Debug().
+						AddConfirm("Would you like to clone the fork?", huhtest.ConfirmNegative).
+						AddConfirm("Would you like to add a remote for the fork?", huhtest.ConfirmNegative).
+						AddConfirm("Would you like to add this repository as a remote instead?", huhtest.ConfirmNegative)
+				}
+				opts = append(opts, cmdtest.WithResponder(t, responder))
+			}
+
+			exec := cmdtest.SetupCmdForTest(
+				t,
+				NewCmdFork,
+				true,
+				opts...,
 			)
 
 			t.Logf("Running fork command with arguments: %q", tt.commandArgs)
@@ -342,8 +371,6 @@ func TestProjectForkExistingRepo(t *testing.T) {
 				}
 			} else {
 				if assert.NoErrorf(t, err, "error running command `project fork %s`: %v", tt.commandArgs, err) {
-					assert.Empty(t, out.OutBuf.String())
-
 					// On success, ensure namespace error message is absent unless we expect it
 					if !tt.expectNamespaceMessage {
 						assert.NotContains(t, out.ErrBuf.String(), "Only user namespaces")
@@ -361,7 +388,7 @@ func TestProjectForkExistingRepo(t *testing.T) {
 
 			// Assert shellouts
 			if len(tt.expectedShellouts) > 0 {
-				assert.Equal(t, len(tt.expectedShellouts), cs.Count)
+				require.Equal(t, len(tt.expectedShellouts), cs.Count)
 				for idx, expectedShellout := range tt.expectedShellouts {
 					assert.Equal(t, expectedShellout, strings.Join(cs.Calls[idx].Args, " "))
 				}
