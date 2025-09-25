@@ -41,6 +41,7 @@ linters:
               - "**/*.go"
               - "!**/cmd/glab/*.go"
               - "!**/internal/testing/cmdtest/*.go"
+              - "!**/internal/cmdutils/*_test.go"
               - "!**/internal/commands/*.go"
               - "!**/internal/commands/**/*.go"
             deny:

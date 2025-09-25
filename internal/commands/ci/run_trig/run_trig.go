@@ -40,11 +40,17 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ glab ci run-trig -t xxxx
 			$ glab ci run-trig -t xxxx -b main
+
+			# Specify CI variables
 			$ glab ci run-trig -t xxxx -b main --variables key1:val1
 			$ glab ci run-trig -t xxxx -b main --variables key1:val1,key2:val2
 			$ glab ci run-trig -t xxxx -b main --variables key1:val1 --variables key2:val2
+
+			# Specify CI inputs
+			$ glab ci run-trig -t xxxx -b main --input key1:val1 --input key2:val2
+			$ glab ci run-trig -t xxxx -b main --input "replicas:int(3)" --input "debug:bool(false)" --input "regions:array(us-east,eu-west)"
 		`),
-		Long: ``,
+		Long: cmdutils.PipelineInputsDescription,
 		Args: cobra.ExactArgs(0),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
@@ -62,9 +68,7 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			c := &gitlab.RunPipelineTriggerOptions{
-				Variables: make(map[string]string),
-			}
+			pipelineVariables := make(map[string]string)
 
 			if customPipelineVars, _ := cmd.Flags().GetStringSlice("variables"); len(customPipelineVars) > 0 {
 				for _, v := range customPipelineVars {
@@ -72,8 +76,21 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 					if err != nil {
 						return fmt.Errorf("parsing pipeline variable. Expected format KEY:VALUE: %w", err)
 					}
-					c.Variables[key] = val
+					pipelineVariables[key] = val
 				}
+			}
+
+			pipelineInputs, err := cmdutils.PipelineInputsFromFlags(cmd)
+			if err != nil {
+				return err
+			}
+
+			c := &gitlab.RunPipelineTriggerOptions{
+				Inputs: pipelineInputs,
+			}
+
+			if len(pipelineVariables) != 0 {
+				c.Variables = pipelineVariables
 			}
 
 			branch, err := cmd.Flags().GetString("branch")
@@ -116,6 +133,7 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 	pipelineRunCmd.Flags().StringP("token", "t", "", "Pipeline trigger token. Can be omitted only if the `CI_JOB_TOKEN` environment variable is set.")
 	pipelineRunCmd.Flags().StringP("branch", "b", "", "Create pipeline on branch or reference <string>.")
 	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables", "", []string{}, "Pass variables to pipeline in the format <key>:<value>.")
+	cmdutils.AddPipelineInputsFlag(pipelineRunCmd)
 
 	return pipelineRunCmd
 }
