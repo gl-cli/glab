@@ -64,6 +64,12 @@ func TestCIRun(t *testing.T) {
 			expectedPOSTBody: `"ref":"custom-branch-123"`,
 			expectedOut:      "Created pipeline (ID: 123), status: created, ref: custom-branch-123, weburl: https://gitlab.com/OWNER/REPO/-/pipelines/123\n",
 		},
+		{
+			name:             "when running `ci run-trig` with input parameter, run CI with untyped input",
+			cli:              "-t foobar -i key1:val1 --input key2:val2",
+			expectedPOSTBody: `"ref":"custom-branch-123","token":"foobar","inputs":{"key1":"val1","key2":"val2"}`,
+			expectedOut:      "Created pipeline (ID: 123), status: created, ref: custom-branch-123, weburl: https://gitlab.com/OWNER/REPO/-/pipelines/123\n",
+		},
 	}
 
 	for _, tc := range tests {

@@ -205,11 +205,17 @@ func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 			$ glab ci run --variables \"key1:value,with,comma\"
 			$ glab ci run -b main
 			$ glab ci run --web
+			$ glab ci run --mr
+
+			# Specify CI variables
 			$ glab ci run -b main --variables-env key1:val1
 			$ glab ci run -b main --variables-env key1:val1,key2:val2
 			$ glab ci run -b main --variables-env key1:val1 --variables-env key2:val2
 			$ glab ci run -b main --variables-file MYKEY:file1 --variables KEY2:some_value
-			$ glab ci run --mr
+
+			# Specify CI inputs
+			$ glab ci run -b main --input key1:val1 --input key2:val2
+			$ glab ci run -b main --input "replicas:int(3)" --input "debug:bool(false)" --input "regions:array(us-east,eu-west)"
 
 			// For an example of 'glab ci run -f' with a variables file, see
 			// [Run a CI/CD pipeline with variables from a file](https://docs.gitlab.com/editor_extensions/gitlab_cli/#run-a-cicd-pipeline-with-variables-from-a-file)
@@ -220,7 +226,8 @@ func NewCmdRun(f cmdutils.Factory) *cobra.Command {
 
 The options for variables are incompatible with merge request pipelines.
 If used with merge request pipelines, the command fails with a message like ` + "`ERROR: if any flags in the group [output output-format] are set none of the others can be`" + `
-`,
+
+` + cmdutils.PipelineInputsDescription,
 		Args: cobra.ExactArgs(0),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
@@ -243,8 +250,17 @@ If used with merge request pipelines, the command fails with a message like ` + 
 				return err
 			}
 
+			pipelineInputs, err := cmdutils.PipelineInputsFromFlags(cmd)
+			if err != nil {
+				return err
+			}
+
 			c := &gitlab.CreatePipelineOptions{
-				Variables: gitlab.Ptr(pipelineVars),
+				Inputs: pipelineInputs,
+			}
+
+			if len(pipelineVars) != 0 {
+				c.Variables = gitlab.Ptr(pipelineVars)
 			}
 
 			pipe, err := createPipeline(cmd, c, f, client, repo, mr)
@@ -276,8 +292,9 @@ If used with merge request pipelines, the command fails with a message like ` + 
 	pipelineRunCmd.Flags().StringP("variables-from", "f", "", "JSON file with variables for pipeline execution. Expects array of hashes, each with at least 'key' and 'value'. Cannot be used for MR pipelines.")
 	pipelineRunCmd.Flags().BoolVarP(&openInBrowser, "web", "w", false, "Open pipeline in a browser. Uses default browser, or browser specified in BROWSER environment variable.")
 	pipelineRunCmd.Flags().BoolVar(&mr, "mr", false, "Run merge request pipeline instead of branch pipeline.")
+	cmdutils.AddPipelineInputsFlag(pipelineRunCmd)
 
-	for _, flag := range []string{"variables", "variables-env", "variables-file", "variables-from"} {
+	for _, flag := range []string{"variables", "variables-env", "variables-file", "variables-from", "input"} {
 		// https://docs.gitlab.com/api/merge_requests/#create-merge-request-pipeline
 		// MR pipeline creation API does not accept variables unlike "normal" pipelines
 		// https://docs.gitlab.com/api/pipelines/#create-a-new-pipeline

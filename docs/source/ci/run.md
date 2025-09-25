@@ -20,6 +20,29 @@ The `--branch` option is available for all pipeline types.
 The options for variables are incompatible with merge request pipelines.
 If used with merge request pipelines, the command fails with a message like `ERROR: if any flags in the group [output output-format] are set none of the others can be`
 
+Specify one or more pipeline inputs using the `-i` or `--input` flag for each
+input. Each input flag uses the format `key:value`.
+
+The values are typed and will default to `string` unless a type is explicitly
+specified. To specify a type, use the `type(value)` syntax. For example,
+`key:string(value)` will pass the string `value` as the input.
+
+Valid types are:
+
+- `string`: A string value. This is the default type. For example, `key:string(value)`.
+- `int`: An integer value. For example, `key:int(42)`.
+- `float`: A floating-point value. For example, `key:float(3.14)`.
+- `bool`: A boolean value. For example, `key:bool(true)`.
+- `array`: An array of strings. For example, `key:array(foo,bar)`.
+
+An array of strings can be specified with a trailing comma. For example,
+`key:array(foo,bar,)` will pass the array `[foo, bar]`. `array()` specifies an
+empty array. To pass an array with the empty string, use `array(,)`.
+
+Value arguments containing parentheses should be escaped from the shell with
+quotes. For example, `--input key:array(foo,bar)` should be written as
+`--input 'key:array(foo,bar)'`.
+
 ```plaintext
 glab ci run [flags]
 ```
@@ -37,11 +60,17 @@ $ glab ci run
 $ glab ci run --variables \"key1:value,with,comma\"
 $ glab ci run -b main
 $ glab ci run --web
+$ glab ci run --mr
+
+# Specify CI variables
 $ glab ci run -b main --variables-env key1:val1
 $ glab ci run -b main --variables-env key1:val1,key2:val2
 $ glab ci run -b main --variables-env key1:val1 --variables-env key2:val2
 $ glab ci run -b main --variables-file MYKEY:file1 --variables KEY2:some_value
-$ glab ci run --mr
+
+# Specify CI inputs
+$ glab ci run -b main --input key1:val1 --input key2:val2
+$ glab ci run -b main --input "replicas:int(3)" --input "debug:bool(false)" --input "regions:array(us-east,eu-west)"
 
 // For an example of 'glab ci run -f' with a variables file, see
 // [Run a CI/CD pipeline with variables from a file](https://docs.gitlab.com/editor_extensions/gitlab_cli/#run-a-cicd-pipeline-with-variables-from-a-file)
@@ -53,6 +82,7 @@ $ glab ci run --mr
 
 ```plaintext
   -b, --branch string            Create pipeline on branch/ref <string>.
+  -i, --input stringArray        Pass inputs to pipeline in format '<key>:<value>'. Cannot be used for merge request pipelines. See documentation for examples.
       --mr                       Run merge request pipeline instead of branch pipeline.
       --variables strings        Pass variables to pipeline in format <key>:<value>. Cannot be used for MR pipelines.
       --variables-env strings    Pass variables to pipeline in format <key>:<value>. Cannot be used for MR pipelines.
