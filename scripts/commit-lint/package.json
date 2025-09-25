@@ -9,6 +9,6 @@
     "@commitlint/config-conventional": "^19.8.0",
     "@commitlint/format": "^19.8.1",
     "@commitlint/lint": "^19.8.1",
-    "@commitlint/read": "^19.8.1"
+    "@commitlint/read": "^20.0.0"
   }
 }
