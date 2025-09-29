@@ -356,6 +356,11 @@ self-signed certificates, either:
 | `GIT_REMOTE_URL_VAR` | not applicable         | not applicable                          | Alias of `REMOTE_ALIAS`. |
 | `REMOTE_ALIAS`       | `remote_alias`             | -                                        | `git remote` variable or alias that contains the GitLab URL. Alias: `GIT_REMOTE_URL_VAR` |
 
+#### Variable deprecation
+
+In `glab` version 2.0.0 and later, all `glab` environment variables are prefixed with `GLAB_`.
+For more information about this deprecation, see [issue 7999](https://gitlab.com/gitlab-org/cli/-/issues/7999).
+
 ### Token and environment variable precedence
 
 GLab uses tokens in this order:

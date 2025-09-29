@@ -83,6 +83,14 @@ func main() {
 					return
 				}
 
+				if enabled, found := utils.IsEnvVarEnabled("GLAB_FORCE_HYPERLINKS"); found {
+					if enabled {
+						i.SetDisplayHyperlinks("always")
+					}
+
+					return
+				}
+
 				if displayHyperlinks, _ := cfg.Get("", "display_hyperlinks"); displayHyperlinks == "true" {
 					i.SetDisplayHyperlinks("auto")
 				}
@@ -90,6 +98,16 @@ func main() {
 
 			// configure prompt
 			func(i *iostreams.IOStreams) {
+				if value, found := utils.IsEnvVarEnabled("NO_PROMPT"); found {
+					i.SetPrompt(strconv.FormatBool(value))
+					return
+				}
+
+				if value, found := utils.IsEnvVarEnabled("GLAB_NO_PROMPT"); found {
+					i.SetPrompt(strconv.FormatBool(value))
+					return
+				}
+
 				if promptDisabled, _ := cfg.Get("", "no_prompt"); promptDisabled != "" {
 					i.SetPrompt(promptDisabled)
 				}
