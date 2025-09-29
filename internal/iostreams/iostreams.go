@@ -13,6 +13,7 @@ import (
 	"github.com/briandowns/spinner"
 	"github.com/google/shlex"
 	"github.com/muesli/termenv"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 type IOStreams struct {
@@ -253,15 +254,26 @@ func (s *IOStreams) IsInputTTY() bool {
 }
 
 func (s *IOStreams) ResolveBackgroundColor(style string) string {
-	if style == "" {
-		style = os.Getenv("GLAMOUR_STYLE")
+	styleEnvVar := os.Getenv("GLAB_GLAMOUR_STYLE")
+	deprecatedStyleEnvVar := os.Getenv("GLAMOUR_STYLE")
+
+	if styleEnvVar != "" && style != "auto" {
+		s.backgroundColor = styleEnvVar
+		return styleEnvVar
 	}
-	if style != "" && style != "auto" {
+
+	if deprecatedStyleEnvVar != "" && style != "auto" {
+		utils.PrintDeprecationWarning("GLAMOUR_STYLE")
+		s.backgroundColor = deprecatedStyleEnvVar
+		return deprecatedStyleEnvVar
+	}
+
+	// if we aren't using env vars we use the value from the config
+	if styleEnvVar == "" && deprecatedStyleEnvVar == "" {
 		s.backgroundColor = style
-		return style
 	}
-	if (!s.ColorEnabled()) ||
-		(s.pagerProcess != nil) {
+
+	if (!s.ColorEnabled()) || (s.pagerProcess != nil) {
 		s.backgroundColor = "none"
 		return "none"
 	}

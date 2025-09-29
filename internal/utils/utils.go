@@ -217,8 +217,17 @@ func IsEnvVarEnabled(key string) (bool, bool) {
 		if err != nil {
 			fmt.Fprintf(os.Stdout, "WARNING: Could not parse %s environment variable value: %s\n", key, err.Error())
 		}
+
+		if !strings.HasPrefix(key, "GLAB_") {
+			PrintDeprecationWarning(key)
+		}
 		return val, found
 	}
 
 	return false, false
+}
+
+// PrintDeprecationWarning prints a deprecation warning to use the `GLAB_` prefix with environment variables
+func PrintDeprecationWarning(key string) {
+	fmt.Fprintf(os.Stdout, "DEPRECATION WARNING: The environment variable %s has been deprecated and will be removed in future releases. Use GLAB_%s instead.\n", key, key)
 }
