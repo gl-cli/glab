@@ -11,14 +11,18 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/duo/utils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/text"
+	"gitlab.com/gitlab-org/cli/internal/thirdpartyagents"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
+
+const ClaudeExecutable = "claude"
 
 // opts holds the configuration options for Claude commands.
 type opts struct {
@@ -89,14 +93,14 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 
 			client := c.Lab()
 			// Fetch direct_access token
-			token, err := fetchDirectAccessToken(client)
+			token, err := thirdpartyagents.FetchDirectAccessToken(c.Lab())
 			if err != nil {
 				return fmt.Errorf("failed to retrieve GitLab Duo access token: %w", err)
 			}
 
 			// Validate Claude executable exists
-			if err := validateClaudeExecutable(); err != nil {
-				return fmt.Errorf("Claude executable validation failed: %w", err)
+			if err := utils.ValidateExecutable(ClaudeExecutable); err != nil {
+				return fmt.Errorf("claude executable validation failed: %w", err)
 			}
 
 			wasAbleToSetApiKeyHelper := setClaudeSettings()
@@ -106,7 +110,9 @@ func NewCmdClaude(f cmdutils.Factory) *cobra.Command {
 			cmd.Flags().VisitAll(func(f *pflag.Flag) {
 				knownFlags = append(knownFlags, "--"+f.Name)
 			})
-			claudeArgs, err := extractClaudeArgs(knownFlags)
+
+			// Extract Claude command arguments
+			claudeArgs, err := utils.ExtractArgs(ClaudeExecutable)
 			if err != nil {
 				return fmt.Errorf("failed to parse command arguments: %w", err)
 			}

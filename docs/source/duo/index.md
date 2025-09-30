@@ -23,3 +23,4 @@ Work with GitLab Duo
 
 - [`ask`](ask.md)
 - [`claude`](claude/index.md)
+- [`codex`](codex.md)
