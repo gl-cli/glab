@@ -1,7 +1,9 @@
 package update
 
 import (
+	"errors"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 	"time"
@@ -10,6 +12,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -196,4 +199,40 @@ func updateLastCheckTimestamp(cfg config.Config) error {
 	}
 
 	return nil
+}
+
+// PrintUpdateError prints update check errors with helpful formatting and context.
+// This is specifically for errors that occur during background update checks,
+// not main command execution errors.
+func PrintUpdateError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, debug bool) {
+	color := streams.Color()
+
+	var dnsError *net.DNSError
+	if errors.As(err, &dnsError) {
+		streams.Logf("%s error connecting to %s\n", color.FailedIcon(), dnsError.Name)
+		if debug {
+			streams.Log(color.FailedIcon(), dnsError)
+		}
+		streams.Logf("%s Check your internet connection and status.gitlab.com. If on GitLab Self-Managed, run 'sudo gitlab-ctl status' on your server.\n", color.DotWarnIcon())
+	} else {
+		var exitError *cmdutils.ExitError
+		if errors.As(err, &exitError) {
+			streams.Logf("%s %s %s=%s\n", color.FailedIcon(), color.Bold(exitError.Details), color.Red("error"), exitError.Err)
+		} else {
+			streams.Log("ERROR:", err)
+
+			var flagError *cmdutils.FlagError
+			if errors.As(err, &flagError) || strings.HasPrefix(err.Error(), "unknown command ") {
+				if cmd != nil {
+					streams.Logf("Try '%s --help' for more information.", cmd.CommandPath())
+				} else {
+					streams.Log("Try --help for more information.")
+				}
+			}
+		}
+	}
+
+	if cmd != nil {
+		cmd.Print("\n")
+	}
 }

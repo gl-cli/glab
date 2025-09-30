@@ -1,14 +1,14 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"net"
+	"image/color"
 	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
-	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -26,6 +26,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 
+	"github.com/charmbracelet/fang"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -42,6 +44,50 @@ var (
 	// sets to "true" or "false" or "1" or "0" as string
 	debugMode = "false"
 )
+
+// gitLabColorScheme returns a custom color scheme using GitLab product colors
+// for semantic meaning and accessibility across different terminal backgrounds
+func gitLabColorScheme(lightDarkFunc lipgloss.LightDarkFunc) fang.ColorScheme {
+	scheme := fang.DefaultColorScheme(lightDarkFunc)
+
+	// GitLab product semantic colors using lightDarkFunc for accessibility
+	// Format: lightDarkFunc(lightTerminalColor, darkTerminalColor)
+
+	// Primary brand elements
+	gitlabOrange := lightDarkFunc(lipgloss.Color("#FC6D26"), lipgloss.Color("#FC6D26")) // GitLab brand orange
+	gitlabPurple := lightDarkFunc(lipgloss.Color("#7759C2"), lipgloss.Color("#A989F5")) // GitLab brand purple
+
+	// Product semantic colors
+	gitlabBlue := lightDarkFunc(lipgloss.Color("#1068BF"), lipgloss.Color("#4285F4")) // Blue for current/active states
+	_ = lightDarkFunc(lipgloss.Color("#217645"), lipgloss.Color("#34D058"))           // Green for success (unused for now)
+	gitlabRed := lightDarkFunc(lipgloss.Color("#C91C00"), lipgloss.Color("#F97583"))  // Red for errors
+
+	// Neutral colors for text and structure
+	gitlabText := lightDarkFunc(lipgloss.Color("#171321"), lipgloss.Color("#FAFAFA"))   // High-contrast text
+	gitlabSubtle := lightDarkFunc(lipgloss.Color("#6B6B73"), lipgloss.Color("#B0B0B0")) // Subtle elements
+
+	// Error banner configuration to avoid lightDarkFunc
+	whiteText := lipgloss.Color("#FFFFFF")
+	redBg := lipgloss.Color("#C91C00")
+
+	// Apply GitLab product color semantics
+	scheme.Title = gitlabText            // Main command titles
+	scheme.Command = gitlabPurple        // Subcommands
+	scheme.Flag = gitlabPurple           // Flags - purple for brand consistency
+	scheme.FlagDefault = gitlabSubtle    // Default flag values - subtle
+	scheme.Description = gitlabText      // Command descriptions - high contrast
+	scheme.Program = gitlabOrange        // Program name (glab) - brand consistency
+	scheme.Argument = gitlabBlue         // Command arguments - blue for interactive elements
+	scheme.DimmedArgument = gitlabSubtle // Optional/dimmed arguments - reduced prominence
+	scheme.QuotedString = gitlabText     // Quoted strings - purple accent
+	scheme.Comment = gitlabSubtle        // Comments - reduced visual weight
+	scheme.Help = gitlabText             // Help text - maximum readability
+	scheme.Dash = gitlabSubtle           // Dashes and separators - subtle structure
+	scheme.ErrorHeader = [2]color.Color{whiteText, redBg}
+	scheme.ErrorDetails = gitlabRed // Error details in GitLab red
+
+	return scheme
+}
 
 func main() {
 	// Initialize configuration
@@ -173,11 +219,11 @@ func main() {
 
 	rootCmd.SetArgs(expandedArgs)
 
-	if cmd, err := rootCmd.ExecuteC(); err != nil {
-		if !errors.Is(err, cmdutils.SilentError) {
-			printError(cmdFactory.IO(), err, cmd, debug)
-		}
-
+	if err := fang.Execute(context.Background(), rootCmd,
+		fang.WithoutCompletions(),
+		fang.WithoutManpage(),
+		fang.WithColorSchemeFunc(gitLabColorScheme),
+	); err != nil {
 		var exitError *cmdutils.ExitError
 		if errors.As(err, &exitError) {
 			os.Exit(exitError.Code)
@@ -196,36 +242,6 @@ func main() {
 	}
 	if !update.ShouldSkipUpdate(argCommand) {
 		checkForUpdate(cmdFactory, rootCmd, debug)
-	}
-}
-
-func printError(streams *iostreams.IOStreams, err error, cmd *cobra.Command, debug bool) {
-	color := streams.Color()
-
-	var dnsError *net.DNSError
-	if errors.As(err, &dnsError) {
-		streams.Logf("%s error connecting to %s\n", color.FailedIcon(), dnsError.Name)
-		if debug {
-			streams.Log(color.FailedIcon(), dnsError)
-		}
-		streams.Logf("%s Check your internet connection and status.gitlab.com. If on GitLab Self-Managed, run 'sudo gitlab-ctl status' on your server.\n", color.DotWarnIcon())
-	} else {
-		var exitError *cmdutils.ExitError
-		if errors.As(err, &exitError) {
-			streams.Logf("%s %s %s=%s\n", color.FailedIcon(), color.Bold(exitError.Details), color.Red("error"), exitError.Err)
-		} else {
-			streams.Log("ERROR:", err)
-
-			var flagError *cmdutils.FlagError
-			if errors.As(err, &flagError) || strings.HasPrefix(err.Error(), "unknown command ") {
-				streams.Logf("Try '%s --help' for more information.", cmd.CommandPath())
-			}
-
-		}
-	}
-
-	if cmd != nil {
-		cmd.Print("\n")
 	}
 }
 
@@ -263,7 +279,7 @@ func checkForUpdate(f cmdutils.Factory, rootCmd *cobra.Command, debug bool) {
 	}
 
 	if err := update.CheckUpdate(f, true); err != nil {
-		printError(f.IO(), err, rootCmd, debug)
+		update.PrintUpdateError(f.IO(), err, rootCmd, debug)
 	}
 }
 
