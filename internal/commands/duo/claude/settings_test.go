@@ -2,15 +2,12 @@ package claude
 
 import (
 	"encoding/json"
-	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 )
 
 // isolateHomeDir creates a temporary directory and sets it as HOME for the test,
@@ -62,126 +59,6 @@ func TestGetHeaderEnv(t *testing.T) {
 				for k, v := range tc.headers {
 					assert.Contains(t, result, k+": "+v)
 				}
-			}
-		})
-	}
-}
-
-func TestFetchDirectAccessToken(t *testing.T) {
-	tests := []struct {
-		name           string
-		statusCode     int
-		responseBody   string
-		expectedError  string
-		expectedToken  string
-		expectedHeader string
-	}{
-		{
-			name:           "successful request",
-			statusCode:     http.StatusCreated,
-			responseBody:   `{"token": "test-token", "headers": {"X-Auth": "value"}}`,
-			expectedToken:  "test-token",
-			expectedHeader: "value",
-		},
-		{
-			name:          "wrong status code",
-			statusCode:    http.StatusBadRequest,
-			responseBody:  `{"error": "bad request"}`,
-			expectedError: "failed to execute direct access token request",
-		},
-		{
-			name:          "invalid JSON",
-			statusCode:    http.StatusCreated,
-			responseBody:  `invalid json`,
-			expectedError: "failed to execute direct access token request",
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			fakeHTTP := &httpmock.Mocker{
-				MatchURL: httpmock.PathAndQuerystring,
-			}
-			defer fakeHTTP.Verify(t)
-
-			response := httpmock.NewStringResponse(tc.statusCode, tc.responseBody)
-			fakeHTTP.RegisterResponder(http.MethodPost, "/api/v4/ai/third_party_agents/direct_access", response)
-
-			client, err := gitlab.NewClient("", gitlab.WithHTTPClient(&http.Client{Transport: fakeHTTP}))
-			require.NoError(t, err)
-
-			result, err := fetchDirectAccessToken(client)
-
-			if tc.expectedError != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tc.expectedError)
-				assert.Nil(t, result)
-			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, result)
-				assert.Equal(t, tc.expectedToken, result.Token)
-				if tc.expectedHeader != "" {
-					assert.Equal(t, tc.expectedHeader, result.Headers["X-Auth"])
-				}
-			}
-		})
-	}
-}
-
-func TestValidateClaudeExecutable(t *testing.T) {
-	// Test when executable doesn't exist
-	originalPath := os.Getenv("PATH")
-	defer t.Setenv("PATH", originalPath)
-
-	// Set PATH to empty to ensure claude is not found
-	t.Setenv("PATH", "")
-
-	err := validateClaudeExecutable()
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "claude executable not found in PATH")
-}
-
-func TestExtractClaudeArgs(t *testing.T) {
-	tests := []struct {
-		name          string
-		osArgs        []string
-		expectedArgs  []string
-		expectedError string
-	}{
-		{
-			name:         "claude with args",
-			osArgs:       []string{"glab", "duo", "claude", "--help", "some", "args"},
-			expectedArgs: []string{"--help", "some", "args"},
-		},
-		{
-			name:         "claude without args",
-			osArgs:       []string{"glab", "duo", "claude"},
-			expectedArgs: []string{},
-		},
-		{
-			name:          "no claude in args",
-			osArgs:        []string{"glab", "duo", "ask", "something"},
-			expectedError: "could not find 'claude' in command arguments",
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			// Save original os.Args
-			originalArgs := os.Args
-			defer func() { os.Args = originalArgs }()
-
-			// Set test args
-			os.Args = tc.osArgs
-
-			result, err := extractClaudeArgs(nil)
-
-			if tc.expectedError != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tc.expectedError)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tc.expectedArgs, result)
 			}
 		})
 	}

@@ -3,14 +3,9 @@ package claude
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"slices"
 	"strings"
-
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 const (
@@ -23,9 +18,6 @@ const (
 	// Default model: This needs to be configured as we don't support
 	// all models
 	DefaultClaudeModel = "claude-sonnet-4-20250514"
-
-	// Claude executable name
-	ClaudeExecutable = "claude"
 
 	// Settings configuration
 	ClaudeSettingsDir = ".claude"
@@ -42,36 +34,6 @@ func getHeaderEnv(headers map[string]string) string {
 		headerParts = append(headerParts, fmt.Sprintf("%s: %s", k, v))
 	}
 	return strings.Join(headerParts, "\n")
-}
-
-// fetchDirectAccessToken retrieves a direct access token from GitLab AI service.
-func fetchDirectAccessToken(client *gitlab.Client) (*DirectAccessResponse, error) {
-	req, err := client.NewRequest(http.MethodPost, "ai/third_party_agents/direct_access", nil, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request for direct access token: %w", err)
-	}
-
-	var response DirectAccessResponse
-	resp, err := client.Do(req, &response)
-	if err != nil {
-		if gitlab.HasStatusCode(err, http.StatusForbidden) {
-			return nil, fmt.Errorf("failed to execute direct access token request: %w (your user most likely isn't enabled for the `agent_platform_claude_code` feature flag, please contact your GitLab administrator to enable it)", err)
-		} else {
-			return nil, fmt.Errorf("failed to execute direct access token request: %w", err)
-		}
-	}
-
-	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("failed to retrieve direct access token: received status code %d instead of %d", resp.StatusCode, http.StatusCreated)
-	}
-
-	return &response, nil
-}
-
-// DirectAccessResponse represents the response from GitLab direct access token API.
-type DirectAccessResponse struct {
-	Headers map[string]string `json:"headers"`
-	Token   string            `json:"token"`
 }
 
 // getHomeDir returns the home directory, preferring the HOME environment variable
@@ -165,37 +127,4 @@ func writeSettings(settingsPath string, settings map[string]any) bool {
 	}
 
 	return true
-}
-
-// validateClaudeExecutable checks if the Claude executable exists and is accessible.
-func validateClaudeExecutable() error {
-	_, err := exec.LookPath(ClaudeExecutable)
-	if err != nil {
-		return fmt.Errorf("claude executable not found in PATH: %w", err)
-	}
-	return nil
-}
-
-// extractClaudeArgs extracts arguments after "claude" from os.Args.
-func extractClaudeArgs(knownFlags []string) ([]string, error) {
-	// remove known known flags
-	osArgs := slices.DeleteFunc(os.Args, func(a string) bool {
-		return slices.Contains(knownFlags, a)
-	})
-
-	// Find the index where "claude" appears in the arguments
-	claudeIndex := -1
-	for i, arg := range osArgs {
-		if arg == "claude" {
-			claudeIndex = i
-			break
-		}
-	}
-
-	if claudeIndex == -1 {
-		return nil, fmt.Errorf("could not find 'claude' in command arguments")
-	}
-
-	// Return all arguments after "claude"
-	return osArgs[claudeIndex+1:], nil
 }

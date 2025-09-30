@@ -6,6 +6,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/thirdpartyagents"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
@@ -53,7 +54,7 @@ func NewCmdToken(f cmdutils.Factory) *cobra.Command {
 			}
 
 			// Fetch direct_access token
-			token, err := fetchDirectAccessToken(c.Lab())
+			token, err := thirdpartyagents.FetchDirectAccessToken(c.Lab())
 			if err != nil {
 				return fmt.Errorf("failed to retrieve GitLab Duo access token: %w", err)
 			}
