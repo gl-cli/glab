@@ -70,7 +70,6 @@ hosts:
 
 			for name, tt := range tests {
 				t.Run(name, func(t *testing.T) {
-					t.Parallel()
 					helper := Helper{cfg: tt.cfg}
 					gotUser, gotPassword, err := helper.Get(tt.registryURL)
 					assert.NoError(t, err)
@@ -162,7 +161,6 @@ hosts:
 
 			for name, tt := range tests {
 				t.Run(name, func(t *testing.T) {
-					t.Parallel()
 					helper := Helper{cfg: tt.cfg}
 					gotUser, gotPassword, err := helper.Get(tt.registryURL)
 					assert.ErrorContains(t, err, tt.expectErr)
@@ -174,21 +172,18 @@ hosts:
 	})
 
 	t.Run("Add", func(t *testing.T) {
-		t.Parallel()
 		var helper Helper
 		err := helper.Add(&credentials.Credentials{})
 		assert.ErrorContains(t, err, "glab auth docker-helper does not")
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		t.Parallel()
 		var helper Helper
 		err := helper.Delete("registry.gitlab.example.com")
 		assert.ErrorContains(t, err, "glab auth docker-helper does not")
 	})
 
 	t.Run("List", func(t *testing.T) {
-		t.Parallel()
 		var helper Helper
 		got, err := helper.List()
 		assert.ErrorContains(t, err, "glab auth docker-helper does not")

@@ -486,6 +486,8 @@ updated:	2023-10-10 00:00:00 +0000 UTC
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			fakeHTTP := &httpmock.Mocker{
 				MatchURL: httpmock.PathAndQuerystring,
 			}
@@ -552,6 +554,7 @@ func TestCIGetJSON(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
 			fakeHTTP := &httpmock.Mocker{
 				MatchURL: httpmock.PathAndQuerystring,
 			}

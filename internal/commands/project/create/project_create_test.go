@@ -18,8 +18,6 @@ func TestMain(m *testing.M) {
 }
 
 func Test_projectCreateCmd(t *testing.T) {
-	t.Parallel()
-
 	io, _, stdout, stderr := cmdtest.TestIOStreams()
 	f := cmdtest.NewTestFactory(io, cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
 		hosts:

@@ -584,7 +584,6 @@ func TestIssueList_epicIssues(t *testing.T) {
 }
 
 func TestIssueList_filterByLabel(t *testing.T) {
-	t.Parallel()
 	tests := map[string]struct {
 		reqURL     string
 		respStatus int

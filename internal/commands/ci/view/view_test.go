@@ -50,6 +50,8 @@ func assertScreen(t *testing.T, screen tcell.Screen, expected []string) {
 }
 
 func Test_line(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		desc     string
 		lineF    func(screen tcell.Screen, x, y, l int)
@@ -138,6 +140,7 @@ func Test_line(t *testing.T) {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+
 			test.lineF(screen, test.x, test.y, test.l)
 			screen.Show()
 			assertScreen(t, screen, test.expected)
@@ -155,6 +158,8 @@ func testbox(x, y, w, h int) *tview.TextView { // nolint:unparam
 }
 
 func Test_Link(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		desc        string
 		b1, b2      *tview.Box
@@ -229,6 +234,7 @@ func Test_Link(t *testing.T) {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+
 			link(screen, test.b1, test.b2, 2, test.first, test.last)
 			screen.Show()
 			assertScreen(t, screen, test.expected)
@@ -339,6 +345,8 @@ func Test_LinkJobs(t *testing.T) {
 }
 
 func Test_LinkJobsNegative(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		desc  string
 		jobs  []*ViewJob
@@ -416,6 +424,7 @@ func Test_LinkJobsNegative(t *testing.T) {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+
 			assert.Error(t, linkJobs(screen, test.jobs, test.boxes))
 		})
 	}
@@ -534,6 +543,8 @@ func Test_jobsView(t *testing.T) {
 }
 
 func Test_latestJobs(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		desc     string
 		jobs     []*ViewJob
@@ -670,6 +681,7 @@ func Test_latestJobs(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+
 			jobs := latestJobs(test.jobs)
 			assert.Equal(t, test.expected, jobs)
 		})
@@ -769,6 +781,8 @@ func Test_adjacentStages(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
 			prev, next := adjacentStages(test.jobs, test.stage)
 			assert.Equal(t, test.expectedPrev, prev)
 			assert.Equal(t, test.expectedNext, next)
@@ -777,6 +791,8 @@ func Test_adjacentStages(t *testing.T) {
 }
 
 func Test_stageBounds(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		desc                         string
 		stage                        string
@@ -863,6 +879,7 @@ func Test_stageBounds(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+
 			lower, upper := stageBounds(test.jobs, test.stage)
 			assert.Equal(t, test.expectedLower, lower)
 			assert.Equal(t, test.expectedUpper, upper)
@@ -871,6 +888,8 @@ func Test_stageBounds(t *testing.T) {
 }
 
 func Test_handleNavigation(t *testing.T) {
+	t.Parallel()
+
 	jobs := []*ViewJob{
 		{
 			Name:   "stage1-job1-really-long",
@@ -1126,6 +1145,7 @@ func Test_handleNavigation(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+
 			var navi navigator
 			for _, e := range test.input {
 				navi.Navigate(jobs, e)
