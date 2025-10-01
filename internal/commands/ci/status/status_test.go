@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -130,4 +131,68 @@ func Test_getPipelineWithFallback(t *testing.T) {
 			assert.Equal(t, tt.wantPipeline.Status, pipeline.Status)
 		})
 	}
+}
+
+func TestCiStatusCommand_NoPrompt(t *testing.T) {
+	// Test that the command exits cleanly when NO_PROMPT is enabled
+	// and doesn't hang waiting for user input
+	tc := gitlabtesting.NewTestClient(t)
+
+	// Mock calls in expected order
+	gomock.InOrder(
+		// Mock a finished pipeline so the command doesn't loop
+		tc.MockPipelines.EXPECT().
+			GetLatestPipeline("OWNER/REPO", &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr("main")}).
+			Return(&gitlab.Pipeline{ID: 1, Status: "success"}, nil, nil),
+
+		// Mock jobs for the pipeline - need to handle pagination
+		tc.MockJobs.EXPECT().
+			ListPipelineJobs("OWNER/REPO", 1, gomock.Any(), gomock.Any()).
+			Return([]*gitlab.Job{
+				{ID: 1, Name: "test", Stage: "test", Status: "success"},
+			}, &gitlab.Response{NextPage: 0}, nil),
+	)
+
+	exec := cmdtest.SetupCmdForTest(t, NewCmdStatus, true,
+		cmdtest.WithGitLabClient(tc.Client),
+		cmdtest.WithBranch("main"),
+		// Create custom option to disable prompts
+		func(f *cmdtest.Factory) {
+			f.IOStub.SetPrompt("true")
+		},
+	)
+
+	// This should complete without hanging
+	_, err := exec("")
+	require.NoError(t, err)
+}
+
+func TestCiStatusCommand_WithPromptsEnabled_FinishedPipeline(t *testing.T) {
+	// Test that the command shows pipeline status and exits cleanly
+	// when dealing with a finished pipeline (no interactive prompts needed)
+	tc := gitlabtesting.NewTestClient(t)
+
+	// Mock calls in expected order
+	gomock.InOrder(
+		// Mock a finished pipeline
+		tc.MockPipelines.EXPECT().
+			GetLatestPipeline("OWNER/REPO", &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr("main")}).
+			Return(&gitlab.Pipeline{ID: 1, Status: "success"}, nil, nil),
+
+		// Mock jobs for the pipeline - need to handle pagination
+		tc.MockJobs.EXPECT().
+			ListPipelineJobs("OWNER/REPO", 1, gomock.Any(), gomock.Any()).
+			Return([]*gitlab.Job{
+				{ID: 1, Name: "test", Stage: "test", Status: "success"},
+			}, &gitlab.Response{NextPage: 0}, nil),
+	)
+
+	exec := cmdtest.SetupCmdForTest(t, NewCmdStatus, false,
+		cmdtest.WithGitLabClient(tc.Client),
+		cmdtest.WithBranch("main"),
+	)
+
+	// This should complete without hanging since the pipeline is finished
+	_, err := exec("")
+	require.NoError(t, err)
 }
