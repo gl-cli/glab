@@ -70,7 +70,7 @@ func Test_promptForCommit(t *testing.T) {
 			noTTY:   true,
 		},
 		{
-			name:         "A commit with noTTY and a default message returns the default message",
+			name:         "A commit with noTTY and an input and a default message returns the default message",
 			input:        "hello",
 			want:         "default message",
 			defaultValue: "default message",

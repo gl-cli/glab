@@ -179,7 +179,7 @@ func Test_extractComponentName(t *testing.T) {
 			expected: "component-1",
 		},
 		{
-			name:     "valid component path",
+			name:     "valid component path in sub directory",
 			path:     filepath.Join(wd, "templates/component-2", "template.yml"),
 			expected: "component-2",
 		},

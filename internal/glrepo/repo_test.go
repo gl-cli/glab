@@ -2,6 +2,7 @@ package glrepo
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"testing"
 
@@ -430,8 +431,8 @@ func TestFullNameFromURL(t *testing.T) {
 			wantErr:   nil,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.remoteURL, func(t *testing.T) {
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("%d - %s", i, tt.remoteURL), func(t *testing.T) {
 			got, err := FullNameFromURL(tt.remoteURL)
 			if tt.wantErr != nil {
 				if err == nil {

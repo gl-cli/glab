@@ -404,30 +404,6 @@ func Test_LinkJobsNegative(t *testing.T) {
 				"jobs-stage2-job1": testbox(1, 5, 3, 3),
 			},
 		},
-		{
-			"Link -- third job missing",
-			[]*ViewJob{
-				{
-					Name:  "stage1-job1",
-					Stage: "stage1",
-					Kind:  Job,
-				},
-				{
-					Name:  "stage2-job1",
-					Stage: "stage2",
-					Kind:  Job,
-				},
-				{
-					Name:  "stage2-job2",
-					Stage: "stage2",
-					Kind:  Job,
-				},
-			},
-			map[string]*tview.TextView{
-				"jobs-stage1-job1": testbox(1, 1, 3, 3),
-				"jobs-stage2-job1": testbox(1, 5, 3, 3),
-			},
-		},
 	}
 	for _, test := range tests {
 		screen := tcell.NewSimulationScreen("UTF-8")
@@ -699,22 +675,26 @@ func Test_latestJobs(t *testing.T) {
 }
 
 func Test_adjacentStages(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
-		desc                       string
-		stage                      string
-		jobs                       []*ViewJob
-		expectedPrev, expectedNext string
+		desc         string
+		stage        string
+		jobs         []*ViewJob
+		expectedPrev string
+		expectedNext string
 	}{
 		{
-			"no jobs",
-			"1",
-			[]*ViewJob{},
-			"", "",
+			desc:         "no jobs",
+			stage:        "1",
+			jobs:         []*ViewJob{},
+			expectedPrev: "",
+			expectedNext: "",
 		},
 		{
-			"first stage",
-			"1",
-			[]*ViewJob{
+			desc:  "first stage",
+			stage: "1",
+			jobs: []*ViewJob{
 				{
 					Stage: "1",
 				},
@@ -728,12 +708,13 @@ func Test_adjacentStages(t *testing.T) {
 					Stage: "2",
 				},
 			},
-			"1", "2",
+			expectedPrev: "1",
+			expectedNext: "2",
 		},
 		{
-			"mid stage",
-			"2",
-			[]*ViewJob{
+			desc:  "mid stage",
+			stage: "2",
+			jobs: []*ViewJob{
 				{
 					Stage: "1",
 				},
@@ -753,12 +734,13 @@ func Test_adjacentStages(t *testing.T) {
 					Stage: "3",
 				},
 			},
-			"1", "3",
+			expectedPrev: "1",
+			expectedNext: "3",
 		},
 		{
-			"last stage",
-			"3",
-			[]*ViewJob{
+			desc:  "last stage",
+			stage: "3",
+			jobs: []*ViewJob{
 				{
 					Stage: "1",
 				},
@@ -778,13 +760,13 @@ func Test_adjacentStages(t *testing.T) {
 					Stage: "3",
 				},
 			},
-			"2", "3",
+			expectedPrev: "2",
+			expectedNext: "3",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
 			prev, next := adjacentStages(test.jobs, test.stage)
 			assert.Equal(t, test.expectedPrev, prev)
 			assert.Equal(t, test.expectedNext, next)

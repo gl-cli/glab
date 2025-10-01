@@ -419,7 +419,7 @@ func TestProjectView(t *testing.T) {
 			expectedOutput: "Opening gitlab.company.org/OWNER/REPO in your browser.\n",
 		},
 		{
-			name: "view project when passing a https git URL on web",
+			name: "view project when passing a https git URL on web with branch",
 			cli:  "https://gitlab.company.org/OWNER/REPO.git --web --branch foobranch",
 			httpMocks: []httpMock{
 				{
