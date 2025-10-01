@@ -91,6 +91,8 @@ func Test_LabelCreate(t *testing.T) {
 }
 
 func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error) {
+	t.Helper()
+
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 	factory := cmdtest.NewTestFactory(ios,
 		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname).Lab()),

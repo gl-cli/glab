@@ -101,6 +101,8 @@ func Test_NewCmdDiff(t *testing.T) {
 }
 
 func runCommand(t *testing.T, rt http.RoundTripper, isTTY bool, cli string) (*test.CmdOut, error) {
+	t.Helper()
+
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 
 	factory := cmdtest.NewTestFactory(ios,

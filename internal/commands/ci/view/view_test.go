@@ -19,6 +19,8 @@ import (
 )
 
 func assertScreen(t *testing.T, screen tcell.Screen, expected []string) {
+	t.Helper()
+
 	sx, sy := screen.Size()
 	assert.Equal(t, len(expected), sy)
 	assert.Equal(t, len([]rune(expected[0])), sx)
@@ -1152,6 +1154,8 @@ func Test_handleNavigation(t *testing.T) {
 }
 
 func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, error, func()) {
+	t.Helper()
+
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	factory := cmdtest.NewTestFactory(ios,
 		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname).Lab()),

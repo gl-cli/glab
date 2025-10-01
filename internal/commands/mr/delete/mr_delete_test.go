@@ -86,6 +86,8 @@ func Test_deleteMergeRequest(t *testing.T) {
 			wantErr: true,
 
 			assertFunc: func(t *testing.T, out, outErr string, err error) {
+				t.Helper()
+
 				assert.Equal(t, "invalid merge request ID provided.", err.Error())
 			},
 		},
@@ -94,6 +96,8 @@ func Test_deleteMergeRequest(t *testing.T) {
 			args:    []string{"1"},
 			wantErr: false,
 			assertFunc: func(t *testing.T, out, outErr string, err error) {
+				t.Helper()
+
 				assert.Contains(t, out, "- Deleting merge request !1.\n")
 				assert.Contains(t, out, "✓ Merge request !1 deleted.\n")
 			},
@@ -103,6 +107,8 @@ func Test_deleteMergeRequest(t *testing.T) {
 			args:    []string{"1", "-R", "profclems/glab"},
 			wantErr: false,
 			assertFunc: func(t *testing.T, out, outErr string, err error) {
+				t.Helper()
+
 				assert.Contains(t, out, "- Deleting merge request !1.\n")
 				assert.Contains(t, out, "✓ Merge request !1 deleted.\n")
 			},
@@ -111,6 +117,8 @@ func Test_deleteMergeRequest(t *testing.T) {
 			name:    "delete no args",
 			wantErr: true,
 			assertFunc: func(t *testing.T, out, outErr string, err error) {
+				t.Helper()
+
 				assert.Equal(t, `no open merge request available for "master"`, err.Error())
 			},
 		},

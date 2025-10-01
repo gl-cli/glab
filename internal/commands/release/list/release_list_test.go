@@ -80,6 +80,8 @@ func TestNewCmdReleaseList(t *testing.T) {
 			name:    "releases list on test repo",
 			wantErr: false,
 			stdOutFunc: func(t *testing.T, out string) {
+				t.Helper()
+
 				assert.Contains(t, out, "Showing 1 release on cli-automated-testing/test")
 			},
 		},
@@ -88,6 +90,8 @@ func TestNewCmdReleaseList(t *testing.T) {
 			wantErr: false,
 			args:    "--tag v0.0.1-beta",
 			stdOutFunc: func(t *testing.T, out string) {
+				t.Helper()
+
 				assert.Contains(t, out, "Dummy description for v0.0.1-beta")
 			},
 		},
@@ -96,6 +100,8 @@ func TestNewCmdReleaseList(t *testing.T) {
 			wantErr: false,
 			args:    "-R profclems/glab",
 			stdOutFunc: func(t *testing.T, out string) {
+				t.Helper()
+
 				assert.Contains(t, out, "Showing 1 release on profclems/glab")
 			},
 		},

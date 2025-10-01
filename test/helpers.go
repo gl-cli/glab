@@ -107,6 +107,8 @@ func ExpectLines(t T, output string, lines ...string) {
 }
 
 func ClearEnvironmentVariables(t *testing.T) {
+	t.Helper()
+
 	// prevent using environment variables for test
 	t.Setenv("GITLAB_TOKEN", "")
 	t.Setenv("VISUAL", "")
@@ -116,19 +118,20 @@ func ClearEnvironmentVariables(t *testing.T) {
 	t.Setenv("USERNAME", "")
 }
 
-func GetHostOrSkip(t testing.TB) string {
-	t.Helper()
+func GetHostOrSkip(tb testing.TB) string {
+	tb.Helper()
+
 	glTestHost := os.Getenv("GITLAB_TEST_HOST")
 	if glTestHost == "" || os.Getenv("GITLAB_TOKEN_TEST") == "" {
 		// since token requires `api` privileges we only run integration tests in the canonical project
 		ciNamespace := os.Getenv("CI_PROJECT_NAMESPACE")
 		if os.Getenv("CI") == "true" && (ciNamespace == "gitlab-org/cli" || ciNamespace == "gitlab-org/security/cli") {
-			t.Log("Expected GITLAB_TEST_HOST and GITLAB_TOKEN_TEST to be set in CI. Marking as failed.")
-			t.Fail()
+			tb.Log("Expected GITLAB_TEST_HOST and GITLAB_TOKEN_TEST to be set in CI. Marking as failed.")
+			tb.Fail()
 		}
-		t.Skip("Set GITLAB_TEST_HOST and GITLAB_TOKEN_TEST to run this integration test")
+		tb.Skip("Set GITLAB_TEST_HOST and GITLAB_TOKEN_TEST to run this integration test")
 	}
-	t.Setenv("GITLAB_TOKEN", os.Getenv("GITLAB_TOKEN_TEST"))
+	tb.Setenv("GITLAB_TOKEN", os.Getenv("GITLAB_TOKEN_TEST"))
 	return glTestHost
 }
 

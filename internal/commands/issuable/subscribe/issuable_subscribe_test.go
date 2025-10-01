@@ -15,6 +15,8 @@ import (
 )
 
 func runCommand(t *testing.T, rt http.RoundTripper, issuableID string, issueType issuable.IssueType) (*test.CmdOut, error) {
+	t.Helper()
+
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
 	factory := cmdtest.NewTestFactory(ios,

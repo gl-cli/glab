@@ -30,6 +30,8 @@ func doesFileExist(fileName string) bool {
 }
 
 func createZipFile(t *testing.T, filename string) (string, string) {
+	t.Helper()
+
 	tempPath := t.TempDir()
 	archive, err := os.CreateTemp(tempPath, "test.*.zip")
 	require.NoError(t, err)
@@ -57,6 +59,8 @@ func createZipFile(t *testing.T, filename string) (string, string) {
 }
 
 func makeTestFactory(t *testing.T) (cmdutils.Factory, *httpmock.Mocker) {
+	t.Helper()
+
 	fakeHTTP := &httpmock.Mocker{
 		MatchURL: httpmock.PathAndQuerystring,
 	}
@@ -100,6 +104,8 @@ func makeTestFactory(t *testing.T) (cmdutils.Factory, *httpmock.Mocker) {
 }
 
 func createSymlinkZip(t *testing.T) (string, string) {
+	t.Helper()
+
 	tempPath := t.TempDir()
 
 	archive, err := os.CreateTemp(tempPath, "test.*.zip")

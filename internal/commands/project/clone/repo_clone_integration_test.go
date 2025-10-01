@@ -65,6 +65,8 @@ func Test_repoClone_group_paginate_Integration(t *testing.T) {
 }
 
 func repoCloneTest(t *testing.T, expectedRepoNames []string, expectedRepoUrls []string, perPage int, paginate bool) {
+	t.Helper()
+
 	assert.Equal(t, len(expectedRepoNames), len(expectedRepoUrls))
 
 	glTestHost := test.GetHostOrSkip(t)

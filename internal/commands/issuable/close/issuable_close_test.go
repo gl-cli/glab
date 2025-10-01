@@ -16,6 +16,8 @@ import (
 )
 
 func mockAllResponses(t *testing.T, fakeHTTP *httpmock.Mocker) {
+	t.Helper()
+
 	fakeHTTP.RegisterResponder(http.MethodGet, "/projects/OWNER/REPO/issues/1",
 		httpmock.NewStringResponse(http.StatusOK, `{
 			"id": 1,
@@ -78,6 +80,8 @@ func mockAllResponses(t *testing.T, fakeHTTP *httpmock.Mocker) {
 }
 
 func runCommand(t *testing.T, rt http.RoundTripper, issuableID string, issueType issuable.IssueType) (*test.CmdOut, error) {
+	t.Helper()
+
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.NewTestFactory(ios,

@@ -20,6 +20,8 @@ import (
 )
 
 func runCommand(t *testing.T, rt http.RoundTripper, branch string, cli string, opts ...cmdtest.FactoryOption) (*test.CmdOut, error) {
+	t.Helper()
+
 	// Default options
 	defaultOpts := []cmdtest.FactoryOption{
 		cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname).Lab()),

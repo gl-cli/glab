@@ -16,6 +16,7 @@ linters:
         - unparam
         - unused
         - usetesting
+        - thelper
     exclusions:
       presets:
           - comments

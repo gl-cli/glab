@@ -51,6 +51,8 @@ func TestAgentGetToken(t *testing.T) {
 }
 
 func mustParse(t *testing.T, dt string) gitlab.ISOTime {
+	t.Helper()
+
 	x, err := time.Parse(time.DateOnly, dt)
 	require.NoError(t, err)
 	return gitlab.ISOTime(x)
