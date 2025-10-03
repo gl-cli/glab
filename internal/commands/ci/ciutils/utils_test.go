@@ -385,7 +385,7 @@ func TestTraceJob(t *testing.T) {
 			},
 		},
 		{
-			name:          "when traceJob is requested and getJob throws error",
+			name:          "when traceJob is requested and trace job throws error",
 			jobName:       "1122",
 			expectedError: "failed to find job: GET https://gitlab.com/api/v4/projects/OWNER%2FREPO/jobs/1122/trace: 403",
 			httpMocks: []httpMock{

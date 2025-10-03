@@ -2,6 +2,7 @@ package git
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"reflect"
@@ -93,7 +94,7 @@ func Test_isFilesystemPath(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s - %s", tt.name, tt.args.p), func(t *testing.T) {
 			if got := isFilesystemPath(tt.args.p); got != tt.want {
 				t.Errorf("isFilesystemPath() = %v, want %v", got, tt.want)
 			}
@@ -348,11 +349,11 @@ func TestDescribeByTags(t *testing.T) {
 }
 
 func Test_assertValidConfig(t *testing.T) {
-	t.Run("config key is valid", func(t *testing.T) {
+	t.Run("config key is valid with three levels", func(t *testing.T) {
 		err := assertValidConfigKey("remote.this.testsuite")
 		require.NoError(t, err)
 	})
-	t.Run("config key is valid", func(t *testing.T) {
+	t.Run("config key is valid with two levels", func(t *testing.T) {
 		err := assertValidConfigKey("this.testsuite")
 		require.NoError(t, err)
 	})

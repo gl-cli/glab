@@ -1304,7 +1304,7 @@ func TestListGitLabTemplates(t *testing.T) {
 			wantTemplates: []string{"Bug", "Feature Request"},
 		},
 		{
-			name:          "Get all the issues templates",
+			name:          "Get all the merge request templates",
 			give:          "merge_request_templates",
 			wantTemplates: []string{"Default"},
 		},

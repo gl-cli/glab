@@ -1,6 +1,7 @@
 package glinstance
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -139,8 +140,8 @@ func TestAPIEndpoint(t *testing.T) {
 			want:     "http://myserver.net/gitlab/api/v4/",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.host, func(t *testing.T) {
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("%d - %s", i, tt.host), func(t *testing.T) {
 			if got := APIEndpoint(tt.host, tt.protocol, tt.apiHost); got != tt.want {
 				t.Errorf("APIEndpoint() = %v, want %v", got, tt.want)
 			}

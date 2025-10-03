@@ -136,11 +136,6 @@ func Test_AddStackBaseBranch(t *testing.T) {
 			title:  "custom-stack",
 			branch: "feature/branch",
 		},
-		{
-			name:   "successfully add custom branch",
-			title:  "custom-stack",
-			branch: "feature/branch",
-		},
 	}
 
 	for _, tt := range tests {
