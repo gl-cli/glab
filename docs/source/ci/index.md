@@ -38,9 +38,7 @@ pipeline
 
 ## Subcommands
 
-- [`artifact`](artifact.md)
 - [`cancel`](cancel/index.md)
-- [`ci`](ci/index.md)
 - [`config`](config/index.md)
 - [`delete`](delete.md)
 - [`get`](get.md)

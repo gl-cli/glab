@@ -66,7 +66,7 @@ func RootUsageFunc(command *cobra.Command) error {
 	if len(subcommands) > 0 {
 		command.Print("\n\nAvailable commands:\n")
 		for _, c := range subcommands {
-			if c.Hidden {
+			if !c.IsAvailableCommand() {
 				continue
 			}
 			command.Printf("  %s\n", c.Name())
@@ -146,7 +146,7 @@ func RootHelpFunc(c *iostreams.ColorPalette, command *cobra.Command, args []stri
 		if c.Short == "" {
 			continue
 		}
-		if c.Hidden {
+		if !c.IsAvailableCommand() {
 			continue
 		}
 

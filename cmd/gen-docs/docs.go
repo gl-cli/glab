@@ -90,8 +90,8 @@ func genWebDocs(glabCli *cobra.Command, basePath string) error {
 // Non-top-level commands with subcommands get their own folder with index.md
 // Non-top-level commands without subcommands get a .md file in their parent's directory
 func genCommandDocs(cmd *cobra.Command, basePath string, parentPath []string) error {
-	// Skip help commands
-	if cmd.Name() == "help" {
+	// Skip help commands and unavailable commands (hidden/deprecated)
+	if cmd.Name() == "help" || !cmd.IsAvailableCommand() {
 		return nil
 	}
 
@@ -132,7 +132,7 @@ func genCommandDocs(cmd *cobra.Command, basePath string, parentPath []string) er
 
 	// Recursively generate docs for all subcommands
 	for _, subCmd := range cmd.Commands() {
-		if subCmd.Name() != "help" {
+		if subCmd.Name() != "help" && subCmd.IsAvailableCommand() {
 			if err := genCommandDocs(subCmd, basePath, currentPath); err != nil {
 				return err
 			}
@@ -169,7 +169,7 @@ func printSubcommands(cmd *cobra.Command, buf *bytes.Buffer) {
 	var subcommands string
 	// Generate children commands
 	for _, cmdC := range cmd.Commands() {
-		if cmdC.Name() != "help" {
+		if cmdC.Name() != "help" && cmdC.IsAvailableCommand() {
 			if cmdC.HasAvailableSubCommands() {
 				subcommands += fmt.Sprintf("- [`%s`](%s/index.md)\n", cmdC.Name(), cmdC.Name())
 			} else {
@@ -193,7 +193,7 @@ func printRootSubcommands(cmd *cobra.Command, buf *bytes.Buffer) {
 	// Generate children commands for root
 	// All top-level commands get directories and index.md files based on the generation logic
 	for _, cmdC := range cmd.Commands() {
-		if cmdC.Name() != "help" {
+		if cmdC.Name() != "help" && cmdC.IsAvailableCommand() {
 			subcommands += fmt.Sprintf("- [`glab %s`](%s/index.md)\n", cmdC.Name(), cmdC.Name())
 		}
 	}
