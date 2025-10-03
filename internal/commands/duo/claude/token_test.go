@@ -14,6 +14,8 @@ import (
 )
 
 func runTokenCommand(t *testing.T, rt http.RoundTripper, args string, glInstanceHostname string) (*test.CmdOut, *cmdtest.Factory, error) {
+	t.Helper()
+
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.NewTestFactory(ios,

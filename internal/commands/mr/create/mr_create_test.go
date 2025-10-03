@@ -24,6 +24,8 @@ import (
 )
 
 func runCommand(t *testing.T, rt http.RoundTripper, branch string, isTTY bool, cli string, letItFail bool) (*test.CmdOut, error) {
+	t.Helper()
+
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(isTTY))
 	pu, _ := url.Parse("https://gitlab.com/OWNER/REPO.git")
 

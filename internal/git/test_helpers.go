@@ -10,6 +10,8 @@ import (
 )
 
 func InitGitRepo(t *testing.T) string {
+	t.Helper()
+
 	tempDir := t.TempDir()
 
 	t.Chdir(tempDir)
@@ -22,6 +24,8 @@ func InitGitRepo(t *testing.T) string {
 }
 
 func InitGitRepoWithCommit(t *testing.T) string {
+	t.Helper()
+
 	tempDir := InitGitRepo(t)
 
 	configureGitConfig(t)
@@ -41,6 +45,8 @@ func InitGitRepoWithCommit(t *testing.T) string {
 }
 
 func configureGitConfig(t *testing.T) {
+	t.Helper()
+
 	// CI will throw errors using a git command without a configuration
 	nameConfig := GitCommand("config", "user.name", "glab test bot")
 	_, err := run.PrepareCmd(nameConfig).Output()
@@ -67,6 +73,8 @@ func CreateRefFiles(refs map[string]StackRef, title string) error {
 }
 
 func CreateBranches(t *testing.T, branches []string) {
+	t.Helper()
+
 	// older versions of git could default to a different branch,
 	// so making sure this one exists.
 	_ = CheckoutNewBranch("main")

@@ -14,6 +14,8 @@ import (
 // automatically restoring the original HOME when the test completes.
 // Returns the path to the temporary directory.
 func isolateHomeDir(t *testing.T) string {
+	t.Helper()
+
 	tempDir := t.TempDir()
 	t.Setenv("HOME", tempDir)
 	return tempDir

@@ -55,6 +55,8 @@ func TestNewCmdDelete(t *testing.T) {
 			args:    []string{"1"},
 			wantErr: false,
 			assertFunc: func(t *testing.T, out string, err string) {
+				t.Helper()
+
 				assert.Contains(t, err, "✓ Issue deleted.\n")
 			},
 		},
@@ -63,6 +65,8 @@ func TestNewCmdDelete(t *testing.T) {
 			args:    []string{"12", "-R", "profclems/glab"},
 			wantErr: false,
 			assertFunc: func(t *testing.T, out string, stderr string) {
+				t.Helper()
+
 				assert.Contains(t, stderr, "✓ Issue deleted.\n")
 			},
 		},

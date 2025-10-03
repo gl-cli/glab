@@ -75,7 +75,7 @@ func Test_stackAmendCmd(t *testing.T) {
 			saveArgs = append(saveArgs, tc.args...)
 
 			getText := getMockEditor(tc.editorMessage, &[]string{})
-			_, err = runSaveCommand(nil, t, getText, true, strings.Join(saveArgs, " "))
+			_, err = runSaveCommand(t, nil, getText, true, strings.Join(saveArgs, " "))
 			require.Nil(t, err)
 
 			createTemporaryFiles(t, dir, tc.amendedFiles)

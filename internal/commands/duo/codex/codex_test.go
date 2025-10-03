@@ -11,6 +11,8 @@ import (
 )
 
 func runCodexCommand(t *testing.T, rt http.RoundTripper, args string, glInstanceHostname string) error {
+	t.Helper()
+
 	ios, _, stdout, stderr := cmdtest.TestIOStreams()
 
 	factory := cmdtest.NewTestFactory(ios,

@@ -28,6 +28,8 @@ type TestRef struct {
 }
 
 func setupTestFactory(t *testing.T, rt http.RoundTripper) (cmdutils.Factory, *options) {
+	t.Helper()
+
 	ios, _, _, _ := cmdtest.TestIOStreams()
 
 	f := cmdtest.NewTestFactory(ios,
