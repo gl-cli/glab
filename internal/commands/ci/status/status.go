@@ -166,12 +166,13 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 						}
 						runningPipeline = updatedPipeline
 					default:
-						break
+						goto exitLoop
 					}
 				} else {
 					break
 				}
 			}
+		exitLoop:
 			if runningPipeline.Status == "failed" {
 				return cmdutils.SilentError
 			}
