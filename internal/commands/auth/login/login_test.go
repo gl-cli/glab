@@ -316,6 +316,8 @@ func Test_hostnameValidator(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := hostnameValidator(tC.hostname)
 			if tC.expected == "" {
 				assert.NoError(t, err)

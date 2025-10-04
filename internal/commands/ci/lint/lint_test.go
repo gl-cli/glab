@@ -94,6 +94,8 @@ func Test_lintRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			fakeHTTP := httpmock.New()
 			defer fakeHTTP.Verify(t)
 

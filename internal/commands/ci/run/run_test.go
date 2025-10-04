@@ -26,8 +26,6 @@ type responseJSON struct {
 }
 
 func TestCIRun(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name string
 		cli  string

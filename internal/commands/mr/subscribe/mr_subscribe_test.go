@@ -23,8 +23,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewCmdSubscribe(t *testing.T) {
-	t.Parallel()
-
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	f := cmdtest.NewTestFactory(io, cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
 		hosts:

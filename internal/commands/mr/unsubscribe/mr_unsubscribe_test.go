@@ -22,8 +22,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewCmdUnsubscribe(t *testing.T) {
-	t.Parallel()
-
 	io, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 	f := cmdtest.NewTestFactory(io, cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
 		hosts:
