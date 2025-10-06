@@ -13,7 +13,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
-	securejoin "github.com/cyphar/filepath-securejoin"
 	catalog "gitlab.com/gitlab-org/cli/internal/commands/project/publish/catalog"
 	"gitlab.com/gitlab-org/cli/internal/commands/release/releaseutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/release/releaseutils/upload"
@@ -285,12 +284,23 @@ func resolveNotesFileOrText(opts *options) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filePath, err := securejoin.SecureJoin(baseDir, opts.experimentalNotesTextOrFile)
+	root, err := os.OpenRoot(baseDir)
 	if err != nil {
 		return "", err
 	}
 
-	b, err := os.ReadFile(filePath)
+	f, err := root.Open(opts.experimentalNotesTextOrFile)
+	if err != nil {
+		return opts.experimentalNotesTextOrFile, nil
+	}
+	defer func() {
+		cerr := f.Close()
+		if err == nil {
+			err = cerr
+		}
+	}()
+
+	b, err := io.ReadAll(f)
 	if err != nil {
 		// Rule 3: fallback to using the value as text
 		return opts.experimentalNotesTextOrFile, nil
