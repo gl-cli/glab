@@ -34,7 +34,7 @@ require (
 	github.com/mark3labs/mcp-go v0.41.1
 	github.com/mattn/go-colorable v0.1.14
 	github.com/mattn/go-isatty v0.0.20
-	github.com/mattn/go-runewidth v0.0.17
+	github.com/mattn/go-runewidth v0.0.19
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.16.0
@@ -63,6 +63,8 @@ require (
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397
 	oss.terrastruct.com/d2 v0.7.1
 )
+
+require github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 
 require (
 	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3.0.20250917201909-41ff0bf215ea
