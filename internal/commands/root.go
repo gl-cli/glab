@@ -40,6 +40,19 @@ import (
 	versionCmd "gitlab.com/gitlab-org/cli/internal/commands/version"
 )
 
+// setHelpFuncRecursively sets the help function on a command and all its subcommands
+func setHelpFuncRecursively(cmd *cobra.Command, f cmdutils.Factory) {
+	// Set help function for this command
+	cmd.SetHelpFunc(func(command *cobra.Command, args []string) {
+		help.RootHelpFunc(f.IO().Color(), command, args)
+	})
+
+	// Recursively set help function for all subcommands
+	for _, subCmd := range cmd.Commands() {
+		setHelpFuncRecursively(subCmd, f)
+	}
+}
+
 // NewCmdRoot is the main root/parent command
 func NewCmdRoot(f cmdutils.Factory) *cobra.Command {
 	c := f.IO().Color()
@@ -158,6 +171,9 @@ func NewCmdRoot(f cmdutils.Factory) *cobra.Command {
 	// See: https://gitlab.com/gitlab-org/cli/-/issues/7885
 	// Add global repo override flag but keep it hidden
 	cmdutils.AddGlobalRepoOverride(rootCmd, f)
+
+	// Set help function recursively on all commands to filter out deprecated/hidden commands
+	setHelpFuncRecursively(rootCmd, f)
 
 	rootCmd.Flags().BoolP("version", "v", false, "show glab version information")
 	return rootCmd

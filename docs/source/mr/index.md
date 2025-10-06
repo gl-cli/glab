@@ -43,7 +43,6 @@ $ glab mr note -m "needs to do X before it can be merged" branch-foo
 - [`create`](create.md)
 - [`delete`](delete.md)
 - [`diff`](diff.md)
-- [`for`](for.md)
 - [`issues`](issues.md)
 - [`list`](list.md)
 - [`merge`](merge.md)
