@@ -7,7 +7,7 @@
   "type": "module",
   "dependencies": {
     "@commitlint/config-conventional": "^20.0.0",
-    "@commitlint/format": "^19.8.1",
+    "@commitlint/format": "^20.0.0",
     "@commitlint/lint": "^19.8.1",
     "@commitlint/read": "^20.0.0"
   }
