@@ -63,6 +63,8 @@ require (
 	oss.terrastruct.com/d2 v0.7.1
 )
 
+require github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
+
 require (
 	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3.0.20250917201909-41ff0bf215ea
 	github.com/charmbracelet/ultraviolet v0.0.0-20250915111650-81d4262876ef // indirect
