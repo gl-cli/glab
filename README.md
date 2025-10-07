@@ -130,7 +130,7 @@ command you forgot, or provide suggestions on how to run commands to perform oth
 
 ## Documentation
 
-Read the [documentation](docs/source/index.md) for usage instructions or check out `glab help`.
+Read the [documentation](docs/source/_index.md) for usage instructions or check out `glab help`.
 
 ## Installation
 
