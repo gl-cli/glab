@@ -1,0 +1,30 @@
+# See https://docs.gitlab.com/user/project/merge_requests/duo_in_merge_requests/#customize-instructions-for-gitlab-duo-code-review
+instructions:
+  - name: Commands
+    fileFilters:
+      - 'internal/commands/**/*.go'
+    instructions: |
+      1. Each (sub-)command is in its own package. The file where the cobra command itself is defined is named the same as the package.
+      2. The command should be created by a factory function called `NewCmd` that ideally only takes a single argument. That argument is the `cmdutils.Factory`.
+      3. The command uses an unexported `options` struct to store all the information it needs. That is, data from the command arguments and flags and data from the factory.
+      4. In the beginning of the `NewCmd` function the `options` struct is instantiated as `opts` and directly assigns the data from the factory depending on what it needs. For example, the `io: f.IO()`.
+      5. The command itself in the `NewCmd` function is created with `cobra.Command` and stored in a local `cmd` variable, like so `cmd := &cobra.Command{...}`.
+      6. If multiple flags are added to the command it's recommended to retrieve `cmd.Flags()` once and stored it in a local variable `fl` that is then used to register the flags.
+      7. The command should make use of cobra functionality to define requirements for flags, like mutually exclusiveness (`cmd.MarkFlagsMutuallyExclusive`) or requiring flags together (`cmd.MarkFlagsRequiredTogether`).
+      8. The command should be implemented in the `cobra.Command{RunE: ...}` function.
+      9. The command run function should ideally be split into multiple sections depending on the necessity of the command. Into the `options.complete`, `options.validate` and `options.run` functions.
+      10. The `options.complete` function can take the run `cmd` object and / or `args` to complete the `options` struct with CLI argument information.
+      11. The `options.validate` function can take the run `cmd` object and / or `args` to validate the contents of the `options` struct that wasn't possible with cobra's built-in functionality.
+      12. The `options.run` function must execute the commands business logic.
+      13. The `options.complete`, `options.validate` and `options.run` functions may optionally be passed the command context (`cmd.Context()`).
+      14. The commands should never directly print to or read from the standard ios, but instead rely on the factories iostreams object. That must be assigned to the `io` field of the `options` struct.
+
+  - name: Command tests
+    fileFilters:
+      - 'internal/commands/**/*_test.go'
+    instructions: |
+      1. Use the `cmdtest` package for helper functions related to command execution or the factory.
+      2. Ideally use the `cmdtest.SetupCmdForTest` function to setup the command under test for execution.
+      3. Use the GitLab client-go testing package imported as `gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"` to create a GitLab testing client for mocking the API calls. Do not use HTTP mocks directly when possible. The commands interface with the GitLab client-go package and usually not with an HTTP client directly.
+      4. Use `t.Parallel()` when possible.
+      5. Use the testify require and assert package for assertions instead of the assertion functions of `testing.T`.
