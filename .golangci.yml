@@ -25,6 +25,11 @@ linters:
           - legacy
           - std-error-handling
     settings:
+      govet:
+        enable-all: true
+        disable:
+          - fieldalignment
+          - shadow
       staticcheck:
         checks:
           - all
