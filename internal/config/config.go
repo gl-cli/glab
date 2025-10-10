@@ -489,7 +489,7 @@ func (c *fileConfig) parseHosts(hostsEntry *yaml.Node) ([]*HostConfig, error) {
 	}
 
 	if len(hostConfigs) == 0 {
-		return nil, errors.New("could not find any host configurations")
+		return nil, &NotFoundError{errors.New("could not find any host configurations")}
 	}
 
 	return hostConfigs, nil
