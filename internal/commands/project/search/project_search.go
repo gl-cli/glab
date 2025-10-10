@@ -84,23 +84,29 @@ func (o *options) run() error {
 		fmt.Fprintln(o.io.StdOut, string(projectListJSON))
 		return nil
 	}
-	title := fmt.Sprintf("Showing results for \"%s\"", o.search)
+	title := fmt.Sprintf("Showing results for \"%s\"\n", o.search)
 	if len(projects) == 0 {
 		title = fmt.Sprintf("No results found for \"%s\"", o.search)
 	}
-	table := tableprinter.NewTablePrinter()
-	table.Wrap = true
-	for _, p := range projects {
-		table.AddCell(o.io.Color().Green(fmt.Sprintf("%d", p.ID)))
 
-		var description string
+	table := tableprinter.NewTablePrinter()
+	if len(projects) > 0 {
+		table.AddRow("Project ID", "Project path", "Description", "Stars, forks, open issues", "Updated at")
+	}
+	table.Wrap = false
+	for _, p := range projects {
+		description := ""
 		if p.Description != "" {
-			description = fmt.Sprintf("\n%s", o.io.Color().Cyan(p.Description))
+			description = o.io.Color().Cyan(p.Description)
 		}
 
-		table.AddCellf("%s%s\n%s", p.PathWithNamespace, description, o.io.Color().Gray(p.WebURL))
-		table.AddCellf("%d stars %d forks %d issues", p.StarCount, p.ForksCount, p.OpenIssuesCount)
-		table.AddCellf("updated %s", utils.TimeToPrettyTimeAgo(*p.LastActivityAt))
+		metadata := fmt.Sprintf("%d stars %d forks %d issues", p.StarCount, p.ForksCount, p.OpenIssuesCount)
+
+		table.AddCell(o.io.Color().Green(fmt.Sprintf("%d", p.ID)))
+		table.AddCell(p.PathWithNamespace)
+		table.AddCell(description)
+		table.AddCell(metadata)
+		table.AddCell(utils.TimeToPrettyTimeAgo(*p.LastActivityAt))
 		table.EndRow()
 	}
 

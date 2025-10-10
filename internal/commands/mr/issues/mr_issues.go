@@ -59,7 +59,7 @@ func NewCmdIssues(f cmdutils.Factory) *cobra.Command {
 			title.ListActionType = "search"
 			title.CurrentPageTotal = len(mrIssues)
 
-			fmt.Fprintf(f.IO().StdOut, "%s\n%s\n", title.Describe(), issueutils.DisplayIssueList(f.IO(), mrIssues, repo.FullName()))
+			fmt.Fprintf(f.IO().StdOut, "%s\n%s\n", title.Describe(), issueutils.DisplayIssueList(f.IO(), mrIssues, title.RepoName))
 			return nil
 		},
 	}

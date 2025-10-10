@@ -59,10 +59,11 @@ func TestMergeRequestClosesIssues_byID(t *testing.T) {
 	assert.Equal(t, heredoc.Doc(`
 		Showing 2 issues in OWNER/REPO that match your search. 
 
-		#11	new issue                		about X years ago
-		#15	this is another new issue		about X years ago
+		ID 	Title                    	Labels	Created at       
+		#11	new issue                	      	about X years ago
+		#15	this is another new issue	      	about X years ago
 
-	`), out)
+		`), out)
 	assert.Equal(t, ``, output.Stderr())
 }
 
@@ -110,9 +111,10 @@ func TestMergeRequestClosesIssues_currentBranch(t *testing.T) {
 	assert.Equal(t, heredoc.Doc(`
 		Showing 2 issues in OWNER/REPO that match your search. 
 
-		#11	new issue                		about X years ago
-		#15	this is another new issue		about X years ago
+		ID 	Title                    	Labels	Created at       
+		#11	new issue                	      	about X years ago
+		#15	this is another new issue	      	about X years ago
 
-	`), out)
+		`), out)
 	assert.Equal(t, ``, output.Stderr())
 }
