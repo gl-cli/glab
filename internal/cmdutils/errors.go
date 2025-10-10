@@ -3,9 +3,10 @@ package cmdutils
 import (
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/AlecAivazis/survey/v2/terminal"
-
+	"github.com/charmbracelet/fang"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,16 @@ func (fe FlagError) Unwrap() error {
 
 // SilentError is an error that triggers exit Code 1 without any error messaging
 var SilentError = errors.New("SilentError")
+
+// GitLabErrorHandler is a custom error handler for fang that handles GitLab CLI specific errors
+func GitLabErrorHandler(w io.Writer, styles fang.Styles, err error) {
+	// Ignore SilentError - it should not produce any output
+	if errors.Is(err, SilentError) {
+		return
+	}
+	// Delegate everything else to Fang's default handler
+	fang.DefaultErrorHandler(w, styles, err)
+}
 
 type ExitError struct {
 	Err     error
