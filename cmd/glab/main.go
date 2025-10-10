@@ -223,6 +223,7 @@ func main() {
 		fang.WithoutCompletions(),
 		fang.WithoutManpage(),
 		fang.WithColorSchemeFunc(gitLabColorScheme),
+		fang.WithErrorHandler(cmdutils.GitLabErrorHandler),
 	); err != nil {
 		var exitError *cmdutils.ExitError
 		if errors.As(err, &exitError) {
