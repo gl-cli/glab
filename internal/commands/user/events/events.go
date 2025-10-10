@@ -81,9 +81,12 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 					projects[e.ProjectID] = project
 				}
 
-				title := utils.NewListTitle("User events")
+				title := utils.NewListTitle("user event")
+				title.Page = l.Page
 				title.CurrentPageTotal = len(events)
+				title.RepoName = "all projects"
 
+				fmt.Fprintf(f.IO().StdOut, "%s\n", title.Describe())
 				DisplayAllEvents(f.IO().StdOut, events, projects)
 				return nil
 			}
