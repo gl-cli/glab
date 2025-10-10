@@ -115,6 +115,10 @@ func (o *options) run() error {
 
 		// List
 		table := tableprinter.NewTablePrinter()
+		if len(projects) > 0 {
+			table.AddRow("Project path", "Git URL", "Description")
+		}
+
 		for _, prj := range projects {
 			table.AddCell(c.Blue(prj.PathWithNamespace))
 			table.AddCell(prj.SSHURLToRepo)
