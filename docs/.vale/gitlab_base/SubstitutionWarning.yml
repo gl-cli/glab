@@ -22,10 +22,13 @@ swap:
   case sensitive: "case-sensitive"
   case insensitive: "case-insensitive"
   cherry pick: "cherry-pick"
+  cmd: Command
   code base: "codebase"
   config: "configuration"
   confirmation box: "confirmation dialog"
   confirmation dialog box: "confirmation dialog"
+  ctrl: Control
+  del: Delete
   deselect: "clear"
   deselected: "cleared"
   dialog box: "dialog"
@@ -45,6 +48,8 @@ swap:
   log-in: "sign in"
   logged in user: "authenticated user"
   logged-in user: "authenticated user"
+  lower case: "lowercase"
+  lower-case: "lowercase"
   machine-learning: "machine learning"
   modal dialog: "dialog"
   modal window: "dialog"
@@ -61,19 +66,26 @@ swap:
   once the: "after the"
   once you: "after you"
   open telemetry: "OpenTelemetry"
+  open ldap: "OpenLDAP"
   pack file: packfile
   pack files: packfiles
   pop-up window: "dialog"
   pop-up: "dialog"
   popup: "dialog"
+  primary node: "primary site"
   re-index: "reindex"
   repo: "repository"
   root group: "top-level group"
+  secondary node: "secondary site"
   signed in user: "authenticated user"
   signed-in user: "authenticated user"
   since: "because' or 'after"
   source (?:install|installation): self-compiled installation
   source (?:installs|installations): self-compiled installations
+  sub directories: "subdirectories"
+  sub-directories: "subdirectories"
+  sub directory: "subdirectory"
+  sub-directory: "subdirectory"
   sub group: "subgroup"
   sub-group: "subgroup"
   sub-groups: "subgroups"
