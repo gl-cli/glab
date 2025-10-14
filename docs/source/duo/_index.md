@@ -21,5 +21,3 @@ Work with GitLab Duo
 ## Subcommands
 
 - [`ask`](ask.md)
-- [`claude`](claude/_index.md)
-- [`codex`](codex.md)
