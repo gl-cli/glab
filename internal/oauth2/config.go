@@ -31,7 +31,7 @@ func oauthClientID(cfg config.Config, hostname string) (string, error) {
 	return glinstance.DefaultClientID, nil
 }
 
-func unmarshal(hostname string, cfg config.Config) (*oauth2.Token, error) {
+func Unmarshal(hostname string, cfg config.Config) (*oauth2.Token, error) {
 	result := &oauth2.Token{}
 	var err error
 

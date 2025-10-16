@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+	"gitlab.com/gitlab-org/cli/internal/oauth2"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
@@ -14,8 +15,6 @@ import (
 
 	"github.com/spf13/cobra"
 )
-
-const tokenUser = "oauth2"
 
 type options struct {
 	io     *iostreams.IOStreams
@@ -57,16 +56,19 @@ func (o *options) complete(args []string) {
 }
 
 func (o *options) validate() error {
-	if o.operation == "store" {
+	switch o.operation {
+	case "get":
+		// valid option
+		return nil
+	case "store":
 		// We pretend to implement the "store" operation, but do nothing since we already have a cached token.
 		return cmdutils.SilentError
-	}
-
-	if o.operation != "get" {
+	case "erase":
+		// We pretend to implement the "erase" operation, but do nothing since we don't want to erase anything.
+		return cmdutils.SilentError
+	default:
 		return fmt.Errorf("glab auth git-credential: %q is an invalid operation.", o.operation)
 	}
-
-	return nil
 }
 
 func (o *options) run() error {
@@ -107,16 +109,50 @@ func (o *options) run() error {
 
 	cfg := o.config()
 
-	gotToken, _ := cfg.Get(expectedParams["host"], "token")
+	output := map[string]string{}
 
-	if gotToken == "" {
+	host := expectedParams["host"]
+	isOAuth2Cfg, _ := cfg.Get(host, "is_oauth2")
+	jobToken, _ := cfg.Get(host, "job_token")
+	token, _ := cfg.Get(host, "token")
+	username, _ := cfg.Get(host, "user")
+
+	switch {
+	case isOAuth2Cfg == "true":
+		oauth2Token, err := oauth2.Unmarshal(host, cfg)
+		if err != nil {
+			return fmt.Errorf("unable to parse OAuth2 token information from config of host %q: %w", host, err)
+		}
+
+		// see https://docs.gitlab.com/ee/api/oauth2.html#access-git-over-https-with-access-token
+		output["username"] = "oauth2"
+		output["password"] = oauth2Token.AccessToken
+		if !oauth2Token.Expiry.IsZero() {
+			output["password_expiry_utc"] = fmt.Sprintf("%d", oauth2Token.Expiry.UTC().Unix())
+		}
+		if oauth2Token.RefreshToken != "" {
+			output["oauth_refresh_token"] = oauth2Token.RefreshToken
+		}
+	case jobToken != "":
+		output["username"] = "gitlab-ci-token"
+		// see https://docs.gitlab.com/ci/jobs/ci_job_token/#to-git-clone-a-private-projects-repository
+		output["password"] = jobToken
+	case token != "":
+		output["username"] = username
+		output["password"] = token
+	default:
 		return cmdutils.SilentError
 	}
 
-	fmt.Fprintf(o.io.StdOut, "protocol=%s\n", expectedParams["protocol"])
-	fmt.Fprintf(o.io.StdOut, "host=%s\n", expectedParams["host"])
-	fmt.Fprintf(o.io.StdOut, "username=%s\n", tokenUser)
-	fmt.Fprintf(o.io.StdOut, "password=%s\n", gotToken)
+	if expectedParams["username"] != "" && expectedParams["username"] != output["username"] {
+		return fmt.Errorf("the requested username by Git doesn't match the one that is configured for this host with GLab, want %q but got %q. Rejecting request", output["username"], expectedParams["username"])
+	}
+
+	// "A capability[] directive must precede any value depending on it and these directives should be the first item announced in the protocol." https://git-scm.com/docs/git-credential
+	fmt.Fprintln(o.io.StdOut, "capability[]=authtype")
+	for key, v := range output {
+		fmt.Fprintf(o.io.StdOut, "%s=%s\n", key, v)
+	}
 
 	return nil
 }
