@@ -34,7 +34,7 @@ func (s stubConfig) Local() (*config.LocalConfig, error)   { return nil, nil }
 func (s stubConfig) Write() error                          { return nil }
 func (s stubConfig) WriteAll() error                       { return nil }
 
-func TestConfig_unmarshal(t *testing.T) {
+func TestConfig_Unmarshal(t *testing.T) {
 	cfg := stubConfig{
 		hosts: map[string]map[string]string{
 			"gitlab.com": {
@@ -46,7 +46,7 @@ func TestConfig_unmarshal(t *testing.T) {
 		},
 	}
 
-	token, err := unmarshal("gitlab.com", cfg)
+	token, err := Unmarshal("gitlab.com", cfg)
 	require.Nil(t, err)
 
 	assert.Equal(t, "refresh_token", token.RefreshToken)

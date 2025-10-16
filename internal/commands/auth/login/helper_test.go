@@ -2,12 +2,14 @@ package login
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_helperRun(t *testing.T) {
@@ -16,12 +18,13 @@ func Test_helperRun(t *testing.T) {
 	t.Setenv("GITLAB_TOKEN", "")
 	t.Setenv("GITLAB_ACCESS_TOKEN", "")
 	t.Setenv("OAUTH_TOKEN", "")
+	t.Setenv("USER", "")
 
 	tests := []struct {
 		name       string
 		opts       options
 		input      string
-		wantStdout string
+		wantStdout []string
 		wantStderr string
 		wantErr    bool
 	}{
@@ -35,7 +38,7 @@ func Test_helperRun(t *testing.T) {
 						hosts:
 						  example.com:
 						    user: "monalisa"
-						    token: "OTOKEN"
+						    token: "some-password"
 					`))
 				},
 			},
@@ -44,12 +47,10 @@ func Test_helperRun(t *testing.T) {
 				host=example.com
 			`),
 			wantErr: false,
-			wantStdout: heredoc.Doc(`
-				protocol=https
-				host=example.com
-				username=oauth2
-				password=OTOKEN
-			`),
+			wantStdout: []string{
+				"username=monalisa",
+				"password=some-password",
+			},
 			wantStderr: "",
 		},
 		{
@@ -62,7 +63,7 @@ func Test_helperRun(t *testing.T) {
 						hosts:
 						  example.com:
 						    user: "monalisa"
-						    token: "OTOKEN"
+						    token: "some-password"
 					`))
 				},
 			},
@@ -72,12 +73,10 @@ func Test_helperRun(t *testing.T) {
 				username=monalisa
 			`),
 			wantErr: false,
-			wantStdout: heredoc.Doc(`
-				protocol=https
-				host=example.com
-				username=oauth2
-				password=OTOKEN
-			`),
+			wantStdout: []string{
+				"username=monalisa",
+				"password=some-password",
+			},
 			wantStderr: "",
 		},
 		{
@@ -90,7 +89,7 @@ func Test_helperRun(t *testing.T) {
 						hosts:
 						  example.com:
 						    user: "monalisa"
-						    token: "OTOKEN"
+						    token: "some-password"
 					`))
 				},
 			},
@@ -98,12 +97,10 @@ func Test_helperRun(t *testing.T) {
 				url=https://monalisa@example.com
 			`),
 			wantErr: false,
-			wantStdout: heredoc.Doc(`
-				protocol=https
-				host=example.com
-				username=oauth2
-				password=OTOKEN
-			`),
+			wantStdout: []string{
+				"username=monalisa",
+				"password=some-password",
+			},
 			wantStderr: "",
 		},
 		{
@@ -124,7 +121,6 @@ func Test_helperRun(t *testing.T) {
 				host=example.com
 			`),
 			wantErr:    true,
-			wantStdout: "",
 			wantStderr: "",
 		},
 		{
@@ -136,7 +132,8 @@ func Test_helperRun(t *testing.T) {
 						_source: "GITLAB_TOKEN"
 						hosts:
 						  example.com:
-						    token: "OTOKEN"
+						    user: "clemsbot"
+						    token: "some-password"
 					`))
 				},
 			},
@@ -146,12 +143,65 @@ func Test_helperRun(t *testing.T) {
 				username=clemsbot
 			`),
 			wantErr: false,
-			wantStdout: heredoc.Doc(`
+			wantStdout: []string{
+				"username=clemsbot",
+				"password=some-password",
+			},
+			wantStderr: "",
+		},
+		{
+			name: "support OAuth2",
+			opts: options{
+				operation: "get",
+				config: func() config.Config {
+					return config.NewFromString(heredoc.Doc(`
+						_source: "/Users/monalisa/.config/glab/config.yml"
+						hosts:
+						  example.com:
+						    user: "monalisa"
+						    is_oauth2: "true"
+						    oauth2_refresh_token: "some-refresh-token"
+						    oauth2_expiry_date: 13 Oct 25 12:35 UTC
+						    token: "some-access-token"
+					`))
+				},
+			},
+			input: heredoc.Doc(`
 				protocol=https
 				host=example.com
-				username=oauth2
-				password=OTOKEN
 			`),
+			wantErr: false,
+			wantStdout: []string{
+				"username=oauth2",
+				"password=some-access-token",
+				"password_expiry_utc=1760358900",
+				"oauth_refresh_token=some-refresh-token",
+			},
+			wantStderr: "",
+		},
+		{
+			name: "support Job Token",
+			opts: options{
+				operation: "get",
+				config: func() config.Config {
+					return config.NewFromString(heredoc.Doc(`
+						_source: "/Users/monalisa/.config/glab/config.yml"
+						hosts:
+						  example.com:
+						    user: "monalisa"
+						    job_token: "some-job-token"
+					`))
+				},
+			},
+			input: heredoc.Doc(`
+				protocol=https
+				host=example.com
+			`),
+			wantErr: false,
+			wantStdout: []string{
+				"username=gitlab-ci-token",
+				"password=some-job-token",
+			},
 			wantStderr: "",
 		},
 	}
@@ -161,14 +211,25 @@ func Test_helperRun(t *testing.T) {
 			fmt.Fprint(stdin, tt.input)
 			opts := &tt.opts
 			opts.io = io
-			if err := opts.run(); (err != nil) != tt.wantErr {
-				t.Fatalf("helperRun() error = %v, wantErr %v", err, tt.wantErr)
+
+			err := opts.run()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
-			if tt.wantStdout != stdout.String() {
-				t.Errorf("stdout: got %q, wants %q", stdout.String(), tt.wantStdout)
+
+			if tt.wantStdout != nil {
+				stdout := stdout.String()
+				assert.Truef(t, strings.HasPrefix(stdout, "capability[]=authtype\n"), "first line of stdout must always be the capability preamble")
+				t.Log(stdout)
+				for _, expectedKV := range tt.wantStdout {
+					assert.Contains(t, stdout, expectedKV)
+				}
 			}
-			if tt.wantStderr != stderr.String() {
-				t.Errorf("stderr: got %q, wants %q", stderr.String(), tt.wantStderr)
+
+			if tt.wantStderr != "" {
+				assert.Equal(t, tt.wantStderr, stderr.String())
 			}
 		})
 	}

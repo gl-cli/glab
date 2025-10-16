@@ -30,7 +30,7 @@ func NewConfigTokenSource(cfg config.Config, httpClient *http.Client, protocol, 
 
 	oauth2Config := gitlaboauth2.NewOAuth2Config(fmt.Sprintf("%s://%s", protocol, hostname), clientID, redirectURL, scopes)
 
-	token, err := unmarshal(hostname, cfg)
+	token, err := Unmarshal(hostname, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (c *configTokenSource) Token() (*oauth2.Token, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	token, err := unmarshal(c.hostname, c.cfg)
+	token, err := Unmarshal(c.hostname, c.cfg)
 	if err != nil {
 		return nil, err
 	}
