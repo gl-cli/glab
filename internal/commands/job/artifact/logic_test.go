@@ -14,10 +14,12 @@ import (
 
 const numTestFiles = 100
 
-func createTestZipFile() (*os.File, error) {
-	tempFile, err := os.CreateTemp("", "temp-*.zip")
+func createTestZipFile(t *testing.T) string {
+	t.Helper()
+
+	tempFile, err := os.CreateTemp(t.TempDir(), "temp-*.zip")
 	if err != nil {
-		return nil, err
+		t.Fatalf("Create temp file: %v", err)
 	}
 
 	zipWriter := zip.NewWriter(tempFile)
@@ -27,20 +29,24 @@ func createTestZipFile() (*os.File, error) {
 
 		fileWriter, err := zipWriter.Create(fileName)
 		if err != nil {
-			return nil, err
+			t.Fatalf("Create zip: %v", err)
 		}
 
 		_, err = fileWriter.Write([]byte(fileName))
 		if err != nil {
-			return nil, err
+			t.Fatalf("Write zip: %v", err)
 		}
 	}
 
 	if err := zipWriter.Close(); err != nil {
-		return nil, err
+		t.Fatalf("Close zip: %v", err)
 	}
 
-	return tempFile, nil
+	if err := tempFile.Close(); err != nil {
+		t.Fatalf("Close temp: %v", err)
+	}
+
+	return tempFile.Name()
 }
 
 func toByteReader(zipFilePath string) (*bytes.Reader, error) {
@@ -68,11 +74,9 @@ func listFilesInDir(dirPath string) ([]string, error) {
 }
 
 func TestAcceptableZipFile(t *testing.T) {
-	zip, err := createTestZipFile()
-	require.NoError(t, err)
-	defer os.Remove(zip.Name())
+	zipName := createTestZipFile(t)
 
-	reader, err := toByteReader(zip.Name())
+	reader, err := toByteReader(zipName)
 	require.NoError(t, err)
 
 	targetDir := t.TempDir()
@@ -100,27 +104,23 @@ func TestAcceptableZipFile(t *testing.T) {
 }
 
 func TestFileLimitExceeded(t *testing.T) {
-	zip, err := createTestZipFile()
-	require.NoError(t, err)
-	defer os.Remove(zip.Name())
+	zipName := createTestZipFile(t)
 
-	reader, err := toByteReader(zip.Name())
+	reader, err := toByteReader(zipName)
 	require.NoError(t, err)
 
-	err = readZip(reader, os.TempDir(), false, defaultZIPReadLimit, 50)
+	err = readZip(reader, t.TempDir(), false, defaultZIPReadLimit, 50)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "zip archive includes too many files")
 }
 
 func TestReadLimitExceeded(t *testing.T) {
-	zip, err := createTestZipFile()
-	require.NoError(t, err)
-	defer os.Remove(zip.Name())
+	zipName := createTestZipFile(t)
 
-	reader, err := toByteReader(zip.Name())
+	reader, err := toByteReader(zipName)
 	require.NoError(t, err)
 
-	err = readZip(reader, os.TempDir(), false, 50, defaultZIPFileLimit)
+	err = readZip(reader, t.TempDir(), false, 50, defaultZIPFileLimit)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "extracted zip too large")
 }
