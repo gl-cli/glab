@@ -56,19 +56,11 @@ func (o *options) complete(args []string) {
 }
 
 func (o *options) validate() error {
-	switch o.operation {
-	case "get":
-		// valid option
-		return nil
-	case "store":
-		// We pretend to implement the "store" operation, but do nothing since we already have a cached token.
+	if o.operation != "get" {
+		// Ignore unsupported operation
 		return cmdutils.SilentError
-	case "erase":
-		// We pretend to implement the "erase" operation, but do nothing since we don't want to erase anything.
-		return cmdutils.SilentError
-	default:
-		return fmt.Errorf("glab auth git-credential: %q is an invalid operation.", o.operation)
 	}
+	return nil
 }
 
 func (o *options) run() error {
