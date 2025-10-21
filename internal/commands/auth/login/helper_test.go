@@ -21,12 +21,13 @@ func Test_helperRun(t *testing.T) {
 	t.Setenv("USER", "")
 
 	tests := []struct {
-		name       string
-		opts       options
-		input      string
-		wantStdout []string
-		wantStderr string
-		wantErr    bool
+		name            string
+		opts            options
+		input           string
+		wantStdout      []string
+		wantStderr      string
+		wantErr         bool
+		wantValidateErr bool
 	}{
 		{
 			name: "host only, credentials found",
@@ -46,7 +47,8 @@ func Test_helperRun(t *testing.T) {
 				protocol=https
 				host=example.com
 			`),
-			wantErr: false,
+			wantErr:         false,
+			wantValidateErr: false,
 			wantStdout: []string{
 				"username=monalisa",
 				"password=some-password",
@@ -72,7 +74,8 @@ func Test_helperRun(t *testing.T) {
 				host=example.com
 				username=monalisa
 			`),
-			wantErr: false,
+			wantErr:         false,
+			wantValidateErr: false,
 			wantStdout: []string{
 				"username=monalisa",
 				"password=some-password",
@@ -96,7 +99,8 @@ func Test_helperRun(t *testing.T) {
 			input: heredoc.Doc(`
 				url=https://monalisa@example.com
 			`),
-			wantErr: false,
+			wantErr:         false,
+			wantValidateErr: false,
 			wantStdout: []string{
 				"username=monalisa",
 				"password=some-password",
@@ -120,8 +124,9 @@ func Test_helperRun(t *testing.T) {
 				protocol=https
 				host=example.com
 			`),
-			wantErr:    true,
-			wantStderr: "",
+			wantErr:         true,
+			wantValidateErr: false,
+			wantStderr:      "",
 		},
 		{
 			name: "token from env",
@@ -142,7 +147,8 @@ func Test_helperRun(t *testing.T) {
 				host=example.com
 				username=clemsbot
 			`),
-			wantErr: false,
+			wantErr:         false,
+			wantValidateErr: false,
 			wantStdout: []string{
 				"username=clemsbot",
 				"password=some-password",
@@ -170,7 +176,8 @@ func Test_helperRun(t *testing.T) {
 				protocol=https
 				host=example.com
 			`),
-			wantErr: false,
+			wantErr:         false,
+			wantValidateErr: false,
 			wantStdout: []string{
 				"username=oauth2",
 				"password=some-access-token",
@@ -197,12 +204,79 @@ func Test_helperRun(t *testing.T) {
 				protocol=https
 				host=example.com
 			`),
-			wantErr: false,
+			wantErr:         false,
+			wantValidateErr: false,
 			wantStdout: []string{
 				"username=gitlab-ci-token",
 				"password=some-job-token",
 			},
 			wantStderr: "",
+		},
+		{
+			name: "store command",
+			opts: options{
+				operation: "store",
+				config: func() config.Config {
+					return config.NewFromString(heredoc.Doc(`
+						_source: "/Users/monalisa/.config/glab/config.yml"
+						hosts:
+						  example.com:
+						    user: "monalisa"
+						    token: "some-password"
+					`))
+				},
+			},
+			input: heredoc.Doc(`
+				protocol=https
+				host=example.com
+			`),
+			wantErr:         false,
+			wantValidateErr: true,
+			wantStdout:      nil,
+			wantStderr:      "",
+		},
+		{
+			name: "erase command",
+			opts: options{
+				operation: "erase",
+				config: func() config.Config {
+					return config.NewFromString(heredoc.Doc(`
+						_source: "/Users/monalisa/.config/glab/config.yml"
+						hosts:
+						  example.com:
+						    user: "monalisa"
+						    token: "some-password"
+					`))
+				},
+			},
+			input: heredoc.Doc(`
+				protocol=https
+				host=example.com
+			`),
+			wantErr:         false,
+			wantValidateErr: true,
+			wantStdout:      nil,
+			wantStderr:      "",
+		},
+		{
+			name: "invalid command",
+			opts: options{
+				operation: "not-a-valid-command",
+				config: func() config.Config {
+					return config.NewFromString(heredoc.Doc(`
+						_source: "/Users/monalisa/.config/glab/config.yml"
+						hosts:
+						  example.com:
+						    user: "monalisa"
+						    token: "some-password"
+					`))
+				},
+			},
+			input:           "",
+			wantErr:         false,
+			wantValidateErr: true,
+			wantStdout:      nil,
+			wantStderr:      "",
 		},
 	}
 	for _, tt := range tests {
@@ -212,11 +286,23 @@ func Test_helperRun(t *testing.T) {
 			opts := &tt.opts
 			opts.io = io
 
-			err := opts.run()
-			if tt.wantErr {
-				assert.Error(t, err)
+			validateErr := opts.validate()
+			if tt.wantValidateErr {
+				assert.Error(t, validateErr)
 			} else {
-				assert.NoError(t, err)
+				assert.NoError(t, validateErr)
+			}
+
+			// No need to run if validate error is expected
+			if tt.wantValidateErr {
+				return
+			}
+
+			runErr := opts.run()
+			if tt.wantErr {
+				assert.Error(t, runErr)
+			} else {
+				assert.NoError(t, runErr)
 			}
 
 			if tt.wantStdout != nil {
