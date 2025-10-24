@@ -1174,6 +1174,62 @@ func runCommand(t *testing.T, rt http.RoundTripper, cli string) (*test.CmdOut, e
 	return cmdOut, err, restoreCmd
 }
 
+func Test_bracketEscaper(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		desc     string
+		input    string
+		expected string
+	}{
+		{
+			desc:     "no brackets",
+			input:    "simple text",
+			expected: "simple text",
+		},
+		{
+			desc:     "literal brackets [MASKED]",
+			input:    "value is [MASKED]",
+			expected: "value is [MASKED[]",
+		},
+		{
+			desc:     "ANSI escape sequence preserved",
+			input:    "\x1b[32;1mgreen text\x1b[0m",
+			expected: "\x1b[32;1mgreen text\x1b[0m",
+		},
+		{
+			desc:     "ANSI with literal brackets",
+			input:    "\x1b[32;1m$ echo \"test\"\x1b[0m\nvalue is [MASKED]\n",
+			expected: "\x1b[32;1m$ echo \"test\"\x1b[0m\nvalue is [MASKED[]\n",
+		},
+		{
+			desc:     "multiple literal brackets",
+			input:    "[MASKED] and [HIDDEN]",
+			expected: "[MASKED[] and [HIDDEN[]",
+		},
+		{
+			desc:     "complex trace with section markers",
+			input:    "Compile complete.\n\x1b[32;1m$ echo \"MASKED variables's value is ${TEST_MASKED}\"\x1b[0m\nMASKED variables's value is [MASKED]\n",
+			expected: "Compile complete.\n\x1b[32;1m$ echo \"MASKED variables's value is ${TEST_MASKED}\"\x1b[0m\nMASKED variables's value is [MASKED[]\n",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			var output strings.Builder
+			escaper := &bracketEscaper{Writer: &output}
+
+			n, err := escaper.Write([]byte(test.input))
+
+			assert.NoError(t, err)
+			assert.Equal(t, len(test.input), n, "should return number of input bytes consumed")
+			assert.Equal(t, test.expected, output.String())
+		})
+	}
+}
+
 func TestCIView(t *testing.T) {
 	type httpMock struct {
 		method string
