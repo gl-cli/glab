@@ -6,27 +6,29 @@ import (
 	"net/url"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-	"gitlab.com/gitlab-org/cli/internal/oauth2"
-
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
 	"github.com/spf13/cobra"
 )
 
 type options struct {
-	io     *iostreams.IOStreams
-	config func() config.Config
+	io        *iostreams.IOStreams
+	config    func() config.Config
+	apiClient func(repoHost string) (*api.Client, error)
 
 	operation string
 }
 
 func NewCmdCredential(f cmdutils.Factory) *cobra.Command {
 	opts := &options{
-		io:     f.IO(),
-		config: f.Config,
+		io:        f.IO(),
+		config:    f.Config,
+		apiClient: f.ApiClient,
 	}
 
 	cmd := &cobra.Command{
@@ -111,9 +113,17 @@ func (o *options) run() error {
 
 	switch {
 	case isOAuth2Cfg == "true":
-		oauth2Token, err := oauth2.Unmarshal(host, cfg)
+		// Trying to refresh access token
+		apiClient, err := o.apiClient(host)
 		if err != nil {
-			return fmt.Errorf("unable to parse OAuth2 token information from config of host %q: %w", host, err)
+			return err
+		}
+		// The AuthSource for apiClient with OAuth2 settings should gives back
+		// gitlab.OAuthTokenSource, which should pass type assertion here.
+		authSource := apiClient.AuthSource().(gitlab.OAuthTokenSource)
+		oauth2Token, err := authSource.TokenSource.Token()
+		if err != nil {
+			return fmt.Errorf("failed to refresh token for %q: %w", host, err)
 		}
 
 		// see https://docs.gitlab.com/ee/api/oauth2.html#access-git-over-https-with-access-token
