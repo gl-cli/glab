@@ -31,6 +31,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/test"
+
+	"golang.org/x/oauth2"
 )
 
 var (
@@ -487,6 +489,26 @@ func NewTestApiClient(t *testing.T, httpClient *http.Client, token, host string,
 	opts = append(opts, options...)
 	testClient, err := api.NewClient(
 		func(*http.Client) (gitlab.AuthSource, error) { return gitlab.AccessTokenAuthSource{Token: token}, nil },
+		opts...,
+	)
+	require.NoError(t, err)
+	return testClient
+}
+
+func NewTestOAuth2ApiClient(t *testing.T, httpClient *http.Client, tokenSource oauth2.TokenSource, host string, options ...api.ClientOption) *api.Client {
+	t.Helper()
+
+	opts := []api.ClientOption{
+		api.WithUserAgent("glab test client"),
+		api.WithBaseURL(glinstance.APIEndpoint(host, glinstance.DefaultProtocol, "")),
+		api.WithInsecureSkipVerify(true),
+		api.WithHTTPClient(httpClient),
+	}
+	opts = append(opts, options...)
+	testClient, err := api.NewClient(
+		func(*http.Client) (gitlab.AuthSource, error) {
+			return gitlab.OAuthTokenSource{TokenSource: tokenSource}, nil
+		},
 		opts...,
 	)
 	require.NoError(t, err)
