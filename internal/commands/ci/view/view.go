@@ -441,6 +441,55 @@ var (
 	boxes                     map[string]*tview.TextView
 )
 
+// bracketEscaper wraps a writer and escapes square brackets for tview, but preserves ANSI escape sequences.
+// This is necessary because tview interprets square brackets as color tag markers.
+// For example, [MASKED] would be treated as a color tag and stripped from display.
+// By escaping closing brackets to [], we prevent tview from parsing literal brackets as tags.
+type bracketEscaper struct {
+	io.Writer
+}
+
+func (b *bracketEscaper) Write(p []byte) (int, error) {
+	// Build escaped output, preserving ANSI escape sequences
+	// In tview's escaping convention, only closing ] needs to be escaped to []
+	var result strings.Builder
+	i := 0
+	for i < len(p) {
+		// Check if this is the start of an ANSI escape sequence: ESC [
+		if i < len(p)-1 && p[i] == '\x1b' && p[i+1] == '[' {
+			// Find the end of the ANSI sequence (ends with a letter)
+			result.WriteByte(p[i])   // ESC
+			result.WriteByte(p[i+1]) // [
+			i += 2
+			// Copy the rest of the ANSI sequence
+			for i < len(p) && !((p[i] >= 'A' && p[i] <= 'Z') || (p[i] >= 'a' && p[i] <= 'z')) {
+				result.WriteByte(p[i])
+				i++
+			}
+			if i < len(p) {
+				result.WriteByte(p[i]) // Final letter
+				i++
+			}
+		} else if p[i] == ']' {
+			// Literal closing bracket - escape it for tview by replacing with []
+			result.WriteString("[]")
+			i++
+		} else {
+			result.WriteByte(p[i])
+			i++
+		}
+	}
+
+	// Write the escaped data to the underlying writer
+	_, err := b.Writer.Write([]byte(result.String()))
+	if err != nil {
+		return 0, err
+	}
+	// Return the number of bytes consumed from input (per io.Writer contract)
+	// We successfully processed all input bytes even though output may be longer
+	return len(p), nil
+}
+
 func curPipeline(commit *gitlab.Commit) gitlab.PipelineInfo {
 	if len(pipelines) == 0 {
 		return *commit.LastPipeline
@@ -580,10 +629,26 @@ func jobsView(
 				SetBorder(true)
 
 			go func() {
+				// Chain: bracketEscaper -> vtclean -> ANSIWriter -> TextView
+				//
+				// The bracketEscaper must come FIRST in the chain to escape literal square
+				// brackets (like [MASKED]) before they reach tview. This prevents tview from
+				// interpreting them as color tags and removing them.
+				//
+				// Flow:
+				// 1. Raw trace with ANSI codes and [MASKED] text
+				// 2. bracketEscaper: Escapes ] to [] while preserving ANSI codes
+				// 3. vtclean: Cleans terminal control sequences, preserves ANSI colors
+				// 4. ANSIWriter: Converts ANSI codes to tview color tags
+				// 5. TextView: Displays with colors and escaped brackets
+				ansiWriter := tview.ANSIWriter(tv)
+				vtcleanWriter := vtclean.NewWriter(ansiWriter, true)
+				bracketWriter := &bracketEscaper{Writer: vtcleanWriter}
+
 				err := ciutils.RunTraceSha(
 					context.Background(),
 					apiClient,
-					vtclean.NewWriter(tview.ANSIWriter(tv), true),
+					bracketWriter,
 					projectID,
 					commitSHA,
 					curJob.Name,
