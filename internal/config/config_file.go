@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/mitchellh/go-homedir"
+	"github.com/adrg/xdg"
 	"gopkg.in/yaml.v3"
 )
 
@@ -17,27 +17,51 @@ var (
 	configError  error
 )
 
-// ConfigDir returns the config directory
+// ConfigDir returns the config directory for writing configuration.
+// It respects GLAB_CONFIG_DIR as the highest priority override,
+// otherwise uses XDG_CONFIG_HOME (defaulting to ~/.config).
 func ConfigDir() string {
 	glabDir := os.Getenv("GLAB_CONFIG_DIR")
 	if glabDir != "" {
 		return glabDir
 	}
-	usrConfigHome := os.Getenv("XDG_CONFIG_HOME")
-	if usrConfigHome == "" {
-		usrConfigHome = os.Getenv("HOME")
-		if usrConfigHome == "" {
-			usrConfigHome, _ = homedir.Expand("~/.config")
-		} else {
-			usrConfigHome = filepath.Join(usrConfigHome, ".config")
-		}
-	}
-	return filepath.Join(usrConfigHome, "glab-cli")
+	return filepath.Join(xdg.ConfigHome, "glab-cli")
 }
 
-// ConfigFile returns the config file path
+// ConfigFile returns the config file path.
+// It respects GLAB_CONFIG_DIR as the highest priority override,
+// otherwise returns the XDG-compliant user config file path.
+// This function only determines the path without creating directories.
 func ConfigFile() string {
-	return path.Join(ConfigDir(), "config.yml")
+	return filepath.Join(ConfigDir(), "config.yml")
+}
+
+// SearchConfigFile searches for an existing config file across all XDG config paths.
+// It respects GLAB_CONFIG_DIR as the highest priority override.
+// Search order:
+// 1. $GLAB_CONFIG_DIR/config.yml (if GLAB_CONFIG_DIR is set)
+// 2. $XDG_CONFIG_HOME/glab-cli/config.yml (default: ~/.config/glab-cli/config.yml)
+// 3. $XDG_CONFIG_DIRS/glab-cli/config.yml (default: /etc/xdg/glab-cli/config.yml)
+//
+// Returns the path to the first config file found, or an error if none exist.
+func SearchConfigFile() (string, error) {
+	// HIGHEST PRIORITY: GLAB_CONFIG_DIR completely bypasses XDG
+	if os.Getenv("GLAB_CONFIG_DIR") != "" {
+		configPath := ConfigFile()
+		if _, err := os.Stat(configPath); err == nil {
+			return configPath, nil
+		}
+		// If GLAB_CONFIG_DIR is set but file doesn't exist,
+		// still return this path (don't fall through to XDG)
+		return configPath, os.ErrNotExist
+	}
+
+	// XDG search: user config → system configs
+	configPath, err := xdg.SearchConfigFile("glab-cli/config.yml")
+	if err != nil {
+		return "", err
+	}
+	return configPath, nil
 }
 
 // Init initialises and returns the cached configuration
@@ -57,7 +81,13 @@ func Init() (Config, error) {
 }
 
 func ParseDefaultConfig() (Config, error) {
-	return ParseConfig(ConfigFile())
+	// Try to find existing config first (searches all XDG paths)
+	configPath, err := SearchConfigFile()
+	if err != nil {
+		// No config found, use default writable location
+		configPath = ConfigFile()
+	}
+	return ParseConfig(configPath)
 }
 
 var ReadConfigFile = func(filename string) ([]byte, error) {
