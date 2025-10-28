@@ -9,6 +9,7 @@ import (
 	repoCmdDelete "gitlab.com/gitlab-org/cli/internal/commands/project/delete"
 	repoCmdFork "gitlab.com/gitlab-org/cli/internal/commands/project/fork"
 	repoCmdList "gitlab.com/gitlab-org/cli/internal/commands/project/list"
+	repoCmdMembers "gitlab.com/gitlab-org/cli/internal/commands/project/members"
 	repoCmdMirror "gitlab.com/gitlab-org/cli/internal/commands/project/mirror"
 	repoCmdPublish "gitlab.com/gitlab-org/cli/internal/commands/project/publish"
 	repoCmdSearch "gitlab.com/gitlab-org/cli/internal/commands/project/search"
@@ -31,6 +32,7 @@ func NewCmdRepo(f cmdutils.Factory) *cobra.Command {
 	repoCmd.AddCommand(repoCmdClone.NewCmdClone(f, nil))
 	repoCmd.AddCommand(repoCmdContributors.NewCmdContributors(f))
 	repoCmd.AddCommand(repoCmdList.NewCmdList(f))
+	repoCmd.AddCommand(repoCmdMembers.NewCmdMembers(f))
 	repoCmd.AddCommand(repoCmdCreate.NewCmdCreate(f))
 	repoCmd.AddCommand(repoCmdDelete.NewCmdDelete(f))
 	repoCmd.AddCommand(repoCmdFork.NewCmdFork(f))
