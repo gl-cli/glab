@@ -244,17 +244,35 @@ Endpoints allowing the use of the CI job token are listed in the
 ## Configuration
 
 By default, `glab` follows the
-[XDG Base Directory Spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html).
-Configure it globally, locally, or per host:
+[XDG Base Directory Spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html),
+which means it searches for configuration files in multiple locations with proper precedence.
 
-- **Globally**: run `glab config set --global editor vim`.
-  - The global configuration file is available at `~/.config/glab-cli/config.yml`.
+### Configuration Levels
+
+Configure `glab` at different levels: system-wide, globally (per-user), locally (per-repository), or per host:
+
+- **System-wide** (for all users): Place configuration at `/etc/xdg/glab-cli/config.yml` (or `$XDG_CONFIG_DIRS/glab-cli/config.yml`).
+  - Useful for Linux distributions and system administrators to provide default configurations.
+  - User configurations will override system-wide settings.
+- **Globally** (per-user): run `glab config set --global editor vim`.
+  - The global configuration file is available at `~/.config/glab-cli/config.yml` (or `$XDG_CONFIG_HOME/glab-cli/config.yml`).
   - To override this location, set the `GLAB_CONFIG_DIR` environment variable.
 - **The current repository**: run `glab config set editor vim` in any folder in a Git repository.
   - The local configuration file is available at `.git/glab-cli/config.yml` in the current working Git directory.
 - **Per host**: run `glab config set editor vim --host gitlab.example.org`, changing
   the `--host` parameter to meet your needs.
   - Per-host configuration info is always stored in the global configuration file, with or without the `global` flag.
+
+### Configuration Search Order
+
+When `glab` looks for configuration files, it searches in this order (highest priority first):
+
+1. `$GLAB_CONFIG_DIR/config.yml` (if `GLAB_CONFIG_DIR` is set)
+2. `$XDG_CONFIG_HOME/glab-cli/config.yml` (default: `~/.config/glab-cli/config.yml`)
+3. `$XDG_CONFIG_DIRS/glab-cli/config.yml` (default: `/etc/xdg/glab-cli/config.yml`)
+
+The first configuration file found is used. This allows system administrators to provide
+site-wide defaults while allowing individual users to override them.
 
 ### Configure `glab` to use your GitLab Self-Managed or GitLab Dedicated instance
 
