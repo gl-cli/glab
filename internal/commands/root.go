@@ -17,6 +17,7 @@ import (
 	configCmd "gitlab.com/gitlab-org/cli/internal/commands/config"
 	deployKeyCmd "gitlab.com/gitlab-org/cli/internal/commands/deploy-key"
 	duoCmd "gitlab.com/gitlab-org/cli/internal/commands/duo"
+	gpgCmd "gitlab.com/gitlab-org/cli/internal/commands/gpg-key"
 	"gitlab.com/gitlab-org/cli/internal/commands/help"
 	incidentCmd "gitlab.com/gitlab-org/cli/internal/commands/incident"
 	issueCmd "gitlab.com/gitlab-org/cli/internal/commands/issue"
@@ -154,6 +155,7 @@ func NewCmdRoot(f cmdutils.Factory) *cobra.Command {
 	rootCmd.AddCommand(projectCmd.NewCmdRepo(f))
 	rootCmd.AddCommand(releaseCmd.NewCmdRelease(f))
 	rootCmd.AddCommand(sshCmd.NewCmdSSHKey(f))
+	rootCmd.AddCommand(gpgCmd.NewCmdGPGKey(f))
 	rootCmd.AddCommand(userCmd.NewCmdUser(f))
 	rootCmd.AddCommand(variableCmd.NewVariableCmd(f))
 	rootCmd.AddCommand(apiCmd.NewCmdApi(f, nil))

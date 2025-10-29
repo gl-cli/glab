@@ -325,6 +325,13 @@ func WithBuildInfo(buildInfo api.BuildInfo) FactoryOption {
 	}
 }
 
+// WithStdin configures the Factory with specific stdin content
+func WithStdin(stdin string) FactoryOption {
+	return func(f *Factory) {
+		f.IOStub.In = io.NopCloser(bytes.NewBufferString(stdin))
+	}
+}
+
 // NewTestFactory creates a Factory configured for testing with the given options
 func NewTestFactory(ios *iostreams.IOStreams, opts ...FactoryOption) *Factory {
 	f := &Factory{
