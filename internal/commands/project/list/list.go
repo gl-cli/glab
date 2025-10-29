@@ -60,7 +60,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	repoListCmd.Flags().StringVarP(&opts.orderBy, "order", "o", "last_activity_at", "Return repositories ordered by id, created_at, or other fields.")
+	repoListCmd.Flags().StringVarP(&opts.orderBy, "order", "o", "last_activity_at", "Return repositories ordered by id, name, path, created_at, updated_at, similarity, star_count, last_activity_at.")
 	repoListCmd.Flags().StringVarP(&opts.sort, "sort", "s", "", "Return repositories sorted in asc or desc order.")
 	repoListCmd.Flags().StringVarP(&opts.group, "group", "g", "", "Return repositories in only the given group.")
 	repoListCmd.Flags().BoolVarP(&opts.includeSubgroups, "include-subgroups", "G", false, "Include projects in subgroups of this group. Default is false. Used with the '--group' flag.")

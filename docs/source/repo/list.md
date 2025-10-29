@@ -38,7 +38,7 @@ $ glab repo list
   -G, --include-subgroups   Include projects in subgroups of this group. Default is false. Used with the '--group' flag.
       --member              List only projects of which you are a member.
   -m, --mine                List only projects you own. Default if no filters are provided.
-  -o, --order string        Return repositories ordered by id, created_at, or other fields. (default "last_activity_at")
+  -o, --order string        Return repositories ordered by id, name, path, created_at, updated_at, similarity, star_count, last_activity_at. (default "last_activity_at")
   -F, --output string       Format output as: text, json. (default "text")
   -p, --page int            Page number. (default 1)
   -P, --per-page int        Number of items to list per page. (default 30)
