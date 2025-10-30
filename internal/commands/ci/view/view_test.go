@@ -1260,13 +1260,50 @@ func TestCIView(t *testing.T) {
 							"ref": "main",
 							"sha": "2dc6aa325a317eda67812f05600bdf0fcdc70ab0",
 							"status": "created",
-							"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/225"
+							"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/225",
+							"created_at": "2025-10-28T16:52:39.000+01:00"
 						},
 						"status": "running"
 					}`,
 				},
 			},
 			expectedOutput: "Opening gitlab.com/OWNER/REPO/-/pipelines/225 in your browser.\n",
+		},
+		{
+			name: "view ci pipeline on web for a given pipeline id",
+			cli:  "--web --pipelineid 5",
+			httpMocks: []httpMock{
+				{
+					http.MethodGet,
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO/pipelines/5",
+					http.StatusOK,
+					`
+					{
+						"id": 5,
+						"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/5",
+						"created_at": "2025-10-28T16:52:39.000+01:00",
+						"sha": "2dc6aa325a317eda67812f05600bdf0fcdc70ab0"
+					}`,
+				},
+				{
+					http.MethodGet,
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO/repository/commits/2dc6aa325a317eda67812f05600bdf0fcdc70ab0",
+					http.StatusOK,
+					`{
+						"id": "6104942438c14ec7bd21c6cd5bd995272b3faff6",
+						"last_pipeline": {
+							"id": 5,
+							"ref": "main",
+							"sha": "2dc6aa325a317eda67812f05600bdf0fcdc70ab0",
+							"status": "created",
+							"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/225",
+							"created_at": "2025-10-28T16:52:39.000+01:00"
+						},
+						"status": "running"
+					}`,
+				},
+			},
+			expectedOutput: "Opening gitlab.com/OWNER/REPO/-/pipelines/5 in your browser.\n",
 		},
 	}
 
@@ -1287,7 +1324,6 @@ func TestCIView(t *testing.T) {
 			if assert.NoErrorf(t, err, "error running command `ci view %s`: %v", tc.cli, err) {
 				assert.Empty(t, output.String())
 				assert.Equal(t, tc.expectedOutput, output.Stderr())
-
 			}
 		})
 	}
