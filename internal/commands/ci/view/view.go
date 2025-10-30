@@ -42,6 +42,7 @@ type options struct {
 
 	refName       string
 	openInBrowser bool
+	pipelineID    int
 }
 
 type ViewJobKind int64
@@ -154,6 +155,8 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	pipelineCIView.Flags().
 		StringVarP(&opts.refName, "branch", "b", "", "Check pipeline status for a branch or tag. Defaults to the current branch.")
 	pipelineCIView.Flags().BoolVarP(&opts.openInBrowser, "web", "w", false, "Open pipeline in a browser. Uses default browser, or browser specified in BROWSER variable.")
+	pipelineCIView.Flags().IntVarP(&opts.pipelineID, "pipelineid", "p", 0, "Check pipeline status for a specific pipeline ID.")
+	pipelineCIView.MarkFlagsMutuallyExclusive("branch", "pipelineid")
 
 	return pipelineCIView
 }
@@ -186,33 +189,55 @@ func (o *options) run() error {
 	}
 
 	projectID := repo.FullName()
+	var pipelineID int
+	var webURL string
+	var pipelineCreatedAt time.Time
+	var commit *gitlab.Commit
+	var commitSHA string
 
-	commit, _, err := client.Commits.GetCommit(projectID, o.refName, nil)
-	if err != nil {
-		return err
+	if o.pipelineID != 0 {
+		pipeline, _, err := client.Pipelines.GetPipeline(projectID, o.pipelineID)
+		if err != nil {
+			return err
+		}
+
+		pipelineID = pipeline.ID
+		webURL = pipeline.WebURL
+		pipelineCreatedAt = *pipeline.CreatedAt
+		commitSHA = pipeline.SHA
+		commit, _, err = client.Commits.GetCommit(projectID, commitSHA, nil)
+		if err != nil {
+			return err
+		}
+	} else {
+		commit, _, err = client.Commits.GetCommit(projectID, o.refName, nil)
+		if err != nil {
+			return err
+		}
+
+		if commit.LastPipeline == nil {
+			return fmt.Errorf("Can't find pipeline for commit: %s", commit.ID)
+		}
+
+		pipelineID = commit.LastPipeline.ID
+		webURL = commit.LastPipeline.WebURL
+		pipelineCreatedAt = *commit.LastPipeline.CreatedAt
+		commitSHA = commit.ID
 	}
-
-	commitSHA := commit.ID
-	if commit.LastPipeline == nil {
-		return fmt.Errorf("Can't find pipeline for commit: %s", commitSHA)
-	}
-
-	cfg := o.config()
 
 	if o.openInBrowser { // open in browser if --web flag is specified
-		webURL := commit.LastPipeline.WebURL
-
 		if o.io.IsOutputTTY() {
 			fmt.Fprintf(o.io.StdErr, "Opening %s in your browser.\n", utils.DisplayURL(webURL))
 		}
 
+		cfg := o.config()
 		browser, _ := cfg.Get(repo.RepoHost(), "browser")
 		return utils.OpenInBrowser(webURL, browser)
 	}
 
-	p, _, err := client.Pipelines.GetPipeline(projectID, commit.LastPipeline.ID)
+	p, _, err := client.Pipelines.GetPipeline(projectID, pipelineID)
 	if err != nil {
-		return fmt.Errorf("Can't get pipeline #%d info: %s", commit.LastPipeline.ID, err)
+		return fmt.Errorf("Can't get pipeline #%d info: %s", pipelineID, err)
 	}
 	pipelineUser := p.User
 
@@ -223,7 +248,7 @@ func (o *options) run() error {
 		SetBackgroundColor(tcell.ColorDefault).
 		SetBorderPadding(1, 1, 2, 2).
 		SetBorder(true).
-		SetTitle(fmt.Sprintf(" Pipeline #%d triggered %s by %s ", commit.LastPipeline.ID, utils.TimeToPrettyTimeAgo(*commit.LastPipeline.CreatedAt), pipelineUser.Name))
+		SetTitle(fmt.Sprintf(" Pipeline #%d triggered %s by %s ", pipelineID, utils.TimeToPrettyTimeAgo(pipelineCreatedAt), pipelineUser.Name))
 
 	boxes = make(map[string]*tview.TextView)
 	jobsCh := make(chan []*ViewJob)
