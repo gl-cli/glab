@@ -11,8 +11,8 @@ To release a new version of the CLI, you must:
 
 If those changes are appropriate to be released, proceed with the process:
 
-1. Tag the latest commit on `main` (such as `git tag v1.22.1`).
-1. Push with these commands: `git push origin main` and `git push origin v1.22.1`
+1. Tag the latest commit on `main` (such as `git tag v1.74.1`).
+1. Push with these commands: `git push origin main` and `git push origin v1.74.1`
 1. Manually add attribution to the changelog by editing the release entry on the [releases page](https://gitlab.com/gitlab-org/cli/-/releases).
 
 ## Notifying maintainers
@@ -25,7 +25,7 @@ are available in CLI 1Password Vault in the **Maintainers of Community packages*
 
 ### Homebrew
 
-Homebrew releases were [automated by the CI build](https://gitlab.com/gitlab-org/cli/-/merge_requests/1137) in 15.9.
+Homebrew releases were [automated by the CI build](https://gitlab.com/gitlab-org/cli/-/merge_requests/1137).
 These manual instructions are provided if the automation fails.
 
 Prerequisites:
@@ -34,16 +34,17 @@ Prerequisites:
 
 To manually update the version available through Homebrew:
 
-1. Generate a new token with the `repo`, `workflow`, and `gist` scopes  [using this link](https://github.com/settings/tokens/new?scopes=gist,repo,workflow&description=Homebrew). If you have an existing token with the correct scope, you can use it instead.
+1. Generate a new token with the `repo`, `workflow`, and `gist` scopes  [using this link](https://github.com/settings/tokens/new?scopes=gist,repo,workflow&description=Homebrew).
+   If you have an existing token with the correct scope, you can use it instead.
 1. On the [**Releases** page for this project](https://gitlab.com/gitlab-org/cli/-/releases), identify the release version you want to publish.
 1. In the **Assets** area for the release, download the packaged source code (`Source code (tar.gz)`) for this release.
-1. To compute the SHA256 checksum, run `sha256sum cli-v1.23.0.tar.gz`.
+1. To compute the SHA256 checksum, run `sha256sum cli-v1.74.1.tar.gz`.
 1. Create a pull request with the update with this command, modifying the source code URL and SHA as needed:
 
    ```shell
    brew bump-formula-pr --strict glab \
-   --url="https://gitlab.com/gitlab-org/cli/-/archive/v1.23.0/cli-v1.23.0.tar.gz" \
-   --sha256=4fe9dcecc5e601a849454a3608b47d709b11e2df81527f666b169e0dd362d7df
+   --url="https://gitlab.com/gitlab-org/cli/-/archive/v1.74.1/cli-v1.74.1.tar.gz" \
+   --sha256=b1b8ed3f4c7d8839b540d8a264b3a3ef670e78ae369ef0c01ef5d5e502714905
    ```
 
 1. When the pull request is merged, the update is complete.
@@ -69,18 +70,17 @@ Most `snap` users use the `latest/stable` release channel. To release to it:
 
 No manual action required.
 
-The `glab` project was moved to GitLab in [pull request 4168](https://github.com/ScoopInstaller/Main/pull/4168/files). Scoop uses the [autoupdate URL](https://github.com/ScoopInstaller/Main/pull/4168/files#diff-f454f19e58d4c978be55818fa3c6ad5e1424e81fbb0b693dca0b76cc879f5457L21) for updating to newer versions.
+The `glab` project was moved to GitLab in [pull request 4168](https://github.com/ScoopInstaller/Main/pull/4168/files).
+Scoop uses the [autoupdate URL](https://github.com/ScoopInstaller/Main/pull/4168/files#diff-f454f19e58d4c978be55818fa3c6ad5e1424e81fbb0b693dca0b76cc879f5457L21) for updating to newer versions.
 
 ### WinGet
-
-The SHA is not computed during build, and must be computed manually as part of your update.
-For more information, see [Release CI: compute SHA256 of the Windows installer](https://gitlab.com/gitlab-org/cli/-/issues/1133)).
 
 Prerequisites:
 
 - You must have a GitHub account.
 - You must have signed Microsoft's Contributor License Agreement (CLA).
-- You have read the GitLab policy for [Contributing to a third-party project on behalf of GitLab](https://handbook.gitlab.com/handbook/engineering/open-source/). (The confidential, internal [legal issue](https://gitlab.com/gitlab-com/legal-and-compliance/-/issues/1286) is also available.)
+- You have read the GitLab policy for [Contributing to a third-party project on behalf of GitLab](https://handbook.gitlab.com/handbook/engineering/open-source/).
+  (The confidential, internal [legal issue](https://gitlab.com/gitlab-com/legal-and-compliance/-/issues/1286) is also available.)
 
 To update the WinGet package:
 
