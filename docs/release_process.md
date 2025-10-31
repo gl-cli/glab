@@ -51,9 +51,11 @@ To manually update the version available through Homebrew:
 
 ### Snapcraft
 
-The `latest/edge` channel for Snapcraft can be automatically built from a Git repository,
-but as of 2024-07-22 it must be hosted on GitHub. We've configured the [GitHub fork](https://github.com/gl-cli/glab)
-as a push mirror, and receives changes to `main` only. To see the configuration:
+The `latest/edge` channel for Snapcraft can be automatically built from a Git repository, but as of 2024-07-22 it must be hosted on GitHub.
+The [GitHub fork](https://github.com/gl-cli/glab) sends a webhook to snapcraft.io to build the new `latest/edge` version.
+
+We've configured the [GitHub fork](https://github.com/gl-cli/glab) as a push mirror, and receives changes only to the `main` branch.
+To see the configuration:
 
 1. On the left sidebar, select **Settings > Repository**.
 1. Expand **Mirroring Repositories** and find the GitHub mirror.
