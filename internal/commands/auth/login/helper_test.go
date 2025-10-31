@@ -449,3 +449,190 @@ func Test_helperRun(t *testing.T) {
 		})
 	}
 }
+
+func Test_remoteNameScore(t *testing.T) {
+	tests := []struct {
+		name          string
+		remoteName    string
+		expectedScore int
+	}{
+		{"origin gets highest score", "origin", 3},
+		{"upstream gets second highest", "upstream", 2},
+		{"gitlab gets third", "gitlab", 1},
+		{"other names get zero", "fork", 0},
+		{"case insensitive - ORIGIN", "ORIGIN", 3},
+		{"case insensitive - Upstream", "Upstream", 2},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			score := remoteNameScore(tt.remoteName)
+			assert.Equal(t, tt.expectedScore, score)
+		})
+	}
+}
+
+func Test_calculateHostScore(t *testing.T) {
+	tests := []struct {
+		name          string
+		host          detectedHost
+		expectedScore int
+	}{
+		{
+			name: "gitlab.com with origin remote",
+			host: detectedHost{
+				hostname:      "gitlab.com",
+				remotes:       []string{"origin"},
+				authenticated: false,
+			},
+			expectedScore: 8, // gitlab.com bonus (5) + origin (3)
+		},
+		{
+			name: "authenticated self-hosted with origin",
+			host: detectedHost{
+				hostname:      "gitlab.company.com",
+				remotes:       []string{"origin"},
+				authenticated: true,
+			},
+			expectedScore: 13, // authenticated (10) + origin (3)
+		},
+		{
+			name: "multiple remotes to same host",
+			host: detectedHost{
+				hostname:      "gitlab.company.com",
+				remotes:       []string{"origin", "upstream"},
+				authenticated: false,
+			},
+			expectedScore: 5, // origin (3) + upstream (2)
+		},
+		{
+			name: "unknown remote name",
+			host: detectedHost{
+				hostname:      "gitlab.example.com",
+				remotes:       []string{"fork"},
+				authenticated: false,
+			},
+			expectedScore: 0, // fork (0)
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			score := calculateHostScore(&tt.host)
+			assert.Equal(t, tt.expectedScore, score)
+		})
+	}
+}
+
+func Test_prioritizeHosts(t *testing.T) {
+	tests := []struct {
+		name          string
+		hosts         []detectedHost
+		expectedOrder []string // Expected order of hostnames
+	}{
+		{
+			name: "authenticated host prioritized",
+			hosts: []detectedHost{
+				{hostname: "gitlab.com", remotes: []string{"fork"}, authenticated: false},
+				{hostname: "gitlab.company.com", remotes: []string{"origin"}, authenticated: true},
+			},
+			expectedOrder: []string{"gitlab.company.com", "gitlab.com"},
+		},
+		{
+			name: "origin beats upstream",
+			hosts: []detectedHost{
+				{hostname: "gitlab.upstream.com", remotes: []string{"upstream"}, authenticated: false},
+				{hostname: "gitlab.origin.com", remotes: []string{"origin"}, authenticated: false},
+			},
+			expectedOrder: []string{"gitlab.origin.com", "gitlab.upstream.com"},
+		},
+		{
+			name: "gitlab.com gets boost",
+			hosts: []detectedHost{
+				{hostname: "gitlab.example.com", remotes: []string{"origin"}, authenticated: false},
+				{hostname: "gitlab.com", remotes: []string{"fork"}, authenticated: false},
+			},
+			expectedOrder: []string{"gitlab.com", "gitlab.example.com"}, // gitlab.com bonus (5) + fork (0) = 5 > origin (3)
+		},
+		{
+			name: "multiple remotes increase score",
+			hosts: []detectedHost{
+				{hostname: "gitlab.single.com", remotes: []string{"origin"}, authenticated: false},
+				{hostname: "gitlab.multi.com", remotes: []string{"origin", "upstream"}, authenticated: false},
+			},
+			expectedOrder: []string{"gitlab.multi.com", "gitlab.single.com"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sorted := prioritizeHosts(tt.hosts)
+			var actualOrder []string
+			for _, host := range sorted {
+				actualOrder = append(actualOrder, host.hostname)
+			}
+			assert.Equal(t, tt.expectedOrder, actualOrder)
+		})
+	}
+}
+
+func Test_detectedHost_String(t *testing.T) {
+	tests := []struct {
+		name     string
+		host     detectedHost
+		expected string
+	}{
+		{
+			name: "single remote, not authenticated",
+			host: detectedHost{
+				hostname:      "gitlab.com",
+				remotes:       []string{"origin"},
+				authenticated: false,
+			},
+			expected: "gitlab.com (origin)",
+		},
+		{
+			name: "multiple remotes, authenticated",
+			host: detectedHost{
+				hostname:      "gitlab.company.com",
+				remotes:       []string{"origin", "upstream"},
+				authenticated: true,
+			},
+			expected: "gitlab.company.com (origin, upstream) [authenticated]",
+		},
+		{
+			name: "remotes sorted alphabetically",
+			host: detectedHost{
+				hostname:      "gitlab.example.com",
+				remotes:       []string{"upstream", "fork", "origin"},
+				authenticated: false,
+			},
+			expected: "gitlab.example.com (fork, origin, upstream)",
+		},
+		{
+			name: "nil remotes, not authenticated",
+			host: detectedHost{
+				hostname:      "gitlab.example.com",
+				remotes:       nil,
+				authenticated: false,
+			},
+			expected: "gitlab.example.com",
+		},
+		{
+			name: "empty remotes, authenticated",
+			host: detectedHost{
+				hostname:      "gitlab.company.com",
+				remotes:       []string{},
+				authenticated: true,
+			},
+			expected: "gitlab.company.com [authenticated]",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.host.String()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

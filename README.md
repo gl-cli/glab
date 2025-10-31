@@ -170,6 +170,10 @@ To build from source:
 
 ## Authentication
 
+When running `glab auth login` interactively inside a Git repository, `glab` automatically
+detects GitLab instances from your Git remotes and presents them as options. This saves you
+from having to manually type the hostname.
+
 ### OAuth (GitLab.com)
 
 To authenticate your installation of `glab` with an OAuth application connected to GitLab.com:

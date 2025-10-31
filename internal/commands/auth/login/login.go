@@ -69,9 +69,14 @@ func NewCmdLogin(f cmdutils.Factory) *cobra.Command {
 			You can pass in a token on standard input by using %[1]s--stdin%[1]s.
 			The minimum required scopes for the token are: %[1]sapi%[1]s, %[1]swrite_repository%[1]s.
 			Configuration and credentials are stored in the global configuration file (default %[1]s~/.config/glab-cli/config.yml%[1]s)
+
+			When running in interactive mode inside a Git repository, %[1]sglab%[1]s will automatically detect
+			GitLab instances from your Git remotes and present them as options, saving you from having to
+			manually type the hostname.
 		`, "`"),
 		Example: heredoc.Docf(`
 			# Start interactive setup
+			# (If in a Git repository, glab will detect and suggest GitLab instances from remotes)
 			$ glab auth login
 
 			# Authenticate against %[1]sgitlab.com%[1]s by reading the token from a file
@@ -246,46 +251,93 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 	isSelfHosted := false
 
 	if hostname == "" {
-		var hostType int
-		options := []string{}
-		if hosts, err := cfg.Hosts(); err == nil {
-			options = append(options, hosts...)
-		}
-		if !slices.Contains(options, opts.defaultHostname) {
-			options = append(options, opts.defaultHostname)
-		}
-		options = append(options, "GitLab Self-Managed or GitLab Dedicated instance")
+		// Try to detect GitLab hosts from git remotes
+		detectedHosts, detectErr := detectGitLabHosts(cfg)
 
-		err := survey.AskOne(&survey.Select{
-			Message: "What GitLab instance do you want to sign in to?",
-			Options: options,
-		}, &hostType)
-		if err != nil {
-			return fmt.Errorf("could not prompt: %w", err)
-		}
+		if detectErr == nil && len(detectedHosts) > 0 {
+			// We have detected hosts, present them to the user
+			options := make([]string, 0, len(detectedHosts)+1)
+			for _, host := range detectedHosts {
+				options = append(options, host.String())
+			}
+			options = append(options, "Enter a different hostname")
 
-		isSelfHosted = hostType == len(options)-1
-
-		if isSelfHosted {
-			hostname = opts.defaultHostname
-			apiHostname = hostname
-			err := survey.AskOne(&survey.Input{
-				Message: "GitLab hostname:",
-			}, &hostname, survey.WithValidator(hostnameValidator))
+			var selectedIndex int
+			err := survey.AskOne(&survey.Select{
+				Message: "Found GitLab instances in git remotes. Select one:",
+				Options: options,
+			}, &selectedIndex)
 			if err != nil {
 				return fmt.Errorf("could not prompt: %w", err)
 			}
-			err = survey.AskOne(&survey.Input{
-				Message: "API hostname:",
-				Help:    "For instances with a different hostname for the API endpoint.",
-				Default: hostname,
-			}, &apiHostname, survey.WithValidator(hostnameValidator))
-			if err != nil {
-				return fmt.Errorf("could not prompt: %w", err)
+
+			// Check if user selected "Enter a different hostname" (last option)
+			if selectedIndex == len(options)-1 {
+				// Fall back to manual entry
+				hostname = opts.defaultHostname
+				apiHostname = hostname
+				err := survey.AskOne(&survey.Input{
+					Message: "GitLab hostname:",
+				}, &hostname, survey.WithValidator(hostnameValidator))
+				if err != nil {
+					return fmt.Errorf("could not prompt: %w", err)
+				}
+				err = survey.AskOne(&survey.Input{
+					Message: "API hostname:",
+					Help:    "For instances with a different hostname for the API endpoint.",
+					Default: hostname,
+				}, &apiHostname, survey.WithValidator(hostnameValidator))
+				if err != nil {
+					return fmt.Errorf("could not prompt: %w", err)
+				}
+			} else {
+				// User selected a detected host by index
+				hostname = detectedHosts[selectedIndex].hostname
+				apiHostname = hostname
 			}
 		} else {
-			hostname = options[hostType]
-			apiHostname = hostname
+			// No detected hosts or detection failed, fall back to original behavior
+			var hostType int
+			options := []string{}
+			if hosts, err := cfg.Hosts(); err == nil {
+				options = append(options, hosts...)
+			}
+			if !slices.Contains(options, opts.defaultHostname) {
+				options = append(options, opts.defaultHostname)
+			}
+			options = append(options, "GitLab Self-Managed or GitLab Dedicated instance")
+
+			err := survey.AskOne(&survey.Select{
+				Message: "What GitLab instance do you want to sign in to?",
+				Options: options,
+			}, &hostType)
+			if err != nil {
+				return fmt.Errorf("could not prompt: %w", err)
+			}
+
+			isSelfHosted = hostType == len(options)-1
+
+			if isSelfHosted {
+				hostname = opts.defaultHostname
+				apiHostname = hostname
+				err := survey.AskOne(&survey.Input{
+					Message: "GitLab hostname:",
+				}, &hostname, survey.WithValidator(hostnameValidator))
+				if err != nil {
+					return fmt.Errorf("could not prompt: %w", err)
+				}
+				err = survey.AskOne(&survey.Input{
+					Message: "API hostname:",
+					Help:    "For instances with a different hostname for the API endpoint.",
+					Default: hostname,
+				}, &apiHostname, survey.WithValidator(hostnameValidator))
+				if err != nil {
+					return fmt.Errorf("could not prompt: %w", err)
+				}
+			} else {
+				hostname = options[hostType]
+				apiHostname = hostname
+			}
 		}
 	} else {
 		isSelfHosted = glinstance.IsSelfHosted(hostname)
