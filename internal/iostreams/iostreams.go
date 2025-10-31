@@ -15,6 +15,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/google/shlex"
 	"github.com/muesli/termenv"
+	"gitlab.com/gitlab-org/cli/internal/theme"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
@@ -344,6 +345,7 @@ func (s *IOStreams) Run(ctx context.Context, field huh.Field) error {
 	form := huh.NewForm(group).
 		WithInput(s.In).
 		WithOutput(s.StdOut).
-		WithShowHelp(false)
+		WithShowHelp(false).
+		WithTheme(theme.HuhTheme())
 	return form.RunWithContext(ctx)
 }
