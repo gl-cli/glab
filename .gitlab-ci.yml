@@ -17,7 +17,7 @@ variables:
   - "go.sum"
 
 .sign_windows_base:
-  image: ${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/code-signer:1.2.1
+  image: ${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/code-signer:1.3.0
   extends: .google-oidc:auth
   rules:
     - if: $CI_COMMIT_TAG && $CI_SERVER_HOST == "gitlab.com" && ($CI_PROJECT_PATH == "gitlab-org/cli" || $CI_PROJECT_PATH == "gitlab-org/security/cli")
@@ -116,7 +116,7 @@ check_docs_update:
       fi
 
 check_docs_markdown:
-  image: registry.gitlab.com/gitlab-org/technical-writing/docs-gitlab-com/lint-markdown:alpine-3.21-vale-3.11.2-markdownlint2-0.17.2-lychee-0.18.1
+  image: registry.gitlab.com/gitlab-org/technical-writing/docs-gitlab-com/lint-markdown:alpine-3.21-vale-3.11.2-markdownlint2-0.17.2-lychee-0.19.1
   extends: .documentation
   script:
     # Lint prose
@@ -147,7 +147,7 @@ check_go_generated_code:
 
 lint_commit:
   stage: test
-  image: ${GITLAB_DEPENDENCY_PROXY}node:22-slim
+  image: ${GITLAB_DEPENDENCY_PROXY}node:24-slim
   script:
     - apt-get update && apt-get install -y git
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME $CI_COMMIT_SHA
@@ -287,7 +287,7 @@ release:
       "
 
 homebrew-release:
-  image: ${GITLAB_DEPENDENCY_PROXY}homebrew/ubuntu22.04:latest
+  image: ${GITLAB_DEPENDENCY_PROXY}homebrew/ubuntu24.04:latest
   stage: release
   needs: [release]
   rules:
@@ -301,7 +301,7 @@ homebrew-release:
 windows_installer:
   stage: release
   image:
-    name: amake/innosetup
+    name: ${GITLAB_DEPENDENCY_PROXY}amake/innosetup
     entrypoint: [""]
   rules:
     - if: $CI_COMMIT_TAG

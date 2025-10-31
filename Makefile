@@ -45,7 +45,7 @@ GOURL ?= gitlab.com/gitlab-org/cli
 BUILDLOC ?= ./bin/glab
 
 # Dependency versions
-GOTESTSUM_VERSION = 0.6.0
+GOTESTSUM_VERSION = 1.13.0
 GOLANGCI_LINT_VERSION = 2.4.0
 
 # Add the ability to override some variables
