@@ -19,6 +19,10 @@ You can pass in a token on standard input by using `--stdin`.
 The minimum required scopes for the token are: `api`, `write_repository`.
 Configuration and credentials are stored in the global configuration file (default `~/.config/glab-cli/config.yml`)
 
+When running in interactive mode inside a Git repository, `glab` will automatically detect
+GitLab instances from your Git remotes and present them as options, saving you from having to
+manually type the hostname.
+
 ```plaintext
 glab auth login [flags]
 ```
@@ -27,6 +31,7 @@ glab auth login [flags]
 
 ```console
 # Start interactive setup
+# (If in a Git repository, glab will detect and suggest GitLab instances from remotes)
 $ glab auth login
 
 # Authenticate against `gitlab.com` by reading the token from a file

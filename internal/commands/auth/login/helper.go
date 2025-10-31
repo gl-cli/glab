@@ -4,12 +4,16 @@ import (
 	"bufio"
 	"fmt"
 	"net/url"
+	"slices"
+	"sort"
 	"strings"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
@@ -157,4 +161,161 @@ func (o *options) run() error {
 	}
 
 	return nil
+}
+
+// detectedHost represents a GitLab hostname detected from git remotes
+type detectedHost struct {
+	hostname      string
+	remotes       []string // Names of remotes pointing to this host
+	score         int      // Priority score for sorting
+	authenticated bool     // Whether user is already authenticated to this host
+}
+
+// detectGitLabHosts detects GitLab hostnames from git remotes in the current repository
+func detectGitLabHosts(cfg config.Config) ([]detectedHost, error) {
+	// Check if we're in a git repository
+	_, err := git.ToplevelDir()
+	if err != nil {
+		// Not in a git repo, return empty list
+		return nil, err
+	}
+
+	// Get git remotes
+	gitRemotes, err := git.Remotes()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(gitRemotes) == 0 {
+		return nil, nil
+	}
+
+	// Get authenticated hosts from config
+	var authenticatedHosts map[string]bool
+	if hosts, err := cfg.Hosts(); err == nil {
+		authenticatedHosts = make(map[string]bool, len(hosts))
+		for _, host := range hosts {
+			authenticatedHosts[host] = true
+		}
+	}
+
+	// Group remotes by hostname
+	// Pre-allocate for maximum possible unique hosts (one per remote)
+	hostMap := make(map[string][]string, len(gitRemotes))
+	for _, remote := range gitRemotes {
+		hostname := extractHostFromRemote(remote)
+		if hostname == "" {
+			// Skip local file remotes (file://, relative paths, etc.)
+			continue
+		}
+		hostMap[hostname] = append(hostMap[hostname], remote.Name)
+	}
+
+	// Convert to detectedHost slice
+	detectedHosts := make([]detectedHost, 0, len(hostMap))
+	for hostname, remoteNames := range hostMap {
+		host := detectedHost{
+			hostname:      hostname,
+			remotes:       remoteNames,
+			authenticated: authenticatedHosts[hostname],
+		}
+		detectedHosts = append(detectedHosts, host)
+	}
+
+	// Prioritize and sort
+	detectedHosts = prioritizeHosts(detectedHosts)
+
+	return detectedHosts, nil
+}
+
+// extractHostFromRemote extracts the hostname from a git remote
+func extractHostFromRemote(remote *git.Remote) string {
+	// Try FetchURL first, then PushURL
+	var u *url.URL
+	if remote.FetchURL != nil {
+		u = remote.FetchURL
+	} else if remote.PushURL != nil {
+		u = remote.PushURL
+	}
+
+	if u == nil {
+		// Both FetchURL and PushURL are nil (shouldn't happen with valid git remotes,
+		// but possible if URL parsing failed in git.parseRemotes)
+		return ""
+	}
+
+	return u.Host
+}
+
+// prioritizeHosts sorts detected hosts by priority score
+func prioritizeHosts(hosts []detectedHost) []detectedHost {
+	// Calculate scores
+	for i := range hosts {
+		hosts[i].score = calculateHostScore(&hosts[i])
+	}
+
+	// Sort by score (descending)
+	sort.Slice(hosts, func(i, j int) bool {
+		return hosts[i].score > hosts[j].score
+	})
+
+	return hosts
+}
+
+// calculateHostScore calculates a priority score for a detected host
+func calculateHostScore(host *detectedHost) int {
+	score := 0
+
+	// Sum scores from all remotes pointing to this host
+	for _, remoteName := range host.remotes {
+		score += remoteNameScore(remoteName)
+	}
+
+	// Already authenticated hosts get high priority
+	if host.authenticated {
+		score += 10
+	}
+
+	// gitlab.com gets a boost as the default instance
+	if host.hostname == glinstance.DefaultHostname {
+		score += 5
+	}
+
+	return score
+}
+
+// remoteNameScore assigns a priority score based on remote name
+func remoteNameScore(name string) int {
+	switch strings.ToLower(name) {
+	case "origin":
+		return 3
+	case "upstream":
+		return 2
+	case "gitlab":
+		return 1
+	default:
+		return 0
+	}
+}
+
+// String formats a detected host for display in survey prompt
+func (h detectedHost) String() string {
+	// Handle nil or empty remotes
+	if len(h.remotes) == 0 {
+		if h.authenticated {
+			return fmt.Sprintf("%s [authenticated]", h.hostname)
+		}
+		return h.hostname
+	}
+
+	// Sort remote names for consistent display
+	remotes := make([]string, len(h.remotes))
+	copy(remotes, h.remotes)
+	slices.Sort(remotes)
+
+	result := fmt.Sprintf("%s (%s)", h.hostname, strings.Join(remotes, ", "))
+	if h.authenticated {
+		result += " [authenticated]"
+	}
+	return result
 }
