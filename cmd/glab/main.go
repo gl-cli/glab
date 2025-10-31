@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"image/color"
 	"os"
 	"os/exec"
 	"runtime"
@@ -29,6 +28,7 @@ import (
 	"github.com/charmbracelet/fang"
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/theme"
 )
 
 var (
@@ -46,47 +46,10 @@ var (
 )
 
 // gitLabColorScheme returns a custom color scheme using GitLab product colors
-// for semantic meaning and accessibility across different terminal backgrounds
+// for semantic meaning and accessibility across different terminal backgrounds.
+// The theme is defined in internal/theme/gitlab.go for reuse across Charm libraries.
 func gitLabColorScheme(lightDarkFunc lipgloss.LightDarkFunc) fang.ColorScheme {
-	scheme := fang.DefaultColorScheme(lightDarkFunc)
-
-	// GitLab product semantic colors using lightDarkFunc for accessibility
-	// Format: lightDarkFunc(lightTerminalColor, darkTerminalColor)
-
-	// Primary brand elements
-	gitlabOrange := lightDarkFunc(lipgloss.Color("#FC6D26"), lipgloss.Color("#FC6D26")) // GitLab brand orange
-	gitlabPurple := lightDarkFunc(lipgloss.Color("#7759C2"), lipgloss.Color("#A989F5")) // GitLab brand purple
-
-	// Product semantic colors
-	gitlabBlue := lightDarkFunc(lipgloss.Color("#1068BF"), lipgloss.Color("#4285F4")) // Blue for current/active states
-	_ = lightDarkFunc(lipgloss.Color("#217645"), lipgloss.Color("#34D058"))           // Green for success (unused for now)
-	gitlabRed := lightDarkFunc(lipgloss.Color("#C91C00"), lipgloss.Color("#F97583"))  // Red for errors
-
-	// Neutral colors for text and structure
-	gitlabText := lightDarkFunc(lipgloss.Color("#171321"), lipgloss.Color("#FAFAFA"))   // High-contrast text
-	gitlabSubtle := lightDarkFunc(lipgloss.Color("#6B6B73"), lipgloss.Color("#B0B0B0")) // Subtle elements
-
-	// Error banner configuration to avoid lightDarkFunc
-	whiteText := lipgloss.Color("#FFFFFF")
-	redBg := lipgloss.Color("#C91C00")
-
-	// Apply GitLab product color semantics
-	scheme.Title = gitlabText            // Main command titles
-	scheme.Command = gitlabPurple        // Subcommands
-	scheme.Flag = gitlabPurple           // Flags - purple for brand consistency
-	scheme.FlagDefault = gitlabSubtle    // Default flag values - subtle
-	scheme.Description = gitlabText      // Command descriptions - high contrast
-	scheme.Program = gitlabOrange        // Program name (glab) - brand consistency
-	scheme.Argument = gitlabBlue         // Command arguments - blue for interactive elements
-	scheme.DimmedArgument = gitlabSubtle // Optional/dimmed arguments - reduced prominence
-	scheme.QuotedString = gitlabText     // Quoted strings - purple accent
-	scheme.Comment = gitlabSubtle        // Comments - reduced visual weight
-	scheme.Help = gitlabText             // Help text - maximum readability
-	scheme.Dash = gitlabSubtle           // Dashes and separators - subtle structure
-	scheme.ErrorHeader = [2]color.Color{whiteText, redBg}
-	scheme.ErrorDetails = gitlabRed // Error details in GitLab red
-
-	return scheme
+	return theme.FangColorScheme(lightDarkFunc)
 }
 
 func main() {
