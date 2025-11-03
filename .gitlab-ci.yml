@@ -131,7 +131,7 @@ check_docs_hugo:
   extends: .documentation
   before_script:
       # TODO: Remove branch specification before going live
-    - git clone --depth 1 --branch 219-add-cli-docs https://gitlab.com/gitlab-org/technical-writing/docs-gitlab-com.git
+    - git clone --depth 1 https://gitlab.com/gitlab-org/technical-writing/docs-gitlab-com.git
     - cd docs-gitlab-com
     - make add-latest-icons
   script:

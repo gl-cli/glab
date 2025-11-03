@@ -333,10 +333,9 @@ func printOptions(buf *bytes.Buffer, cmd *cobra.Command) error {
 // GenRootMarkdownCustom creates custom markdown for the root command with preserved intro content
 func GenRootMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 	buf := new(bytes.Buffer)
-	name := cmd.CommandPath()
 	// GitLab Specific Docs Metadata
 	buf.WriteString("---" + "\n")
-	buf.WriteString("title: " + name + "\n")
+	buf.WriteString("title: GitLab CLI (glab)\n")
 	buf.WriteString("stage: Create" + "\n")
 	buf.WriteString("group: Code Review" + "\n")
 	buf.WriteString("info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://about.gitlab.com/handbook/product/ux/technical-writing/#assignments" + "\n")
