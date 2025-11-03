@@ -6,14 +6,13 @@ To release a new version of the CLI, you must:
 1. To preview which commits will be included in a release, run this command:
 
    ```shell
-   git log --oneline --invert-grep --grep="Merge branch" --invert-grep --grep="chore" $(git describe --tags --abbrev=0)..main
+   git log --oneline --invert-grep --grep="Merge branch" --invert-grep --grep="chore" $(git describe --tags --abbrev=0)..main | sort -k2
    ```
 
 If those changes are appropriate to be released, proceed with the process:
 
 1. Tag the latest commit on `main` (such as `git tag v1.74.1`).
 1. Push with these commands: `git push origin main` and `git push origin v1.74.1`
-1. Manually add attribution to the changelog by editing the release entry on the [releases page](https://gitlab.com/gitlab-org/cli/-/releases).
 
 ## Notifying maintainers
 
