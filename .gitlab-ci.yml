@@ -126,6 +126,21 @@ check_docs_markdown:
     # Check links
     - lychee --offline --include-fragments docs/**/*.md *.md
 
+check_docs_hugo: 
+  image: registry.gitlab.com/gitlab-org/technical-writing/docs-gitlab-com/docs-gitlab-com-builder:hugo-0.150.1
+  extends: .documentation
+  before_script:
+      # TODO: Remove branch specification before going live
+    - git clone --depth 1 --branch 219-add-cli-docs https://gitlab.com/gitlab-org/technical-writing/docs-gitlab-com.git
+    - cd docs-gitlab-com
+    - make add-latest-icons
+  script:
+    # Test that Hugo will build
+    - hugo --gc --printPathWarnings --environment test
+    # Test for invalid index pages
+    # See https://gitlab.com/gitlab-org/technical-writing/docs-gitlab-com/-/blob/main/scripts/check-index-filenames.sh
+    - make check-index-pages SEARCH_DIR="../docs/source"
+
 check_go_generated_code:
   extends:
     - .go-cache
