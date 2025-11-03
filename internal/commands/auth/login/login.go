@@ -19,6 +19,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 	"github.com/zalando/go-keyring"
 
@@ -359,14 +360,14 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 		user, _, err := apiClient.Lab().Users.CurrentUser()
 		if err == nil {
 			username := user.Username
-			var keepGoing bool
-			err = survey.AskOne(&survey.Confirm{
-				Message: fmt.Sprintf(
+			keepGoing := false // default value
+			confirm := huh.NewConfirm().
+				Title(fmt.Sprintf(
 					"You're already logged into %s as %s. Do you want to re-authenticate?",
 					hostname,
-					username),
-				Default: false,
-			}, &keepGoing)
+					username)).
+				Value(&keepGoing)
+			err = opts.IO.Run(ctx, confirm)
 			if err != nil {
 				return fmt.Errorf("could not prompt: %w", err)
 			}
@@ -473,7 +474,7 @@ func loginRun(ctx context.Context, opts *LoginOptions) error {
 
 		gitProtocol = strings.ToLower(gitProtocol)
 		if opts.Interactive && gitProtocol != "ssh" {
-			if err := credentialFlow.Prompt(hostname, gitProtocol); err != nil {
+			if err := credentialFlow.Prompt(ctx, opts.IO, hostname, gitProtocol); err != nil {
 				return err
 			}
 		}
