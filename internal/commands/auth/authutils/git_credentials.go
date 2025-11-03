@@ -2,16 +2,17 @@ package authutils
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"path/filepath"
 	"strings"
 
 	"gitlab.com/gitlab-org/cli/internal/git"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/run"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/google/shlex"
 )
 
@@ -22,16 +23,17 @@ type GitCredentialFlow struct {
 	helper      string
 }
 
-func (gc *GitCredentialFlow) Prompt(hostname, protocol string) error {
+func (gc *GitCredentialFlow) Prompt(ctx context.Context, io *iostreams.IOStreams, hostname, protocol string) error {
 	gc.helper, _ = gitCredentialHelper(hostname, protocol)
 	if isOurCredentialHelper(gc.helper) {
 		return nil
 	}
 
-	err := prompt.AskOne(&survey.Confirm{
-		Message: "Authenticate Git with your GitLab credentials?",
-		Default: true,
-	}, &gc.shouldSetup)
+	gc.shouldSetup = true // default value
+	confirm := huh.NewConfirm().
+		Title("Authenticate Git with your GitLab credentials?").
+		Value(&gc.shouldSetup)
+	err := io.Run(ctx, confirm)
 	if err != nil {
 		return fmt.Errorf("could not prompt: %w", err)
 	}
