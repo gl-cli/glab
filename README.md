@@ -272,11 +272,24 @@ Configure `glab` at different levels: system-wide, globally (per-user), locally 
 When `glab` looks for configuration files, it searches in this order (highest priority first):
 
 1. `$GLAB_CONFIG_DIR/config.yml` (if `GLAB_CONFIG_DIR` is set)
-2. `$XDG_CONFIG_HOME/glab-cli/config.yml` (default: `~/.config/glab-cli/config.yml`)
-3. `$XDG_CONFIG_DIRS/glab-cli/config.yml` (default: `/etc/xdg/glab-cli/config.yml`)
+2. `~/.config/glab-cli/config.yml` (legacy location, for backward compatibility)
+3. `$XDG_CONFIG_HOME/glab-cli/config.yml` (platform-specific XDG location)
+4. `$XDG_CONFIG_DIRS/glab-cli/config.yml` (system-wide configs, default: `/etc/xdg/glab-cli/config.yml`)
 
-The first configuration file found is used. This allows system administrators to provide
-site-wide defaults while allowing individual users to override them.
+The first configuration file found is used.
+
+#### Configuration File Locations
+
+**For backward compatibility**, `glab` checks `~/.config/glab-cli/config.yml` first on all platforms.
+If no legacy config exists, `glab` uses platform-specific XDG Base Directory locations:
+
+- **Linux**: `~/.config/glab-cli/config.yml` (XDG_CONFIG_HOME)
+- **macOS**: `~/Library/Application Support/glab-cli/config.yml` (XDG_CONFIG_HOME)
+- **Windows**: `%APPDATA%\glab-cli\config.yml` (XDG_CONFIG_HOME)
+
+**Note**: If you have config files in both the legacy location (`~/.config/glab-cli/config.yml`)
+and the platform-specific XDG location, `glab` will use the legacy location and display a warning.
+Consider consolidating to one location to avoid confusion.
 
 ### Configure `glab` to use your GitLab Self-Managed or GitLab Dedicated instance
 

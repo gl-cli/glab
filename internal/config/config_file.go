@@ -17,14 +17,36 @@ var (
 	configError  error
 )
 
+// legacyConfigDir returns the legacy config directory (~/.config/glab-cli).
+// This was the default location before XDG platform-specific paths were adopted.
+// Uses os.UserHomeDir() for cross-platform compatibility (works on Windows, macOS, Linux).
+func legacyConfigDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return ""
+	}
+	return filepath.Join(home, ".config", "glab-cli")
+}
+
 // ConfigDir returns the config directory for writing configuration.
-// It respects GLAB_CONFIG_DIR as the highest priority override,
-// otherwise uses XDG_CONFIG_HOME (defaulting to ~/.config).
+// It respects GLAB_CONFIG_DIR as the highest priority override.
+// For backward compatibility, if a legacy config exists at ~/.config/glab-cli/,
+// that location continues to be used. Otherwise, uses XDG_CONFIG_HOME.
 func ConfigDir() string {
 	glabDir := os.Getenv("GLAB_CONFIG_DIR")
 	if glabDir != "" {
 		return glabDir
 	}
+
+	// Check for legacy config location for backward compatibility
+	legacyDir := legacyConfigDir()
+	if legacyDir != "" {
+		legacyConfigFile := filepath.Join(legacyDir, "config.yml")
+		if _, err := os.Stat(legacyConfigFile); err == nil {
+			return legacyDir
+		}
+	}
+
 	return filepath.Join(xdg.ConfigHome, "glab-cli")
 }
 
@@ -36,12 +58,13 @@ func ConfigFile() string {
 	return filepath.Join(ConfigDir(), "config.yml")
 }
 
-// SearchConfigFile searches for an existing config file across all XDG config paths.
+// SearchConfigFile searches for an existing config file across all config paths.
 // It respects GLAB_CONFIG_DIR as the highest priority override.
 // Search order:
 // 1. $GLAB_CONFIG_DIR/config.yml (if GLAB_CONFIG_DIR is set)
-// 2. $XDG_CONFIG_HOME/glab-cli/config.yml (default: ~/.config/glab-cli/config.yml)
-// 3. $XDG_CONFIG_DIRS/glab-cli/config.yml (default: /etc/xdg/glab-cli/config.yml)
+// 2. ~/.config/glab-cli/config.yml (legacy location, for backward compatibility)
+// 3. $XDG_CONFIG_HOME/glab-cli/config.yml (platform-specific XDG location)
+// 4. $XDG_CONFIG_DIRS/glab-cli/config.yml (system-wide configs)
 //
 // Returns the path to the first config file found, or an error if none exist.
 func SearchConfigFile() (string, error) {
@@ -56,6 +79,15 @@ func SearchConfigFile() (string, error) {
 		return configPath, os.ErrNotExist
 	}
 
+	// Check legacy location first for backward compatibility
+	legacyDir := legacyConfigDir()
+	if legacyDir != "" {
+		legacyConfigPath := filepath.Join(legacyDir, "config.yml")
+		if _, err := os.Stat(legacyConfigPath); err == nil {
+			return legacyConfigPath, nil
+		}
+	}
+
 	// XDG search: user config → system configs
 	configPath, err := xdg.SearchConfigFile("glab-cli/config.yml")
 	if err != nil {
@@ -64,11 +96,66 @@ func SearchConfigFile() (string, error) {
 	return configPath, nil
 }
 
+// checkForDuplicateConfigs warns if multiple config files exist across different locations.
+// Since we don't support config merging (yet), only the first file found is used, which can
+// be confusing if users have configs in multiple locations.
+func checkForDuplicateConfigs() {
+	// Only check if GLAB_CONFIG_DIR is not set
+	if os.Getenv("GLAB_CONFIG_DIR") != "" {
+		return
+	}
+
+	var existingConfigs []string
+
+	// Check legacy location
+	legacyDir := legacyConfigDir()
+	if legacyDir != "" {
+		legacyConfigPath := filepath.Join(legacyDir, "config.yml")
+		if _, err := os.Stat(legacyConfigPath); err == nil {
+			existingConfigs = append(existingConfigs, legacyConfigPath)
+		}
+	}
+
+	// Check XDG user config (if different from legacy)
+	xdgConfigPath := filepath.Join(xdg.ConfigHome, "glab-cli", "config.yml")
+	if len(existingConfigs) == 0 || existingConfigs[0] != xdgConfigPath {
+		if _, err := os.Stat(xdgConfigPath); err == nil {
+			existingConfigs = append(existingConfigs, xdgConfigPath)
+		}
+	}
+
+	// Check system-wide XDG configs
+	for _, dir := range xdg.ConfigDirs {
+		// Skip if it's the same as ConfigHome (already checked above)
+		if dir == xdg.ConfigHome {
+			continue
+		}
+		configPath := filepath.Join(dir, "glab-cli", "config.yml")
+		if _, err := os.Stat(configPath); err == nil {
+			existingConfigs = append(existingConfigs, configPath)
+		}
+	}
+
+	// Warn if multiple configs exist
+	if len(existingConfigs) > 1 {
+		fmt.Fprintf(os.Stderr, "Warning: Multiple config files found. Only the first one will be used.\n")
+		fmt.Fprintf(os.Stderr, "  Using: %s\n", existingConfigs[0])
+		for _, path := range existingConfigs[1:] {
+			fmt.Fprintf(os.Stderr, "  Ignoring: %s\n", path)
+		}
+		fmt.Fprintf(os.Stderr, "Consider consolidating to one location to avoid confusion.\n")
+	}
+}
+
 // Init initialises and returns the cached configuration
 func Init() (Config, error) {
 	if cachedConfig != nil || configError != nil {
 		return cachedConfig, configError
 	}
+
+	// Check for duplicate configs and warn user
+	checkForDuplicateConfigs()
+
 	cachedConfig, configError = ParseDefaultConfig()
 
 	if os.IsNotExist(configError) {
