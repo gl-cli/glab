@@ -1,4 +1,4 @@
-package list
+package get
 
 import (
 	"testing"
@@ -10,10 +10,9 @@ import (
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"go.uber.org/mock/gomock"
 )
 
-func Test_ListSSHKey(t *testing.T) {
+func Test_GetSSHKey(t *testing.T) {
 	type testCase struct {
 		Name        string
 		ExpectedMsg []string
@@ -33,28 +32,19 @@ func Test_ListSSHKey(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			Name:        "List all ssh keys",
-			ExpectedMsg: []string{"Title\tKey\tUsage type\tCreated At\nmysshkey\tssh-ed25519 example\tauth_and_signing\t2025-01-01 00:00:00 +0000 UTC\n\n"},
-			cli:         "",
+			Name:        "Get SSH key by ID",
+			ExpectedMsg: []string{"ssh-ed25519 example"},
+			cli:         "123",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().ListSSHKeys(gomock.Any()).Return([]*gitlab.SSHKey{testKey}, nil, nil)
+				tc.MockUsers.EXPECT().GetSSHKey(123).Return(testKey, nil, nil)
 			},
 		},
 		{
-			Name:        "When --show-id is used shows a list of keys with IDs",
-			ExpectedMsg: []string{"ID\tTitle\tKey\tUsage type\tCreated At\n123\tmysshkey\tssh-ed25519 example\tauth_and_signing\t2025-01-01 00:00:00 +0000 UTC\n\n"},
-			cli:         "--show-id",
-			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().ListSSHKeys(gomock.Any()).Return([]*gitlab.SSHKey{testKey}, nil, nil)
-			},
-		},
-		{
-			Name:        "When no keys are found returns an empty list",
-			ExpectedMsg: []string{"\n"},
-			cli:         "",
-			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().ListSSHKeys(gomock.Any()).Return([]*gitlab.SSHKey{}, nil, nil)
-			},
+			Name:       "Get SSH key without ID",
+			cli:        "",
+			wantErr:    true,
+			wantStderr: "the <key-id> argument is required when prompts are disabled.",
+			setupMock:  func(tc *gitlabtesting.TestClient) {},
 		},
 	}
 
@@ -65,7 +55,7 @@ func Test_ListSSHKey(t *testing.T) {
 			tc.setupMock(testClient)
 			exec := cmdtest.SetupCmdForTest(
 				t,
-				NewCmdList,
+				NewCmdGet,
 				false,
 				cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "", "", api.WithGitLabClient(testClient.Client))),
 			)
@@ -81,7 +71,7 @@ func Test_ListSSHKey(t *testing.T) {
 			}
 			require.NoError(t, err)
 			for _, msg := range tc.ExpectedMsg {
-				assert.Equal(t, out.OutBuf.String(), msg)
+				assert.Contains(t, out.OutBuf.String(), msg)
 			}
 		})
 	}
