@@ -126,9 +126,9 @@ func (o *options) run() error {
 
 	if o.io.IsOutputTTY() {
 		cs := o.io.Color()
-		o.io.Logf("%s New deploy key added.\n", cs.GreenCheck())
+		o.io.LogInfof("%s New deploy key added.\n", cs.GreenCheck())
 	} else {
-		o.io.Logf("New deploy key added.\n")
+		o.io.LogInfo("New deploy key added.\n")
 	}
 
 	return nil

@@ -145,7 +145,7 @@ func TestPublishCatalog(t *testing.T) {
 				assert.Equal(t, tc.errMsg, err.Error())
 			} else {
 				assert.NoError(t, err)
-				assert.Contains(t, output.Stderr(), tc.wantOutput)
+				assert.Contains(t, output.String(), tc.wantOutput)
 			}
 		})
 	}

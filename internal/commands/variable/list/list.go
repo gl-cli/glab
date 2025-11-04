@@ -104,7 +104,7 @@ func (o *options) run() error {
 	table := tableprinter.NewTablePrinter()
 
 	if o.group != "" {
-		o.io.Logf("Listing variables for the %s group:\n\n", color.Bold(o.group))
+		o.io.LogInfof("Listing variables for the %s group:\n\n", color.Bold(o.group))
 		listOpts := &gitlab.ListGroupVariablesOptions{Page: o.page, PerPage: o.perPage}
 		variables, _, err := client.GroupVariables.ListVariables(o.group, listOpts)
 		if err != nil {
@@ -121,7 +121,7 @@ func (o *options) run() error {
 			}
 		}
 	} else if o.instance {
-		o.io.Logf("Listing variables for the instance\n\n")
+		o.io.LogInfo("Listing variables for the instance\n\n")
 		listOpts := &gitlab.ListInstanceVariablesOptions{Page: o.page, PerPage: o.perPage}
 		variables, _, err := client.InstanceVariables.ListVariables(listOpts)
 		if err != nil {
@@ -142,7 +142,7 @@ func (o *options) run() error {
 		if err != nil {
 			return err
 		}
-		o.io.Logf("Listing variables for the %s project:\n\n", color.Bold(repo.FullName()))
+		o.io.LogInfof("Listing variables for the %s project:\n\n", color.Bold(repo.FullName()))
 		listOpts := &gitlab.ListProjectVariablesOptions{Page: o.page, PerPage: o.perPage}
 		variables, _, err := client.ProjectVariables.ListVariables(repo.FullName(), listOpts)
 		if err != nil {

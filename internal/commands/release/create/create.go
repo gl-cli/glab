@@ -324,22 +324,20 @@ func createRun(opts *options) error {
 	var resp *gitlab.Response
 
 	if opts.ref == "" {
-		opts.io.Log(color.ProgressIcon(), "Validating tag", opts.tagName)
+		opts.io.LogInfo(color.ProgressIcon(), "Validating tag", opts.tagName)
 		tag, resp, err = client.Tags.GetTag(repo.FullName(), opts.tagName)
 		if err != nil && resp != nil && resp.StatusCode != http.StatusNotFound {
 			return cmdutils.WrapError(err, "could not fetch tag")
 		}
 		if tag == nil && resp != nil && resp.StatusCode == http.StatusNotFound {
-			opts.io.Log(color.DotWarnIcon(), "Tag does not exist.")
-			opts.io.Log(color.DotWarnIcon(), "No ref provided. Creating the tag from the latest state of the default branch.")
+			opts.io.LogInfo(color.DotWarnIcon(), "Tag does not exist.")
+			opts.io.LogInfo(color.DotWarnIcon(), "No ref provided. Creating the tag from the latest state of the default branch.")
 			project, err := repo.Project(client)
 			if err == nil {
-				opts.io.Logf("%s using default branch %q as ref\n", color.ProgressIcon(), project.DefaultBranch)
+				opts.io.LogInfof("%s using default branch %q as ref\n", color.ProgressIcon(), project.DefaultBranch)
 				opts.ref = project.DefaultBranch
 			}
 		}
-		// new line
-		opts.io.Log()
 	}
 
 	if opts.io.PromptEnabled() && !opts.noteProvided {
@@ -434,7 +432,7 @@ func createRun(opts *options) error {
 	}
 	start := time.Now()
 
-	opts.io.Logf("%s Creating or updating release %s=%s %s=%s\n",
+	opts.io.LogInfof("%s Creating or updating release %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), opts.tagName)
@@ -489,7 +487,7 @@ func createRun(opts *options) error {
 		if err != nil {
 			return releaseFailedErr(err, start)
 		}
-		opts.io.Logf("%s Release created:\t%s=%s\n", color.GreenCheck(),
+		opts.io.LogInfof("%s Release created:\t%s=%s\n", color.GreenCheck(),
 			color.Blue("url"), release.Links.Self)
 	} else {
 		if opts.noUpdate {
@@ -516,7 +514,7 @@ func createRun(opts *options) error {
 			return releaseFailedErr(err, start)
 		}
 
-		opts.io.Logf("%s Release updated\t%s=%s\n", color.GreenCheck(),
+		opts.io.LogInfof("%s Release updated\t%s=%s\n", color.GreenCheck(),
 			color.Blue("url"), release.Links.Self)
 	}
 
@@ -527,7 +525,7 @@ func createRun(opts *options) error {
 	}
 
 	if opts.noCloseMilestone {
-		opts.io.Logf("%s Skipping closing milestones\n", color.GreenCheck())
+		opts.io.LogInfof("%s Skipping closing milestones\n", color.GreenCheck())
 	} else {
 		if len(opts.milestone) > 0 {
 			// close all associated milestones
@@ -536,14 +534,14 @@ func createRun(opts *options) error {
 				err := closeMilestone(opts, milestone)
 				opts.io.StopSpinner("")
 				if err != nil {
-					opts.io.Log(color.FailedIcon(), err.Error())
+					opts.io.LogError(color.FailedIcon(), err.Error())
 				} else {
-					opts.io.Logf("%s Closed milestone %q\n", color.GreenCheck(), milestone)
+					opts.io.LogInfof("%s Closed milestone %q\n", color.GreenCheck(), milestone)
 				}
 			}
 		}
 	}
-	opts.io.Logf(color.Bold("%s Release succeeded after %0.2f seconds.\n"), color.GreenCheck(), time.Since(start).Seconds())
+	opts.io.LogInfof(color.Bold("%s Release succeeded after %0.2f seconds.\n"), color.GreenCheck(), time.Since(start).Seconds())
 
 	if opts.publishToCatalog {
 		err = catalog.Publish(opts.io, client, repo.FullName(), release.TagName)

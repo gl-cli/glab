@@ -144,7 +144,7 @@ func main() {
 		isShell := false
 		expandedArgs, isShell, err = expand.ExpandAlias(cfg, os.Args, nil)
 		if err != nil {
-			cmdFactory.IO().Logf("Failed to process alias: %s\n", err)
+			cmdFactory.IO().LogErrorf("Failed to process alias: %s\n", err)
 			os.Exit(2)
 		}
 
@@ -165,7 +165,7 @@ func main() {
 					os.Exit(ee.ExitCode())
 				}
 
-				cmdFactory.IO().Logf("failed to run external command: %s\n", err)
+				cmdFactory.IO().LogErrorf("failed to run external command: %s\n", err)
 				os.Exit(3)
 			}
 
@@ -261,7 +261,7 @@ func isUpdateCheckEnabled(f cmdutils.Factory) bool {
 
 	checkUpdate, err := strconv.ParseBool(val)
 	if err != nil {
-		f.IO().Logf("ERROR: Could not parse config value %q: %s", "check_update", err)
+		f.IO().LogErrorf("ERROR: Could not parse config value %q: %s", "check_update", err)
 	}
 
 	return checkUpdate

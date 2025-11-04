@@ -100,7 +100,7 @@ func (o *options) run(ctx context.Context) error {
 	var downloadableAssets []*upload.ReleaseAsset
 
 	if o.tagName == "" {
-		o.io.Logf("%s fetching latest release %s=%s\n",
+		o.io.LogInfof("%s fetching latest release %s=%s\n",
 			color.ProgressIcon(),
 			color.Blue("repo"), repo.FullName())
 		releases, _, err := client.Releases.ListReleases(repo.FullName(), &gitlab.ListReleasesOptions{})
@@ -114,7 +114,7 @@ func (o *options) run(ctx context.Context) error {
 		release = releases[0]
 		o.tagName = release.TagName
 	} else {
-		o.io.Logf("%s fetching release %s=%s %s=%s.\n",
+		o.io.LogInfof("%s fetching release %s=%s %s=%s.\n",
 			color.ProgressIcon(),
 			color.Blue("repo"), repo.FullName(),
 			color.Blue("tag"), o.tagName)
@@ -150,11 +150,11 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if len(downloadableAssets) < 1 {
-		o.io.Logf("%s no release assets found!\n",
+		o.io.LogInfof("%s no release assets found!\n",
 			color.DotWarnIcon())
 		return nil
 	}
-	o.io.Logf("%s downloading release assets %s=%s %s=%s\n",
+	o.io.LogInfof("%s downloading release assets %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), o.tagName)
@@ -164,7 +164,7 @@ func (o *options) run(ctx context.Context) error {
 		return cmdutils.WrapError(err, "failed to download release.")
 	}
 
-	o.io.Logf(color.Bold("%s release %q downloaded\n"), color.RedCheck(), release.Name)
+	o.io.LogInfof(color.Bold("%s release %q downloaded\n"), color.RedCheck(), release.Name)
 
 	return nil
 }
@@ -182,7 +182,7 @@ func matchAny(patterns []string, name string) bool {
 func downloadAssets(ctx context.Context, client *gitlab.Client, io *iostreams.IOStreams, toDownload []*upload.ReleaseAsset, destDir string) error {
 	color := io.Color()
 	for _, asset := range toDownload {
-		io.Logf("%s downloading file %s=%s %s=%s.\n",
+		io.LogInfof("%s downloading file %s=%s %s=%s.\n",
 			color.ProgressIcon(),
 			color.Blue("name"), *asset.Name,
 			color.Blue("url"), *asset.URL)

@@ -96,7 +96,7 @@ func (o *options) run() error {
 		cs := o.io.Color()
 		o.io.LogInfof("%s SSH key deleted.\n", cs.GreenCheck())
 	} else {
-		o.io.LogInfof("SSH key deleted.\n")
+		o.io.LogInfo("SSH key deleted.\n")
 	}
 
 	return nil

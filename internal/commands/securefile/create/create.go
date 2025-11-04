@@ -72,7 +72,7 @@ func (o *options) run() error {
 	}
 
 	color := o.io.Color()
-	o.io.Logf("%s Creating secure file %s=%s %s=%s\n",
+	o.io.LogInfof("%s Creating secure file %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("fileName"), o.fileName)
@@ -87,7 +87,7 @@ func (o *options) run() error {
 		return fmt.Errorf("Error creating secure file: %w", err)
 	}
 
-	o.io.Logf(color.Bold("%s Secure file %s created.\n"), color.GreenCheck(), o.fileName)
+	o.io.LogInfof(color.Bold("%s Secure file %s created.\n"), color.GreenCheck(), o.fileName)
 	return nil
 }
 

@@ -100,7 +100,7 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if !o.forceDelete && o.io.PromptEnabled() {
-		o.io.Logf("This action will permanently delete secure file %d immediately.\n\n", o.fileID)
+		o.io.LogInfof("This action will permanently delete secure file %d immediately.\n\n", o.fileID)
 		err = o.io.Confirm(ctx, &o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete this secure file %d?", o.fileID))
 		if err != nil {
 			return cmdutils.WrapError(err, "could not prompt")
@@ -112,7 +112,7 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	color := o.io.Color()
-	o.io.Logf("%s Deleting secure file %s=%s %s=%d\n",
+	o.io.LogInfof("%s Deleting secure file %s=%s %s=%d\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("fileID"), o.fileID)
@@ -122,7 +122,7 @@ func (o *options) run(ctx context.Context) error {
 		return fmt.Errorf("Error removing secure file: %v", err)
 	}
 
-	o.io.Logf(color.Bold("%s Secure file %d deleted.\n"), color.RedCheck(), o.fileID)
+	o.io.LogInfof(color.Bold("%s Secure file %d deleted.\n"), color.RedCheck(), o.fileID)
 
 	return nil
 }

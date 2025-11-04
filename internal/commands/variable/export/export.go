@@ -121,7 +121,7 @@ func (o *options) run() error {
 			return err
 		}
 
-		o.io.Logf("Exporting variables from the %s group:\n", o.group)
+		o.io.LogInfof("Exporting variables from the %s group:\n", o.group)
 
 		if len(groupVariables) == 0 {
 			return nil
@@ -140,7 +140,7 @@ func (o *options) run() error {
 			return err
 		}
 
-		o.io.Logf("Exporting variables from the %s project:\n", repo.FullName())
+		o.io.LogInfof("Exporting variables from the %s project:\n", repo.FullName())
 
 		if len(projectVariables) == 0 {
 			return nil

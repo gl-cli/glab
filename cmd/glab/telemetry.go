@@ -74,14 +74,14 @@ func sendTelemetryData(f cmdutils.Factory, cmd *cobra.Command) {
 
 		c, err := f.ApiClient("")
 		if err != nil {
-			f.IO().Logf("Could not get API Client in telemetry hook: %s", err.Error())
+			f.IO().LogErrorf("Could not get API Client in telemetry hook: %s", err.Error())
 			return
 		}
 		client = c.Lab()
 	} else {
 		c, err := f.GitLabClient()
 		if err != nil {
-			f.IO().Logf("Could not get API Client in telemetry hook: %s", err.Error())
+			f.IO().LogErrorf("Could not get API Client in telemetry hook: %s", err.Error())
 			return
 		}
 		client = c
@@ -105,6 +105,6 @@ func sendTelemetryData(f cmdutils.Factory, cmd *cobra.Command) {
 		},
 	})
 	if err != nil {
-		f.IO().Logf("Could not send telemetry data: %s", err.Error())
+		f.IO().LogErrorf("Could not send telemetry data: %s", err.Error())
 	}
 }

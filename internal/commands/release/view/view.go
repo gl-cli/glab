@@ -113,7 +113,7 @@ func (o *options) run() error {
 		url := release.Links.Self
 
 		if o.io.IsOutputTTY() {
-			o.io.Logf("Opening %s in your browser.\n", url)
+			o.io.LogInfof("Opening %s in your browser.\n", url)
 		}
 
 		browser, _ := cfg.Get(repo.RepoHost(), "browser")

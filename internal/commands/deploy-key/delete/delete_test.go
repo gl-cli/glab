@@ -73,7 +73,7 @@ func Test_DeployKeyRemove(t *testing.T) {
 			require.NoError(t, err)
 
 			for _, msg := range tc.ExpectedMsg {
-				require.Contains(t, out.Stderr(), msg)
+				require.Contains(t, out.String(), msg)
 			}
 		})
 	}

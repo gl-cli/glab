@@ -144,8 +144,8 @@ func TestReleaseDelete(t *testing.T) {
 			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `delete %s`: %v", tc.cli, err) {
-				assert.Equal(t, tc.expectedOut, output.Stderr())
-				assert.Empty(t, output.String())
+				assert.Equal(t, tc.expectedOut, output.String())
+				assert.Empty(t, output.Stderr())
 			}
 		})
 	}

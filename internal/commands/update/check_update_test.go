@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 )
@@ -407,9 +407,7 @@ func TestPrintUpdateError(t *testing.T) {
 				cmd:   cmd,
 				debug: false,
 			},
-			wantOut: `x error connecting to https://gitlab.com/api/v4
-• Check your internet connection and status.gitlab.com. If on GitLab Self-Managed, run 'sudo gitlab-ctl status' on your server.
-`,
+			wantOut: "x error connecting to https://gitlab.com/api/v4\n",
 		},
 		{
 			name: "DNS error with debug",
@@ -420,8 +418,7 @@ func TestPrintUpdateError(t *testing.T) {
 				cmd:   cmd,
 				debug: true,
 			},
-
-			wantOut: "x error connecting to https://gitlab.com/api/v4\nx lookup https://gitlab.com/api/v4: \n• Check your internet connection and status.gitlab.com. If on GitLab Self-Managed, run 'sudo gitlab-ctl status' on your server.\n",
+			wantOut: "x error connecting to https://gitlab.com/api/v4\nx lookup https://gitlab.com/api/v4: \n",
 		},
 		{
 			name: "Cobra flag error",
@@ -430,7 +427,7 @@ func TestPrintUpdateError(t *testing.T) {
 				cmd:   cmd,
 				debug: false,
 			},
-			wantOut: "ERROR: unknown flag --foo\nTry ' --help' for more information.",
+			wantOut: "ERROR: unknown flag --foo\n",
 		},
 		{
 			name: "unknown Cobra command error",
@@ -439,7 +436,7 @@ func TestPrintUpdateError(t *testing.T) {
 				cmd:   cmd,
 				debug: false,
 			},
-			wantOut: "ERROR: unknown command foo\nTry ' --help' for more information.",
+			wantOut: "ERROR: unknown command foo\n",
 		},
 	}
 

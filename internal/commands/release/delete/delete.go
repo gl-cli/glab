@@ -98,7 +98,7 @@ func (o *options) run(ctx context.Context) error {
 	color := o.io.Color()
 	var resp *gitlab.Response
 
-	o.io.Logf("%s Validating tag %s=%s %s=%s\n",
+	o.io.LogInfof("%s Validating tag %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), o.tagName)
@@ -112,7 +112,7 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if !o.forceDelete && o.io.PromptEnabled() {
-		o.io.Logf("This action will permanently delete release %q immediately.\n\n", release.TagName)
+		o.io.LogInfof("This action will permanently delete release %q immediately.\n\n", release.TagName)
 		err = o.io.Confirm(ctx, &o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete this release %q?", release.Name))
 		if err != nil {
 			return cmdutils.WrapError(err, "could not prompt")
@@ -123,7 +123,7 @@ func (o *options) run(ctx context.Context) error {
 		return cmdutils.CancelError()
 	}
 
-	o.io.Logf("%s Deleting release %s=%s %s=%s\n",
+	o.io.LogInfof("%s Deleting release %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), o.tagName)
@@ -133,11 +133,11 @@ func (o *options) run(ctx context.Context) error {
 		return cmdutils.WrapError(err, "failed to delete release.")
 	}
 
-	o.io.Logf(color.Bold("%s Release %q deleted.\n"), color.RedCheck(), release.Name)
+	o.io.LogInfof(color.Bold("%s Release %q deleted.\n"), color.RedCheck(), release.Name)
 
 	if o.deleteTag {
 
-		o.io.Logf("%s Deleting associated tag %q.\n",
+		o.io.LogInfof("%s Deleting associated tag %q.\n",
 			color.ProgressIcon(), o.tagName)
 
 		_, err = client.Tags.DeleteTag(repo.FullName(), release.TagName)
@@ -145,7 +145,7 @@ func (o *options) run(ctx context.Context) error {
 			return cmdutils.WrapError(err, "failed to delete tag.")
 		}
 
-		o.io.Logf(color.Bold("%s Tag %q deleted.\n"), color.RedCheck(), release.Name)
+		o.io.LogInfof(color.Bold("%s Tag %q deleted.\n"), color.RedCheck(), release.Name)
 	}
 	return nil
 }
