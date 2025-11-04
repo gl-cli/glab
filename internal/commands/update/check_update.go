@@ -209,24 +209,24 @@ func PrintUpdateError(streams *iostreams.IOStreams, err error, cmd *cobra.Comman
 
 	var dnsError *net.DNSError
 	if errors.As(err, &dnsError) {
-		streams.Logf("%s error connecting to %s\n", color.FailedIcon(), dnsError.Name)
+		streams.LogErrorf("%s error connecting to %s\n", color.FailedIcon(), dnsError.Name)
 		if debug {
-			streams.Log(color.FailedIcon(), dnsError)
+			streams.LogError(color.FailedIcon(), dnsError)
 		}
-		streams.Logf("%s Check your internet connection and status.gitlab.com. If on GitLab Self-Managed, run 'sudo gitlab-ctl status' on your server.\n", color.DotWarnIcon())
+		streams.LogInfof("%s Check your internet connection and status.gitlab.com. If on GitLab Self-Managed, run 'sudo gitlab-ctl status' on your server.\n", color.DotWarnIcon())
 	} else {
 		var exitError *cmdutils.ExitError
 		if errors.As(err, &exitError) {
-			streams.Logf("%s %s %s=%s\n", color.FailedIcon(), color.Bold(exitError.Details), color.Red("error"), exitError.Err)
+			streams.LogErrorf("%s %s %s=%s\n", color.FailedIcon(), color.Bold(exitError.Details), color.Red("error"), exitError.Err)
 		} else {
-			streams.Log("ERROR:", err)
+			streams.LogError("ERROR:", err)
 
 			var flagError *cmdutils.FlagError
 			if errors.As(err, &flagError) || strings.HasPrefix(err.Error(), "unknown command ") {
 				if cmd != nil {
-					streams.Logf("Try '%s --help' for more information.", cmd.CommandPath())
+					streams.LogInfof("Try '%s --help' for more information.", cmd.CommandPath())
 				} else {
-					streams.Log("Try --help for more information.")
+					streams.LogInfof("Try --help for more information.")
 				}
 			}
 		}

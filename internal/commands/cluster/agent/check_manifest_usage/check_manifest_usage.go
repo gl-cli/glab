@@ -102,7 +102,7 @@ func checkGroup(apiClient *gitlab.Client, group string, opts *options) error {
 	}
 
 	color := opts.io.Color()
-	opts.io.Log(color.ProgressIcon(), fmt.Sprintf("Checking %d of %d projects (Page %d of %d)\n", len(projects), resp.TotalItems, resp.CurrentPage, resp.TotalPages))
+	opts.io.LogInfo(color.ProgressIcon(), fmt.Sprintf("Checking %d of %d projects (Page %d of %d)\n", len(projects), resp.TotalItems, resp.CurrentPage, resp.TotalPages))
 	for _, prj := range projects {
 		err = checkManifestUsageInProject(apiClient, opts, prj)
 		if err != nil {
@@ -110,7 +110,6 @@ func checkGroup(apiClient *gitlab.Client, group string, opts *options) error {
 		}
 	}
 
-	opts.io.Log()
 	return nil
 }
 
@@ -143,11 +142,11 @@ func checkManifestUsageInProject(apiClient *gitlab.Client, opts *options, projec
 		return err
 	}
 
-	opts.io.Log(color.ProgressIcon(), fmt.Sprintf("Found %d agents.\n", len(agents)))
+	opts.io.LogInfo(color.ProgressIcon(), fmt.Sprintf("Found %d agents.\n", len(agents)))
 	for _, agent := range agents {
 		found, err := agentUsesManifestProjects(apiClient, opts, agent)
 		if err != nil {
-			opts.io.Log(color.RedCheck(), "An error happened.", err)
+			opts.io.LogError(color.RedCheck(), "An error happened.", err)
 			continue
 		}
 		if found {
@@ -168,7 +167,7 @@ func agentUsesManifestProjects(apiClient *gitlab.Client, opts *options, agent *g
 	// GetRawFile
 	file, _, err := apiClient.RepositoryFiles.GetRawFile(agent.ConfigProject.ID, ".gitlab/agents/"+agent.Name+"/config.yaml", &gitlab.GetRawFileOptions{})
 	if err != nil {
-		opts.io.Log(color.WarnIcon(), fmt.Sprintf("Agent %s uses the default configuration.", agent.Name))
+		opts.io.LogInfo(color.WarnIcon(), fmt.Sprintf("Agent %s uses the default configuration.", agent.Name))
 		return false, nil
 	}
 
@@ -176,15 +175,15 @@ func agentUsesManifestProjects(apiClient *gitlab.Client, opts *options, agent *g
 	var configData AgentConfig
 	err = yaml.Unmarshal(file, &configData)
 	if err != nil {
-		opts.io.Log("Unmarshal error", fmt.Sprintf("%s\n", string(file)))
+		opts.io.LogError("Unmarshal error", fmt.Sprintf("%s\n", string(file)))
 		return false, err
 	}
 
 	if len(configData.GitOps.ManifestProjects) == 0 {
-		opts.io.Log(color.GreenCheck(), fmt.Sprintf("Agent %s does not have manifest projects configured.", agent.Name))
+		opts.io.LogInfo(color.GreenCheck(), fmt.Sprintf("Agent %s does not have manifest projects configured.", agent.Name))
 		return false, nil
 	} else {
-		opts.io.Log(color.FailedIcon(), fmt.Sprintf("Agent %s has %d manifest projects configured.", agent.Name, len(configData.GitOps.ManifestProjects)))
+		opts.io.LogInfo(color.FailedIcon(), fmt.Sprintf("Agent %s has %d manifest projects configured.", agent.Name, len(configData.GitOps.ManifestProjects)))
 		return true, nil
 	}
 }

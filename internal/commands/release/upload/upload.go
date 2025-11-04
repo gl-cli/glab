@@ -159,7 +159,7 @@ func (o *options) run() error {
 	color := o.io.Color()
 	var resp *gitlab.Response
 
-	o.io.Logf("%s Validating tag %s=%s %s=%s\n",
+	o.io.LogInfof("%s Validating tag %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repo.FullName(),
 		color.Blue("tag"), o.tagName)
@@ -178,6 +178,6 @@ func (o *options) run() error {
 		return cmdutils.WrapError(err, "creating release assets failed.")
 	}
 
-	o.io.Logf(color.Bold("%s Upload succeeded after %0.2fs.\n"), color.GreenCheck(), time.Since(start).Seconds())
+	o.io.LogInfof(color.Bold("%s Upload succeeded after %0.2fs.\n"), color.GreenCheck(), time.Since(start).Seconds())
 	return nil
 }

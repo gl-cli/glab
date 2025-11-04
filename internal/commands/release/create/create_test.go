@@ -98,12 +98,11 @@ func TestReleaseCreate(t *testing.T) {
 			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `create %s`: %v", tc.cli, err) {
-				assert.Contains(t, output.Stderr(), `• Validating tag 0.0.1
-
+				assert.Contains(t, output.String(), `• Validating tag 0.0.1
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
 ✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 ✓ Release succeeded after`)
-				assert.Empty(t, output.String())
+				assert.Empty(t, output.Stderr())
 			}
 		})
 	}
@@ -206,14 +205,13 @@ func TestReleaseCreateWithFiles(t *testing.T) {
 			output, err := runCommand(t, fakeHTTP, tc.cli)
 
 			if assert.NoErrorf(t, err, "error running command `create %s`: %v", tc.cli, err) {
-				assert.Contains(t, output.Stderr(), `• Validating tag 0.0.1
-
+				assert.Contains(t, output.String(), `• Validating tag 0.0.1
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
 ✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 • Uploading release assets repo=OWNER/REPO tag=0.0.1
 • Uploading to release	file=testdata/test_file.txt name=test_file.txt
 ✓ Release succeeded after`)
-				assert.Empty(t, output.String())
+				assert.Empty(t, output.Stderr())
 			}
 		})
 	}
@@ -229,7 +227,6 @@ func TestReleaseCreate_WithAssetsLinksJSON(t *testing.T) {
 			name: "with direct_asset_path",
 			cli:  `0.0.1 --assets-links='[{"name": "any-name", "url": "https://example.com/any-asset-url", "direct_asset_path": "/any-path"}]'`,
 			expectedOutput: `• Validating tag 0.0.1
-
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
 ✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 • Uploading release assets repo=OWNER/REPO tag=0.0.1
@@ -240,7 +237,6 @@ func TestReleaseCreate_WithAssetsLinksJSON(t *testing.T) {
 			name: "with filepath aliased to direct_asset_path",
 			cli:  `0.0.1 --assets-links='[{"name": "any-name", "url": "https://example.com/any-asset-url", "filepath": "/any-path"}]'`,
 			expectedOutput: `• Validating tag 0.0.1
-
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
 ✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 • Uploading release assets repo=OWNER/REPO tag=0.0.1
@@ -308,8 +304,8 @@ func TestReleaseCreate_WithAssetsLinksJSON(t *testing.T) {
 			output, err := runCommand(t, fakeHTTP, tt.cli)
 
 			if assert.NoErrorf(t, err, "error running command `create %s`: %v", tt.cli, err) {
-				assert.Contains(t, output.Stderr(), tt.expectedOutput)
-				assert.Empty(t, output.String())
+				assert.Contains(t, output.String(), tt.expectedOutput)
+				assert.Empty(t, output.Stderr())
 			}
 		})
 	}
@@ -424,7 +420,7 @@ func TestReleaseCreateWithPublishToCatalog(t *testing.T) {
 				assert.Equal(t, tc.errMsg, err.Error())
 			} else {
 				assert.NoError(t, err)
-				assert.Contains(t, output.Stderr(), tc.wantOutput)
+				assert.Contains(t, output.String(), tc.wantOutput)
 			}
 		})
 	}
@@ -482,7 +478,7 @@ func TestReleaseCreate_NoUpdate(t *testing.T) {
 				assert.Contains(t, err.Error(), "release for tag \"0.0.1\" already exists and --no-update flag was specified")
 			} else {
 				assert.NoError(t, err)
-				assert.Contains(t, output.Stderr(), "Release created:")
+				assert.Contains(t, output.String(), "Release created:")
 			}
 		})
 	}
@@ -517,7 +513,6 @@ func TestReleaseCreate_MilestoneClosing(t *testing.T) {
 					}`))
 			},
 			wantOutput: `• Validating tag 0.0.1
-
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
 ✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 ✓ Closed milestone "v1.0"`,
@@ -528,7 +523,6 @@ func TestReleaseCreate_MilestoneClosing(t *testing.T) {
 			cli:            "0.0.1 --milestone 'v1.0' --no-close-milestone",
 			extraHttpStubs: nil,
 			wantOutput: `• Validating tag 0.0.1
-
 • Creating or updating release repo=OWNER/REPO tag=0.0.1
 ✓ Release created:	url=https://gitlab.com/OWNER/REPO/-/releases/0.0.1
 ✓ Skipping closing milestones`,
@@ -566,7 +560,7 @@ func TestReleaseCreate_MilestoneClosing(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Contains(t, output.Stderr(), tt.wantOutput)
+				assert.Contains(t, output.String(), tt.wantOutput)
 			}
 		})
 	}
@@ -669,8 +663,8 @@ func TestReleaseCreate_ExperimentalNotes(t *testing.T) {
 				assert.Equal(t, tt.errMsg, err.Error())
 			} else {
 				require.NoErrorf(t, err, "error running command `create %s`: %v", tt.cli, err)
-				assert.Contains(t, output.Stderr(), "✓ Release created:")
-				assert.Empty(t, output.String())
+				assert.Contains(t, output.String(), "✓ Release created:")
+				assert.Empty(t, output.Stderr())
 			}
 		})
 	}

@@ -83,9 +83,9 @@ func (o *options) run() error {
 
 	if o.io.IsOutputTTY() {
 		cs := o.io.Color()
-		o.io.Logf("%s Deploy key deleted.\n", cs.GreenCheck())
+		o.io.LogInfof("%s Deploy key deleted.\n", cs.GreenCheck())
 	} else {
-		o.io.Logf("Deploy key deleted.\n")
+		o.io.LogInfo("Deploy key deleted.\n")
 	}
 
 	return nil

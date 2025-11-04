@@ -76,7 +76,7 @@ func (c *Context) UploadFiles(projectID, tagName string, packageName string, use
 	}
 	color := c.IO.Color()
 	for _, file := range c.AssetFiles {
-		fmt.Fprintf(c.IO.StdErr, "%s Uploading to release\t%s=%s %s=%s\n",
+		fmt.Fprintf(c.IO.StdOut, "%s Uploading to release\t%s=%s %s=%s\n",
 			color.ProgressIcon(), color.Blue("file"), file.Path,
 			color.Blue("name"), file.Name)
 
@@ -177,12 +177,12 @@ func (c *Context) CreateReleaseAssetLinks(projectID string, tagName string) erro
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(c.IO.StdErr, "%s Added release asset\t%s=%s %s=%s\n",
+		fmt.Fprintf(c.IO.StdOut, "%s Added release asset\t%s=%s %s=%s\n",
 			color.GreenCheck(), color.Blue("name"), *asset.Name,
 			color.Blue("url"), releaseLink.DirectAssetURL)
 
 		if aliased {
-			fmt.Fprintf(c.IO.StdErr, "\t%s Aliased deprecated `filepath` field to `direct_asset_path`. Replace `filepath` with `direct_asset_path`\t%s=%s\n",
+			fmt.Fprintf(c.IO.StdOut, "\t%s Aliased deprecated `filepath` field to `direct_asset_path`. Replace `filepath` with `direct_asset_path`\t%s=%s\n",
 				color.WarnIcon(),
 				color.Blue("name"), *asset.Name)
 		}

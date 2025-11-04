@@ -123,7 +123,7 @@ func CreateReleaseAssets(io *iostreams.IOStreams, client *gitlab.Client, assetFi
 	}
 
 	color := io.Color()
-	io.Logf("%s Uploading release assets %s=%s %s=%s\n",
+	io.LogInfof("%s Uploading release assets %s=%s %s=%s\n",
 		color.ProgressIcon(),
 		color.Blue("repo"), repoName,
 		color.Blue("tag"), tagName)
