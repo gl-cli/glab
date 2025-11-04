@@ -1,7 +1,7 @@
 variables:
-  GO_VERSION: '1.25.3'
-  GOLANGCI_LINT_VERSION: '2.4.0'
-  GITLAB_ADVANCED_SAST_ENABLED: 'true'
+  GO_VERSION: "1.25.3"
+  GOLANGCI_LINT_VERSION: "2.4.0"
+  GITLAB_ADVANCED_SAST_ENABLED: "true"
 
 .code-patterns: &code-patterns
   - ".gitlab/**/*"
@@ -52,11 +52,12 @@ default:
   tags:
     # NOTE: largest linux-based hosted runner available in Free tier.
     # see https://docs.gitlab.com/ci/runners/hosted_runners/linux/#machine-types-available-for-linux---x86-64
-    - 'saas-linux-medium-amd64'
+    - "saas-linux-medium-amd64"
 
 stages:
   - documentation
   - test
+  - build
   - release
 
 include:
@@ -195,11 +196,11 @@ run_tests:
   # If we need to introduce testing for future versions of compatibility reasons
   # uncomment the below lines and adjust the `GO_VERSION` to included versions to test.
   # parallel:
-    # matrix:
-      # - GO_VERSION: ["1.22.3"]
+  # matrix:
+  # - GO_VERSION: ["1.22.3"]
   variables:
     # NOTE: required for race detector
-    CGO_ENABLED: '1'
+    CGO_ENABLED: "1"
   script:
     # `goreleaser` also uses GITLAB_TOKEN and so we need to distinguish between
     # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token
@@ -214,7 +215,7 @@ run_tests:
     when: always
     reports:
       junit: coverage.xml
-    access: 'developer'
+    access: "developer"
 
 .release:
   extends: .sign_windows_base
@@ -222,7 +223,7 @@ run_tests:
     # NOTE: we really benefit from the capacities of this 2xlarge runner.
     # we only want to build from the canonical project so we don't really
     # need to bother about this being compatible with forks.
-    - 'saas-linux-2xlarge-amd64'
+    - "saas-linux-2xlarge-amd64"
   stage: release
   image: ${GITLAB_DEPENDENCY_PROXY}docker:stable
   services:
@@ -245,9 +246,9 @@ run_tests:
     - !reference [.google-oidc:auth, after_script]
     - rm -rf .gitlab-secrets
 
-release_test:
+build_test:
   extends: .release
-  stage: release
+  stage: build
   rules:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -318,7 +319,7 @@ homebrew-release:
     - brew bump-formula-pr glab --no-browse --tag="$CI_COMMIT_TAG" --revision="$CI_COMMIT_SHA"
 
 windows_installer:
-  stage: release
+  stage: build
   image:
     name: ${GITLAB_DEPENDENCY_PROXY}amake/innosetup
     entrypoint: [""]
@@ -345,7 +346,7 @@ windows_installer:
       optional: true
 
 build_windows:
-  stage: release
+  stage: build
   needs: []
   extends: .go-cache
   rules:
@@ -365,6 +366,7 @@ build_windows:
 
 sign_windows_glab:
   extends: .sign_windows_base
+  stage: build
   needs:
     - build_windows
   script:
@@ -375,6 +377,7 @@ sign_windows_glab:
 
 sign_windows_installer:
   extends: .sign_windows_base
+  stage: build
   needs:
     - windows_installer
   script:
@@ -382,6 +385,21 @@ sign_windows_installer:
   artifacts:
     paths:
       - "signed/glab_*Windows_x86_64_installer.exe"
+
+snapcraft:
+  stage: release
+  image:
+    name: ${GITLAB_DEPENDENCY_PROXY}ghcr.io/canonical/snapcraft:8_core24
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_TAG
+  # The snapcraft package is build on snapcraft.io, it needs about 15mins after the branch is merged to build the packages
+  when: manual
+  script:
+    - export SNAPCRAFT_STORE_CREDENTIALS=$(cat $SNAPCRAFT_CREDENTIALS_FILE)
+    - snapcraft whoami
+    - snapcraft promote --from-channel latest/edge --to-channel latest/stable --yes glab
+    - snapcraft logout
 
 secret_detection:
   dependencies: [] # Don't download artifacts, especially `./public/`
