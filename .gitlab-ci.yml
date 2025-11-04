@@ -389,7 +389,7 @@ sign_windows_installer:
 snapcraft:
   stage: release
   image:
-    name: ${GITLAB_DEPENDENCY_PROXY}ghcr.io/canonical/snapcraft:8_core24
+    name: ghcr.io/canonical/snapcraft:8_core24
     entrypoint: [""]
   rules:
     - if: $CI_COMMIT_TAG
