@@ -94,9 +94,9 @@ func (o *options) run() error {
 
 	if o.io.IsOutputTTY() {
 		cs := o.io.Color()
-		o.io.Logf("%s SSH key deleted.\n", cs.GreenCheck())
+		o.io.LogInfof("%s SSH key deleted.\n", cs.GreenCheck())
 	} else {
-		o.io.Logf("SSH key deleted.\n")
+		o.io.LogInfof("SSH key deleted.\n")
 	}
 
 	return nil

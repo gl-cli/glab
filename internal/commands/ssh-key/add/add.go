@@ -116,7 +116,9 @@ func (o *options) run() error {
 
 	if o.io.IsOutputTTY() {
 		cs := o.io.Color()
-		o.io.Logf("%s New SSH public key added to your account.\n", cs.GreenCheck())
+		o.io.LogInfof("%s New SSH public key added to your account.\n", cs.GreenCheck())
+	} else {
+		o.io.LogInfo("New SSH public key added to your account.\n")
 	}
 
 	return nil
