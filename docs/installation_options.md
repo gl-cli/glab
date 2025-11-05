@@ -17,7 +17,7 @@ are maintained by the community.
   - [Homebrew](#homebrew)
   - [mise-en-place](#mise-en-place)
   - [ASDF](#asdf)
-  - [Snapcraft (currently out of date)](#snapcraft)
+  - [Snapcraft](#snapcraft)
   - [Arch Linux](#arch-linux)
   - [Alpine Linux](#alpine-linux)
     - [Install a pinned version from edge](#install-a-pinned-version-from-edge)
@@ -102,12 +102,11 @@ asdf plugin add glab; asdf install glab latest; asdf global glab latest
 
 ### Snapcraft
 
-This method is out of date. See [issue 1127](https://gitlab.com/gitlab-org/cli/-/issues/1127) for more information.
-
 To install `glab` from the [Snap Store](https://snapcraft.io/glab):
 
 1. Make sure you have [snap installed](https://snapcraft.io/docs/installing-snapd) on your Linux distribution.
-1. Install the package: `sudo snap install --edge glab`
+1. For the latest stable release: `sudo snap install glab`
+1. For the latest edge release (updated on every commit to `main`): `sudo snap install --edge glab`
 1. Grant `glab` access to SSH keys: `sudo snap connect glab:ssh-keys`
 
 [![Download from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/glab)
