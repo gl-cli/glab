@@ -347,7 +347,6 @@ windows_installer:
 
 build_windows:
   stage: build
-  needs: []
   extends: .go-cache
   rules:
     - if: $CI_COMMIT_TAG
@@ -386,19 +385,71 @@ sign_windows_installer:
     paths:
       - "signed/glab_*Windows_x86_64_installer.exe"
 
-snapcraft:
+.snapcraft_base:
+  image:
+    name: ghcr.io/canonical/snapcraft:8_core24
+    entrypoint: [""]
+  script:
+    - apt-get update
+    - apt-get install -y git
+    # Set version dynamically in snapcraft.yaml
+    - |
+      if git describe --exact-match --tags HEAD >/dev/null 2>&1; then
+        VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+      else
+        VERSION=$(git describe --tags --always | sed 's/^v//')
+      fi
+      sed -i "s/^version: git$/version: \"$VERSION\"/" snap/snapcraft.yaml
+    - snapcraft pack --destructive-mode --verbose
+  artifacts:
+    paths:
+      - "*.snap"
+    expire_in: "30 days"
+
+snapcraft_build_stable:
+  extends: .snapcraft_base
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG
+
+snapcraft_build_edge:
+  extends: .snapcraft_base
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "merge_request_event"
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+    - changes:
+        - snap/snapcraft.yaml
+        - .gitlab-ci.yml
+
+snapcraft_release_stable:
   stage: release
   image:
     name: ghcr.io/canonical/snapcraft:8_core24
     entrypoint: [""]
+  needs:
+    - snapcraft_build_stable
   rules:
     - if: $CI_COMMIT_TAG
-  # The snapcraft package is build on snapcraft.io, it needs about 15mins after the branch is merged to build the packages
-  when: manual
   script:
     - export SNAPCRAFT_STORE_CREDENTIALS=$(cat $SNAPCRAFT_CREDENTIALS_FILE)
     - snapcraft whoami
-    - snapcraft promote --from-channel latest/edge --to-channel latest/stable --yes glab
+    - snapcraft upload *.snap --release=latest/stable
+    - snapcraft logout
+
+snapcraft_release_edge:
+  stage: release
+  image:
+    name: ghcr.io/canonical/snapcraft:8_core24
+    entrypoint: [""]
+  needs:
+    - snapcraft_build_edge
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - export SNAPCRAFT_STORE_CREDENTIALS=$(cat $SNAPCRAFT_CREDENTIALS_FILE)
+    - snapcraft whoami
+    - snapcraft upload *.snap --release=latest/edge
     - snapcraft logout
 
 secret_detection:
