@@ -1,8 +1,6 @@
 package create
 
 import (
-	"fmt"
-
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -52,11 +50,19 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			if s, _ := cmd.Flags().GetString("description"); s != "" {
 				l.Description = gitlab.Ptr(s)
 			}
+			if cmd.Flags().Changed("priority") {
+				if s, err := cmd.Flags().GetInt("priority"); err == nil {
+					l.Priority = gitlab.Ptr(s)
+				} else {
+					return err
+				}
+			}
 			label, _, err := client.Labels.CreateLabel(repo.FullName(), l)
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(f.IO().StdOut, "Created label: %s\nWith color: %s\n", label.Name, label.Color)
+
+			f.IO().LogInfof("Created label: %s\nWith color: %s\n", label.Name, label.Color)
 
 			return nil
 		},
@@ -65,6 +71,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	_ = labelCreateCmd.MarkFlagRequired("name")
 	labelCreateCmd.Flags().StringP("color", "c", "#428BCA", "Color of the label, in plain or HEX code.")
 	labelCreateCmd.Flags().StringP("description", "d", "", "Label description.")
+	labelCreateCmd.Flags().IntP("priority", "p", 0, "Label priority.")
 
 	return labelCreateCmd
 }
