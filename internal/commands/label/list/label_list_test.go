@@ -61,12 +61,12 @@ func TestLabelList(t *testing.T) {
 
 	out := output.String()
 
-	assert.Equal(t, heredoc.Doc(`
-		Showing label 2 of 2 on OWNER/REPO.
-
-		 bug (#6699cc)
-		 ux -> User Experience (#3cb371)
- 
+	assert.Equal(t, heredoc.Doc(`Showing label 2 of 2 on OWNER/REPO.
+	
+	ID	Name	Description	Color
+	1	bug		#6699cc
+	2	ux	User Experience	#3cb371
+	
 	`), out)
 	assert.Empty(t, output.Stderr())
 }
@@ -155,12 +155,12 @@ func TestGroupLabelList(t *testing.T) {
 
 	out := output.String()
 
-	assert.Equal(t, heredoc.Doc(`
-		Showing label 2 of 2 for group foo.
-
-		 groupbug (#6699cc)
-		 groupux -> User Experience (#3cb371)
- 
+	assert.Equal(t, heredoc.Doc(`Showing label 2 of 2 for group foo.
+	
+	ID	Name	Description	Color
+	1	groupbug		#6699cc
+	2	groupux	User Experience	#3cb371
+	
 	`), out)
 	assert.Empty(t, output.Stderr())
 }

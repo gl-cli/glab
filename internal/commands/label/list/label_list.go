@@ -3,20 +3,27 @@ package list
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
+	"strconv"
 
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/utils"
 
 	"github.com/spf13/cobra"
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
+
+type printLabel struct {
+	ID          string
+	Name        string
+	Description string
+	Color       string
+}
 
 type options struct {
 	io           *iostreams.IOStreams
@@ -87,6 +94,7 @@ func (opts *listLabelsOptions) listGroupLabelsOptions() *gitlab.ListGroupLabelsO
 
 func (o *options) run() error {
 	var err error
+	var pl []printLabel
 
 	// NOTE: this command can not only be used for projects,
 	// so we have to manually check for the base repo, it it doesn't exist,
@@ -113,8 +121,6 @@ func (o *options) run() error {
 		labelApiOpts.perPage = api.DefaultListLimit
 	}
 
-	var labelBuilder strings.Builder
-
 	if o.group != "" {
 		labels, _, err := client.GroupLabels.ListGroupLabels(o.group, labelApiOpts.listGroupLabelsOptions())
 		if err != nil {
@@ -126,8 +132,9 @@ func (o *options) run() error {
 		} else {
 			fmt.Fprintf(o.io.StdOut, "Showing label %d of %d for group %s.\n\n", len(labels), len(labels), o.group)
 			for _, label := range labels {
-				labelBuilder.WriteString(formatLabelInfo(label.Description, label.Name, label.Color))
+				pl = append(pl, printLabel{ID: strconv.Itoa(label.ID), Name: label.Name, Description: label.Description, Color: label.Color})
 			}
+			printLabels(pl, o.io)
 		}
 	} else {
 		repo, err := o.baseRepo()
@@ -145,18 +152,26 @@ func (o *options) run() error {
 		} else {
 			fmt.Fprintf(o.io.StdOut, "Showing label %d of %d on %s.\n\n", len(labels), len(labels), repo.FullName())
 			for _, label := range labels {
-				labelBuilder.WriteString(formatLabelInfo(label.Description, label.Name, label.Color))
+				pl = append(pl, printLabel{ID: strconv.Itoa(label.ID), Name: label.Name, Description: label.Description, Color: label.Color})
 			}
+			printLabels(pl, o.io)
 		}
 
 	}
-	fmt.Fprintln(o.io.StdOut, utils.Indent(labelBuilder.String(), " "))
+
 	return nil
 }
 
-func formatLabelInfo(description string, name string, color string) string {
-	if description != "" {
-		description = fmt.Sprintf(" -> %s", description)
+func printLabels(label []printLabel, io *iostreams.IOStreams) {
+	table := tableprinter.NewTablePrinter()
+
+	if len(label) > 0 {
+		table.AddRow("ID", "Name", "Description", "Color")
 	}
-	return fmt.Sprintf("%s%s (%s)\n", name, description, color)
+
+	for _, l := range label {
+		table.AddRow(l.ID, l.Name, l.Description, l.Color)
+	}
+
+	io.LogInfo(table.String())
 }

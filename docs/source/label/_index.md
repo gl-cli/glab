@@ -28,4 +28,6 @@ Manage labels on remote.
 
 - [`create`](create.md)
 - [`delete`](delete.md)
+- [`edit`](edit.md)
+- [`get`](get.md)
 - [`list`](list.md)
