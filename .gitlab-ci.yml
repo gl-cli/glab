@@ -192,6 +192,7 @@ run_tests:
   extends:
     - .go-cache
     - .test
+  needs: []
   # We currently only test on the lastest versino of Go which we also build against.
   # If we need to introduce testing for future versions of compatibility reasons
   # uncomment the below lines and adjust the `GO_VERSION` to included versions to test.
