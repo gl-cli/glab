@@ -106,6 +106,7 @@ func checkForDuplicateConfigs() {
 	}
 
 	var existingConfigs []string
+	seenPaths := make(map[string]bool)
 
 	// Check legacy location
 	legacyDir := legacyConfigDir()
@@ -113,26 +114,31 @@ func checkForDuplicateConfigs() {
 		legacyConfigPath := filepath.Join(legacyDir, "config.yml")
 		if _, err := os.Stat(legacyConfigPath); err == nil {
 			existingConfigs = append(existingConfigs, legacyConfigPath)
+			seenPaths[legacyConfigPath] = true
 		}
 	}
 
-	// Check XDG user config (if different from legacy)
+	// Check XDG user config (if not already seen)
 	xdgConfigPath := filepath.Join(xdg.ConfigHome, "glab-cli", "config.yml")
-	if len(existingConfigs) == 0 || existingConfigs[0] != xdgConfigPath {
+	if !seenPaths[xdgConfigPath] {
 		if _, err := os.Stat(xdgConfigPath); err == nil {
 			existingConfigs = append(existingConfigs, xdgConfigPath)
+			seenPaths[xdgConfigPath] = true
 		}
 	}
 
-	// Check system-wide XDG configs
+	// Check system-wide XDG configs (skip if already seen)
 	for _, dir := range xdg.ConfigDirs {
 		// Skip if it's the same as ConfigHome (already checked above)
 		if dir == xdg.ConfigHome {
 			continue
 		}
 		configPath := filepath.Join(dir, "glab-cli", "config.yml")
-		if _, err := os.Stat(configPath); err == nil {
-			existingConfigs = append(existingConfigs, configPath)
+		if !seenPaths[configPath] {
+			if _, err := os.Stat(configPath); err == nil {
+				existingConfigs = append(existingConfigs, configPath)
+				seenPaths[configPath] = true
+			}
 		}
 	}
 
