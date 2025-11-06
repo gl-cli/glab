@@ -1,5 +1,5 @@
 variables:
-  GO_VERSION: "1.25.3"
+  GO_VERSION: "1.25.4"
   GOLANGCI_LINT_VERSION: "2.4.0"
   GITLAB_ADVANCED_SAST_ENABLED: "true"
 
@@ -127,7 +127,7 @@ check_docs_markdown:
     # Check links
     - lychee --offline --include-fragments docs/**/*.md *.md
 
-check_docs_hugo: 
+check_docs_hugo:
   image: registry.gitlab.com/gitlab-org/technical-writing/docs-gitlab-com/docs-gitlab-com-builder:hugo-0.150.1
   extends: .documentation
   before_script:
