@@ -1,3 +1,5 @@
+//go:build !integration
+
 package oauth2
 
 import (

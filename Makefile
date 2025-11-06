@@ -132,6 +132,16 @@ test-race: export CI_PROJECT_PATH=$(shell git remote get-url origin)
 test-race: bin/gotestsum ## Run tests with race detection
 	$(GOTEST) --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic -race $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
 
+.PHONY: integration-test-race
+integration-test-race: TEST_FORMAT ?= short
+integration-test-race: SHELL = /bin/bash # set environment variables to ensure consistent test behavior
+integration-test-race: VISUAL=
+integration-test-race: EDITOR=
+integration-test-race: PAGER=
+integration-test-race: export CI_PROJECT_PATH=$(shell git remote get-url origin)
+integration-test-race: bin/gotestsum ## Run tests with race detection
+	$(GOTEST) --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic -race -tags=integration $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
+
 ifdef HASGOCILINT
 bin/golangci-lint:
 	@echo "Skip this"
