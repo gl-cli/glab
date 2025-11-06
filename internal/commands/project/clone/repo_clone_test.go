@@ -1,14 +1,12 @@
+//go:build !integration
+
 package clone
 
 import (
-	"bytes"
 	"testing"
-
-	"github.com/spf13/cobra"
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/gitlab-org/cli/test"
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -16,41 +14,6 @@ import (
 
 func TestMain(m *testing.M) {
 	cmdtest.InitTest(m, "repo_clone_test")
-}
-
-func runCommand(cmd *cobra.Command, cli string, stds ...*bytes.Buffer) (*test.CmdOut, error) {
-	var stdin *bytes.Buffer
-	var stderr *bytes.Buffer
-	var stdout *bytes.Buffer
-
-	for i, std := range stds {
-		if std != nil {
-			if i == 0 {
-				stdin = std
-			}
-			if i == 1 {
-				stdout = std
-			}
-			if i == 2 {
-				stderr = std
-			}
-		}
-	}
-	cmd.SetIn(stdin)
-	cmd.SetOut(stdout)
-	cmd.SetErr(stderr)
-
-	argv, err := shlex.Split(cli)
-	if err != nil {
-		return nil, err
-	}
-	cmd.SetArgs(argv)
-	_, err = cmd.ExecuteC()
-
-	return &test.CmdOut{
-		OutBuf: stdout,
-		ErrBuf: stderr,
-	}, err
 }
 
 func TestNewCmdClone(t *testing.T) {

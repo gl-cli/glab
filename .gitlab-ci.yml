@@ -127,7 +127,7 @@ check_docs_markdown:
     # Check links
     - lychee --offline --include-fragments docs/**/*.md *.md
 
-check_docs_hugo: 
+check_docs_hugo:
   image: registry.gitlab.com/gitlab-org/technical-writing/docs-gitlab-com/docs-gitlab-com-builder:hugo-0.150.1
   extends: .documentation
   before_script:
@@ -188,7 +188,34 @@ lint:
     paths:
       - gl-code-quality-report.json
 
-run_tests:
+tests:unit:
+  extends:
+    - .go-cache
+    - .test
+  needs: []
+  # We currently only test on the lastest versino of Go which we also build against.
+  # If we need to introduce testing for future versions of compatibility reasons
+  # uncomment the below lines and adjust the `GO_VERSION` to included versions to test.
+  # parallel:
+  # matrix:
+  # - GO_VERSION: ["1.22.3"]
+  variables:
+    # NOTE: required for race detector
+    CGO_ENABLED: "1"
+  script:
+    - make test-race
+  after_script:
+    - echo -e "\e[0Ksection_start:`date +%s`:coverage[collapsed=true]\r\e[0KRunning coverage report"
+    - make coverage
+    - echo -e "\e[0Ksection_end:`date +%s`:coverage\r\e[0K"
+  coverage: /^total:\t+\(statements\)\t+\d+\.\d+%$/
+  artifacts:
+    when: always
+    reports:
+      junit: coverage.xml
+    access: "developer"
+
+tests:integration:
   extends:
     - .go-cache
     - .test
@@ -206,17 +233,11 @@ run_tests:
     # `goreleaser` also uses GITLAB_TOKEN and so we need to distinguish between
     # the GITLAB_TOKEN_TEST with less privilege used for testing and the GITLAB_TOKEN_RELEASE token
     # GITLAB_TEST_HOST is the GitLab instance used for the integration tests
-    - GITLAB_TOKEN_TEST=$GITLAB_TOKEN_TEST GITLAB_TEST_HOST=$GITLAB_TEST_HOST make test-race
+    - GITLAB_TOKEN_TEST=$GITLAB_TOKEN_TEST GITLAB_TEST_HOST=$GITLAB_TEST_HOST make integration-test-race
   after_script:
     - echo -e "\e[0Ksection_start:`date +%s`:coverage[collapsed=true]\r\e[0KRunning coverage report"
     - make coverage
     - echo -e "\e[0Ksection_end:`date +%s`:coverage\r\e[0K"
-  coverage: /^total:\t+\(statements\)\t+\d+\.\d+%$/
-  artifacts:
-    when: always
-    reports:
-      junit: coverage.xml
-    access: "developer"
 
 .release:
   extends: .sign_windows_base
