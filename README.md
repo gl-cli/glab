@@ -73,34 +73,38 @@ You're ready!
 
 Run `glab --help` to view a list of core commands in your terminal.
 
-- [`glab alias`](docs/source/alias)
-- [`glab api`](docs/source/api)
-- [`glab auth`](docs/source/auth)
-- [`glab changelog`](docs/source/changelog)
-- [`glab check-update`](docs/source/check-update)
-- [`glab ci`](docs/source/ci)
-- [`glab cluster`](docs/source/cluster)
-- [`glab completion`](docs/source/completion)
-- [`glab config`](docs/source/config)
-- [`glab deploy-key`](docs/source/deploy-key)
-- [`glab duo`](docs/source/duo)
-- [`glab incident`](docs/source/incident)
-- [`glab issue`](docs/source/issue)
-- [`glab iteration`](docs/source/iteration)
-- [`glab job`](docs/source/job)
-- [`glab label`](docs/source/label)
-- [`glab mr`](docs/source/mr)
-- [`glab opentofu`](docs/source/opentofu)
-- [`glab release`](docs/source/release)
-- [`glab repo`](docs/source/repo)
-- [`glab schedule`](docs/source/schedule)
-- [`glab securefile`](docs/source/securefile)
-- [`glab snippet`](docs/source/snippet)
-- [`glab ssh-key`](docs/source/ssh-key)
-- [`glab stack`](docs/source/stack)
-- [`glab token`](docs/source/token)
-- [`glab user`](docs/source/user)
-- [`glab variable`](docs/source/variable)
+- [`glab alias`](docs/source/alias): Create, list, and delete aliases.
+- [`glab api`](docs/source/api): Make authenticated requests to the GitLab API.
+- [`glab auth`](docs/source/auth): Manage the authentication state of the CLI.
+- [`glab changelog`](docs/source/changelog): Interact with the changelog API.
+- [`glab check-update`](docs/source/check-update): Check for updates to the CLI.
+- [`glab ci`](docs/source/ci): Work with GitLab CI/CD pipelines and jobs.
+- [`glab cluster`](docs/source/cluster): Manage GitLab agents for Kubernetes and their clusters.
+- [`glab completion`](docs/source/completion): Generate shell completion scripts.
+- [`glab config`](docs/source/config): Set and get CLI settings.
+- [`glab deploy-key`](docs/source/deploy-key): Manage deploy keys.
+- [`glab duo`](docs/source/duo): Generate terminal commands from natural language.
+- [`glab gpg-key`](docs/source/gpg-key): Manage GPG keys registered with your GitLab account.
+- [`glab incident`](docs/source/incident): Work with GitLab incidents.
+- [`glab issue`](docs/source/issue): Work with GitLab issues.
+- [`glab iteration`](docs/source/iteration): Retrieve iteration information.
+- [`glab job`](docs/source/job): Work with GitLab CI/CD jobs.
+- [`glab label`](docs/source/label): Manage labels for your project.
+- [`glab mcp`](docs/source/mcp): Work with a Model Context Protocol (MCP) server. (EXPERIMENTAL)
+- [`glab milestone`](docs/source/milestone): Manage group or project milestones.
+- [`glab mr`](docs/source/mr): Create, view, and manage merge requests.
+- [`glab opentofu`](docs/source/opentofu): Work with the OpenTofu or Terraform integration.
+- [`glab release`](docs/source/release): Manage GitLab releases.
+- [`glab repo`](docs/source/repo): Work with GitLab repositories and projects.
+- [`glab schedule`](docs/source/schedule): Work with GitLab CI/CD schedules.
+- [`glab securefile`](docs/source/securefile): Manage secure files for a project.
+- [`glab snippet`](docs/source/snippet): Create, view and manage snippets.
+- [`glab ssh-key`](docs/source/ssh-key): Manage SSH keys registered with your GitLab account.
+- [`glab stack`](docs/source/stack): Create, manage, and work with stacked diffs.
+- [`glab token`](docs/source/token): Manage personal, project, or group tokens.
+- [`glab user`](docs/source/user): Interact with a GitLab user account.
+- [`glab variable`](docs/source/variable): Manage variables for a GitLab project or group.
+- [`glab version`](docs/source/version): Show version information for the CLI.
 
 Commands follow this pattern:
 
