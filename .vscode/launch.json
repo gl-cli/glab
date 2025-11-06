@@ -4,20 +4,14 @@
     {
       "name": "Debug glab",
       "type": "go",
+      "mode": "debug",
       "request": "launch",
       "program": "${workspaceFolder}/cmd/glab",
-      "outputMode": "remote",
       "args": [
-        "${input:arguments}"
+        // enter the arguments here
+        // for example:
+        // "issue", "list", "--per-page", "10"
       ]
     }
   ],
-  "inputs": [
-    {
-      "id": "arguments",
-      "type": "promptString",
-      "description": "Enter arguments to pass to the program",
-      "default": ""
-    }
-  ]
 }

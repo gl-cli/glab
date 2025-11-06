@@ -326,3 +326,9 @@ For workspace-specific issues:
 - See the [GitLab Workspaces documentation](https://docs.gitlab.com/user/workspace/).
 - Reach out in the Slack `#f_workspaces` channel.
 - Create an issue in the [Workspace User Feedback Epic](https://gitlab.com/groups/gitlab-org/-/epics/12601).
+
+## Debugging
+
+The project includes a `.vscode/launch.json` file that you can use in Visual Studio Code when debugging the code.
+Add the command line arguments in the `args` array otherwise you will see the default `--help` output.
+Make sure you don't commit this file when pushing your changes.
