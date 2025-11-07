@@ -83,7 +83,7 @@ func Test_ListSSHKey(t *testing.T) {
 			}
 			require.NoError(t, err)
 			for _, msg := range tc.ExpectedMsg {
-				assert.Equal(t, out.OutBuf.String(), msg)
+				assert.Equal(t, msg, out.OutBuf.String())
 			}
 		})
 	}
