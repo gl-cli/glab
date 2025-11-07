@@ -27,5 +27,7 @@ Manage group or project milestones.
 ## Subcommands
 
 - [`create`](create.md)
+- [`delete`](delete.md)
+- [`edit`](edit.md)
 - [`get`](get.md)
 - [`list`](list.md)
