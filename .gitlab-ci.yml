@@ -79,14 +79,19 @@ include:
 # From: https://docs.gitlab.com/ci/caching/#cache-go-dependencies
 .go-cache:
   variables:
+    GOCACHE: $CI_PROJECT_DIR/.gocache-$CI_COMMIT_REF_PROTECTED
     GOPATH: $CI_PROJECT_DIR/.go
     GOLANGCI_LINT_CACHE: $CI_PROJECT_DIR/.golangci-lint
   before_script:
-    - mkdir -p .go .golangci-lint
+    - mkdir -p "$GOCACHE"
+    - go env GOCACHE
   cache:
     paths:
-      - .go/pkg/mod/
-      - .golangci-lint/
+      # The .gocache-false only caches on unprotected branches
+      - $CI_PROJECT_DIR/.gocache-false/
+      - $CI_PROJECT_DIR/.go/pkg/mod/
+      - $CI_PROJECT_DIR/.golangci-lint/
+    key: "${CI_JOB_NAME}"
 
 .documentation:
   stage: documentation
@@ -147,6 +152,8 @@ check_go_generated_code:
     - .go-cache
     - .test
   needs: []
+  before_script:
+    - unset GOCACHE # To prevent .gocache-false from creating
   script:
     # Workaround config.yaml.lock file permissions
     - chmod 600 internal/config/config.yaml.lock
@@ -163,6 +170,7 @@ check_go_generated_code:
 
 lint_commit:
   stage: test
+  needs: []
   image: ${GITLAB_DEPENDENCY_PROXY}node:24-slim
   script:
     - apt-get update && apt-get install -y git
@@ -174,14 +182,16 @@ lint_commit:
       when: always
 
 lint:
-  extends: .test
+  extends:
+    - .test
+    - .go-cache
+  needs: []
   image: ${GITLAB_DEPENDENCY_PROXY}golangci/golangci-lint:v$GOLANGCI_LINT_VERSION
   script:
     # Write the code coverage report to gl-code-quality-report.json
     # and print linting issues to stdout in the format: path/to/file:line description
     # add `--issues-exit-code 0` to ignore linting issues
     - golangci-lint run --output.text.path=stdout --output.text.colors=false --output.text.print-issued-lines=false --output.code-climate.path=gl-code-quality-report.json
-
   artifacts:
     reports:
       codequality: gl-code-quality-report.json
@@ -217,8 +227,8 @@ tests:unit:
 
 tests:integration:
   extends:
-    - .go-cache
     - .test
+    - .go-cache
   needs: []
   # We currently only test on the lastest versino of Go which we also build against.
   # If we need to introduce testing for future versions of compatibility reasons

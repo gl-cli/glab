@@ -140,7 +140,7 @@ integration-test-race: EDITOR=
 integration-test-race: PAGER=
 integration-test-race: export CI_PROJECT_PATH=$(shell git remote get-url origin)
 integration-test-race: bin/gotestsum ## Run tests with race detection
-	$(GOTEST) --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic -race -tags=integration $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...)
+	$(GOTEST) --no-summary=skipped --junitfile ./coverage.xml --format ${TEST_FORMAT} -- -coverprofile=./coverage.txt -covermode=atomic -race -tags=integration $(filter-out -v,${GOARGS}) $(if ${TEST_PKGS},${TEST_PKGS},./...) -count=1
 
 ifdef HASGOCILINT
 bin/golangci-lint:
