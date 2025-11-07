@@ -84,6 +84,52 @@ Build with: `make` or `go build -o bin/glab ./cmd/glab/main.go`
 
 Run the new binary as: `./bin/glab`
 
+### Git hooks with Lefthook (optional)
+
+This project supports [Lefthook](https://github.com/evilmartians/lefthook) for managing Git hooks. Lefthook helps catch issues before pushing to CI by running checks locally.
+
+#### Quick setup
+
+1. Install development tools using [mise](https://mise.jdx.dev/):
+
+   ```bash
+   # Install mise if you don't have it
+   curl https://mise.run | sh
+
+   # Install all development tools (includes lefthook)
+   make bootstrap
+
+   # Enable git hooks
+   lefthook install
+   ```
+
+   This installs all tools defined in `.tool-versions`: Go, golangci-lint (includes gofumpt and goimports formatters), markdownlint-cli2, vale, lychee, Node.js, lefthook, and commitlint dependencies.
+
+#### Available hooks
+
+- **pre-commit**: Formats and lints Go code (golangci-lint with gofumpt/goimports), auto-fixes Markdown formatting (markdownlint), checks and regenerates documentation if command files changed (blocks commit until docs are staged)
+- **commit-msg**: Validates commit messages follow [conventional commits](https://www.conventionalcommits.org/) format
+- **pre-push**: Runs documentation validation (markdownlint, vale, lychee) on changed files
+
+#### Graceful degradation
+
+If a required tool is not installed, the hook will display a warning and skip that check. This means you can install lefthook immediately and add tools incrementally. All validation also runs in CI, so nothing is missed.
+
+#### Skipping hooks
+
+If you need to skip hooks temporarily:
+
+```bash
+# Skip all hooks for one commit
+LEFTHOOK=0 git commit -m "message"
+
+# Skip all hooks for one push
+LEFTHOOK=0 git push
+
+# Skip specific hook
+LEFTHOOK_EXCLUDE=pre-push git push
+```
+
 ### Running tests
 
 Run tests with: `go test ./...` or `make test`.

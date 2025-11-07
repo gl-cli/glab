@@ -67,7 +67,7 @@ gl-*-report.json
 # gotestsum test log
 test-output.log
 
-# commitlint node_modules
+# commitlint dependencies
 scripts/commit-lint/node_modules/
 
 # See https://gitlab.com/gitlab-org/cli/-/merge_requests/2387#note_2751915451

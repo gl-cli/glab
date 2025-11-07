@@ -1,0 +1,123 @@
+# Lefthook configuration
+# See https://github.com/evilmartians/lefthook/blob/master/docs/configuration.md
+#
+# To install: lefthook install
+# To skip: LEFTHOOK=0 git commit/push
+# To install tools: make bootstrap
+
+pre-commit:
+  parallel: true
+  commands:
+    # Format and lint Go code with auto-fix (includes gofumpt and goimports)
+    go-lint-fix:
+      tags: backend lint style
+      glob: "*.go"
+      run: |
+        if ! command -v golangci-lint > /dev/null 2>&1; then
+          echo "⚠️  golangci-lint not found. Run 'make bootstrap' to install tools."
+          echo "   Skipping Go formatting and linting check..."
+          exit 0
+        fi
+        # Get unique package directories from staged files
+        packages=$(echo {staged_files} | xargs -n1 dirname | sort -u | xargs -I {} echo "./{}")
+        if [ -n "$packages" ]; then
+          golangci-lint run --fix $packages
+        fi
+      stage_fixed: true
+
+    # Fix markdown formatting issues
+    markdownlint-fix:
+      tags: docs style
+      glob: "*.md"
+      run: |
+        if ! command -v markdownlint-cli2 > /dev/null 2>&1; then
+          echo "⚠️  markdownlint-cli2 not found. Run 'make bootstrap' to install tools."
+          echo "   Skipping markdown auto-fix..."
+          exit 0
+        fi
+        markdownlint-cli2 --fix {staged_files}
+        git add {staged_files}
+      stage_fixed: true
+
+    # Check if documentation needs regeneration
+    check-docs:
+      tags: docs
+      glob: "internal/commands/**/*.go"
+      run: |
+        echo "Checking if documentation needs regeneration..."
+        make gen-docs > /dev/null 2>&1
+        if git diff --quiet docs/; then
+          echo "✔ Documentation is up to date."
+          exit 0
+        else
+          echo ""
+          echo "✖ ERROR: Documentation changes detected!"
+          echo ""
+          echo "Command files were modified and documentation is out of sync."
+          echo "The documentation has been regenerated for you."
+          echo ""
+          echo "Next steps:"
+          echo "  1. Review the changes in docs/"
+          echo "  2. Stage the changes: git add docs/"
+          echo "  3. Commit again"
+          echo ""
+          exit 1
+        fi
+
+commit-msg:
+  commands:
+    # Validate commit message format using conventional commits
+    commitlint:
+      run: |
+        if ! command -v node > /dev/null 2>&1; then
+          echo "⚠️  node not found. Commit message validation requires Node.js."
+          echo "   Skipping commit message validation..."
+          exit 0
+        fi
+        # Install commitlint dependencies if not already installed
+        if [ ! -d "scripts/commit-lint/node_modules" ]; then
+          echo "Installing commitlint dependencies (one-time setup)..."
+          cd scripts/commit-lint && npm install
+        else
+          cd scripts/commit-lint
+        fi
+        npx commitlint --config .commitlintrc.js --edit {1}
+
+pre-push:
+  parallel: true
+  commands:
+    # Lint markdown files
+    markdownlint:
+      tags: docs lint
+      glob: "*.md"
+      run: |
+        if ! command -v markdownlint-cli2 > /dev/null 2>&1; then
+          echo "⚠️  markdownlint-cli2 not found. Run 'make bootstrap' to install tools."
+          echo "   Skipping markdown linting..."
+          exit 0
+        fi
+        markdownlint-cli2 {push_files}
+
+    # Check prose style
+    vale:
+      tags: docs prose
+      glob: "docs/**/*.md"
+      run: |
+        if ! command -v vale > /dev/null 2>&1; then
+          echo "⚠️  vale not found. Run 'make bootstrap' to install tools."
+          echo "   Skipping prose checking..."
+          exit 0
+        fi
+        vale --minAlertLevel error {push_files}
+
+    # Check links in documentation (can be slow)
+    lychee:
+      tags: docs links
+      glob: "*.md"
+      run: |
+        if ! command -v lychee > /dev/null 2>&1; then
+          echo "⚠️  lychee not found. Run 'make bootstrap' to install tools."
+          echo "   Skipping link checking..."
+          exit 0
+        fi
+        lychee --offline --include-fragments {push_files}
