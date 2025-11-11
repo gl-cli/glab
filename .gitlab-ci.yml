@@ -259,7 +259,7 @@ tests:integration:
   stage: release
   image: ${GITLAB_DEPENDENCY_PROXY}docker:stable
   services:
-    - docker:dind
+    - docker:28-dind
   variables:
     # Disable shallow cloning so that goreleaser can diff between tags to
     # generate a changelog.
