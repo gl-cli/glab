@@ -181,6 +181,37 @@ list-todo: ## Detect FIXME, TODO and other comment keywords
 gen-config: ## Generate config stub from lockfile
 	cd internal/config && go generate
 
+.PHONY: bootstrap
+bootstrap: ## Install development tools for git hooks
+	@echo "Installing development tools..."
+	@echo ""
+	@if command -v mise > /dev/null 2>&1; then \
+		echo "Installing tools via mise..."; \
+		if ! mise install; then \
+			echo "❌ mise install failed"; \
+			exit 1; \
+		fi; \
+	else \
+		echo "⚠️  mise not found. Install mise from https://mise.jdx.dev/"; \
+		echo "   Alternatively, manually install tools listed in .tool-versions"; \
+		exit 1; \
+	fi
+	@echo ""
+	@echo "Installing commitlint dependencies..."
+	@if command -v npm > /dev/null 2>&1; then \
+		if ! cd scripts/commit-lint && npm install; then \
+			echo "❌ npm install failed"; \
+			exit 1; \
+		fi; \
+	else \
+		echo "⚠️  npm not found (should be installed by mise if node is in .tool-versions)"; \
+		exit 1; \
+	fi
+	@echo ""
+	@echo "✓ Bootstrap complete!"
+	@echo ""
+	@echo "To enable git hooks, run: lefthook install"
+
 # Add custom targets here
 -include custom.mk
 
