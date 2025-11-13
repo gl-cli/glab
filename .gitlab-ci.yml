@@ -467,6 +467,7 @@ snapcraft_release_stable:
     - export SNAPCRAFT_STORE_CREDENTIALS=$(cat $SNAPCRAFT_CREDENTIALS_FILE)
     - snapcraft whoami
     - snapcraft upload *.snap --release=latest/stable
+    - snapcraft upload *.snap --release=latest/edge
     - snapcraft logout
 
 snapcraft_release_edge:
