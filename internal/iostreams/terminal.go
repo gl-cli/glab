@@ -9,8 +9,9 @@ import (
 	"strings"
 
 	"github.com/mattn/go-isatty"
-	"gitlab.com/gitlab-org/cli/internal/execext"
 	"golang.org/x/term"
+
+	"gitlab.com/gitlab-org/cli/internal/execext"
 )
 
 // IsTerminal reports whether the file descriptor is connected to a terminal

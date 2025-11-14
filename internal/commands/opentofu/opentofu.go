@@ -2,6 +2,7 @@ package opentofu
 
 import (
 	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	initCmd "gitlab.com/gitlab-org/cli/internal/commands/opentofu/init"
 	stateCmd "gitlab.com/gitlab-org/cli/internal/commands/opentofu/state"

@@ -1,12 +1,12 @@
 package members
 
 import (
+	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	membersAdd "gitlab.com/gitlab-org/cli/internal/commands/project/members/add"
 	membersRemove "gitlab.com/gitlab-org/cli/internal/commands/project/members/remove"
-
-	"github.com/MakeNowJust/heredoc/v2"
-	"github.com/spf13/cobra"
 )
 
 func NewCmdMembers(f cmdutils.Factory) *cobra.Command {

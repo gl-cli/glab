@@ -5,16 +5,15 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+	"github.com/spf13/cobra"
 
-	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
-	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
+	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 	"gitlab.com/gitlab-org/cli/internal/utils"
-
-	"github.com/spf13/cobra"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func NewCmdNote(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Command {

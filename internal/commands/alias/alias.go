@@ -1,12 +1,12 @@
 package alias
 
 import (
+	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	deleteCmd "gitlab.com/gitlab-org/cli/internal/commands/alias/delete"
 	listCmd "gitlab.com/gitlab-org/cli/internal/commands/alias/list"
 	setCmd "gitlab.com/gitlab-org/cli/internal/commands/alias/set"
-
-	"github.com/spf13/cobra"
 )
 
 func NewCmdAlias(f cmdutils.Factory) *cobra.Command {

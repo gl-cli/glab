@@ -9,10 +9,10 @@ import (
 	"runtime"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/execext"
-
 	"github.com/google/shlex"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/execext"
 )
 
 // ExpandAlias processes argv to see if it should be rewritten according to a user's aliases. The

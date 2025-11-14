@@ -11,7 +11,9 @@ import (
 	"time"
 
 	"github.com/charmbracelet/glamour"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/browser"
 	"gitlab.com/gitlab-org/cli/internal/run"
 )

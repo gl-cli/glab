@@ -1,6 +1,7 @@
 package list
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,10 +9,10 @@ import (
 	"path/filepath"
 	"time"
 
-	_ "embed"
-
 	"github.com/spf13/cobra"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	agentutils "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/agentutils"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"

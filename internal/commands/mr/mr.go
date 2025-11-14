@@ -2,6 +2,8 @@ package mr
 
 import (
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	mrApproveCmd "gitlab.com/gitlab-org/cli/internal/commands/mr/approve"
 	mrApproversCmd "gitlab.com/gitlab-org/cli/internal/commands/mr/approvers"
@@ -23,8 +25,6 @@ import (
 	mrUnsubscribeCmd "gitlab.com/gitlab-org/cli/internal/commands/mr/unsubscribe"
 	mrUpdateCmd "gitlab.com/gitlab-org/cli/internal/commands/mr/update"
 	mrViewCmd "gitlab.com/gitlab-org/cli/internal/commands/mr/view"
-
-	"github.com/spf13/cobra"
 )
 
 func NewCmdMR(f cmdutils.Factory) *cobra.Command {

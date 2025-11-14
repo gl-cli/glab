@@ -1,10 +1,10 @@
 package job
 
 import (
+	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/job/artifact"
-
-	"github.com/spf13/cobra"
 )
 
 func NewCmdJob(f cmdutils.Factory) *cobra.Command {

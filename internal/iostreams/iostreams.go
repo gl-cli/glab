@@ -16,6 +16,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/google/shlex"
 	"github.com/muesli/termenv"
+
 	"gitlab.com/gitlab-org/cli/internal/theme"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )

@@ -10,17 +10,18 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/dbg"
-	"gitlab.com/gitlab-org/cli/internal/git"
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/utils"
+	"golang.org/x/sync/errgroup"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/dbg"
+	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
-	"golang.org/x/sync/errgroup"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 type MRCheckErrOptions struct {

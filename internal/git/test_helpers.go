@@ -4,9 +4,9 @@ import (
 	"os/exec"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/internal/run"
-
 	"github.com/stretchr/testify/require"
+
+	"gitlab.com/gitlab-org/cli/internal/run"
 )
 
 func InitGitRepo(t *testing.T) string {

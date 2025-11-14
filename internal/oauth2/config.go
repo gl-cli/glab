@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"golang.org/x/oauth2"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"golang.org/x/oauth2"
 )
 
 const (

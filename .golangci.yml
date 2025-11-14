@@ -72,5 +72,13 @@ linters:
 
 formatters:
     enable:
+        - gci
         - gofumpt
         - goimports
+    settings:
+      gci:
+        sections:
+          - standard
+          - default
+          - prefix(gitlab.com/gitlab-org/api)
+          - localmodule

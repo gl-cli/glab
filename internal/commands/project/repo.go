@@ -1,6 +1,8 @@
 package project
 
 import (
+	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	repoCmdArchive "gitlab.com/gitlab-org/cli/internal/commands/project/archive"
 	repoCmdClone "gitlab.com/gitlab-org/cli/internal/commands/project/clone"
@@ -16,8 +18,6 @@ import (
 	repoCmdTransfer "gitlab.com/gitlab-org/cli/internal/commands/project/transfer"
 	repoCmdUpdate "gitlab.com/gitlab-org/cli/internal/commands/project/update"
 	repoCmdView "gitlab.com/gitlab-org/cli/internal/commands/project/view"
-
-	"github.com/spf13/cobra"
 )
 
 func NewCmdRepo(f cmdutils.Factory) *cobra.Command {

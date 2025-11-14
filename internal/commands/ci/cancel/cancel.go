@@ -2,6 +2,7 @@ package cancel
 
 import (
 	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	cancelJobCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/cancel/job"
 	cancelPipelineCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/cancel/pipeline"

@@ -7,12 +7,12 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/test"
-
 	"github.com/stretchr/testify/assert"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
+	"gitlab.com/gitlab-org/cli/test"
 )
 
 func runCommand(t *testing.T, cli string) (*test.CmdOut, error) {

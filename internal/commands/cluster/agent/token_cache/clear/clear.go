@@ -2,6 +2,7 @@ package clear
 
 import (
 	"context"
+	_ "embed"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -11,11 +12,11 @@ import (
 	"path/filepath"
 	"time"
 
-	_ "embed"
-
 	"github.com/spf13/cobra"
 	"github.com/zalando/go-keyring"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	agentutils "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/agentutils"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"

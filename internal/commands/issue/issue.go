@@ -2,6 +2,8 @@ package issue
 
 import (
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	issueBoardCmd "gitlab.com/gitlab-org/cli/internal/commands/issue/board"
 	issueCloseCmd "gitlab.com/gitlab-org/cli/internal/commands/issue/close"
@@ -14,8 +16,6 @@ import (
 	issueUnsubscribeCmd "gitlab.com/gitlab-org/cli/internal/commands/issue/unsubscribe"
 	issueUpdateCmd "gitlab.com/gitlab-org/cli/internal/commands/issue/update"
 	issueViewCmd "gitlab.com/gitlab-org/cli/internal/commands/issue/view"
-
-	"github.com/spf13/cobra"
 )
 
 func NewCmdIssue(f cmdutils.Factory) *cobra.Command {

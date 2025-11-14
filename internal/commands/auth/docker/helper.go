@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker-credential-helpers/credentials"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/oauth2"

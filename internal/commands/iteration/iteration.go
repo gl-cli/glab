@@ -2,6 +2,7 @@ package iteration
 
 import (
 	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	iterationListCmd "gitlab.com/gitlab-org/cli/internal/commands/iteration/list"
 )

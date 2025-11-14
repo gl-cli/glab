@@ -5,13 +5,13 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-
-	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
+
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {

@@ -8,9 +8,9 @@ package legacyci
 import (
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-
 	"github.com/stretchr/testify/assert"
+
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
 func TestNewCmdCI(t *testing.T) {

@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-
-	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
+	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-
-	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 var errTodoExists = errors.New("To-do already exists.")

@@ -2,8 +2,9 @@ package incident
 
 import (
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"github.com/spf13/cobra"
 
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	incidentCloseCmd "gitlab.com/gitlab-org/cli/internal/commands/incident/close"
 	incidentListCmd "gitlab.com/gitlab-org/cli/internal/commands/incident/list"
 	incidentNoteCmd "gitlab.com/gitlab-org/cli/internal/commands/incident/note"
@@ -11,8 +12,6 @@ import (
 	incidentSubscribeCmd "gitlab.com/gitlab-org/cli/internal/commands/incident/subscribe"
 	incidentUnsubscribeCmd "gitlab.com/gitlab-org/cli/internal/commands/incident/unsubscribe"
 	incidentViewCmd "gitlab.com/gitlab-org/cli/internal/commands/incident/view"
-
-	"github.com/spf13/cobra"
 )
 
 func NewCmdIncident(f cmdutils.Factory) *cobra.Command {

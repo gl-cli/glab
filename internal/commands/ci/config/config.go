@@ -1,10 +1,10 @@
 package config
 
 import (
+	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	ConfigCompileCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/config/compile"
-
-	"github.com/spf13/cobra"
 )
 
 func NewCmdConfig(f cmdutils.Factory) *cobra.Command {

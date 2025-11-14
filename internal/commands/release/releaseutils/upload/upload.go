@@ -5,6 +5,7 @@ import (
 	"io"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 

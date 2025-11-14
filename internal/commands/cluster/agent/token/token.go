@@ -2,8 +2,8 @@ package token
 
 import (
 	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	tokenListCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/token/list"
 	tokenRevokeCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/token/revoke"
 )

@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+
 	"gitlab.com/gitlab-org/cli/internal/commands/alias"
 	"gitlab.com/gitlab-org/cli/internal/commands/alias/set"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"

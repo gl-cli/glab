@@ -8,6 +8,7 @@ import (
 
 	"github.com/docker/docker-credential-helpers/credentials"
 	"github.com/stretchr/testify/assert"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
 )
 

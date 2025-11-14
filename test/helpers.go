@@ -9,9 +9,9 @@ import (
 	"regexp"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/internal/run"
-
 	"github.com/pkg/errors"
+
+	"gitlab.com/gitlab-org/cli/internal/run"
 )
 
 // TODO copypasta from command package

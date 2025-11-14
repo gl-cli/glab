@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/zalando/go-keyring"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 

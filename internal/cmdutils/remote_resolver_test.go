@@ -5,12 +5,12 @@ package cmdutils
 import (
 	"testing"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/git"
-
-	"github.com/MakeNowJust/heredoc/v2"
 )
 
 func Test_remoteResolver(t *testing.T) {

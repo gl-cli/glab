@@ -7,19 +7,19 @@ import (
 	"slices"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 const (

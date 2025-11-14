@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	agentCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent"
 	graphCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/graph"

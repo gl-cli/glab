@@ -11,12 +11,14 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"go.uber.org/mock/gomock"
 )
 
 func Test_NewCmdStatus(t *testing.T) {

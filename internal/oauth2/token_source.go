@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"sync"
 
-	"gitlab.com/gitlab-org/api/client-go/gitlaboauth2"
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"golang.org/x/oauth2"
+
+	"gitlab.com/gitlab-org/api/client-go/gitlaboauth2"
+
+	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 type configTokenSource struct {

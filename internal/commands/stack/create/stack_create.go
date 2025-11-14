@@ -5,17 +5,16 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/briandowns/spinner"
+	"github.com/spf13/cobra"
+
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/text"
 	"gitlab.com/gitlab-org/cli/internal/utils"
-
-	"github.com/briandowns/spinner"
-	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 )
 
 var longString = `Create a new stacked diff. Adds metadata to your "./.git/stacked" directory.

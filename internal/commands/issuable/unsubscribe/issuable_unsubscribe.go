@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/spf13/cobra"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
-
-	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 // errIssuableUserNotSubscribed received when trying to unsubscribe from an issue the user is not subscribed to

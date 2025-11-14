@@ -7,13 +7,12 @@ import (
 	"io"
 	"testing"
 
-	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-
-	"gitlab.com/gitlab-org/cli/internal/config"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
 func TestAliasList(t *testing.T) {

@@ -8,9 +8,11 @@ import (
 	"slices"
 	"time"
 
-	gitlab "gitlab.com/gitlab-org/api/client-go"
-	glab_api "gitlab.com/gitlab-org/cli/internal/api"
 	"gopkg.in/yaml.v3"
+
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+
+	glab_api "gitlab.com/gitlab-org/cli/internal/api"
 )
 
 const (

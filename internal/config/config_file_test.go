@@ -12,8 +12,9 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/gitlab-org/cli/test"
 	"gopkg.in/yaml.v3"
+
+	"gitlab.com/gitlab-org/cli/test"
 )
 
 func eq(t *testing.T, got any, expected any) {

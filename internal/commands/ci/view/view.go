@@ -11,7 +11,16 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/gdamore/tcell/v2"
+	"github.com/lunixbochs/vtclean"
+	"github.com/pkg/errors"
+	"github.com/rivo/tview"
+	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -20,18 +29,8 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 	"gitlab.com/gitlab-org/cli/internal/utils"
-
-	"github.com/MakeNowJust/heredoc/v2"
-	"github.com/gdamore/tcell/v2"
-	"github.com/lunixbochs/vtclean"
-	"github.com/pkg/errors"
-	"github.com/rivo/tview"
-	"github.com/spf13/cobra"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type options struct {

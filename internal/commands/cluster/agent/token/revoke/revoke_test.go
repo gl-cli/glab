@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
-	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"go.uber.org/mock/gomock"
+
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
+
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
 func TestRevoke_InvalidAgentID(t *testing.T) {

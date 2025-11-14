@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
-	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/stretchr/testify/require"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 
-	"github.com/stretchr/testify/assert"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
