@@ -1,7 +1,7 @@
 golang 1.25.3
 
 # For linting and formatting Go code (includes gofumpt and goimports)
-golangci-lint 2.6.1
+golangci-lint 2.6.2
 
 # For linting documentation
 markdownlint-cli2 0.19.0
