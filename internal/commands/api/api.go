@@ -556,6 +556,7 @@ func openUserFile(fn string, stdin io.ReadCloser) (io.ReadCloser, int64, error) 
 
 	s, err := os.Stat(fn)
 	if err != nil {
+		r.Close()
 		return r, -1, err
 	}
 
