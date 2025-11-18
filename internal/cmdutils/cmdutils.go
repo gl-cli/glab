@@ -86,6 +86,7 @@ func LoadGitLabTemplate(tmplType, tmplName string) (string, error) {
 	} else if err != nil {
 		return "", err
 	}
+	defer f.Close()
 
 	tmpl, err := io.ReadAll(f)
 	if err != nil {

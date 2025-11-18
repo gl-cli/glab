@@ -98,6 +98,8 @@ func readZip(artifact *bytes.Reader, path string, listPaths bool, zipReadLimit i
 			if err != nil {
 				return err
 			}
+			defer dstFile.Close()
+
 			var writtenPerFile int64
 			if writtenPerFile, err = io.Copy(dstFile, limitedReader); err != nil {
 				return err
