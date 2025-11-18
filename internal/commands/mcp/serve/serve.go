@@ -34,6 +34,7 @@ func NewCmdServe(_ cmdutils.Factory) *cobra.Command {
 			{
 			  "mcpServers": {
 			    "glab": {
+			      "type": "stdio",
 			      "command": "glab",
 			      "args": ["mcp", "serve"]
 			    }

@@ -32,6 +32,7 @@ MCP settings:
 {
   "mcpServers": {
     "glab": {
+      "type": "stdio",
       "command": "glab",
       "args": ["mcp", "serve"]
     }
