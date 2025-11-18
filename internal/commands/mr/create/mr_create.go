@@ -441,7 +441,7 @@ func (o *options) run() error {
 							templateContents += "Signed-off-by: " + u.Name + "<" + u.Email + ">"
 						}
 					case mrEmptyTemplate:
-						// blank merge request was choosen, leave templateContents empty
+						// blank merge request was chosen, leave templateContents empty
 						if o.signoff {
 							u, _, _ := client.Users.CurrentUser()
 							templateContents += "Signed-off-by: " + u.Name + "<" + u.Email + ">"

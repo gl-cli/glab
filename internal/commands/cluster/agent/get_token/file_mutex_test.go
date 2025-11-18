@@ -130,7 +130,7 @@ func TestFileMutex(t *testing.T) {
 		require.NoError(t, err)
 
 		// WHEN
-		// able to aquire lock, because it cleans up the stale lock file
+		// able to acquire lock, because it cleans up the stale lock file
 		err = fm.lock(t.Context())
 
 		// THEN

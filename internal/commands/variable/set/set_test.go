@@ -136,7 +136,7 @@ func Test_NewCmdSet(t *testing.T) {
 			},
 		},
 		{
-			name: "var with descripton",
+			name: "var with description",
 			cli:  `var_desc -v"var_desc" -d "cool var description"`,
 			wants: options{
 				key:         "var_desc",
