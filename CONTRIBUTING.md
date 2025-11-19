@@ -103,11 +103,11 @@ This project supports [Lefthook](https://github.com/evilmartians/lefthook) for m
    lefthook install
    ```
 
-   This installs all tools defined in `.tool-versions`: Go, golangci-lint (includes gofumpt and goimports formatters), markdownlint-cli2, vale, lychee, Node.js, lefthook, and commitlint dependencies.
+   This installs all tools defined in `.tool-versions`: Go, golangci-lint (includes gofumpt and goimports formatters), shellcheck, markdownlint-cli2, vale, lychee, Node.js, lefthook, and commitlint dependencies.
 
 #### Available hooks
 
-- **pre-commit**: Formats and lints Go code (golangci-lint with gofumpt/goimports), auto-fixes Markdown formatting (markdownlint), checks and regenerates documentation if command files changed (blocks commit until docs are staged)
+- **pre-commit**: Formats and lints Go code (golangci-lint with gofumpt/goimports), lints shell scripts (shellcheck), auto-fixes Markdown formatting (markdownlint), checks and regenerates documentation if command files changed (blocks commit until docs are staged)
 - **commit-msg**: Validates commit messages follow [conventional commits](https://www.conventionalcommits.org/) format
 - **pre-push**: Runs documentation validation (markdownlint, vale, lychee) on changed files
 
