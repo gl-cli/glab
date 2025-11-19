@@ -107,7 +107,7 @@ func Test_NewCmdUpdate(t *testing.T) {
 			},
 		},
 		{
-			name: "var with desription",
+			name: "var with description",
 			cli:  `cool_secret -d"description"`,
 			wants: options{
 				key:         "cool_secret",
