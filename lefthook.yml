@@ -25,6 +25,18 @@ pre-commit:
         fi
       stage_fixed: true
 
+    # Lint shell scripts
+    shellcheck:
+      tags: shell lint
+      glob: "*.sh"
+      run: |
+        if ! command -v shellcheck > /dev/null 2>&1; then
+          echo "⚠️  shellcheck not found. Run 'make bootstrap' to install tools."
+          echo "   Skipping shell script linting..."
+          exit 0
+        fi
+        shellcheck {staged_files}
+
     # Fix markdown formatting issues
     markdownlint-fix:
       tags: docs style
