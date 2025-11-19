@@ -159,6 +159,14 @@ func Init() (Config, error) {
 		return cachedConfig, configError
 	}
 
+	// Ensure the config directory exists before attempting to read/write config files.
+	// This is especially important on Windows where os.ReadFile returns a different error
+	// when the parent directory doesn't exist vs. when just the file doesn't exist.
+	configDir := ConfigDir()
+	if err := os.MkdirAll(configDir, 0o750); err != nil {
+		return nil, fmt.Errorf("failed to create config directory: %w", err)
+	}
+
 	// Check for duplicate configs and warn user
 	checkForDuplicateConfigs()
 
