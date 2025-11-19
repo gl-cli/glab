@@ -1,6 +1,7 @@
 package merge
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -16,6 +17,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/avast/retry-go/v4"
+	"github.com/charmbracelet/huh"
 	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
 
@@ -159,9 +161,13 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 		}
 
 		if o.mergeCommitMessage == "" && o.squashMessage == "" {
-			action, err := confirmSurvey(o.mergeMethod != MRMergeMethodRebase)
+			action, err := confirmSurvey(cmd.Context(), x, o.mergeMethod != MRMergeMethodRebase)
 			if err != nil {
-				return fmt.Errorf("unable to prompt: %w", err)
+				// iostreams.Run already prints "Cancelled." for user cancellation
+				if errors.Is(err, iostreams.ErrUserCancelled) {
+					return cmdutils.SilentError
+				}
+				return err
 			}
 
 			if action == cmdutils.EditCommitMessageAction {
@@ -182,9 +188,13 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 					o.mergeCommitMessage = mergeMessage
 				}
 
-				action, err = confirmSurvey(false)
+				action, err = confirmSurvey(cmd.Context(), x, false)
 				if err != nil {
-					return fmt.Errorf("unable to confirm: %w", err)
+					// iostreams.Run already prints "Cancelled." for user cancellation
+					if errors.Is(err, iostreams.ErrUserCancelled) {
+						return cmdutils.SilentError
+					}
+					return err
 				}
 			}
 			if action == cmdutils.CancelAction {
@@ -318,25 +328,46 @@ func mergeMethodSurvey() (MRMergeMethod, error) {
 	return mergeOpts[result].method, err
 }
 
-func confirmSurvey(allowEditMsg bool) (cmdutils.Action, error) {
+func confirmSurvey(ctx context.Context, f cmdutils.Factory, allowEditMsg bool) (cmdutils.Action, error) {
 	const (
 		submitLabel        = "Submit"
 		editCommitMsgLabel = "Edit commit message"
 		cancelLabel        = "Cancel"
 	)
 
-	options := []string{submitLabel}
-	if allowEditMsg {
-		options = append(options, editCommitMsgLabel)
-	}
-	options = append(options, cancelLabel)
+	// If only 2 options (Submit/Cancel), use huh.NewConfirm()
+	if !allowEditMsg {
+		shouldSubmit := false // default value
 
-	var result string
-	submit := &survey.Select{
-		Message: "What's next?",
-		Options: options,
+		confirm := huh.NewConfirm().
+			Title("What's next?").
+			Affirmative(submitLabel).
+			Negative(cancelLabel).
+			Value(&shouldSubmit)
+
+		err := f.IO().Run(ctx, confirm)
+		if err != nil {
+			return cmdutils.CancelAction, fmt.Errorf("could not prompt: %w", err)
+		}
+
+		if shouldSubmit {
+			return cmdutils.SubmitAction, nil
+		}
+		return cmdutils.CancelAction, nil
 	}
-	err := prompt.AskOne(submit, &result)
+
+	// If 3 options (Submit/Edit/Cancel), use huh.NewSelect()
+	var result string
+	selector := huh.NewSelect[string]().
+		Title("What's next?").
+		Options(
+			huh.NewOption(submitLabel, submitLabel),
+			huh.NewOption(editCommitMsgLabel, editCommitMsgLabel),
+			huh.NewOption(cancelLabel, cancelLabel),
+		).
+		Value(&result)
+
+	err := f.IO().Run(ctx, selector)
 	if err != nil {
 		return cmdutils.CancelAction, fmt.Errorf("could not prompt: %w", err)
 	}
