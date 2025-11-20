@@ -30,6 +30,7 @@ config:
   reference-links-images: false     # MD052
   ul-style:                         # MD004
     style: "dash"
+  table-column-style: false         # MD060
 
   # Disable this rule in the CLI project, because 1. 1. 1. 1. numbering
   # is rendered verbatim in CLI output
