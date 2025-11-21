@@ -44,10 +44,6 @@ are maintained by the community.
   - Install with `mise install`
 - [ASDF tool version manager](https://asdf-vm.com/guide/introduction.html):
   - Install with: `asdf plugin add glab; asdf install glab latest; asdf global glab latest`
-- Install into `usr/bin` with a shell script:
-  `curl -s "https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh" | sudo sh`
-
-  Before running any install script, review its contents.
 
 ## Windows
 
