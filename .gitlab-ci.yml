@@ -376,7 +376,7 @@ release:
       "
 
 homebrew-release:
-  image: ${GITLAB_DEPENDENCY_PROXY}homebrew/ubuntu24.04:latest
+  image: ${GITLAB_DEPENDENCY_PROXY}homebrew/brew:4.6.20
   stage: release
   needs: [release]
   rules:
@@ -504,7 +504,6 @@ snapcraft_release_stable:
     - export SNAPCRAFT_STORE_CREDENTIALS=$(cat $SNAPCRAFT_CREDENTIALS_FILE)
     - snapcraft whoami
     - snapcraft upload *.snap --release=latest/stable
-    - snapcraft upload *.snap --release=latest/edge
     - snapcraft logout
 
 snapcraft_release_edge:
