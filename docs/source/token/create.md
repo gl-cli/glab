@@ -18,8 +18,9 @@ Creates a new access token for a user, group, or project. Defaults to a
 project access token, unless user or group name is specified.
 
 The expiration date of the token is calculated by adding the duration
-(default: 30 days) to the current date. You can specify a different duration,
-or an explicit end date.
+(default: 30 days) to the current date, with expiration occurring at midnight
+UTC on the calculated date. You can specify a different duration using days (d),
+weeks (w), or hours (h), or provide an explicit end date.
 
 The name of the token must be unique. The token is printed to stdout.
 
@@ -44,20 +45,23 @@ new
 ## Examples
 
 ```console
-# Create project access token for current project
+# Create project access token for current project (default 30 days)
 $ glab token create --access-level developer --scope read_repository --scope read_registry my-project-token
 
-# Create project access token for a specific project
-$ glab token create --repo user/my-repo --access-level owner --scope api my-project-token --description "example description"
+# Create project access token with 7 day lifetime
+$ glab token create --repo user/my-repo --access-level owner --scope api my-project-token --duration 7d
 
-# Create a group access token
-$ glab token create --group group/sub-group --access-level owner --scope api my-group-token
+# Create a group access token expiring in 2 weeks
+$ glab token create --group group/sub-group --access-level owner --scope api my-group-token --duration 2w
 
-# Create a personal access token for current user
-$ glab token create --user @me --scope k8s_proxy my-personal-token
+# Create a personal access token for current user with 90 day lifetime
+$ glab token create --user @me --scope k8s_proxy my-personal-token --duration 90d
 
 # (administrator only) Create a personal access token for another user
-$ glab token create --user johndoe --scope api johns-personal-token
+$ glab token create --user johndoe --scope api johns-personal-token --duration 180d
+
+# Create a token with explicit expiration date
+$ glab token create --access-level developer --scope api my-token --expires-at 2025-12-31
 
 
 ```
@@ -67,7 +71,7 @@ $ glab token create --user johndoe --scope api johns-personal-token
 ```plaintext
   -A, --access-level AccessLevel   Access level of the token: one of 'guest', 'reporter', 'developer', 'maintainer', 'owner'. (default no)
       --description string         Sets the token's description. (default "description")
-  -D, --duration duration          Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h. (default 720h0m0s)
+  -D, --duration duration          Sets the token lifetime in days. Accepts: days (30d), weeks (4w), or hours in multiples of 24 (24h, 168h, 720h). Maximum: 365d. The token expires at midnight UTC on the calculated date. (default 30d)
   -E, --expires-at DATE            Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used. (default 0001-01-01)
   -g, --group string               Create a group access token. Ignored if a user or repository argument is set.
   -F, --output string              Format output as 'text' for the token value, 'json' for the actual API token structure. (default "text")
