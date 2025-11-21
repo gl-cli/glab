@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/commands/token/expirationdate"
 	"gitlab.com/gitlab-org/cli/internal/commands/token/filter"
+	"gitlab.com/gitlab-org/cli/internal/commands/token/tokenduration"
 
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 
@@ -30,7 +31,7 @@ type options struct {
 	user         string
 	group        string
 	name         any
-	duration     time.Duration
+	duration     tokenduration.TokenDuration
 	expireAt     expirationdate.ExpirationDate
 	outputFormat string
 }
@@ -40,6 +41,7 @@ func NewCmdRotate(f cmdutils.Factory) *cobra.Command {
 		io:        f.IO(),
 		apiClient: f.ApiClient,
 		baseRepo:  f.BaseRepo,
+		duration:  tokenduration.TokenDuration(30 * 24 * time.Hour), // Default: 30 days
 	}
 
 	cmd := &cobra.Command{
@@ -52,7 +54,8 @@ func NewCmdRotate(f cmdutils.Factory) *cobra.Command {
 			the same name exist, you can specify the ID of the token.
 
 			The expiration date of the token will be calculated by adding the duration (default 30 days) to the
-			current date. Alternatively you can specify a different duration or an explicit end date.
+			current date, with expiration occurring at midnight UTC on the calculated date. Alternatively you can
+			specify a different duration using days (d), weeks (w), or hours (h), or provide an explicit end date.
 
 			The output format can be either "JSON" or "text". The JSON output will show the meta information of the
 			rotated token.
@@ -60,20 +63,20 @@ func NewCmdRotate(f cmdutils.Factory) *cobra.Command {
 			Administrators can rotate personal access tokens belonging to other users.
 		`),
 		Example: heredoc.Doc(`
-		# Rotate project access token of current project
-		$ glab token rotate  my-project-token
+		# Rotate project access token of current project (default 30 days)
+		$ glab token rotate my-project-token
 
-		# Rotate project access token of another project, set to expiration date
-		$ glab token rotate --repo user/repo my-project-token --expires-at 2024-08-08
+		# Rotate project access token with explicit expiration date
+		$ glab token rotate --repo user/repo my-project-token --expires-at 2025-08-08
 
-		# Rotate group access token
-		$ glab token rotate --group group/sub-group my-group-token
+		# Rotate group access token with 7 day lifetime
+		$ glab token rotate --group group/sub-group my-group-token --duration 7d
 
-		# Rotate personal access token and extend duration to 7 days
-		$ glab token rotate --user @me --duration $((7 * 24))h my-personal-token
+		# Rotate personal access token with 2 week lifetime
+		$ glab token rotate --user @me my-personal-token --duration 2w
 
 		# Rotate a personal access token of another user (administrator only)
-		$ glab token rotate --user johndoe johns-personal-token
+		$ glab token rotate --user johndoe johns-personal-token --duration 90d
 		`),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
@@ -94,7 +97,7 @@ func NewCmdRotate(f cmdutils.Factory) *cobra.Command {
 	cmdutils.EnableRepoOverride(cmd, f)
 	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "Rotate group access token. Ignored if a user or repository argument is set.")
 	cmd.Flags().StringVarP(&opts.user, "user", "U", "", "Rotate personal access token. Use @me for the current user.")
-	cmd.Flags().DurationVarP(&opts.duration, "duration", "D", 30*24*time.Hour, "Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h.")
+	cmd.Flags().VarP(&opts.duration, "duration", "D", "Sets the token lifetime in days. Accepts: days (30d), weeks (4w), or hours in multiples of 24 (24h, 168h, 720h). Maximum: 365d. The token expires at midnight UTC on the calculated date.")
 	cmd.Flags().VarP(&opts.expireAt, "expires-at", "E", "Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used.")
 	cmd.Flags().StringVarP(&opts.outputFormat, "output", "F", "text", "Format output as: text, json. 'text' provides the new token value; 'json' outputs the token with metadata.")
 	cmd.MarkFlagsMutuallyExclusive("duration", "expires-at")
@@ -115,7 +118,7 @@ func (o *options) complete(cmd *cobra.Command, args []string) error {
 	}
 
 	if time.Time(o.expireAt).IsZero() {
-		o.expireAt = expirationdate.ExpirationDate(time.Now().Add(o.duration).Truncate(time.Hour * 24))
+		o.expireAt = expirationdate.ExpirationDate(o.duration.CalculateExpirationDate())
 	}
 
 	return nil
@@ -123,15 +126,7 @@ func (o *options) complete(cmd *cobra.Command, args []string) error {
 
 func (o *options) validate() error {
 	if o.group != "" && o.user != "" {
-		return cmdutils.FlagError{Err: errors.New("'--group' and '--user' are mutually exclusive.")}
-	}
-
-	if o.duration.Truncate(24*time.Hour) != o.duration {
-		return cmdutils.FlagError{Err: errors.New("duration must be in days.")}
-	}
-
-	if o.duration < 24*time.Hour || o.duration > 365*24*time.Hour {
-		return cmdutils.FlagError{Err: errors.New("duration in days must be between 1 and 365.")}
+		return cmdutils.FlagError{Err: errors.New("'--group' and '--user' are mutually exclusive")}
 	}
 
 	return nil

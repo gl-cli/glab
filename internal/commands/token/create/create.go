@@ -14,6 +14,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/commands/token/accesslevel"
 	"gitlab.com/gitlab-org/cli/internal/commands/token/expirationdate"
 	"gitlab.com/gitlab-org/cli/internal/commands/token/filter"
+	"gitlab.com/gitlab-org/cli/internal/commands/token/tokenduration"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
@@ -30,7 +31,7 @@ type options struct {
 	group        string
 	accessLevel  accesslevel.AccessLevel
 	scopes       []string
-	duration     time.Duration
+	duration     tokenduration.TokenDuration
 	expireAt     expirationdate.ExpirationDate
 	outputFormat string
 }
@@ -40,6 +41,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		io:        f.IO(),
 		apiClient: f.ApiClient,
 		baseRepo:  f.BaseRepo,
+		duration:  tokenduration.TokenDuration(30 * 24 * time.Hour), // Default: 30 days
 	}
 
 	cmd := &cobra.Command{
@@ -52,8 +54,9 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		project access token, unless user or group name is specified.
 
 		The expiration date of the token is calculated by adding the duration
-		(default: 30 days) to the current date. You can specify a different duration,
-		or an explicit end date.
+		(default: 30 days) to the current date, with expiration occurring at midnight
+		UTC on the calculated date. You can specify a different duration using days (d),
+		weeks (w), or hours (h), or provide an explicit end date.
 
 		The name of the token must be unique. The token is printed to stdout.
 
@@ -65,20 +68,23 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 		[User tokens API](https://docs.gitlab.com/api/user_tokens/#create-a-personal-access-token).
 		`),
 		Example: heredoc.Doc(`
-		# Create project access token for current project
+		# Create project access token for current project (default 30 days)
 		$ glab token create --access-level developer --scope read_repository --scope read_registry my-project-token
 
-		# Create project access token for a specific project
-		$ glab token create --repo user/my-repo --access-level owner --scope api my-project-token --description "example description"
+		# Create project access token with 7 day lifetime
+		$ glab token create --repo user/my-repo --access-level owner --scope api my-project-token --duration 7d
 
-		# Create a group access token
-		$ glab token create --group group/sub-group --access-level owner --scope api my-group-token
+		# Create a group access token expiring in 2 weeks
+		$ glab token create --group group/sub-group --access-level owner --scope api my-group-token --duration 2w
 
-		# Create a personal access token for current user
-		$ glab token create --user @me --scope k8s_proxy my-personal-token
+		# Create a personal access token for current user with 90 day lifetime
+		$ glab token create --user @me --scope k8s_proxy my-personal-token --duration 90d
 
 		# (administrator only) Create a personal access token for another user
-		$ glab token create --user johndoe --scope api johns-personal-token
+		$ glab token create --user johndoe --scope api johns-personal-token --duration 180d
+
+		# Create a token with explicit expiration date
+		$ glab token create --access-level developer --scope api my-token --expires-at 2025-12-31
 
 		`),
 		Annotations: map[string]string{
@@ -101,7 +107,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.group, "group", "g", "", "Create a group access token. Ignored if a user or repository argument is set.")
 	cmd.Flags().StringVarP(&opts.user, "user", "U", "", "Create a personal access token. For the current user, use @me.")
 	cmd.Flags().StringVarP(&opts.description, "description", "", "description", "Sets the token's description.")
-	cmd.Flags().DurationVarP(&opts.duration, "duration", "D", 30*24*time.Hour, "Sets the token duration, in hours. Maximum of 8760. Examples: 24h, 168h, 504h.")
+	cmd.Flags().VarP(&opts.duration, "duration", "D", "Sets the token lifetime in days. Accepts: days (30d), weeks (4w), or hours in multiples of 24 (24h, 168h, 720h). Maximum: 365d. The token expires at midnight UTC on the calculated date.")
 	cmd.Flags().VarP(&opts.expireAt, "expires-at", "E", "Sets the token's expiration date and time, in YYYY-MM-DD format. If not specified, --duration is used.")
 	cmd.Flags().StringSliceVarP(&opts.scopes, "scope", "S", []string{"read_repository"}, "Scopes for the token. For a list, see https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes.")
 	cmd.Flags().VarP(&opts.accessLevel, "access-level", "A", "Access level of the token: one of 'guest', 'reporter', 'developer', 'maintainer', 'owner'.")
@@ -121,23 +127,15 @@ func (o *options) complete(cmd *cobra.Command, args []string) error {
 	}
 
 	if time.Time(o.expireAt).IsZero() {
-		o.expireAt = expirationdate.ExpirationDate(time.Now().Add(o.duration).Truncate(time.Hour * 24))
+		o.expireAt = expirationdate.ExpirationDate(o.duration.CalculateExpirationDate())
 	}
 
 	return nil
 }
 
 func (o *options) validate(cmd *cobra.Command) error {
-	if o.duration.Truncate(24*time.Hour) != o.duration {
-		return cmdutils.FlagError{Err: errors.New("duration must be in days.")}
-	}
-
-	if o.duration < 24*time.Hour || o.duration > 365*24*time.Hour {
-		return cmdutils.FlagError{Err: errors.New("duration in days must be between 1 and 365.")}
-	}
-
 	if o.user == "" && !cmd.Flag("access-level").Changed {
-		return cmdutils.FlagError{Err: errors.New("the required flag '--access-level' is not set.")}
+		return cmdutils.FlagError{Err: errors.New("the required flag '--access-level' is not set")}
 	}
 
 	return nil
