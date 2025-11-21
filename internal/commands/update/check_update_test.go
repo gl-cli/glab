@@ -20,7 +20,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 )
 
@@ -29,12 +28,18 @@ func runCommand(t *testing.T, rt http.RoundTripper, version string) (*test.CmdOu
 
 	ios, _, stdout, stderr := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(true))
 
-	tc := cmdtest.NewTestApiClient(t, &http.Client{Transport: rt}, "", glinstance.DefaultHostname)
+	// Override clientCreator to use the mocked HTTP transport
+	oldCreator := clientCreator
+	clientCreator = func(userAgent string, options ...api.ClientOption) (*api.Client, error) {
+		opts := append([]api.ClientOption{api.WithHTTPClient(&http.Client{Transport: rt})}, options...)
+		return createUnauthenticatedClient(userAgent, opts...)
+	}
+	t.Cleanup(func() {
+		clientCreator = oldCreator
+	})
 
 	factory := cmdtest.NewTestFactory(
 		ios,
-		cmdtest.WithApiClient(tc),
-		cmdtest.WithGitLabClient(tc.Lab()),
 		cmdtest.WithBuildInfo(api.BuildInfo{Version: version}),
 	)
 
@@ -205,6 +210,10 @@ func TestShouldSkipUpdate_NoRun(t *testing.T) {
 			name:            "when previous command is completion",
 			previousCommand: "completion",
 		},
+		{
+			name:            "when previous command is git-credential",
+			previousCommand: "git-credential",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -353,7 +362,7 @@ func Test_checkLastUpdate(t *testing.T) {
 				},
 			)
 
-			result, err := checkLastUpdate(f)
+			result, err := checkLastUpdate(f, false)
 
 			if tt.expectError {
 				assert.Error(t, err)

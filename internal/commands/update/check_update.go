@@ -4,14 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 
@@ -34,52 +36,64 @@ func NewCheckUpdateCmd(f cmdutils.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   commandUse,
 		Short: "Check for latest glab releases.",
-		Long: heredoc.Doc(`Checks for new versions every 24 hours after any 'glab' command is run. Does not recheck if the most recent recheck is less than 24 hours old.
+		Long: heredoc.Doc(`Checks for the latest version of glab available on GitLab.com.
 
-		To override the recheck behavior and force an update check, set the GLAB_CHECK_UPDATE environment variable to 'true'.
+		When run explicitly, this command always checks for updates regardless of when the last check occurred.
 
-		To disable the update check entirely, run 'glab config set check_update false'.
-		To re-enable the update check, run 'glab config set check_update true'.
+		When run automatically after other glab commands, it checks for updates at most once every 24 hours.
+
+		To disable the automatic update check entirely, run 'glab config set check_update false'.
+		To re-enable the automatic update check, run 'glab config set check_update true'.
 		`),
 		Aliases: commandAliases,
 		Annotations: map[string]string{
 			mcpannotations.Safe: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return CheckUpdate(f, false)
+			return CheckUpdateExplicit(f)
 		},
 	}
 
 	return cmd
 }
 
+// clientCreator is a variable that can be overridden for testing
+var clientCreator = createUnauthenticatedClient
+
 func CheckUpdate(f cmdutils.Factory, silentSuccess bool) error {
-	moreThan24hAgo, err := checkLastUpdate(f)
+	return checkUpdate(f, silentSuccess, false)
+}
+
+// CheckUpdateExplicit performs an update check when explicitly invoked by the user.
+// Unlike automatic checks, this bypasses the 24-hour throttle.
+func CheckUpdateExplicit(f cmdutils.Factory) error {
+	return checkUpdate(f, false, true)
+}
+
+func checkUpdate(f cmdutils.Factory, silentSuccess bool, forceCheck bool) error {
+	moreThan24hAgo, err := checkLastUpdate(f, forceCheck)
 	if err != nil {
 		return err
 	}
 	// if the last update check was less than 24h ago we skip the version check
+	// (unless this is a forced check from explicit command invocation)
 	if !moreThan24hAgo {
 		return nil
 	}
 
-	// We set the project to the `glab` project to check for `glab` updates
-	repo, err := glrepo.FromFullName(defaultProjectURL, f.DefaultHostname())
-	if err != nil {
-		return err
-	}
-	apiClient, err := f.ApiClient(repo.RepoHost())
+	// Create an unauthenticated API client to check for updates on the public gitlab.com/gitlab-org/cli project.
+	// We explicitly avoid using user credentials since:
+	// 1. The releases endpoint is public and doesn't require authentication
+	// 2. Using user credentials (especially from GITLAB_TOKEN env var) can cause issues
+	//    when users have tokens for self-hosted instances that aren't valid for gitlab.com
+	apiClient, err := clientCreator(f.BuildInfo().UserAgent())
 	if err != nil {
 		return err
 	}
 	gitlabClient := apiClient.Lab()
 
-	// Since the `gitlab.com/gitlab-org/cli` is public, we remove the token
-	// for this single request. When users have a `GITLAB_TOKEN` set with a
-	// token for GitLab Self-Managed or GitLab Dedicated, we shouldn't use it
-	// to authenticate to gitlab.com.
 	releases, _, err := gitlabClient.Releases.ListReleases(
-		repo.FullName(), &gitlab.ListReleasesOptions{ListOptions: gitlab.ListOptions{Page: 1, PerPage: 1}}, gitlab.WithToken(gitlab.PrivateToken, ""))
+		"gitlab-org/cli", &gitlab.ListReleasesOptions{ListOptions: gitlab.ListOptions{Page: 1, PerPage: 1}})
 	if err != nil {
 		return fmt.Errorf("failed checking for glab updates: %s", err.Error())
 	}
@@ -107,15 +121,38 @@ func CheckUpdate(f cmdutils.Factory, silentSuccess bool) error {
 	return nil
 }
 
+// createUnauthenticatedClient creates an API client without authentication for accessing
+// public endpoints on gitlab.com. This avoids issues where user credentials (especially
+// from environment variables like GITLAB_TOKEN) might be for self-hosted instances
+// and invalid for gitlab.com.
+func createUnauthenticatedClient(userAgent string, options ...api.ClientOption) (*api.Client, error) {
+	// Create a client with an empty token for unauthenticated requests
+	opts := []api.ClientOption{
+		api.WithBaseURL(glinstance.APIEndpoint(glinstance.DefaultHostname, glinstance.DefaultProtocol, "")),
+		api.WithUserAgent(userAgent),
+	}
+	opts = append(opts, options...)
+
+	return api.NewClient(
+		func(c *http.Client) (gitlab.AuthSource, error) {
+			// Use AccessTokenAuthSource with empty token for public API access
+			return gitlab.AccessTokenAuthSource{Token: ""}, nil
+		},
+		opts...,
+	)
+}
+
 // Don't CheckUpdate if previous command is CheckUpdate
-// or it’s Completion, so it doesn’t take a noticably long time
-// to start new shells and we don’t encourage users setting
+// or it's Completion, so it doesn't take a noticably long time
+// to start new shells and we don't encourage users setting
 // `check_update` to false in the config.
+// Also skip for git-credential to avoid interfering with Git operations.
 func ShouldSkipUpdate(previousCommand string) bool {
 	isCheckUpdate := previousCommand == commandUse || utils.PresentInStringSlice(commandAliases, previousCommand)
 	isCompletion := previousCommand == "completion"
+	isGitCredential := previousCommand == "git-credential"
 
-	return isCheckUpdate || isCompletion
+	return isCheckUpdate || isCompletion || isGitCredential
 }
 
 func isOlderVersion(latestVersion, appVersion string) bool {
@@ -132,13 +169,14 @@ func isOlderVersion(latestVersion, appVersion string) bool {
 //
 // returns false if we should skip the update check
 //
-// We only want to check for updates once every 24 hours
-func checkLastUpdate(f cmdutils.Factory) (bool, error) {
+// We only want to check for updates once every 24 hours, unless forceCheck is true
+func checkLastUpdate(f cmdutils.Factory, forceCheck bool) (bool, error) {
 	const updateCheckInterval = 24 * time.Hour
 	cfg := f.Config()
 
 	// We don't care when the command was run if the environment variable is forcing an update
-	if isEnvForcingUpdate() {
+	// or if this is an explicit command invocation (forceCheck = true)
+	if isEnvForcingUpdate() || forceCheck {
 		if err := updateLastCheckTimestamp(cfg); err != nil {
 			return false, err
 		}
