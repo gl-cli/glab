@@ -14,12 +14,14 @@ Check for latest glab releases.
 
 ## Synopsis
 
-Checks for new versions every 24 hours after any 'glab' command is run. Does not recheck if the most recent recheck is less than 24 hours old.
+Checks for the latest version of glab available on GitLab.com.
 
-To override the recheck behavior and force an update check, set the GLAB_CHECK_UPDATE environment variable to 'true'.
+When run explicitly, this command always checks for updates regardless of when the last check occurred.
 
-To disable the update check entirely, run 'glab config set check_update false'.
-To re-enable the update check, run 'glab config set check_update true'.
+When run automatically after other glab commands, it checks for updates at most once every 24 hours.
+
+To disable the automatic update check entirely, run 'glab config set check_update false'.
+To re-enable the automatic update check, run 'glab config set check_update true'.
 
 ```plaintext
 glab check-update [flags]
