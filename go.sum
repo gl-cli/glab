@@ -125,8 +125,8 @@ github.com/fxamacker/cbor/v2 v2.9.0 h1:NpKPmjDBgUfBms6tr6JZkTHtfFGcMKsw3eGcmD/sa
 github.com/fxamacker/cbor/v2 v2.9.0/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
 github.com/gdamore/encoding v1.0.1 h1:YzKZckdBL6jVt2Gc+5p82qhrGiqMdG/eNs6Wy0u3Uhw=
 github.com/gdamore/encoding v1.0.1/go.mod h1:0Z0cMFinngz9kS1QfMjCP8TY7em3bZYeeklsSDPivEo=
-github.com/gdamore/tcell/v2 v2.10.0 h1:u/czxSDixtjOR7UzXXtxHyO4Av2aoZvr2te9TGOaANo=
-github.com/gdamore/tcell/v2 v2.10.0/go.mod h1:K2DslmrxoadNP0709mqdgVuM6QcJjzYvJisintiFBfY=
+github.com/gdamore/tcell/v2 v2.11.0 h1:ntVCx4v2M7ev2hMuAHad5ZRPymfpxb8VR3X3VRz+/YQ=
+github.com/gdamore/tcell/v2 v2.11.0/go.mod h1:pytyB+bE6zrRVf6u/ZMWX9AZqSVcW4bpimuDiR5k2mU=
 github.com/go-logr/logr v1.4.2 h1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=
 github.com/go-logr/logr v1.4.2/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
 github.com/go-openapi/jsonpointer v0.21.0 h1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=
