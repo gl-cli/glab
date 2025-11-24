@@ -14,7 +14,6 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/pkg/browser"
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"oss.terrastruct.com/d2/d2format"
 	"oss.terrastruct.com/d2/d2graph"
 	"oss.terrastruct.com/d2/d2layouts/d2dagrelayout"
@@ -22,6 +21,8 @@ import (
 	"oss.terrastruct.com/d2/d2renderers/d2svg"
 	"oss.terrastruct.com/d2/lib/log"
 	"oss.terrastruct.com/d2/lib/textmeasure"
+
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 )
 
 const (

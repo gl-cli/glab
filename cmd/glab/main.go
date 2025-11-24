@@ -9,26 +9,24 @@ import (
 	"runtime"
 	"strconv"
 
-	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/utils"
-
-	"github.com/mgutz/ansi"
-
 	surveyCore "github.com/AlecAivazis/survey/v2/core"
+	"github.com/charmbracelet/fang"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/mgutz/ansi"
+	"github.com/spf13/cobra"
+
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands"
 	"gitlab.com/gitlab-org/cli/internal/commands/alias/expand"
 	"gitlab.com/gitlab-org/cli/internal/commands/help"
 	"gitlab.com/gitlab-org/cli/internal/commands/update"
 	"gitlab.com/gitlab-org/cli/internal/config"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
-
-	"github.com/charmbracelet/fang"
-	"github.com/charmbracelet/lipgloss/v2"
-	"github.com/spf13/cobra"
 	"gitlab.com/gitlab-org/cli/internal/theme"
+	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
 var (

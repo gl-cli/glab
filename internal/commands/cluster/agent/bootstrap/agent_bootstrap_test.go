@@ -10,12 +10,13 @@ import (
 	"testing"
 
 	"github.com/google/shlex"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/stretchr/testify/assert"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
 func TestAgentBootstrap_FailsToGetDefaultBranchForDefaultManifestBranch(t *testing.T) {

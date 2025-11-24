@@ -12,14 +12,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/stretchr/testify/assert"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/oauth2"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-
-	"github.com/MakeNowJust/heredoc/v2"
-	"github.com/stretchr/testify/assert"
 )
 
 type roundTripFunc func(r *http.Request) (*http.Response, error)

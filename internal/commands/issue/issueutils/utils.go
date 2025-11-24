@@ -8,16 +8,15 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"golang.org/x/sync/errgroup"
+
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"golang.org/x/sync/errgroup"
-
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 	"gitlab.com/gitlab-org/cli/internal/utils"
-
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func DisplayIssueList(streams *iostreams.IOStreams, issues []*gitlab.Issue, projectID string) string {

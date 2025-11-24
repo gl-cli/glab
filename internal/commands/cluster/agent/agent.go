@@ -2,6 +2,7 @@ package agent
 
 import (
 	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	agentBootstrapCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/bootstrap"
 	checkManifestUsageCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/check_manifest_usage"

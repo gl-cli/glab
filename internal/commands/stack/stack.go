@@ -1,6 +1,9 @@
 package stack
 
 import (
+	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	stackCreateCmd "gitlab.com/gitlab-org/cli/internal/commands/stack/create"
 	stackListCmd "gitlab.com/gitlab-org/cli/internal/commands/stack/list"
@@ -12,9 +15,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/surveyext"
 	"gitlab.com/gitlab-org/cli/internal/text"
-
-	"github.com/MakeNowJust/heredoc/v2"
-	"github.com/spf13/cobra"
 )
 
 func wrappedEdit(f cmdutils.Factory) cmdutils.GetTextUsingEditor {

@@ -3,8 +3,9 @@ package api
 import (
 	"fmt"
 
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"golang.org/x/sync/errgroup"
+
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 // Describe namespace kinds which is either group or user

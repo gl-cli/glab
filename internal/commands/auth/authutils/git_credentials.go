@@ -7,13 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/git"
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/run"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/charmbracelet/huh"
 	"github.com/google/shlex"
+
+	"gitlab.com/gitlab-org/cli/internal/git"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/run"
 )
 
 type GitCredentialFlow struct {

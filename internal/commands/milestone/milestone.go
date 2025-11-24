@@ -2,6 +2,7 @@ package milestone
 
 import (
 	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	cmdCreate "gitlab.com/gitlab-org/cli/internal/commands/milestone/create"
 	cmdDelete "gitlab.com/gitlab-org/cli/internal/commands/milestone/delete"

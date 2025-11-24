@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/spf13/pflag"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 )
 

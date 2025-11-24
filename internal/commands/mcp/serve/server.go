@@ -12,6 +12,7 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 

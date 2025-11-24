@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	jobArtifactCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/artifact"
@@ -22,8 +22,7 @@ import (
 	ciTraceCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/trace"
 	jobPlayCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/trigger"
 	ciViewCmd "gitlab.com/gitlab-org/cli/internal/commands/ci/view"
-
-	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 func NewCmdCI(f cmdutils.Factory) *cobra.Command {

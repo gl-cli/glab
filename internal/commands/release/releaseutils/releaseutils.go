@@ -6,17 +6,14 @@ import (
 	"os"
 	"strings"
 
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/release/releaseutils/upload"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
-
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-
 	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 	"gitlab.com/gitlab-org/cli/internal/utils"
-
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func DisplayAllReleases(io *iostreams.IOStreams, releases []*gitlab.Release, repoName string) string {

@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/commands/issue/issueutils"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 // errIssuableUserAlreadySubscribed received when trying to subscribe to an issue the user is already subscribed to

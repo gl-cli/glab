@@ -1,15 +1,14 @@
 package schedule
 
 import (
+	"github.com/spf13/cobra"
+
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	scheduleCreateCmd "gitlab.com/gitlab-org/cli/internal/commands/schedule/create"
 	scheduleDeleteCmd "gitlab.com/gitlab-org/cli/internal/commands/schedule/delete"
 	scheduleListCmd "gitlab.com/gitlab-org/cli/internal/commands/schedule/list"
 	scheduleRunCmd "gitlab.com/gitlab-org/cli/internal/commands/schedule/run"
 	scheduleUpdateCmd "gitlab.com/gitlab-org/cli/internal/commands/schedule/update"
-
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-
-	"github.com/spf13/cobra"
 )
 
 func NewCmdSchedule(f cmdutils.Factory) *cobra.Command {

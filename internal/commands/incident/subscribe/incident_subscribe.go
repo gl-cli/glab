@@ -2,9 +2,9 @@ package subscribe
 
 import (
 	"github.com/spf13/cobra"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
-
 	issuableSubscribeCmd "gitlab.com/gitlab-org/cli/internal/commands/issuable/subscribe"
 )
 

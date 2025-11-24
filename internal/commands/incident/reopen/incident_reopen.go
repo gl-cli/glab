@@ -1,11 +1,10 @@
 package reopen
 
 import (
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
-
 	"github.com/spf13/cobra"
 
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 	issuableReopenCmd "gitlab.com/gitlab-org/cli/internal/commands/issuable/reopen"
 )
 

@@ -1,11 +1,10 @@
 package token_cache
 
 import (
-	"github.com/spf13/cobra"
-	"gitlab.com/gitlab-org/cli/internal/cmdutils"
-
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/spf13/cobra"
 
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	tokenCacheClearCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/token_cache/clear"
 	tokenCacheListCmd "gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/token_cache/list"
 )

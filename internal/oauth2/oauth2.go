@@ -6,11 +6,13 @@ import (
 	"io"
 	"net/http"
 
+	"golang.org/x/oauth2"
+
 	"gitlab.com/gitlab-org/api/client-go/gitlaboauth2"
+
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/utils"
-	"golang.org/x/oauth2"
 )
 
 func StartFlow(ctx context.Context, cfg config.Config, out io.Writer, httpClient *http.Client, hostname string) (string, error) {

@@ -14,16 +14,17 @@ import (
 	"syscall"
 	"time"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-
 	"github.com/spf13/cobra"
 	"github.com/zalando/go-keyring"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientauthenticationv1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
+
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/agentutils"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientauthenticationv1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 const (

@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"runtime"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-
 	"github.com/docker/docker-credential-helpers/credentials"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 const (

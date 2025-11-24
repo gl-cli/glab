@@ -4,16 +4,13 @@ import (
 	"fmt"
 	"sort"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
-
-	"gitlab.com/gitlab-org/cli/internal/tableprinter"
+	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
-
-	"github.com/spf13/cobra"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
+	"gitlab.com/gitlab-org/cli/internal/tableprinter"
 )
 
 type options struct {

@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"go/format"
 
-	"gitlab.com/gitlab-org/cli/internal/config"
 	"gopkg.in/yaml.v3"
+
+	"gitlab.com/gitlab-org/cli/internal/config"
 )
 
 var configLockPath = "config.yaml.lock"

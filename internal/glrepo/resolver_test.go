@@ -8,15 +8,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/go-multierror"
+	"github.com/stretchr/testify/assert"
+	"github.com/survivorbat/huhtest"
+
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-
-	"github.com/hashicorp/go-multierror"
-	"github.com/stretchr/testify/assert"
-	"github.com/survivorbat/huhtest"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func Test_RemoteForRepo(t *testing.T) {

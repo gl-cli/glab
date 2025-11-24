@@ -7,15 +7,16 @@ import (
 	"net/http"
 	"testing"
 
-	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
-	"gitlab.com/gitlab-org/cli/internal/api"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
-	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"go.uber.org/mock/gomock"
-
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
+
+	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
+	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 )
 

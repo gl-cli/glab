@@ -3,20 +3,18 @@
 package clone
 
 import (
-	"fmt"
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/spf13/cobra"
 	"github.com/google/shlex"
+	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-
 	"gitlab.com/gitlab-org/cli/test"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func runCommand(cmd *cobra.Command, cli string, stds ...*bytes.Buffer) (*test.CmdOut, error) {

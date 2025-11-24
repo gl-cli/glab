@@ -7,12 +7,13 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
+
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-
-	"github.com/hashicorp/go-multierror"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 // cap the number of git remotes looked up, since the user might have an

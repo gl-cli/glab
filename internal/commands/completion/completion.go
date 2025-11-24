@@ -3,12 +3,11 @@ package completion
 import (
 	"fmt"
 
-	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-
 	"github.com/MakeNowJust/heredoc/v2"
-	"gitlab.com/gitlab-org/cli/internal/iostreams"
-
 	"github.com/spf13/cobra"
+
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
+	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
 func NewCmdCompletion(io *iostreams.IOStreams) *cobra.Command {

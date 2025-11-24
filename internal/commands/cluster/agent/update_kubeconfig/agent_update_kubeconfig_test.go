@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
-	"gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/agentutils"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+
+	"gitlab.com/gitlab-org/cli/internal/commands/cluster/agent/agentutils"
 )
 
 func TestAgent_UpdateKubeConfig_GlabExec(t *testing.T) {

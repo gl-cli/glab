@@ -11,13 +11,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	git_testing "gitlab.com/gitlab-org/cli/internal/git/testing"
+	"github.com/stretchr/testify/require"
 	gomock "go.uber.org/mock/gomock"
 
+	git_testing "gitlab.com/gitlab-org/cli/internal/git/testing"
 	"gitlab.com/gitlab-org/cli/internal/run"
 	"gitlab.com/gitlab-org/cli/test"
-
-	"github.com/stretchr/testify/require"
 )
 
 func getEnv(key, fallback string) string {
