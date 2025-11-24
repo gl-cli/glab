@@ -150,10 +150,49 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - >
-        ^docs(\(.*\))*:
-      - >
-        ^test(\(.*\))*:
       - "^Merge branch"
-      - "^chore"
       - "^Update README.md"
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Bug Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Documentation
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: Maintenance
+      regexp: '^.*?(chore|ci|refactor)(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: Dependencies
+      regexp: '^.*?chore\((deps|dependencies)\)[^:]*:.+$'
+      order: 4
+    - title: Others
+      order: 999
+
+announce:
+  slack:
+    enabled: true
+    # Set SLACK_WEBHOOK environment variable in your CI/CD settings
+    # Format: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX
+    channel: '{{ .Env.SLACK_CHANNEL }}'
+    username: 'glab Release Bot'
+    icon_emoji: ':rocket:'
+    message_template: |
+      :rocket: *glab {{ .Tag }}* has been released!
+      {{ if .IsPrerelease }}
+      :warning: _This is a pre-release version_
+      {{ end }}
+      *What's Changed*
+      {{ range .Changelog.Groups -}}
+      {{ if gt (len .Items) 0 -}}
+      *{{ .Title }}*
+      {{ range .Items -}}
+      • {{ .Message }} - <{{ .WebURL }}|{{ .ShortHash }}>{{ if .AuthorName }} by {{ .AuthorName }}{{ if .AuthorEmail }} <{{ .AuthorEmail }}>{{ end }}{{ end }}
+      {{ end }}
+      {{ end -}}
+      {{ end }}
+      *Get the Release*
+      • <{{ .ReleaseURL }}|View on GitLab>
+      • <https://gitlab.com/gitlab-org/cli/-/releases/{{ .Tag }}|Download Assets>
