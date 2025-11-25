@@ -22,7 +22,7 @@ func TestCIDelete(t *testing.T) {
 	t.Parallel()
 
 	tc := gitlabtesting.NewTestClient(t)
-	tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, nil)
+	tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", int64(11111111)).Return(nil, nil)
 	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
 	out, err := exec("11111111")
@@ -36,7 +36,7 @@ func TestCIDeleteNonExistingPipeline(t *testing.T) {
 	t.Parallel()
 
 	tc := gitlabtesting.NewTestClient(t)
-	tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, errors.New(`{"message": "404 Not found"}`))
+	tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", int64(11111111)).Return(nil, errors.New(`{"message": "404 Not found"}`))
 	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
 	out, err := exec("11111111")
@@ -69,8 +69,8 @@ func TestCIDeleteByStatus(t *testing.T) {
 					ID: 22222222,
 				},
 			}, &gitlab.Response{NextPage: 0}, nil),
-		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, nil),
-		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 22222222).Return(nil, nil),
+		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", int64(11111111)).Return(nil, nil),
+		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", int64(22222222)).Return(nil, nil),
 	)
 	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
@@ -110,8 +110,8 @@ func TestCIDeleteMultiple(t *testing.T) {
 
 	tc := gitlabtesting.NewTestClient(t)
 	gomock.InOrder(
-		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 11111111).Return(nil, nil),
-		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 22222222).Return(nil, nil),
+		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", int64(11111111)).Return(nil, nil),
+		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", int64(22222222)).Return(nil, nil),
 	)
 	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
@@ -174,7 +174,7 @@ func TestCIDeleteBySource(t *testing.T) {
 					ID: 22222222,
 				},
 			}, &gitlab.Response{NextPage: 0}, nil),
-		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", 22222222).Return(nil, nil),
+		tc.MockPipelines.EXPECT().DeletePipeline("OWNER/REPO", int64(22222222)).Return(nil, nil),
 	)
 	exec := cmdtest.SetupCmdForTest(t, NewCmdDelete, false, cmdtest.WithGitLabClient(tc.Client))
 
@@ -248,6 +248,6 @@ func TestOptsFromFlagsWithPagination(t *testing.T) {
 
 	opts := optsFromFlags(flags)
 
-	assert.Equal(t, opts.Page, 5)
-	assert.Equal(t, opts.PerPage, 10)
+	assert.Equal(t, opts.Page, int64(5))
+	assert.Equal(t, opts.PerPage, int64(10))
 }

@@ -203,13 +203,13 @@ func Test_UsersFromReplaces(t *testing.T) {
 	testCases := []struct {
 		name           string
 		users          []*gitlab.User
-		expectedIDs    []int
+		expectedIDs    []int64
 		expectedAction []string
 	}{
 		{
 			name:           "nothingness",
 			users:          []*gitlab.User{},
-			expectedIDs:    []int{},
+			expectedIDs:    []int64{},
 			expectedAction: []string{},
 		},
 		{
@@ -217,7 +217,7 @@ func Test_UsersFromReplaces(t *testing.T) {
 			users: []*gitlab.User{
 				{ID: 1, Username: "foo"},
 			},
-			expectedIDs:    []int{1},
+			expectedIDs:    []int64{1},
 			expectedAction: []string{`assigned to "@foo"`},
 		},
 		{
@@ -227,7 +227,7 @@ func Test_UsersFromReplaces(t *testing.T) {
 				{ID: 3, Username: "bar"},
 				{ID: 7, Username: "baz"},
 			},
-			expectedIDs:    []int{1, 3, 7},
+			expectedIDs:    []int64{1, 3, 7},
 			expectedAction: []string{`assigned to "@foo @bar @baz"`},
 		},
 	}
@@ -283,7 +283,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 		users          []*gitlab.User          // Mock *gitlab.User received from api.UsersByNames
 		merge          []*gitlab.BasicUser     // Mock `.Assignee field` from a merge request
 		issue          []*gitlab.IssueAssignee // Mock `.Assignee field` from an issue
-		expectedIDs    []int
+		expectedIDs    []int64
 		expectedAction []string
 		ua             UserAssignments
 		wantErr        string
@@ -296,7 +296,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 					Username: "foo",
 				},
 			},
-			expectedIDs:    []int{1},
+			expectedIDs:    []int64{1},
 			expectedAction: []string{`assigned "@foo"`},
 			ua:             UserAssignments{ToAdd: []string{"foo"}},
 		},
@@ -316,7 +316,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 					Username: "baz",
 				},
 			},
-			expectedIDs:    []int{1, 235, 1500},
+			expectedIDs:    []int64{1, 235, 1500},
 			expectedAction: []string{`assigned "@foo @bar @baz"`},
 			ua:             UserAssignments{ToAdd: []string{"foo", "bar", "baz"}},
 		},
@@ -329,7 +329,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 					Username: "foo",
 				},
 			},
-			expectedIDs:    []int{0},
+			expectedIDs:    []int64{0},
 			expectedAction: []string{`unassigned "@foo"`},
 			ua:             UserAssignments{ToRemove: []string{"foo"}},
 		},
@@ -350,7 +350,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 					Username: "baz",
 				},
 			},
-			expectedIDs:    []int{2},
+			expectedIDs:    []int64{2},
 			expectedAction: []string{`unassigned "@foo @baz"`},
 			ua:             UserAssignments{ToRemove: []string{"foo", "baz"}},
 		},
@@ -372,7 +372,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 					Username: "baz",
 				},
 			},
-			expectedIDs: []int{500, 100},
+			expectedIDs: []int64{500, 100},
 			expectedAction: []string{
 				`unassigned "@foo"`,
 				`assigned "@bar"`,
@@ -391,7 +391,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 					Username: "foo",
 				},
 			},
-			expectedIDs:    []int{0},
+			expectedIDs:    []int64{0},
 			expectedAction: []string{`unassigned "@foo"`},
 			ua:             UserAssignments{ToRemove: []string{"foo"}},
 		},
@@ -412,7 +412,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 					Username: "baz",
 				},
 			},
-			expectedIDs:    []int{2},
+			expectedIDs:    []int64{2},
 			expectedAction: []string{`unassigned "@foo @baz"`},
 			ua:             UserAssignments{ToRemove: []string{"foo", "baz"}},
 		},
@@ -434,7 +434,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 					Username: "baz",
 				},
 			},
-			expectedIDs: []int{500, 100},
+			expectedIDs: []int64{500, 100},
 			expectedAction: []string{
 				`unassigned "@foo"`,
 				`assigned "@bar"`,
@@ -484,7 +484,7 @@ func Test_UsersFromAddRemove(t *testing.T) {
 
 func Test_ParseMilestoneTitleIsID(t *testing.T) {
 	title := "1"
-	expectedMilestoneID := 1
+	expectedMilestoneID := int64(1)
 
 	// Override function to return an error, it should never reach this
 	projectMilestoneByTitle = func(client *gitlab.Client, projectID any, name string) (*gitlab.Milestone, error) {
@@ -520,7 +520,7 @@ func Test_ParseMilestoneAPIFail(t *testing.T) {
 
 func Test_ParseMilestoneTitleToID(t *testing.T) {
 	milestoneTitle := "kind: testing"
-	expectedID := 3
+	expectedID := int64(3)
 
 	// Override function so it returns the correct milestone
 	projectMilestoneByTitle = func(_ *gitlab.Client, _ any, _ string) (*gitlab.Milestone, error) {
@@ -858,8 +858,8 @@ func Test_MilestonesPrompt(t *testing.T) {
 
 	testCases := []struct {
 		name       string
-		inputIdx   int // Selected milestone
-		expectedID int // expected global ID from the milestone
+		inputIdx   int   // Selected milestone
+		expectedID int64 // expected global ID from the milestone
 	}{
 		{
 			name:       "match",
@@ -876,7 +876,7 @@ func Test_MilestonesPrompt(t *testing.T) {
 
 			ios := iostreams.New(iostreams.WithStdin(stdin, true), iostreams.WithStdout(stdout, true))
 
-			var got int
+			var got int64
 			err := MilestonesPrompt(&got, &gitlab.Client{}, repoRemote, ios)
 			if err != nil {
 				t.Errorf("MilestonesPrompt() unexpected error = %s", err)
@@ -907,7 +907,7 @@ func Test_MilestonesPromptNoPrompts(t *testing.T) {
 		Repo:   repo,
 	}
 
-	var got int
+	var got int64
 	stderr := &bytes.Buffer{}
 	io := iostreams.New(iostreams.WithStderr(stderr, false))
 
@@ -936,7 +936,7 @@ func TestMilestonesPromptFailures(t *testing.T) {
 		Repo:   repo,
 	}
 
-	var got int
+	var got int64
 	io := iostreams.New()
 
 	err := MilestonesPrompt(&got, &gitlab.Client{}, repoRemote, io)
@@ -950,7 +950,7 @@ func Test_IDsFromUsers(t *testing.T) {
 	testCases := []struct {
 		name  string
 		users []*gitlab.User // Mock of the gitlab.User object
-		IDs   []int          // IDs we expect from the users
+		IDs   []int64        // IDs we expect from the users
 	}{
 		{
 			name: "no users",
@@ -962,7 +962,7 @@ func Test_IDsFromUsers(t *testing.T) {
 					ID: 1,
 				},
 			},
-			IDs: []int{1},
+			IDs: []int64{1},
 		},
 		{
 			name: "multiple users",
@@ -995,7 +995,7 @@ func Test_IDsFromUsers(t *testing.T) {
 					ID: 50132,
 				},
 			},
-			IDs: []int{
+			IDs: []int64{
 				50132,
 				6493,
 				210,

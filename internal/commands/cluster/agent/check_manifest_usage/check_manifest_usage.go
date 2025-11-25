@@ -122,8 +122,8 @@ func listAllGroupsForGroup(apiClient *gitlab.Client, group string) ([]*gitlab.Gr
 func listAllProjectsForGroup(apiClient *gitlab.Client, group string, opts options) ([]*gitlab.Project, *gitlab.Response, error) {
 	l := &gitlab.ListGroupProjectsOptions{
 		ListOptions: gitlab.ListOptions{
-			PerPage: opts.projectPerPage,
-			Page:    opts.projectPage,
+			PerPage: int64(opts.projectPerPage),
+			Page:    int64(opts.projectPage),
 		},
 	}
 
@@ -136,8 +136,10 @@ func checkManifestUsageInProject(apiClient *gitlab.Client, opts *options, projec
 	defer opts.io.StopSpinner("")
 
 	agents, _, err := apiClient.ClusterAgents.ListAgents(project.ID, &gitlab.ListAgentsOptions{
-		Page:    opts.agentPage,
-		PerPage: opts.agentPerPage,
+		ListOptions: gitlab.ListOptions{
+			Page:    int64(opts.agentPage),
+			PerPage: int64(opts.agentPerPage),
+		},
 	})
 	if err != nil {
 		return err

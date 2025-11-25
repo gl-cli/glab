@@ -116,13 +116,17 @@ func (o *options) run() error {
 	client := apiClient.Lab()
 
 	if o.group != "" {
-		createVarOpts := &gitlab.ListGroupVariablesOptions{Page: o.page, PerPage: o.perPage}
+		o.io.LogInfof("Exporting variables from the %s group:\n", o.group)
+		createVarOpts := &gitlab.ListGroupVariablesOptions{
+			ListOptions: gitlab.ListOptions{
+				Page:    int64(o.page),
+				PerPage: int64(o.perPage),
+			},
+		}
 		groupVariables, _, err := client.GroupVariables.ListVariables(o.group, createVarOpts)
 		if err != nil {
 			return err
 		}
-
-		o.io.LogInfof("Exporting variables from the %s group:\n", o.group)
 
 		if len(groupVariables) == 0 {
 			return nil
@@ -135,13 +139,17 @@ func (o *options) run() error {
 		if err != nil {
 			return err
 		}
-		listOpts := &gitlab.ListProjectVariablesOptions{Page: o.page, PerPage: o.perPage}
+		o.io.LogInfof("Exporting variables from the %s project:\n", repo.FullName())
+		listOpts := &gitlab.ListProjectVariablesOptions{
+			ListOptions: gitlab.ListOptions{
+				Page:    int64(o.page),
+				PerPage: int64(o.perPage),
+			},
+		}
 		projectVariables, _, err := client.ProjectVariables.ListVariables(repo.FullName(), listOpts)
 		if err != nil {
 			return err
 		}
-
-		o.io.LogInfof("Exporting variables from the %s project:\n", repo.FullName())
 
 		if len(projectVariables) == 0 {
 			return nil

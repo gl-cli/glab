@@ -13,7 +13,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
-var unsubscribeFromMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
+var unsubscribeFromMR = func(client *gitlab.Client, projectID any, mrID int64, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
 	mr, _, err := client.MergeRequests.UnsubscribeFromMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return nil, err

@@ -41,7 +41,7 @@ func TestNewCmdUpdate_Integration(t *testing.T) {
 		},
 		CreatedAt: &timer,
 	}
-	api.UpdateIssue = func(client *gitlab.Client, projectID any, issueID int, opts *gitlab.UpdateIssueOptions) (*gitlab.Issue, error) {
+	api.UpdateIssue = func(client *gitlab.Client, projectID any, issueID int64, opts *gitlab.UpdateIssueOptions) (*gitlab.Issue, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" || issueID != testIssue.ID {
 			return nil, fmt.Errorf("error expected")
 		}

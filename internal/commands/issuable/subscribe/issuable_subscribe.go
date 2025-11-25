@@ -74,7 +74,7 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 					)
 				}
 
-				issue, err := subscribe(client, repo.FullName(), issue.IID)
+				issue, err := subscribe(client, repo.FullName(), int(issue.IID))
 				if err != nil {
 					if errors.Is(err, errIssuableUserAlreadySubscribed) {
 						fmt.Fprintf(
@@ -99,7 +99,7 @@ func NewCmdSubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.Co
 }
 
 func subscribe(client *gitlab.Client, projectID any, issueID int) (*gitlab.Issue, error) {
-	issue, resp, err := client.Issues.SubscribeToIssue(projectID, issueID)
+	issue, resp, err := client.Issues.SubscribeToIssue(projectID, int64(issueID))
 	if err != nil {
 		if resp != nil {
 			// If the user is already subscribed to the issue, the status code 304 is returned.

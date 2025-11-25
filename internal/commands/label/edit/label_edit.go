@@ -57,7 +57,7 @@ func NewCmdEdit(f cmdutils.Factory) *cobra.Command {
 			}
 			if cmd.Flags().Changed("priority") {
 				if s, err := cmd.Flags().GetInt("priority"); err == nil {
-					l.Priority = gitlab.Ptr(s)
+					l.Priority = gitlab.Ptr(int64(s))
 					change += fmt.Sprintf("Updated priority: %d\n", s)
 				} else {
 					return err

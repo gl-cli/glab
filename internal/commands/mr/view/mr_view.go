@@ -21,7 +21,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
-var listMRNotes = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
+var listMRNotes = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.ListMergeRequestNotesOptions) ([]*gitlab.Note, error) {
 	if opts.PerPage == 0 {
 		opts.PerPage = api.DefaultListLimit
 	}
@@ -125,8 +125,8 @@ func (o *options) run(f cmdutils.Factory, args []string) error {
 		l := &gitlab.ListMergeRequestNotesOptions{
 			Sort: gitlab.Ptr("asc"),
 			ListOptions: gitlab.ListOptions{
-				Page:    o.commentPageNujmber,
-				PerPage: o.commentLimit,
+				Page:    int64(o.commentPageNujmber),
+				PerPage: int64(o.commentLimit),
 			},
 		}
 

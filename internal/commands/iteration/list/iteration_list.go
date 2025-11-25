@@ -64,8 +64,8 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 
 type listProjectIterationsOptions struct {
 	IncludeAncestors *bool
-	PerPage          int
-	Page             int
+	PerPage          int64
+	Page             int64
 }
 
 func (opts *listProjectIterationsOptions) listProjectIterationsOptions() *gitlab.ListProjectIterationsOptions {
@@ -102,10 +102,10 @@ func (o *options) run() error {
 	iterationApiOpts.IncludeAncestors = gitlab.Ptr(true)
 
 	if o.page != 0 {
-		iterationApiOpts.Page = o.page
+		iterationApiOpts.Page = int64(o.page)
 	}
 	if o.perPage != 0 {
-		iterationApiOpts.PerPage = o.perPage
+		iterationApiOpts.PerPage = int64(o.perPage)
 	} else {
 		iterationApiOpts.PerPage = api.DefaultListLimit
 	}

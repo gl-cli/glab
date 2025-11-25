@@ -21,7 +21,7 @@ type options struct {
 
 	projectID   string
 	groupID     string
-	milestoneID int
+	milestoneID int64
 }
 
 func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
@@ -50,10 +50,11 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			opts.milestoneID, err = strconv.Atoi(args[0])
+			milestoneIDInt, err := strconv.Atoi(args[0])
 			if err != nil {
 				return err
 			}
+			opts.milestoneID = int64(milestoneIDInt)
 
 			return opts.run()
 		},

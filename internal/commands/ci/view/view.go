@@ -41,7 +41,7 @@ type options struct {
 
 	refName       string
 	openInBrowser bool
-	pipelineID    int
+	pipelineID    int64
 }
 
 type ViewJobKind int64
@@ -52,7 +52,7 @@ const (
 )
 
 type ViewJob struct {
-	ID           int        `json:"id"`
+	ID           int64      `json:"id"`
 	Name         string     `json:"name"`
 	StartedAt    *time.Time `json:"started_at"`
 	FinishedAt   *time.Time `json:"finished_at"`
@@ -154,7 +154,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 	pipelineCIView.Flags().
 		StringVarP(&opts.refName, "branch", "b", "", "Check pipeline status for a branch or tag. Defaults to the current branch.")
 	pipelineCIView.Flags().BoolVarP(&opts.openInBrowser, "web", "w", false, "Open pipeline in a browser. Uses default browser, or browser specified in BROWSER variable.")
-	pipelineCIView.Flags().IntVarP(&opts.pipelineID, "pipelineid", "p", 0, "Check pipeline status for a specific pipeline ID.")
+	pipelineCIView.Flags().Int64VarP(&opts.pipelineID, "pipelineid", "p", 0, "Check pipeline status for a specific pipeline ID.")
 	pipelineCIView.MarkFlagsMutuallyExclusive("branch", "pipelineid")
 
 	return pipelineCIView
@@ -188,7 +188,7 @@ func (o *options) run() error {
 	}
 
 	projectID := repo.FullName()
-	var pipelineID int
+	var pipelineID int64
 	var webURL string
 	var pipelineCreatedAt time.Time
 	var commit *gitlab.Commit

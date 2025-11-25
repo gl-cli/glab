@@ -183,7 +183,7 @@ func (o *options) run() error {
 		for _, token := range tokens {
 			if !o.listActive || token.Active {
 				outputTokens = append(outputTokens, Token{
-					ID:          strconv.FormatInt(int64(token.ID), 10),
+					ID:          strconv.FormatInt(token.ID, 10),
 					Name:        token.Name,
 					Description: formatDescription(token.Description),
 					AccessLevel: "-",
@@ -209,7 +209,7 @@ func (o *options) run() error {
 		for _, token := range tokens {
 			if !o.listActive || token.Active {
 				outputTokens = append(outputTokens, Token{
-					ID:          strconv.FormatInt(int64(token.ID), 10),
+					ID:          strconv.FormatInt(token.ID, 10),
 					Name:        token.Name,
 					Description: formatDescription(token.Description),
 					AccessLevel: formatAccessLevel(token.AccessLevel),
@@ -240,7 +240,7 @@ func (o *options) run() error {
 		for _, token := range tokens {
 			if !o.listActive || token.Active {
 				outputTokens = append(outputTokens, Token{
-					ID:          strconv.FormatInt(int64(token.ID), 10),
+					ID:          strconv.FormatInt(token.ID, 10),
 					Name:        token.Name,
 					Description: formatDescription(token.Description),
 					AccessLevel: formatAccessLevel(token.AccessLevel),

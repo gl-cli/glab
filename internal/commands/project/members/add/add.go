@@ -18,7 +18,7 @@ import (
 
 type options struct {
 	role      string
-	roleID    int
+	roleID    int64
 	expiresAt string
 	userID    int
 	username  string
@@ -75,7 +75,7 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 
 	fl := cmd.Flags()
 	fl.StringVarP(&opts.role, "role", "r", "developer", "Role for the user (guest, reporter, developer, maintainer, owner)")
-	fl.IntVar(&opts.roleID, "role-id", 0, "ID of a custom role defined in the project or group")
+	fl.Int64Var(&opts.roleID, "role-id", 0, "ID of a custom role defined in the project or group")
 	fl.StringVarP(&opts.expiresAt, "expires-at", "e", "", "Expiration date for the membership (YYYY-MM-DD)")
 	fl.IntVarP(&opts.userID, "user-id", "u", 0, "User ID instead of username")
 	fl.StringVarP(&opts.username, "username", "", "", "Username instead of user-id")
@@ -138,7 +138,7 @@ func (o *options) run() error {
 			return fmt.Errorf("multiple users found with username %s", o.username)
 		}
 
-		userIDToAdd = users[0].ID
+		userIDToAdd = int(users[0].ID)
 		userIdentifier = o.username
 	}
 

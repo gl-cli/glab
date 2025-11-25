@@ -102,7 +102,7 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 					return errors.New("must provide fileID argument")
 				}
 
-				fileID, err := strconv.Atoi(args[0])
+				fileID, err := strconv.ParseInt(args[0], 10, 64)
 				if err != nil {
 					return fmt.Errorf("secure file ID must be an integer: %s", args[0])
 				}
@@ -129,7 +129,7 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 	return securefileDownloadCmd
 }
 
-func downloadSecureFile(client *gitlab.Client, stdOut io.Writer, root *os.Root, fileID int, repoName, path string, verifyChecksum, forceDownload bool) error {
+func downloadSecureFile(client *gitlab.Client, stdOut io.Writer, root *os.Root, fileID int64, repoName, path string, verifyChecksum, forceDownload bool) error {
 	path = filepath.Clean(path)
 	if err := ensureDirectoryExists(root, path); err != nil {
 		return err
@@ -146,8 +146,10 @@ func downloadSecureFile(client *gitlab.Client, stdOut io.Writer, root *os.Root, 
 
 func downloadAllSecureFiles(client *gitlab.Client, stdOut io.Writer, root *os.Root, repoName, outputDir string, verifyChecksum, forceDownload bool) error {
 	l := &gitlab.ListProjectSecureFilesOptions{
-		Page:    1,
-		PerPage: api.MaxPerPage,
+		ListOptions: gitlab.ListOptions{
+			Page:    1,
+			PerPage: api.MaxPerPage,
+		},
 	}
 
 	files, _, err := client.SecureFiles.ListProjectSecureFiles(repoName, l)
@@ -166,7 +168,7 @@ func downloadAllSecureFiles(client *gitlab.Client, stdOut io.Writer, root *os.Ro
 	return nil
 }
 
-func saveFile(apiClient *gitlab.Client, stdOut io.Writer, repoName string, fileID int, path string, verifyChecksum, forceDownload bool) (err error) {
+func saveFile(apiClient *gitlab.Client, stdOut io.Writer, repoName string, fileID int64, path string, verifyChecksum, forceDownload bool) (err error) {
 	contents, _, err := apiClient.SecureFiles.DownloadSecureFile(repoName, fileID)
 	if err != nil {
 		return fmt.Errorf("error downloading secure file: %w", err)
@@ -242,9 +244,9 @@ func ensureDirectoryExists(root *os.Root, path string) error {
 }
 
 // This is a modified implementation of os.CreateTemp() using root.OpenFile.
-func createTemp(root *os.Root, fileID int, path string) (*os.File, error) {
+func createTemp(root *os.Root, fileID int64, path string) (*os.File, error) {
 	dir := filepath.Dir(path)
-	name := filepath.Join(dir, strconv.FormatInt(int64(fileID), 10))
+	name := filepath.Join(dir, strconv.FormatInt(fileID, 10))
 
 	// This retry logic is to handle tempfile name collisions with an existing tempfile.
 	// This is probably overkill since the chances of a collision are already extremely unlikely.

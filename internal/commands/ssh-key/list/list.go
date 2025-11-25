@@ -61,8 +61,10 @@ func (o *options) run() error {
 	client := c.Lab()
 
 	sshKeyListOptions := &gitlab.ListSSHKeysOptions{
-		Page:    o.page,
-		PerPage: o.perPage,
+		ListOptions: gitlab.ListOptions{
+			Page:    int64(o.page),
+			PerPage: int64(o.perPage),
+		},
 	}
 	keys, _, err := client.Users.ListSSHKeys(sshKeyListOptions)
 	if err != nil {

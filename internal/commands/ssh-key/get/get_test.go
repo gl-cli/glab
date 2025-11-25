@@ -40,7 +40,7 @@ func Test_GetSSHKey(t *testing.T) {
 			ExpectedMsg: []string{"ssh-ed25519 example"},
 			cli:         "123",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().GetSSHKey(123).Return(testKey, nil, nil)
+				tc.MockUsers.EXPECT().GetSSHKey(int64(123)).Return(testKey, nil, nil)
 			},
 		},
 		{

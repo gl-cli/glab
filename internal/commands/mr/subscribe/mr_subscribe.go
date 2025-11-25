@@ -13,7 +13,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
-var subscribeToMR = func(client *gitlab.Client, projectID any, mrID int, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
+var subscribeToMR = func(client *gitlab.Client, projectID any, mrID int64, opts gitlab.RequestOptionFunc) (*gitlab.MergeRequest, error) {
 	mr, _, err := client.MergeRequests.SubscribeToMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return nil, err

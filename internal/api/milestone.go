@@ -16,7 +16,7 @@ const (
 )
 
 type Milestone struct {
-	ID    int
+	ID    int64
 	Title string
 }
 
@@ -35,13 +35,13 @@ func NewGroupMilestone(m *gitlab.GroupMilestone) *Milestone {
 }
 
 type ListMilestonesOptions struct {
-	IIDs                    []int
+	IIDs                    []int64
 	State                   *string
 	Title                   *string
 	Search                  *string
 	IncludeParentMilestones *bool
-	PerPage                 int
-	Page                    int
+	PerPage                 int64
+	Page                    int64
 }
 
 func (opts *ListMilestonesOptions) ListProjectMilestonesOptions() *gitlab.ListMilestonesOptions {

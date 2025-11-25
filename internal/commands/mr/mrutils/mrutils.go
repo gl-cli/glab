@@ -204,9 +204,9 @@ func MRFromArgsWithOpts(
 		if err != nil {
 			return nil, nil, err
 		}
-		mrID = basicMR.IID
+		mrID = int(basicMR.IID)
 	}
-	mr, err = api.GetMR(client, baseRepo.FullName(), mrID, opts)
+	mr, err = api.GetMR(client, baseRepo.FullName(), int64(mrID), opts)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get merge request %d: %w", mrID, err)
 	}

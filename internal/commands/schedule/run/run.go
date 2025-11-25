@@ -15,7 +15,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
-var runSchedule = func(client *gitlab.Client, repo string, schedule int, opts ...gitlab.RequestOptionFunc) error {
+var runSchedule = func(client *gitlab.Client, repo string, schedule int64, opts ...gitlab.RequestOptionFunc) error {
 	_, err := client.PipelineSchedules.RunPipelineSchedule(repo, schedule, opts...)
 	if err != nil {
 		return fmt.Errorf("running scheduled pipeline status: %w", err)
@@ -25,7 +25,7 @@ var runSchedule = func(client *gitlab.Client, repo string, schedule int, opts ..
 }
 
 type options struct {
-	scheduleID int
+	scheduleID int64
 
 	io           *iostreams.IOStreams
 	gitlabClient func() (*gitlab.Client, error)
@@ -67,7 +67,7 @@ func (o *options) complete(args []string) error {
 	if err != nil {
 		return err
 	}
-	o.scheduleID = int(id)
+	o.scheduleID = int64(id)
 
 	return nil
 }

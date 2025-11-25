@@ -385,7 +385,7 @@ func fillPlaceholders(value string, opts *options) (string, error) {
 			h, _ := opts.apiClient(baseRepo.RepoHost())
 			project, e := baseRepo.Project(h.Lab())
 			if e == nil && project != nil {
-				return strconv.Itoa(project.ID)
+				return strconv.FormatInt(project.ID, 10)
 			}
 			err = e
 			return ""

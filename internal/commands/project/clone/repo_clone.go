@@ -202,10 +202,10 @@ func groupClone(opts *options, ctxOpts *ContextOpts) error {
 		listOpts.PerPage = 30
 	}
 	if opts.perPage != 0 {
-		listOpts.PerPage = opts.perPage
+		listOpts.PerPage = int64(opts.perPage)
 	}
 	if opts.page != 0 {
-		listOpts.Page = opts.page
+		listOpts.Page = int64(opts.page)
 	}
 
 	var projects []*gitlab.Project

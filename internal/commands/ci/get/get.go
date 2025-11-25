@@ -86,16 +86,16 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 					if mr.HeadPipeline == nil {
 						return fmt.Errorf("no pipeline found. It might not exist yet. If this problem continues, check your pipeline configuration.")
 					} else {
-						pipelineId = mr.HeadPipeline.ID
+						pipelineId = int(mr.HeadPipeline.ID)
 					}
 
 				} else {
-					pipelineId = commit.LastPipeline.ID
+					pipelineId = int(commit.LastPipeline.ID)
 				}
 				msgNotFound = fmt.Sprintf("No pipelines running or available on branch: %s", branch)
 			}
 
-			pipeline, _, err := client.Pipelines.GetPipeline(repo.FullName(), pipelineId)
+			pipeline, _, err := client.Pipelines.GetPipeline(repo.FullName(), int64(pipelineId))
 			if err != nil {
 				redCheck := c.Red("✘")
 				fmt.Fprintf(f.IO().StdOut, "%s %s\n", redCheck, msgNotFound)
@@ -103,7 +103,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 			}
 
 			jobs, err := gitlab.ScanAndCollect(func(p gitlab.PaginationOptionFunc) ([]*gitlab.Job, *gitlab.Response, error) {
-				return client.Jobs.ListPipelineJobs(repo.FullName(), pipelineId, &gitlab.ListJobsOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}, p)
+				return client.Jobs.ListPipelineJobs(repo.FullName(), int64(pipelineId), &gitlab.ListJobsOptions{ListOptions: gitlab.ListOptions{PerPage: 100}}, p)
 			})
 			if err != nil {
 				return err
@@ -113,7 +113,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 
 			var variables []*gitlab.PipelineVariable
 			if showVariables {
-				variables, _, err = client.Pipelines.GetPipelineVariables(pipeline.ProjectID, pipelineId)
+				variables, _, err = client.Pipelines.GetPipelineVariables(pipeline.ProjectID, int64(pipelineId))
 				if err != nil {
 					return err
 				}
@@ -170,7 +170,7 @@ func printTable(p PipelineMergedResponse, dest io.Writer, showJobDetails bool) {
 func printPipelineTable(p PipelineMergedResponse, dest io.Writer) {
 	fmt.Fprint(dest, "# Pipeline:\n")
 	pipelineTable := tableprinter.NewTablePrinter()
-	pipelineTable.AddRow("id:", strconv.Itoa(p.ID))
+	pipelineTable.AddRow("id:", strconv.FormatInt(p.ID, 10))
 	pipelineTable.AddRow("status:", p.Status)
 	pipelineTable.AddRow("source:", p.Source)
 	pipelineTable.AddRow("ref:", p.Ref)

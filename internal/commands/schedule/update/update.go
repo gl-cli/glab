@@ -77,7 +77,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				return err
 			}
 
-			scheduleId := int(id)
+			scheduleId := int64(id)
 
 			opts := &gitlab.EditPipelineScheduleOptions{}
 

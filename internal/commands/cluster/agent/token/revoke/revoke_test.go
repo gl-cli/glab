@@ -55,7 +55,7 @@ func TestRevoke_Success(t *testing.T) {
 
 	// setup mock expectations
 	tc.MockClusterAgents.EXPECT().
-		RevokeAgentToken("OWNER/REPO", 1, 2, gomock.Any()).
+		RevokeAgentToken("OWNER/REPO", int64(1), int64(2), gomock.Any()).
 		Return(nil, nil)
 
 	// WHEN
@@ -80,7 +80,7 @@ func TestRevoke_Error(t *testing.T) {
 
 	// setup mock expectations
 	tc.MockClusterAgents.EXPECT().
-		RevokeAgentToken("OWNER/REPO", 1, 2, gomock.Any()).
+		RevokeAgentToken("OWNER/REPO", int64(1), int64(2), gomock.Any()).
 		Return(nil, errors.New("dummy error"))
 
 	// WHEN

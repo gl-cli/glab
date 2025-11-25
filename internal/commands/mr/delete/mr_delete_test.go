@@ -38,14 +38,14 @@ func Test_deleteMergeRequest(t *testing.T) {
 	)
 	oldDeleteMR := api.DeleteMR
 
-	api.DeleteMR = func(client *gitlab.Client, projectID any, mrID int) error {
+	api.DeleteMR = func(client *gitlab.Client, projectID any, mrID int64) error {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" || mrID == 0 {
 			return fmt.Errorf("error expected")
 		}
 		return nil
 	}
 
-	api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+	api.GetMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 		if projectID == "" || projectID == "WRONG_REPO" || projectID == "expected_err" {
 			return nil, fmt.Errorf("error expected")
 		}

@@ -19,7 +19,7 @@ type options struct {
 	io           *iostreams.IOStreams
 	baseRepo     func() (glrepo.Interface, error)
 
-	keyID int
+	keyID int64
 }
 
 func NewCmdGet(f cmdutils.Factory) *cobra.Command {
@@ -52,7 +52,7 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 
 func (o *options) complete(args []string) {
 	if len(args) == 1 {
-		o.keyID = utils.StringToInt(args[0])
+		o.keyID = int64(utils.StringToInt(args[0]))
 	}
 }
 

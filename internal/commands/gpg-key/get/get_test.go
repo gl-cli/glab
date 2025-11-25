@@ -38,7 +38,7 @@ func Test_GetGPGKey(t *testing.T) {
 			ExpectedMsg: []string{"Showing GPG key with ID 123"},
 			cli:         "123",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().GetGPGKey(123).Return(testKey, nil, nil)
+				tc.MockUsers.EXPECT().GetGPGKey(int64(123)).Return(testKey, nil, nil)
 			},
 		},
 		{
@@ -47,7 +47,7 @@ func Test_GetGPGKey(t *testing.T) {
 			wantErr:    true,
 			wantStderr: "404",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().GetGPGKey(0).Return(nil, nil, errors.New("404 Not Found"))
+				tc.MockUsers.EXPECT().GetGPGKey(int64(0)).Return(nil, nil, errors.New("404 Not Found"))
 			},
 		},
 		{
@@ -56,7 +56,7 @@ func Test_GetGPGKey(t *testing.T) {
 			wantErr:    true,
 			wantStderr: "404 Not Found",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().GetGPGKey(123).Return(nil, nil, errors.New("404 Not Found"))
+				tc.MockUsers.EXPECT().GetGPGKey(int64(123)).Return(nil, nil, errors.New("404 Not Found"))
 			},
 		},
 		{

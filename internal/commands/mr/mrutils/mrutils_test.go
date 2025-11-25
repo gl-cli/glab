@@ -511,7 +511,7 @@ func Test_getMRForBranchPrompt(t *testing.T) {
 	got, err := GetMRForBranch(ios, &gitlab.Client{}, MrOptions{baseRepo, "foo", "opened", true})
 	assert.NoError(t, err)
 
-	assert.Equal(t, 1, got.IID)
+	assert.Equal(t, int64(1), got.IID)
 	assert.Equal(t, "profclems", got.Author.Username)
 }
 
@@ -527,7 +527,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Run("via-ID", func(t *testing.T) {
-			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				return &gitlab.MergeRequest{
 					BasicMergeRequest: gitlab.BasicMergeRequest{
 						IID:          2,
@@ -547,7 +547,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 
 			assert.Equal(t, expectedRepo.FullName(), gotRepo.FullName())
 
-			assert.Equal(t, 2, gotMR.IID)
+			assert.Equal(t, int64(2), gotMR.IID)
 			assert.Equal(t, "test mr", gotMR.Title)
 			assert.Equal(t, "main", gotMR.SourceBranch)
 		})
@@ -560,7 +560,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 				}, nil
 			}
 
-			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				return &gitlab.MergeRequest{
 					BasicMergeRequest: gitlab.BasicMergeRequest{
 						IID:          2,
@@ -580,14 +580,14 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 
 			assert.Equal(t, expectedRepo.FullName(), gotRepo.FullName())
 
-			assert.Equal(t, 2, gotMR.IID)
+			assert.Equal(t, int64(2), gotMR.IID)
 			assert.Equal(t, "test mr", gotMR.Title)
 			assert.Equal(t, "main", gotMR.SourceBranch)
 		})
 		t.Run("via-URL", func(t *testing.T) {
-			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				// Verify the correct MR ID from the URL is being used
-				assert.Equal(t, 1234, mrID)
+				assert.Equal(t, int64(1234), mrID)
 				return &gitlab.MergeRequest{
 					BasicMergeRequest: gitlab.BasicMergeRequest{
 						IID:          1234,
@@ -603,14 +603,14 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			// The repository should be extracted from the URL
 			assert.Equal(t, "gitlab-org/cli", gotRepo.FullName())
 
-			assert.Equal(t, 1234, gotMR.IID)
+			assert.Equal(t, int64(1234), gotMR.IID)
 			assert.Equal(t, "test mr from URL", gotMR.Title)
 			assert.Equal(t, "feature-branch", gotMR.SourceBranch)
 		})
 		t.Run("via-URL-self-managed", func(t *testing.T) {
-			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				// Verify the correct MR ID from the URL is being used
-				assert.Equal(t, 42, mrID)
+				assert.Equal(t, int64(42), mrID)
 				return &gitlab.MergeRequest{
 					BasicMergeRequest: gitlab.BasicMergeRequest{
 						IID:          42,
@@ -633,14 +633,14 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.Equal(t, "kde/krita", gotRepo.FullName())
 			assert.Equal(t, "invent.kde.org", gotRepo.RepoHost())
 
-			assert.Equal(t, 42, gotMR.IID)
+			assert.Equal(t, int64(42), gotMR.IID)
 			assert.Equal(t, "test mr from self-managed", gotMR.Title)
 			assert.Equal(t, "feature-branch", gotMR.SourceBranch)
 		})
 		t.Run("via-URL-cross-instance", func(t *testing.T) {
-			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				// Verify the correct MR ID from the URL is being used
-				assert.Equal(t, 42, mrID)
+				assert.Equal(t, int64(42), mrID)
 				return &gitlab.MergeRequest{
 					BasicMergeRequest: gitlab.BasicMergeRequest{
 						IID:          42,
@@ -664,12 +664,12 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.Equal(t, "kde/krita", gotRepo.FullName())
 			assert.Equal(t, "invent.kde.org", gotRepo.RepoHost())
 
-			assert.Equal(t, 42, gotMR.IID)
+			assert.Equal(t, int64(42), gotMR.IID)
 			assert.Equal(t, "test mr from cross instance", gotMR.Title)
 			assert.Equal(t, "feature-branch", gotMR.SourceBranch)
 		})
 		t.Run("via-URL-cross-instance-api-client", func(t *testing.T) {
-			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				return &gitlab.MergeRequest{
 					BasicMergeRequest: gitlab.BasicMergeRequest{
 						IID:          42,
@@ -701,7 +701,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.Equal(t, "custom.gitlab.com", capturedHostname)
 			assert.Equal(t, "user/repo", gotRepo.FullName())
 			assert.Equal(t, "custom.gitlab.com", gotRepo.RepoHost())
-			assert.Equal(t, 42, gotMR.IID)
+			assert.Equal(t, int64(42), gotMR.IID)
 		})
 	})
 
@@ -757,7 +757,7 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.EqualError(t, err, `no merge requests from branch "foo"`)
 		})
 		t.Run("api.GetMR", func(t *testing.T) {
-			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				return nil, errors.New("API call failed")
 			}
 
@@ -767,9 +767,9 @@ func Test_MRFromArgsWithOpts(t *testing.T) {
 			assert.EqualError(t, err, "failed to get merge request 2: API call failed")
 		})
 		t.Run("URL-with-API-failure", func(t *testing.T) {
-			api.GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+			api.GetMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 				// This should be called with the ID from the URL (1234)
-				assert.Equal(t, 1234, mrID)
+				assert.Equal(t, int64(1234), mrID)
 				return nil, errors.New("API call failed for URL MR")
 			}
 

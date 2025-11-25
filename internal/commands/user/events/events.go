@@ -38,10 +38,10 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 			l := &gitlab.ListContributionEventsOptions{}
 
 			if p, _ := cmd.Flags().GetInt("page"); p != 0 {
-				l.Page = p
+				l.Page = int64(p)
 			}
 			if p, _ := cmd.Flags().GetInt("per-page"); p != 0 {
-				l.PerPage = p
+				l.PerPage = int64(p)
 			}
 
 			if l.PerPage == 0 {
@@ -72,7 +72,7 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 			}
 
 			if lb, _ := cmd.Flags().GetBool("all"); lb {
-				projects := make(map[int]*gitlab.Project)
+				projects := make(map[int64]*gitlab.Project)
 				for _, e := range events {
 					project, err := api.GetProject(client, e.ProjectID)
 					if err != nil {
@@ -82,7 +82,7 @@ func NewCmdEvents(f cmdutils.Factory) *cobra.Command {
 				}
 
 				title := utils.NewListTitle("user event")
-				title.Page = l.Page
+				title.Page = int(l.Page)
 				title.CurrentPageTotal = len(events)
 				title.RepoName = "all projects"
 
@@ -123,7 +123,7 @@ func DisplayProjectEvents(w io.Writer, events []*gitlab.ContributionEvent, proje
 	}
 }
 
-func DisplayAllEvents(w io.Writer, events []*gitlab.ContributionEvent, projects map[int]*gitlab.Project) {
+func DisplayAllEvents(w io.Writer, events []*gitlab.ContributionEvent, projects map[int64]*gitlab.Project) {
 	for _, e := range events {
 		printEvent(w, e, projects[e.ProjectID])
 	}

@@ -36,7 +36,7 @@ type issueBoardViewOptions struct {
 
 type boardMeta struct {
 	name    string
-	id      int
+	id      int64
 	group   *gitlab.Group
 	project *gitlab.Project
 }
@@ -390,13 +390,13 @@ func getBoardLists(apiClient *gitlab.Client, board boardMeta, repo glrepo.Interf
 			Color:     "#8ec07c",
 			TextColor: "#000000",
 		},
-		Position: len(boardLists),
+		Position: int64(len(boardLists)),
 	}
 	boardLists = append(boardLists, closed)
 	return boardLists, nil
 }
 
-func getGroupBoardIssues(apiClient *gitlab.Client, groupID int, opts *issueBoardViewOptions) ([]*gitlab.Issue, error) {
+func getGroupBoardIssues(apiClient *gitlab.Client, groupID int64, opts *issueBoardViewOptions) ([]*gitlab.Issue, error) {
 	reqOpts := opts.getListGroupIssueOptions()
 	if reqOpts.PerPage == 0 {
 		reqOpts.PerPage = api.DefaultListLimit

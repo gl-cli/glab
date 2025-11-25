@@ -79,7 +79,7 @@ func (c *MockAPIConfigureAgentCall) DoAndReturn(f func(*gitlab.Agent, string) er
 }
 
 // ConfigureEnvironment mocks base method.
-func (m *MockAPI) ConfigureEnvironment(agentID int, name, kubernetesNamespace, fluxResourcePath string) error {
+func (m *MockAPI) ConfigureEnvironment(agentID int64, name, kubernetesNamespace, fluxResourcePath string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigureEnvironment", agentID, name, kubernetesNamespace, fluxResourcePath)
 	ret0, _ := ret[0].(error)
@@ -105,19 +105,19 @@ func (c *MockAPIConfigureEnvironmentCall) Return(arg0 error) *MockAPIConfigureEn
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockAPIConfigureEnvironmentCall) Do(f func(int, string, string, string) error) *MockAPIConfigureEnvironmentCall {
+func (c *MockAPIConfigureEnvironmentCall) Do(f func(int64, string, string, string) error) *MockAPIConfigureEnvironmentCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockAPIConfigureEnvironmentCall) DoAndReturn(f func(int, string, string, string) error) *MockAPIConfigureEnvironmentCall {
+func (c *MockAPIConfigureEnvironmentCall) DoAndReturn(f func(int64, string, string, string) error) *MockAPIConfigureEnvironmentCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
 
 // CreateAgentToken mocks base method.
-func (m *MockAPI) CreateAgentToken(agentID int) (*gitlab.AgentToken, error) {
+func (m *MockAPI) CreateAgentToken(agentID int64) (*gitlab.AgentToken, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateAgentToken", agentID)
 	ret0, _ := ret[0].(*gitlab.AgentToken)
@@ -144,13 +144,13 @@ func (c *MockAPICreateAgentTokenCall) Return(arg0 *gitlab.AgentToken, arg1 error
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockAPICreateAgentTokenCall) Do(f func(int) (*gitlab.AgentToken, error)) *MockAPICreateAgentTokenCall {
+func (c *MockAPICreateAgentTokenCall) Do(f func(int64) (*gitlab.AgentToken, error)) *MockAPICreateAgentTokenCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockAPICreateAgentTokenCall) DoAndReturn(f func(int) (*gitlab.AgentToken, error)) *MockAPICreateAgentTokenCall {
+func (c *MockAPICreateAgentTokenCall) DoAndReturn(f func(int64) (*gitlab.AgentToken, error)) *MockAPICreateAgentTokenCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
@@ -514,7 +514,7 @@ func (m *MockKubectlWrapper) EXPECT() *MockKubectlWrapperMockRecorder {
 }
 
 // createAgentTokenSecret mocks base method.
-func (m *MockKubectlWrapper) createAgentTokenSecret(tokenID int, token string) error {
+func (m *MockKubectlWrapper) createAgentTokenSecret(tokenID int64, token string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "createAgentTokenSecret", tokenID, token)
 	ret0, _ := ret[0].(error)
@@ -540,13 +540,13 @@ func (c *MockKubectlWrappercreateAgentTokenSecretCall) Return(arg0 error) *MockK
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockKubectlWrappercreateAgentTokenSecretCall) Do(f func(int, string) error) *MockKubectlWrappercreateAgentTokenSecretCall {
+func (c *MockKubectlWrappercreateAgentTokenSecretCall) Do(f func(int64, string) error) *MockKubectlWrappercreateAgentTokenSecretCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockKubectlWrappercreateAgentTokenSecretCall) DoAndReturn(f func(int, string) error) *MockKubectlWrappercreateAgentTokenSecretCall {
+func (c *MockKubectlWrappercreateAgentTokenSecretCall) DoAndReturn(f func(int64, string) error) *MockKubectlWrappercreateAgentTokenSecretCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }

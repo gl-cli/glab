@@ -49,9 +49,9 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 
 			l := &gitlab.ListPipelineSchedulesOptions{}
 			page, _ := cmd.Flags().GetInt("page")
-			l.Page = page
+			l.Page = int64(page)
 			perPage, _ := cmd.Flags().GetInt("per-page")
-			l.PerPage = perPage
+			l.PerPage = int64(perPage)
 
 			schedules, err := getSchedules(client, l, repo.FullName())
 			if err != nil {
@@ -60,7 +60,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 
 			title := utils.NewListTitle("schedule")
 			title.RepoName = repo.FullName()
-			title.Page = l.Page
+			title.Page = int(l.Page)
 			title.CurrentPageTotal = len(schedules)
 
 			fmt.Fprintf(f.IO().StdOut, "%s\n%s\n", title.Describe(), ciutils.DisplaySchedules(f.IO(), schedules, repo.FullName()))

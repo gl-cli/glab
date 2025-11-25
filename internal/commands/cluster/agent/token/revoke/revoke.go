@@ -77,8 +77,8 @@ func (o *options) run(ctx context.Context) error {
 
 	_, err = client.ClusterAgents.RevokeAgentToken(
 		baseRepo.FullName(),
-		int(o.agentID),
-		int(o.tokenID),
+		o.agentID,
+		o.tokenID,
 		gitlab.WithContext(ctx),
 	)
 	if err != nil {

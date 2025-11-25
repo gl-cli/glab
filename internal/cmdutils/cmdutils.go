@@ -209,9 +209,9 @@ func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glre
 	return nil
 }
 
-func MilestonesPrompt(response *int, apiClient *gitlab.Client, repoRemote *glrepo.Remote, ios *iostreams.IOStreams) error {
+func MilestonesPrompt(response *int64, apiClient *gitlab.Client, repoRemote *glrepo.Remote, ios *iostreams.IOStreams) error {
 	var milestoneOptions []string
-	milestoneMap := map[string]int{}
+	milestoneMap := map[string]int64{}
 
 	lOpts := &api.ListMilestonesOptions{
 		IncludeParentMilestones: gitlab.Ptr(true),
@@ -383,17 +383,17 @@ func PickMetadata() ([]Action, error) {
 }
 
 // IDsFromUsers collects all user IDs from a slice of users
-func IDsFromUsers(users []*gitlab.User) *[]int {
-	ids := make([]int, len(users))
+func IDsFromUsers(users []*gitlab.User) *[]int64 {
+	ids := make([]int64, len(users))
 	for i, user := range users {
 		ids[i] = user.ID
 	}
 	return &ids
 }
 
-func ParseMilestone(apiClient *gitlab.Client, repo glrepo.Interface, milestoneTitle string) (int, error) {
+func ParseMilestone(apiClient *gitlab.Client, repo glrepo.Interface, milestoneTitle string) (int64, error) {
 	if milestoneID, err := strconv.Atoi(milestoneTitle); err == nil {
-		return milestoneID, nil
+		return int64(milestoneID), nil
 	}
 
 	milestone, err := projectMilestoneByTitle(apiClient, repo.FullName(), milestoneTitle)
@@ -464,10 +464,10 @@ func (ua *UserAssignments) VerifyAssignees() error {
 // UsersFromReplaces converts all users from the `ToReplace` member of the struct into
 // an Slice of String representing the Users' IDs, it also takes a Slice of Strings and
 // writes a proper action message to it
-func (ua *UserAssignments) UsersFromReplaces(apiClient *gitlab.Client, actions []string) (*[]int, []string, error) {
+func (ua *UserAssignments) UsersFromReplaces(apiClient *gitlab.Client, actions []string) (*[]int64, []string, error) {
 	users, err := api.UsersByNames(apiClient, ua.ToReplace)
 	if err != nil {
-		return &[]int{}, actions, err
+		return &[]int64{}, actions, err
 	}
 	var usernames []string
 	for i := range users {
@@ -494,13 +494,13 @@ func (ua *UserAssignments) UsersFromAddRemove(
 	mergeRequestAssignees []*gitlab.BasicUser,
 	apiClient *gitlab.Client,
 	actions []string,
-) (*[]int, []string, error) {
-	var assignedIDs []int
+) (*[]int64, []string, error) {
+	var assignedIDs []int64
 	var usernames []string
 
 	// Only one of those is required
 	if mergeRequestAssignees != nil && issueAssignees != nil {
-		return &[]int{}, actions, fmt.Errorf("issueAssignees and mergeRequestAssignees can't both be set.")
+		return &[]int64{}, actions, fmt.Errorf("issueAssignees and mergeRequestAssignees can't both be set.")
 	}
 
 	// Path for Issues
@@ -540,7 +540,7 @@ func (ua *UserAssignments) UsersFromAddRemove(
 		// which causes a 500 Internal Error if duplicate `IDs` are used. Filter out any
 		// IDs that is already present
 		for i := range users {
-			if !utils.PresentInIntSlice(assignedIDs, users[i].ID) {
+			if !utils.PresentInInt64Slice(assignedIDs, users[i].ID) {
 				assignedIDs = append(assignedIDs, users[i].ID)
 			}
 		}
@@ -561,7 +561,7 @@ func (ua *UserAssignments) UsersFromAddRemove(
 	// That means that all assignees were removed but we can't pass an empty Slice of Ints so
 	// pass the documented value of 0
 	if len(assignedIDs) == 0 {
-		assignedIDs = []int{0}
+		assignedIDs = []int64{0}
 	}
 	return &assignedIDs, actions, nil
 }

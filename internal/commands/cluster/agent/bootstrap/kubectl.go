@@ -23,7 +23,7 @@ type localKubectlWrapper struct {
 	gitlabAgentTokenSecretName string
 }
 
-func (k *localKubectlWrapper) createAgentTokenSecret(tokenID int, token string) error {
+func (k *localKubectlWrapper) createAgentTokenSecret(tokenID int64, token string) error {
 	namespaceFlag := fmt.Sprintf("-n=%s", k.gitlabAgentNamespace)
 
 	output, err := k.cmd.RunWithOutput(k.binary, "create", "namespace", k.gitlabAgentNamespace)

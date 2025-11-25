@@ -135,8 +135,8 @@ func (o *options) run() error {
 func listAllProjects(apiClient *gitlab.Client, opts options) ([]*gitlab.Project, *gitlab.Response, error) {
 	l := &gitlab.ListProjectsOptions{
 		ListOptions: gitlab.ListOptions{
-			PerPage: opts.perPage,
-			Page:    opts.page,
+			PerPage: int64(opts.perPage),
+			Page:    int64(opts.page),
 		},
 		OrderBy: gitlab.Ptr(opts.orderBy),
 	}
@@ -183,8 +183,8 @@ func listAllProjectsForGroup(apiClient *gitlab.Client, opts options) ([]*gitlab.
 
 	l := &gitlab.ListGroupProjectsOptions{
 		ListOptions: gitlab.ListOptions{
-			PerPage: opts.perPage,
-			Page:    opts.page,
+			PerPage: int64(opts.perPage),
+			Page:    int64(opts.page),
 		},
 		OrderBy: gitlab.Ptr(opts.orderBy),
 	}
@@ -224,8 +224,8 @@ func listAllProjectsForUser(apiClient *gitlab.Client, opts options) ([]*gitlab.P
 	l := &gitlab.ListProjectsOptions{
 		OrderBy: gitlab.Ptr(opts.orderBy),
 		ListOptions: gitlab.ListOptions{
-			PerPage: opts.perPage,
-			Page:    opts.page,
+			PerPage: int64(opts.perPage),
+			Page:    int64(opts.page),
 		},
 	}
 

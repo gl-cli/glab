@@ -21,7 +21,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
-var listIssueNotes = func(client *gitlab.Client, projectID any, issueID int, opts *gitlab.ListIssueNotesOptions) ([]*gitlab.Note, error) {
+var listIssueNotes = func(client *gitlab.Client, projectID any, issueID int64, opts *gitlab.ListIssueNotesOptions) ([]*gitlab.Note, error) {
 	if opts.PerPage == 0 {
 		opts.PerPage = api.DefaultListLimit
 	}
@@ -138,10 +138,10 @@ func (o *options) run(issueType issuable.IssueType, args []string) error {
 			Sort: gitlab.Ptr("asc"),
 		}
 		if o.commentPageNumber != 0 {
-			l.Page = o.commentPageNumber
+			l.Page = int64(o.commentPageNumber)
 		}
 		if o.commentLimit != 0 {
-			l.PerPage = o.commentLimit
+			l.PerPage = int64(o.commentLimit)
 		}
 		o.notes, err = listIssueNotes(client, baseRepo.FullName(), o.issue.IID, l)
 		if err != nil {

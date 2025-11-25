@@ -243,11 +243,11 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 				} else {
 					// Unassign the Milestone
 					actions = append(actions, "unassigned milestone")
-					l.MilestoneID = gitlab.Ptr(0)
+					l.MilestoneID = gitlab.Ptr(int64(0))
 				}
 			}
 			if cmd.Flags().Changed("unassign") {
-				l.AssigneeIDs = &[]int{0} // 0 or an empty int[] is the documented way to unassign
+				l.AssigneeIDs = &[]int64{0} // 0 or an empty int[] is the documented way to unassign
 				actions = append(actions, "unassigned all users")
 			}
 			if ua != nil {

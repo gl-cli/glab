@@ -22,7 +22,7 @@ type options struct {
 	apiClient func(repoHost string) (*api.Client, error)
 	io        *iostreams.IOStreams
 
-	keyID   int
+	keyID   int64
 	perPage int
 	page    int
 }
@@ -74,7 +74,7 @@ func (o *options) complete(args []string) error {
 	}
 
 	if len(args) == 1 {
-		o.keyID = utils.StringToInt(args[0])
+		o.keyID = int64(utils.StringToInt(args[0]))
 	}
 
 	return nil
@@ -102,14 +102,16 @@ func (o *options) run() error {
 	return nil
 }
 
-func keySelectPrompt(opts *options) (int, error) {
+func keySelectPrompt(opts *options) (int64, error) {
 	if !opts.io.PromptEnabled() {
 		return 0, cmdutils.FlagError{Err: errors.New("the <key-id> argument is required when prompts are disabled.")}
 	}
 
 	sshKeyListOptions := &gitlab.ListSSHKeysOptions{
-		PerPage: opts.perPage,
-		Page:    opts.page,
+		ListOptions: gitlab.ListOptions{
+			PerPage: int64(opts.perPage),
+			Page:    int64(opts.page),
+		},
 	}
 
 	c, err := opts.apiClient("")
@@ -126,7 +128,7 @@ func keySelectPrompt(opts *options) (int, error) {
 		return 0, cmdutils.WrapError(errors.New("no keys found"), "Retrieving list of SSH keys.")
 	}
 
-	keyOpts := map[string]int{}
+	keyOpts := map[string]int64{}
 	surveyOpts := make([]string, 0, len(keys))
 	for _, key := range keys {
 		keyOpts[key.Title] = key.ID

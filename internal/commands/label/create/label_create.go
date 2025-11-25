@@ -52,7 +52,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			}
 			if cmd.Flags().Changed("priority") {
 				if s, err := cmd.Flags().GetInt("priority"); err == nil {
-					l.Priority = gitlab.Ptr(s)
+					l.Priority = gitlab.Ptr(int64(s))
 				} else {
 					return err
 				}
