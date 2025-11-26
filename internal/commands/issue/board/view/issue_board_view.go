@@ -1,13 +1,14 @@
 package view
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"runtime/debug"
 	"slices"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
@@ -19,6 +20,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/api"
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
+	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
@@ -90,7 +92,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 
 			// prompt user to select issue board
 			menuOptions, boardMetaMap := mapBoardData(projectIssueBoards, projectGroupIssueBoards)
-			selection, err := selectBoard(menuOptions)
+			selection, err := selectBoard(cmd.Context(), f.IO(), menuOptions)
 			if err != nil {
 				return fmt.Errorf("selecting issue board: %w", err)
 			}
@@ -256,13 +258,19 @@ func buildLabelString(labelDetails []*gitlab.LabelDetails) string {
 	return labels
 }
 
-func selectBoard(menuOptions []string) (string, error) {
-	var selectedOption string
-	prompt := &survey.Select{
-		Message: "Select board:",
-		Options: menuOptions,
+func selectBoard(ctx context.Context, io *iostreams.IOStreams, menuOptions []string) (string, error) {
+	options := make([]huh.Option[string], 0, len(menuOptions))
+	for _, opt := range menuOptions {
+		options = append(options, huh.NewOption(opt, opt))
 	}
-	err := survey.AskOne(prompt, &selectedOption)
+
+	var selectedOption string
+	selector := huh.NewSelect[string]().
+		Title("Select board:").
+		Options(options...).
+		Value(&selectedOption)
+
+	err := io.Run(ctx, selector)
 	if err != nil {
 		return "", err
 	}

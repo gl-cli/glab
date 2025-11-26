@@ -1,11 +1,12 @@
 package delete
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -14,7 +15,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
@@ -51,7 +51,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 			mcpannotations.Destructive: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.complete(args); err != nil {
+			if err := opts.complete(cmd.Context(), args); err != nil {
 				return err
 			}
 			return opts.run()
@@ -64,9 +64,9 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 	return cmd
 }
 
-func (o *options) complete(args []string) error {
+func (o *options) complete(ctx context.Context, args []string) error {
 	if len(args) == 0 {
-		keyID, err := keySelectPrompt(o)
+		keyID, err := keySelectPrompt(ctx, o)
 		if err != nil {
 			return err
 		}
@@ -102,7 +102,7 @@ func (o *options) run() error {
 	return nil
 }
 
-func keySelectPrompt(opts *options) (int64, error) {
+func keySelectPrompt(ctx context.Context, opts *options) (int64, error) {
 	if !opts.io.PromptEnabled() {
 		return 0, cmdutils.FlagError{Err: errors.New("the <key-id> argument is required when prompts are disabled.")}
 	}
@@ -128,29 +128,27 @@ func keySelectPrompt(opts *options) (int64, error) {
 		return 0, cmdutils.WrapError(errors.New("no keys found"), "Retrieving list of SSH keys.")
 	}
 
-	keyOpts := map[string]int64{}
-	surveyOpts := make([]string, 0, len(keys))
+	options := make([]huh.Option[int64], 0, len(keys))
 	for _, key := range keys {
-		keyOpts[key.Title] = key.ID
-		surveyOpts = append(surveyOpts, key.Title)
+		options = append(options, huh.NewOption(key.Title, key.ID))
 	}
 
-	keySelectQuestion := &survey.Select{
-		Message: fmt.Sprintf(
+	var selectedID int64
+	selector := huh.NewSelect[int64]().
+		Title(fmt.Sprintf(
 			"Select key to delete - Showing %d/%d keys - page %d/%d",
 			len(keys),
 			resp.TotalItems,
 			opts.page,
 			resp.TotalPages,
-		),
-		Options: surveyOpts,
-	}
+		)).
+		Options(options...).
+		Value(&selectedID)
 
-	var result string
-	err = prompt.AskOne(keySelectQuestion, &result)
+	err = opts.io.Run(ctx, selector)
 	if err != nil {
 		return 0, cmdutils.WrapError(err, "prompting for SSH key to delete.")
 	}
 
-	return keyOpts[result], nil
+	return selectedID, nil
 }

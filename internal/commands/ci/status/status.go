@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/gosuri/uilive"
 	"github.com/spf13/cobra"
 
@@ -135,16 +135,19 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 					}
 					runningPipeline = updatedPipeline
 				} else if f.IO().IsInputTTY() && f.IO().PromptEnabled() {
-					prompt := &survey.Select{
-						Message: "Choose an action:",
-						Options: []string{"View logs", "Retry", "Exit"},
-						Default: "Exit",
-					}
 					var answer string
-					_ = survey.AskOne(prompt, &answer)
+					selector := huh.NewSelect[string]().
+						Title("Choose an action:").
+						Options(
+							huh.NewOption("View logs", "View logs"),
+							huh.NewOption("Retry", "Retry"),
+							huh.NewOption("Exit", "Exit"),
+						).
+						Value(&answer)
+					_ = f.IO().Run(cmd.Context(), selector)
 					switch answer {
 					case "View logs":
-						return ciutils.TraceJob(&ciutils.JobInputs{
+						return ciutils.TraceJob(cmd.Context(), &ciutils.JobInputs{
 							Branch: branch,
 						}, &ciutils.JobOptions{
 							Repo:   repo,
