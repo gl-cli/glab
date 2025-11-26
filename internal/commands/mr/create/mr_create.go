@@ -37,7 +37,7 @@ type options struct {
 	Labels                []string `json:"labels,omitempty"`
 	Assignees             []string `json:"assignees,omitempty"`
 	Reviewers             []string `json:"reviewers,omitempty"`
-	Milestone             int      `json:"milestone,omitempty"`
+	Milestone             int64    `json:"milestone,omitempty"`
 	MilestoneFlag         string   `json:"milestone_flag,omitempty"`
 	MRCreateTargetProject string   `json:"mr_create_target_project,omitempty"`
 
@@ -777,8 +777,8 @@ func generateMRCompareURL(opts *options) (string, error) {
 	q.Add("merge_request[description]", description)
 	q.Add("merge_request[source_branch]", opts.SourceBranch)
 	q.Add("merge_request[target_branch]", opts.TargetBranch)
-	q.Add("merge_request[source_project_id]", strconv.Itoa(opts.SourceProject.ID))
-	q.Add("merge_request[target_project_id]", strconv.Itoa(opts.TargetProject.ID))
+	q.Add("merge_request[source_project_id]", strconv.FormatInt(opts.SourceProject.ID, 10))
+	q.Add("merge_request[target_project_id]", strconv.FormatInt(opts.TargetProject.ID, 10))
 	u.RawQuery = q.Encode()
 
 	return u.String(), nil

@@ -61,7 +61,7 @@ func extractFileVar(s string) (*gitlab.PipelineVariableOptions, error) {
 }
 
 type PipelineData struct {
-	ID     int    `json:"id"`
+	ID     int64  `json:"id"`
 	Status string `json:"status"`
 	Ref    string `json:"ref"`
 	WebURL string `json:"web_url"`

@@ -24,8 +24,8 @@ type API interface {
 	GetAgentByName(name string) (*gitlab.Agent, error)
 	RegisterAgent(name string) (*gitlab.Agent, error)
 	ConfigureAgent(agent *gitlab.Agent, branch string) error
-	ConfigureEnvironment(agentID int, name string, kubernetesNamespace string, fluxResourcePath string) error
-	CreateAgentToken(agentID int) (*gitlab.AgentToken, error)
+	ConfigureEnvironment(agentID int64, name string, kubernetesNamespace string, fluxResourcePath string) error
+	CreateAgentToken(agentID int64) (*gitlab.AgentToken, error)
 	SyncFile(f file, branch string) error
 	GetKASAddress() (string, error)
 }
@@ -37,7 +37,7 @@ type FluxWrapper interface {
 }
 
 type KubectlWrapper interface {
-	createAgentTokenSecret(tokenID int, token string) error
+	createAgentTokenSecret(tokenID int64, token string) error
 }
 
 type (

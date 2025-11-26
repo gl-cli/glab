@@ -74,7 +74,7 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 					)
 				}
 
-				issue, err := unsubscribe(client, repo.FullName(), issue.IID, nil)
+				issue, err := unsubscribe(client, repo.FullName(), int(issue.IID), nil)
 				if err != nil {
 					if errors.Is(err, errIssuableUserNotSubscribed) {
 						fmt.Fprintf(
@@ -99,7 +99,7 @@ func NewCmdUnsubscribe(f cmdutils.Factory, issueType issuable.IssueType) *cobra.
 }
 
 func unsubscribe(client *gitlab.Client, projectID any, issueID int, opts gitlab.RequestOptionFunc) (*gitlab.Issue, error) {
-	issue, resp, err := client.Issues.UnsubscribeFromIssue(projectID, issueID, opts)
+	issue, resp, err := client.Issues.UnsubscribeFromIssue(projectID, int64(issueID), opts)
 	if err != nil {
 		if resp != nil {
 			// If the user is not subscribed to the issue, the status code 304 is returned.

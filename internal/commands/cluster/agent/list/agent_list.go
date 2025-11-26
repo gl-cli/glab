@@ -59,8 +59,10 @@ func (o *options) run() error {
 	}
 
 	agents, _, err := client.ClusterAgents.ListAgents(repo.FullName(), &gitlab.ListAgentsOptions{
-		Page:    int(o.page),
-		PerPage: int(o.perPage),
+		ListOptions: gitlab.ListOptions{
+			Page:    int64(o.page),
+			PerPage: int64(o.perPage),
+		},
 	})
 	if err != nil {
 		return err

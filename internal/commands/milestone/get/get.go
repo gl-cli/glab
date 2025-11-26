@@ -22,7 +22,7 @@ type options struct {
 
 	projectID   string
 	groupID     string
-	milestoneID int
+	milestoneID int64
 }
 
 func NewCmdGet(f cmdutils.Factory) *cobra.Command {
@@ -50,12 +50,12 @@ func NewCmdGet(f cmdutils.Factory) *cobra.Command {
 			mcpannotations.Safe: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
 			if len(args) == 1 {
-				opts.milestoneID, err = strconv.Atoi(args[0])
+				milestoneIDInt, err := strconv.Atoi(args[0])
 				if err != nil {
 					return err
 				}
+				opts.milestoneID = int64(milestoneIDInt)
 			}
 
 			return opts.run()

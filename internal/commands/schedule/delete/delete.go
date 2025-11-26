@@ -16,7 +16,7 @@ import (
 )
 
 type options struct {
-	scheduleID int
+	scheduleID int64
 
 	io           *iostreams.IOStreams
 	gitlabClient func() (*gitlab.Client, error)
@@ -58,7 +58,7 @@ func (o *options) complete(args []string) error {
 	if err != nil {
 		return err
 	}
-	o.scheduleID = int(id)
+	o.scheduleID = int64(id)
 
 	return nil
 }

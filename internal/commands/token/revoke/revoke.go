@@ -19,14 +19,15 @@ import (
 )
 
 type options struct {
+	tokenID int64
+	name    string
+
 	apiClient func(repoHost string) (*api.Client, error)
 	io        *iostreams.IOStreams
 	baseRepo  func() (glrepo.Interface, error)
 
 	user         string
 	group        string
-	name         string
-	tokenID      int
 	outputFormat string
 }
 
@@ -90,7 +91,7 @@ func NewCmdRevoke(f cmdutils.Factory) *cobra.Command {
 }
 
 func (o *options) complete(cmd *cobra.Command, args []string) error {
-	if tokenID, err := strconv.Atoi(args[0]); err != nil {
+	if tokenID, err := strconv.ParseInt(args[0], 10, 64); err != nil {
 		o.name = args[0]
 	} else {
 		o.tokenID = tokenID

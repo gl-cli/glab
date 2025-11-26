@@ -13,7 +13,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 )
 
-var deleteIssue = func(client *gitlab.Client, projectID any, issueID int) error {
+var deleteIssue = func(client *gitlab.Client, projectID any, issueID int64) error {
 	_, err := client.Issues.DeleteIssue(projectID, issueID)
 	if err != nil {
 		return err

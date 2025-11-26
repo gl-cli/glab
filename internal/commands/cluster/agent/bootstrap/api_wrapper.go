@@ -48,8 +48,10 @@ func (a *apiWrapper) GetDefaultBranch() (string, error) {
 
 func (a *apiWrapper) GetAgentByName(name string) (*gitlab.Agent, error) {
 	opts := &gitlab.ListAgentsOptions{
-		Page:    1,
-		PerPage: 100,
+		ListOptions: gitlab.ListOptions{
+			Page:    1,
+			PerPage: 100,
+		},
 	}
 
 	for agent, err := range gitlab.Scan2(func(p gitlab.PaginationOptionFunc) ([]*gitlab.Agent, *gitlab.Response, error) {
@@ -168,7 +170,7 @@ func (a *apiWrapper) ConfigureAgent(agent *gitlab.Agent, branch string) error {
 	}
 }
 
-func (a *apiWrapper) ConfigureEnvironment(agentID int, name string, kubernetesNamespace string, fluxResourcePath string) error {
+func (a *apiWrapper) ConfigureEnvironment(agentID int64, name string, kubernetesNamespace string, fluxResourcePath string) error {
 	env, err := a.getEnvironmentByName(name)
 	if err != nil {
 		return err
@@ -193,8 +195,12 @@ func (a *apiWrapper) ConfigureEnvironment(agentID int, name string, kubernetesNa
 	}
 }
 
-func (a *apiWrapper) CreateAgentToken(agentID int) (*gitlab.AgentToken, error) {
-	tokens, _, err := a.client.ClusterAgents.ListAgentTokens(a.projectID, agentID, &gitlab.ListAgentTokensOptions{PerPage: agentTokenLimit})
+func (a *apiWrapper) CreateAgentToken(agentID int64) (*gitlab.AgentToken, error) {
+	tokens, _, err := a.client.ClusterAgents.ListAgentTokens(a.projectID, agentID, &gitlab.ListAgentTokensOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: agentTokenLimit,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}

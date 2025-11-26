@@ -94,8 +94,8 @@ func (o *options) run(cmd *cobra.Command) error {
 	if o.projectID != "" { // list project milestones
 		listMilestonesOptions := &gitlab.ListMilestonesOptions{
 			ListOptions: gitlab.ListOptions{
-				PerPage: o.perPage,
-				Page:    o.page,
+				PerPage: int64(o.perPage),
+				Page:    int64(o.page),
 			},
 		}
 
@@ -137,8 +137,8 @@ func (o *options) run(cmd *cobra.Command) error {
 	} else if o.groupID != "" { // list group milestones
 		listMilestonesOptions := &gitlab.ListGroupMilestonesOptions{
 			ListOptions: gitlab.ListOptions{
-				Page:    o.page,
-				PerPage: o.perPage,
+				Page:    int64(o.page),
+				PerPage: int64(o.perPage),
 			},
 		}
 

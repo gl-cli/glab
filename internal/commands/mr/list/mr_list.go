@@ -222,10 +222,10 @@ func (o *options) run() error {
 		o.listType = "search"
 	}
 	if o.page != 0 {
-		l.Page = o.page
+		l.Page = int64(o.page)
 	}
 	if o.perPage != 0 {
-		l.PerPage = o.perPage
+		l.PerPage = int64(o.perPage)
 	}
 	if o.draft {
 		l.WIP = gitlab.Ptr("yes")
@@ -260,7 +260,7 @@ func (o *options) run() error {
 				return err
 			}
 			for _, user := range users {
-				assigneeIds = append(assigneeIds, user.ID)
+				assigneeIds = append(assigneeIds, int(user.ID))
 			}
 		}
 	}
@@ -275,7 +275,7 @@ func (o *options) run() error {
 				return err
 			}
 			for _, user := range users {
-				reviewerIds = append(reviewerIds, user.ID)
+				reviewerIds = append(reviewerIds, int(user.ID))
 			}
 		}
 	}
@@ -298,7 +298,7 @@ func (o *options) run() error {
 		return err
 	}
 
-	title.Page = l.Page
+	title.Page = int(l.Page)
 	title.ListActionType = o.listType
 	title.CurrentPageTotal = len(mergeRequests)
 

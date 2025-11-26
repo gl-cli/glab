@@ -84,7 +84,7 @@ func RunTraceSha(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid
 	return runTrace(ctx, apiClient, w, pid, job.ID)
 }
 
-func runTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid any, jobId int) error {
+func runTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid any, jobId int64) error {
 	var once sync.Once
 	var offset int64
 
@@ -130,7 +130,7 @@ func runTrace(ctx context.Context, apiClient *gitlab.Client, w io.Writer, pid an
 	return nil
 }
 
-func GetJobId(inputs *JobInputs, opts *JobOptions) (int, error) {
+func GetJobId(inputs *JobInputs, opts *JobOptions) (int64, error) {
 	// If the user hasn't supplied an argument, we display the jobs list interactively.
 	if inputs.JobName == "" {
 		return getJobIdInteractive(inputs, opts)
@@ -138,7 +138,7 @@ func GetJobId(inputs *JobInputs, opts *JobOptions) (int, error) {
 
 	// If the user supplied a job ID, we can use it directly.
 	if jobID, err := strconv.Atoi(inputs.JobName); err == nil {
-		return jobID, nil
+		return int64(jobID), nil
 	}
 
 	// Otherwise, we try to find the latest job ID based on the job name.
@@ -184,9 +184,9 @@ func GetJobId(inputs *JobInputs, opts *JobOptions) (int, error) {
 	return 0, fmt.Errorf("pipeline %d contains no jobs with the name %s", pipelineId, inputs.JobName)
 }
 
-func getPipelineId(inputs *JobInputs, opts *JobOptions) (int, error) {
+func getPipelineId(inputs *JobInputs, opts *JobOptions) (int64, error) {
 	if inputs.PipelineId != 0 {
-		return inputs.PipelineId, nil
+		return int64(inputs.PipelineId), nil
 	}
 
 	branch := GetBranch(inputs.Branch, nil, opts.Repo, opts.Client)
@@ -230,7 +230,7 @@ func GetBranch(branch string, currentBranch func() (string, error), repo glrepo.
 	return GetDefaultBranch(repo, client)
 }
 
-func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
+func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int64, error) {
 	pipelineId, err := getPipelineId(inputs, opts)
 	if err != nil {
 		return 0, err
@@ -283,7 +283,7 @@ func getJobIdInteractive(inputs *JobInputs, opts *JobOptions) (int, error) {
 	if selectedJob != "" {
 		re := regexp.MustCompile(`(?s)\((.*)\)`)
 		m := re.FindAllStringSubmatch(selectedJob, -1)
-		return utils.StringToInt(m[0][1]), nil
+		return int64(utils.StringToInt(m[0][1])), nil
 	} else if len(jobs) > 0 {
 		return 0, nil
 	}

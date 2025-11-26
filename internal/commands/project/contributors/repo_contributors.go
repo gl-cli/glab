@@ -83,8 +83,8 @@ func (o *options) run() error {
 	l := &gitlab.ListContributorsOptions{
 		OrderBy: gitlab.Ptr(o.orderBy),
 		ListOptions: gitlab.ListOptions{
-			Page:    o.page,
-			PerPage: o.perPage,
+			Page:    int64(o.page),
+			PerPage: int64(o.perPage),
 		},
 	}
 
@@ -100,7 +100,7 @@ func (o *options) run() error {
 	// Title
 	title := utils.NewListTitle("contributor")
 	title.RepoName = repo.FullName()
-	title.Page = l.Page
+	title.Page = int(l.Page)
 	title.CurrentPageTotal = len(users)
 
 	// List

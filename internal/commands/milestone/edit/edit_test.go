@@ -41,7 +41,7 @@ func Test_EditProjectMilestone(t *testing.T) {
 			ExpectedMsg: []string{"Updated project milestone Example (ID: 123)"},
 			cli:         "123 --title='Example' --project=456",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockMilestones.EXPECT().UpdateMilestone("456", 123, &gitlab.UpdateMilestoneOptions{
+				tc.MockMilestones.EXPECT().UpdateMilestone("456", int64(123), &gitlab.UpdateMilestoneOptions{
 					Title: gitlab.Ptr("Example"),
 				}).Return(testMilestone, nil, nil)
 			},
@@ -51,7 +51,7 @@ func Test_EditProjectMilestone(t *testing.T) {
 			ExpectedMsg: []string{"Updated project milestone Example (ID: 123)"},
 			cli:         "123 --description='Updated description' --project 456",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockMilestones.EXPECT().UpdateMilestone("456", 123, &gitlab.UpdateMilestoneOptions{
+				tc.MockMilestones.EXPECT().UpdateMilestone("456", int64(123), &gitlab.UpdateMilestoneOptions{
 					Description: gitlab.Ptr("Updated description"),
 				}).Return(testMilestone, nil, nil)
 			},
@@ -62,7 +62,7 @@ func Test_EditProjectMilestone(t *testing.T) {
 			wantStderr: "404 Not found",
 			cli:        "111 --project 456",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockMilestones.EXPECT().UpdateMilestone("456", 111, gomock.Any()).Return(nil, nil, errors.New("404 Not found"))
+				tc.MockMilestones.EXPECT().UpdateMilestone("456", int64(111), gomock.Any()).Return(nil, nil, errors.New("404 Not found"))
 			},
 		},
 		{
@@ -76,7 +76,7 @@ func Test_EditProjectMilestone(t *testing.T) {
 			Name: "When neither project nor group is set it updates the current project",
 			cli:  "123 --title='Example'",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockMilestones.EXPECT().UpdateMilestone("OWNER/REPO", 123, &gitlab.UpdateMilestoneOptions{
+				tc.MockMilestones.EXPECT().UpdateMilestone("OWNER/REPO", int64(123), &gitlab.UpdateMilestoneOptions{
 					Title: gitlab.Ptr("Example"),
 				}).Return(testMilestone, nil, nil)
 			},
@@ -137,7 +137,7 @@ func Test_EditGroupMilestone(t *testing.T) {
 			ExpectedMsg: []string{"Updated group milestone Example (ID: 123)"},
 			cli:         "123 --title='Example' --group=456",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockGroupMilestones.EXPECT().UpdateGroupMilestone("456", 123, &gitlab.UpdateGroupMilestoneOptions{
+				tc.MockGroupMilestones.EXPECT().UpdateGroupMilestone("456", int64(123), &gitlab.UpdateGroupMilestoneOptions{
 					Title: gitlab.Ptr("Example"),
 				}).Return(testMilestone, nil, nil)
 			},
@@ -147,7 +147,7 @@ func Test_EditGroupMilestone(t *testing.T) {
 			ExpectedMsg: []string{"Updated group milestone Example (ID: 123)"},
 			cli:         "123 --description='Updated description' --group 456",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockGroupMilestones.EXPECT().UpdateGroupMilestone("456", 123, &gitlab.UpdateGroupMilestoneOptions{
+				tc.MockGroupMilestones.EXPECT().UpdateGroupMilestone("456", int64(123), &gitlab.UpdateGroupMilestoneOptions{
 					Description: gitlab.Ptr("Updated description"),
 				}).Return(testMilestone, nil, nil)
 			},
@@ -158,7 +158,7 @@ func Test_EditGroupMilestone(t *testing.T) {
 			wantStderr: "404 Not found",
 			cli:        "111 --group 456",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockGroupMilestones.EXPECT().UpdateGroupMilestone("456", 111, gomock.Any()).Return(nil, nil, errors.New("404 Not found"))
+				tc.MockGroupMilestones.EXPECT().UpdateGroupMilestone("456", int64(111), gomock.Any()).Return(nil, nil, errors.New("404 Not found"))
 			},
 		},
 		{

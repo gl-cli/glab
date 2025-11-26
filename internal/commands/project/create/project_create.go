@@ -167,7 +167,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 		if err != nil {
 			return fmt.Errorf("could not find group or namespace %s: %v", namespace, err)
 		}
-		namespaceID = group.ID
+		namespaceID = int(group.ID)
 	}
 
 	name, _ := cmd.Flags().GetString("name")
@@ -206,7 +206,7 @@ func runCreateProject(cmd *cobra.Command, args []string, f cmdutils.Factory) err
 	}
 
 	if namespaceID != 0 {
-		opts.NamespaceID = &namespaceID
+		opts.NamespaceID = gitlab.Ptr(int64(namespaceID))
 	}
 
 	project, err := createProject(gitlabClient, opts)

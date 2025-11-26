@@ -35,7 +35,7 @@ func TestGetJobId(t *testing.T) {
 		pipelineId    int
 		httpMocks     []httpMock
 		askOneStubs   []string
-		expectedOut   int
+		expectedOut   int64
 		expectedError string
 	}{
 		{

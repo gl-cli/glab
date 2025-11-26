@@ -68,8 +68,8 @@ func (o *options) run() error {
 	}
 	gitlabClient := c.Lab()
 	listOpts := gitlab.ListOptions{
-		Page:    o.page,
-		PerPage: o.perPage,
+		Page:    int64(o.page),
+		PerPage: int64(o.perPage),
 	}
 	projects, _, err := gitlabClient.Search.Projects(o.search, &gitlab.SearchOptions{ListOptions: listOpts})
 	if err != nil {

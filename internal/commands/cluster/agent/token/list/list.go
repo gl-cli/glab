@@ -71,7 +71,7 @@ func (o *options) run(ctx context.Context) error {
 		return err
 	}
 
-	tokens, _, err := client.ClusterAgents.ListAgentTokens(baseRepo.FullName(), int(o.agentID), nil, gitlab.WithContext(ctx))
+	tokens, _, err := client.ClusterAgents.ListAgentTokens(baseRepo.FullName(), o.agentID, nil, gitlab.WithContext(ctx))
 	if err != nil {
 		return fmt.Errorf("unable to retrieve agent tokens: %w", err)
 	}
@@ -84,7 +84,7 @@ func (o *options) run(ctx context.Context) error {
 	var username string
 	// NOTE: there can only ever be two tokens registered for an agent at once, therefore, it's safe to assume that
 	// we only ever get a maximum of two items back from the API, despite it's slice return type.
-	var cachedUserID int
+	var cachedUserID int64
 	for _, token := range tokens {
 		var lastUsedAt string
 		switch token.LastUsedAt {

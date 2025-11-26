@@ -62,8 +62,10 @@ func (o *options) run() error {
 	}
 
 	listProjectDeployKeysOptions := &gitlab.ListProjectDeployKeysOptions{
-		Page:    o.page,
-		PerPage: o.perPage,
+		ListOptions: gitlab.ListOptions{
+			Page:    int64(o.page),
+			PerPage: int64(o.perPage),
+		},
 	}
 
 	baseRepo, err := o.baseRepo()

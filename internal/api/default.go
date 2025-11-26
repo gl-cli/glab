@@ -2,7 +2,7 @@ package api
 
 import "strings"
 
-var DefaultListLimit = 30
+var DefaultListLimit int64 = 30
 
 // MaxPerPage is the maximum number of items per page supported by the GitLab API.
 // https://docs.gitlab.com/api/rest/#offset-based-pagination

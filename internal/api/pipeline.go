@@ -6,7 +6,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-func PlayOrRetryJobs(client *gitlab.Client, repo string, jobID int, status string) (*gitlab.Job, error) {
+func PlayOrRetryJobs(client *gitlab.Client, repo string, jobID int64, status string) (*gitlab.Job, error) {
 	switch status {
 	case "pending", "running":
 		return nil, nil
@@ -84,7 +84,7 @@ func (s bridgeSort) Less(i, j int) bool {
 
 // PipelineJobsWithID returns a list of jobs in a pipeline for a id.
 // The jobs are returned in the order in which they were created
-func PipelineJobsWithID(client *gitlab.Client, pid any, ppid int) ([]*gitlab.Job, []*gitlab.Bridge, error) {
+func PipelineJobsWithID(client *gitlab.Client, pid any, ppid int64) ([]*gitlab.Job, []*gitlab.Bridge, error) {
 	opts := &gitlab.ListJobsOptions{
 		ListOptions: gitlab.ListOptions{
 			PerPage: 500,

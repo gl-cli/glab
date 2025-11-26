@@ -16,7 +16,7 @@ import (
 )
 
 type options struct {
-	userID   int
+	userID   int64
 	username string
 
 	baseRepo     func() (glrepo.Interface, error)
@@ -63,7 +63,7 @@ func NewCmd(f cmdutils.Factory) *cobra.Command {
 	cmdutils.EnableRepoOverride(cmd, f)
 
 	fl := cmd.Flags()
-	fl.IntVarP(&opts.userID, "user-id", "u", 0, "User ID instead of username")
+	fl.Int64VarP(&opts.userID, "user-id", "u", 0, "User ID instead of username")
 	fl.StringVarP(&opts.username, "username", "", "", "Username instead of user-id")
 	cmd.MarkFlagsMutuallyExclusive("username", "user-id")
 
@@ -93,13 +93,13 @@ func (o *options) run() error {
 		return err
 	}
 
-	var userIDToRemove int
+	var userIDToRemove int64
 	var userIdentifier string
 
 	switch {
 	case o.userID != 0:
 		userIDToRemove = o.userID
-		userIdentifier = strconv.Itoa(o.userID)
+		userIdentifier = strconv.FormatInt(o.userID, 10)
 	case o.username != "":
 		// Get user ID from username
 		users, _, err := client.Users.ListUsers(&gitlab.ListUsersOptions{

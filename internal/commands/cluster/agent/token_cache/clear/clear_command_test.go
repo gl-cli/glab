@@ -109,7 +109,7 @@ func TestClear_WithRevoke_ActiveToken(t *testing.T) {
 
 	// mock revocation API call
 	tc.MockPersonalAccessTokens.EXPECT().
-		RevokePersonalAccessToken(456, gomock.Any()).
+		RevokePersonalAccessToken(int64(456), gomock.Any()).
 		Return(&gitlab.Response{}, nil).
 		Times(1)
 

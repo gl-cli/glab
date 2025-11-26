@@ -22,7 +22,7 @@ type options struct {
 	enabled               bool
 	protectedBranchesOnly bool
 	allowDivergence       bool
-	projectID             int
+	projectID             int64
 
 	io              *iostreams.IOStreams
 	baseRepo        glrepo.Interface

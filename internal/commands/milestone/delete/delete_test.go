@@ -30,7 +30,7 @@ func Test_DeleteProjectMilestone(t *testing.T) {
 			ExpectedMsg: []string{"Deleted project milestone with ID 123.\n"},
 			cli:         "123 --project 456",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockMilestones.EXPECT().DeleteMilestone("456", 123).Return(nil, nil)
+				tc.MockMilestones.EXPECT().DeleteMilestone("456", int64(123)).Return(nil, nil)
 			},
 		},
 		{
@@ -39,7 +39,7 @@ func Test_DeleteProjectMilestone(t *testing.T) {
 			wantStderr: "404 Not found",
 			cli:        "111 --project 456",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockMilestones.EXPECT().DeleteMilestone("456", 111).Return(nil, errors.New("404 Not found"))
+				tc.MockMilestones.EXPECT().DeleteMilestone("456", int64(111)).Return(nil, errors.New("404 Not found"))
 			},
 		},
 		{
@@ -53,7 +53,7 @@ func Test_DeleteProjectMilestone(t *testing.T) {
 			Name: "When neither project nor group is set it deletes the milestone from the current project",
 			cli:  "123",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockMilestones.EXPECT().DeleteMilestone("OWNER/REPO", 123, gomock.Any()).Return(nil, nil)
+				tc.MockMilestones.EXPECT().DeleteMilestone("OWNER/REPO", int64(123), gomock.Any()).Return(nil, nil)
 			},
 		},
 	}
@@ -103,7 +103,7 @@ func Test_DeleteGroupMilestone(t *testing.T) {
 			ExpectedMsg: []string{"Deleted group milestone with ID 123.\n"},
 			cli:         "123 --group 456",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockGroupMilestones.EXPECT().DeleteGroupMilestone("456", 123).Return(nil, nil)
+				tc.MockGroupMilestones.EXPECT().DeleteGroupMilestone("456", int64(123)).Return(nil, nil)
 			},
 		},
 		{
@@ -112,7 +112,7 @@ func Test_DeleteGroupMilestone(t *testing.T) {
 			wantStderr: "404 Not found",
 			cli:        "111 --group 456",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockGroupMilestones.EXPECT().DeleteGroupMilestone("456", 111).Return(nil, errors.New("404 Not found"))
+				tc.MockGroupMilestones.EXPECT().DeleteGroupMilestone("456", int64(111)).Return(nil, errors.New("404 Not found"))
 			},
 		},
 		{

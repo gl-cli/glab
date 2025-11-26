@@ -31,7 +31,7 @@ func Test_DeleteGPGKey(t *testing.T) {
 			cli:         "123",
 			wantErr:     false,
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().DeleteGPGKey(123).Return(nil, nil)
+				tc.MockUsers.EXPECT().DeleteGPGKey(int64(123)).Return(nil, nil)
 			},
 		},
 		{
@@ -40,7 +40,7 @@ func Test_DeleteGPGKey(t *testing.T) {
 			wantErr:    true,
 			wantStderr: "404",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().DeleteGPGKey(0).Return(nil, errors.New("404 Not Found"))
+				tc.MockUsers.EXPECT().DeleteGPGKey(int64(0)).Return(nil, errors.New("404 Not Found"))
 			},
 		},
 		{
@@ -49,7 +49,7 @@ func Test_DeleteGPGKey(t *testing.T) {
 			wantErr:    true,
 			wantStderr: "404",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().DeleteGPGKey(999).Return(nil, errors.New("404 Not found"))
+				tc.MockUsers.EXPECT().DeleteGPGKey(int64(999)).Return(nil, errors.New("404 Not found"))
 			},
 		},
 		{
@@ -65,7 +65,7 @@ func Test_DeleteGPGKey(t *testing.T) {
 			wantErr:    true,
 			wantStderr: "401",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().DeleteGPGKey(123).Return(nil, errors.New("401 Unauthorized"))
+				tc.MockUsers.EXPECT().DeleteGPGKey(int64(123)).Return(nil, errors.New("401 Unauthorized"))
 			},
 		},
 		{
@@ -74,7 +74,7 @@ func Test_DeleteGPGKey(t *testing.T) {
 			wantErr:    true,
 			wantStderr: "404 Not found",
 			setupMock: func(tc *gitlabtesting.TestClient) {
-				tc.MockUsers.EXPECT().DeleteGPGKey(0).Return(nil, errors.New("404 Not found"))
+				tc.MockUsers.EXPECT().DeleteGPGKey(int64(0)).Return(nil, errors.New("404 Not found"))
 			},
 		},
 	}

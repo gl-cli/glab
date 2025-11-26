@@ -8,7 +8,7 @@ import (
 
 // GetMR returns an MR
 // Attention: this is a global variable and may be overridden in tests.
-var GetMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
+var GetMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.GetMergeRequestsOptions) (*gitlab.MergeRequest, error) {
 	mr, _, err := client.MergeRequests.GetMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func listGroupMRsWithAssigneesOrReviewers(client *gitlab.Client, projectID any, 
 		opts.PerPage = DefaultListLimit
 	}
 
-	mrMap := make(map[int]*gitlab.BasicMergeRequest)
+	mrMap := make(map[int64]*gitlab.BasicMergeRequest)
 	for _, id := range assigneeIds {
 		opts.AssigneeID = gitlab.AssigneeID(id)
 		assigneeMrs, err := listGroupMRsBase(client, projectID, opts)
@@ -144,7 +144,7 @@ func listMRsWithAssigneesOrReviewers(client *gitlab.Client, projectID any, opts 
 		opts.PerPage = DefaultListLimit
 	}
 
-	mrMap := make(map[int]*gitlab.BasicMergeRequest)
+	mrMap := make(map[int64]*gitlab.BasicMergeRequest)
 	for _, id := range assigneeIds {
 		opts.AssigneeID = gitlab.AssigneeID(id)
 		assigneeMrs, err := listMRsBase(client, projectID, opts)
@@ -181,7 +181,7 @@ func listMRsWithAssigneesOrReviewers(client *gitlab.Client, projectID any, opts 
 
 // UpdateMR updates an MR
 // Attention: this is a global variable and may be overridden in tests.
-var UpdateMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab.UpdateMergeRequestOptions) (*gitlab.MergeRequest, error) {
+var UpdateMR = func(client *gitlab.Client, projectID any, mrID int64, opts *gitlab.UpdateMergeRequestOptions) (*gitlab.MergeRequest, error) {
 	mr, _, err := client.MergeRequests.UpdateMergeRequest(projectID, mrID, opts)
 	if err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ var UpdateMR = func(client *gitlab.Client, projectID any, mrID int, opts *gitlab
 
 // UpdateMR updates an MR
 // Attention: this is a global variable and may be overridden in tests.
-var DeleteMR = func(client *gitlab.Client, projectID any, mrID int) error {
+var DeleteMR = func(client *gitlab.Client, projectID any, mrID int64) error {
 	_, err := client.MergeRequests.DeleteMergeRequest(projectID, mrID)
 	if err != nil {
 		return err

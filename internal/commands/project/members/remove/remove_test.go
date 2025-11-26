@@ -31,7 +31,7 @@ func TestMembersRemove(t *testing.T) {
 					ListUsers(&gitlab.ListUsersOptions{Username: gitlab.Ptr("john.doe")}).
 					Return([]*gitlab.User{{ID: 1, Username: "john.doe"}}, nil, nil)
 				tc.MockProjectMembers.EXPECT().
-					DeleteProjectMember("OWNER/REPO", 1).
+					DeleteProjectMember("OWNER/REPO", int64(1)).
 					Return(nil, nil)
 			},
 			expectedOutput: "✓ Successfully removed john.doe from OWNER/REPO\n",
@@ -41,7 +41,7 @@ func TestMembersRemove(t *testing.T) {
 			cli:  "--user-id=123",
 			setupMocks: func(tc *gitlabtesting.TestClient) {
 				tc.MockProjectMembers.EXPECT().
-					DeleteProjectMember("OWNER/REPO", 123).
+					DeleteProjectMember("OWNER/REPO", int64(123)).
 					Return(nil, nil)
 			},
 			expectedOutput: "✓ Successfully removed 123 from OWNER/REPO\n",

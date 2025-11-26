@@ -60,9 +60,9 @@ func run(factory cmdutils.Factory, cmd *cobra.Command) error {
 	l := &gitlab.ListReleasesOptions{}
 
 	page, _ := cmd.Flags().GetInt("page")
-	l.Page = page
+	l.Page = int64(page)
 	perPage, _ := cmd.Flags().GetInt("per-page")
-	l.PerPage = perPage
+	l.PerPage = int64(perPage)
 
 	tag, err := cmd.Flags().GetString("tag")
 	if err != nil {

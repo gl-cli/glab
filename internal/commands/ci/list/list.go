@@ -64,10 +64,10 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 				l.Sort = gitlab.Ptr(m)
 			}
 			if p, _ := cmd.Flags().GetInt("page"); p != 0 {
-				l.Page = p
+				l.Page = int64(p)
 			}
 			if p, _ := cmd.Flags().GetInt("per-page"); p != 0 {
-				l.PerPage = p
+				l.PerPage = int64(p)
 			}
 			if m, _ := cmd.Flags().GetString("ref"); m != "" {
 				l.Ref = gitlab.Ptr(m)
@@ -112,7 +112,7 @@ func NewCmdList(f cmdutils.Factory) *cobra.Command {
 
 			title := utils.NewListTitle(fmt.Sprintf("%s pipeline", titleQualifier))
 			title.RepoName = repo.FullName()
-			title.Page = l.Page
+			title.Page = int(l.Page)
 			title.CurrentPageTotal = len(pipes)
 
 			if jsonOut {

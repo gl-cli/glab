@@ -57,8 +57,8 @@ func parseCommand(parts []string) (string, string, string) {
 }
 
 func sendTelemetryData(f cmdutils.Factory, cmd *cobra.Command) {
-	var projectID int
-	var namespaceID int
+	var projectID int64
+	var namespaceID int64
 
 	if cmd == nil {
 		return
