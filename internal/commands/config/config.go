@@ -92,11 +92,11 @@ func NewCmdConfigSet(f cmdutils.Factory) *cobra.Command {
 		Short: "Updates configuration with the value of a given key.",
 		Long: `Update the configuration by setting a key to a value.
 Use 'glab config set --global' to set a global config.
-Specifying the '--hostname' flag also saves in the global configuration file.
+Specifying the '--host' flag also saves in the global configuration file.
 `,
 		Example: heredoc.Doc(`
 - glab config set editor vim
-- glab config set token xxxxx -h gitlab.com
+- glab config set token xxxxx --host gitlab.com
 - glab config set check_update false --global`),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
