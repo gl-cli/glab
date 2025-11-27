@@ -33,7 +33,7 @@ $ glab schedule create --cron "0 * * * *" --description "Describe your pipeline 
       --cronTimeZone string   Cron timezone. (default "UTC")
       --description string    Description of the schedule.
       --ref string            Target branch or tag.
-      --variable strings      Pass variables to schedule in the format <key>:<value>.
+      --variable strings      Pass variables to schedule in the format <key>:<value>. Repeat flag for multiple variables.
 ```
 
 ## Options inherited from parent commands
