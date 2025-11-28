@@ -20,7 +20,7 @@ glab issue board view [flags]
 
 ```plaintext
   -a, --assignee string    Filter board issues by assignee username.
-  -l, --labels strings     Filter board issues by labels, comma separated.
+  -l, --labels strings     Filter board issues by labels. Multiple labels can be comma-separated or specified by repeating the flag.
   -m, --milestone string   Filter board issues by milestone.
 ```
 

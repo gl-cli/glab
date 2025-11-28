@@ -132,7 +132,7 @@ func NewCmdRunTrig(f cmdutils.Factory) *cobra.Command {
 	}
 	pipelineRunCmd.Flags().StringP("token", "t", "", "Pipeline trigger token. Can be omitted only if the `CI_JOB_TOKEN` environment variable is set.")
 	pipelineRunCmd.Flags().StringP("branch", "b", "", "Create pipeline on branch or reference <string>.")
-	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables", "", []string{}, "Pass variables to pipeline in the format <key>:<value>.")
+	pipelineRunCmd.Flags().StringSliceVarP(&envVariables, "variables", "", []string{}, "Pass variables to pipeline in the format <key>:<value>. Multiple variables can be comma-separated or specified by repeating the flag.")
 	cmdutils.AddPipelineInputsFlag(pipelineRunCmd)
 
 	return pipelineRunCmd

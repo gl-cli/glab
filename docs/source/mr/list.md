@@ -44,22 +44,22 @@ $ glab mr list --not-draft
 
 ```plaintext
   -A, --all                    Get all merge requests.
-  -a, --assignee strings       Get only merge requests assigned to users.
+  -a, --assignee strings       Get only merge requests assigned to users. Multiple users can be comma-separated or specified by repeating the flag.
       --author string          Filter merge request by author <username>.
   -c, --closed                 Get only closed merge requests.
   -d, --draft                  Filter by draft merge requests.
   -g, --group string           Select a group/subgroup. This option is ignored if a repo argument is set.
-  -l, --label strings          Filter merge request by label <name>.
+  -l, --label strings          Filter merge request by label <name>. Multiple labels can be comma-separated or specified by repeating the flag.
   -M, --merged                 Get only merged merge requests.
   -m, --milestone string       Filter merge request by milestone <id>.
       --not-draft              Filter by non-draft merge requests.
-      --not-label strings      Filter merge requests by not having label <name>.
+      --not-label strings      Filter merge requests by not having label <name>. Multiple labels can be comma-separated or specified by repeating the flag.
   -o, --order string           Order merge requests by <field>. Order options: created_at, title, merged_at or updated_at.
   -F, --output string          Format output as: text, json. (default "text")
   -p, --page int               Page number. (default 1)
   -P, --per-page int           Number of items to list per page. (default 30)
   -R, --repo OWNER/REPO        Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
-  -r, --reviewer strings       Get only merge requests with users as reviewer.
+  -r, --reviewer strings       Get only merge requests with users as reviewer. Multiple users can be comma-separated or specified by repeating the flag.
       --search string          Filter by <string> in title and description.
   -S, --sort string            Sort merge requests by <field>. Sort options: asc, desc.
   -s, --source-branch string   Filter by source branch <name>.

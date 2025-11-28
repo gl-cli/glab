@@ -27,7 +27,7 @@ $ glab issue update 42 --unlabel working
 ## Options
 
 ```plaintext
-  -a, --assignee strings     Assign users by username. Prefix with '!' or '-' to remove from existing assignees, or '+' to add new. Otherwise, replace existing assignees with these users.
+  -a, --assignee strings     Assign users by username. Prefix with '!' or '-' to remove from existing assignees, or '+' to add new. Otherwise, replace existing assignees with these users. Multiple usernames can be comma-separated or specified by repeating the flag.
   -c, --confidential         Make issue confidential
   -d, --description string   Issue description. Set to "-" to open an editor.
       --due-date string      A date in 'YYYY-MM-DD' format.
