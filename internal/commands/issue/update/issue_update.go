@@ -210,7 +210,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	issueUpdateCmd.Flags().BoolP("confidential", "c", false, "Make issue confidential")
 	issueUpdateCmd.Flags().StringP("milestone", "m", "", "Title of the milestone to assign Set to \"\" or 0 to unassign.")
 	issueUpdateCmd.Flags().
-		StringSliceP("assignee", "a", []string{}, "Assign users by username. Prefix with '!' or '-' to remove from existing assignees, or '+' to add new. Otherwise, replace existing assignees with these users.")
+		StringSliceP("assignee", "a", []string{}, "Assign users by username. Prefix with '!' or '-' to remove from existing assignees, or '+' to add new. Otherwise, replace existing assignees with these users. Multiple usernames can be comma-separated or specified by repeating the flag.")
 	issueUpdateCmd.Flags().Bool("unassign", false, "Unassign all users.")
 	issueUpdateCmd.Flags().IntP("weight", "w", 0, "Set weight of the issue.")
 	issueUpdateCmd.Flags().StringP("due-date", "", "", "A date in 'YYYY-MM-DD' format.")

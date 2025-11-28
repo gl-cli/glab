@@ -70,7 +70,7 @@ $ glab ci run-trig -t xxxx -b main --input "replicas:int(3)" --input "debug:bool
   -b, --branch string        Create pipeline on branch or reference <string>.
   -i, --input stringArray    Pass inputs to pipeline in format '<key>:<value>'. Cannot be used for merge request pipelines. See documentation for examples.
   -t, --token CI_JOB_TOKEN   Pipeline trigger token. Can be omitted only if the CI_JOB_TOKEN environment variable is set.
-      --variables strings    Pass variables to pipeline in the format <key>:<value>.
+      --variables strings    Pass variables to pipeline in the format <key>:<value>. Multiple variables can be comma-separated or specified by repeating the flag.
 ```
 
 ## Options inherited from parent commands

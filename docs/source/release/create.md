@@ -96,7 +96,7 @@ $ glab release create v1.0.1 --publish-to-catalog
 
 ```plaintext
   -a, --assets-links string    JSON string representation of assets links. See documentation for example.
-  -m, --milestone strings      The title of each milestone the release is associated with.
+  -m, --milestone strings      The title of each milestone the release is associated with. Multiple milestones can be comma-separated or specified by repeating the flag.
   -n, --name string            The release name or title.
       --no-close-milestone     Prevent closing milestones after creating the release.
       --no-update              Prevent updating the existing release.

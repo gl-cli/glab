@@ -184,7 +184,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 	fl.StringVarP(&opts.notes, "notes", "N", "", "The release notes or description. Accepts Markdown.")
 	fl.StringVarP(&opts.notesFile, "notes-file", "F", "", "Read release notes 'file'. To read from stdin, use '-'.")
 	fl.StringVarP(&opts.releasedAt, "released-at", "D", "", "ISO 8601 datetime when the release was ready. Defaults to the current datetime.")
-	fl.StringSliceVarP(&opts.milestone, "milestone", "m", []string{}, "The title of each milestone the release is associated with.")
+	fl.StringSliceVarP(&opts.milestone, "milestone", "m", []string{}, "The title of each milestone the release is associated with. Multiple milestones can be comma-separated or specified by repeating the flag.")
 	fl.StringVarP(&opts.assetLinksAsJSON, "assets-links", "a", "", "JSON string representation of assets links. See documentation for example.")
 	fl.BoolVar(&opts.publishToCatalog, "publish-to-catalog", false, "(EXPERIMENTAL) Publish the release to the GitLab CI/CD catalog.")
 	fl.BoolVar(&opts.noUpdate, "no-update", false, "Prevent updating the existing release.")

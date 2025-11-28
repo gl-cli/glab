@@ -326,9 +326,9 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 	mrUpdateCmd.Flags().StringSliceP("label", "l", []string{}, "Add labels.")
 	mrUpdateCmd.Flags().StringSliceP("unlabel", "u", []string{}, "Remove labels.")
 	mrUpdateCmd.Flags().
-		StringSliceP("assignee", "a", []string{}, "Assign users via username. Prefix with '!' or '-' to remove from existing assignees, '+' to add. Otherwise, replace existing assignees with given users.")
+		StringSliceP("assignee", "a", []string{}, "Assign users via username. Prefix with '!' or '-' to remove from existing assignees, '+' to add. Otherwise, replace existing assignees with given users. Multiple usernames can be comma-separated or specified by repeating the flag.")
 	mrUpdateCmd.Flags().
-		StringSliceP("reviewer", "", []string{}, "Request review from users by their usernames. Prefix with '!' or '-' to remove from existing reviewers, '+' to add. Otherwise, replace existing reviewers with given users.")
+		StringSliceP("reviewer", "", []string{}, "Request review from users by their usernames. Prefix with '!' or '-' to remove from existing reviewers, '+' to add. Otherwise, replace existing reviewers with given users. Multiple usernames can be comma-separated or specified by repeating the flag.")
 	mrUpdateCmd.Flags().Bool("unassign", false, "Unassign all users.")
 	mrUpdateCmd.Flags().
 		BoolP("squash-before-merge", "", false, "Toggles the option to squash commits into a single commit when merging.")

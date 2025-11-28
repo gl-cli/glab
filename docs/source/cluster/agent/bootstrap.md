@@ -109,8 +109,8 @@ $ glab cluster agent bootstrap my-agent --use-api-commit-author
       --helm-release-name string                     Name of the Flux HelmRelease manifest. (default "gitlab-agent")
       --helm-release-namespace string                Namespace of the Flux HelmRelease manifest. (default "flux-system")
       --helm-release-target-namespace string         Namespace of the GitLab Agent deployment. (default "gitlab-agent")
-      --helm-release-values strings                  Local path to values.yaml files
-      --helm-release-values-from strings             Kubernetes object reference that contains the values.yaml data key in the format '<kind>/<name>', where 'kind' must be one of: (Secret, ConfigMap)
+      --helm-release-values strings                  Local path to values.yaml files. Multiple files can be comma-separated or specified by repeating the flag.
+      --helm-release-values-from strings             Kubernetes object reference that contains the values.yaml data key in the format '<kind>/<name>', where 'kind' must be one of: (Secret, ConfigMap). Multiple references can be comma-separated or specified by repeating the flag.
       --helm-repository-address string               Address of the HelmRepository. (default "https://charts.gitlab.io")
       --helm-repository-filepath string              File path within the GitLab Agent project to commit the Flux HelmRepository to. (default "gitlab-helm-repository.yaml")
       --helm-repository-name string                  Name of the Flux HelmRepository manifest. (default "gitlab")

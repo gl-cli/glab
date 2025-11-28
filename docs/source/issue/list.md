@@ -45,11 +45,11 @@ $ glab issue list --milestone release-2.0.0 --opened
       --in string              search in: title, description. (default "title,description")
   -t, --issue-type string      Filter issue by its type. Options: issue, incident, test_case.
   -i, --iteration int          Filter issue by iteration <id>.
-  -l, --label strings          Filter issue by label <name>.
+  -l, --label strings          Filter issue by label <name>. Multiple labels can be comma-separated or specified by repeating the flag.
   -m, --milestone string       Filter issue by milestone <id>.
       --not-assignee string    Filter issue by not being assigned to <username>.
       --not-author string      Filter issue by not being by author(s) <username>.
-      --not-label strings      Filter issue by lack of label <name>.
+      --not-label strings      Filter issue by lack of label <name>. Multiple labels can be comma-separated or specified by repeating the flag.
       --order string           Order issue by <field>. Order options: created_at, updated_at, priority, due_date, relative_position, label_priority, milestone_due, popularity, weight. (default "created_at")
   -O, --output string          Options: 'text' or 'json'. (default "text")
   -F, --output-format string   Options: 'details', 'ids', 'urls'. (default "details")

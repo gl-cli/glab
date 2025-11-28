@@ -76,7 +76,7 @@ $ glab token create --access-level developer --scope api my-token --expires-at 2
   -g, --group string               Create a group access token. Ignored if a user or repository argument is set.
   -F, --output string              Format output as 'text' for the token value, 'json' for the actual API token structure. (default "text")
   -R, --repo OWNER/REPO            Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
-  -S, --scope strings              Scopes for the token. For a list, see https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes. (default [read_repository])
+  -S, --scope strings              Scopes for the token. Multiple scopes can be comma-separated or specified by repeating the flag. For a list, see https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes. (default [read_repository])
   -U, --user string                Create a personal access token. For the current user, use @me.
 ```
 
