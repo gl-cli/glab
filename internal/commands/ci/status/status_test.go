@@ -13,6 +13,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 
+	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
 
@@ -83,7 +84,7 @@ func Test_getPipelineWithFallback(t *testing.T) {
 			},
 			wantPipeline:   nil,
 			wantErr:        true,
-			expectedErrMsg: "no pipeline found for branch feature and no associated merge request found",
+			expectedErrMsg: "no pipeline found for branch feature and failed to find associated merge request",
 		},
 		{
 			name:   "returns error when MR has no pipeline",
@@ -119,7 +120,7 @@ func Test_getPipelineWithFallback(t *testing.T) {
 			ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(false))
 			factory := cmdtest.NewTestFactory(ios, cmdtest.WithGitLabClient(tc.Client))
 
-			pipeline, err := getPipelineWithFallback(tc.Client, factory, "OWNER/REPO", tt.branch)
+			pipeline, err := ciutils.GetPipelineWithFallback(tc.Client, factory, "OWNER/REPO", tt.branch)
 
 			if tt.wantErr {
 				assert.Error(t, err)

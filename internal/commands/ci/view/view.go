@@ -39,6 +39,7 @@ type options struct {
 	gitlabClient func() (*gitlab.Client, error)
 	baseRepo     func() (glrepo.Interface, error)
 	config       func() config.Config
+	factory      cmdutils.Factory
 
 	refName       string
 	openInBrowser bool
@@ -107,6 +108,7 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		gitlabClient: f.GitLabClient,
 		baseRepo:     f.BaseRepo,
 		config:       f.Config,
+		factory:      f,
 	}
 	pipelineCIView := &cobra.Command{
 		Use:   "view [branch/tag]",
@@ -210,19 +212,22 @@ func (o *options) run() error {
 			return err
 		}
 	} else {
-		commit, _, err = client.Commits.GetCommit(projectID, o.refName, nil)
+		// Get pipeline by branch reference (not by commit's LastPipeline)
+		pipeline, err := ciutils.GetPipelineWithFallback(client, o.factory, projectID, o.refName)
 		if err != nil {
 			return err
 		}
 
-		if commit.LastPipeline == nil {
-			return fmt.Errorf("Can't find pipeline for commit: %s", commit.ID)
-		}
+		pipelineID = pipeline.ID
+		webURL = pipeline.WebURL
+		pipelineCreatedAt = *pipeline.CreatedAt
+		commitSHA = pipeline.SHA
 
-		pipelineID = commit.LastPipeline.ID
-		webURL = commit.LastPipeline.WebURL
-		pipelineCreatedAt = *commit.LastPipeline.CreatedAt
-		commitSHA = commit.ID
+		// Get commit details for display purposes
+		commit, _, err = client.Commits.GetCommit(projectID, commitSHA, nil)
+		if err != nil {
+			return err
+		}
 	}
 
 	if o.openInBrowser { // open in browser if --web flag is specified

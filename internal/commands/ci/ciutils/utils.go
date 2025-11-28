@@ -17,6 +17,8 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/prompt"
@@ -26,6 +28,37 @@ import (
 
 func makeHyperlink(s *iostreams.IOStreams, pipeline *gitlab.PipelineInfo) string {
 	return s.Hyperlink(fmt.Sprintf("%d", pipeline.ID), pipeline.WebURL)
+}
+
+// GetPipelineWithFallback gets the latest pipeline for a branch, falling back to MR head pipeline
+// for merged results pipelines where the direct branch lookup may fail.
+func GetPipelineWithFallback(client *gitlab.Client, f cmdutils.Factory, repoName, branch string) (*gitlab.Pipeline, error) {
+	// First try: Get pipeline by branch name
+	pipeline, _, err := client.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
+	if err == nil {
+		return pipeline, nil
+	}
+
+	// Fallback: Look for MR pipeline (for merged results pipelines)
+	mr, _, mrErr := mrutils.MRFromArgs(f, []string{}, "any")
+	if mr == nil || mrErr != nil {
+		if mrErr != nil {
+			return nil, fmt.Errorf("no pipeline found for branch %s and failed to find associated merge request: %v", branch, mrErr)
+		}
+		return nil, fmt.Errorf("no pipeline found for branch %s and no associated merge request found", branch)
+	}
+
+	if mr.HeadPipeline == nil {
+		return nil, fmt.Errorf("no pipeline found. It might not exist yet. Check your pipeline configuration")
+	}
+
+	// Get the full pipeline details using the MR's head pipeline ID
+	pipeline, _, pipelineErr := client.Pipelines.GetPipeline(repoName, mr.HeadPipeline.ID)
+	if pipelineErr != nil {
+		return nil, pipelineErr
+	}
+
+	return pipeline, nil
 }
 
 func DisplaySchedules(i *iostreams.IOStreams, s []*gitlab.PipelineSchedule, projectID string) string {

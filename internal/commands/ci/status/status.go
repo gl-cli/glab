@@ -13,7 +13,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/ci/ciutils"
-	"gitlab.com/gitlab-org/cli/internal/commands/mr/mrutils"
 	"gitlab.com/gitlab-org/cli/internal/dbg"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
 	"gitlab.com/gitlab-org/cli/internal/utils"
@@ -67,7 +66,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 			dbg.Debug("Using branch:", branch)
 
 			// Use fallback logic for robust pipeline lookup
-			runningPipeline, err := getPipelineWithFallback(client, f, repoName, branch)
+			runningPipeline, err := ciutils.GetPipelineWithFallback(client, f, repoName, branch)
 			if err != nil {
 				redCheck := c.Red("✘")
 				fmt.Fprintf(f.IO().StdOut, "%s %v\n", redCheck, err)
@@ -125,7 +124,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 
 				if (runningPipeline.Status == "pending" || runningPipeline.Status == "running") && live {
 					// Use fallback logic for live updates
-					updatedPipeline, err := getPipelineWithFallback(client, f, repoName, branch)
+					updatedPipeline, err := ciutils.GetPipelineWithFallback(client, f, repoName, branch)
 					if err != nil {
 						// Final fallback: refresh current pipeline by ID
 						updatedPipeline, _, err = client.Pipelines.GetPipeline(repoName, runningPipeline.ID)
@@ -156,7 +155,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 						if err != nil {
 							return err
 						}
-						updatedPipeline, err := getPipelineWithFallback(client, f, repoName, branch)
+						updatedPipeline, err := ciutils.GetPipelineWithFallback(client, f, repoName, branch)
 						if err != nil {
 							// Fallback: refresh by pipeline ID if MR lookup fails
 							updatedPipeline, _, err = client.Pipelines.GetPipeline(repoName, runningPipeline.ID)
@@ -185,30 +184,4 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 	pipelineStatusCmd.Flags().StringP("branch", "b", "", "Check pipeline status for a branch. (default current branch)")
 
 	return pipelineStatusCmd
-}
-
-func getPipelineWithFallback(client *gitlab.Client, f cmdutils.Factory, repoName, branch string) (*gitlab.Pipeline, error) {
-	// First try: Get pipeline by branch name
-	pipeline, _, err := client.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
-	if err == nil {
-		return pipeline, nil
-	}
-
-	// Fallback: Look for MR pipeline
-	mr, _, mrErr := mrutils.MRFromArgs(f, []string{}, "any")
-	if mr == nil || mrErr != nil {
-		return nil, fmt.Errorf("no pipeline found for branch %s and no associated merge request found. Branch may not have an open MR", branch)
-	}
-
-	if mr.HeadPipeline == nil {
-		return nil, fmt.Errorf("no pipeline found. It might not exist yet. If this problem continues, check your pipeline configuration.")
-	}
-
-	// Get the full pipeline details using the MR's head pipeline ID
-	pipeline, _, pipelineErr := client.Pipelines.GetPipeline(repoName, mr.HeadPipeline.ID)
-	if pipelineErr != nil {
-		return nil, pipelineErr
-	}
-
-	return pipeline, nil
 }

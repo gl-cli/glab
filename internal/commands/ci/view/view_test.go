@@ -1254,13 +1254,26 @@ func TestCIView(t *testing.T) {
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
-					"https://gitlab.com/api/v4/projects/OWNER%2FREPO/repository/commits/foo",
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO/pipelines/latest?ref=foo",
 					http.StatusOK,
 					`{
-						"id": "6104942438c14ec7bd21c6cd5bd995272b3faff6",
+						"id": 8,
+						"ref": "foo",
+						"sha": "2dc6aa325a317eda67812f05600bdf0fcdc70ab0",
+						"status": "created",
+						"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/225",
+						"created_at": "2025-10-28T16:52:39.000+01:00"
+					}`,
+				},
+				{
+					http.MethodGet,
+					"https://gitlab.com/api/v4/projects/OWNER%2FREPO/repository/commits/2dc6aa325a317eda67812f05600bdf0fcdc70ab0",
+					http.StatusOK,
+					`{
+						"id": "2dc6aa325a317eda67812f05600bdf0fcdc70ab0",
 						"last_pipeline": {
 							"id": 8,
-							"ref": "main",
+							"ref": "foo",
 							"sha": "2dc6aa325a317eda67812f05600bdf0fcdc70ab0",
 							"status": "created",
 							"web_url": "https://gitlab.com/OWNER/REPO/-/pipelines/225",
