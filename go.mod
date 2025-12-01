@@ -18,7 +18,7 @@ require (
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/charmbracelet/huh v0.8.0
 	github.com/coder/websocket v1.8.14
-	github.com/docker/cli v29.1.0+incompatible
+	github.com/docker/cli v29.1.1+incompatible
 	github.com/docker/docker-credential-helpers v0.9.4
 	github.com/dustin/go-humanize v1.0.1
 	github.com/gdamore/tcell/v2 v2.11.0
