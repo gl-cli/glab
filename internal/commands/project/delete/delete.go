@@ -35,14 +35,26 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 
 	projectCreateCmd := &cobra.Command{
 		Use:   "delete [<NAMESPACE>/]<NAME>",
-		Short: `Delete an existing repository on GitLab.`,
-		Long:  ``,
-		Args:  cobra.MaximumNArgs(1),
+		Short: `Delete an existing project on GitLab.`,
+		Long: heredoc.Doc(`
+			Delete an existing project on GitLab.
+
+			This permanently deletes the entire project, including:
+			
+			- The Git repository.
+			- Issues and merge requests.
+			- Wiki pages.
+			- CI/CD pipelines and job artifacts.
+			- Other project content and settings.
+
+			This action cannot be undone.
+		`),
+		Args: cobra.MaximumNArgs(1),
 		Example: heredoc.Doc(`
-			# Delete a personal repository.
+			# Delete a personal project.
 			$ glab repo delete dotfiles
 
-			# Delete a repository in a GitLab group, or another repository
+			# Delete a project in a GitLab group, or another project
 			# you have write access to:
 			$ glab repo delete mygroup/dotfiles
 			$ glab repo delete myorg/mynamespace/dotfiles
@@ -56,7 +68,7 @@ func NewCmdDelete(f cmdutils.Factory) *cobra.Command {
 		},
 	}
 
-	projectCreateCmd.Flags().BoolVarP(&opts.forceDelete, "yes", "y", false, "Skip the confirmation prompt and immediately delete the repository.")
+	projectCreateCmd.Flags().BoolVarP(&opts.forceDelete, "yes", "y", false, "Skip the confirmation prompt and immediately delete the project.")
 
 	return projectCreateCmd
 }
@@ -97,7 +109,7 @@ func (o *options) run(ctx context.Context) error {
 	}
 
 	if !o.forceDelete && o.io.PromptEnabled() {
-		fmt.Fprintf(o.io.StdErr, "This action will permanently delete %s immediately, including its repositories and all content: issues and merge requests.\n\n", o.repoName)
+		fmt.Fprintf(o.io.StdErr, "This action will permanently delete the project %s immediately, including its repositories and all content: issues, merge requests, wiki, CI/CD data, and all other project resources.\n\n", o.repoName)
 		err = o.io.Confirm(ctx, &o.forceDelete, fmt.Sprintf("Are you ABSOLUTELY SURE you wish to delete %s?", o.repoName))
 		if err != nil {
 			return err
