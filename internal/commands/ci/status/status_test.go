@@ -33,8 +33,49 @@ func Test_getPipelineWithFallback(t *testing.T) {
 				tc.MockPipelines.EXPECT().
 					GetLatestPipeline("OWNER/REPO", &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr("main")}).
 					Return(&gitlab.Pipeline{ID: 1, Status: "success"}, nil, nil)
+
+				// Mock job check to verify pipeline has jobs
+				tc.MockJobs.EXPECT().
+					ListPipelineJobs("OWNER/REPO", int64(1), gomock.Any()).
+					Return([]*gitlab.Job{{ID: 1, Name: "test"}}, nil, nil)
 			},
 			wantPipeline: &gitlab.Pipeline{ID: 1, Status: "success"},
+			wantErr:      false,
+		},
+		{
+			name:   "falls back to MR pipeline when branch pipeline has no jobs",
+			branch: "feature",
+			setupMocks: func(tc *gitlabtesting.TestClient) {
+				// Latest pipeline found but has no jobs (e.g., external pipeline)
+				tc.MockPipelines.EXPECT().
+					GetLatestPipeline("OWNER/REPO", &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr("feature")}).
+					Return(&gitlab.Pipeline{ID: 1, Status: "success"}, nil, nil)
+
+				// Mock job check returns empty list
+				tc.MockJobs.EXPECT().
+					ListPipelineJobs("OWNER/REPO", int64(1), gomock.Any()).
+					Return([]*gitlab.Job{}, nil, nil)
+
+				// Find and get MR
+				tc.MockMergeRequests.EXPECT().
+					ListProjectMergeRequests("OWNER/REPO", gomock.Any()).
+					Return([]*gitlab.BasicMergeRequest{{IID: 1}}, nil, nil)
+
+				tc.MockMergeRequests.EXPECT().
+					GetMergeRequest("OWNER/REPO", int64(1), gomock.Any()).
+					Return(&gitlab.MergeRequest{
+						BasicMergeRequest: gitlab.BasicMergeRequest{IID: 1},
+						HeadPipeline:      &gitlab.Pipeline{ID: 2, Status: "running"},
+					}, nil, nil)
+
+				tc.MockPipelines.EXPECT().
+					GetPipeline("OWNER/REPO", int64(2), gomock.Any()).
+					Return(&gitlab.Pipeline{
+						ID:     2,
+						Status: "running",
+					}, nil, nil)
+			},
+			wantPipeline: &gitlab.Pipeline{ID: 2, Status: "running"},
 			wantErr:      false,
 		},
 		{
@@ -116,11 +157,10 @@ func Test_getPipelineWithFallback(t *testing.T) {
 			tc := gitlabtesting.NewTestClient(t)
 			tt.setupMocks(tc)
 
-			// Create a test factory with test IO streams
+			// Create test IO streams
 			ios, _, _, _ := cmdtest.TestIOStreams(cmdtest.WithTestIOStreamsAsTTY(false))
-			factory := cmdtest.NewTestFactory(ios, cmdtest.WithGitLabClient(tc.Client))
 
-			pipeline, err := ciutils.GetPipelineWithFallback(tc.Client, factory, "OWNER/REPO", tt.branch)
+			pipeline, err := ciutils.GetPipelineWithFallback(tc.Client, "OWNER/REPO", tt.branch, ios)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -149,6 +189,11 @@ func TestCiStatusCommand_NoPrompt(t *testing.T) {
 		tc.MockPipelines.EXPECT().
 			GetLatestPipeline("OWNER/REPO", &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr("main")}).
 			Return(&gitlab.Pipeline{ID: 1, Status: "success"}, nil, nil),
+
+		// Mock job check in GetPipelineWithFallback
+		tc.MockJobs.EXPECT().
+			ListPipelineJobs("OWNER/REPO", int64(1), gomock.Any()).
+			Return([]*gitlab.Job{{ID: 1, Name: "test"}}, nil, nil),
 
 		// Mock jobs for the pipeline - need to handle pagination
 		tc.MockJobs.EXPECT().
@@ -183,6 +228,11 @@ func TestCiStatusCommand_WithPromptsEnabled_FinishedPipeline(t *testing.T) {
 		tc.MockPipelines.EXPECT().
 			GetLatestPipeline("OWNER/REPO", &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr("main")}).
 			Return(&gitlab.Pipeline{ID: 1, Status: "success"}, nil, nil),
+
+		// Mock job check in GetPipelineWithFallback
+		tc.MockJobs.EXPECT().
+			ListPipelineJobs("OWNER/REPO", int64(1), gomock.Any()).
+			Return([]*gitlab.Job{{ID: 1, Name: "test"}}, nil, nil),
 
 		// Mock jobs for the pipeline - need to handle pagination
 		tc.MockJobs.EXPECT().

@@ -66,7 +66,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 			dbg.Debug("Using branch:", branch)
 
 			// Use fallback logic for robust pipeline lookup
-			runningPipeline, err := ciutils.GetPipelineWithFallback(client, f, repoName, branch)
+			runningPipeline, err := ciutils.GetPipelineWithFallback(client, repoName, branch, f.IO())
 			if err != nil {
 				redCheck := c.Red("✘")
 				fmt.Fprintf(f.IO().StdOut, "%s %v\n", redCheck, err)
@@ -124,7 +124,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 
 				if (runningPipeline.Status == "pending" || runningPipeline.Status == "running") && live {
 					// Use fallback logic for live updates
-					updatedPipeline, err := ciutils.GetPipelineWithFallback(client, f, repoName, branch)
+					updatedPipeline, err := ciutils.GetPipelineWithFallback(client, repoName, branch, f.IO())
 					if err != nil {
 						// Final fallback: refresh current pipeline by ID
 						updatedPipeline, _, err = client.Pipelines.GetPipeline(repoName, runningPipeline.ID)
@@ -155,7 +155,7 @@ func NewCmdStatus(f cmdutils.Factory) *cobra.Command {
 						if err != nil {
 							return err
 						}
-						updatedPipeline, err := ciutils.GetPipelineWithFallback(client, f, repoName, branch)
+						updatedPipeline, err := ciutils.GetPipelineWithFallback(client, repoName, branch, f.IO())
 						if err != nil {
 							// Fallback: refresh by pipeline ID if MR lookup fails
 							updatedPipeline, _, err = client.Pipelines.GetPipeline(repoName, runningPipeline.ID)

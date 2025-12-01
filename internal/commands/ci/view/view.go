@@ -39,7 +39,6 @@ type options struct {
 	gitlabClient func() (*gitlab.Client, error)
 	baseRepo     func() (glrepo.Interface, error)
 	config       func() config.Config
-	factory      cmdutils.Factory
 
 	refName       string
 	openInBrowser bool
@@ -108,7 +107,6 @@ func NewCmdView(f cmdutils.Factory) *cobra.Command {
 		gitlabClient: f.GitLabClient,
 		baseRepo:     f.BaseRepo,
 		config:       f.Config,
-		factory:      f,
 	}
 	pipelineCIView := &cobra.Command{
 		Use:   "view [branch/tag]",
@@ -213,7 +211,7 @@ func (o *options) run() error {
 		}
 	} else {
 		// Get pipeline by branch reference (not by commit's LastPipeline)
-		pipeline, err := ciutils.GetPipelineWithFallback(client, o.factory, projectID, o.refName)
+		pipeline, err := ciutils.GetPipelineWithFallback(client, projectID, o.refName, o.io)
 		if err != nil {
 			return err
 		}
