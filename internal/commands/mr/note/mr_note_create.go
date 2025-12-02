@@ -3,6 +3,7 @@ package note
 import (
 	"fmt"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -20,7 +21,16 @@ func NewCmdNote(f cmdutils.Factory) *cobra.Command {
 		Aliases: []string{"comment"},
 		Short:   "Add a comment or note to a merge request.",
 		Long:    ``,
-		Args:    cobra.MaximumNArgs(1),
+		Example: heredoc.Doc(`
+			# Add a comment to merge request with ID 123
+			$ glab mr note 123 -m "Looks good to me!"
+
+			# Add a comment to the merge request for the current branch
+			$ glab mr note -m "LGTM"
+
+			# Open your editor to compose a multi-line comment
+			$ glab mr note 123`),
+		Args: cobra.MaximumNArgs(1),
 		Annotations: map[string]string{
 			mcpannotations.Destructive: "true",
 		},
