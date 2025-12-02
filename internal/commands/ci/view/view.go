@@ -10,6 +10,7 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/gdamore/tcell/v2"
@@ -949,7 +950,8 @@ func link(
 	// Drawing a job in the same stage
 	// left of view
 	if !firstStage {
-		if r, _, _, _ := screen.GetContent(x2-p, y1+h/2); r == '╚' {
+		s, _, _ := screen.Get(x2-p, y1+h/2)
+		if r, _ := utf8.DecodeRuneInString(s); r == '╚' {
 			screen.SetContent(x2-p, y1+h/2, '╠', nil, tcell.StyleDefault)
 		} else {
 			screen.SetContent(x2-p, y1+h/2, '╦', nil, tcell.StyleDefault)
@@ -964,7 +966,8 @@ func link(
 	}
 	// right of view
 	if !lastStage {
-		if r, _, _, _ := screen.GetContent(x2+w+p-1, y1+h/2); r == '┛' {
+		s, _, _ := screen.Get(x2+w+p-1, y1+h/2)
+		if r, _ := utf8.DecodeRuneInString(s); r == '┛' {
 			screen.SetContent(x2+w+p-1, y1+h/2, '╣', nil, tcell.StyleDefault)
 		}
 		for i := range p - 1 {

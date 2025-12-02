@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -31,8 +32,8 @@ func assertScreen(t *testing.T, screen tcell.Screen, expected []string) {
 		runes := make([]rune, len(str))
 		row := []rune(str)
 		for x, expectedRune := range row {
-			r, _, _, _ := screen.GetContent(x, y)
-			runes[x] = r
+			s, _, _ := screen.Get(x, y)
+			runes[x], _ = utf8.DecodeRuneInString(s)
 			_ = expectedRune
 			// assert.Equal(t, expectedRune, r, "%s != %s at (%d,%d)",
 			//	strconv.QuoteRune(expectedRune), strconv.QuoteRune(r), x, y)
