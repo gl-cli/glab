@@ -26,8 +26,9 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 		Use:   "download <fileID> [flags]",
 		Short: `Download a secure file for a project.`,
 		Example: heredoc.Doc(`
-		    # Download a project's secure file using the file's ID.
+		    # Download a project's secure file using the file's ID by argument or flag.
 		    $ glab securefile download 1
+		    $ glab securefile download --id 1
 
 		    # Download a project's secure file using the file's ID to a given path.
 		    $ glab securefile download 1 --path="securefiles/file.txt"
@@ -37,6 +38,12 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 
 		    # Download a project's secure file even if checksum verification fails.
 		    $ glab securefile download 1 --force-download
+
+		    # Download a project's secure file using the file's name to the current directory.
+		    $ glab securefile download --name my-secure-file.pem
+
+		    # Download a project's secure file using the file's name to a given path.
+		    $ glab securefile download --name my-secure-file.pem --path=securefiles/some-other-name.pem
 
 		    # Download all (limit 100) of a project's secure files.
 		    $ glab securefile download --all
@@ -98,18 +105,47 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 					return errors.New("output-dir flag is only compatible with all flag")
 				}
 
-				if len(args) == 0 {
-					return errors.New("must provide fileID argument")
-				}
-
-				fileID, err := strconv.ParseInt(args[0], 10, 64)
-				if err != nil {
-					return fmt.Errorf("secure file ID must be an integer: %s", args[0])
-				}
-
 				path, err := cmd.Flags().GetString("path")
 				if err != nil {
 					return fmt.Errorf("unable to get path flag: %w", err)
+				}
+
+				// Download securefile by Name
+				name, err := cmd.Flags().GetString("name")
+				if err != nil {
+					return fmt.Errorf("unable to get name flag: %w", err)
+				}
+
+				if name != "" {
+					if len(args) > 0 && args[0] != "" {
+						return errors.New("name flag is not compatible with arguments")
+					}
+
+					// If path wasn't explicitly set by user, use name as default
+					if !cmd.Flags().Changed("path") {
+						path = fmt.Sprintf("./%s", name)
+					}
+
+					return downloadSecureFileByName(client, f.IO().StdOut, root, name, repo.FullName(), path, !noVerify, forceDownload)
+				}
+
+				var fileID int64
+				// Check if --id is passed, else drop to positional argument
+				if cmd.Flags().Changed("id") {
+					fileID, err = cmd.Flags().GetInt64("id")
+					if err != nil {
+						return fmt.Errorf("unable to get id flag: %w", err)
+					}
+				} else {
+					// Guard against no args
+					if len(args) == 0 {
+						return errors.New("must provide fileID argument, --id or --name flag")
+					}
+
+					fileID, err = strconv.ParseInt(args[0], 10, 64)
+					if err != nil {
+						return fmt.Errorf("secure file ID must be an integer: %s", args[0])
+					}
 				}
 
 				return downloadSecureFile(client, f.IO().StdOut, root, fileID, repo.FullName(), path, !noVerify, forceDownload)
@@ -118,6 +154,8 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 	}
 	securefileDownloadCmd.Flags().StringP("path", "p", "./downloaded.tmp", "Path to download the secure file to, including filename and extension.")
 	securefileDownloadCmd.Flags().String("output-dir", ".", "Output directory for files downloaded with --all.")
+	securefileDownloadCmd.Flags().Int64("id", 0, "ID of the secure file to download.")
+	securefileDownloadCmd.Flags().String("name", "", "Name of the secure file to download. Saves the file with this name, or to the path specified by --path.")
 	securefileDownloadCmd.Flags().Bool("no-verify", false, "Do not verify the checksum of the downloaded file(s). Warning: when enabled, this setting allows the download of files that are corrupt or tampered with.")
 	securefileDownloadCmd.Flags().Bool("force-download", false, "Force download file(s) even if checksum verification fails. Warning: when enabled, this setting allows the download of files that are corrupt or tampered with.")
 	securefileDownloadCmd.Flags().Bool("all", false, "Download all (limit 100) of a project's secure files. Files are downloaded with their original name and file extension.")
@@ -125,8 +163,50 @@ func NewCmdDownload(f cmdutils.Factory) *cobra.Command {
 	securefileDownloadCmd.MarkFlagsMutuallyExclusive("no-verify", "force-download")
 	securefileDownloadCmd.MarkFlagsMutuallyExclusive("path", "output-dir")
 	securefileDownloadCmd.MarkFlagsMutuallyExclusive("path", "all")
+	securefileDownloadCmd.MarkFlagsMutuallyExclusive("id", "name", "all")
 
 	return securefileDownloadCmd
+}
+
+func downloadSecureFileByName(client *gitlab.Client, stdOut io.Writer, root *os.Root, fileName string, repoName, path string, verifyChecksum, forceDownload bool) error {
+	path = filepath.Clean(path)
+	if err := ensureDirectoryExists(root, path); err != nil {
+		return err
+	}
+
+	// Get the fileID for the given Name
+	options := &gitlab.ListProjectSecureFilesOptions{
+		ListOptions: gitlab.ListOptions{
+			Page:    1,
+			PerPage: api.MaxPerPage,
+		},
+	}
+
+	var fileID int64
+	for secureFile, err := range gitlab.Scan2(func(p gitlab.PaginationOptionFunc) ([]*gitlab.SecureFile, *gitlab.Response, error) {
+		return client.SecureFiles.ListProjectSecureFiles(repoName, options, p)
+	}) {
+		if err != nil {
+			return fmt.Errorf("error fetching secure files: %w", err)
+		}
+
+		if secureFile.Name == fileName {
+			fileID = secureFile.ID
+			break
+		}
+	}
+
+	if fileID == 0 {
+		return fmt.Errorf("couldn't locate secure file with name %s", fileName)
+	}
+
+	err := saveFile(client, stdOut, repoName, fileID, path, verifyChecksum, forceDownload)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(stdOut, "Downloaded secure file '%s' (Name: %s)\n", filepath.Base(path), fileName)
+	return nil
 }
 
 func downloadSecureFile(client *gitlab.Client, stdOut io.Writer, root *os.Root, fileID int64, repoName, path string, verifyChecksum, forceDownload bool) error {
