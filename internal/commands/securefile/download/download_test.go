@@ -36,10 +36,28 @@ func Test_SecurefileDownload(t *testing.T) {
 		setupMocks       func(*gitlabtesting.TestClient)
 	}{
 		{
-			Name:             "Download secure file to current folder with checksum verification",
+			Name:             "Download secure file to current folder with checksum verification via id arg",
 			ExpectedMsg:      []string{"Downloaded secure file 'downloaded.tmp' (ID: 1)\n"},
 			expectedFileName: "downloaded.tmp",
 			cli:              "1",
+			setupMocks: func(testClient *gitlabtesting.TestClient) {
+				testClient.MockSecureFiles.EXPECT().
+					DownloadSecureFile(repoName, int64(1)).
+					Return(strings.NewReader(fileContents), nil, nil)
+				testClient.MockSecureFiles.EXPECT().
+					ShowSecureFileDetails(repoName, int64(1)).
+					Return(&gitlab.SecureFile{
+						ID:       1,
+						Name:     fileName,
+						Checksum: fileContentsChecksum,
+					}, nil, nil)
+			},
+		},
+		{
+			Name:             "Download secure file to current folder with checksum verification via id flag",
+			ExpectedMsg:      []string{"Downloaded secure file 'downloaded.tmp' (ID: 1)\n"},
+			expectedFileName: "downloaded.tmp",
+			cli:              "--id 1",
 			setupMocks: func(testClient *gitlabtesting.TestClient) {
 				testClient.MockSecureFiles.EXPECT().
 					DownloadSecureFile(repoName, int64(1)).
@@ -131,6 +149,162 @@ func Test_SecurefileDownload(t *testing.T) {
 						Checksum: "invalid_checksum",
 					}, nil, nil)
 			},
+		},
+		{
+			Name: "Download secure file by name to current directory",
+			ExpectedMsg: []string{
+				"Downloaded secure file 'file2.txt' (Name: file2.txt)\n",
+			},
+			cli:              "--name file2.txt",
+			expectedFileName: "file2.txt",
+			setupMocks: func(testClient *gitlabtesting.TestClient) {
+				testClient.MockSecureFiles.EXPECT().
+					ListProjectSecureFiles(repoName, &gitlab.ListProjectSecureFilesOptions{
+						ListOptions: gitlab.ListOptions{
+							Page:    1,
+							PerPage: 100,
+						},
+					}, nil).
+					Return([]*gitlab.SecureFile{
+						{ID: 1, Name: "file1.txt", Checksum: fileContentsChecksum},
+						{ID: 2, Name: "file2.txt", Checksum: fileContentsChecksum},
+					}, nil, nil)
+
+				testClient.MockSecureFiles.EXPECT().
+					DownloadSecureFile(repoName, int64(2)).
+					Return(strings.NewReader(fileContents), nil, nil)
+				testClient.MockSecureFiles.EXPECT().
+					ShowSecureFileDetails(repoName, int64(2)).
+					Return(&gitlab.SecureFile{
+						ID:       2,
+						Name:     "file2.txt",
+						Checksum: fileContentsChecksum,
+					}, nil, nil)
+			},
+		},
+		{
+			Name: "Download secure file by name to custom output directory",
+			ExpectedMsg: []string{
+				"Downloaded secure file 'file1.txt' (Name: file1.txt)",
+			},
+			cli:              "--name file1.txt --path=secure_files/file1.txt",
+			expectedFileName: "secure_files/file1.txt",
+			setupMocks: func(testClient *gitlabtesting.TestClient) {
+				testClient.MockSecureFiles.EXPECT().
+					ListProjectSecureFiles(repoName, &gitlab.ListProjectSecureFilesOptions{
+						ListOptions: gitlab.ListOptions{
+							Page:    1,
+							PerPage: 100,
+						},
+					}, nil).
+					Return([]*gitlab.SecureFile{
+						{ID: 1, Name: "file2.pdf", Checksum: fileContentsChecksum},
+						{ID: 2, Name: "file1.txt", Checksum: fileContentsChecksum},
+					}, nil, nil)
+
+				testClient.MockSecureFiles.EXPECT().
+					DownloadSecureFile(repoName, int64(2)).
+					Return(strings.NewReader(fileContents), nil, nil)
+				testClient.MockSecureFiles.EXPECT().
+					ShowSecureFileDetails(repoName, int64(2)).
+					Return(&gitlab.SecureFile{
+						ID:       2,
+						Name:     "file1.txt",
+						Checksum: fileContentsChecksum,
+					}, nil, nil)
+			},
+		},
+		{
+			Name: "Download secure file by name without checksum verification",
+			ExpectedMsg: []string{
+				"Downloaded secure file 'file1.txt' (Name: file1.txt)",
+			},
+			cli:              "--name file1.txt --no-verify",
+			expectedFileName: "file1.txt",
+			setupMocks: func(testClient *gitlabtesting.TestClient) {
+				testClient.MockSecureFiles.EXPECT().
+					ListProjectSecureFiles(repoName, &gitlab.ListProjectSecureFilesOptions{
+						ListOptions: gitlab.ListOptions{
+							Page:    1,
+							PerPage: 100,
+						},
+					}, nil).
+					Return([]*gitlab.SecureFile{
+						{ID: 1, Name: "file1.txt", Checksum: fileContentsChecksum},
+					}, nil, nil)
+
+				testClient.MockSecureFiles.EXPECT().
+					DownloadSecureFile(repoName, int64(1)).
+					Return(strings.NewReader(fileContents), nil, nil)
+			},
+		},
+		{
+			Name: "Download secure file by name with force download on checksum failure",
+			ExpectedMsg: []string{
+				"Checksum verification failed for file1.txt: expected invalid_checksum, got 185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+				"Force-download selected, continuing to download file.",
+				"Downloaded secure file 'file1.txt' (Name: file1.txt)",
+			},
+			cli:              "--name file1.txt --force-download",
+			expectedFileName: "file1.txt",
+			setupMocks: func(testClient *gitlabtesting.TestClient) {
+				testClient.MockSecureFiles.EXPECT().
+					ListProjectSecureFiles(repoName, &gitlab.ListProjectSecureFilesOptions{
+						ListOptions: gitlab.ListOptions{
+							Page:    1,
+							PerPage: 100,
+						},
+					}, nil).
+					Return([]*gitlab.SecureFile{
+						{ID: 1, Name: "file1.txt", Checksum: "invalid_checksum"},
+					}, nil, nil)
+
+				testClient.MockSecureFiles.EXPECT().
+					DownloadSecureFile(repoName, int64(1)).
+					Return(strings.NewReader(fileContents), nil, nil)
+				testClient.MockSecureFiles.EXPECT().
+					ShowSecureFileDetails(repoName, int64(1)).
+					Return(&gitlab.SecureFile{
+						ID:       1,
+						Name:     "file1.txt",
+						Checksum: "invalid_checksum",
+					}, nil, nil)
+			},
+		},
+		{
+			Name:             "Handle empty secure files list",
+			ExpectedMsg:      []string{},
+			cli:              "--name notfound",
+			expectedFileName: "",
+			wantErr:          true,
+			wantStderr:       "couldn't locate secure file with name notfound",
+			setupMocks: func(testClient *gitlabtesting.TestClient) {
+				testClient.MockSecureFiles.EXPECT().
+					ListProjectSecureFiles(repoName, &gitlab.ListProjectSecureFilesOptions{
+						ListOptions: gitlab.ListOptions{
+							Page:    1,
+							PerPage: 100,
+						},
+					}, nil).
+					Return([]*gitlab.SecureFile{}, &gitlab.Response{
+						NextPage: 0,
+						NextLink: "",
+					}, nil)
+			},
+		},
+		{
+			Name:       "Error when --name flag is used with fileID argument",
+			cli:        "--name foobar 1",
+			wantErr:    true,
+			wantStderr: "name flag is not compatible with arguments",
+			setupMocks: func(testClient *gitlabtesting.TestClient) {},
+		},
+		{
+			Name:       "Error when --name flag is used with --id flag",
+			cli:        "--name foobar --id 1",
+			wantErr:    true,
+			wantStderr: "if any flags in the group [id name all] are set none of the others can be; [id name] were all set",
+			setupMocks: func(testClient *gitlabtesting.TestClient) {},
 		},
 		{
 			Name:       "Error when output-dir flag is used without all flag",
