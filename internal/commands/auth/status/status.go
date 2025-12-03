@@ -19,7 +19,9 @@ import (
 type options struct {
 	hostname  string
 	showToken bool
+	all       bool
 
+	defaultHostname    string
 	httpClientOverride func(token, hostname string) (*api.Client, error) // used in tests to mock http client
 	io                 *iostreams.IOStreams
 	apiClient          func(repoHost string) (*api.Client, error)
@@ -28,19 +30,23 @@ type options struct {
 
 func NewCmdStatus(f cmdutils.Factory, runE func(*options) error) *cobra.Command {
 	opts := &options{
-		io:        f.IO(),
-		apiClient: f.ApiClient,
-		config:    f.Config,
+		io:              f.IO(),
+		apiClient:       f.ApiClient,
+		config:          f.Config,
+		defaultHostname: f.DefaultHostname(),
 	}
 
 	cmd := &cobra.Command{
 		Use:   "status",
 		Args:  cobra.ExactArgs(0),
 		Short: "View authentication status.",
-		Long: heredoc.Doc(`Verifies and displays information about your authentication state.
+		Long: heredoc.Docf(`Verifies and displays information about your authentication state.
 
-		This command tests the authentication states of all known GitLab instances in the configuration file and reports issues, if any.
-		`),
+		By default, this command checks the authentication state of the GitLab instance 
+		determined by your current context (%[1]sgit remote%[1]s, %[1]sGITLAB_HOST%[1]s environment variable, 
+		or configuration). Use %[1]s--all%[1]s to check all configured instances, or %[1]s--hostname%[1]s to 
+		check a specific instance.
+		`, "`"),
 		Annotations: map[string]string{
 			mcpannotations.Safe: "true",
 		},
@@ -55,6 +61,9 @@ func NewCmdStatus(f cmdutils.Factory, runE func(*options) error) *cobra.Command 
 
 	cmd.Flags().StringVarP(&opts.hostname, "hostname", "", "", "Check a specific instance's authentication status.")
 	cmd.Flags().BoolVarP(&opts.showToken, "show-token", "t", false, "Display the authentication token.")
+	cmd.Flags().BoolVarP(&opts.all, "all", "a", false, "Check all configured instances.")
+
+	cmd.MarkFlagsMutuallyExclusive("all", "hostname")
 
 	return cmd
 }
@@ -70,6 +79,17 @@ func (o *options) run() error {
 	instances, err := cfg.Hosts()
 	if len(instances) == 0 || err != nil {
 		return fmt.Errorf("No GitLab instances have been authenticated with glab. Run `%s` to authenticate.\n", c.Bold("glab auth login"))
+	}
+
+	// Determine which host(s) to check
+	// Priority: --hostname flag > --all flag > defaultHostname (from GITLAB_HOST/git remote)
+	if o.hostname == "" && !o.all {
+		// No explicit flags, use default hostname if it's not gitlab.com
+		// This means GITLAB_HOST or git remote has set a specific host
+		if o.defaultHostname != glinstance.DefaultHostname {
+			o.hostname = o.defaultHostname
+		}
+		// else: hostname stays empty, will check all instances (backward compatible)
 	}
 
 	if o.hostname != "" && !slices.Contains(instances, o.hostname) {

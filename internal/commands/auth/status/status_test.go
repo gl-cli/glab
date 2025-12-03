@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -17,6 +19,7 @@ import (
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 )
@@ -34,9 +37,9 @@ func Test_NewCmdStatus(t *testing.T) {
 		},
 		{
 			name: "hostname set",
-			cli:  "--hostname gitlab.gnome.org",
+			cli:  "--hostname gitlab.example.com",
 			wants: options{
-				hostname: "gitlab.gnome.org",
+				hostname: "gitlab.example.com",
 			},
 		},
 		{
@@ -44,6 +47,13 @@ func Test_NewCmdStatus(t *testing.T) {
 			cli:  "--show-token",
 			wants: options{
 				showToken: true,
+			},
+		},
+		{
+			name: "all flag set",
+			cli:  "--all",
+			wants: options{
+				all: true,
 			},
 		},
 	}
@@ -73,6 +83,8 @@ func Test_NewCmdStatus(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.Equal(t, tt.wants.hostname, gotOpts.hostname)
+			assert.Equal(t, tt.wants.showToken, gotOpts.showToken)
+			assert.Equal(t, tt.wants.all, gotOpts.all)
 		})
 	}
 }
@@ -80,21 +92,21 @@ func Test_NewCmdStatus(t *testing.T) {
 func Test_statusRun(t *testing.T) {
 	defer config.StubConfig(`---
 hosts:
-  gitlab.alpinelinux.org:
+  gitlab.example.com:
     token: xxxxxxxxxxxxxxxxxxxx
     git_protocol: ssh
     api_protocol: https
-  gitlab.foo.bar:
+  gitlab2.example.com:
     token: glpat-xxxxxxxxxxxxxxxxxxxx
     git_protocol: ssh
     api_protocol: https
-  gitlab.env.bar:
+  gitlab3.example.com:
     token: glpat-xxxxxxxxxxxxxxxxxxxx
     git_protocol: ssh
     api_protocol: https
-  another.host:
+  another.example:
     token: isinvalid
-  gl.io:
+  test.example:
     token:
 `, "")()
 
@@ -112,54 +124,54 @@ hosts:
 		{
 			name: "hostname set with old token format",
 			opts: &options{
-				hostname: "gitlab.alpinelinux.org",
+				hostname: "gitlab.example.com",
 			},
 			wantErr: false,
-			stderr: fmt.Sprintf(`gitlab.alpinelinux.org
-  ✓ Logged in to gitlab.alpinelinux.org as john_smith (%s)
-  ✓ Git operations for gitlab.alpinelinux.org configured to use ssh protocol.
-  ✓ API calls for gitlab.alpinelinux.org are made over https protocol.
-  ✓ REST API Endpoint: https://gitlab.alpinelinux.org/api/v4/
-  ✓ GraphQL Endpoint: https://gitlab.alpinelinux.org/api/graphql/
+			stderr: fmt.Sprintf(`gitlab.example.com
+  ✓ Logged in to gitlab.example.com as john_smith (%s)
+  ✓ Git operations for gitlab.example.com configured to use ssh protocol.
+  ✓ API calls for gitlab.example.com are made over https protocol.
+  ✓ REST API Endpoint: https://gitlab.example.com/api/v4/
+  ✓ GraphQL Endpoint: https://gitlab.example.com/api/graphql/
   ✓ Token found: **************************
 `, cfgFile),
 		},
 		{
 			name: "hostname set with new token format",
 			opts: &options{
-				hostname: "gitlab.foo.bar",
+				hostname: "gitlab2.example.com",
 			},
 			wantErr: false,
-			stderr: fmt.Sprintf(`gitlab.foo.bar
-  ✓ Logged in to gitlab.foo.bar as john_doe (%s)
-  ✓ Git operations for gitlab.foo.bar configured to use ssh protocol.
-  ✓ API calls for gitlab.foo.bar are made over https protocol.
-  ✓ REST API Endpoint: https://gitlab.foo.bar/api/v4/
-  ✓ GraphQL Endpoint: https://gitlab.foo.bar/api/graphql/
+			stderr: fmt.Sprintf(`gitlab2.example.com
+  ✓ Logged in to gitlab2.example.com as john_doe (%s)
+  ✓ Git operations for gitlab2.example.com configured to use ssh protocol.
+  ✓ API calls for gitlab2.example.com are made over https protocol.
+  ✓ REST API Endpoint: https://gitlab2.example.com/api/v4/
+  ✓ GraphQL Endpoint: https://gitlab2.example.com/api/graphql/
   ✓ Token found: **************************
 `, cfgFile),
 		},
 		{
 			name: "instance not authenticated",
 			opts: &options{
-				hostname: "invalid.instance",
+				hostname: "invalid.example",
 			},
 			wantErr: true,
-			stderr:  "x invalid.instance has not been authenticated with glab. Run `glab auth login --hostname invalid.instance` to authenticate.",
+			stderr:  "x invalid.example has not been authenticated with glab. Run `glab auth login --hostname invalid.example` to authenticate.",
 		},
 		{
 			name: "with token set in env variable",
 			opts: &options{
-				hostname: "gitlab.env.bar",
+				hostname: "gitlab3.example.com",
 			},
 			envVar:  true,
 			wantErr: false,
-			stderr: `gitlab.env.bar
-  ✓ Logged in to gitlab.env.bar as john_doe (GITLAB_TOKEN)
-  ✓ Git operations for gitlab.env.bar configured to use ssh protocol.
-  ✓ API calls for gitlab.env.bar are made over https protocol.
-  ✓ REST API Endpoint: https://gitlab.env.bar/api/v4/
-  ✓ GraphQL Endpoint: https://gitlab.env.bar/api/graphql/
+			stderr: `gitlab3.example.com
+  ✓ Logged in to gitlab3.example.com as john_doe (GITLAB_TOKEN)
+  ✓ Git operations for gitlab3.example.com configured to use ssh protocol.
+  ✓ API calls for gitlab3.example.com are made over https protocol.
+  ✓ REST API Endpoint: https://gitlab3.example.com/api/v4/
+  ✓ GraphQL Endpoint: https://gitlab3.example.com/api/graphql/
   ✓ Token found: **************************
 
 ! One of GITLAB_TOKEN, GITLAB_ACCESS_TOKEN, OAUTH_TOKEN environment variables is set. It will be used for all authentication.
@@ -216,13 +228,13 @@ hosts:
 func Test_statusRun_noHostnameSpecified(t *testing.T) {
 	defer config.StubConfig(`---
 hosts:
-  gitlab.alpinelinux.org:
+  gitlab.example.com:
     token: xxxxxxxxxxxxxxxxxxxx
     git_protocol: ssh
     api_protocol: https
-  another.host:
+  another.example:
     token: isinvalid
-  gl.io:
+  test.example:
     token:
 `, "")()
 
@@ -231,34 +243,34 @@ hosts:
 	tc := gitlabtesting.NewTestClient(t)
 	gomock.InOrder(
 		tc.MockUsers.EXPECT().CurrentUser().Return(&gitlab.User{Username: "john_smith"}, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusOK}}, nil),
-		tc.MockUsers.EXPECT().CurrentUser().Return(nil, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusUnauthorized}}, errors.New("GET https://another.host/api/v4/user: 401 {message: invalid token}")),
-		tc.MockUsers.EXPECT().CurrentUser().Return(nil, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusUnauthorized}}, errors.New("GET https://gl.io/api/v4/user: 401 {message: no token provided}")),
+		tc.MockUsers.EXPECT().CurrentUser().Return(nil, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusUnauthorized}}, errors.New("GET https://another.example/api/v4/user: 401 {message: invalid token}")),
+		tc.MockUsers.EXPECT().CurrentUser().Return(nil, &gitlab.Response{Response: &http.Response{StatusCode: http.StatusUnauthorized}}, errors.New("GET https://test.example/api/v4/user: 401 {message: no token provided}")),
 	)
 
 	client := func(token, hostname string) (*api.Client, error) { // nolint:unparam
 		return cmdtest.NewTestApiClient(t, nil, token, hostname, api.WithGitLabClient(tc.Client)), nil
 	}
 
-	expectedOutput := fmt.Sprintf(`gitlab.alpinelinux.org
-  ✓ Logged in to gitlab.alpinelinux.org as john_smith (%s)
-  ✓ Git operations for gitlab.alpinelinux.org configured to use ssh protocol.
-  ✓ API calls for gitlab.alpinelinux.org are made over https protocol.
-  ✓ REST API Endpoint: https://gitlab.alpinelinux.org/api/v4/
-  ✓ GraphQL Endpoint: https://gitlab.alpinelinux.org/api/graphql/
+	expectedOutput := fmt.Sprintf(`gitlab.example.com
+  ✓ Logged in to gitlab.example.com as john_smith (%s)
+  ✓ Git operations for gitlab.example.com configured to use ssh protocol.
+  ✓ API calls for gitlab.example.com are made over https protocol.
+  ✓ REST API Endpoint: https://gitlab.example.com/api/v4/
+  ✓ GraphQL Endpoint: https://gitlab.example.com/api/graphql/
   ✓ Token found: **************************
-another.host
-  x another.host: API call failed: GET https://another.host/api/v4/user: 401 {message: invalid token}
-  ✓ Git operations for another.host configured to use ssh protocol.
-  ✓ API calls for another.host are made over https protocol.
-  ✓ REST API Endpoint: https://another.host/api/v4/
-  ✓ GraphQL Endpoint: https://another.host/api/graphql/
+another.example
+  x another.example: API call failed: GET https://another.example/api/v4/user: 401 {message: invalid token}
+  ✓ Git operations for another.example configured to use ssh protocol.
+  ✓ API calls for another.example are made over https protocol.
+  ✓ REST API Endpoint: https://another.example/api/v4/
+  ✓ GraphQL Endpoint: https://another.example/api/graphql/
   ✓ Token found: **************************
-gl.io
-  x gl.io: API call failed: GET https://gl.io/api/v4/user: 401 {message: no token provided}
-  ✓ Git operations for gl.io configured to use ssh protocol.
-  ✓ API calls for gl.io are made over https protocol.
-  ✓ REST API Endpoint: https://gl.io/api/v4/
-  ✓ GraphQL Endpoint: https://gl.io/api/graphql/
+test.example
+  x test.example: API call failed: GET https://test.example/api/v4/user: 401 {message: no token provided}
+  ✓ Git operations for test.example configured to use ssh protocol.
+  ✓ API calls for test.example are made over https protocol.
+  ✓ REST API Endpoint: https://test.example/api/v4/
+  ✓ GraphQL Endpoint: https://test.example/api/graphql/
   ! No token found (checked config file, keyring, and environment variables).
 `, cfgFile)
 
@@ -307,4 +319,25 @@ git_protocol: ssh
 		assert.Equal(t, "No GitLab instances have been authenticated with glab. Run `glab auth login` to authenticate.\n", err.Error())
 		assert.Empty(t, stdout.String())
 	})
+}
+
+func Test_statusRun_flagValidation(t *testing.T) {
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		func(f cmdutils.Factory) *cobra.Command { return NewCmdStatus(f, nil) },
+		false,
+		cmdtest.WithConfig(config.NewFromString(heredoc.Doc(`
+			hosts:
+			  gitlab.example.com:
+			    token: glpat-xxxxxxxxxxxxxxxxxxxx
+			    git_protocol: ssh
+			    api_protocol: https
+			`,
+		))),
+	)
+
+	_, err := exec("--all --hostname gitlab.example.com")
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "if any flags in the group [all hostname] are set none of the others can be")
 }
