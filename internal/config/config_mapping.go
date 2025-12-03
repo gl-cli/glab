@@ -1,7 +1,10 @@
 package config
 
 import (
+	"os"
 	"strings"
+
+	"gitlab.com/gitlab-org/cli/internal/dbg"
 )
 
 // ConfigKeyEquivalence returns the equivalent key that's actually used in the config file
@@ -34,13 +37,57 @@ func ConfigKeyEquivalence(key string) string {
 func EnvKeyEquivalence(key string) []string {
 	key = strings.ToLower(key)
 	// we only have a set default for one setting right now
+
+	ciAutologinEnabled := os.Getenv("GLAB_ENABLE_CI_AUTOLOGIN") == "true" && os.Getenv("GITLAB_CI") == "true"
+	if ciAutologinEnabled {
+		dbg.Debug("The experimental GLAB_ENABLE_CI_AUTOLOGIN is enabled together with GITLAB_CI being true. This enables auto-login using GitLab's predefined CI/CD variables and potentially authenticates with the CI_JOB_TOKEN")
+	}
+
 	switch key {
 	case "api_host":
-		return []string{"GITLAB_API_HOST"}
+		keys := []string{"GITLAB_API_HOST"}
+		if ciAutologinEnabled {
+			keys = append(keys, "CI_SERVER_FQDN")
+		}
+		return keys
+	case "api_protocol":
+		keys := []string{strings.ToUpper(key)}
+		if ciAutologinEnabled {
+			keys = append(keys, "CI_SERVER_PROTOCOL")
+		}
+		return keys
 	case "host":
-		return []string{"GITLAB_HOST", "GITLAB_URI", "GL_HOST"}
+		keys := []string{"GITLAB_HOST", "GITLAB_URI", "GL_HOST"}
+		if ciAutologinEnabled {
+			keys = append(keys, "CI_SERVER_FQDN")
+		}
+		return keys
 	case "token":
 		return []string{"GITLAB_TOKEN", "GITLAB_ACCESS_TOKEN", "OAUTH_TOKEN"}
+	case "job_token":
+		keys := []string{strings.ToUpper(key)}
+		if ciAutologinEnabled {
+			keys = append(keys, "CI_JOB_TOKEN")
+		}
+		return keys
+	case "ca_cert":
+		keys := []string{strings.ToUpper(key)}
+		if ciAutologinEnabled {
+			keys = append(keys, "CI_SERVER_TLS_CA_FILE")
+		}
+		return keys
+	case "client_cert":
+		keys := []string{strings.ToUpper(key)}
+		if ciAutologinEnabled {
+			keys = append(keys, "CI_SERVER_TLS_CERT_FILE")
+		}
+		return keys
+	case "client_key":
+		keys := []string{strings.ToUpper(key)}
+		if ciAutologinEnabled {
+			keys = append(keys, "CI_SERVER_TLS_KEY_FILE")
+		}
+		return keys
 	case "no_prompt":
 		return []string{"NO_PROMPT", "PROMPT_DISABLED"}
 	case "telemetry":

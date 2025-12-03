@@ -62,6 +62,7 @@ in the main README.
 | `NO_PROMPT` | Set to true to disable prompts. |
 | `REMOTE_ALIAS or GIT_REMOTE_URL_VAR` | A 'git remote' variable or alias that contains the GitLab URL. Can be set in the config with 'glab config set remote_alias origin'. |
 | `VISUAL, EDITOR (in order of precedence)` | The editor tool to use for authoring text. Can be set in the config with 'glab config set editor vim'. |
+| `GLAB_ENABLE_CI_AUTOLOGIN [EXPERIMENTAL]` | Set to true to enable auto-login in GitLab CI. CI auto-login detects if glab is running in a GitLab CI job by checking the predefined CI/CD variable 'GITLAB_CI'. If detected, it uses other predefined CI/CD variables like 'CI_SERVER_FQDN' and 'CI_JOB_TOKEN' to log in. Predefined CI/CD variables have the lowest priority. Even with auto-login enabled, configuration-mapped variables like 'GITLAB_TOKEN' or 'GITLAB_HOST' take precedence over the corresponding predefined variables. Only glab commands that support 'CI_JOB_TOKEN' are available. For a list of supported commands, see: https://docs.gitlab.com/ci/jobs/ci_job_token/#job-token-access. This flag is experimental. Use it with caution and leave feedback in https://gitlab.com/gitlab-org/cli/-/work_items/8071. |
 <!-- markdownlint-enable MD044 MD034 -->
 
 ## Options
