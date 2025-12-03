@@ -210,19 +210,22 @@ func (o *options) run() error {
 			return err
 		}
 	} else {
-		commit, _, err = client.Commits.GetCommit(projectID, o.refName, nil)
+		// Get pipeline by branch reference (not by commit's LastPipeline)
+		pipeline, err := ciutils.GetPipelineWithFallback(client, projectID, o.refName, o.io)
 		if err != nil {
 			return err
 		}
 
-		if commit.LastPipeline == nil {
-			return fmt.Errorf("Can't find pipeline for commit: %s", commit.ID)
-		}
+		pipelineID = pipeline.ID
+		webURL = pipeline.WebURL
+		pipelineCreatedAt = *pipeline.CreatedAt
+		commitSHA = pipeline.SHA
 
-		pipelineID = commit.LastPipeline.ID
-		webURL = commit.LastPipeline.WebURL
-		pipelineCreatedAt = *commit.LastPipeline.CreatedAt
-		commitSHA = commit.ID
+		// Get commit details for display purposes
+		commit, _, err = client.Commits.GetCommit(projectID, commitSHA, nil)
+		if err != nil {
+			return err
+		}
 	}
 
 	if o.openInBrowser { // open in browser if --web flag is specified

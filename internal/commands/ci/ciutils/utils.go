@@ -28,6 +28,112 @@ func makeHyperlink(s *iostreams.IOStreams, pipeline *gitlab.PipelineInfo) string
 	return s.Hyperlink(fmt.Sprintf("%d", pipeline.ID), pipeline.WebURL)
 }
 
+// GetPipelineWithFallback gets the latest pipeline for a branch, falling back to MR head pipeline
+// for merged results pipelines where the direct branch lookup may fail or returns a pipeline with no jobs.
+func GetPipelineWithFallback(client *gitlab.Client, repoName, branch string, ios *iostreams.IOStreams) (*gitlab.Pipeline, error) {
+	// First try: Get pipeline by branch name
+	pipeline, _, err := client.Pipelines.GetLatestPipeline(repoName, &gitlab.GetLatestPipelineOptions{Ref: gitlab.Ptr(branch)})
+	if err == nil {
+		// Check if the pipeline has jobs - some pipelines (e.g., external pipelines) may have no jobs
+		jobs, _, jobsErr := client.Jobs.ListPipelineJobs(repoName, pipeline.ID, &gitlab.ListJobsOptions{
+			ListOptions: gitlab.ListOptions{PerPage: 1},
+		})
+		if jobsErr == nil && len(jobs) > 0 {
+			// Pipeline has jobs, return it
+			return pipeline, nil
+		}
+		// Pipeline has no jobs, try MR fallback below
+	}
+
+	// Fallback: Look for MR pipeline (for merged results pipelines or when branch pipeline has no jobs)
+	mr, mrErr := getMRForBranch(client, repoName, branch, ios)
+	if mrErr != nil {
+		// If we had a pipeline from the branch lookup (even with no jobs), return it
+		if pipeline != nil {
+			return pipeline, nil
+		}
+		return nil, fmt.Errorf("no pipeline found for branch %s and failed to find associated merge request: %v", branch, mrErr)
+	}
+
+	if mr.HeadPipeline == nil {
+		// If we had a pipeline from the branch lookup (even with no jobs), return it
+		if pipeline != nil {
+			return pipeline, nil
+		}
+		return nil, fmt.Errorf("no pipeline found. It might not exist yet. Check your pipeline configuration")
+	}
+
+	// Get the full pipeline details using the MR's head pipeline ID
+	mrPipeline, _, pipelineErr := client.Pipelines.GetPipeline(repoName, mr.HeadPipeline.ID)
+	if pipelineErr != nil {
+		// If we had a pipeline from the branch lookup, return it as fallback
+		if pipeline != nil {
+			return pipeline, nil
+		}
+		return nil, pipelineErr
+	}
+
+	return mrPipeline, nil
+}
+
+// getMRForBranch finds a merge request for the given branch
+func getMRForBranch(client *gitlab.Client, repoName, branch string, ios *iostreams.IOStreams) (*gitlab.MergeRequest, error) {
+	opts := &gitlab.ListProjectMergeRequestsOptions{
+		SourceBranch: gitlab.Ptr(branch),
+	}
+
+	mrs, err := api.ListMRs(client, repoName, opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get merge requests for %q: %w", branch, err)
+	}
+
+	if len(mrs) == 0 {
+		return nil, fmt.Errorf("no merge request available for %q", branch)
+	}
+
+	var selectedMR *gitlab.BasicMergeRequest
+
+	// If exactly one MR, use it
+	if len(mrs) == 1 {
+		selectedMR = mrs[0]
+	} else {
+		// Multiple MRs exist - need to handle selection
+		if ios == nil || !ios.PromptEnabled() {
+			// Build error message with list of possible MRs
+			var mrNames []string
+			for _, mr := range mrs {
+				mrNames = append(mrNames, fmt.Sprintf("!%d (%s) by @%s", mr.IID, branch, mr.Author.Username))
+			}
+			return nil, fmt.Errorf("merge request ID number required. Possible matches:\n\n%s", strings.Join(mrNames, "\n"))
+		}
+
+		// Prompt user to select
+		mrMap := map[string]*gitlab.BasicMergeRequest{}
+		var mrNames []string
+		for i := range mrs {
+			t := fmt.Sprintf("!%d (%s) by @%s", mrs[i].IID, branch, mrs[i].Author.Username)
+			mrMap[t] = mrs[i]
+			mrNames = append(mrNames, t)
+		}
+
+		pickedMR := mrNames[0]
+		err = ios.Select(context.Background(), &pickedMR, "Multiple merge requests exist for this branch. Select one:", mrNames)
+		if err != nil {
+			return nil, fmt.Errorf("you must select a merge request: %w", err)
+		}
+
+		selectedMR = mrMap[pickedMR]
+	}
+
+	// Fetch the full MR to get HeadPipeline
+	fullMR, _, err := client.MergeRequests.GetMergeRequest(repoName, selectedMR.IID, &gitlab.GetMergeRequestsOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get merge request details: %w", err)
+	}
+
+	return fullMR, nil
+}
+
 func DisplaySchedules(i *iostreams.IOStreams, s []*gitlab.PipelineSchedule, projectID string) string {
 	if len(s) > 0 {
 		table := tableprinter.NewTablePrinter()
