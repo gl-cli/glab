@@ -18,7 +18,7 @@ Stacked diffs are a way of creating small changes that build upon each other to 
 
 This feature is experimental. It might be broken or removed without any prior notice.
 Read more about what experimental features mean at
-<https://docs.gitlab.com/policy/development_stages_support/>
+[https://docs.gitlab.com/policy/development_stages_support/](https://docs.gitlab.com/policy/development_stages_support/)
 
 Use experimental features at your own risk.
 
