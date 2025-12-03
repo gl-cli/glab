@@ -18,7 +18,7 @@ Shows a menu with a fuzzy finder to select a stack.
 
 This feature is experimental. It might be broken or removed without any prior notice.
 Read more about what experimental features mean at
-<https://docs.gitlab.com/policy/development_stages_support/>
+[https://docs.gitlab.com/policy/development_stages_support/](https://docs.gitlab.com/policy/development_stages_support/)
 
 Use experimental features at your own risk.
 
