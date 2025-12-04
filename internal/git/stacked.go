@@ -23,6 +23,11 @@ type StandardGitCommand struct{}
 
 func (gitc StandardGitCommand) Git(args ...string) (string, error) {
 	cmd := GitCommand(args...)
+
+	// Ensure output from git is in English for string matching
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "LC_ALL=C")
+
 	output, err := run.PrepareCmd(cmd).Output()
 	if err != nil {
 		return "", err
