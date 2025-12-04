@@ -29,14 +29,17 @@ $ glab variable export
 $ glab variable export --per-page 1000 --page 1
 $ glab variable export --group gitlab-org
 $ glab variable export --group gitlab-org --per-page 1000 --page 1
+$ glab variable export --output json
+$ glab variable export --output env
+$ glab variable export --output export
 
 ```
 
 ## Options
 
 ```plaintext
-  -F, --format string     Format of output: json, export, env. (default "json")
   -g, --group string      Select a group or subgroup. Ignored if a repository argument is set.
+  -F, --output string     Format output as: json, export, env. (default "json")
   -p, --page int          Page number. (default 1)
   -P, --per-page int      Number of items to list per page. (default 100)
   -R, --repo OWNER/REPO   Select another repository. Can use either OWNER/REPO or `GROUP/NAMESPACE/REPO` format. Also accepts full URL or Git URL.
