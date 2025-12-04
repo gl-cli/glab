@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
@@ -192,27 +192,21 @@ func NewCmdStackMove(f cmdutils.Factory, gr git.GitRunner) *cobra.Command {
 				return err
 			}
 
-			var branches []string
-			var descriptions []string
-
+			options := make([]huh.Option[string], 0)
 			i := 1
 			for ref := range stack.Iter() {
-				branches = append(branches, ref.Branch)
-				message := fmt.Sprintf("%v: %v", i, ref.Description)
-				descriptions = append(descriptions, message)
-
+				label := fmt.Sprintf("%s - %d: %s", ref.Branch, i, ref.Description)
+				options = append(options, huh.NewOption(label, ref.Branch))
 				i++
 			}
 
 			var branch string
-			prompt := &survey.Select{
-				Message: "Choose a diff to be checked out:",
-				Options: branches,
-				Description: func(value string, index int) string {
-					return descriptions[index]
-				},
-			}
-			err = survey.AskOne(prompt, &branch)
+			selector := huh.NewSelect[string]().
+				Title("Choose a diff to be checked out:").
+				Options(options...).
+				Value(&branch)
+
+			err = f.IO().Run(cmd.Context(), selector)
 			if err != nil {
 				return err
 			}

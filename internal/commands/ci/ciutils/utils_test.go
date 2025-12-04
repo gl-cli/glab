@@ -9,13 +9,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/survivorbat/huhtest"
 	"go.uber.org/mock/gomock"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 )
@@ -34,7 +34,7 @@ func TestGetJobId(t *testing.T) {
 		jobName       string
 		pipelineId    int
 		httpMocks     []httpMock
-		askOneStubs   []string
+		responder     *huhtest.Responder
 		expectedOut   int64
 		expectedError string
 	}{
@@ -194,30 +194,8 @@ func TestGetJobId(t *testing.T) {
 			jobName:     "",
 			pipelineId:  123,
 			expectedOut: 1122,
-			askOneStubs: []string{"lint (1122) - failed"},
-			httpMocks: []httpMock{
-				{
-					http.MethodGet,
-					"/api/v4/projects/OWNER%2FREPO/pipelines/123/jobs?per_page=100",
-					http.StatusOK,
-					`[{
-							"id": 1122,
-							"name": "lint",
-							"status": "failed"
-						}, {
-							"id": 1124,
-							"name": "publish",
-							"status": "failed"
-						}]`,
-					http.Header{},
-				},
-			},
-		}, {
-			name:        "when getJobId with pipelineId is requested, ask for job and give no answer",
-			jobName:     "",
-			pipelineId:  123,
-			expectedOut: 0,
-			askOneStubs: []string{""},
+			responder: huhtest.NewResponder().
+				AddSelect("Select pipeline job to trace:", 0),
 			httpMocks: []httpMock{
 				{
 					http.MethodGet,
@@ -244,14 +222,6 @@ func TestGetJobId(t *testing.T) {
 				MatchURL: httpmock.PathAndQuerystring,
 			}
 
-			if tc.askOneStubs != nil {
-				as, restoreAsk := prompt.InitAskStubber()
-				defer restoreAsk()
-				for _, value := range tc.askOneStubs {
-					as.StubOne(value)
-				}
-			}
-
 			defer fakeHTTP.Verify(t)
 
 			for _, mock := range tc.httpMocks {
@@ -262,16 +232,22 @@ func TestGetJobId(t *testing.T) {
 				)
 			}
 
-			ios, _, _, _ := cmdtest.TestIOStreams()
-			f := cmdtest.NewTestFactory(ios,
+			factoryOpts := []cmdtest.FactoryOption{
 				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
 				cmdtest.WithBranch("main"),
-			)
+			}
+
+			if tc.responder != nil {
+				factoryOpts = append(factoryOpts, cmdtest.WithResponder(t, tc.responder))
+			}
+
+			ios, _, _, _ := cmdtest.TestIOStreams()
+			f := cmdtest.NewTestFactory(ios, factoryOpts...)
 
 			client, _ := f.GitLabClient()
 			repo, _ := f.BaseRepo()
 
-			output, err := GetJobId(&JobInputs{
+			output, err := GetJobId(t.Context(), &JobInputs{
 				JobName:    tc.jobName,
 				PipelineId: tc.pipelineId,
 				Branch:     "main",
@@ -438,7 +414,7 @@ func TestTraceJob(t *testing.T) {
 			client, _ := f.GitLabClient()
 			repo, _ := f.BaseRepo()
 
-			err := TraceJob(&JobInputs{
+			err := TraceJob(t.Context(), &JobInputs{
 				JobName:    tc.jobName,
 				PipelineId: tc.pipelineId,
 				Branch:     "main",

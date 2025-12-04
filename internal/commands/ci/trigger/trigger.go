@@ -50,7 +50,7 @@ func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 			}
 			branch, _ := cmd.Flags().GetString("branch")
 			pipelineId, _ := cmd.Flags().GetInt("pipeline-id")
-			jobID, err := ciutils.GetJobId(&ciutils.JobInputs{
+			jobID, err := ciutils.GetJobId(cmd.Context(), &ciutils.JobInputs{
 				JobName:         jobName,
 				Branch:          branch,
 				PipelineId:      pipelineId,
@@ -64,7 +64,9 @@ func NewCmdTrigger(f cmdutils.Factory) *cobra.Command {
 				Repo:   repo,
 			})
 			if err != nil {
-				fmt.Fprintln(f.IO().StdErr, "invalid job ID:", jobName)
+				if jobName != "" {
+					fmt.Fprintln(f.IO().StdErr, "invalid job ID:", jobName)
+				}
 				return err
 			}
 

@@ -43,7 +43,7 @@ func NewCmdTrace(f cmdutils.Factory) *cobra.Command {
 			branch, _ := cmd.Flags().GetString("branch")
 			pipelineId, _ := cmd.Flags().GetInt("pipeline-id")
 
-			return ciutils.TraceJob(&ciutils.JobInputs{
+			return ciutils.TraceJob(cmd.Context(), &ciutils.JobInputs{
 				JobName:    jobName,
 				Branch:     branch,
 				PipelineId: pipelineId,
