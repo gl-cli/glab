@@ -42,7 +42,7 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
 	github.com/rivo/tview v0.0.0-20230621164836-6cc0565babaf
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
@@ -61,13 +61,11 @@ require (
 	k8s.io/apimachinery v0.34.2
 	k8s.io/client-go v0.34.2
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397
+	mvdan.cc/xurls/v2 v2.6.0
 	oss.terrastruct.com/d2 v0.7.1
 )
 
-require (
-	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
-	mvdan.cc/xurls/v2 v2.6.0 // indirect
-)
+require github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 
 require (
 	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3.0.20250917201909-41ff0bf215ea
