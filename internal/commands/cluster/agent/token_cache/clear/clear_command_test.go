@@ -22,11 +22,17 @@ import (
 )
 
 // helper to write a filesystem cached token under <cacheDir>/gitlab/<base64(url)>-<agentID>
-func writeFSToken(t *testing.T, cacheBase, gitlabURL string, agentID int64, pat *gitlab.PersonalAccessToken) string {
+func writeFSToken(t *testing.T, gitlabURL string, agentID int64, pat *gitlab.PersonalAccessToken) string {
 	t.Helper()
+
+	// Use os.UserCacheDir to get the actual cache directory that the code will use
+	// This ensures compatibility across Windows, Linux, and macOS
+	actualCacheDir, err := os.UserCacheDir()
+	require.NoError(t, err)
+
 	enc := base64.StdEncoding.EncodeToString([]byte(gitlabURL))
 	fname := enc + "-" + strconv.FormatInt(agentID, 10)
-	dir := filepath.Join(cacheBase, "gitlab")
+	dir := filepath.Join(actualCacheDir, "gitlab")
 	require.NoError(t, os.MkdirAll(dir, 0o700))
 	fp := filepath.Join(dir, fname)
 	data, err := json.Marshal(pat)
@@ -35,12 +41,13 @@ func writeFSToken(t *testing.T, cacheBase, gitlabURL string, agentID int64, pat 
 	return fp
 }
 
-// setUserCacheDir points Go's UserCacheDir to tempDir for this process (Windows & Unix)
+// setUserCacheDir points Go's UserCacheDir to tempDir for this process (Windows, Unix, and macOS)
 func setUserCacheDir(t *testing.T, tempDir string) {
 	t.Helper()
 	t.Setenv("LocalAppData", tempDir)   // Windows
 	t.Setenv("LOCALAPPDATA", tempDir)   // Windows
-	t.Setenv("XDG_CACHE_HOME", tempDir) // Unix
+	t.Setenv("XDG_CACHE_HOME", tempDir) // Unix (Linux, BSD, etc.)
+	t.Setenv("HOME", tempDir)           // macOS (uses $HOME/Library/Caches)
 }
 
 func TestClear_ValidationError_NoSources(t *testing.T) {
@@ -78,7 +85,7 @@ func TestClear_FilesystemTokens_DeletesFiles(t *testing.T) {
 	setUserCacheDir(t, cacheDir)
 
 	pat := &gitlab.PersonalAccessToken{ID: 123, Name: "token1"}
-	filePath := writeFSToken(t, cacheDir, tc.Client.BaseURL().String(), 5, pat)
+	filePath := writeFSToken(t, tc.Client.BaseURL().String(), 5, pat)
 
 	// verify file exists before clear
 	_, err := os.Stat(filePath)
@@ -105,7 +112,7 @@ func TestClear_WithRevoke_ActiveToken(t *testing.T) {
 
 	expires := gitlab.Ptr(gitlab.ISOTime(time.Now().Add(24 * time.Hour)))
 	pat := &gitlab.PersonalAccessToken{ID: 456, Name: "active-token", ExpiresAt: expires, Revoked: false}
-	writeFSToken(t, cacheDir, tc.Client.BaseURL().String(), 10, pat)
+	writeFSToken(t, tc.Client.BaseURL().String(), 10, pat)
 
 	// mock revocation API call
 	tc.MockPersonalAccessTokens.EXPECT().
@@ -131,7 +138,7 @@ func TestClear_WithRevoke_SkipsExpiredToken(t *testing.T) {
 
 	expires := gitlab.Ptr(gitlab.ISOTime(time.Now().Add(-24 * time.Hour)))
 	pat := &gitlab.PersonalAccessToken{ID: 789, Name: "expired-token", ExpiresAt: expires, Revoked: false}
-	writeFSToken(t, cacheDir, tc.Client.BaseURL().String(), 15, pat)
+	writeFSToken(t, tc.Client.BaseURL().String(), 15, pat)
 
 	// no API call expected for expired token
 	tc.MockPersonalAccessTokens.EXPECT().
@@ -153,7 +160,7 @@ func TestClear_WithRevoke_SkipsAlreadyRevokedToken(t *testing.T) {
 	setUserCacheDir(t, cacheDir)
 
 	pat := &gitlab.PersonalAccessToken{ID: 999, Name: "revoked-token", Revoked: true}
-	writeFSToken(t, cacheDir, tc.Client.BaseURL().String(), 20, pat)
+	writeFSToken(t, tc.Client.BaseURL().String(), 20, pat)
 
 	// no API call expected for already revoked token
 	tc.MockPersonalAccessTokens.EXPECT().
@@ -176,8 +183,8 @@ func TestClear_FilterAgents_OnlySpecified(t *testing.T) {
 
 	pat1 := &gitlab.PersonalAccessToken{ID: 100, Name: "token-agent-30"}
 	pat2 := &gitlab.PersonalAccessToken{ID: 200, Name: "token-agent-31"}
-	file1 := writeFSToken(t, cacheDir, tc.Client.BaseURL().String(), 30, pat1)
-	file2 := writeFSToken(t, cacheDir, tc.Client.BaseURL().String(), 31, pat2)
+	file1 := writeFSToken(t, tc.Client.BaseURL().String(), 30, pat1)
+	file2 := writeFSToken(t, tc.Client.BaseURL().String(), 31, pat2)
 
 	out, err := exec("--filesystem --keyring=false --revoke=false --agent 30")
 	require.NoError(t, err)
