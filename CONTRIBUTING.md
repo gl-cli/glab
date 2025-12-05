@@ -78,7 +78,7 @@ For more information see, [Creating a workspace](#creating-a-workspace).
 
 Prerequisites:
 
-- Go 1.22+
+- Go version as defined by [`main/go.mod`](https://gitlab.com/gitlab-org/cli/-/blob/main/go.mod?ref_type=heads#L3)
 
 Build with: `make` or `go build -o bin/glab ./cmd/glab/main.go`
 
