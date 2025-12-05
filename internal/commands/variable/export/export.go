@@ -125,7 +125,7 @@ func (o *options) run() error {
 	client := apiClient.Lab()
 
 	if o.group != "" {
-		o.io.LogInfof("Exporting variables from the %s group:\n", o.group)
+		o.io.LogErrorf("Exporting variables from the %s group:\n", o.group)
 		createVarOpts := &gitlab.ListGroupVariablesOptions{
 			ListOptions: gitlab.ListOptions{
 				Page:    int64(o.page),
@@ -148,7 +148,7 @@ func (o *options) run() error {
 		if err != nil {
 			return err
 		}
-		o.io.LogInfof("Exporting variables from the %s project:\n", repo.FullName())
+		o.io.LogErrorf("Exporting variables from the %s project:\n", repo.FullName())
 		listOpts := &gitlab.ListProjectVariablesOptions{
 			ListOptions: gitlab.ListOptions{
 				Page:    int64(o.page),
