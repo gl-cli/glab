@@ -4,20 +4,22 @@ package export
 
 import (
 	"bytes"
-	"net/http"
+	"fmt"
 	"testing"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/google/shlex"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
-	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 )
 
 func Test_NewCmdExport(t *testing.T) {
@@ -91,12 +93,7 @@ func Test_NewCmdExport(t *testing.T) {
 }
 
 func Test_exportRun_project(t *testing.T) {
-	reg := &httpmock.Mocker{
-		MatchURL: httpmock.FullURL,
-	}
-	defer reg.Verify(t)
-
-	mockProjectVariables := []gitlab.ProjectVariable{
+	mockProjectVariables := []*gitlab.ProjectVariable{
 		{
 			Key:              "VAR1",
 			Value:            "value1",
@@ -139,17 +136,17 @@ func Test_exportRun_project(t *testing.T) {
 		},
 	}
 
-	io, _, stdout, _ := cmdtest.TestIOStreams()
-
 	tests := []struct {
 		scope          string
 		format         string
-		expectedOutput string
+		expectedStderr string
+		expectedStdout string
 	}{
 		{
-			scope:  "*",
-			format: "json",
-			expectedOutput: heredoc.Doc(`Exporting variables from the owner/repo project:
+			scope:          "*",
+			format:         "json",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: heredoc.Doc(`
             [
               {
                 "key": "VAR1",
@@ -243,9 +240,10 @@ func Test_exportRun_project(t *testing.T) {
             `),
 		},
 		{
-			scope:  "dev/b",
-			format: "json",
-			expectedOutput: heredoc.Doc(`Exporting variables from the owner/repo project:
+			scope:          "dev/b",
+			format:         "json",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: heredoc.Doc(`
             [
               {
                 "key": "VAR2",
@@ -275,99 +273,103 @@ func Test_exportRun_project(t *testing.T) {
 		{
 			scope:          "*",
 			format:         "env",
-			expectedOutput: "Exporting variables from the owner/repo project:\nVAR1=\"value1\"\nVAR2=\"value2.1\"\nVAR3=\"value3\"\nVAR4=\"value4.1\"\nVAR4=\"value4.2\"\nVAR4=\"value4.3\"\nVAR5=\"value5\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "VAR1=\"value1\"\nVAR2=\"value2.1\"\nVAR3=\"value3\"\nVAR4=\"value4.1\"\nVAR4=\"value4.2\"\nVAR4=\"value4.3\"\nVAR5=\"value5\"\n",
 		},
 		{
 			scope:          "*",
 			format:         "export",
-			expectedOutput: "Exporting variables from the owner/repo project:\nexport VAR1=\"value1\"\nexport VAR2=\"value2.1\"\nexport VAR3=\"value3\"\nexport VAR4=\"value4.1\"\nexport VAR4=\"value4.2\"\nexport VAR4=\"value4.3\"\nexport VAR5=\"value5\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "export VAR1=\"value1\"\nexport VAR2=\"value2.1\"\nexport VAR3=\"value3\"\nexport VAR4=\"value4.1\"\nexport VAR4=\"value4.2\"\nexport VAR4=\"value4.3\"\nexport VAR5=\"value5\"\n",
 		},
 		{
 			scope:          "dev",
 			format:         "env",
-			expectedOutput: "Exporting variables from the owner/repo project:\nVAR1=\"value1\"\nVAR2=\"value2.2\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "VAR1=\"value1\"\nVAR2=\"value2.2\"\n",
 		},
 		{
 			scope:          "dev",
 			format:         "export",
-			expectedOutput: "Exporting variables from the owner/repo project:\nexport VAR1=\"value1\"\nexport VAR2=\"value2.2\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "export VAR1=\"value1\"\nexport VAR2=\"value2.2\"\n",
 		},
 		{
 			scope:          "prod",
 			format:         "env",
-			expectedOutput: "Exporting variables from the owner/repo project:\nVAR2=\"value2.1\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "VAR2=\"value2.1\"\n",
 		},
 		{
 			scope:          "prod",
 			format:         "export",
-			expectedOutput: "Exporting variables from the owner/repo project:\nexport VAR2=\"value2.1\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "export VAR2=\"value2.1\"\n",
 		},
 		{
 			scope:          "dev/a",
 			format:         "env",
-			expectedOutput: "Exporting variables from the owner/repo project:\nVAR3=\"value3\"\nVAR2=\"value2.2\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "VAR3=\"value3\"\nVAR2=\"value2.2\"\n",
 		},
 		{
 			scope:          "dev/a",
 			format:         "export",
-			expectedOutput: "Exporting variables from the owner/repo project:\nexport VAR3=\"value3\"\nexport VAR2=\"value2.2\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "export VAR3=\"value3\"\nexport VAR2=\"value2.2\"\n",
 		},
 		{
 			scope:          "feature-1",
 			format:         "env",
-			expectedOutput: "Exporting variables from the owner/repo project:\nVAR4=\"value4.2\"\nVAR2=\"value2.2\"\nVAR5=\"value5\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "VAR4=\"value4.2\"\nVAR2=\"value2.2\"\nVAR5=\"value5\"\n",
 		},
 		{
 			scope:          "feature-1",
 			format:         "export",
-			expectedOutput: "Exporting variables from the owner/repo project:\nexport VAR4=\"value4.2\"\nexport VAR2=\"value2.2\"\nexport VAR5=\"value5\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "export VAR4=\"value4.2\"\nexport VAR2=\"value2.2\"\nexport VAR5=\"value5\"\n",
 		},
 		{
 			scope:          "feature-2",
 			format:         "env",
-			expectedOutput: "Exporting variables from the owner/repo project:\nVAR4=\"value4.3\"\nVAR2=\"value2.2\"\nVAR5=\"value5\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "VAR4=\"value4.3\"\nVAR2=\"value2.2\"\nVAR5=\"value5\"\n",
 		},
 		{
 			scope:          "feature-2",
 			format:         "export",
-			expectedOutput: "Exporting variables from the owner/repo project:\nexport VAR4=\"value4.3\"\nexport VAR2=\"value2.2\"\nexport VAR5=\"value5\"\n",
+			expectedStderr: "Exporting variables from the owner/repo project:\n",
+			expectedStdout: "export VAR4=\"value4.3\"\nexport VAR2=\"value2.2\"\nexport VAR5=\"value5\"\n",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.scope+"_"+test.format, func(t *testing.T) {
-			reg.RegisterResponder(http.MethodGet, "https://gitlab.com/api/v4/projects/owner%2Frepo/variables?page=1&per_page=10",
-				httpmock.NewJSONResponse(http.StatusOK, mockProjectVariables),
-			)
-			opts := &options{
-				apiClient: func(repoHost string) (*api.Client, error) {
-					return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com"), nil
-				},
-				baseRepo: func() (glrepo.Interface, error) {
-					return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
-				},
-				io:           io,
-				page:         1,
-				perPage:      10,
-				outputFormat: test.format,
-				scope:        test.scope,
-			}
+			tc := gitlabtesting.NewTestClient(t)
 
-			err := opts.run()
+			tc.MockProjectVariables.EXPECT().ListVariables("owner/repo", gomock.Any(), gomock.Any()).Return(mockProjectVariables, nil, nil)
+
+			exec := cmdtest.SetupCmdForTest(
+				t,
+				func(f cmdutils.Factory) *cobra.Command {
+					return NewCmdExport(f, nil)
+				},
+				false,
+				cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "testtoken", "gitlab.example.com", api.WithGitLabClient(tc.Client))),
+				cmdtest.WithBaseRepo("owner", "repo", glinstance.DefaultHostname),
+			)
+
+			out, err := exec(fmt.Sprintf("--page 1 --per-page 10 --format %s --scope %s", test.format, test.scope))
 			assert.NoError(t, err)
-			assert.Equal(t, test.expectedOutput, stdout.String())
-			stdout.Reset()
+			assert.Equal(t, test.expectedStderr, out.ErrBuf.String())
+			assert.Equal(t, test.expectedStdout, out.OutBuf.String())
 		})
 	}
 }
 
 func Test_exportRun_group(t *testing.T) {
-	reg := &httpmock.Mocker{
-		MatchURL: httpmock.FullURL,
-	}
-	defer reg.Verify(t)
-
-	mockGroupVariables := []gitlab.GroupVariable{
+	mockGroupVariables := []*gitlab.GroupVariable{
 		{
 			Key:              "VAR1",
 			Value:            "\"value1\"",
@@ -410,17 +412,17 @@ func Test_exportRun_group(t *testing.T) {
 		},
 	}
 
-	io, _, stdout, _ := cmdtest.TestIOStreams()
-
 	tests := []struct {
 		scope          string
 		format         string
-		expectedOutput string
+		expectedStderr string
+		expectedStdout string
 	}{
 		{
-			scope:  "*",
-			format: "json",
-			expectedOutput: heredoc.Doc(`Exporting variables from the group group:
+			scope:          "*",
+			format:         "json",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: heredoc.Doc(`
             [
               {
                 "key": "VAR1",
@@ -514,9 +516,10 @@ func Test_exportRun_group(t *testing.T) {
             `),
 		},
 		{
-			scope:  "dev/b",
-			format: "json",
-			expectedOutput: heredoc.Doc(`Exporting variables from the group group:
+			scope:          "dev/b",
+			format:         "json",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: heredoc.Doc(`
             [
               {
                 "key": "VAR2",
@@ -546,89 +549,97 @@ func Test_exportRun_group(t *testing.T) {
 		{
 			scope:          "*",
 			format:         "env",
-			expectedOutput: "Exporting variables from the group group:\nVAR1=\"value1\"\nVAR2=value2.1\nVAR3=value3\nVAR4=value4.1\nVAR4=value4.2\nVAR4=value4.3\nVAR5=value5\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "VAR1=\"value1\"\nVAR2=value2.1\nVAR3=value3\nVAR4=value4.1\nVAR4=value4.2\nVAR4=value4.3\nVAR5=value5\n",
 		},
 		{
 			scope:          "*",
 			format:         "export",
-			expectedOutput: "Exporting variables from the group group:\nexport VAR1=\"value1\"\nexport VAR2=value2.1\nexport VAR3=value3\nexport VAR4=value4.1\nexport VAR4=value4.2\nexport VAR4=value4.3\nexport VAR5=value5\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "export VAR1=\"value1\"\nexport VAR2=value2.1\nexport VAR3=value3\nexport VAR4=value4.1\nexport VAR4=value4.2\nexport VAR4=value4.3\nexport VAR5=value5\n",
 		},
 		{
 			scope:          "dev",
 			format:         "env",
-			expectedOutput: "Exporting variables from the group group:\nVAR1=\"value1\"\nVAR2=value2.2\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "VAR1=\"value1\"\nVAR2=value2.2\n",
 		},
 		{
 			scope:          "dev",
 			format:         "export",
-			expectedOutput: "Exporting variables from the group group:\nexport VAR1=\"value1\"\nexport VAR2=value2.2\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "export VAR1=\"value1\"\nexport VAR2=value2.2\n",
 		},
 		{
 			scope:          "prod",
 			format:         "env",
-			expectedOutput: "Exporting variables from the group group:\nVAR2=value2.1\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "VAR2=value2.1\n",
 		},
 		{
 			scope:          "prod",
 			format:         "export",
-			expectedOutput: "Exporting variables from the group group:\nexport VAR2=value2.1\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "export VAR2=value2.1\n",
 		},
 		{
 			scope:          "dev/a",
 			format:         "env",
-			expectedOutput: "Exporting variables from the group group:\nVAR3=value3\nVAR2=value2.2\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "VAR3=value3\nVAR2=value2.2\n",
 		},
 		{
 			scope:          "dev/a",
 			format:         "export",
-			expectedOutput: "Exporting variables from the group group:\nexport VAR3=value3\nexport VAR2=value2.2\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "export VAR3=value3\nexport VAR2=value2.2\n",
 		},
 		{
 			scope:          "feature-1",
 			format:         "env",
-			expectedOutput: "Exporting variables from the group group:\nVAR4=value4.2\nVAR2=value2.2\nVAR5=value5\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "VAR4=value4.2\nVAR2=value2.2\nVAR5=value5\n",
 		},
 		{
 			scope:          "feature-1",
 			format:         "export",
-			expectedOutput: "Exporting variables from the group group:\nexport VAR4=value4.2\nexport VAR2=value2.2\nexport VAR5=value5\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "export VAR4=value4.2\nexport VAR2=value2.2\nexport VAR5=value5\n",
 		},
 		{
 			scope:          "feature-2",
 			format:         "env",
-			expectedOutput: "Exporting variables from the group group:\nVAR4=value4.3\nVAR2=value2.2\nVAR5=value5\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "VAR4=value4.3\nVAR2=value2.2\nVAR5=value5\n",
 		},
 		{
 			scope:          "feature-2",
 			format:         "export",
-			expectedOutput: "Exporting variables from the group group:\nexport VAR4=value4.3\nexport VAR2=value2.2\nexport VAR5=value5\n",
+			expectedStderr: "Exporting variables from the group group:\n",
+			expectedStdout: "export VAR4=value4.3\nexport VAR2=value2.2\nexport VAR5=value5\n",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.scope+"_"+test.format, func(t *testing.T) {
-			reg.RegisterResponder(http.MethodGet, "https://gitlab.com/api/v4/groups/group/variables?page=1&per_page=10",
-				httpmock.NewJSONResponse(http.StatusOK, mockGroupVariables),
-			)
-			opts := &options{
-				apiClient: func(repoHost string) (*api.Client, error) {
-					return cmdtest.NewTestApiClient(t, &http.Client{Transport: reg}, "", "gitlab.com"), nil
-				},
-				baseRepo: func() (glrepo.Interface, error) {
-					return glrepo.FromFullName("owner/repo", glinstance.DefaultHostname)
-				},
-				io:           io,
-				page:         1,
-				perPage:      10,
-				outputFormat: test.format,
-				scope:        test.scope,
-				group:        "group",
-			}
+			tc := gitlabtesting.NewTestClient(t)
 
-			err := opts.run()
+			tc.MockGroupVariables.EXPECT().ListVariables("group", gomock.Any(), gomock.Any()).Return(mockGroupVariables, nil, nil)
+
+			exec := cmdtest.SetupCmdForTest(
+				t,
+				func(f cmdutils.Factory) *cobra.Command {
+					return NewCmdExport(f, nil)
+				},
+				false,
+				cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "testtoken", "gitlab.example.com", api.WithGitLabClient(tc.Client))),
+				cmdtest.WithBaseRepo("owner", "repo", glinstance.DefaultHostname),
+			)
+
+			out, err := exec(fmt.Sprintf("--page 1 --per-page 10 --group group --format %s --scope %s", test.format, test.scope))
 			assert.NoError(t, err)
-			assert.Equal(t, test.expectedOutput, stdout.String())
-			stdout.Reset()
+			assert.Equal(t, test.expectedStderr, out.ErrBuf.String())
+			assert.Equal(t, test.expectedStdout, out.OutBuf.String())
 		})
 	}
 }
