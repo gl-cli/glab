@@ -364,6 +364,8 @@ release:
       -e GITLAB_TOKEN=$GITLAB_TOKEN_RELEASE \
       -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
       -e HOST_PWD=$PWD \
+      -e SLACK_WEBHOOK=$SLACK_WEBHOOK \
+      -e SLACK_CHANNEL=$SLACK_CHANNEL \
       -v $PWD:/go/src/gitlab.com/gitlab-org/cli \
       -v /var/run/docker.sock:/var/run/docker.sock \
       -w /go/src/gitlab.com/gitlab-org/cli \
