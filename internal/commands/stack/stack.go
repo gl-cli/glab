@@ -1,6 +1,8 @@
 package stack
 
 import (
+	"context"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
@@ -13,13 +15,14 @@ import (
 	stackSwitchCmd "gitlab.com/gitlab-org/cli/internal/commands/stack/switch"
 	stackSyncCmd "gitlab.com/gitlab-org/cli/internal/commands/stack/sync"
 	"gitlab.com/gitlab-org/cli/internal/git"
-	"gitlab.com/gitlab-org/cli/internal/surveyext"
 	"gitlab.com/gitlab-org/cli/internal/text"
 )
 
 func wrappedEdit(f cmdutils.Factory) cmdutils.GetTextUsingEditor {
 	return func(editor, tmpFileName, content string) (string, error) {
-		return surveyext.Edit(editor, tmpFileName, content, f.IO().In, f.IO().StdOut, f.IO().StdErr, nil)
+		var result string = content
+		err := f.IO().Editor(context.Background(), &result, "Edit", content, editor)
+		return result, err
 	}
 }
 

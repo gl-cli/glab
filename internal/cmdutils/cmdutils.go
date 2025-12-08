@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
-
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"gitlab.com/gitlab-org/cli/internal/api"
@@ -20,8 +18,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
-	"gitlab.com/gitlab-org/cli/internal/surveyext"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
@@ -134,7 +130,7 @@ func GetEditor(cf func() config.Config) (string, error) {
 	return editorCommand, nil
 }
 
-func EditorPrompt(response *string, question, templateContent, editorCommand string) error {
+func EditorPrompt(io *iostreams.IOStreams, response *string, question, templateContent, editorCommand string) error {
 	defaultBody := *response
 	if templateContent != "" {
 		if defaultBody != "" {
@@ -145,24 +141,7 @@ func EditorPrompt(response *string, question, templateContent, editorCommand str
 		defaultBody += templateContent
 	}
 
-	qs := []*survey.Question{
-		{
-			Name: question,
-			Prompt: &surveyext.GLabEditor{
-				BlankAllowed:  true,
-				EditorCommand: editorCommand,
-				Editor: &survey.Editor{
-					Message:       "Description",
-					FileName:      "*.md",
-					Default:       defaultBody,
-					HideDefault:   true,
-					AppendDefault: true,
-				},
-			},
-		},
-	}
-
-	err := prompt.Ask(qs, response)
+	err := io.Editor(context.Background(), response, question, defaultBody, editorCommand)
 	if err != nil {
 		return err
 	}
@@ -174,7 +153,7 @@ func EditorPrompt(response *string, question, templateContent, editorCommand str
 
 type GetTextUsingEditor func(editor, tmpFileName, content string) (string, error)
 
-func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote) error {
+func LabelsPrompt(ctx context.Context, ios *iostreams.IOStreams, response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote) error {
 	labelOpts := &gitlab.ListLabelsOptions{}
 	labelOpts.PerPage = 100
 	labels, err := listLabels(apiClient, repoRemote.FullName(), labelOpts)
@@ -190,7 +169,7 @@ func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glre
 		}
 
 		var selectedLabels []string
-		err = prompt.MultiSelect(&selectedLabels, "labels", "Select labels", labelOptions)
+		err = ios.MultiSelect(ctx, &selectedLabels, "Select labels", labelOptions)
 		if err != nil {
 			return err
 		}
@@ -199,7 +178,7 @@ func LabelsPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glre
 	}
 
 	var responseString string
-	err = prompt.AskQuestionWithInput(&responseString, "labels", "Label(s) (comma-separated)", "", false)
+	err = ios.Input(ctx, &responseString, "Label(s) (comma-separated)", "", nil)
 	if err != nil {
 		return err
 	}
@@ -260,7 +239,7 @@ var GroupMemberLevel = map[int]string{
 // for the remote referenced by the `*glrepo.Remote`.
 //
 // `role` will appear on the prompt to keep the user informed of the reason of the selection.
-func UsersPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote, io *iostreams.IOStreams, minimumAccessLevel int, role string) error {
+func UsersPrompt(ctx context.Context, response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote, io *iostreams.IOStreams, minimumAccessLevel int, role string) error {
 	var userOptions []string
 	userMap := map[string]string{}
 
@@ -286,7 +265,7 @@ func UsersPrompt(response *[]string, apiClient *gitlab.Client, repoRemote *glrep
 	}
 
 	var selectedUsers []string
-	err = prompt.MultiSelect(&selectedUsers, role, fmt.Sprintf("Select %s", role), userOptions)
+	err = io.MultiSelect(ctx, &selectedUsers, fmt.Sprintf("Select %s", role), userOptions)
 	if err != nil {
 		return err
 	}
@@ -348,7 +327,7 @@ const (
 	AddMilestoneAction
 )
 
-func PickMetadata() ([]Action, error) {
+func PickMetadata(ctx context.Context, io *iostreams.IOStreams) ([]Action, error) {
 	const (
 		labelsLabel    = "labels"
 		assigneeLabel  = "assignees"
@@ -362,7 +341,7 @@ func PickMetadata() ([]Action, error) {
 	}
 
 	var confirmAnswers []string
-	err := prompt.MultiSelect(&confirmAnswers, "metadata", "Which metadata types to add?", options)
+	err := io.MultiSelect(ctx, &confirmAnswers, "Which metadata types to add?", options)
 	if err != nil {
 		return nil, fmt.Errorf("could not prompt: %w", err)
 	}
@@ -379,6 +358,7 @@ func PickMetadata() ([]Action, error) {
 			pickedActions = append(pickedActions, AddMilestoneAction)
 		}
 	}
+
 	return pickedActions, nil
 }
 

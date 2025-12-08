@@ -1,6 +1,7 @@
 package create
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -8,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -23,7 +24,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/recovery"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
@@ -389,14 +389,11 @@ func (o *options) run() error {
 			var templateContents string
 			if o.Description == "" {
 				if o.noEditor {
-					err = prompt.AskMultiline(&o.Description, "description", "Description:", "")
+					err = o.io.Multiline(context.Background(), &o.Description, "Description:", "")
 					if err != nil {
 						return err
 					}
 				} else {
-					templateResponse := struct {
-						Index int
-					}{}
 					templateNames, err := cmdutils.ListGitLabTemplates(cmdutils.MergeRequestTemplate)
 					if err != nil {
 						return fmt.Errorf("error getting templates: %w", err)
@@ -408,21 +405,9 @@ func (o *options) run() error {
 					templateNames = append(templateNames, mrWithCommitsTemplate)
 					templateNames = append(templateNames, mrEmptyTemplate)
 
-					selectQs := []*survey.Question{
-						{
-							Name: "index",
-							Prompt: &survey.Select{
-								Message: "Choose a template:",
-								Options: templateNames,
-							},
-						},
-					}
-
-					if err := prompt.Ask(selectQs, &templateResponse); err != nil {
+					if err := o.io.Select(context.Background(), &templateName, "Choose a template:", templateNames); err != nil {
 						return fmt.Errorf("could not prompt: %w", err)
 					}
-
-					templateName = templateNames[templateResponse.Index]
 					switch templateName {
 					case mrWithCommitsTemplate:
 						// templateContents should be filled from commit messages
@@ -453,27 +438,57 @@ func (o *options) run() error {
 				}
 			}
 
-			if o.Title == "" {
-				err = prompt.AskQuestionWithInput(&o.Title, "title", "Title:", "", true)
-				if err != nil {
-					return err
-				}
+			// Combine Title + Description into a single form
+			var fields []huh.Field
+			needsTitle := o.Title == ""
+			needsDescription := o.Description == ""
+
+			if needsTitle {
+				fields = append(fields, huh.NewInput().
+					Title("Title").
+					Value(&o.Title).
+					Validate(func(s string) error {
+						if s == "" {
+							return fmt.Errorf("title is required")
+						}
+						return nil
+					}))
 			}
-			if o.Description == "" {
+
+			if needsDescription {
 				if o.noEditor {
-					err = prompt.AskMultiline(&o.Description, "description", "Description:", "")
-					if err != nil {
-						return err
-					}
+					fields = append(fields, huh.NewText().
+						Title("Description").
+						Value(&o.Description))
 				} else {
 					editor, err := cmdutils.GetEditor(o.config)
 					if err != nil {
 						return err
 					}
-					err = cmdutils.EditorPrompt(&o.Description, "Description", templateContents, editor)
-					if err != nil {
-						return err
+
+					if templateContents != "" {
+						o.Description = templateContents
 					}
+
+					textField := huh.NewText().
+						Title("Description").
+						Value(&o.Description).
+						ExternalEditor(true).
+						EditorExtension(".md")
+
+					if editor != "" {
+						textField = textField.Editor(editor)
+					}
+
+					fields = append(fields, textField)
+				}
+			}
+
+			// Run the combined form
+			if len(fields) > 0 {
+				err = o.io.RunForm(context.Background(), fields...)
+				if err != nil {
+					return err
 				}
 			}
 		}
@@ -552,14 +567,14 @@ func (o *options) run() error {
 		}
 		var metadataActions []string
 
-		err := prompt.MultiSelect(&metadataActions, "metadata", "Which metadata types to add?", metadataOptions)
+		err := o.io.MultiSelect(context.Background(), &metadataActions, "Which metadata types to add?", metadataOptions)
 		if err != nil {
 			return fmt.Errorf("failed to pick the metadata to add: %w", err)
 		}
 
 		for _, x := range metadataActions {
 			if x == "labels" {
-				err = cmdutils.LabelsPrompt(&o.Labels, client, baseRepoRemote)
+				err = cmdutils.LabelsPrompt(context.Background(), o.io, &o.Labels, client, baseRepoRemote)
 				if err != nil {
 					return err
 				}
@@ -567,7 +582,7 @@ func (o *options) run() error {
 			if x == "assignees" {
 				// Use minimum permission level 30 (Maintainer) as it is the minimum level
 				// to accept a merge request
-				err = cmdutils.UsersPrompt(&o.Assignees, client, baseRepoRemote, o.io, 30, x)
+				err = cmdutils.UsersPrompt(context.Background(), &o.Assignees, client, baseRepoRemote, o.io, 30, x)
 				if err != nil {
 					return err
 				}
@@ -581,7 +596,7 @@ func (o *options) run() error {
 			if x == "reviewers" {
 				// Use minimum permission level 30 (Maintainer) as it is the minimum level
 				// to accept a merge request
-				err = cmdutils.UsersPrompt(&o.Reviewers, client, baseRepoRemote, o.io, 30, x)
+				err = cmdutils.UsersPrompt(context.Background(), &o.Reviewers, client, baseRepoRemote, o.io, 30, x)
 				if err != nil {
 					return err
 				}

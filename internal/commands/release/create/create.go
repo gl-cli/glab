@@ -2,6 +2,7 @@ package create
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -27,9 +28,7 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/run"
-	"gitlab.com/gitlab-org/cli/internal/surveyext"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
 
@@ -381,23 +380,22 @@ func createRun(opts *options) error {
 		}
 		editorOptions = append(editorOptions, noteOptionsNames[noteOptLeaveBlank])
 
-		qs := []*survey.Question{
-			{
-				Name: "name",
-				Prompt: &survey.Input{
-					Message: "Release title (optional)",
-					Default: opts.Name,
-				},
-			},
-			{
-				Name: "releaseNotesAction",
-				Prompt: &survey.Select{
-					Message: "Release notes",
-					Options: editorOptions,
-				},
-			},
-		}
-		err = prompt.Ask(qs, opts)
+		// Combine title and release notes selection into a single form
+		var fields []huh.Field
+
+		// Add title input field
+		fields = append(fields, huh.NewInput().
+			Title("Release title (optional)").
+			Value(&opts.Name))
+
+		// Add release notes selection field
+		fields = append(fields, huh.NewSelect[string]().
+			Title("Release notes").
+			Options(huh.NewOptions(editorOptions...)...).
+			Value(&opts.ReleaseNotesAction))
+
+		// Run the combined form
+		err = opts.io.RunForm(context.Background(), fields...)
 		if err != nil {
 			return fmt.Errorf("could not prompt: %w", err)
 		}
@@ -421,11 +419,10 @@ func createRun(opts *options) error {
 		}
 
 		if openEditor {
-			txt, err := surveyext.Edit(editorCommand, "*.md", editorContents, opts.io.In, opts.io.StdOut, opts.io.StdErr, nil)
+			err = opts.io.Editor(context.Background(), &opts.notes, "Release notes", editorContents, editorCommand)
 			if err != nil {
 				return err
 			}
-			opts.notes = txt
 		}
 	}
 	start := time.Now()

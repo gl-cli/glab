@@ -102,7 +102,9 @@ func HuhTheme() *huh.Theme {
 	theme.Focused.SelectedOption = theme.Focused.SelectedOption.Foreground(gitlabBlue)
 	theme.Focused.UnselectedOption = theme.Focused.UnselectedOption.Foreground(gitlabSubtle)
 	theme.Focused.SelectedPrefix = lipgloss.NewStyle().Foreground(gitlabOrange).SetString("✓ ")
-	theme.Focused.UnselectedPrefix = lipgloss.NewStyle().Foreground(gitlabSubtle).SetString("  ")
+	theme.Focused.UnselectedPrefix = lipgloss.NewStyle().Foreground(gitlabSubtle).SetString("• ")
+	theme.Focused.MultiSelectSelector = theme.Focused.MultiSelectSelector.Foreground(gitlabOrange) // MultiSelect cursor arrow
+	theme.Focused.SelectSelector = theme.Focused.SelectSelector.Foreground(gitlabOrange)           // Select cursor arrow
 
 	// Text input styling
 	theme.Focused.TextInput.Cursor = theme.Focused.TextInput.Cursor.Foreground(gitlabOrange)
