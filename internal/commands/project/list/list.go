@@ -203,10 +203,10 @@ func listAllProjectsForGroup(apiClient *gitlab.Client, opts options) ([]*gitlab.
 		if opts.filterStarred {
 			l.Starred = gitlab.Ptr(opts.filterStarred)
 		}
+	}
 
-		if opts.includeSubgroups {
-			l.IncludeSubGroups = gitlab.Ptr(true)
-		}
+	if opts.includeSubgroups {
+		l.IncludeSubGroups = gitlab.Ptr(true)
 	}
 
 	if opts.archivedSet {
