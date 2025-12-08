@@ -1,6 +1,7 @@
 package create
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -8,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -21,7 +22,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/glrepo"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/recovery"
 	"gitlab.com/gitlab-org/cli/internal/utils"
 )
@@ -202,64 +202,86 @@ var createRun = func(opts *options) error {
 	}
 
 	if opts.isInteractive {
-		if opts.Description == "" {
-			if opts.noEditor {
-				err = prompt.AskMultiline(&opts.Description, "description", "Description:", "")
-				if err != nil {
-					return err
-				}
-			} else {
-
-				templateResponse := struct {
-					Index int
-				}{}
-				templateNames, err := cmdutils.ListGitLabTemplates(cmdutils.IssueTemplate)
-				if err != nil {
-					return fmt.Errorf("error getting templates: %w", err)
-				}
-
-				templateNames = append(templateNames, "Open a blank issue")
-
-				selectQs := []*survey.Question{
-					{
-						Name: "index",
-						Prompt: &survey.Select{
-							Message: "Choose a template",
-							Options: templateNames,
-						},
-					},
-				}
-
-				if err := prompt.Ask(selectQs, &templateResponse); err != nil {
-					return fmt.Errorf("could not prompt: %w", err)
-				}
-				if templateResponse.Index != len(templateNames) {
-					templateName = templateNames[templateResponse.Index]
-					templateContents, err = cmdutils.LoadGitLabTemplate(cmdutils.IssueTemplate, templateName)
-					if err != nil {
-						return fmt.Errorf("failed to get template contents: %w", err)
-					}
-				}
-			}
-		}
-		if opts.Title == "" {
-			err = prompt.AskQuestionWithInput(&opts.Title, "title", "Title", "", true)
+		// Step 1: Template selection (if not using --no-editor and description is empty)
+		if opts.Description == "" && !opts.noEditor {
+			templateNames, err := cmdutils.ListGitLabTemplates(cmdutils.IssueTemplate)
 			if err != nil {
-				return err
+				return fmt.Errorf("error getting templates: %w", err)
+			}
+
+			const blankIssueOption = "Open a blank issue"
+			templateNames = append(templateNames, blankIssueOption)
+
+			var selectedTemplate string
+			if err := opts.io.Select(context.Background(), &selectedTemplate, "Choose a template", templateNames); err != nil {
+				return fmt.Errorf("could not prompt: %w", err)
+			}
+
+			if selectedTemplate != blankIssueOption {
+				templateName = selectedTemplate
+				templateContents, err = cmdutils.LoadGitLabTemplate(cmdutils.IssueTemplate, templateName)
+				if err != nil {
+					return fmt.Errorf("failed to get template contents: %w", err)
+				}
 			}
 		}
-		if opts.Description == "" {
-			if opts.noEditor {
-				err = prompt.AskMultiline(&opts.Description, "description", "Description:", "")
-				if err != nil {
-					return err
+
+		// Step 2: Title and Description in a single form
+		needsTitle := opts.Title == ""
+		needsDescription := opts.Description == ""
+
+		if needsTitle || needsDescription {
+			var fields []huh.Field
+
+			// Add title field if needed
+			if needsTitle {
+				fields = append(fields, huh.NewInput().
+					Title("Title").
+					Value(&opts.Title).
+					Validate(func(s string) error {
+						if s == "" {
+							return fmt.Errorf("title is required")
+						}
+						return nil
+					}))
+			}
+
+			// Add description field if needed
+			if needsDescription {
+				if opts.noEditor {
+					// Use multiline text input
+					fields = append(fields, huh.NewText().
+						Title("Description").
+						Value(&opts.Description))
+				} else {
+					// Use editor with template contents
+					editor, err := cmdutils.GetEditor(opts.config)
+					if err != nil {
+						return err
+					}
+
+					// Set initial value from template
+					if templateContents != "" {
+						opts.Description = templateContents
+					}
+
+					textField := huh.NewText().
+						Title("Description").
+						Value(&opts.Description).
+						ExternalEditor(true).
+						EditorExtension(".md")
+
+					if editor != "" {
+						textField = textField.Editor(editor)
+					}
+
+					fields = append(fields, textField)
 				}
-			} else {
-				editor, err := cmdutils.GetEditor(opts.config)
-				if err != nil {
-					return err
-				}
-				err = cmdutils.EditorPrompt(&opts.Description, "Description", templateContents, editor)
+			}
+
+			// Run the combined form
+			if len(fields) > 0 {
+				err = opts.io.RunForm(context.Background(), fields...)
 				if err != nil {
 					return err
 				}
@@ -290,7 +312,7 @@ var createRun = func(opts *options) error {
 	if action == cmdutils.AddMetadataAction {
 		var metadataActions []cmdutils.Action
 
-		metadataActions, err = cmdutils.PickMetadata()
+		metadataActions, err = cmdutils.PickMetadata(context.Background(), opts.io)
 		if err != nil {
 			return fmt.Errorf("failed to pick metadata to add: %w", err)
 		}
@@ -311,7 +333,7 @@ var createRun = func(opts *options) error {
 
 		for _, x := range metadataActions {
 			if x == cmdutils.AddLabelAction {
-				err = cmdutils.LabelsPrompt(&opts.Labels, apiClient, repoRemote)
+				err = cmdutils.LabelsPrompt(context.Background(), opts.io, &opts.Labels, apiClient, repoRemote)
 				if err != nil {
 					return err
 				}
@@ -320,7 +342,7 @@ var createRun = func(opts *options) error {
 			if x == cmdutils.AddAssigneeAction {
 				// Involve only reporters and up, in the future this might be expanded to `guests`
 				// but that might hit the `100` limit for projects with large amounts of collaborators
-				err = cmdutils.UsersPrompt(&opts.Assignees, apiClient, repoRemote, opts.io, 20, "assignees")
+				err = cmdutils.UsersPrompt(context.Background(), &opts.Assignees, apiClient, repoRemote, opts.io, 20, "assignees")
 				if err != nil {
 					return err
 				}

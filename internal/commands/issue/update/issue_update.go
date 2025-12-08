@@ -116,7 +116,7 @@ func NewCmdUpdate(f cmdutils.Factory) *cobra.Command {
 					}
 
 					l.Description = gitlab.Ptr("")
-					err = cmdutils.EditorPrompt(l.Description, "Description", issue.Description, editor)
+					err = cmdutils.EditorPrompt(f.IO(), l.Description, "Description", issue.Description, editor)
 					if err != nil {
 						return err
 					}

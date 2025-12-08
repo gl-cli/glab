@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/avast/retry-go/v4"
 	"github.com/charmbracelet/huh"
@@ -21,8 +20,6 @@ import (
 	"gitlab.com/gitlab-org/cli/internal/dbg"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
-	"gitlab.com/gitlab-org/cli/internal/surveyext"
 )
 
 type MRMergeMethod int
@@ -147,7 +144,7 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 
 	if o.io.IsOutputTTY() && !o.skipPrompts {
 		if !o.squashBeforeMerge && !o.rebaseBeforeMerge && o.mergeCommitMessage == "" {
-			o.mergeMethod, err = mergeMethodSurvey()
+			o.mergeMethod, err = mergeMethodSurvey(o.io)
 			if err != nil {
 				return err
 			}
@@ -176,7 +173,7 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 				if err != nil {
 					return err
 				}
-				mergeMessage, err = surveyext.Edit(editor, "*.md", mr.Title, o.io.In, o.io.StdOut, o.io.StdErr, nil)
+				err = o.io.Editor(context.Background(), &mergeMessage, "Merge commit message", mr.Title, editor)
 				if err != nil {
 					return err
 				}
@@ -300,7 +297,7 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func mergeMethodSurvey() (MRMergeMethod, error) {
+func mergeMethodSurvey(io *iostreams.IOStreams) (MRMergeMethod, error) {
 	type mergeOption struct {
 		title  string
 		method MRMergeMethod
@@ -312,19 +309,25 @@ func mergeMethodSurvey() (MRMergeMethod, error) {
 		{title: "Squash and merge", method: MRMergeMethodSquash},
 	}
 
-	var surveyOpts []string
+	var options []string
 	for _, v := range mergeOpts {
-		surveyOpts = append(surveyOpts, v.title)
+		options = append(options, v.title)
 	}
 
-	mergeQuestion := &survey.Select{
-		Message: "What merge method do you want to use?",
-		Options: surveyOpts,
+	var selectedTitle string
+	err := io.Select(context.Background(), &selectedTitle, "What merge method do you want to use?", options)
+	if err != nil {
+		return MRMergeMethodMerge, err
 	}
 
-	var result int
-	err := prompt.AskOne(mergeQuestion, &result)
-	return mergeOpts[result].method, err
+	// Find the method corresponding to the selected title
+	for _, opt := range mergeOpts {
+		if opt.title == selectedTitle {
+			return opt.method, nil
+		}
+	}
+
+	return 0, fmt.Errorf("invalid merge method selected")
 }
 
 func confirmSurvey(ctx context.Context, f cmdutils.Factory, allowEditMsg bool) (cmdutils.Action, error) {

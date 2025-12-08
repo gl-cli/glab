@@ -9,7 +9,6 @@ import (
 
 	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/mcpannotations"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 )
 
 var createIssueBoard = func(client *gitlab.Client, projectID any, opts *gitlab.CreateIssueBoardOptions) (*gitlab.IssueBoard, error) {
@@ -51,7 +50,12 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			}
 
 			if boardName == "" {
-				err = prompt.AskQuestionWithInput(&boardName, "board name", "Board Name:", "", true)
+				err = f.IO().Input(cmd.Context(), &boardName, "Board Name:", "", func(s string) error {
+					if s == "" {
+						return fmt.Errorf("board name is required")
+					}
+					return nil
+				})
 				if err != nil {
 					return err
 				}
