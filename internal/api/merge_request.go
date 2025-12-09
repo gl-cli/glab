@@ -90,9 +90,12 @@ func listGroupMRsWithAssigneesOrReviewers(client *gitlab.Client, projectID any, 
 		mrs = append(mrs, mr)
 	}
 
-	sort.Slice(mrs, func(i, j int) bool {
-		return mrs[i].CreatedAt.After(*mrs[j].CreatedAt)
-	})
+	// Sort by CreatedAt if no custom sort is specified, otherwise let API sorting take precedence
+	if opts.OrderBy == nil {
+		sort.Slice(mrs, func(i, j int) bool {
+			return mrs[i].CreatedAt.After(*mrs[j].CreatedAt)
+		})
+	}
 
 	return mrs, nil
 }
@@ -172,9 +175,12 @@ func listMRsWithAssigneesOrReviewers(client *gitlab.Client, projectID any, opts 
 		mrs = append(mrs, mr)
 	}
 
-	sort.Slice(mrs, func(i, j int) bool {
-		return mrs[i].CreatedAt.After(*mrs[j].CreatedAt)
-	})
+	// Sort by CreatedAt if no custom sort is specified, otherwise let API sorting take precedence
+	if opts.OrderBy == nil {
+		sort.Slice(mrs, func(i, j int) bool {
+			return mrs[i].CreatedAt.After(*mrs[j].CreatedAt)
+		})
+	}
 
 	return mrs, nil
 }
