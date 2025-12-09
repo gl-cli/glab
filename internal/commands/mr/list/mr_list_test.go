@@ -10,8 +10,16 @@ import (
 	"testing"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
+
+	"gitlab.com/gitlab-org/cli/internal/api"
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/iostreams"
@@ -719,4 +727,112 @@ func TestMergeRequestList_SortAndOrderBy(t *testing.T) {
 	!7	OWNER/REPO/merge_requests/7	MergeRequest two	(master) ← (test2)
 
 	`), output.String())
+}
+
+func TestMergeRequestList_LabelPriorityDefaultsToAsc(t *testing.T) {
+	// GIVEN
+	testClient := gitlabtesting.NewTestClient(t)
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		func(f cmdutils.Factory) *cobra.Command { return NewCmdList(f, nil) },
+		false,
+		cmdtest.WithBaseRepo("OWNER", "REPO", ""),
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "", "", api.WithGitLabClient(testClient.Client))),
+	)
+
+	// Setup mock - verify sort=asc is passed when order=label_priority
+	testClient.MockMergeRequests.EXPECT().
+		ListProjectMergeRequests("OWNER/REPO", gomock.Any()).
+		DoAndReturn(func(pid interface{}, opts *gitlab.ListProjectMergeRequestsOptions, options ...gitlab.RequestOptionFunc) ([]*gitlab.BasicMergeRequest, *gitlab.Response, error) {
+			assert.Equal(t, "label_priority", *opts.OrderBy)
+			assert.Equal(t, "asc", *opts.Sort)
+			return []*gitlab.BasicMergeRequest{}, nil, nil
+		})
+
+	// WHEN
+	_, err := exec("--order label_priority")
+
+	// THEN
+	require.NoError(t, err)
+}
+
+func TestMergeRequestList_PriorityDefaultsToAsc(t *testing.T) {
+	// GIVEN
+	testClient := gitlabtesting.NewTestClient(t)
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		func(f cmdutils.Factory) *cobra.Command { return NewCmdList(f, nil) },
+		false,
+		cmdtest.WithBaseRepo("OWNER", "REPO", ""),
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "", "", api.WithGitLabClient(testClient.Client))),
+	)
+
+	// Setup mock - verify sort=asc is passed when order=priority
+	testClient.MockMergeRequests.EXPECT().
+		ListProjectMergeRequests("OWNER/REPO", gomock.Any()).
+		DoAndReturn(func(pid interface{}, opts *gitlab.ListProjectMergeRequestsOptions, options ...gitlab.RequestOptionFunc) ([]*gitlab.BasicMergeRequest, *gitlab.Response, error) {
+			assert.Equal(t, "priority", *opts.OrderBy)
+			assert.Equal(t, "asc", *opts.Sort)
+			return []*gitlab.BasicMergeRequest{}, nil, nil
+		})
+
+	// WHEN
+	_, err := exec("--order priority")
+
+	// THEN
+	require.NoError(t, err)
+}
+
+func TestMergeRequestList_CreatedAtDefaultsToDesc(t *testing.T) {
+	// GIVEN
+	testClient := gitlabtesting.NewTestClient(t)
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		func(f cmdutils.Factory) *cobra.Command { return NewCmdList(f, nil) },
+		false,
+		cmdtest.WithBaseRepo("OWNER", "REPO", ""),
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "", "", api.WithGitLabClient(testClient.Client))),
+	)
+
+	// Setup mock - verify sort=desc is passed when order=created_at
+	testClient.MockMergeRequests.EXPECT().
+		ListProjectMergeRequests("OWNER/REPO", gomock.Any()).
+		DoAndReturn(func(pid interface{}, opts *gitlab.ListProjectMergeRequestsOptions, options ...gitlab.RequestOptionFunc) ([]*gitlab.BasicMergeRequest, *gitlab.Response, error) {
+			assert.Equal(t, "created_at", *opts.OrderBy)
+			assert.Equal(t, "desc", *opts.Sort)
+			return []*gitlab.BasicMergeRequest{}, nil, nil
+		})
+
+	// WHEN
+	_, err := exec("--order created_at")
+
+	// THEN
+	require.NoError(t, err)
+}
+
+func TestMergeRequestList_ExplicitSortOverridesDefault(t *testing.T) {
+	// GIVEN
+	testClient := gitlabtesting.NewTestClient(t)
+	exec := cmdtest.SetupCmdForTest(
+		t,
+		func(f cmdutils.Factory) *cobra.Command { return NewCmdList(f, nil) },
+		false,
+		cmdtest.WithBaseRepo("OWNER", "REPO", ""),
+		cmdtest.WithApiClient(cmdtest.NewTestApiClient(t, nil, "", "", api.WithGitLabClient(testClient.Client))),
+	)
+
+	// Setup mock - verify explicit --sort desc overrides the default asc for label_priority
+	testClient.MockMergeRequests.EXPECT().
+		ListProjectMergeRequests("OWNER/REPO", gomock.Any()).
+		DoAndReturn(func(pid interface{}, opts *gitlab.ListProjectMergeRequestsOptions, options ...gitlab.RequestOptionFunc) ([]*gitlab.BasicMergeRequest, *gitlab.Response, error) {
+			assert.Equal(t, "label_priority", *opts.OrderBy)
+			assert.Equal(t, "desc", *opts.Sort)
+			return []*gitlab.BasicMergeRequest{}, nil, nil
+		})
+
+	// WHEN
+	_, err := exec("--order label_priority --sort desc")
+
+	// THEN
+	require.NoError(t, err)
 }

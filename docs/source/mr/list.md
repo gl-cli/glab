@@ -54,7 +54,7 @@ $ glab mr list --not-draft
   -m, --milestone string       Filter merge request by milestone <id>.
       --not-draft              Filter by non-draft merge requests.
       --not-label strings      Filter merge requests by not having label <name>. Multiple labels can be comma-separated or specified by repeating the flag.
-  -o, --order string           Order merge requests by <field>. Order options: created_at, title, merged_at or updated_at.
+  -o, --order string           Order merge requests by <field>. Order options: created_at, updated_at, merged_at, title, priority, label_priority, milestone_due, and popularity.
   -F, --output string          Format output as: text, json. (default "text")
   -p, --page int               Page number. (default 1)
   -P, --per-page int           Number of items to list per page. (default 30)
