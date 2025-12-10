@@ -6,22 +6,18 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/survivorbat/huhtest"
 
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
+	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/git"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
-
-// skipPromptTest skips tests that use prompt.InitAskStubber which is incompatible with huh
-// TODO: Migrate these tests to use huhtest.Responder
-func skipPromptTest(t *testing.T) {
-	t.Helper()
-	t.Skip("Skipping test that uses prompt.InitAskStubber - needs migration to huhtest.Responder")
-}
 
 func TestMain(m *testing.M) {
 	cmdtest.InitTest(m, "mr_note_create_test")
@@ -123,7 +119,6 @@ func Test_NewCmdNote_error(t *testing.T) {
 }
 
 func Test_mrNoteCreate_prompt(t *testing.T) {
-	skipPromptTest(t)
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -149,18 +144,26 @@ func Test_mrNoteCreate_prompt(t *testing.T) {
 			"web_url": "https://gitlab.com/OWNER/REPO/merge_requests/1"
 		}
 	`))
-		as, teardown := prompt.InitAskStubber()
-		defer teardown()
-		as.StubOne("some note message")
+
+		responder := huhtest.NewResponder()
+		responder.AddResponse("Note message:", "some note message")
+
+		exec := cmdtest.SetupCmdForTest(t, func(f cmdutils.Factory) *cobra.Command {
+			return NewCmdNote(f)
+		}, false,
+			cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
+			cmdtest.WithConfig(config.NewFromString("editor: vi")),
+			cmdtest.WithResponder(t, responder),
+		)
 
 		// glab mr note 1
-		output, err := runCommand(t, fakeHTTP, `1`)
+		output, err := exec(`1`)
 		if err != nil {
 			t.Error(err)
 			return
 		}
 		assert.Equal(t, output.Stderr(), "")
-		assert.Equal(t, output.String(), "https://gitlab.com/OWNER/REPO/merge_requests/1#note_301\n")
+		assert.Contains(t, output.String(), "https://gitlab.com/OWNER/REPO/merge_requests/1#note_301")
 	})
 
 	t.Run("message is empty", func(t *testing.T) {
@@ -173,22 +176,28 @@ func Test_mrNoteCreate_prompt(t *testing.T) {
 		}
 	`))
 
-		as, teardown := prompt.InitAskStubber()
-		defer teardown()
-		as.StubOne("")
+		responder := huhtest.NewResponder()
+		responder.AddResponse("Note message:", "")
+
+		exec := cmdtest.SetupCmdForTest(t, func(f cmdutils.Factory) *cobra.Command {
+			return NewCmdNote(f)
+		}, false,
+			cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
+			cmdtest.WithConfig(config.NewFromString("editor: vi")),
+			cmdtest.WithResponder(t, responder),
+		)
 
 		// glab mr note 1
-		_, err := runCommand(t, fakeHTTP, `1`)
+		_, err := exec(`1`)
 		if err == nil {
 			t.Error("expected error")
 			return
 		}
-		assert.Equal(t, err.Error(), "aborted... Note has an empty message.")
+		assert.Equal(t, "aborted... Note has an empty message.", err.Error())
 	})
 }
 
 func Test_mrNoteCreate_no_duplicate(t *testing.T) {
-	skipPromptTest(t)
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -211,18 +220,26 @@ func Test_mrNoteCreate_no_duplicate(t *testing.T) {
 			{"id": 333, "body": "ccc"}
 		]
 	`))
-		as, teardown := prompt.InitAskStubber()
-		defer teardown()
-		as.StubOne("some note message")
+
+		responder := huhtest.NewResponder()
+		responder.AddResponse("Note message:", "some note message")
+
+		exec := cmdtest.SetupCmdForTest(t, func(f cmdutils.Factory) *cobra.Command {
+			return NewCmdNote(f)
+		}, false,
+			cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
+			cmdtest.WithConfig(config.NewFromString("editor: vi")),
+			cmdtest.WithResponder(t, responder),
+		)
 
 		// glab mr note 1
-		output, err := runCommand(t, fakeHTTP, `1 --unique`)
+		output, err := exec(`1 --unique`)
 		if err != nil {
 			t.Error(err)
 			return
 		}
 		println(output.String())
 		assert.Equal(t, output.Stderr(), "")
-		assert.Equal(t, output.String(), "https://gitlab.com/OWNER/REPO/merge_requests/1#note_222\n")
+		assert.Contains(t, output.String(), "https://gitlab.com/OWNER/REPO/merge_requests/1#note_222")
 	})
 }
