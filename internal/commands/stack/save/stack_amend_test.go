@@ -89,7 +89,7 @@ func Test_stackAmendCmd(t *testing.T) {
 				require.Nil(t, err)
 			}
 
-			output, err := amendFunc(f, tc.args, getText, tc.description)
+			output, err := amendFunc(t.Context(), f, tc.args, getText, tc.description)
 
 			if tc.wantErr {
 				require.ErrorContains(t, err, tc.expected)

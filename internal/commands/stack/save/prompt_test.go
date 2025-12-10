@@ -3,6 +3,7 @@
 package save
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,7 +12,7 @@ import (
 )
 
 func getMockEditor(input string, prompts *[]string) cmdutils.GetTextUsingEditor {
-	return func(editor, tmpFileName, content string) (string, error) {
+	return func(ctx context.Context, editor, tmpFileName, content string) (string, error) {
 		*prompts = append(*prompts, content)
 		return input, nil
 	}
@@ -93,7 +94,7 @@ func Test_promptForCommit(t *testing.T) {
 			_, _, factory := setupTestFactory(t, nil, isTTY)
 			prompts := []string{}
 			getText := getMockEditor(tt.input, &prompts)
-			got, err := promptForCommit(factory, getText, tt.defaultValue)
+			got, err := promptForCommit(t.Context(), factory, getText, tt.defaultValue)
 			if tt.wantErr {
 				require.Error(t, err)
 			} else {

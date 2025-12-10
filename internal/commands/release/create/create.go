@@ -76,6 +76,7 @@ type options struct {
 	usePackageRegistry bool
 	packageName        string
 
+	ctx          context.Context
 	io           *iostreams.IOStreams
 	gitlabClient func() (*gitlab.Client, error)
 	baseRepo     func() (glrepo.Interface, error)
@@ -168,6 +169,7 @@ func NewCmdCreate(f cmdutils.Factory) *cobra.Command {
 			mcpannotations.Destructive: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.ctx = cmd.Context()
 			if err := opts.complete(cmd.Flags(), args); err != nil {
 				return err
 			}
@@ -395,7 +397,7 @@ func createRun(opts *options) error {
 			Value(&opts.ReleaseNotesAction))
 
 		// Run the combined form
-		err = opts.io.RunForm(context.Background(), fields...)
+		err = opts.io.RunForm(opts.ctx, fields...)
 		if err != nil {
 			return fmt.Errorf("could not prompt: %w", err)
 		}
@@ -419,7 +421,7 @@ func createRun(opts *options) error {
 		}
 
 		if openEditor {
-			err = opts.io.Editor(context.Background(), &opts.notes, "Release notes", editorContents, editorCommand)
+			err = opts.io.Editor(opts.ctx, &opts.notes, "Release notes", "", editorContents, editorCommand)
 			if err != nil {
 				return err
 			}

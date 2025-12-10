@@ -3,6 +3,7 @@
 package reorder
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -50,7 +51,7 @@ func Test_promptForReorder(t *testing.T) {
 			prompts := []string{}
 			getText := getMockEditor(tt.args.input, &prompts)
 
-			got, err := promptForOrder(factory, getText, tt.args.stack, "")
+			got, err := promptForOrder(t.Context(), factory, getText, tt.args.stack, "")
 			if tt.wantErr {
 				require.Error(t, err)
 			} else {
@@ -154,7 +155,7 @@ func setupTestFactory(t *testing.T, rt http.RoundTripper, isTTY bool) cmdutils.F
 }
 
 func getMockEditor(input string, prompts *[]string) cmdutils.GetTextUsingEditor {
-	return func(editor, tmpFileName, content string) (string, error) {
+	return func(ctx context.Context, editor, tmpFileName, content string) (string, error) {
 		*prompts = append(*prompts, content)
 		return input, nil
 	}

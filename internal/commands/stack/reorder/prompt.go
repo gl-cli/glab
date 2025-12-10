@@ -2,6 +2,7 @@ package reorder
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -34,7 +35,7 @@ func parseReorderFile(input string) ([]string, error) {
 	return branches, nil
 }
 
-func promptForOrder(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, stack git.Stack, branch string) ([]string, error) {
+func promptForOrder(ctx context.Context, f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, stack git.Stack, branch string) ([]string, error) {
 	var message string
 	var buffer bytes.Buffer
 
@@ -63,7 +64,7 @@ func promptForOrder(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, sta
 		return []string{}, errors.New("No TTY available")
 	}
 
-	promptResponse, err := getText(editor, "glab-stack-reorder*.gitrebase", message)
+	promptResponse, err := getText(ctx, editor, "glab-stack-reorder*.gitrebase", message)
 	if err != nil {
 		return []string{}, err
 	}

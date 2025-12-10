@@ -19,9 +19,9 @@ import (
 )
 
 func wrappedEdit(f cmdutils.Factory) cmdutils.GetTextUsingEditor {
-	return func(editor, tmpFileName, content string) (string, error) {
+	return func(ctx context.Context, editor, tmpFileName, content string) (string, error) {
 		var result string = content
-		err := f.IO().Editor(context.Background(), &result, "Edit", content, editor)
+		err := f.IO().Editor(ctx, &result, "Edit", "", content, editor)
 		return result, err
 	}
 }
