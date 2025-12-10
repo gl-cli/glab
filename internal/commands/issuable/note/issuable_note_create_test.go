@@ -5,27 +5,20 @@ package note
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"reflect"
 	"testing"
 
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/survivorbat/huhtest"
 
+	"gitlab.com/gitlab-org/cli/internal/cmdutils"
 	"gitlab.com/gitlab-org/cli/internal/commands/issuable"
 	"gitlab.com/gitlab-org/cli/internal/config"
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
-	"gitlab.com/gitlab-org/cli/internal/prompt"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
 	"gitlab.com/gitlab-org/cli/internal/testing/httpmock"
 	"gitlab.com/gitlab-org/cli/test"
 )
-
-// skipPromptTest skips tests that use prompt.InitAskStubber which is incompatible with huh
-// TODO: Migrate these tests to use huhtest.Responder
-func skipPromptTest(t *testing.T) {
-	t.Helper()
-	t.Skip("Skipping test that uses prompt.InitAskStubber - needs migration to huhtest.Responder")
-}
 
 func runCommand(t *testing.T, rt http.RoundTripper, cli string, issueType issuable.IssueType) (*test.CmdOut, error) {
 	t.Helper()
@@ -163,7 +156,6 @@ func Test_NewCmdNote_error(t *testing.T) {
 }
 
 func Test_IssuableNoteCreate_prompt(t *testing.T) {
-	skipPromptTest(t)
 	fakeHTTP := httpmock.New()
 	defer fakeHTTP.Verify(t)
 
@@ -199,30 +191,27 @@ func Test_IssuableNoteCreate_prompt(t *testing.T) {
 					"web_url": "https://gitlab.com/OWNER/REPO/issues/1"
 				}
 			`, cc.issueType)))
-			as, teardown := prompt.InitAskStubber()
-			defer teardown()
-			as.StubOne("some note message")
+
+			responder := huhtest.NewResponder()
+			responder.AddResponse("Message:", "some note message")
+
+			exec := cmdtest.SetupCmdForTest(t, func(f cmdutils.Factory) *cobra.Command {
+				return NewCmdNote(f, cc.issueType)
+			}, false,
+				cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
+				cmdtest.WithConfig(config.NewFromString("editor: vi")),
+				cmdtest.WithResponder(t, responder),
+			)
 
 			// glab issue note 1
 			// glab incident note 1
-			output, err := runCommand(t, fakeHTTP, `1`, cc.issueType)
-
-			// get the editor used
-			notePrompt := *as.AskOnes[0]
-			actualEditor := reflect.ValueOf(notePrompt).Elem().FieldByName("EditorCommand").String()
-
+			output, err := exec(`1`)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 			assert.Equal(t, "", output.Stderr())
-			assert.Equal(t, "https://gitlab.com/OWNER/REPO/issues/1#note_301\n", output.String())
-
-			editor := os.Getenv("EDITOR")
-			if editor == "" {
-				editor = "vi"
-			}
-			assert.Equal(t, editor, actualEditor)
+			assert.Contains(t, output.String(), "https://gitlab.com/OWNER/REPO/issues/1#note_301")
 		})
 
 		tests := []struct {
@@ -246,11 +235,18 @@ func Test_IssuableNoteCreate_prompt(t *testing.T) {
 					}
 				`, cc.issueType)))
 
-				as, teardown := prompt.InitAskStubber()
-				defer teardown()
-				as.StubOne(tt.message)
+				responder := huhtest.NewResponder()
+				responder.AddResponse("Message:", tt.message)
 
-				_, err := runCommand(t, fakeHTTP, `1`, cc.issueType)
+				exec := cmdtest.SetupCmdForTest(t, func(f cmdutils.Factory) *cobra.Command {
+					return NewCmdNote(f, cc.issueType)
+				}, false,
+					cmdtest.WithGitLabClient(cmdtest.NewTestApiClient(t, &http.Client{Transport: fakeHTTP}, "", glinstance.DefaultHostname).Lab()),
+					cmdtest.WithConfig(config.NewFromString("editor: vi")),
+					cmdtest.WithResponder(t, responder),
+				)
+
+				_, err := exec(`1`)
 				if err == nil {
 					t.Error("expected error")
 					return
