@@ -173,7 +173,7 @@ func (o *options) run(x cmdutils.Factory, cmd *cobra.Command, args []string) err
 				if err != nil {
 					return err
 				}
-				err = o.io.Editor(context.Background(), &mergeMessage, "Merge commit message", mr.Title, editor)
+				err = o.io.Editor(cmd.Context(), &mergeMessage, "Merge commit message", "", mr.Title, editor)
 				if err != nil {
 					return err
 				}

@@ -1,6 +1,7 @@
 package save
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -29,7 +30,7 @@ func NewCmdAmendStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.Get
 			mcpannotations.Destructive: "true",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			output, err := amendFunc(f, args, getText, description)
+			output, err := amendFunc(cmd.Context(), f, args, getText, description)
 			if err != nil {
 				return fmt.Errorf("could not run stack amend: %v", err)
 			}
@@ -48,7 +49,7 @@ func NewCmdAmendStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.Get
 	return stackSaveCmd
 }
 
-func amendFunc(f cmdutils.Factory, args []string, getText cmdutils.GetTextUsingEditor, description string) (string, error) {
+func amendFunc(ctx context.Context, f cmdutils.Factory, args []string, getText cmdutils.GetTextUsingEditor, description string) (string, error) {
 	// check if there are even any changes before we start
 	err := checkForChanges()
 	if err != nil {
@@ -72,7 +73,7 @@ func amendFunc(f cmdutils.Factory, args []string, getText cmdutils.GetTextUsingE
 
 	// a description is required, so ask if one is not provided
 	if description == "" {
-		description, err = promptForCommit(f, getText, ref.Description)
+		description, err = promptForCommit(ctx, f, getText, ref.Description)
 		if err != nil {
 			return "", fmt.Errorf("error getting commit message: %v", err)
 		}

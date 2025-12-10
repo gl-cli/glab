@@ -130,7 +130,7 @@ func GetEditor(cf func() config.Config) (string, error) {
 	return editorCommand, nil
 }
 
-func EditorPrompt(io *iostreams.IOStreams, response *string, question, templateContent, editorCommand string) error {
+func EditorPrompt(ctx context.Context, io *iostreams.IOStreams, response *string, question, templateContent, editorCommand string) error {
 	defaultBody := *response
 	if templateContent != "" {
 		if defaultBody != "" {
@@ -141,7 +141,7 @@ func EditorPrompt(io *iostreams.IOStreams, response *string, question, templateC
 		defaultBody += templateContent
 	}
 
-	err := io.Editor(context.Background(), response, question, defaultBody, editorCommand)
+	err := io.Editor(ctx, response, question, "", defaultBody, editorCommand)
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,7 @@ func EditorPrompt(io *iostreams.IOStreams, response *string, question, templateC
 	return nil
 }
 
-type GetTextUsingEditor func(editor, tmpFileName, content string) (string, error)
+type GetTextUsingEditor func(ctx context.Context, editor, tmpFileName, content string) (string, error)
 
 func LabelsPrompt(ctx context.Context, ios *iostreams.IOStreams, response *[]string, apiClient *gitlab.Client, repoRemote *glrepo.Remote) error {
 	labelOpts := &gitlab.ListLabelsOptions{}

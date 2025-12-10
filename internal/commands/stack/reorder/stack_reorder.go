@@ -1,6 +1,7 @@
 package reorder
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -51,13 +52,13 @@ func NewCmdReorderStack(f cmdutils.Factory, gr git.GitRunner, getText cmdutils.G
 			opts.io.StartSpinner("Reordering\n")
 			defer opts.io.StopSpinner("%s Reordering complete\n", f.IO().Color().GreenCheck())
 
-			return opts.run(f, getText)
+			return opts.run(cmd.Context(), f, getText)
 		},
 	}
 	return stackSaveCmd
 }
 
-func (o *options) run(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor) error {
+func (o *options) run(ctx context.Context, f cmdutils.Factory, getText cmdutils.GetTextUsingEditor) error {
 	o.io.StartSpinner("Reordering\n")
 	defer o.io.StopSpinner("")
 
@@ -79,7 +80,7 @@ func (o *options) run(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor) e
 	o.io.StopSpinner("")
 	// pausing the spinner in case it's a terminal based editor
 
-	branches, err := promptForOrder(f, getText, stack, ref.Branch)
+	branches, err := promptForOrder(ctx, f, getText, stack, ref.Branch)
 	if err != nil {
 		return fmt.Errorf("error getting new branch order: %v", err)
 	}

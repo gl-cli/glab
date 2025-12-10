@@ -1,6 +1,7 @@
 package save
 
 import (
+	"context"
 	"errors"
 	"strings"
 
@@ -20,7 +21,7 @@ func cleanDescription(message string) string {
 	return strings.TrimSpace(sb.String())
 }
 
-func promptForCommit(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, defaultValue string) (string, error) {
+func promptForCommit(ctx context.Context, f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, defaultValue string) (string, error) {
 	message := "\n# Please enter the commit message for this change. Lines starting\n# with '#' will be ignored. A message is required.\n#\n"
 	editor, err := cmdutils.GetEditor(f.Config)
 	if err != nil {
@@ -38,7 +39,7 @@ func promptForCommit(f cmdutils.Factory, getText cmdutils.GetTextUsingEditor, de
 		}
 		return defaultValue, nil
 	}
-	description, err = getText(editor, "glab-stack-save-description*.gitcommit", message)
+	description, err = getText(ctx, editor, "glab-stack-save-description*.gitcommit", message)
 	if err != nil {
 		return "", err
 	}

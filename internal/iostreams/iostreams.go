@@ -417,12 +417,17 @@ func (s *IOStreams) Multiline(ctx context.Context, result *string, title, placeh
 	return s.Run(ctx, text)
 }
 
-func (s *IOStreams) Editor(ctx context.Context, result *string, title, defaultContent, editorCmd string) error {
+func (s *IOStreams) Editor(ctx context.Context, result *string, title, description, defaultContent, editorCmd string) error {
 	text := huh.NewText().
 		Title(title).
 		Value(result).
 		ExternalEditor(true).
 		EditorExtension(".md")
+
+	// Set the description (help text) if provided
+	if description != "" {
+		text = text.Description(description)
+	}
 
 	// Set the default content if provided
 	if defaultContent != "" {
