@@ -4,6 +4,7 @@ package create
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -12,6 +13,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
+
+	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlabtesting "gitlab.com/gitlab-org/api/client-go/testing"
 
 	"gitlab.com/gitlab-org/cli/internal/glinstance"
 	"gitlab.com/gitlab-org/cli/internal/testing/cmdtest"
@@ -565,6 +570,87 @@ func TestReleaseCreate_MilestoneClosing(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestReleaseCreate_DefaultBranchDetectionForRef(t *testing.T) {
+	t.Setenv("CI_DEFAULT_BRANCH", "")
+
+	t.Run("use default branch from project API when available", func(t *testing.T) {
+		tc := gitlabtesting.NewTestClient(t)
+
+		exec := cmdtest.SetupCmdForTest(
+			t,
+			NewCmdCreate,
+			false,
+			cmdtest.WithGitLabClient(tc.Client),
+			cmdtest.WithBaseRepo("OWNER", "REPO", glinstance.DefaultHostname),
+		)
+
+		notFoundResponse := &gitlab.Response{Response: &http.Response{StatusCode: http.StatusNotFound}}
+		tc.MockTags.EXPECT().GetTag("OWNER/REPO", "0.0.1", gomock.Any()).Return(nil, notFoundResponse, errors.New("not found"))
+		tc.MockProjects.EXPECT().GetProject("OWNER/REPO", gomock.Any()).Return(&gitlab.Project{DefaultBranch: "some-default-branch"}, nil, nil)
+		tc.MockReleases.EXPECT().GetRelease("OWNER/REPO", "0.0.1", gomock.Any()).Return(nil, notFoundResponse, errors.New("not found"))
+		tc.MockReleases.EXPECT().CreateRelease("OWNER/REPO", &gitlab.CreateReleaseOptions{
+			Name:    gitlab.Ptr("0.0.1"),
+			TagName: gitlab.Ptr("0.0.1"),
+			Ref:     gitlab.Ptr("some-default-branch"),
+		}).Return(&gitlab.Release{}, nil, nil)
+
+		_, err := exec("0.0.1")
+		require.NoError(t, err)
+	})
+
+	t.Run("use default branch from environment if available and project API not available", func(t *testing.T) {
+		t.Setenv("CI_DEFAULT_BRANCH", "some-default-branch")
+
+		tc := gitlabtesting.NewTestClient(t)
+
+		exec := cmdtest.SetupCmdForTest(
+			t,
+			NewCmdCreate,
+			false,
+			cmdtest.WithGitLabClient(tc.Client),
+			cmdtest.WithBaseRepo("OWNER", "REPO", glinstance.DefaultHostname),
+		)
+
+		notFoundResponse := &gitlab.Response{Response: &http.Response{StatusCode: http.StatusNotFound}}
+		tc.MockTags.EXPECT().GetTag("OWNER/REPO", "0.0.1", gomock.Any()).Return(nil, notFoundResponse, errors.New("not found"))
+		tc.MockProjects.EXPECT().GetProject("OWNER/REPO", gomock.Any()).Return(nil, nil, errors.New("forbidden"))
+		tc.MockReleases.EXPECT().GetRelease("OWNER/REPO", "0.0.1", gomock.Any()).Return(nil, notFoundResponse, errors.New("not found"))
+		tc.MockReleases.EXPECT().CreateRelease("OWNER/REPO", &gitlab.CreateReleaseOptions{
+			Name:    gitlab.Ptr("0.0.1"),
+			TagName: gitlab.Ptr("0.0.1"),
+			Ref:     gitlab.Ptr("some-default-branch"),
+		}).Return(&gitlab.Release{}, nil, nil)
+
+		_, err := exec("0.0.1")
+		require.NoError(t, err)
+	})
+
+	t.Run("no explicit ref if default branch not in environment and project API not available", func(t *testing.T) {
+		tc := gitlabtesting.NewTestClient(t)
+
+		exec := cmdtest.SetupCmdForTest(
+			t,
+			NewCmdCreate,
+			false,
+			cmdtest.WithGitLabClient(tc.Client),
+			cmdtest.WithBaseRepo("OWNER", "REPO", glinstance.DefaultHostname),
+		)
+
+		notFoundResponse := &gitlab.Response{Response: &http.Response{StatusCode: http.StatusNotFound}}
+		tc.MockTags.EXPECT().GetTag("OWNER/REPO", "0.0.1", gomock.Any()).Return(nil, notFoundResponse, errors.New("not found"))
+		tc.MockProjects.EXPECT().GetProject("OWNER/REPO", gomock.Any()).Return(nil, nil, errors.New("forbidden"))
+		tc.MockReleases.EXPECT().GetRelease("OWNER/REPO", "0.0.1", gomock.Any()).Return(nil, notFoundResponse, errors.New("not found"))
+		tc.MockReleases.EXPECT().CreateRelease("OWNER/REPO", &gitlab.CreateReleaseOptions{
+			Name:    gitlab.Ptr("0.0.1"),
+			TagName: gitlab.Ptr("0.0.1"),
+			Ref:     nil,
+		}).Return(&gitlab.Release{}, nil, nil)
+
+		_, err := exec("0.0.1")
+		require.NoError(t, err)
+	})
 }
 
 func TestReleaseCreate_ExperimentalNotes(t *testing.T) {
