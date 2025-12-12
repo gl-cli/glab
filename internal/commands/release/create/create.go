@@ -332,7 +332,16 @@ func createRun(opts *options) error {
 			opts.io.LogInfo(color.DotWarnIcon(), "Tag does not exist.")
 			opts.io.LogInfo(color.DotWarnIcon(), "No ref provided. Creating the tag from the latest state of the default branch.")
 			project, err := repo.Project(client)
-			if err == nil {
+			if err != nil {
+				// We are not able to retrieve the project from the API.
+				// This is most likely because we are running in CI with a CI Job Token
+				// which does not have access to the Projects API. Thus, let's check if we have access
+				// to the predefined CI/CD variable CI_DEFAULT_BRANCH and use it instead if available.
+				if defaultBranch, found := os.LookupEnv("CI_DEFAULT_BRANCH"); found {
+					opts.io.LogInfof("%s using default branch %q as ref from CI_DEFAULT_BRANCH\n", color.ProgressIcon(), defaultBranch)
+					opts.ref = defaultBranch
+				}
+			} else {
 				opts.io.LogInfof("%s using default branch %q as ref\n", color.ProgressIcon(), project.DefaultBranch)
 				opts.ref = project.DefaultBranch
 			}
